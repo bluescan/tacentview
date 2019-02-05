@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html><head>
+
+<title>CxImage Linked Libraries</title><meta name="GENERATOR" content="Microsoft FrontPage 3.0">
+<link rel="stylesheet" href="xdp.css" type="text/css">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"><style type="text/css">
+<!--
+body {
+	background-color: #FFFFFF;
+}
+-->
+</style></head>
+<body background="img5/grid02.gif">
+<h2>CxImage Linked Libraries</h2>
+<hr> 
+<p>CxImage must be linked with additional libraries in order to read
+and write some specific file formats. All these libraries are freely
+available, with source code, documentation and examples. Some of the
+libraries distributed with CxImage have been patched, or slightly
+edited, to add features normally not enabled in the standard
+distributions, or just to avoid too many warnings from the compiler
+during the compilation, and mainly to ensure that CxImage can be easily
+linked with all of them without troubles. Here is a list of the
+libraries linked with CxImage :</p>
+<ul>
+  <li><a href="#zLib">zLib</a></li>
+  <li> <a href="#LibTIFF">LibTIFF</a></li>
+  <li> <a href="#LibPNG">LibPNG</a></li>
+  <li> <a href="#LibMNG">LibMNG</a></li>
+  <li> <a href="#LibJPEG">LibJPEG</a></li>
+  <li> <a href="#JBIGKit">JBIG-Kit</a></li>
+  <li> <a href="#JasPer">JasPer</a></li>
+  <li> <a href="#LibDCR">LibDCR</a></li><li><a href="#LibPSD">LibPSD</a></li>
+</ul>
+<hr>
+<h3><a name="zLib"></a>zLib</h3>
+<p>Home page : <a href="http://www.zlib.net/">http://www.zlib.net/</a> [<a href="http://www.zlib.net/" target="_blank">^</a>] <br>
+Version : 1.2.5<br>
+Required for : PNG, TIFF, JBIG.<br>
+Patches : none.<br>
+</p>
+<hr>
+<h3><a name="LibTIFF"></a>LibTIFF</h3>
+<p>Home page : <a href="http://www.libtiff.org/">http://www.libtiff.org/</a> [<a href="http://www.libtiff.org/" target="_blank">^</a>] <br>
+  Version : 3.9.4 <br>
+  Required for :  TIFF.<br>Optional Patches :&nbsp;support images with non standard bitpersamples (<a href="libtiff_patches.7z">libtiff_patches.7z)</a></p>
+<ul></ul>
+<hr>
+<h3><a name="LibPNG"></a>LibPNG</h3>
+<p>Home page : <a href="http://www.libpng.org/pub/png/">http://www.libpng.org/pub/png/</a> [<a href="http://www.libpng.org/pub/png/" target="_blank">^</a>] <br>
+  Version : 1.5.0<br>
+  Required for : PNG.<br>
+  Patches :&nbsp;minor configuration changes.<br>
+</p>
+<hr>
+<h3><a name="LibMNG"></a>LibMNG</h3>
+<p>Home page : <a href="http://www.libpng.org/pub/mng/">http://www.libpng.org/pub/mng/</a> [<a href="http://www.libpng.org/pub/mng/" target="_blank">^</a>] <br>
+  Version : 1.0.10<br>
+  Required for : MNG, JNG.<br>
+  Patches : none.<br>
+</p>
+<hr>
+<h3><a name="LibJPEG"></a>LibJPEG</h3>
+<p>Home page : <a href="http://www.ijg.org">http://www.ijg.org</a> [<a href="http://www.ijg.org" target="_blank">^</a>] <br>
+  Version : 8b <br>
+  Required for : JPG, TIFF, MNG.<br>Optional Patches : read corrupted images or with unknown markers (<a href="libjpeg_patches.7z">libjpeg_patches.7z</a>)</p>
+<ul></ul>
+<hr>
+<h3><a name="JBIGKit"></a>JBIG-Kit</h3>
+<p>Home page : <a href="http://www.cl.cam.ac.uk/%7Emgk25/jbigkit/">http://www.cl.cam.ac.uk/~mgk25/jbigkit/</a> [<a href="http://www.cl.cam.ac.uk/%7Emgk25/jbigkit/" target="_blank">^</a>] <br>
+  Version : 1.6<br>
+  Required for : JBIG.<br>
+  Patches : only some missing cast.<br>
+</p>
+<hr>
+<h3><a name="JasPer"></a>JasPer</h3>
+<p>Home page : <a href="http://www.ece.uvic.ca/%7Emdadams/jasper/">http://www.ece.uvic.ca/~mdadams/jasper/</a> [<a href="http://www.ece.uvic.ca/%7Emdadams/jasper/" target="_blank">^</a>] <br>
+  Version : 1.900.1<br>
+  Required for : 
+
+
+ JP2, 
+
+
+ JPC, PNM, RAS, 
+
+
+ PGX.<br>
+  Patches : only some missing cast and minor configuration editing.<br>
+</p>
+<hr>
+<h3><a name="LibDCR" id="LibDCR"></a>LibDCR</h3>
+<p>Home page : <a href="http://www.xdp.it/libdcr/">http://www.xdp.it/libdcr/</a> [<a href="http://www.xdp.it/libdcr/" target="_blank">^</a>] <br>
+  Version : 0.1.8.93<br>
+  Required for : RAW, CRW, NEF, CR2, DNG, ORF, ARW, ERF, 3FR, DCR, X3F, MEF, RAF, MRW, PEF, SR2.</p><hr>
+<h3><a name="LibPSD" id="LibDCR"></a>LibPSD</h3>
+Home page : <a href="http://sourceforge.net/projects/libpsd/">http://sourceforge.net/projects/libpsd/</a> [<a href="http://sourceforge.net/projects/libpsd/" target="_blank">^</a>] <br>
+  Version : 0.9<br>
+  Required for : PSD.<br>Patches : required&nbsp;to support the CxImage file management<p>
+  
+</p>
+</body></html>

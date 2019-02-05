@@ -1,0 +1,89 @@
+FONT {
+	FONT-SIZE: 12px; FONT-FAMILY: Verdana,Helvetica
+}
+P {
+	FONT-SIZE: 12px; FONT-FAMILY: Verdana,Helvetica
+}
+DIV {
+	FONT-SIZE: 12px; FONT-FAMILY: Verdana,Helvetica
+}
+TD {
+	FONT-SIZE: 12px; FONT-FAMILY: Verdana,Helvetica
+}
+LI {
+	FONT-SIZE: 12px; FONT-FAMILY: Verdana,Helvetica; line-height: 18px;
+}
+DD {
+	FONT-SIZE: 12pt; FONT-FAMILY: Verdana, Helvetica; COLOR: Navy; line-height: 18px;
+}
+BODY {
+	FONT-SIZE: 12px;
+	FONT-FAMILY: Verdana,Helvetica;
+}
+H2 {
+	FONT-SIZE: 15px; FONT-FAMILY: Verdana,Helvetica; letter-spacing: 2px;
+}
+H3 {
+	FONT-SIZE: 13px; FONT-FAMILY: Verdana,Helvetica; letter-spacing: 2px;
+}
+INPUT {
+	FONT-SIZE: 11px; FONT-FAMILY: Verdana,Helvetica
+}
+TEXTAREA {
+	FONT-SIZE: 11px; FONT-FAMILY: Verdana,Helvetica
+}
+FORM {
+	FONT-SIZE: 11px; FONT-FAMILY: Verdana,Helvetica
+}
+SELECT {
+	FONT-SIZE: 11px; FONT-FAMILY: Verdana,Helvetica
+}
+PRE {
+	font-size: 11px; font-family: "Courier New", Courier, monospace; background-color: #F8F4F4;
+	border: 1px solid Black; padding: 3px; background-image: url(img5/gridpre.gif); width: 80%;
+}
+CODE {
+	font-size: 12px; font-family: "Courier New", Courier, monospace; color: #800000;
+}
+A:link {
+	FONT-SIZE: 12px; FONT-FAMILY: Verdana, Helvetica; COLOR: #4169E1; TEXT-DECORATION: none
+}
+A:active {
+	FONT-SIZE: 12px; FONT-FAMILY: Verdana, Helvetica; COLOR: Red; TEXT-DECORATION: none
+}
+A:visited {
+	FONT-SIZE: 12px; FONT-FAMILY: Verdana, Helvetica; COLOR: #4682B4; TEXT-DECORATION: none
+}
+A:hover {
+	FONT-SIZE: 12px; FONT-FAMILY: Verdana, Helvetica; COLOR: Blue; TEXT-DECORATION: underline;
+}
+.title {
+	FONT-SIZE: 15px; FONT-FAMILY: Verdana, Helvetica; COLOR: #003399; font-weight: bold;
+}
+.chapter {
+	FONT-SIZE: 14px; FONT-FAMILY: Verdana,Helvetica; letter-spacing: 2px; 
+	text-align: center; font-weight: bold;
+}
+.content {
+	FONT-SIZE: 11px; FONT-FAMILY: Verdana, Helvetica; COLOR: #000000
+}
+.grayed {
+	FONT-SIZE: 11px; FONT-FAMILY: Verdana, Helvetica; COLOR: #999999
+}
+.frozen {
+	FONT-SIZE: 11px; FONT-FAMILY: Verdana, Helvetica; COLOR: #0099FF
+}
+.comment {
+	FONT-SIZE: 11px; FONT-FAMILY: "Courier New", Courier, monospace; COLOR: green; font-style: italic;
+}
+.active {
+	FONT-SIZE: 11px; FONT-FAMILY: Verdana, Helvetica; COLOR: #FF0000
+}
+.option {
+	FONT-SIZE: 11px; FONT-FAMILY: Verdana, Helvetica; FONT-WEIGHT: bold;
+	BACKGROUND: none transparent scroll repeat 0% 0%; COLOR: #ffffff; TEXT-DECORATION: none
+}
+.tiny {
+	FONT-SIZE: 9px; FONT-FAMILY: Verdana, Helvetica; COLOR: #4682B4; FONT-WEIGHT: normal;
+	font-style: italic; BACKGROUND: none transparent scroll repeat 0% 0%;
+}
