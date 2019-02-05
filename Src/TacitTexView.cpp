@@ -16,7 +16,7 @@
 #include <System/tCommand.h>
 #include <Image/tTexture.h>
 #include <System/tFile.h>
-#include "TextureViewer.h"
+#include "TacitTexView.h"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"

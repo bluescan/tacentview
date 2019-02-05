@@ -1,23 +1,27 @@
+.vs/*
+
+Debug/
+
+Release/
+
 *.log
 
 *.tlog
 
 *.obj
 
-Contrib/CxImage/CxImage/x64/Debug/cximage\.pdb
+Tacent/Contrib/CxImage/CxImage/x64/Debug/cximage\.pdb
 
 *.lib
 
-!Contrib/imgui/examples/libs/glfw/lib-vc2010-64/*.lib
-!Contrib/imgui/examples/libs/glfw/lib-vc2010-32/*.lib
-!Contrib/glfw/Debug/*.lib
-!Contrib/glfw/Release/*.lib
+!Tacent/Contrib/glfw/Debug/*.lib
+!Tacent/Contrib/glfw/Release/*.lib
 
 *.idb
 
 *.pdb
-!Contrib/glfw/Debug/*.pdb
-!Contrib/glfw/Release/*.pdb
+!Tacent/Contrib/glfw/Debug/*.pdb
+!Tacent/Contrib/glfw/Release/*.pdb
 
 *.ilk
 
@@ -31,7 +35,7 @@ Contrib/CxImage/CxImage/x64/Debug/cximage\.pdb
 
 *.exp
 
-Contrib/NvidiaTextureTools/project/vs/nvtt/x64/Debug/nvtt\.res
+Tacent/Contrib/NvidiaTextureTools/project/vs/nvtt/x64/Debug/nvtt\.res
 
 *.ipch
 
@@ -39,15 +43,9 @@ Contrib/NvidiaTextureTools/project/vs/nvtt/x64/Debug/nvtt\.res
 
 *.user
 
-Contrib/NvidiaTextureTools/project/vs/nvtt/x64/Release/nvtt\.res
-
-Tools/TextureViewer/\.vs/TextureViewer/v15/\.suo
-
-Tools/TextureViewer/imgui\.ini
+Tacent/Contrib/NvidiaTextureTools/project/vs/nvtt/x64/Release/nvtt\.res
 
 *.aps
-
-Tools/TextureViewer/Debug/TextureViewer\.res
 
 *.iobj
 
