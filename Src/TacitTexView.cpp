@@ -218,7 +218,7 @@ void LoadCurrFile()
 void LoadTextureFromDisk()
 {
 	tString currentDir = tSystem::tGetCurrentDir();
-	tString imagesDir = currentDir + "TestData/";
+	tString imagesDir = currentDir + "Textures/";
 
 	tPrintf("Looking for image files in %s\n", imagesDir.ConstText());
 	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.jpg");
@@ -247,13 +247,13 @@ void LoadTextureFromDisk()
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
-	//if (!tSystem::tDirExists("TestData/"))
+	//if (!tSystem::tDirExists("Textures/"))
 
 		// Test dxt1 texture.
-	//	tImage::tTexture dxt1Tex("TestData/TestDXT1.dds");
+	//	tImage::tTexture dxt1Tex("Textures/TestDXT1.dds");
 
 	// Test tPicture loading jpg and saving as tga.
-	///tImage::tPicture jpgPic("TestData/WiredDrives.jpg");
+	///tImage::tPicture jpgPic("Textures/WiredDrives.jpg");
 }
 
 
