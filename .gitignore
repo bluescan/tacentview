@@ -43,6 +43,8 @@ Tacent/Contrib/NvidiaTextureTools/project/vs/nvtt/x64/Debug/nvtt\.res
 
 *.user
 
+!TacitTexView.vcxproj.user
+
 Tacent/Contrib/NvidiaTextureTools/project/vs/nvtt/x64/Release/nvtt\.res
 
 *.aps
