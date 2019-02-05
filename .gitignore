@@ -50,3 +50,5 @@ Tacent/Contrib/NvidiaTextureTools/project/vs/nvtt/x64/Release/nvtt\.res
 *.iobj
 
 *.ipdb
+
+imgui\.ini
