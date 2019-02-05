@@ -1,0 +1,6 @@
+root = true
+
+# Matches multiple files with brace expansion notation
+[*.{c,cpp,h,hpp}]
+indent_style = tab
+indent_size = 4
