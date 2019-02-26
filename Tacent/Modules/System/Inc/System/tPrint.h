@@ -5,7 +5,7 @@
 // different type sizes and can print integral types in a variety of bases. Redirection via a callback as well as
 // visibility channels are also supported.
 //
-// Copyright (c) 2004-2006, 2015, 2017 Tristan Grimmer.
+// Copyright (c) 2004-2006, 2015, 2017, 2019 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -233,17 +233,24 @@ int tvsPrintf(char* dest, int destSize, const char* format, va_list);
 int tsPrintf(char* dest, int destSize, const char* format, ...);
 
 
-// Here is the file handle print as well as a flush call. aFlush may be called with any FileHandle such as stdout or
-// stderr as well as other file handles opened with tSystem::OpenFile.
+// Here is the file handle print
 int tfPrintf(tFileHandle dest, const char* format, ...);
 int tvfPrintf(tFileHandle dest, const char* format, va_list);
+
+
+// These variants print a timestamp (ttf = tacent timestamp file) before any content is printed.
+int ttfPrintf(tFileHandle dest, const char* format, ...);
+int ttvfPrintf(tFileHandle dest, const char* format, va_list);
+
+// tFlush may be called with any FileHandle such as stdout or stderr as well as other file handles opened with
+// tSystem::tOpenFile.
 void tFlush(tFileHandle);
 
 
 // The tdPrintf variations print to both the destination string or file, as well as printing to whatever channels are
 // specified. The 'd' is for dual. Useful for things like log files and unit tests that also need to print to stdout.
-// The dest file or string is always printed to. The channels only affect what is output to stdout athe the return
-// values will match what the plain print to string or file would have returned.
+// The dest file or string is always printed to. The channels only affect what is output to stdout and the return
+// values will match what the plain print-to-string (or file) would have returned.
 int tdsPrintf(char* dest, const char* format, ...);
 int tdsPrintf(tSystem::tChannel channels, char* dest, const char* format, ...);
 tString& tdsPrintf(tString& dest, const char* format, ...);

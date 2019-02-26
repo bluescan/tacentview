@@ -1,4 +1,4 @@
-// TextureViewer.cpp
+// TacitTexView.cpp
 //
 // A texture viewer for various formats.
 //
@@ -137,48 +137,13 @@ void ShowTextureViewerLog()
 	// For the demo: add a debug button before the normal log window contents
 	// We take advantage of the fact that multiple calls to Begin()/End() are appending to the same window.
 	ImGui::SetNextWindowSize(ImVec2(500, 400), ImGuiCond_FirstUseEver);
-//	ImGui::Begin("Log", &gLogOpen);
-	/*
-	if (ImGui::SmallButton("Add 5 entries"))
-	{
-		static int counter = 0;
-		for (int n = 0; n < 5; n++)
-		{
-			const char* categories[3] = { "info", "warn", "error" };
-			const char* words[] = { "Bumfuzzled", "Cattywampus", "Snickersnee", "Abibliophobia", "Absquatulate", "Nincompoop", "Pauciloquent" };
-			gLog.AddLog("[%05d] [%s] Hello, current time is %.1f, here's a word: '%s'\n",
-				ImGui::GetFrameCount(), categories[counter % IM_ARRAYSIZE(categories)], ImGui::GetTime(), words[counter % IM_ARRAYSIZE(words)]);
-			counter++;
-		}
-	}
-	*/
-//	ImGui::End();
 
 	gLog.Draw("Log", &gLogOpen);
 }
 
 
-
-namespace tUnitTest
-{
-	int UnitRequirementNumber = 0;
-	int UnitGoalNumber = 0;
-	int UnitsSkipped = 0;
-	int TotalRequirements = 0;
-	int RequirementsPassed = 0;
-	int TotalGoals = 0;
-	int GoalsPassed = 0;
-}
-
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h> 
-
-// [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
-// To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do using this pragma. 
-// Your own project should not be affected, as you are likely to link with a newer binary of GLFW that is adequate for your version of Visual Studio.
-//#if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
-//#pragma comment(lib, "legacy_stdio_definitions")
-//#endif
 
 
 static void glfw_error_callback(int error, const char* description)
@@ -207,15 +172,14 @@ void LoadCurrFile()
 	gPicture.Load(*gCurrFile);
 
 	glBindTexture(GL_TEXTURE_2D, tex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	tPrintf("Width: %d Height: %d\n", gPicture.GetWidth(), gPicture.GetHeight());
-		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, gPicture.GetWidth(), gPicture.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, gPicture.GetPixelPointer());
-//	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, gPicture.GetWidth(), gPicture.GetHeight(), GL_RGBA, GL_UNSIGNED_BYTE, gPicture.GetPixelPointer());
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, gPicture.GetWidth(), gPicture.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, gPicture.GetPixelPointer());
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, gPicture.GetWidth(), gPicture.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, gPicture.GetPixelPointer());
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void LoadTextureFromDisk()
+void FindTextureFiles()
 {
 	tString currentDir = tSystem::tGetCurrentDir();
 	tString imagesDir = currentDir + "Textures/";
@@ -226,42 +190,120 @@ void LoadTextureFromDisk()
 	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.tga");
 	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.png");
 	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.tiff");
-	//for (tStringItem* image = foundFiles.First(); image; image = image->Next())
 	gCurrFile = gFoundFiles.First();
-	if (gCurrFile)
-	{
-		tPrintf("Loading Image: %s\n", gCurrFile->ConstText());
-		gPicture.Load(*gCurrFile);
-
-		//upload to GPU texture
-		glGenTextures(1, &tex);
-		glBindTexture(GL_TEXTURE_2D, tex);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		// glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, 8, 8, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, texDat);
-		tPrintf("Width: %d Height: %d Opaque: %s\n", gPicture.GetWidth(), gPicture.GetHeight(), gPicture.IsOpaque() ? "true" : "false");
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, gPicture.GetWidth(), gPicture.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, gPicture.GetPixelPointer());
-		//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, gPicture.GetWidth(), ,
-		//	GL_RGBA, GL_UNSIGNED_BYTE, gPicture.GetPixelPointer());
-
-		glBindTexture(GL_TEXTURE_2D, 0);
-	}
-
-	//if (!tSystem::tDirExists("Textures/"))
-
-		// Test dxt1 texture.
-	//	tImage::tTexture dxt1Tex("Textures/TestDXT1.dds");
-
-	// Test tPicture loading jpg and saving as tga.
-	///tImage::tPicture jpgPic("Textures/WiredDrives.jpg");
+	glGenTextures(1, &tex);
 }
 
+void DoFrame(GLFWwindow* window, bool dopoll = true)
+{
+	// Poll and handle events (inputs, window resize, etc.)
+	// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
+	// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
+	// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
+	// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
+	if (dopoll)
+		glfwPollEvents();
+
+    // Start the Dear ImGui frame
+    ImGui_ImplOpenGL2_NewFrame();		
+	ImGui_ImplGlfw_NewFrame();
+
+	int dispw, disph;
+	glfwGetFramebufferSize(window, &dispw, &disph);
+	float dispaspect = float(dispw)/float(disph);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, dispw, 0, disph, -1, 1);
+	glMatrixMode(GL_MODELVIEW);
+
+	//clear and draw quad with texture (could be in display callback)
+	if (gPicture.IsValid())
+	{
+		ImVec4 clear_color = ImVec4(0.10f, 0.10f, 0.12f, 1.00f);
+		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		glBindTexture(GL_TEXTURE_2D, tex);
+		glEnable(GL_TEXTURE_2D);
+		glBegin(GL_QUADS);
+
+		int w = gPicture.GetWidth();
+		int h = gPicture.GetHeight();
+		float picaspect = float(w)/float(h);
+
+		float drawh = 0.0f;
+		float draww = 0.0f;
+		float hmargin = 0.0f;
+		float vmargin = 0.0f;
+		if (dispaspect > picaspect)
+		{
+			drawh = float(disph);
+			draww = picaspect * drawh;
+			hmargin = (dispw - draww) * 0.5f;
+			vmargin = 0.0f;
+		}
+		else
+		{
+			draww = float(dispw);
+			drawh = draww / picaspect;
+			vmargin = (disph - drawh) * 0.5f;
+			hmargin = 0.0f;
+		}
+
+		glTexCoord2i(0, 0); glVertex2f(hmargin, vmargin);
+		glTexCoord2i(0, 1); glVertex2f(hmargin, vmargin+drawh);
+		glTexCoord2i(1, 1); glVertex2f(hmargin+draww, vmargin+drawh);
+		glTexCoord2i(1, 0); glVertex2f(hmargin+draww, vmargin);
+		glEnd();
+		glDisable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glFlush(); //don't need this with GLUT_DOUBLE and glutSwapBuffers
+	}
+
+    ImGui::NewFrame();
+
+	if (ImGui::Button("Next"))
+	{
+		if (gCurrFile && gCurrFile->Next())
+		{
+			gCurrFile = gCurrFile->Next();
+			LoadCurrFile();
+		}
+	}
+	if (ImGui::Button("Prev"))
+	{
+		if (gCurrFile && gCurrFile->Prev())
+		{
+			gCurrFile = gCurrFile->Prev();
+			LoadCurrFile();
+		}
+	}
+	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
+	//if (show_demo_window)
+	//	ImGui::ShowDemoWindow(&show_demo_window);
+
+	ShowTextureViewerLog();
+
+    // Rendering
+    ImGui::Render();
+    glViewport(0, 0, dispw, disph);
+    ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
+
+    glfwMakeContextCurrent(window);
+    glfwSwapBuffers(window);
+}
+
+void Windowrefreshfun(GLFWwindow* window)
+{
+	DoFrame(window, false);
+}
 
 int main(int, char**)
 {
 	tSystem::tSetStdoutRedirectCallback(PrintRedirectCallback);	
 
-	tPrintf("Tacent Texture Viewer\n");
+	tPrintf("Tacit Texture Viewer\n");
 	tPrintf("Tacent Version %d.%d.%d\n", tVersion::Major, tVersion::Minor, tVersion::Revision);
 	tPrintf("Dear IMGUI Version %s (%d)\n", IMGUI_VERSION, IMGUI_VERSION_NUM);
 
@@ -270,22 +312,22 @@ int main(int, char**)
 	if (!glfwInit())
 		return 1;
 
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Tacent Texture Viewer", NULL, NULL);
-    if (window == NULL)
-        return 1;
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1); // Enable vsync
+	GLFWwindow* window = glfwCreateWindow(1280, 720, "Tacent Texture Viewer", NULL, NULL);
+	if (!window)
+		return 1;
+	glfwMakeContextCurrent(window);
+	glfwSwapInterval(1); // Enable vsync
+	glfwSetWindowRefreshCallback(window, Windowrefreshfun);
 
     // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
 
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
-	//ImGui::StyleColorsClassic();
 
 	// Setup Platform/Renderer bindings
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -295,98 +337,14 @@ int main(int, char**)
 
 	bool show_demo_window = true;
 	bool show_another_window = false;
-	ImVec4 clear_color = ImVec4(0.10f, 0.10f, 0.12f, 1.00f);
 
-	LoadTextureFromDisk();
-
-	//match projection to window resolution (could be in reshape callback)
-	glMatrixMode(GL_PROJECTION);
-	glOrtho(0, 1280, 0, 720, -1, 1);
-	glMatrixMode(GL_MODELVIEW);
+	FindTextureFiles();
+	LoadCurrFile();
 
 	// Main loop
 	while (!glfwWindowShouldClose(window))
 	{
-		// Poll and handle events (inputs, window resize, etc.)
-		// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-		// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
-		// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
-		// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-		glfwPollEvents();
-
-        // Start the Dear ImGui frame
-        ImGui_ImplOpenGL2_NewFrame();
-		
-		ImGui_ImplGlfw_NewFrame();
-
-		int display_w, display_h;
-		glfwGetFramebufferSize(window, &display_w, &display_h);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(0, display_w, 0, display_h, -1, 1);
-		glMatrixMode(GL_MODELVIEW);
-
-
-
-
-		//clear and draw quad with texture (could be in display callback)
-		if (gPicture.IsValid())
-		{
-			glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-			glClear(GL_COLOR_BUFFER_BIT);
-
-			glBindTexture(GL_TEXTURE_2D, tex);
-			glEnable(GL_TEXTURE_2D);
-			glBegin(GL_QUADS);
-
-			int w = gPicture.GetWidth();
-			int h = gPicture.GetHeight();
-			glTexCoord2i(0, 0); glVertex2i(10+0, 10+0);
-			glTexCoord2i(0, 1); glVertex2i(10+0, 10+h);
-			glTexCoord2i(1, 1); glVertex2i(10+w, 10+h);
-			glTexCoord2i(1, 0); glVertex2i(10+w, 10+0);
-			glEnd();
-			glDisable(GL_TEXTURE_2D);
-			glBindTexture(GL_TEXTURE_2D, 0);
-			glFlush(); //don't need this with GLUT_DOUBLE and glutSwapBuffers
-		}
-
-
-        ImGui::NewFrame();
-
-		 if (ImGui::Button("Next"))
-		 {
-			 if (gCurrFile && gCurrFile->Next())
-			 {
-				 gCurrFile = gCurrFile->Next();
-				 LoadCurrFile();
-			 }
-		 }
-		 if (ImGui::Button("Prev"))
-		 {
-			 if (gCurrFile && gCurrFile->Prev())
-			 {
-				 gCurrFile = gCurrFile->Prev();
-				 LoadCurrFile();
-			 }
-		 }
-		//tPrintf("Logging...\n");
-		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-		if (show_demo_window)
-			ImGui::ShowDemoWindow(&show_demo_window);
-
-		ShowTextureViewerLog();
-
-        // Rendering
-        ImGui::Render();
-        glViewport(0, 0, display_w, display_h);
-   //     glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-   //     glClear(GL_COLOR_BUFFER_BIT);
-        //glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound, but prefer using the GL3+ code.
-        ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
-
-        glfwMakeContextCurrent(window);
-        glfwSwapBuffers(window);
+		DoFrame(window);
 	}
 
     // Cleanup
@@ -399,6 +357,3 @@ int main(int, char**)
 
     return 0;
 }
-
-
-

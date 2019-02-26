@@ -28,7 +28,7 @@ namespace tVersion
 
 	// The revision number, also called a patch number, is for minor bug fixes and the like. It Resets to 0 when the
 	// minor version increments.
-	const uint Revision = 0;
+	const uint Revision = 1;
 
 	// Additionally, a change number is specified on Tacent releases. This is a monotonically increasing number that
 	// never resets. @todo At some point I'll make a versioning tool so that this file, including the ChangeNumber

@@ -64,12 +64,14 @@
 
 #include "System/tCommand.h"
 #include "System/tFile.h"
+#include "Math/tFundamentals.h"
 
 
 namespace tCommand
 {
 	// Any single-hyphen combined arguments are expanded here. Ex. -abc becomes -a -b -c.
 	void ExpandArgs(tList<tStringItem>& args);
+	int IndentSpaces(int numSpaces);
 
 	// I'm relying on zero initialization here. It's all zeroes before any tObjects are constructed.
 	tListZ<tParam> Params;
@@ -142,6 +144,15 @@ tCommand::tOption::tOption(const char* description, const char* longName, int nu
 	Present(false)
 {
 	Options.Append(this);
+}
+
+
+int tCommand::IndentSpaces(int numSpaces)
+{
+	for (int s = 0; s < numSpaces; s++)
+		tPrintf(" ");
+
+	return numSpaces;
 }
 
 
@@ -302,9 +313,9 @@ void tCommand::tParse(const char* commandLine)
 }
 
 
-void tCommand::tPrintUsage()
+void tCommand::tPrintSyntax()
 {
-	tString usage =
+	tString syntax =
 R"U5AG3(
 Arguments are separated by spaces. An argument must be enclosed in quotes
 (single or double) if it has a space in it. Use escape sequences to put either
@@ -333,10 +344,14 @@ when options take arguments as only the last flag would get them.
 
 Variable argument counts are not supported but you may list the same option
 more than once. Eg. -i filea.txt -i fileb.txt etc is valid.
-
-
 )U5AG3";
 
+	tPrintf("\n\n%s", syntax.Pod());
+}
+
+
+void tCommand::tPrintUsage()
+{
 	tString exeName = "Program.exe";
 	if (!tCommand::Program.IsEmpty())
 		exeName = tSystem::tGetFileName(tCommand::Program);
@@ -357,38 +372,76 @@ more than once. Eg. -i filea.txt -i fileb.txt etc is valid.
 			printedParamNum[param->ParamNumber] = true;
 		}
 	}
-	tPrintf("\n\n%s", usage.Pod());
 
+	tPrintf("\n\n");
 	if (!Params.IsEmpty())
 	{
 		tPrintf("Parameters:\n");
+		int indent = 0;
 		for (tParam* param = Params.First(); param; param = param->Next())
 		{
+			int numPrint = 0;
 			if (!param->Name.IsEmpty())
-				tPrintf("%s ", param->Name.Pod());
+				numPrint = tcPrintf("%s ", param->Name.Pod());
 			else
-				tPrintf("param%d ", param->ParamNumber);
+				numPrint = tcPrintf("param%d ", param->ParamNumber);
+			indent = tMath::tMax(indent, numPrint);
+		}
+
+		for (tParam* param = Params.First(); param; param = param->Next())
+		{
+			int numPrinted = 0;
+			if (!param->Name.IsEmpty())
+				numPrinted = tPrintf("%s ", param->Name.Pod());
+			else
+				numPrinted = tPrintf("param%d ", param->ParamNumber);
+
+			IndentSpaces(indent - numPrinted);
 
 			if (!param->Description.IsEmpty())
 				tPrintf(" : %s", param->Description.Pod());
 
 			tPrintf("\n");
 		}
-		tPrintf("\n\n");
+		tPrintf("\n");
 	}
 
-	tPrintf("Options:\n");
-	for (tOption* option = Options.First(); option; option = option->Next())
+	if (!Options.IsEmpty())
 	{
-		if (!option->LongName.IsEmpty())
-		{
-			tPrintf("--%s ", option->LongName.Pod());
-			if (!option->ShortName.IsEmpty())
-				tPrintf("(-%s) ", option->ShortName.Pod());
+		tPrintf("Options:\n");
 
-			for (int a = 0; a < option->NumFlagArgs; a++)
-				tPrintf("arg%c ", '1'+a);
-			tPrintf(" : %s\n", option->Description.Pod());
+		int indent = 0;
+		for (tOption* option = Options.First(); option; option = option->Next())
+		{
+			if (!option->LongName.IsEmpty())
+			{
+				int numPrint = 0;
+				numPrint += tcPrintf("--%s ", option->LongName.Pod());
+				if (!option->ShortName.IsEmpty())
+					numPrint += tcPrintf("(-%s) ", option->ShortName.Pod());
+
+				for (int a = 0; a < option->NumFlagArgs; a++)
+					numPrint += tcPrintf("arg%c ", '1'+a);
+
+				indent = tMath::tMax(indent, numPrint);
+			}
+		}
+
+		for (tOption* option = Options.First(); option; option = option->Next())
+		{
+			if (!option->LongName.IsEmpty())
+			{
+				int numPrinted = 0;
+				numPrinted += tPrintf("--%s ", option->LongName.Pod());
+				if (!option->ShortName.IsEmpty())
+					numPrinted += tPrintf("(-%s) ", option->ShortName.Pod());
+
+				for (int a = 0; a < option->NumFlagArgs; a++)
+					numPrinted += tPrintf("arg%c ", '1'+a);
+
+				IndentSpaces(indent-numPrinted);
+				tPrintf(" : %s\n", option->Description.Pod());
+			}
 		}
 	}
 

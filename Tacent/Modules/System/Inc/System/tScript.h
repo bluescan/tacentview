@@ -9,7 +9,7 @@
 //
 // The second format is a functional format. ex. a(b,c) See tFunExtression.
 //
-// Copyright (c) 2006, 2017 Tristan Grimmer.
+// Copyright (c) 2006, 2017, 2019 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -71,6 +71,7 @@ public:
 	tString GetAtomString() const;
 	bool GetAtomBool() const																							{ return GetAtomString().GetAsBool(); }
 	uint GetAtomUint() const																							{ return GetAtomString().GetAsUInt(); }
+	uint64 GetAtomUint64() const																						{ return GetAtomString().GetAsUInt64(); }
 	int GetAtomInt() const																								{ return GetAtomString().GetAsInt(); }
 	float GetAtomFloat() const																							{ return GetAtomString().GetAsFloat(); }
 	uint32 GetAtomHash() const																							{ tMath::tHashString(GetAtomString()); }
@@ -170,10 +171,10 @@ class tScriptReader : public tExpression
 {
 public:
 	// Constructs an initially invalid tScriptReader.
-	tScriptReader()																										: tExpression(), ReadBuffer(0) { }
+	tScriptReader()																										: tExpression(), ReadBuffer(nullptr) { }
 
 	// If isFile is true then the file 'name' is loaded, otherwise treats 'name' as the actual script string.
-	tScriptReader(const tString& name, bool isFile = true)																: tExpression(), ReadBuffer(0) { Load(name, isFile); }
+	tScriptReader(const tString& name, bool isFile = true)																: tExpression(), ReadBuffer(nullptr) { Load(name, isFile); }
 
 	// Useful for command line utilities. Makes a script from standard command line argc and argv parameters. Honestly,
 	// I'm not sure how useful this is now that we have tOption for parsing command lines in a nice way that is a bit
@@ -211,6 +212,7 @@ public:
 	void WriteAtom(const char*);
 	void WriteAtom(const bool);
 	void WriteAtom(const uint32);
+	void WriteAtom(const uint64);
 	void WriteAtom(const int);
 	void WriteAtom(const float);
 	void WriteAtom(const tMath::tVector2&);

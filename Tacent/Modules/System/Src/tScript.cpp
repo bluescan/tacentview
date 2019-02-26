@@ -9,7 +9,7 @@
 //
 // The second format is a functional format. ex. a(b,c) See tFunExtression.
 //
-// Copyright (c) 2006, 2017 Tristan Grimmer.
+// Copyright (c) 2006, 2017, 2019 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -27,7 +27,7 @@ using namespace tMath;
 
 tExpression tExpression::Car() const
 {
-	tAssert( Valid() );
+	tAssert( IsValid() );
 
 	const char* c = ValueData + 1;
 
@@ -36,6 +36,10 @@ tExpression tExpression::Car() const
 
 	int lineCount;
 	c = EatWhiteAndComments(c, lineCount);
+
+	// Look for empty list.
+	if (*c == ']')
+		return tExpression();
 
 	return tExpression(c, LineNumber+lineCount);
 }
@@ -504,37 +508,43 @@ void tScriptReader::Load(const tString& name, bool isFile)
 
 		int fileSize = tSystem::tGetFileSize(file);
 
-		// Create a buffer big enough for the file, and the uber []'s, and a terminating 0.
-		int bufferSize = fileSize + 3;
+		// Create a buffer big enough for the file, the uber []'s, two line-endings (one for each square bracket), and a terminating 0.
+		int bufferSize = fileSize + 7;
 
 		ReadBuffer = new char[bufferSize];
 		ReadBuffer[0] = '[';
+		ReadBuffer[1] = '\r';
+		ReadBuffer[2] = '\n';
 
 		// Load the entire thing into memory.
-		int numRead = tSystem::tReadFile(file, (uint8*)(ReadBuffer+1), fileSize);
+		int numRead = tSystem::tReadFile(file, (uint8*)(ReadBuffer+3), fileSize);
 		if (numRead != fileSize)
 			throw tScriptError("Cannot read file [%s].", name.Pod());
 		tSystem::tCloseFile(file);
 
+		ReadBuffer[bufferSize-4] = '\r';
+		ReadBuffer[bufferSize-3] = '\n';
 		ReadBuffer[bufferSize-2] = ']';
-
-		// This allows comments to be on the last line without a carraige return. It makes buffer a valid null terminated string.
 		ReadBuffer[bufferSize-1] = '\0';
 	}
 	else
 	{
 		int stringSize = name.Length();
-		int bufferSize = stringSize + 3;
+		int bufferSize = stringSize + 7;
 		ReadBuffer = new char[bufferSize];
 
 		ReadBuffer[0] = '[';
-		tStd::tStrcpy(ReadBuffer+1, name);
+		ReadBuffer[1] = '\r';
+		ReadBuffer[2] = '\n';
+		tStd::tStrcpy(ReadBuffer+3, name);
+		ReadBuffer[bufferSize-4] = '\r';
+		ReadBuffer[bufferSize-3] = '\n';
 		ReadBuffer[bufferSize-2] = ']';
 		ReadBuffer[bufferSize-1] = '\0';
 	}
 
-	ValueData = ReadBuffer;
 	LineNumber = 1;
+	ValueData = EatWhiteAndComments(ReadBuffer, LineNumber);
 }
 
 
@@ -643,6 +653,14 @@ void tScriptWriter::WriteAtom(const uint32 atom)
 {
 	char val[36];
 	tStd::tItoa(atom, val, 36, 10);
+	WriteAtom(val);
+}
+
+
+void tScriptWriter::WriteAtom(const uint64 atom)
+{
+	char val[48];
+	tStd::tItoa(atom, val, 48, 10);
 	WriteAtom(val);
 }
 

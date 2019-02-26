@@ -585,6 +585,33 @@ int tvfPrintf(tFileHandle dest, const char* format, va_list argList)
 }
 
 
+int ttfPrintf(tFileHandle dest, const char* format, ...)
+{
+	va_list argList;
+	va_start(argList, format);
+	int count = ttvfPrintf(dest, format, argList);
+	va_end(argList);
+	return count;
+}
+
+
+int ttvfPrintf(tFileHandle dest, const char* format, va_list argList)
+{
+	if (!format || !dest)
+		return 0;
+
+	tString stamp = tSystem::tConvertTimeToString(tSystem::tGetTimeLocal(), tSystem::tTimeFormat::Standard) + " ";
+	int count = tSystem::tPrint(stamp.Pod(), dest);
+
+	tArray<char> buffer;
+	tSystem::Receiver receiver(&buffer);
+
+	Process(receiver, format, argList);
+	tSystem::tPrint(buffer.GetElements(), dest);
+	return count + receiver.GetNumReceived() - 1;
+}
+
+
 void tFlush(tFileHandle handle)
 {
 	fflush(handle);

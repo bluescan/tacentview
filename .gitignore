@@ -54,3 +54,7 @@ Tacent/Contrib/NvidiaTextureTools/project/vs/nvtt/x64/Release/nvtt\.res
 *.ipdb
 
 imgui\.ini
+
+Tacent/Modules/ModuleDependencies\.txt
+
+Tacent/Modules/WoboqTacent\.cfg
