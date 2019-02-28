@@ -22,6 +22,8 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl2.h"
 #include <stdio.h>
+// Include glfw3.h after our OpenGL definitions
+#include <GLFW/glfw3.h> 
 using namespace tStd;
 
 
@@ -65,11 +67,11 @@ struct TextureViewerLog
 
 	void    Draw(const char* title, bool* p_open = NULL)
 	{
-		if (!ImGui::Begin(title, p_open))
-		{
-			ImGui::End();
-			return;
-		}
+//		if (!ImGui::Begin(title, p_open))
+//		{
+//			ImGui::End();
+//			return;
+//		}
 		if (ImGui::Button("Clear")) Clear();
 		ImGui::SameLine();
 		bool copy = ImGui::Button("Copy");
@@ -123,7 +125,7 @@ struct TextureViewerLog
 			ImGui::SetScrollHereY(1.0f);
 		ScrollToBottom = false;
 		ImGui::EndChild();
-		ImGui::End();
+		//ImGui::End();
 	}
 };
 
@@ -136,14 +138,11 @@ void ShowTextureViewerLog()
 {
 	// For the demo: add a debug button before the normal log window contents
 	// We take advantage of the fact that multiple calls to Begin()/End() are appending to the same window.
-	ImGui::SetNextWindowSize(ImVec2(500, 400), ImGuiCond_FirstUseEver);
-
+	ImGui::SetNextWindowSize(ImVec2(600, 50), ImGuiCond_FirstUseEver);
+	ImGui::SetCursorPosX(500.0f);
+	ImGui::SetCursorPosY(0.0f);
 	gLog.Draw("Log", &gLogOpen);
 }
-
-
-// Include glfw3.h after our OpenGL definitions
-#include <GLFW/glfw3.h> 
 
 
 static void glfw_error_callback(int error, const char* description)
@@ -263,26 +262,36 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 
     ImGui::NewFrame();
 
-	if (ImGui::Button("Next"))
-	{
-		if (gCurrFile && gCurrFile->Next())
-		{
-			gCurrFile = gCurrFile->Next();
-			LoadCurrFile();
-		}
-	}
-	if (ImGui::Button("Prev"))
-	{
-		if (gCurrFile && gCurrFile->Prev())
-		{
-			gCurrFile = gCurrFile->Prev();
-			LoadCurrFile();
-		}
-	}
 	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-	//if (show_demo_window)
-	//	ImGui::ShowDemoWindow(&show_demo_window);
+	bool show_demo_window = false;
+	if (show_demo_window)
+		ImGui::ShowDemoWindow(&show_demo_window);
 
+	ImGui::BeginMainMenuBar();
+	{
+		if (ImGui::Button("Prev"))
+		{
+			if (gCurrFile && gCurrFile->Prev())
+			{
+				gCurrFile = gCurrFile->Prev();
+				LoadCurrFile();
+			}
+		}
+		if (ImGui::Button("Next"))
+		{
+			if (gCurrFile && gCurrFile->Next())
+			{
+				gCurrFile = gCurrFile->Next();
+				LoadCurrFile();
+			}
+		}
+
+		static ImVec4 colour;
+		colour.x = 1.0f;	colour.y = 0.0f;	colour.z = 0.0f;	colour.w = 1.0f;
+		ImGui::ColorButton("Colour", colour);
+	}
+
+	ImGui::EndMainMenuBar();
 	ShowTextureViewerLog();
 
     // Rendering
