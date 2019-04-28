@@ -82,21 +82,15 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="TextureViewer.ico">
+    <Image Include="TacitTexView.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="icon2.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="TextureViewerTitlebar.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="icon1.ico">
+    <Image Include="TacitTexViewTitlebar.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="TextureViewer.rc">
+    <ResourceCompile Include="TacitTexView.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

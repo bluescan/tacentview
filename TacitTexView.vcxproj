@@ -14,19 +14,19 @@
     <ProjectGuid>{2FF3CA7A-2E66-42BD-BF34-CBF61CD8748F}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>TacitTexView</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -203,8 +203,6 @@
     <ClCompile Include="Src\TacitTexView.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="icon1.ico" />
-    <Image Include="icon2.ico" />
     <Image Include="TacitTexView.ico" />
     <Image Include="TacitTexViewTitlebar.ico" />
   </ItemGroup>
