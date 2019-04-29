@@ -28,12 +28,9 @@ using namespace tStd;
 
 
 tCommand::tOption PrintAllOutput("Print all output.", 'a', "all");
+tCommand::tParam ImageFile(1, "ImageFile", "File to open.");
 
 
-// Usage:
-//  static ExampleAppLog my_log;
-//  my_log.AddLog("Hello %d world\n", 123);
-//  my_log.Draw("title");
 struct TextureViewerLog
 {
 	ImGuiTextBuffer     Buf;
@@ -134,14 +131,25 @@ static bool gLogOpen = true;
 static TextureViewerLog gLog;
 
 
-void ShowTextureViewerLog()
+void ShowTextureViewerLog(float x, float y, float w, float h)
 {
 	// For the demo: add a debug button before the normal log window contents
 	// We take advantage of the fact that multiple calls to Begin()/End() are appending to the same window.
-	ImGui::SetNextWindowSize(ImVec2(600, 50), ImGuiCond_FirstUseEver);
-	ImGui::SetCursorPosX(500.0f);
-	ImGui::SetCursorPosY(0.0f);
+	ImGui::SetNextWindowSize(ImVec2(w, h), ImGuiCond_Always);
+
+	//ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos(ImVec2(x, y), ImGuiCond_Always);
+
+	bool opened = true;
+	ImGui::Begin("Info", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+
+
+	//ImGui::SetCursorPosX(500.0f);
+	//ImGui::SetCursorPosY(0.0f);
 	gLog.Draw("Log", &gLogOpen);
+
+	ImGui::End();
+
 }
 
 
@@ -167,21 +175,32 @@ void LoadCurrFile()
 	if (!gCurrFile)
 		return;
 
-	tPrintf("Loading Image: %s\n", gCurrFile->ConstText());
-	gPicture.Load(*gCurrFile);
+	bool success = gPicture.Load(*gCurrFile);
+	if (!success)
+	{
+		tPrintf("Cannot Load Image: %s\n", tSystem::tGetFileName(*gCurrFile).ConstText());
+		return;
+	}
+
+	tPrintf("Image: %s Width: %d Height: %d\n", tSystem::tGetFileName(*gCurrFile).ConstText(), gPicture.GetWidth(), gPicture.GetHeight());
 
 	glBindTexture(GL_TEXTURE_2D, tex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	tPrintf("Width: %d Height: %d\n", gPicture.GetWidth(), gPicture.GetHeight());
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, gPicture.GetWidth(), gPicture.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, gPicture.GetPixelPointer());
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+bool CompareFunc(const tStringItem& a, const tStringItem& b)
+{
+	return tStrcmp(a.ConstText(), b.ConstText()) < 0;
+}
+
+
 void FindTextureFiles()
 {
 	tString currentDir = tSystem::tGetCurrentDir();
-	tString imagesDir = currentDir + "Textures/";
+	tString imagesDir = currentDir; // +"Textures/";
 
 	tPrintf("Looking for image files in %s\n", imagesDir.ConstText());
 	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.jpg");
@@ -189,7 +208,27 @@ void FindTextureFiles()
 	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.tga");
 	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.png");
 	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.tiff");
+//	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.dds");
+
+	gFoundFiles.Sort(CompareFunc, tListSortAlgorithm::Merge);
+
 	gCurrFile = gFoundFiles.First();
+
+	if (ImageFile.IsPresent())
+	{
+		for (tStringItem* si = gFoundFiles.First(); si; si = si->Next())
+		{
+			tString siName = tSystem::tGetFileName(*si);
+			tString imgName = tSystem::tGetFileName(ImageFile.Get());
+
+			if (tStricmp(siName.ConstText(), imgName.ConstText()) == 0)
+			{
+				gCurrFile = si;
+				break;
+			}
+		}
+	}
+
 	glGenTextures(1, &tex);
 }
 
@@ -203,29 +242,35 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 	if (dopoll)
 		glfwPollEvents();
 
+	ImVec4 clear_color = ImVec4(0.10f, 0.10f, 0.12f, 1.00f);
+	glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL2_NewFrame();		
 	ImGui_ImplGlfw_NewFrame();
 
 	int dispw, disph;
 	glfwGetFramebufferSize(window, &dispw, &disph);
-	float dispaspect = float(dispw)/float(disph);
 
+	int workAreaW = dispw;
+	int workAreaH = disph - 120 - 20;
+	float workAreaAspect = float(workAreaW)/float(workAreaH);
+
+	glViewport(0, 120, workAreaW, workAreaH);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, dispw, 0, disph, -1, 1);
+	glOrtho(0, workAreaW, 0, workAreaH, -1, 1);
 	glMatrixMode(GL_MODELVIEW);
 
 	//clear and draw quad with texture (could be in display callback)
 	if (gPicture.IsValid())
 	{
-		ImVec4 clear_color = ImVec4(0.10f, 0.10f, 0.12f, 1.00f);
-		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-		glClear(GL_COLOR_BUFFER_BIT);
+//		ImVec4 clear_color = ImVec4(1.0f, 0.10f, 0.12f, 1.00f);
+//		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+//		glClear(GL_COLOR_BUFFER_BIT);
 
-		glBindTexture(GL_TEXTURE_2D, tex);
-		glEnable(GL_TEXTURE_2D);
-		glBegin(GL_QUADS);
 
 		int w = gPicture.GetWidth();
 		int h = gPicture.GetHeight();
@@ -235,20 +280,35 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 		float draww = 0.0f;
 		float hmargin = 0.0f;
 		float vmargin = 0.0f;
-		if (dispaspect > picaspect)
+		if (workAreaAspect > picaspect)
 		{
-			drawh = float(disph);
+			drawh = float(workAreaH);// - 240.0f;
 			draww = picaspect * drawh;
-			hmargin = (dispw - draww) * 0.5f;
-			vmargin = 0.0f;
+			hmargin = (workAreaW - draww) * 0.5f;
+			vmargin = 0.0f;// + 120.0f;
 		}
 		else
 		{
-			draww = float(dispw);
+			draww = float(workAreaW);
 			drawh = draww / picaspect;
-			vmargin = (disph - drawh) * 0.5f;
+			vmargin = (workAreaH - drawh) * 0.5f;
 			hmargin = 0.0f;
 		}
+
+		glColor4f(0.5f,0.5f,0.52f,1.0f);
+		glBegin(GL_QUADS);
+		glVertex3f(hmargin, vmargin, -0.5f);
+		glVertex3f(hmargin, vmargin+drawh, -0.5f);
+		glVertex3f(hmargin+draww, vmargin+drawh, -0.5f);
+		glVertex3f(hmargin+draww, vmargin, -0.5f);
+		glEnd();
+
+		glColor4f(1.0f,1.0f,1.0f,1.0f);
+
+		glBindTexture(GL_TEXTURE_2D, tex);
+		glEnable(GL_TEXTURE_2D);
+		glBegin(GL_QUADS);
+
 
 		glTexCoord2i(0, 0); glVertex2f(hmargin, vmargin);
 		glTexCoord2i(0, 1); glVertex2f(hmargin, vmargin+drawh);
@@ -259,6 +319,11 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glFlush(); //don't need this with GLUT_DOUBLE and glutSwapBuffers
 	}
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, dispw, 0, disph, -1, 1);
+	glMatrixMode(GL_MODELVIEW);
 
     ImGui::NewFrame();
 
@@ -286,13 +351,15 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 			}
 		}
 
-		static ImVec4 colour;
-		colour.x = 1.0f;	colour.y = 0.0f;	colour.z = 0.0f;	colour.w = 1.0f;
-		ImGui::ColorButton("Colour", colour);
+		//static ImVec4 colour;
+		//colour.x = 1.0f;	colour.y = 0.0f;	colour.z = 0.0f;	colour.w = 1.0f;
+		//ImGui::ColorButton("Colour", colour);
 	}
 
 	ImGui::EndMainMenuBar();
-	ShowTextureViewerLog();
+
+	float infoHeight = 120;
+	ShowTextureViewerLog(0.0f, float(disph - infoHeight), float(dispw), float(infoHeight));
 
     // Rendering
     ImGui::Render();
@@ -308,8 +375,10 @@ void Windowrefreshfun(GLFWwindow* window)
 	DoFrame(window, false);
 }
 
-int main(int, char**)
+int main(int argc, char** argv)
 {
+	tCommand::tParse(argc, argv);
+
 	tSystem::tSetStdoutRedirectCallback(PrintRedirectCallback);	
 
 	tPrintf("Tacit Texture Viewer\n");
@@ -342,7 +411,11 @@ int main(int, char**)
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL2_Init();
 
-	io.Fonts->AddFontFromFileTTF("Data/Roboto-Medium.ttf", 14.0f);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	tString fontFile = tSystem::tGetProgramDir() + "Data/Roboto-Medium.ttf";
+	io.Fonts->AddFontFromFileTTF(fontFile.ConstText(), 14.0f);
 
 	bool show_demo_window = true;
 	bool show_another_window = false;

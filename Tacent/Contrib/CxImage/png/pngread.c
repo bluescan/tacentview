@@ -1277,7 +1277,7 @@ png_read_destroy(png_structp png_ptr, png_infop info_ptr,
    free_fn = png_ptr->free_fn;
 #endif
 
-   png_memset(png_ptr, 0, png_sizeof(png_struct));
+   png_memset((void*)png_ptr, 0, png_sizeof(png_struct));
 
    png_ptr->error_fn = error_fn;
    png_ptr->warning_fn = warning_fn;
