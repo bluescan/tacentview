@@ -25,6 +25,7 @@
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h> 
 using namespace tStd;
+using namespace tSystem;
 
 
 tCommand::tOption PrintAllOutput("Print all output.", 'a', "all");
@@ -346,9 +347,31 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 			}
 		}
 
-		//static ImVec4 colour;
-		//colour.x = 1.0f;	colour.y = 0.0f;	colour.z = 0.0f;	colour.w = 1.0f;
-		//ImGui::ColorButton("Colour", colour);
+		tFileType fileType = tFileType::Unknown;
+		if (gCurrFile && gPicture.IsValid())
+			fileType = tGetFileType(*gCurrFile);
+
+		if ((fileType != tFileType::Unknown) && (fileType != tFileType::Targa))
+		{
+			tString tgaFile = *gCurrFile;
+			tgaFile.ExtractLastWord('.');
+			tgaFile += ".tga";
+			if (ImGui::Button("Save As Targa"))
+			{
+				if (tFileExists(tgaFile))
+				{
+					tPrintf("Targa %s already exists. Will not overwrite.\n", tgaFile.ConstText());
+				}
+				else
+				{
+					bool success = gPicture.SaveTGA(tgaFile, tImage::tFileTGA::tFormat::Auto, tImage::tFileTGA::tCompression::None);
+					if (success)
+						tPrintf("Saved targa as : %s\n", tgaFile.ConstText());
+					else
+						tPrintf("Failed to save targa %s\n", tgaFile.ConstText());
+				}
+			}
+		}
 	}
 
 	ImGui::EndMainMenuBar();
