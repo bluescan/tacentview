@@ -136,20 +136,14 @@ void ShowTextureViewerLog(float x, float y, float w, float h)
 	// For the demo: add a debug button before the normal log window contents
 	// We take advantage of the fact that multiple calls to Begin()/End() are appending to the same window.
 	ImGui::SetNextWindowSize(ImVec2(w, h), ImGuiCond_Always);
-
-	//ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowPos(ImVec2(x, y), ImGuiCond_Always);
 
-	bool opened = true;
 	ImGui::Begin("Info", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-
 
 	//ImGui::SetCursorPosX(500.0f);
 	//ImGui::SetCursorPosY(0.0f);
 	gLog.Draw("Log", &gLogOpen);
-
 	ImGui::End();
-
 }
 
 
@@ -182,7 +176,13 @@ void LoadCurrFile()
 		return;
 	}
 
-	tPrintf("Image: %s Width: %d Height: %d\n", tSystem::tGetFileName(*gCurrFile).ConstText(), gPicture.GetWidth(), gPicture.GetHeight());
+	tPrintf
+	(
+		"Image: %s Width: %d Height: %d Opaque: %s\n",
+		tSystem::tGetFileName(*gCurrFile).ConstText(),
+		gPicture.GetWidth(), gPicture.GetHeight(),
+		gPicture.IsOpaque() ? "True" : "False"
+	);
 
 	glBindTexture(GL_TEXTURE_2D, tex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -245,7 +245,8 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 	ImVec4 clear_color = ImVec4(0.10f, 0.10f, 0.12f, 1.00f);
 	glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 	glClear(GL_COLOR_BUFFER_BIT);
-
+	int bottomUIHeight = 150;
+	int topUIHeight = 20;
 
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL2_NewFrame();		
@@ -255,10 +256,10 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 	glfwGetFramebufferSize(window, &dispw, &disph);
 
 	int workAreaW = dispw;
-	int workAreaH = disph - 120 - 20;
+	int workAreaH = disph - bottomUIHeight - topUIHeight;
 	float workAreaAspect = float(workAreaW)/float(workAreaH);
 
-	glViewport(0, 120, workAreaW, workAreaH);
+	glViewport(0, bottomUIHeight, workAreaW, workAreaH);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(0, workAreaW, 0, workAreaH, -1, 1);
@@ -267,11 +268,6 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 	//clear and draw quad with texture (could be in display callback)
 	if (gPicture.IsValid())
 	{
-//		ImVec4 clear_color = ImVec4(1.0f, 0.10f, 0.12f, 1.00f);
-//		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-//		glClear(GL_COLOR_BUFFER_BIT);
-
-
 		int w = gPicture.GetWidth();
 		int h = gPicture.GetHeight();
 		float picaspect = float(w)/float(h);
@@ -282,10 +278,10 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 		float vmargin = 0.0f;
 		if (workAreaAspect > picaspect)
 		{
-			drawh = float(workAreaH);// - 240.0f;
+			drawh = float(workAreaH);
 			draww = picaspect * drawh;
 			hmargin = (workAreaW - draww) * 0.5f;
-			vmargin = 0.0f;// + 120.0f;
+			vmargin = 0.0f;;
 		}
 		else
 		{
@@ -295,12 +291,12 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 			hmargin = 0.0f;
 		}
 
-		glColor4f(0.5f,0.5f,0.52f,1.0f);
+		glColor4f(0.5f,0.5f,0.53f,1.0f);
 		glBegin(GL_QUADS);
-		glVertex3f(hmargin, vmargin, -0.5f);
-		glVertex3f(hmargin, vmargin+drawh, -0.5f);
-		glVertex3f(hmargin+draww, vmargin+drawh, -0.5f);
-		glVertex3f(hmargin+draww, vmargin, -0.5f);
+		glVertex2f(hmargin, vmargin);
+		glVertex2f(hmargin, vmargin+drawh);
+		glVertex2f(hmargin+draww, vmargin+drawh);
+		glVertex2f(hmargin+draww, vmargin);
 		glEnd();
 
 		glColor4f(1.0f,1.0f,1.0f,1.0f);
@@ -308,7 +304,6 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 		glBindTexture(GL_TEXTURE_2D, tex);
 		glEnable(GL_TEXTURE_2D);
 		glBegin(GL_QUADS);
-
 
 		glTexCoord2i(0, 0); glVertex2f(hmargin, vmargin);
 		glTexCoord2i(0, 1); glVertex2f(hmargin, vmargin+drawh);
@@ -358,8 +353,7 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 
 	ImGui::EndMainMenuBar();
 
-	float infoHeight = 120;
-	ShowTextureViewerLog(0.0f, float(disph - infoHeight), float(dispw), float(infoHeight));
+	ShowTextureViewerLog(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
 
     // Rendering
     ImGui::Render();
