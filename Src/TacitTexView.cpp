@@ -200,16 +200,9 @@ bool CompareFunc(const tStringItem& a, const tStringItem& b)
 
 void FindTextureFiles()
 {
-	// If an absolute full path is specified I think we should only open that one file.
+	tString imagesDir = tSystem::tGetCurrentDir();
 	if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
-	{
-		gCurrFile = new tStringItem(ImageFileParam.Get());
-		gFoundFiles.Append(gCurrFile);
-		return;
-	}
-
-	tString currentDir = tSystem::tGetCurrentDir();
-	tString imagesDir = currentDir; // +"Textures/";
+		imagesDir = tSystem::tGetDir(ImageFileParam.Get());
 
 	tPrintf("Looking for image files in %s\n", imagesDir.ConstText());
 	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.jpg");
@@ -217,7 +210,6 @@ void FindTextureFiles()
 	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.tga");
 	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.png");
 	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.tiff");
-//	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.dds");
 
 	gFoundFiles.Sort(CompareFunc, tListSortAlgorithm::Merge);
 
