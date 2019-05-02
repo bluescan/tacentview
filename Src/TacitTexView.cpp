@@ -29,7 +29,7 @@ using namespace tSystem;
 
 
 tCommand::tOption PrintAllOutput("Print all output.", 'a', "all");
-tCommand::tParam ImageFile(1, "ImageFile", "File to open.");
+tCommand::tParam ImageFileParam(1, "ImageFile", "File to open.");
 
 
 struct TextureViewerLog
@@ -200,6 +200,14 @@ bool CompareFunc(const tStringItem& a, const tStringItem& b)
 
 void FindTextureFiles()
 {
+	// If an absolute full path is specified I think we should only open that one file.
+	if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
+	{
+		gCurrFile = new tStringItem(ImageFileParam.Get());
+		gFoundFiles.Append(gCurrFile);
+		return;
+	}
+
 	tString currentDir = tSystem::tGetCurrentDir();
 	tString imagesDir = currentDir; // +"Textures/";
 
@@ -215,12 +223,12 @@ void FindTextureFiles()
 
 	gCurrFile = gFoundFiles.First();
 
-	if (ImageFile.IsPresent())
+	if (ImageFileParam.IsPresent())
 	{
 		for (tStringItem* si = gFoundFiles.First(); si; si = si->Next())
 		{
 			tString siName = tSystem::tGetFileName(*si);
-			tString imgName = tSystem::tGetFileName(ImageFile.Get());
+			tString imgName = tSystem::tGetFileName(ImageFileParam.Get());
 
 			if (tStricmp(siName.ConstText(), imgName.ConstText()) == 0)
 			{
@@ -232,6 +240,7 @@ void FindTextureFiles()
 
 	glGenTextures(1, &tex);
 }
+
 
 void DoFrame(GLFWwindow* window, bool dopoll = true)
 {
@@ -292,13 +301,45 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 			hmargin = 0.0f;
 		}
 
-		glColor4f(0.5f,0.5f,0.53f,1.0f);
-		glBegin(GL_QUADS);
-		glVertex2f(hmargin, vmargin);
-		glVertex2f(hmargin, vmargin+drawh);
-		glVertex2f(hmargin+draww, vmargin+drawh);
-		glVertex2f(hmargin+draww, vmargin);
-		glEnd();
+		// Semitransparent checker BG.
+
+		int x = 0;
+		int y = 0;
+		bool lineStartToggle = false;
+		float checkSize = 25.0f;
+		while (y*checkSize < drawh)
+		{
+			bool colourToggle = lineStartToggle;
+
+			while (x*checkSize < draww)
+			{
+				if (colourToggle)
+					glColor4f(1.0f,1.0f,1.0f,1.0f);
+				else
+					glColor4f(0.8f,0.7f,0.6f,1.0f);
+				colourToggle = !colourToggle;
+
+				float w = checkSize;
+				if ((x+1)*checkSize > draww)
+					w -= (x+1)*checkSize - draww;
+
+				float h = checkSize;
+				if ((y+1)*checkSize > drawh)
+					h -= (y+1)*checkSize - drawh;
+
+				glBegin(GL_QUADS);
+				glVertex2f(hmargin+x*checkSize, vmargin+y*checkSize);
+				glVertex2f(hmargin+x*checkSize, vmargin+y*checkSize+h);
+				glVertex2f(hmargin+x*checkSize+w, vmargin+y*checkSize+h);
+				glVertex2f(hmargin+x*checkSize+w, vmargin+y*checkSize);
+				glEnd();
+
+				x++;
+			}
+			x = 0;
+			y++;
+			lineStartToggle = !lineStartToggle;
+		}
 
 		glColor4f(1.0f,1.0f,1.0f,1.0f);
 
@@ -313,6 +354,7 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, 0);
+
 		glFlush(); //don't need this with GLUT_DOUBLE and glutSwapBuffers
 	}
 
@@ -392,6 +434,35 @@ void Windowrefreshfun(GLFWwindow* window)
 	DoFrame(window, false);
 }
 
+void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int modifiers)
+{
+	if (action != GLFW_PRESS)
+		return;
+
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.WantTextInput)
+		return;
+
+	switch (key)
+	{
+		case GLFW_KEY_LEFT:
+			if (gCurrFile && gCurrFile->Prev())
+			{
+				gCurrFile = gCurrFile->Prev();
+				LoadCurrFile();
+			}
+			break;
+
+		case GLFW_KEY_RIGHT:
+			if (gCurrFile && gCurrFile->Next())
+			{
+				gCurrFile = gCurrFile->Next();
+				LoadCurrFile();
+			}
+			break;
+	}
+}
+
 int main(int argc, char** argv)
 {
 	tCommand::tParse(argc, argv);
@@ -413,12 +484,15 @@ int main(int argc, char** argv)
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1); // Enable vsync
 	glfwSetWindowRefreshCallback(window, Windowrefreshfun);
+	glfwSetKeyCallback(window, KeyCallback);
 
     // Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+    ImGuiIO& io = ImGui::GetIO();
+	io.IniFilename = nullptr;
+	//io.NavActive = false;
+	io.ConfigFlags = 0; // |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
 
 	// Setup Dear ImGui style
@@ -439,6 +513,7 @@ int main(int argc, char** argv)
 
 	FindTextureFiles();
 	LoadCurrFile();
+
 
 	// Main loop
 	while (!glfwWindowShouldClose(window))
