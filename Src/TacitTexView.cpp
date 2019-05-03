@@ -24,6 +24,7 @@
 #include <stdio.h>
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h> 
+#include <Windows.h>
 using namespace tStd;
 using namespace tSystem;
 
@@ -457,13 +458,16 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int modi
 
 int main(int argc, char** argv)
 {
-	tCommand::tParse(argc, argv);
-
 	tSystem::tSetStdoutRedirectCallback(PrintRedirectCallback);	
 
 	tPrintf("Tacit Texture Viewer\n");
 	tPrintf("Tacent Version %d.%d.%d\n", tVersion::Major, tVersion::Minor, tVersion::Revision);
 	tPrintf("Dear IMGUI Version %s (%d)\n", IMGUI_VERSION, IMGUI_VERSION_NUM);
+
+//	LPWSTR cmdLine = GetCommandLineA();
+	char* cmdLine = GetCommandLineA();
+	tPrintf("CL: %s\n", cmdLine);
+	tCommand::tParse(argc, argv);
 
 	// Setup window
 	glfwSetErrorCallback(glfw_error_callback);
