@@ -171,24 +171,26 @@ void tCommand::tParse(int argc, char** argv)
 	if (argc <= 0)
 		return;
 
-	// Set the program name as typed in the command line.
-	Program = argv[0];
-
 	// Create a single line string of all the separate argv's. Arguments with quotes and spaces will come in as
 	// distinct argv's, but they all get combined here. I don't believe two consecutive spaces will work.
 	tString line;
-	for (int a = 1; a < argc; a++)
+	for (int a = 0; a < argc; a++)
 	{
 		char* arg = argv[a];
 		if (!arg || (tStd::tStrlen(arg) == 0))
 			continue;
 
-		line += arg;
+		// Arg may have spaces within it. Such arguments need to be enclosed in quotes.
+		tString argStr(arg);
+		if (argStr.FindChar(' ') != -1)
+			argStr = tString("\"") + argStr + tString("\"");
+
+		line += argStr;
 		if (a < (argc - 1))
 			line += " ";
 	}
 
-	tParse(line);
+	tParse(line, true);
 }
 
 
@@ -218,7 +220,7 @@ void tCommand::ExpandArgs(tList<tStringItem>& args)
 }
 
 
-void tCommand::tParse(const char* commandLine)
+void tCommand::tParse(const char* commandLine, bool fullCommandLine)
 {
 	tString line(commandLine);
 
@@ -243,19 +245,31 @@ void tCommand::tParse(const char* commandLine)
 
 	line.Remove('\'');
 	line.Remove('\"');
+
 	tList<tStringItem> args;
 	tStd::tExplode(args, line, ' ');
 
-	ExpandArgs(args);
-
 	// Now that the arguments are exploded into separate elements we replace the separators with the correct characters.
-	int c = 0;
 	for (tStringItem* arg = args.First(); arg; arg = arg->Next())
 	{
 		arg->Replace(tStd::SeparatorA, '\'');
 		arg->Replace(tStd::SeparatorB, '\"');
 		arg->Replace(tStd::SeparatorC, ' ');
 	}
+
+	// Set the program name as typed in the command line.
+	if (fullCommandLine)
+	{
+		tStringItem* prog = args.Remove();
+		Program.Set(prog->ConstText());
+		delete prog;
+	}
+	else
+	{
+		Program.Clear();
+	}
+
+	ExpandArgs(args);
 
 	// Process all options.
 	for (tStringItem* arg = args.First(); arg; arg = arg->Next())

@@ -24,12 +24,10 @@
 #include <stdio.h>
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h> 
-#include <Windows.h>
 using namespace tStd;
 using namespace tSystem;
 
 
-tCommand::tOption PrintAllOutput("Print all output.", 'a', "all");
 tCommand::tParam ImageFileParam(1, "ImageFile", "File to open.");
 
 
@@ -151,7 +149,7 @@ void ShowTextureViewerLog(float x, float y, float w, float h)
 
 static void glfw_error_callback(int error, const char* description)
 {
-	fprintf(stderr, "Glfw Error %d: %s\n", error, description);
+	tPrintf("Glfw Error %d: %s\n", error, description);
 }
 
 
@@ -464,9 +462,9 @@ int main(int argc, char** argv)
 	tPrintf("Tacent Version %d.%d.%d\n", tVersion::Major, tVersion::Minor, tVersion::Revision);
 	tPrintf("Dear IMGUI Version %s (%d)\n", IMGUI_VERSION, IMGUI_VERSION_NUM);
 
-//	LPWSTR cmdLine = GetCommandLineA();
-	char* cmdLine = GetCommandLineA();
-	tPrintf("CL: %s\n", cmdLine);
+	//char* cmdLine = GetCommandLineA();
+	//tCommand::tParse(cmdLine, true);
+
 	tCommand::tParse(argc, argv);
 
 	// Setup window
@@ -502,7 +500,8 @@ int main(int argc, char** argv)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	tString fontFile = tSystem::tGetProgramDir() + "Data/Roboto-Medium.ttf";
-	io.Fonts->AddFontFromFileTTF(fontFile.ConstText(), 14.0f);
+	if (tFileExists(fontFile))
+		io.Fonts->AddFontFromFileTTF(fontFile.ConstText(), 14.0f);
 
 	bool show_demo_window = true;
 	bool show_another_window = false;

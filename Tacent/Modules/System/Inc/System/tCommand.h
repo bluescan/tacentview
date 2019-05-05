@@ -122,7 +122,7 @@ namespace tCommand
 	};
 
 	void tParse(int argc, char** argv);
-	void tParse(const char* commandLine);
+	void tParse(const char* commandLine, bool fullCommandLine = false);
 	void tPrintUsage();
 	void tPrintSyntax();
 }
