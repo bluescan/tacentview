@@ -8,7 +8,7 @@
 // use backslashes, but consistency in using forward slashes is advised. Directory path specifications always end with
 // a trailing slash. Without the trailing separator the path will be interpreted as a file.
 //
-// Copyright (c) 2004-2006, 2017 Tristan Grimmer.
+// Copyright (c) 2004-2006, 2017, 2019 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -1606,7 +1606,7 @@ void tSystem::tFindFiles(tList<tStringItem>& foundFiles, const tString& fileMask
 				{
 					tString maskExtension = tGetFileExtension(fileMask);
 					tString foundExtension = tGetFileExtension(fd.cFileName);
-					if (maskExtension == foundExtension)
+					if (maskExtension.IsEqualCI(foundExtension))
 						foundFiles.Append(new tStringItem(path + fd.cFileName));
 				}
 				else

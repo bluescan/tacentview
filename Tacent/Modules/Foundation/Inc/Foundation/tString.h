@@ -4,7 +4,7 @@
 // no UCS2 or UTF16 support since UTF8 is, in my opinion, superior and the way forward. tStrings will work with UTF8.
 // You cannot stream (from cin etc) more than 512 chars into a string. This restriction is only for wacky << streaming.
 //
-// Copyright (c) 2004-2006, 2015, 2017 Tristan Grimmer.
+// Copyright (c) 2004-2006, 2015, 2017, 2019 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -36,6 +36,11 @@ struct tString
 	bool operator==(const char* s) const																				{ return( !tStd::tStrcmp(TextData, s) ); }
 	bool operator!=(const tString& s) const																				{ return( !!tStd::tStrcmp(TextData, s.TextData) ); }
 	bool operator!=(const char* s) const																				{ return( !!tStd::tStrcmp(TextData, s) ); }
+
+	bool IsEqual(const tString& s) const																				{ return( !tStd::tStrcmp(TextData, s.TextData) ); }
+	bool IsEqual(const char* s) const																					{ return( !tStd::tStrcmp(TextData, s) ); }
+	bool IsEqualCI(const tString& s) const																				{ return( !tStd::tStricmp(TextData, s.TextData) ); }
+	bool IsEqualCI(const char* s) const																					{ return( !tStd::tStricmp(TextData, s) ); }
 
 	operator const char*()																								{ return TextData; }
 	operator const char*() const																						{ return TextData; }

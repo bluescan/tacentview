@@ -292,6 +292,7 @@ bool tRenameFile(const tString& dir, const tString& oldName, const tString& newN
 // first if that's what you intend. If no second argument, the contents of the current directory are returned. The
 // filenames in foundFiles are absolute. Use GetFileName if you only care about the filename. If you're looking for
 // files without extensions, you are still required to have ".*" at the end of the filemask. Relic from dos days.
+// FileMask is case-insensitive.
 void tFindFiles
 (
 	tList<tStringItem>& foundFiles,
@@ -302,6 +303,7 @@ void tFindFiles
 // what you intend. If the path argument is the empty string the contents of the current directory are returned. The
 // filenames in foundFiles are absolute. Use GetFileName if you only care about the filename. If you're looking for
 // files without extensions, you are still required to have ".*" at the end of the filemask. Relic from dos days.
+// FileMask is case-insensitive.
 void tFindFilesInDir
 (
 	tList<tStringItem>& foundFiles, const tString& path,
@@ -310,7 +312,7 @@ void tFindFilesInDir
 
 // Again, fileMask may contain *'s. Path should not include the filename. The filenames in foundFiles are absolute. Use
 // GetFileName if you only care about the filename. If you're looking for files without extensions, you are still
-// required to have ".*" at the end of the filemask. Relic from dos days.
+// required to have ".*" at the end of the filemask. Relic from dos days. fileMask is case-insensitive.
 void tFindFilesRecursive
 (
 	tList<tStringItem>& foundFiles, const tString& path,
@@ -323,6 +325,7 @@ void tFindDirsRecursive
 );
 
 // dirMask may contain stuff like "c:/Temp/Dir*". All returned path names have a terminating slash.
+// dirMask is case-insensitive.
 void tFindDirs
 (
 	tList<tStringItem>& foundDirs, const tString& dirMask = "*.*", bool includeHidden = true
