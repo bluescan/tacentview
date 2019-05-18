@@ -12,18 +12,31 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+//#define GLEW_STATIC
+//#define GLEW_MX
+#include <GL/glew.h>
+//#include <GL/wglew.h>
+
+//#  define glewGetContext() ctx
+//GLEWContext* glewGetContext();
+
 #include <Foundation/tVersion.h>
 #include <System/tCommand.h>
 #include <Image/tTexture.h>
 #include <System/tFile.h>
 #include "TacitTexView.h"
 
+//#include <GL/gl3w.h>
+
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl2.h"
 #include <stdio.h>
 // Include glfw3.h after our OpenGL definitions
-#include <GLFW/glfw3.h> 
+//#define GLFW_INCLUDE_GLCOREARB
+#include <GLFW/glfw3.h>
+//#define GLCOREARB_PROTOTYPES
+//#include <GL/glcorearb.h>
 using namespace tStd;
 using namespace tSystem;
 
@@ -169,6 +182,48 @@ void LoadCurrFile()
 	if (!gCurrFile)
 		return;
 
+	tString imgFile = *gCurrFile;
+	if (tSystem::tGetFileTypeFromExtension(imgFile) == tSystem::tFileType::DDS)
+	{
+		//tImage::tTexture ddsTex(imgFile);
+
+		//ddsTex.GetFirstLayer()->PixelFormat == tImage::tPixelFormat::
+
+		//glBindTexture(GL_TEXTURE_2D, tex);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, gPicture.GetWidth(), gPicture.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, gPicture.GetPixelPointer());
+
+		/*
+		srcFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+		dstFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+		compressed = true;
+		break;
+
+		case aPixelFormat_S3TCDXT1:
+		srcFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+		dstFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+		compressed = true;
+		break;
+
+		case aPixelFormat_S3TCDXT3:
+		srcFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+		dstFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+		compressed = true;
+		break;
+
+		case aPixelFormat_S3TCDXT5:
+		srcFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+		dstFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+
+		glCompressedTexImage2D(GL_TEXTURE_2D, mipmapLevel, dstFormat, layer->iWidth, layer->iHeight, 0, layer->iNumBytes, layer->pData);
+		*/
+
+		//glCompressedTexImage2D(
+
+		//glBindTexture(GL_TEXTURE_2D, 0);
+
+	}
+
 	bool success = gPicture.Load(*gCurrFile);
 	if (!success)
 	{
@@ -185,8 +240,11 @@ void LoadCurrFile()
 	);
 
 	glBindTexture(GL_TEXTURE_2D, tex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, gPicture.GetWidth(), gPicture.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, gPicture.GetPixelPointer());
+
+//	glCompressedTexImage2D(;
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
@@ -209,6 +267,7 @@ void FindTextureFiles()
 	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.tga");
 	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.png");
 	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.tiff");
+	//tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.dds");
 
 	gFoundFiles.Sort(CompareFunc, tListSortAlgorithm::Merge);
 
@@ -461,6 +520,7 @@ int main(int argc, char** argv)
 	tPrintf("Tacit Texture Viewer\n");
 	tPrintf("Tacent Version %d.%d.%d\n", tVersion::Major, tVersion::Minor, tVersion::Revision);
 	tPrintf("Dear IMGUI Version %s (%d)\n", IMGUI_VERSION, IMGUI_VERSION_NUM);
+	tPrintf("GLEW Version %s\n", glewGetString(GLEW_VERSION));
 
 	//char* cmdLine = GetCommandLineA();
 	//tCommand::tParse(cmdLine, true);
@@ -472,6 +532,7 @@ int main(int argc, char** argv)
 	if (!glfwInit())
 		return 1;
 
+
 	GLFWwindow* window = glfwCreateWindow(1280, 720, "Tacent Texture Viewer", NULL, NULL);
 	if (!window)
 		return 1;
@@ -479,6 +540,11 @@ int main(int argc, char** argv)
 	glfwSwapInterval(1); // Enable vsync
 	glfwSetWindowRefreshCallback(window, Windowrefreshfun);
 	glfwSetKeyCallback(window, KeyCallback);
+
+	GLenum err = glewInit();
+	if (err != GLEW_OK)
+		return err;
+
 
     // Setup Dear ImGui context
 	IMGUI_CHECKVERSION();

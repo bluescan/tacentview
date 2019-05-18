@@ -42,12 +42,6 @@
     <ClInclude Include="Tacent\Contrib\imgui\examples\imgui_impl_glfw.h">
       <Filter>Source Files\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="Tacent\Contrib\imgui\examples\libs\gl3w\GL\gl3w.h">
-      <Filter>Source Files\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="Tacent\Contrib\imgui\examples\libs\gl3w\GL\glcorearb.h">
-      <Filter>Source Files\imgui</Filter>
-    </ClInclude>
     <ClInclude Include="Tacent\Contrib\imgui\examples\imgui_impl_opengl2.h">
       <Filter>Source Files\imgui</Filter>
     </ClInclude>
@@ -74,11 +68,11 @@
     <ClCompile Include="Tacent\Contrib\imgui\examples\imgui_impl_glfw.cpp">
       <Filter>Source Files\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="Tacent\Contrib\imgui\examples\libs\gl3w\GL\gl3w.c">
-      <Filter>Source Files\imgui</Filter>
-    </ClCompile>
     <ClCompile Include="Tacent\Contrib\imgui\examples\imgui_impl_opengl2.cpp">
       <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Tacent\Contrib\GLEW\src\glew.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
