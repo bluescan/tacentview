@@ -12,31 +12,16 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
-//#define GLEW_STATIC
-//#define GLEW_MX
 #include <GL/glew.h>
-//#include <GL/wglew.h>
-
-//#  define glewGetContext() ctx
-//GLEWContext* glewGetContext();
-
+#include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL definitions.
 #include <Foundation/tVersion.h>
 #include <System/tCommand.h>
 #include <Image/tTexture.h>
 #include <System/tFile.h>
 #include "TacitTexView.h"
-
-//#include <GL/gl3w.h>
-
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl2.h"
-#include <stdio.h>
-// Include glfw3.h after our OpenGL definitions
-//#define GLFW_INCLUDE_GLCOREARB
-#include <GLFW/glfw3.h>
-//#define GLCOREARB_PROTOTYPES
-//#include <GL/glcorearb.h>
 using namespace tStd;
 using namespace tSystem;
 
@@ -75,13 +60,8 @@ struct TextureViewerLog
 		ScrollToBottom = true;
 	}
 
-	void    Draw(const char* title, bool* p_open = NULL)
+	void Draw(const char* title, bool* p_open = NULL)
 	{
-//		if (!ImGui::Begin(title, p_open))
-//		{
-//			ImGui::End();
-//			return;
-//		}
 		if (ImGui::Button("Clear")) Clear();
 		ImGui::SameLine();
 		bool copy = ImGui::Button("Copy");
@@ -135,7 +115,6 @@ struct TextureViewerLog
 			ImGui::SetScrollHereY(1.0f);
 		ScrollToBottom = false;
 		ImGui::EndChild();
-		//ImGui::End();
 	}
 };
 
@@ -152,9 +131,6 @@ void ShowTextureViewerLog(float x, float y, float w, float h)
 	ImGui::SetNextWindowPos(ImVec2(x, y), ImGuiCond_Always);
 
 	ImGui::Begin("Info", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-
-	//ImGui::SetCursorPosX(500.0f);
-	//ImGui::SetCursorPosY(0.0f);
 	gLog.Draw("Log", &gLogOpen);
 	ImGui::End();
 }
@@ -186,9 +162,7 @@ void LoadCurrFile()
 	if (tSystem::tGetFileTypeFromExtension(imgFile) == tSystem::tFileType::DDS)
 	{
 		//tImage::tTexture ddsTex(imgFile);
-
 		//ddsTex.GetFirstLayer()->PixelFormat == tImage::tPixelFormat::
-
 		//glBindTexture(GL_TEXTURE_2D, tex);
 		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, gPicture.GetWidth(), gPicture.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, gPicture.GetPixelPointer());
@@ -219,9 +193,7 @@ void LoadCurrFile()
 		*/
 
 		//glCompressedTexImage2D(
-
 		//glBindTexture(GL_TEXTURE_2D, 0);
-
 	}
 
 	bool success = gPicture.Load(*gCurrFile);
@@ -240,11 +212,9 @@ void LoadCurrFile()
 	);
 
 	glBindTexture(GL_TEXTURE_2D, tex);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, gPicture.GetWidth(), gPicture.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, gPicture.GetPixelPointer());
-
-//	glCompressedTexImage2D(;
+	//	glCompressedTexImage2D();
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
@@ -266,7 +236,9 @@ void FindTextureFiles()
 	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.gif");
 	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.tga");
 	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.png");
+	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.tif");
 	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.tiff");
+	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.bmp");
 	//tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.dds");
 
 	gFoundFiles.Sort(CompareFunc, tListSortAlgorithm::Merge);
@@ -522,16 +494,12 @@ int main(int argc, char** argv)
 	tPrintf("Dear IMGUI Version %s (%d)\n", IMGUI_VERSION, IMGUI_VERSION_NUM);
 	tPrintf("GLEW Version %s\n", glewGetString(GLEW_VERSION));
 
-	//char* cmdLine = GetCommandLineA();
-	//tCommand::tParse(cmdLine, true);
-
 	tCommand::tParse(argc, argv);
 
 	// Setup window
 	glfwSetErrorCallback(glfw_error_callback);
 	if (!glfwInit())
 		return 1;
-
 
 	GLFWwindow* window = glfwCreateWindow(1280, 720, "Tacent Texture Viewer", NULL, NULL);
 	if (!window)
@@ -544,7 +512,6 @@ int main(int argc, char** argv)
 	GLenum err = glewInit();
 	if (err != GLEW_OK)
 		return err;
-
 
     // Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -574,7 +541,6 @@ int main(int argc, char** argv)
 
 	FindTextureFiles();
 	LoadCurrFile();
-
 
 	// Main loop
 	while (!glfwWindowShouldClose(window))
