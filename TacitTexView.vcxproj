@@ -179,6 +179,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\TacitImage.h" />
     <ClInclude Include="Tacent\Contrib\imgui\examples\imgui_impl_glfw.h" />
     <ClInclude Include="Tacent\Contrib\imgui\examples\imgui_impl_opengl2.h" />
     <ClInclude Include="Tacent\Contrib\imgui\imconfig.h" />
@@ -188,9 +189,9 @@
     <ClInclude Include="Tacent\Contrib\imgui\imstb_textedit.h" />
     <ClInclude Include="Tacent\Contrib\imgui\imstb_truetype.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="Src\TacitTexView.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\TacitImage.cpp" />
     <ClCompile Include="Tacent\Contrib\GLEW\src\glew.c" />
     <ClCompile Include="Tacent\Contrib\imgui\examples\imgui_impl_glfw.cpp" />
     <ClCompile Include="Tacent\Contrib\imgui\examples\imgui_impl_opengl2.cpp" />

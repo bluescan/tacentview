@@ -18,9 +18,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Src\TacitTexView.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Tacent\Contrib\imgui\imconfig.h">
       <Filter>Source Files\imgui</Filter>
     </ClInclude>
@@ -48,6 +45,9 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Src\TacitImage.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\TacitTexView.cpp">
@@ -72,6 +72,9 @@
       <Filter>Source Files\imgui</Filter>
     </ClCompile>
     <ClCompile Include="Tacent\Contrib\GLEW\src\glew.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\TacitImage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

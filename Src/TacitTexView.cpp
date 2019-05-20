@@ -2,7 +2,7 @@
 //
 // A texture viewer for various formats.
 //
-// Copyright (c) 2017, 2019 Tristan Grimmer.
+// Copyright (c) 2018, 2019 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -18,7 +18,7 @@
 #include <System/tCommand.h>
 #include <Image/tTexture.h>
 #include <System/tFile.h>
-#include "TacitTexView.h"
+#include "TacitImage.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl2.h"
@@ -148,75 +148,39 @@ void PrintRedirectCallback(const char* text, int numChars)
 }
 
 
-tImage::tPicture gPicture;
-GLuint tex = 0;
-tList<tStringItem> gFoundFiles;
-tStringItem* gCurrFile = nullptr;
+//tImage::tPicture gPicture;
+//GLuint texID = 0;
+//tList<tStringItem> gFoundFiles;
+tList<TacitImage> gImages;
+TacitImage* gCurrImage = nullptr;
 
-void LoadCurrFile()
+void LoadCurrImage()
 {
-	if (!gCurrFile)
+	if (!gCurrImage)
 		return;
 
-	tString imgFile = *gCurrFile;
-	if (tSystem::tGetFileTypeFromExtension(imgFile) == tSystem::tFileType::DDS)
-	{
-		//tImage::tTexture ddsTex(imgFile);
-		//ddsTex.GetFirstLayer()->PixelFormat == tImage::tPixelFormat::
-		//glBindTexture(GL_TEXTURE_2D, tex);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, gPicture.GetWidth(), gPicture.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, gPicture.GetPixelPointer());
-
-		/*
-		srcFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-		dstFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-		compressed = true;
-		break;
-
-		case aPixelFormat_S3TCDXT1:
-		srcFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-		dstFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-		compressed = true;
-		break;
-
-		case aPixelFormat_S3TCDXT3:
-		srcFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-		dstFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-		compressed = true;
-		break;
-
-		case aPixelFormat_S3TCDXT5:
-		srcFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-		dstFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-
-		glCompressedTexImage2D(GL_TEXTURE_2D, mipmapLevel, dstFormat, layer->iWidth, layer->iHeight, 0, layer->iNumBytes, layer->pData);
-		*/
-
-		//glCompressedTexImage2D(
-		//glBindTexture(GL_TEXTURE_2D, 0);
-	}
-
-	bool success = gPicture.Load(*gCurrFile);
+	bool success = gCurrImage->Load();
 	if (!success)
 	{
-		tPrintf("Cannot Load Image: %s\n", tSystem::tGetFileName(*gCurrFile).ConstText());
+		tPrintf("Cannot Load Image: %s\n", tSystem::tGetFileName(gCurrImage->Filename).ConstText());
 		return;
 	}
 
-	tPrintf
-	(
-		"Image: %s Width: %d Height: %d Opaque: %s\n",
-		tSystem::tGetFileName(*gCurrFile).ConstText(),
-		gPicture.GetWidth(), gPicture.GetHeight(),
-		gPicture.IsOpaque() ? "True" : "False"
-	);
+//	tPrintf
+//	(
+//		"Image: %s Width: %d Height: %d Opaque: %s\n",
+//		tSystem::tGetFileName(*gCurrFile).ConstText(),
+//		gPicture.GetWidth(), gPicture.GetHeight(),
+//		gPicture.IsOpaque() ? "True" : "False"
+//	);
 
-	glBindTexture(GL_TEXTURE_2D, tex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, gPicture.GetWidth(), gPicture.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, gPicture.GetPixelPointer());
+	gCurrImage->Bind();
+	//glBindTexture(GL_TEXTURE_2D, texID);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, gPicture.GetWidth(), gPicture.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, gPicture.GetPixelPointer());
 	//	glCompressedTexImage2D();
 
-	glBindTexture(GL_TEXTURE_2D, 0);
+	//glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 bool CompareFunc(const tStringItem& a, const tStringItem& b)
@@ -232,35 +196,42 @@ void FindTextureFiles()
 		imagesDir = tSystem::tGetDir(ImageFileParam.Get());
 
 	tPrintf("Looking for image files in %s\n", imagesDir.ConstText());
-	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.jpg");
-	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.gif");
-	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.tga");
-	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.png");
-	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.tif");
-	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.tiff");
-	tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.bmp");
-	//tSystem::tFindFilesInDir(gFoundFiles, imagesDir, "*.dds");
 
-	gFoundFiles.Sort(CompareFunc, tListSortAlgorithm::Merge);
+	tList<tStringItem> foundFiles;
 
-	gCurrFile = gFoundFiles.First();
+	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.jpg");
+	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.gif");
+	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.tga");
+	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.png");
+	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.tif");
+	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.tiff");
+	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.bmp");
+	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.dds");
+	foundFiles.Sort(CompareFunc, tListSortAlgorithm::Merge);
+	for (tStringItem* filename = foundFiles.First(); filename; filename = filename->Next())
+	{
+		gImages.Append(new TacitImage(*filename));
+	}
+
+	gCurrImage = gImages.First();
 
 	if (ImageFileParam.IsPresent())
 	{
-		for (tStringItem* si = gFoundFiles.First(); si; si = si->Next())
+		for (TacitImage* si = gImages.First(); si; si = si->Next())
 		{
-			tString siName = tSystem::tGetFileName(*si);
+			tString siName = tSystem::tGetFileName(si->Filename);
 			tString imgName = tSystem::tGetFileName(ImageFileParam.Get());
 
 			if (tStricmp(siName.ConstText(), imgName.ConstText()) == 0)
 			{
-				gCurrFile = si;
+				gCurrImage = si;
 				break;
 			}
 		}
 	}
 
-	glGenTextures(1, &tex);
+	//glGenTextures(1, &texID);
+	//tPrintf("texID %d\n", texID);
 }
 
 
@@ -298,10 +269,14 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 	glMatrixMode(GL_MODELVIEW);
 
 	//clear and draw quad with texture (could be in display callback)
-	if (gPicture.IsValid())
+	//if (gPicture.IsValid())
+	if (gCurrImage)
 	{
-		int w = gPicture.GetWidth();
-		int h = gPicture.GetHeight();
+		if (!gCurrImage->IsLoaded())
+			gCurrImage->Load();
+
+		int w = gCurrImage->GetWidth();
+		int h = gCurrImage->GetHeight();
 		float picaspect = float(w)/float(h);
 
 		float drawh = 0.0f;
@@ -365,7 +340,9 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 
 		glColor4f(1.0f,1.0f,1.0f,1.0f);
 
-		glBindTexture(GL_TEXTURE_2D, tex);
+		if (!gCurrImage->IsBound())
+			gCurrImage->Bind();
+		//glBindTexture(GL_TEXTURE_2D, texID);
 		glEnable(GL_TEXTURE_2D);
 		glBegin(GL_QUADS);
 
@@ -375,7 +352,7 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 		glTexCoord2i(1, 0); glVertex2f(hmargin+draww, vmargin);
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		//glBindTexture(GL_TEXTURE_2D, 0);
 
 		glFlush(); //don't need this with GLUT_DOUBLE and glutSwapBuffers
 	}
@@ -396,28 +373,28 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 	{
 		if (ImGui::Button("Prev"))
 		{
-			if (gCurrFile && gCurrFile->Prev())
+			if (gCurrImage && gCurrImage->Prev())
 			{
-				gCurrFile = gCurrFile->Prev();
-				LoadCurrFile();
+				gCurrImage = gCurrImage->Prev();
+				//LoadCurrFile();
 			}
 		}
 		if (ImGui::Button("Next"))
 		{
-			if (gCurrFile && gCurrFile->Next())
+			if (gCurrImage && gCurrImage->Next())
 			{
-				gCurrFile = gCurrFile->Next();
-				LoadCurrFile();
+				gCurrImage = gCurrImage->Next();
+				//LoadCurrFile();
 			}
 		}
 
 		tFileType fileType = tFileType::Unknown;
-		if (gCurrFile && gPicture.IsValid())
-			fileType = tGetFileType(*gCurrFile);
+		if (gCurrImage && gCurrImage->IsLoaded())
+			fileType = gCurrImage->Filetype;
 
-		if ((fileType != tFileType::Unknown) && (fileType != tFileType::Targa))
+		if ((fileType != tFileType::Unknown) && (fileType != tFileType::Targa) && (fileType != tFileType::DDS))
 		{
-			tString tgaFile = *gCurrFile;
+			tString tgaFile = gCurrImage->Filename;
 			tgaFile.ExtractLastWord('.');
 			tgaFile += ".tga";
 			if (ImGui::Button("Save As Targa"))
@@ -428,7 +405,7 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 				}
 				else
 				{
-					bool success = gPicture.SaveTGA(tgaFile, tImage::tFileTGA::tFormat::Auto, tImage::tFileTGA::tCompression::None);
+					bool success = gCurrImage->PictureImage.SaveTGA(tgaFile, tImage::tFileTGA::tFormat::Auto, tImage::tFileTGA::tCompression::None);
 					if (success)
 						tPrintf("Saved targa as : %s\n", tgaFile.ConstText());
 					else
@@ -468,18 +445,18 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int modi
 	switch (key)
 	{
 		case GLFW_KEY_LEFT:
-			if (gCurrFile && gCurrFile->Prev())
+			if (gCurrImage && gCurrImage->Prev())
 			{
-				gCurrFile = gCurrFile->Prev();
-				LoadCurrFile();
+				gCurrImage = gCurrImage->Prev();
+				//LoadCurrFile();
 			}
 			break;
 
 		case GLFW_KEY_RIGHT:
-			if (gCurrFile && gCurrFile->Next())
+			if (gCurrImage && gCurrImage->Next())
 			{
-				gCurrFile = gCurrFile->Next();
-				LoadCurrFile();
+				gCurrImage = gCurrImage->Next();
+				//LoadCurrFile();
 			}
 			break;
 	}
@@ -540,7 +517,7 @@ int main(int argc, char** argv)
 	bool show_another_window = false;
 
 	FindTextureFiles();
-	LoadCurrFile();
+	//LoadCurrImage();
 
 	// Main loop
 	while (!glfwWindowShouldClose(window))
