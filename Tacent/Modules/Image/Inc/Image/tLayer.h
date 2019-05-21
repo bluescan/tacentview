@@ -109,6 +109,25 @@ inline tLayer::tLayer(tPixelFormat format, int width, int height, uint8* data, b
 }
 
 
+inline tLayer::tLayer(const tLayer& src) :
+	PixelFormat(src.PixelFormat),
+	Width(src.Width),
+	Height(src.Height),
+	OwnsData(src.OwnsData)
+{
+	if (OwnsData)
+	{
+		int dataSize = src.GetDataSize();
+		Data = new uint8[dataSize];
+		tStd::tMemcpy(Data, src.Data, dataSize);
+	}
+	else
+	{
+		Data = src.Data;
+	}
+}
+
+
 inline int tLayer::GetDataSize() const
 {
 	if (!Width || !Height || (PixelFormat == tPixelFormat::Invalid))
