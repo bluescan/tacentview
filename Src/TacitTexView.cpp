@@ -29,25 +29,32 @@ using namespace tSystem;
 tCommand::tParam ImageFileParam(1, "ImageFile", "File to open.");
 
 
+namespace TacitTexView
+{
+	int MajorVersion	= 0;
+	int MinorVersion	= 8;
+	int Revision		= 0;
+};
+
 struct TextureViewerLog
 {
-	ImGuiTextBuffer     Buf;
-	ImGuiTextFilter     Filter;
-	ImVector<int>       LineOffsets;        // Index to lines offset. We maintain this with AddLog() calls, allowing us to have a random access on lines
-	bool                ScrollToBottom;
+	ImGuiTextBuffer Buf;
+	ImGuiTextFilter Filter;
+	ImVector<int> LineOffsets;        // Index to lines offset. We maintain this with AddLog() calls, allowing us to have a random access on lines
+	bool ScrollToBottom;
 	TextureViewerLog() : ScrollToBottom(true)
 	{
 		Clear();
 	}
 
-	void    Clear()
+	void Clear()
 	{
 		Buf.clear();
 		LineOffsets.clear();
 		LineOffsets.push_back(0);
 	}
 
-	void    AddLog(const char* fmt, ...) IM_FMTARGS(2)
+	void AddLog(const char* fmt, ...) IM_FMTARGS(2)
 	{
 		int old_size = Buf.size();
 		va_list args;
@@ -148,11 +155,9 @@ void PrintRedirectCallback(const char* text, int numChars)
 }
 
 
-//tImage::tPicture gPicture;
-//GLuint texID = 0;
-//tList<tStringItem> gFoundFiles;
 tList<TacitImage> gImages;
 TacitImage* gCurrImage = nullptr;
+
 
 bool CompareFunc(const tStringItem& a, const tStringItem& b)
 {
@@ -167,7 +172,6 @@ void FindTextureFiles()
 		imagesDir = tSystem::tGetDir(ImageFileParam.Get());
 
 	tPrintf("Looking for image files in %s\n", imagesDir.ConstText());
-
 	tList<tStringItem> foundFiles;
 
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.jpg");
@@ -205,10 +209,6 @@ void FindTextureFiles()
 	{
 		gCurrImage->Load(); gCurrImage->PrintInfo();
 	}
-
-//	gCurrImage.
-	//glGenTextures(1, &texID);
-	//tPrintf("texID %d\n", texID);
 }
 
 
@@ -245,8 +245,6 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 	glOrtho(0, workAreaW, 0, workAreaH, -1, 1);
 	glMatrixMode(GL_MODELVIEW);
 
-	//clear and draw quad with texture (could be in display callback)
-	//if (gPicture.IsValid())
 	if (gCurrImage)
 	{
 		int w = gCurrImage->GetWidth();
@@ -273,7 +271,6 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 		}
 
 		// Semitransparent checker BG.
-
 		int x = 0;
 		int y = 0;
 		bool lineStartToggle = false;
@@ -325,7 +322,7 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
 
-		glFlush(); //don't need this with GLUT_DOUBLE and glutSwapBuffers
+		glFlush(); // Don't need this with GLUT_DOUBLE and glutSwapBuffers.
 	}
 
 	glMatrixMode(GL_PROJECTION);
@@ -399,10 +396,12 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
     glfwSwapBuffers(window);
 }
 
+
 void Windowrefreshfun(GLFWwindow* window)
 {
 	DoFrame(window, false);
 }
+
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int modifiers)
 {
@@ -433,15 +432,15 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int modi
 	}
 }
 
+
 int main(int argc, char** argv)
 {
 	tSystem::tSetStdoutRedirectCallback(PrintRedirectCallback);	
 
-	tPrintf("Tacit Texture Viewer\n");
+	tPrintf("Tacit Texture Viewer Version %d.%d.%d\n", TacitTexView::MajorVersion, TacitTexView::MinorVersion, TacitTexView::Revision);
 	tPrintf("Tacent Version %d.%d.%d\n", tVersion::Major, tVersion::Minor, tVersion::Revision);
 	tPrintf("Dear IMGUI Version %s (%d)\n", IMGUI_VERSION, IMGUI_VERSION_NUM);
 	tPrintf("GLEW Version %s\n", glewGetString(GLEW_VERSION));
-
 	tCommand::tParse(argc, argv);
 
 	// Setup window
@@ -467,8 +466,9 @@ int main(int argc, char** argv)
     ImGuiIO& io = ImGui::GetIO();
 	io.IniFilename = nullptr;
 	//io.NavActive = false;
-	io.ConfigFlags = 0; // |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
+	io.ConfigFlags = 0;
+	// io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	// io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
