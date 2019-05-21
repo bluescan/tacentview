@@ -154,35 +154,6 @@ void PrintRedirectCallback(const char* text, int numChars)
 tList<TacitImage> gImages;
 TacitImage* gCurrImage = nullptr;
 
-void LoadCurrImage()
-{
-	if (!gCurrImage)
-		return;
-
-	bool success = gCurrImage->Load();
-	if (!success)
-	{
-		tPrintf("Cannot Load Image: %s\n", tSystem::tGetFileName(gCurrImage->Filename).ConstText());
-		return;
-	}
-
-//	tPrintf
-//	(
-//		"Image: %s Width: %d Height: %d Opaque: %s\n",
-//		tSystem::tGetFileName(*gCurrFile).ConstText(),
-//		gPicture.GetWidth(), gPicture.GetHeight(),
-//		gPicture.IsOpaque() ? "True" : "False"
-//	);
-
-	gCurrImage->Bind();
-	//glBindTexture(GL_TEXTURE_2D, texID);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, gPicture.GetWidth(), gPicture.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, gPicture.GetPixelPointer());
-	//	glCompressedTexImage2D();
-
-	//glBindTexture(GL_TEXTURE_2D, 0);
-}
-
 bool CompareFunc(const tStringItem& a, const tStringItem& b)
 {
 	return tStrcmp(a.ConstText(), b.ConstText()) < 0;
@@ -230,6 +201,12 @@ void FindTextureFiles()
 		}
 	}
 
+	if (gCurrImage)
+	{
+		gCurrImage->Load(); gCurrImage->PrintInfo();
+	}
+
+//	gCurrImage.
 	//glGenTextures(1, &texID);
 	//tPrintf("texID %d\n", texID);
 }
@@ -272,8 +249,8 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 	//if (gPicture.IsValid())
 	if (gCurrImage)
 	{
-		if (!gCurrImage->IsLoaded())
-			gCurrImage->Load();
+		//if (!gCurrImage->IsLoaded())
+		//	gCurrImage->Load();
 
 		int w = gCurrImage->GetWidth();
 		int h = gCurrImage->GetHeight();
@@ -340,8 +317,11 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 
 		glColor4f(1.0f,1.0f,1.0f,1.0f);
 
-		if (!gCurrImage->IsBound())
-			gCurrImage->Bind();
+		//if (!gCurrImage->IsBound())
+		bool bound = gCurrImage->Bind();
+		//if (bound)
+		//	gCurrImage->PrintInfo();
+
 		//glBindTexture(GL_TEXTURE_2D, texID);
 		glEnable(GL_TEXTURE_2D);
 		glBegin(GL_QUADS);
@@ -376,7 +356,7 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 			if (gCurrImage && gCurrImage->Prev())
 			{
 				gCurrImage = gCurrImage->Prev();
-				//LoadCurrFile();
+				gCurrImage->Load(); gCurrImage->PrintInfo();
 			}
 		}
 		if (ImGui::Button("Next"))
@@ -384,7 +364,7 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 			if (gCurrImage && gCurrImage->Next())
 			{
 				gCurrImage = gCurrImage->Next();
-				//LoadCurrFile();
+				gCurrImage->Load(); gCurrImage->PrintInfo();
 			}
 		}
 
@@ -448,7 +428,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int modi
 			if (gCurrImage && gCurrImage->Prev())
 			{
 				gCurrImage = gCurrImage->Prev();
-				//LoadCurrFile();
+				gCurrImage->Load(); gCurrImage->PrintInfo();
 			}
 			break;
 
@@ -456,7 +436,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int modi
 			if (gCurrImage && gCurrImage->Next())
 			{
 				gCurrImage = gCurrImage->Next();
-				//LoadCurrFile();
+				gCurrImage->Load(); gCurrImage->PrintInfo();
 			}
 			break;
 	}
@@ -517,7 +497,6 @@ int main(int argc, char** argv)
 	bool show_another_window = false;
 
 	FindTextureFiles();
-	//LoadCurrImage();
 
 	// Main loop
 	while (!glfwWindowShouldClose(window))

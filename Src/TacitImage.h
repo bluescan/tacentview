@@ -29,10 +29,12 @@ public:
 	bool IsLoaded() const;
 
 	bool Bind();					// Bind to a particulr texture ID and load into VRAM. If image is already in VRAM, it only binds (makes texture current).
-	bool IsBound() const;
+	//bool IsBound() const;
 
 	int GetWidth() const;
 	int GetHeight() const;
+
+	void PrintInfo();
 
 	tString Filename;
 	tSystem::tFileType Filetype;

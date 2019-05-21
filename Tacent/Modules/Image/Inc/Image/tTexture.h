@@ -126,6 +126,7 @@ public:
 	tLayer* GetFirstLayer() const																						{ return Layers.First(); }
 	tLayer* GetMainLayer() const																						{ return Layers.First(); }
 	void StealLayers(tList<tLayer>&);	/* Leaves the object invalid. */
+	const tList<tLayer>& GetLayers() { return Layers; }
 	int GetTotalPixelDataSize() const;
 
 	// Save and Load to tChunk format.

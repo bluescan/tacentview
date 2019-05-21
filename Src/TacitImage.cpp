@@ -52,21 +52,6 @@ bool TacitImage::Load()
 		success = false;
 	}
 
-	if (success)
-	{
-		tPixelFormat format = tPixelFormat::Invalid;
-		if (Filetype == tSystem::tFileType::DDS)
-			format = TextureImage.GetPixelFormat();
-		else
-			format = PictureImage.IsOpaque() ? tPixelFormat::R8G8B8 : tPixelFormat::R8G8B8A8;
-		tPrintf
-		(
-			"Image: %s Width: %d Height: %d PixelFormat: %d\n",
-			tSystem::tGetFileName(Filename).ConstText(),
-			GetWidth(), GetHeight(), int(format)
-		);
-	}
-
 	return success;
 }
 
@@ -100,6 +85,22 @@ int TacitImage::GetHeight() const
 }
 
 
+void TacitImage::PrintInfo()
+{
+	tPixelFormat format = tPixelFormat::Invalid;
+	if (Filetype == tSystem::tFileType::DDS)
+		format = TextureImage.GetPixelFormat();
+	else
+		format = PictureImage.IsOpaque() ? tPixelFormat::R8G8B8 : tPixelFormat::R8G8B8A8;
+	tPrintf
+	(
+		"Image: %s Width: %d Height: %d PixelFormat: %d\n",
+		tSystem::tGetFileName(Filename).ConstText(),
+		GetWidth(), GetHeight(), int(format)
+	);
+}
+
+
 bool TacitImage::Bind()
 {
 	if (GLTextureID != 0)
@@ -112,6 +113,7 @@ bool TacitImage::Bind()
 		return false;
 
 	glGenTextures(1, &GLTextureID);
+	//tPrintf("TextureID %d\n", GLTextureID);
 	if (GLTextureID == 0)
 		return false;
 
@@ -134,8 +136,8 @@ bool TacitImage::Bind()
 
 	if (TextureImage.IsValid())
 	{
-		tList<tLayer> layers;
-		TextureImage.StealLayers(layers);
+		const tList<tLayer>& layers = TextureImage.GetLayers();
+		//TextureImage.StealLayers(layers);
 		BindLayers(layers);
 		return true;
 	}
@@ -190,10 +192,10 @@ void TacitImage::BindLayers(const tList<tLayer>& layers)
 }
 
 
-bool TacitImage::IsBound() const
-{
-	return (GLTextureID != 0);
-}
+//bool TacitImage::IsBound() const
+//{
+//	return (GLTextureID != 0);
+//}
 
 
 void TacitImage::GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFormat, bool& compressed, tPixelFormat pixelFormat)
