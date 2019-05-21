@@ -59,7 +59,7 @@ bool tIsBlockFormat(tPixelFormat);
 bool tIsNormalFormat(tPixelFormat);
 int tGetBytesPerPixel(tPixelFormat);			// This function must be given a non-BC pixel format.
 int tGetBytesPer4x4PixelBlock(tPixelFormat);	// This function must be given a BC pixel format.
-
+const char* tGetPixelFormatName(tPixelFormat);
 
 
 }

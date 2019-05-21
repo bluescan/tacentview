@@ -85,4 +85,34 @@ int tGetBytesPer4x4PixelBlock(tPixelFormat format)
 }
 
 
+const char* tGetPixelFormatName(tPixelFormat pixelFormat)
+{
+	const char* names[] =
+	{
+		"Unknown",
+		"R8G8B8",
+		"R8G8B8A8",
+		"B8G8R8",
+		"B8G8R8A8",
+		"G3B5A1R5G2",
+		"G4B4A4R4",
+		"G3B5R5G3",
+		"L8A8",
+
+		"BC1_DXT1",
+		"BC1_DXT1BA",
+		"BC2_DXT3",
+		"BC3_DXT5",
+		"BC4_ATI1",
+		"BC5_ATI2",
+		"BC6H",
+		"BC7"
+	};
+
+	tAssert(int(tPixelFormat::NumPixelFormats)+1 == sizeof(names)/sizeof(*names));
+	int index = int(pixelFormat) + 1;
+	return names[index];
+}
+
+
 }

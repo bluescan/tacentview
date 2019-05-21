@@ -249,9 +249,6 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 	//if (gPicture.IsValid())
 	if (gCurrImage)
 	{
-		//if (!gCurrImage->IsLoaded())
-		//	gCurrImage->Load();
-
 		int w = gCurrImage->GetWidth();
 		int h = gCurrImage->GetHeight();
 		float picaspect = float(w)/float(h);
@@ -317,12 +314,7 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 
 		glColor4f(1.0f,1.0f,1.0f,1.0f);
 
-		//if (!gCurrImage->IsBound())
-		bool bound = gCurrImage->Bind();
-		//if (bound)
-		//	gCurrImage->PrintInfo();
-
-		//glBindTexture(GL_TEXTURE_2D, texID);
+		gCurrImage->Bind();
 		glEnable(GL_TEXTURE_2D);
 		glBegin(GL_QUADS);
 
@@ -332,7 +324,6 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 		glTexCoord2i(1, 0); glVertex2f(hmargin+draww, vmargin);
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
-		//glBindTexture(GL_TEXTURE_2D, 0);
 
 		glFlush(); //don't need this with GLUT_DOUBLE and glutSwapBuffers
 	}

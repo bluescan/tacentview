@@ -94,9 +94,9 @@ void TacitImage::PrintInfo()
 		format = PictureImage.IsOpaque() ? tPixelFormat::R8G8B8 : tPixelFormat::R8G8B8A8;
 	tPrintf
 	(
-		"Image: %s Width: %d Height: %d PixelFormat: %d\n",
+		"Image: %s Width: %d Height: %d PixelFormat: %s\n",
 		tSystem::tGetFileName(Filename).ConstText(),
-		GetWidth(), GetHeight(), int(format)
+		GetWidth(), GetHeight(), tImage::tGetPixelFormatName(format)
 	);
 }
 
