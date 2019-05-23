@@ -68,7 +68,9 @@ bool CxImagePNG::Decode(CxFile *hFile)
 		/* Free all of the memory associated with the png_ptr and info_ptr */
 		delete [] row_pointers;
 		png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
-		cx_throw("");
+
+		// @tacent Added non-empty error string.
+		cx_throw("Failed to set error handling.");
 	}
 
 	// use custom I/O functions

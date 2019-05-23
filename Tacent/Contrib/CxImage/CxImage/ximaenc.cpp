@@ -581,7 +581,9 @@ bool CxImage::Load(const TCHAR * filename, uint32_t imagetype)
 
 		bOK = Decode(hFile,imagetype);
 		fclose(hFile);
-		if (bOK) return bOK;
+		// if (bOK) return bOK;
+		// @tacent
+		return bOK;
 	}
 
 	char szError[256];
