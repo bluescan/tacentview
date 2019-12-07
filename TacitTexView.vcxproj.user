@@ -3,13 +3,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerCommand>$(ProjectDir)$(TargetFileName)</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>"C:\Program Files\Autodesk\Maya2018\presets\Assets\Textures\male_hair_v2.png"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>TextCursor.png</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)\Textures</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerCommand>$(ProjectDir)$(TargetFileName)</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>"C:\Program Files\Autodesk\Maya2018\presets\Assets\Textures\male_hair_v2.png"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>TextCursor.png</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)\Textures</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
 </Project>

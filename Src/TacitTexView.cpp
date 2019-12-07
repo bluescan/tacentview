@@ -16,7 +16,7 @@
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL definitions.
 #include <Foundation/tVersion.h>
 #include <System/tCommand.h>
-#include <Image/tTexture.h>
+#include <Image/tPicture.h>
 #include <System/tFile.h>
 #include "TacitImage.h"
 #include "imgui.h"
@@ -212,6 +212,90 @@ void FindTextureFiles()
 }
 
 
+// Helper to display a little (?) mark which shows a tooltip when hovered.
+static void ShowHelpMark(const char* desc)
+{
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted(desc);
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+}
+
+
+void ShowContactSheetDialog(bool* popen)
+{
+	ImGuiWindowFlags windowFlags = 0;
+
+	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only do it to make the Demo applications a little more welcoming.
+	ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(550, 400), ImGuiCond_FirstUseEver);
+
+	// Main body of the Demo window starts here.
+	if (!ImGui::Begin("Contact Sheet Generator", popen, windowFlags))
+	{
+		ImGui::End();
+		return;
+	}
+
+	static int contactWidth = 1024;
+	static int contactHeight = 1024;
+	static int numRows = 4;
+	static int numColumns = 4;
+
+	ImGui::InputInt("Width", &contactWidth);
+	ImGui::SameLine(); ShowHelpMark("Contact sheet width in pixels.");
+
+	ImGui::InputInt("Height", &contactHeight);
+	ImGui::SameLine(); ShowHelpMark("Contact sheet height in pixels.");
+
+	ImGui::InputInt("Columns", &numColumns);
+	ImGui::SameLine(); ShowHelpMark("Number of columns. The width must be divisible by this number.");
+ 
+	ImGui::InputInt("Rows", &numRows);
+	ImGui::SameLine(); ShowHelpMark("Number of rows. The height must be divisible by this number.");
+
+    static char filename[128] = "ContactSheet";
+    ImGui::InputText("Filename", filename, IM_ARRAYSIZE(filename));
+    ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
+
+	bool canGenerate = true;
+	if (contactWidth % numColumns)
+	{
+	    ImGui::Text("Error: Width must be a multiple of Columns.");
+		canGenerate = false;
+	}
+	else
+	{
+	    ImGui::Text("Each frame will have width %d.", contactWidth / numColumns);
+	}
+	if (contactHeight % numRows)
+	{
+	    ImGui::Text("Error: Height must be a multiple of Rows.");
+		canGenerate = false;
+	}
+	else
+	{
+	    ImGui::Text("Each frame will have height %d.", contactHeight / numRows);
+	}
+
+	if (canGenerate)
+	{
+		if (ImGui::Button("Generate"))
+		{
+			tImage::tPicture outPic(contactWidth, contactHeight);
+			// Do the work.
+		}
+	}
+
+    ImGui::End();
+}
+
+
 void DoFrame(GLFWwindow* window, bool dopoll = true)
 {
 	// Poll and handle events (inputs, window resize, etc.)
@@ -333,7 +417,7 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
     ImGui::NewFrame();
 
 	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-	bool show_demo_window = false;
+	static bool show_demo_window = true;
 	if (show_demo_window)
 		ImGui::ShowDemoWindow(&show_demo_window);
 
@@ -347,6 +431,7 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 				gCurrImage->Load(); gCurrImage->PrintInfo();
 			}
 		}
+
 		if (ImGui::Button("Next"))
 		{
 			if (gCurrImage && gCurrImage->Next())
@@ -354,6 +439,15 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 				gCurrImage = gCurrImage->Next();
 				gCurrImage->Load(); gCurrImage->PrintInfo();
 			}
+		}
+
+		static bool contactDialog = false;
+		if (ImGui::Button("Contact Sheet"))
+			contactDialog = !contactDialog;
+
+		if (contactDialog)
+		{
+			ShowContactSheetDialog(&contactDialog);
 		}
 
 		tFileType fileType = tFileType::Unknown;
