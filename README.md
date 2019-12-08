@@ -5,6 +5,6 @@ Left/right direction keys load previous and next images, semitransparent images 
 
 ![Tacent Texture Viewer](https://raw.githubusercontent.com/bluescan/tacit-texview/master/Screenshots/TextureViewerScreenshot.png)
 
-Tacit-texview may also be used to generate contact sheets for flip-book animation. If any of the source images have non-unity alpha (are not fully opaque), the generated tga contact sheet will have an alpha channel (32bit instead of a 24bit tga). Empty frames are filled with black for non-alpha-channel sheets, and black with an alpha/opacity of 0 for contact sheets that have a transparency/alpha channel.
+Tacit-texview can be used to generate contact sheets for flip-book animation. If any of the source images have non-unity alpha (are not fully opaque), the generated tga contact sheet will have an alpha channel (32-bit instead of a 24-bit tga). Empty frames are filled with black (with an opacity/alpha of 0 for 32-bit sheets).
 
 ![Tacent Texture Viewer](https://raw.githubusercontent.com/bluescan/tacit-texview/master/Screenshots/TextureViewerScreenshot_ContactSheetGen.png)
