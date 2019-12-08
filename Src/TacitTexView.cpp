@@ -265,25 +265,31 @@ void ShowContactSheetDialog(bool* popen)
 
 	bool canGenerate = true;
 	if ((contactWidth <= 0) || (contactHeight <= 0) || (numRows <= 0) || (numColumns <= 0))
+	{
+		ImGui::Text("Error: Width, Height, Rows, and Columns must all be bigger than 0.");
 		canGenerate = false;
+	}
 
-	if ((contactWidth % numColumns) && canGenerate)
+	if (canGenerate)
 	{
-		ImGui::Text("Error: Width must be a multiple of Columns.");
-		canGenerate = false;
-	}
-	else
-	{
-		ImGui::Text("Each frame will have width %d.", contactWidth / numColumns);
-	}
-	if ((contactHeight % numRows) && canGenerate)
-	{
-		ImGui::Text("Error: Height must be a multiple of Rows.");
-		canGenerate = false;
-	}
-	else
-	{
-		ImGui::Text("Each frame will have height %d.", contactHeight / numRows);
+		if (contactWidth % numColumns)
+		{
+			ImGui::Text("Error: Width must be a multiple of Columns.");
+			canGenerate = false;
+		}
+		else
+		{
+			ImGui::Text("Each frame will have width %d.", contactWidth / numColumns);
+		}
+		if (contactHeight % numRows)
+		{
+			ImGui::Text("Error: Height must be a multiple of Rows.");
+			canGenerate = false;
+		}
+		else
+		{
+			ImGui::Text("Each frame will have height %d.", contactHeight / numRows);
+		}
 	}
 
 	if (canGenerate)
