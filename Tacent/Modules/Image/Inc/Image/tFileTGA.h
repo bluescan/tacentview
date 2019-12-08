@@ -6,7 +6,7 @@
 // After the array is stolen the tFileTGA is invalid. This is purely for performance. The tPicture class uses the
 // CxImage library for image files that are not targas.
 //
-// Copyright (c) 2006, 2017 Tristan Grimmer.
+// Copyright (c) 2006, 2017, 2019 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -54,7 +54,7 @@ public:
 		Invalid,	// Invalid must be 0.
 		Auto,		// Save function will decide format. Bit24 if all image pixels are opaque and Bit32 otherwise.
 		Bit24,		// 24 bit colour.
-		Bit32		// 24 bit colour with 8 bits transparency.
+		Bit32		// 24 bit colour with 8 bits opacity in the alpha channel.
 	};
 	enum class tCompression
 	{

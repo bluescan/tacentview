@@ -184,30 +184,33 @@ void FindTextureFiles()
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.dds");
 	foundFiles.Sort(CompareFunc, tListSortAlgorithm::Merge);
 	for (tStringItem* filename = foundFiles.First(); filename; filename = filename->Next())
-	{
 		gImages.Append(new TacitImage(*filename));
-	}
 
-	gCurrImage = gImages.First();
+	gCurrImage = nullptr;
+}
 
-	if (ImageFileParam.IsPresent())
+
+void SetCurrentImage(const tString& currFilename = tString())
+{
+	for (TacitImage* si = gImages.First(); si; si = si->Next())
 	{
-		for (TacitImage* si = gImages.First(); si; si = si->Next())
-		{
-			tString siName = tSystem::tGetFileName(si->Filename);
-			tString imgName = tSystem::tGetFileName(ImageFileParam.Get());
+		tString siName = tSystem::tGetFileName(si->Filename);
+		tString imgName = tSystem::tGetFileName(currFilename);
 
-			if (tStricmp(siName.ConstText(), imgName.ConstText()) == 0)
-			{
-				gCurrImage = si;
-				break;
-			}
+		if (tStricmp(siName.ConstText(), imgName.ConstText()) == 0)
+		{
+			gCurrImage = si;
+			break;
 		}
 	}
 
+	if (!gCurrImage)
+		gCurrImage = gImages.First();
+
 	if (gCurrImage)
 	{
-		gCurrImage->Load(); gCurrImage->PrintInfo();
+		gCurrImage->Load();
+		gCurrImage->PrintInfo();
 	}
 }
 
@@ -259,6 +262,21 @@ void ShowContactSheetDialog(bool* popen)
 	ImGui::InputInt("Rows", &numRows);
 	ImGui::SameLine(); ShowHelpMark("Number of rows. The height must be divisible by this number.");
 
+    const char* fileTypeItems[] = { "TGA", "PNG", "BMP", "JPG", "GIF" };
+    static int itemCurrent = 0;
+    ImGui::Combo("File Type", &itemCurrent, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
+    ImGui::SameLine(); ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
+
+	tString extension = ".tga";
+	switch (itemCurrent)
+	{
+		case 0: extension = ".tga"; break;
+		case 1: extension = ".png"; break;
+		case 2: extension = ".bmp"; break;
+		case 3: extension = ".jpg"; break;
+		case 4: extension = ".gif"; break;
+	}
+
 	static char filename[128] = "ContactSheet";
 	ImGui::InputText("Filename", filename, IM_ARRAYSIZE(filename));
 	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
@@ -299,7 +317,7 @@ void ShowContactSheetDialog(bool* popen)
 			tString imagesDir = tSystem::tGetCurrentDir();
 			if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
 				imagesDir = tSystem::tGetDir(ImageFileParam.Get());
-			tString outFile = imagesDir + tString(filename) + tString(".tga");
+			tString outFile = imagesDir + tString(filename) + extension;
 			tImage::tPicture outPic(contactWidth, contactHeight);
 			outPic.SetAll(tColouri(0, 0, 0, 0));
 
@@ -329,7 +347,8 @@ void ShowContactSheetDialog(bool* popen)
 					currImg = currImg->Next();
 					continue;
 				}
-				if (tSystem::tGetFileName(currImg->Filename) == tSystem::tGetFileName(outFile))
+
+				if (tSystem::tGetFileBaseName(currImg->Filename) == tSystem::tGetFileBaseName(outFile))
 				{
 					currImg = currImg->Next();
 					continue;
@@ -358,22 +377,11 @@ void ShowContactSheetDialog(bool* popen)
 				}
 			}
 
-			tImage::tFileTGA::tCompression comp = tImage::tFileTGA::tCompression::None;
-			tImage::tFileTGA::tFormat format = allOpaque ? tImage::tFileTGA::tFormat::Bit24 : tImage::tFileTGA::tFormat::Bit32;
-			outPic.SaveTGA(outFile, format, comp);
+			tImage::tPicture::tColourFormat colourFmt = allOpaque ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
+			outPic.Save(outFile, colourFmt);
 			gImages.Clear();
 			FindTextureFiles();
-			for (TacitImage* img = gImages.First(); img; img = img->Next())
-			{
-				if (tSystem::tGetFileName(img->Filename) == tSystem::tGetFileName(outFile))
-				{
-					gCurrImage = img;
-					gCurrImage->Load();
-					gCurrImage->PrintInfo();
-					break;
-				}
-			}
-
+			SetCurrentImage(outFile);
 		}
 	}
 
@@ -501,7 +509,7 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 
 	ImGui::NewFrame();
 
-	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
+	// Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
 	static bool show_demo_window = false;
 	if (show_demo_window)
 		ImGui::ShowDemoWindow(&show_demo_window);
@@ -663,10 +671,11 @@ int main(int argc, char** argv)
 	if (tFileExists(fontFile))
 		io.Fonts->AddFontFromFileTTF(fontFile.ConstText(), 14.0f);
 
-	bool show_demo_window = true;
-	bool show_another_window = false;
-
 	FindTextureFiles();
+	if (ImageFileParam.IsPresent())
+		SetCurrentImage(ImageFileParam.Get());
+	else
+		SetCurrentImage();
 
 	// Main loop
 	while (!glfwWindowShouldClose(window))

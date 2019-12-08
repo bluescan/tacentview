@@ -6,7 +6,7 @@
 // functionality is restricted to saving tga files only (targa files are not lossless when RLE compressed). Image
 // manipulation (excluding compression) happens in a tPicture, so there are crop, scale, etc functions in this class.
 //
-// Copyright (c) 2006, 2016, 2017 Tristan Grimmer.
+// Copyright (c) 2006, 2016, 2017, 2019 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -16,6 +16,7 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+#include "Foundation/tStandard.h"
 #include "Image/tPicture.h"
 #include "Image/tFileTGA.h"
 #include <CxImage/ximage.h>
@@ -70,9 +71,15 @@ void tPicture::Set(int width, int height, tPixel* pixelBuffer, bool copyPixels)
 
 bool tPicture::CanSave(tFileType fileType)
 {
-	// Targas handled natively.
-	if (fileType == tFileType::TGA)
-		return true;
+	switch (fileType)
+	{
+		case tFileType::TGA:				// Targas handled natively.
+		case tFileType::BMP:
+		case tFileType::GIF:
+		case tFileType::JPG:
+		case tFileType::PNG:
+			return true;
+	}
 
 	return false;
 }
@@ -92,7 +99,7 @@ bool tPicture::CanLoad(tFileType fileType)
 }
 
 
-bool tPicture::Save(const tString& imageFile)
+bool tPicture::Save(const tString& imageFile, tPicture::tColourFormat colourFmt)
 {
 	if (!IsValid())
 		return false;
@@ -101,13 +108,36 @@ bool tPicture::Save(const tString& imageFile)
 	if (!CanSave(fileType))
 		return false;
 
-	switch (fileType)
+	if (fileType == tFileType::TGA)
+		return SaveTGA(imageFile, tImage::tFileTGA::tFormat(colourFmt), tImage::tFileTGA::tCompression::None);
+
+	tPixel* reorderedPixelArray = new tPixel[Width*Height];
+	for (int p = 0; p < Width*Height; p++)
 	{
-		case tFileType::TGA:
-			return SaveTGA(imageFile);
+		tPixel pixel = Pixels[p];
+		tStd::tSwap(pixel.R, pixel.B);
+		reorderedPixelArray[p] = pixel;
 	}
 
-	return false;
+	CxImage image;
+	image.CreateFromArray((uint8*)reorderedPixelArray, Width, Height, 32, Width*4, false);
+	delete[] reorderedPixelArray;
+
+	uint32 cxImgFormat = CXIMAGE_FORMAT_PNG;
+	switch (fileType)
+	{
+		case tFileType::BMP: cxImgFormat = CXIMAGE_FORMAT_BMP; break;
+		case tFileType::GIF: cxImgFormat = CXIMAGE_FORMAT_GIF; break;
+		case tFileType::JPG: cxImgFormat = CXIMAGE_FORMAT_JPG; break;
+		case tFileType::PNG: cxImgFormat = CXIMAGE_FORMAT_PNG; break;
+	}
+
+	if (colourFmt == tPicture::tColourFormat::Colour)
+		image.AlphaDelete();
+	else if ((colourFmt == tPicture::tColourFormat::Auto) && IsOpaque())
+		image.AlphaDelete();
+
+	return image.Save(imageFile.ConstText(), cxImgFormat);
 }
 
 
@@ -156,7 +186,6 @@ bool tPicture::Load(const tString& imageFile)
 
 	CxImage image;
 	image.Load(imageFile.ConstText(), cxFormat);
-
 	int width = image.GetWidth();
 	int height = image.GetHeight();
 	if (!image.IsValid() || (width <= 0) || (height <= 0))

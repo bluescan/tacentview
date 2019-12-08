@@ -78,11 +78,18 @@ public:
 	static bool CanLoad(const tString& imageFile);
 	static bool CanLoad(tSystem::tFileType);
 
-	// Saves to the image file you specify and examines the extension to determine filetype. Currently only saving to a
-	// tga is supported, but more may be in the future. When using this function default parameters are used for format-
-	// specific parameters. For example if you save to "image.tga" the tga format is set to 'auto' and the compression
-	// is set to on (RLE).
-	bool Save(const tString& imageFile);
+	enum class tColourFormat
+	{
+		Invalid,	// Invalid must be 0.
+		Auto,		// Save function will decide format. Colour if all image pixels are opaque and ColourAndAlpha otherwise.
+		Colour,
+		ColourAndAlpha
+	};
+
+	// Saves to the image file you specify and examines the extension to determine filetype. Supports tga, png, bmp, jpg,
+	// and gif. If tColourFormat is set to auto, the opacity/alpha channel will be excluded if all pixels are opaque.
+	// Alpha channels are not supported for gif and jpg files.
+	bool Save(const tString& imageFile, tColourFormat = tColourFormat::Auto);
 
 	bool SaveTGA
 	(
