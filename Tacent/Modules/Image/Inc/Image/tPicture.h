@@ -50,6 +50,9 @@ public:
 	// and png are handled by CxImage.
 	tPicture(const tString& imageFile)																					{ Load(imageFile); }
 
+	// Copy constructor.
+	tPicture(const tPicture& src)																						: tPicture() { if (src.Pixels) { Set(src.Width, src.Height, src.Pixels); Filename = src.Filename; } }
+
 	virtual ~tPicture()																									{ Clear(); }
 	bool IsValid() const																								{ return Pixels ? true : false; }
 

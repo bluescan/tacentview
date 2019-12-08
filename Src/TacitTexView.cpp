@@ -40,7 +40,7 @@ struct TextureViewerLog
 {
 	ImGuiTextBuffer Buf;
 	ImGuiTextFilter Filter;
-	ImVector<int> LineOffsets;        // Index to lines offset. We maintain this with AddLog() calls, allowing us to have a random access on lines
+	ImVector<int> LineOffsets;			// Index to lines offset. We maintain this with AddLog() calls, allowing us to have a random access on lines
 	bool ScrollToBottom;
 	TextureViewerLog() : ScrollToBottom(true)
 	{
@@ -215,15 +215,15 @@ void FindTextureFiles()
 // Helper to display a little (?) mark which shows a tooltip when hovered.
 static void ShowHelpMark(const char* desc)
 {
-    ImGui::TextDisabled("(?)");
-    if (ImGui::IsItemHovered())
-    {
-        ImGui::BeginTooltip();
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        ImGui::TextUnformatted(desc);
-        ImGui::PopTextWrapPos();
-        ImGui::EndTooltip();
-    }
+	ImGui::TextDisabled("(?)");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::BeginTooltip();
+		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+		ImGui::TextUnformatted(desc);
+		ImGui::PopTextWrapPos();
+		ImGui::EndTooltip();
+	}
 }
 
 
@@ -232,8 +232,8 @@ void ShowContactSheetDialog(bool* popen)
 	ImGuiWindowFlags windowFlags = 0;
 
 	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only do it to make the Demo applications a little more welcoming.
-	ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(550, 400), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos(ImVec2(200, 150), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(380, 220), ImGuiCond_FirstUseEver);
 
 	// Main body of the Demo window starts here.
 	if (!ImGui::Begin("Contact Sheet Generator", popen, windowFlags))
@@ -259,40 +259,119 @@ void ShowContactSheetDialog(bool* popen)
 	ImGui::InputInt("Rows", &numRows);
 	ImGui::SameLine(); ShowHelpMark("Number of rows. The height must be divisible by this number.");
 
-    static char filename[128] = "ContactSheet";
-    ImGui::InputText("Filename", filename, IM_ARRAYSIZE(filename));
-    ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
+	static char filename[128] = "ContactSheet";
+	ImGui::InputText("Filename", filename, IM_ARRAYSIZE(filename));
+	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
 
 	bool canGenerate = true;
-	if (contactWidth % numColumns)
+	if ((contactWidth <= 0) || (contactHeight <= 0) || (numRows <= 0) || (numColumns <= 0))
+		canGenerate = false;
+
+	if ((contactWidth % numColumns) && canGenerate)
 	{
-	    ImGui::Text("Error: Width must be a multiple of Columns.");
+		ImGui::Text("Error: Width must be a multiple of Columns.");
 		canGenerate = false;
 	}
 	else
 	{
-	    ImGui::Text("Each frame will have width %d.", contactWidth / numColumns);
+		ImGui::Text("Each frame will have width %d.", contactWidth / numColumns);
 	}
-	if (contactHeight % numRows)
+	if ((contactHeight % numRows) && canGenerate)
 	{
-	    ImGui::Text("Error: Height must be a multiple of Rows.");
+		ImGui::Text("Error: Height must be a multiple of Rows.");
 		canGenerate = false;
 	}
 	else
 	{
-	    ImGui::Text("Each frame will have height %d.", contactHeight / numRows);
+		ImGui::Text("Each frame will have height %d.", contactHeight / numRows);
 	}
 
 	if (canGenerate)
 	{
 		if (ImGui::Button("Generate"))
 		{
+			tString imagesDir = tSystem::tGetCurrentDir();
+			if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
+				imagesDir = tSystem::tGetDir(ImageFileParam.Get());
+			tString outFile = imagesDir + tString(filename) + tString(".tga");
 			tImage::tPicture outPic(contactWidth, contactHeight);
+			outPic.SetAll(tColouri(0, 0, 0, 0));
+
 			// Do the work.
+			int frameWidth = contactWidth / numColumns;
+			int frameHeight = contactHeight / numRows;
+			int ix = 0;
+			int iy = 0;
+			int frame = 0;
+
+			tPrintf("Loading all frames...\n");
+			bool allOpaque = true;
+			for (TacitImage* img = gImages.First(); img; img = img->Next())
+			{
+				if (!img->IsLoaded())
+					img->Load();
+
+				if (img->IsLoaded() && img->PictureImage.IsValid() && !img->PictureImage.IsOpaque())
+					allOpaque = false;
+			}
+
+			TacitImage* currImg = gImages.First();
+			while (currImg)
+			{
+				if (!currImg->PictureImage.IsValid())
+				{
+					currImg = currImg->Next();
+					continue;
+				}
+				if (tSystem::tGetFileName(currImg->Filename) == tSystem::tGetFileName(outFile))
+				{
+					currImg = currImg->Next();
+					continue;
+				}
+
+				tPrintf("Processing frame %d : %s at (%d, %d).\n", frame, currImg->Filename.ConstText(), ix, iy);
+				frame++;
+
+				tImage::tPicture resampled(currImg->PictureImage);
+				resampled.Resample(frameWidth, frameHeight);
+
+				// Copy resampled frame into place.
+				for (int y = 0; y < frameHeight; y++)
+					for (int x = 0; x < frameWidth; x++)
+						outPic.SetPixel(x + (ix*frameWidth), y + ((numRows-1-iy)*frameHeight), resampled.GetPixel(x, y));						
+
+				currImg = currImg->Next();
+
+				ix++;
+				if (ix >= numColumns)
+				{
+					ix = 0;
+					iy++;
+					if (iy >= numRows)
+						break;
+				}
+			}
+
+			tImage::tFileTGA::tCompression comp = tImage::tFileTGA::tCompression::None;
+			tImage::tFileTGA::tFormat format = allOpaque ? tImage::tFileTGA::tFormat::Bit24 : tImage::tFileTGA::tFormat::Bit32;
+			outPic.SaveTGA(outFile, format, comp);
+			gImages.Clear();
+			FindTextureFiles();
+			for (TacitImage* img = gImages.First(); img; img = img->Next())
+			{
+				if (tSystem::tGetFileName(img->Filename) == tSystem::tGetFileName(outFile))
+				{
+					gCurrImage = img;
+					gCurrImage->Load();
+					gCurrImage->PrintInfo();
+					break;
+				}
+			}
+
 		}
 	}
 
-    ImGui::End();
+	ImGui::End();
 }
 
 
@@ -312,8 +391,8 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 	int bottomUIHeight = 150;
 	int topUIHeight = 20;
 
-    // Start the Dear ImGui frame
-    ImGui_ImplOpenGL2_NewFrame();		
+	// Start the Dear ImGui frame
+	ImGui_ImplOpenGL2_NewFrame();		
 	ImGui_ImplGlfw_NewFrame();
 
 	int dispw, disph;
@@ -414,10 +493,10 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 	glOrtho(0, dispw, 0, disph, -1, 1);
 	glMatrixMode(GL_MODELVIEW);
 
-    ImGui::NewFrame();
+	ImGui::NewFrame();
 
 	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-	static bool show_demo_window = true;
+	static bool show_demo_window = false;
 	if (show_demo_window)
 		ImGui::ShowDemoWindow(&show_demo_window);
 
@@ -481,13 +560,13 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 
 	ShowTextureViewerLog(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
 
-    // Rendering
-    ImGui::Render();
-    glViewport(0, 0, dispw, disph);
-    ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
+	// Rendering
+	ImGui::Render();
+	glViewport(0, 0, dispw, disph);
+	ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 
-    glfwMakeContextCurrent(window);
-    glfwSwapBuffers(window);
+	glfwMakeContextCurrent(window);
+	glfwSwapBuffers(window);
 }
 
 
@@ -554,10 +633,10 @@ int main(int argc, char** argv)
 	if (err != GLEW_OK)
 		return err;
 
-    // Setup Dear ImGui context
+	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
+	ImGuiIO& io = ImGui::GetIO();
 	io.IniFilename = nullptr;
 	//io.NavActive = false;
 	io.ConfigFlags = 0;
@@ -569,7 +648,7 @@ int main(int argc, char** argv)
 
 	// Setup Platform/Renderer bindings
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL2_Init();
+	ImGui_ImplOpenGL2_Init();
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -589,13 +668,13 @@ int main(int argc, char** argv)
 		DoFrame(window);
 	}
 
-    // Cleanup
-    ImGui_ImplOpenGL2_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+	// Cleanup
+	ImGui_ImplOpenGL2_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 
-    glfwDestroyWindow(window);
-    glfwTerminate();
+	glfwDestroyWindow(window);
+	glfwTerminate();
 
-    return 0;
+	return 0;
 }
