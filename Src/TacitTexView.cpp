@@ -18,10 +18,11 @@
 #include <System/tCommand.h>
 #include <Image/tPicture.h>
 #include <System/tFile.h>
-#include "TacitImage.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl2.h"
+#include "TacitImage.h"
+#include "ImGuiLogWindow.h"
 using namespace tStd;
 using namespace tSystem;
 
@@ -29,156 +30,45 @@ using namespace tSystem;
 tCommand::tParam ImageFileParam(1, "ImageFile", "File to open.");
 
 
-namespace TacitTexView
+namespace TexView
 {
-	int MajorVersion	= 0;
-	int MinorVersion	= 8;
-	int Revision		= 0;
+	int MajorVersion			= 0;
+	int MinorVersion			= 9;
+	int Revision				= 0;
+	bool LogWindowOpen			= true;
+	TexView::ImGuiLog LogWindow;
+	tList<TacitImage> Images;
+	TacitImage* CurrImage		= nullptr;
 
-	// This class is a version of the one that ships with Dear ImGui.
-	struct ImGuiLog
-	{
-		ImGuiLog()																										: ScrollToBottom(true) { Clear(); }
+	void DrawTextureViewerLog(float x, float y, float w, float h);
+	void PrintRedirectCallback(const char* text, int numChars)															{ LogWindow.AddLog("%s", text); }
+	void GlfwErrorCallback(int error, const char* description)															{ tPrintf("Glfw Error %d: %s\n", error, description); }
+	bool CompareFunc(const tStringItem& a, const tStringItem& b)														{ return tStrcmp(a.ConstText(), b.ConstText()) < 0; }
+	void FindTextureFiles();
+	void SetCurrentImage(const tString& currFilename = tString());
 
-		void Clear();
-		void AddLog(const char* fmt, ...) IM_FMTARGS(2);
-		void Draw(const char* title, bool* popen = nullptr);
-
-		ImGuiTextBuffer Buf;
-		ImGuiTextFilter Filter;
-		ImVector<int> LineOffsets;			// Index to lines offset. We maintain this with AddLog() calls, allowing us to have a random access on lines
-		bool ScrollToBottom;
-	};
-
-};
-
-
-void TacitTexView::ImGuiLog::Clear()
-{
-	Buf.clear();
-	LineOffsets.clear();
-	LineOffsets.push_back(0);
+	// Helper to display a little (?) mark which shows a tooltip when hovered.
+	void ShowHelpMark(const char* desc);
+	void ShowContactSheetDialog(bool* popen);
+	void DoFrame(GLFWwindow* window, bool dopoll = true);
+	void WindowRefreshFun(GLFWwindow* window)																			{ DoFrame(window, false); }
+	void KeyCallback(GLFWwindow*, int key, int scancode, int action, int modifiers);
 }
 
 
-void TacitTexView::ImGuiLog::AddLog(const char* fmt, ...)
+void TexView::DrawTextureViewerLog(float x, float y, float w, float h)
 {
-	int oldSize = Buf.size();
-	va_list args;
-	va_start(args, fmt);
-	Buf.appendfv(fmt, args);
-	va_end(args);
-
-	for (int newSize = Buf.size(); oldSize < newSize; oldSize++)
-		if (Buf[oldSize] == '\n')
-			LineOffsets.push_back(oldSize + 1);
-
-	ScrollToBottom = true;
-}
-
-
-void TacitTexView::ImGuiLog::Draw(const char* title, bool* popen)
-{
-	if (ImGui::Button("Clear"))
-		Clear();
-
-	ImGui::SameLine();
-	bool copy = ImGui::Button("Copy");
-	ImGui::SameLine();
-	Filter.Draw("Filter", -100.0f);
-	ImGui::Separator();
-	ImGui::BeginChild("scrolling", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
-	if (copy)
-		ImGui::LogToClipboard();
-
-	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-	const char* buf = Buf.begin();
-	const char* bufEnd = Buf.end();
-	if (Filter.IsActive())
-	{
-		for (int lineNo = 0; lineNo < LineOffsets.Size; lineNo++)
-		{
-			const char* lineStart = buf + LineOffsets[lineNo];
-			const char* lineEnd = (lineNo + 1 < LineOffsets.Size) ? (buf + LineOffsets[lineNo + 1] - 1) : bufEnd;
-			if (Filter.PassFilter(lineStart, lineEnd))
-				ImGui::TextUnformatted(lineStart, lineEnd);
-		}
-	}
-	else
-	{
-		// The simplest way to display the entire buffer is with ImGui::TextUnformatted(buf, buf_end); TextUnformatted
-		// has specialization for large blobs of text and will fast-forward to skip non-visible lines. Here we instead
-		// demonstrate using the clipper to only process lines that are within the visible area. If you have tens of
-		// thousands of items and their processing cost is non-negligible, coarse clipping them on your side is
-		// recommended.
-		//
-		// ImGuiListClipper requires a) random access into your data, and b) items all being the same height, both of
-		// which we can handle since we an array pointing to the beginning of each line of text. When using the filter
-		// (in the block of code above) we don't have random access into the data to display anymore, which is why we
-		// don't use the clipper. Storing or skimming through the search result would make it possible and would be
-		// recommended if you want to search through tens of thousands of entries.
-		ImGuiListClipper clipper;
-		clipper.Begin(LineOffsets.Size);
-		while (clipper.Step())
-		{
-			for (int lineNo = clipper.DisplayStart; lineNo < clipper.DisplayEnd; lineNo++)
-			{
-				const char* lineStart = buf + LineOffsets[lineNo];
-				const char* lineEnd = (lineNo + 1 < LineOffsets.Size) ? (buf + LineOffsets[lineNo + 1] - 1) : bufEnd;
-				ImGui::TextUnformatted(lineStart, lineEnd);
-			}
-		}
-		clipper.End();
-	}
-	ImGui::PopStyleVar();
-
-	if (ScrollToBottom)
-		ImGui::SetScrollHereY(1.0f);
-	ScrollToBottom = false;
-	ImGui::EndChild();
-}
-
-
-static bool gLogOpen = true;
-static TacitTexView::ImGuiLog gLog;
-
-
-void ShowTextureViewerLog(float x, float y, float w, float h)
-{
-	// For the demo: add a debug button before the normal log window contents
 	// We take advantage of the fact that multiple calls to Begin()/End() are appending to the same window.
 	ImGui::SetNextWindowSize(ImVec2(w, h), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(ImVec2(x, y), ImGuiCond_Always);
 
 	ImGui::Begin("Info", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-	gLog.Draw("Log", &gLogOpen);
+	LogWindow.Draw("Log", &LogWindowOpen);
 	ImGui::End();
 }
 
 
-static void glfw_error_callback(int error, const char* description)
-{
-	tPrintf("Glfw Error %d: %s\n", error, description);
-}
-
-
-void PrintRedirectCallback(const char* text, int numChars)
-{
-	gLog.AddLog("%s", text);
-}
-
-
-tList<TacitImage> gImages;
-TacitImage* gCurrImage = nullptr;
-
-
-bool CompareFunc(const tStringItem& a, const tStringItem& b)
-{
-	return tStrcmp(a.ConstText(), b.ConstText()) < 0;
-}
-
-
-void FindTextureFiles()
+void TexView::FindTextureFiles()
 {
 	tString imagesDir = tSystem::tGetCurrentDir();
 	if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
@@ -197,57 +87,57 @@ void FindTextureFiles()
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.dds");
 	foundFiles.Sort(CompareFunc, tListSortAlgorithm::Merge);
 	for (tStringItem* filename = foundFiles.First(); filename; filename = filename->Next())
-		gImages.Append(new TacitImage(*filename));
+		Images.Append(new TacitImage(*filename));
 
-	gCurrImage = nullptr;
+	CurrImage = nullptr;
 }
 
 
-void SetCurrentImage(const tString& currFilename = tString())
+void TexView::SetCurrentImage(const tString& currFilename)
 {
-	for (TacitImage* si = gImages.First(); si; si = si->Next())
+	for (TacitImage* si = Images.First(); si; si = si->Next())
 	{
 		tString siName = tSystem::tGetFileName(si->Filename);
 		tString imgName = tSystem::tGetFileName(currFilename);
 
 		if (tStricmp(siName.ConstText(), imgName.ConstText()) == 0)
 		{
-			gCurrImage = si;
+			CurrImage = si;
 			break;
 		}
 	}
 
-	if (!gCurrImage)
-		gCurrImage = gImages.First();
+	if (!CurrImage)
+		CurrImage = Images.First();
 
-	if (gCurrImage)
+	if (CurrImage)
 	{
-		gCurrImage->Load();
-		gCurrImage->PrintInfo();
+		CurrImage->Load();
+		CurrImage->PrintInfo();
 	}
 }
 
 
-// Helper to display a little (?) mark which shows a tooltip when hovered.
-static void ShowHelpMark(const char* desc)
+void TexView::ShowHelpMark(const char* desc)
 {
-	ImGui::TextDisabled("(?)");
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::BeginTooltip();
-		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-		ImGui::TextUnformatted(desc);
-		ImGui::PopTextWrapPos();
-		ImGui::EndTooltip();
-	}
+	ImGui::TextDisabled("[?]");
+	if (!ImGui::IsItemHovered())
+		return;
+
+	ImGui::BeginTooltip();
+	ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+	ImGui::TextUnformatted(desc);
+	ImGui::PopTextWrapPos();
+	ImGui::EndTooltip();
 }
 
 
-void ShowContactSheetDialog(bool* popen)
+void TexView::ShowContactSheetDialog(bool* popen)
 {
 	ImGuiWindowFlags windowFlags = 0;
 
-	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only do it to make the Demo applications a little more welcoming.
+	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
+	// do it to make the Demo applications a little more welcoming.
 	ImGui::SetNextWindowPos(ImVec2(200, 150), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(ImVec2(380, 220), ImGuiCond_FirstUseEver);
 
@@ -264,21 +154,26 @@ void ShowContactSheetDialog(bool* popen)
 	static int numColumns = 4;
 
 	ImGui::InputInt("Width", &contactWidth);
-	ImGui::SameLine(); ShowHelpMark("Contact sheet width in pixels.");
+	ImGui::SameLine();
+	ShowHelpMark("Contact sheet width in pixels.");
 
 	ImGui::InputInt("Height", &contactHeight);
-	ImGui::SameLine(); ShowHelpMark("Contact sheet height in pixels.");
+	ImGui::SameLine();
+	ShowHelpMark("Contact sheet height in pixels.");
 
 	ImGui::InputInt("Columns", &numColumns);
-	ImGui::SameLine(); ShowHelpMark("Number of columns. The width must be divisible by this number.");
+	ImGui::SameLine();
+	ShowHelpMark("Number of columns. The width must be divisible by this number.");
  
 	ImGui::InputInt("Rows", &numRows);
-	ImGui::SameLine(); ShowHelpMark("Number of rows. The height must be divisible by this number.");
+	ImGui::SameLine();
+	ShowHelpMark("Number of rows. The height must be divisible by this number.");
 
     const char* fileTypeItems[] = { "TGA", "PNG", "BMP", "JPG", "GIF" };
     static int itemCurrent = 0;
     ImGui::Combo("File Type", &itemCurrent, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
-    ImGui::SameLine(); ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
+    ImGui::SameLine();
+	ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
 
 	tString extension = ".tga";
 	switch (itemCurrent)
@@ -343,7 +238,7 @@ void ShowContactSheetDialog(bool* popen)
 
 			tPrintf("Loading all frames...\n");
 			bool allOpaque = true;
-			for (TacitImage* img = gImages.First(); img; img = img->Next())
+			for (TacitImage* img = Images.First(); img; img = img->Next())
 			{
 				if (!img->IsLoaded())
 					img->Load();
@@ -352,7 +247,7 @@ void ShowContactSheetDialog(bool* popen)
 					allOpaque = false;
 			}
 
-			TacitImage* currImg = gImages.First();
+			TacitImage* currImg = Images.First();
 			while (currImg)
 			{
 				if (!currImg->PictureImage.IsValid())
@@ -392,7 +287,7 @@ void ShowContactSheetDialog(bool* popen)
 
 			tImage::tPicture::tColourFormat colourFmt = allOpaque ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
 			outPic.Save(outFile, colourFmt);
-			gImages.Clear();
+			Images.Clear();
 			FindTextureFiles();
 			SetCurrentImage(outFile);
 		}
@@ -402,18 +297,21 @@ void ShowContactSheetDialog(bool* popen)
 }
 
 
-void DoFrame(GLFWwindow* window, bool dopoll = true)
+void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 {
-	// Poll and handle events (inputs, window resize, etc.)
-	// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-	// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
-	// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
-	// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
+	// Poll and handle events like inputs, window resize, etc. You can read the io.WantCaptureMouse,
+	// io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
+	//
+	// When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
+	// When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
+	//
+	// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those
+	// two flags.
 	if (dopoll)
 		glfwPollEvents();
 
-	ImVec4 clear_color = ImVec4(0.10f, 0.10f, 0.12f, 1.00f);
-	glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+	ImVec4 clearColour = ImVec4(0.10f, 0.10f, 0.12f, 1.00f);
+	glClearColor(clearColour.x, clearColour.y, clearColour.z, clearColour.w);
 	glClear(GL_COLOR_BUFFER_BIT);
 	int bottomUIHeight = 150;
 	int topUIHeight = 20;
@@ -435,27 +333,27 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 	glOrtho(0, workAreaW, 0, workAreaH, -1, 1);
 	glMatrixMode(GL_MODELVIEW);
 
-	if (gCurrImage)
+	if (CurrImage)
 	{
-		int w = gCurrImage->GetWidth();
-		int h = gCurrImage->GetHeight();
-		float picaspect = float(w)/float(h);
+		int w = CurrImage->GetWidth();
+		int h = CurrImage->GetHeight();
+		float picAspect = float(w)/float(h);
 
 		float drawh = 0.0f;
 		float draww = 0.0f;
 		float hmargin = 0.0f;
 		float vmargin = 0.0f;
-		if (workAreaAspect > picaspect)
+		if (workAreaAspect > picAspect)
 		{
 			drawh = float(workAreaH);
-			draww = picaspect * drawh;
+			draww = picAspect * drawh;
 			hmargin = (workAreaW - draww) * 0.5f;
 			vmargin = 0.0f;;
 		}
 		else
 		{
 			draww = float(workAreaW);
-			drawh = draww / picaspect;
+			drawh = draww / picAspect;
 			vmargin = (workAreaH - drawh) * 0.5f;
 			hmargin = 0.0f;
 		}
@@ -501,7 +399,7 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 
 		glColor4f(1.0f,1.0f,1.0f,1.0f);
 
-		gCurrImage->Bind();
+		CurrImage->Bind();
 		glEnable(GL_TEXTURE_2D);
 		glBegin(GL_QUADS);
 
@@ -522,28 +420,30 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 
 	ImGui::NewFrame();
 
-	// Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-	static bool show_demo_window = false;
-	if (show_demo_window)
-		ImGui::ShowDemoWindow(&show_demo_window);
+	// Show the big demo window. You can browse its code to learn more about Dear ImGui.
+	static bool showDemoWindow = false;
+	if (showDemoWindow)
+		ImGui::ShowDemoWindow(&showDemoWindow);
 
 	ImGui::BeginMainMenuBar();
 	{
 		if (ImGui::Button("Prev"))
 		{
-			if (gCurrImage && gCurrImage->Prev())
+			if (CurrImage && CurrImage->Prev())
 			{
-				gCurrImage = gCurrImage->Prev();
-				gCurrImage->Load(); gCurrImage->PrintInfo();
+				CurrImage = CurrImage->Prev();
+				CurrImage->Load();
+				CurrImage->PrintInfo();
 			}
 		}
 
 		if (ImGui::Button("Next"))
 		{
-			if (gCurrImage && gCurrImage->Next())
+			if (CurrImage && CurrImage->Next())
 			{
-				gCurrImage = gCurrImage->Next();
-				gCurrImage->Load(); gCurrImage->PrintInfo();
+				CurrImage = CurrImage->Next();
+				CurrImage->Load();
+				CurrImage->PrintInfo();
 			}
 		}
 
@@ -557,12 +457,12 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 		}
 
 		tFileType fileType = tFileType::Unknown;
-		if (gCurrImage && gCurrImage->IsLoaded())
-			fileType = gCurrImage->Filetype;
+		if (CurrImage && CurrImage->IsLoaded())
+			fileType = CurrImage->Filetype;
 
 		if ((fileType != tFileType::Unknown) && (fileType != tFileType::Targa) && (fileType != tFileType::DDS))
 		{
-			tString tgaFile = gCurrImage->Filename;
+			tString tgaFile = CurrImage->Filename;
 			tgaFile.ExtractLastWord('.');
 			tgaFile += ".tga";
 			if (ImGui::Button("Save As Targa"))
@@ -573,7 +473,7 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 				}
 				else
 				{
-					bool success = gCurrImage->PictureImage.SaveTGA(tgaFile, tImage::tFileTGA::tFormat::Auto, tImage::tFileTGA::tCompression::None);
+					bool success = CurrImage->PictureImage.SaveTGA(tgaFile, tImage::tFileTGA::tFormat::Auto, tImage::tFileTGA::tCompression::None);
 					if (success)
 						tPrintf("Saved targa as : %s\n", tgaFile.ConstText());
 					else
@@ -584,10 +484,8 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 	}
 
 	ImGui::EndMainMenuBar();
+	TexView::DrawTextureViewerLog(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
 
-	ShowTextureViewerLog(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
-
-	// Rendering
 	ImGui::Render();
 	glViewport(0, 0, dispw, disph);
 	ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
@@ -597,13 +495,7 @@ void DoFrame(GLFWwindow* window, bool dopoll = true)
 }
 
 
-void Windowrefreshfun(GLFWwindow* window)
-{
-	DoFrame(window, false);
-}
-
-
-void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int modifiers)
+void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int modifiers)
 {
 	if (action != GLFW_PRESS)
 		return;
@@ -615,18 +507,20 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int modi
 	switch (key)
 	{
 		case GLFW_KEY_LEFT:
-			if (gCurrImage && gCurrImage->Prev())
+			if (CurrImage && CurrImage->Prev())
 			{
-				gCurrImage = gCurrImage->Prev();
-				gCurrImage->Load(); gCurrImage->PrintInfo();
+				CurrImage = CurrImage->Prev();
+				CurrImage->Load();
+				CurrImage->PrintInfo();
 			}
 			break;
 
 		case GLFW_KEY_RIGHT:
-			if (gCurrImage && gCurrImage->Next())
+			if (CurrImage && CurrImage->Next())
 			{
-				gCurrImage = gCurrImage->Next();
-				gCurrImage->Load(); gCurrImage->PrintInfo();
+				CurrImage = CurrImage->Next();
+				CurrImage->Load();
+				CurrImage->PrintInfo();
 			}
 			break;
 	}
@@ -635,45 +529,47 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int modi
 
 int main(int argc, char** argv)
 {
-	tSystem::tSetStdoutRedirectCallback(PrintRedirectCallback);	
+	tSystem::tSetStdoutRedirectCallback(TexView::PrintRedirectCallback);	
 
-	tPrintf("Tacit Texture Viewer Version %d.%d.%d\n", TacitTexView::MajorVersion, TacitTexView::MinorVersion, TacitTexView::Revision);
+	tPrintf("Tacit Texture Viewer Version %d.%d.%d\n", TexView::MajorVersion, TexView::MinorVersion, TexView::Revision);
 	tPrintf("Tacent Version %d.%d.%d\n", tVersion::Major, tVersion::Minor, tVersion::Revision);
 	tPrintf("Dear IMGUI Version %s (%d)\n", IMGUI_VERSION, IMGUI_VERSION_NUM);
 	tPrintf("GLEW Version %s\n", glewGetString(GLEW_VERSION));
 	tCommand::tParse(argc, argv);
 
 	// Setup window
-	glfwSetErrorCallback(glfw_error_callback);
+	glfwSetErrorCallback(TexView::GlfwErrorCallback);
 	if (!glfwInit())
 		return 1;
 
 	GLFWwindow* window = glfwCreateWindow(1280, 720, "Tacent Texture Viewer", NULL, NULL);
 	if (!window)
 		return 1;
+
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1); // Enable vsync
-	glfwSetWindowRefreshCallback(window, Windowrefreshfun);
-	glfwSetKeyCallback(window, KeyCallback);
+	glfwSetWindowRefreshCallback(window, TexView::WindowRefreshFun);
+	glfwSetKeyCallback(window, TexView::KeyCallback);
 
 	GLenum err = glewInit();
 	if (err != GLEW_OK)
 		return err;
 
-	// Setup Dear ImGui context
+	// Setup Dear ImGui context.
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
+
 	io.IniFilename = nullptr;
-	//io.NavActive = false;
 	io.ConfigFlags = 0;
+	// io.NavActive = false;
 	// io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	// io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
-	// Setup Dear ImGui style
+	// Setup Dear ImGui style.
 	ImGui::StyleColorsDark();
 
-	// Setup Platform/Renderer bindings
+	// Setup platform/renderer bindings.
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL2_Init();
 
@@ -684,25 +580,24 @@ int main(int argc, char** argv)
 	if (tFileExists(fontFile))
 		io.Fonts->AddFontFromFileTTF(fontFile.ConstText(), 14.0f);
 
-	FindTextureFiles();
+	TexView::FindTextureFiles();
 	if (ImageFileParam.IsPresent())
-		SetCurrentImage(ImageFileParam.Get());
+		TexView::SetCurrentImage(ImageFileParam.Get());
 	else
-		SetCurrentImage();
+		TexView::SetCurrentImage();
 
-	// Main loop
+	// Main loop.
 	while (!glfwWindowShouldClose(window))
 	{
-		DoFrame(window);
+		TexView::DoFrame(window);
 	}
 
-	// Cleanup
+	// Cleanup.
 	ImGui_ImplOpenGL2_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
-
 	return 0;
 }
