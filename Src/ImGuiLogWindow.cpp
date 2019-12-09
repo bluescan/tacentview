@@ -28,14 +28,12 @@
 
 #include "ImGuiLogWindow.h"
 
-
 void TexView::ImGuiLog::Clear()
 {
 	Buf.clear();
 	LineOffsets.clear();
 	LineOffsets.push_back(0);
 }
-
 
 void TexView::ImGuiLog::AddLog(const char* fmt, ...)
 {
@@ -51,7 +49,6 @@ void TexView::ImGuiLog::AddLog(const char* fmt, ...)
 
 	ScrollToBottom = true;
 }
-
 
 void TexView::ImGuiLog::Draw(const char* title, bool* popen)
 {

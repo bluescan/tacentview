@@ -30,7 +30,6 @@
 #include "imgui.h"
 namespace TexView
 {
-
 	
 // This class is a version of the one that ships with Dear ImGui.
 struct ImGuiLog
@@ -48,6 +47,5 @@ struct ImGuiLog
 	ImVector<int> LineOffsets;
 	bool ScrollToBottom;
 };
-
 
 }
