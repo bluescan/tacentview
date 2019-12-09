@@ -27,13 +27,7 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #pragma once
-//#include <Foundation/tList.h>
-//#include <Foundation/tString.h>
-//#include <System/tFile.h>
-//#include <Image/tPicture.h>
-//#include <Image/tTexture.h>
 #include "imgui.h"
-
 namespace TexView
 {
 
@@ -41,7 +35,7 @@ namespace TexView
 // This class is a version of the one that ships with Dear ImGui.
 struct ImGuiLog
 {
-	ImGuiLog()																										: ScrollToBottom(true) { Clear(); }
+	ImGuiLog()																											: ScrollToBottom(true) { Clear(); }
 
 	void Clear();
 	void AddLog(const char* fmt, ...) IM_FMTARGS(2);

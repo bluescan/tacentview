@@ -110,6 +110,7 @@ void TexView::ImGuiLog::Draw(const char* title, bool* popen)
 
 	if (ScrollToBottom)
 		ImGui::SetScrollHereY(1.0f);
+
 	ScrollToBottom = false;
 	ImGui::EndChild();
 }
