@@ -12,8 +12,11 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+#include <dwmapi.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL definitions.
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
 #include <Foundation/tVersion.h>
 #include <System/tCommand.h>
 #include <Image/tPicture.h>
@@ -39,6 +42,7 @@ namespace TexView
 	TexView::ImGuiLog LogWindow;
 	tList<TacitImage> Images;
 	TacitImage* CurrImage		= nullptr;
+	GLFWwindow* Window			= nullptr;
 
 	void DrawTextureViewerLog(float x, float y, float w, float h);
 	void PrintRedirectCallback(const char* text, int numChars)															{ LogWindow.AddLog("%s", text); }
@@ -50,6 +54,7 @@ namespace TexView
 	// Helper to display a little (?) mark which shows a tooltip when hovered.
 	void ShowHelpMark(const char* desc);
 	void ShowContactSheetDialog(bool* popen);
+	void SetWindowTitle();
 	void DoFrame(GLFWwindow* window, bool dopoll = true);
 	void WindowRefreshFun(GLFWwindow* window)																			{ DoFrame(window, false); }
 	void KeyCallback(GLFWwindow*, int key, int scancode, int action, int modifiers);
@@ -114,6 +119,7 @@ void TexView::SetCurrentImage(const tString& currFilename)
 	{
 		CurrImage->Load();
 		CurrImage->PrintInfo();
+		SetWindowTitle();
 	}
 }
 
@@ -297,6 +303,19 @@ void TexView::ShowContactSheetDialog(bool* popen)
 }
 
 
+void TexView::SetWindowTitle()
+{
+	if (!Window)
+		return;
+
+	tString title = "Tacit Viewer";
+	if (CurrImage && !CurrImage->Filename.IsEmpty())
+		title = title + " - " + tGetFileName(CurrImage->Filename);
+
+	glfwSetWindowTitle(Window, title.ConstText());
+}
+
+
 void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 {
 	// Poll and handle events like inputs, window resize, etc. You can read the io.WantCaptureMouse,
@@ -316,7 +335,7 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 	int bottomUIHeight = 150;
 	int topUIHeight = 20;
 
-	// Start the Dear ImGui frame
+	// Start the Dear ImGui frame.
 	ImGui_ImplOpenGL2_NewFrame();		
 	ImGui_ImplGlfw_NewFrame();
 
@@ -434,6 +453,7 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 				CurrImage = CurrImage->Prev();
 				CurrImage->Load();
 				CurrImage->PrintInfo();
+				SetWindowTitle();
 			}
 		}
 
@@ -444,6 +464,7 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 				CurrImage = CurrImage->Next();
 				CurrImage->Load();
 				CurrImage->PrintInfo();
+				SetWindowTitle();
 			}
 		}
 
@@ -512,6 +533,7 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 				CurrImage = CurrImage->Prev();
 				CurrImage->Load();
 				CurrImage->PrintInfo();
+				SetWindowTitle();
 			}
 			break;
 
@@ -521,6 +543,7 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 				CurrImage = CurrImage->Next();
 				CurrImage->Load();
 				CurrImage->PrintInfo();
+				SetWindowTitle();
 			}
 			break;
 	}
@@ -542,14 +565,22 @@ int main(int argc, char** argv)
 	if (!glfwInit())
 		return 1;
 
-	GLFWwindow* window = glfwCreateWindow(1280, 720, "Tacent Texture Viewer", NULL, NULL);
-	if (!window)
+	TexView::Window = glfwCreateWindow(1280, 720, "Tacit Viewer", NULL, NULL);
+	if (!TexView::Window)
 		return 1;
 
-	glfwMakeContextCurrent(window);
+	// Make the window title bar show up in black.
+	HWND hwnd = glfwGetWin32Window(TexView::Window);
+	const int DWMWA_USE_IMMERSIVE_DARK_MODE = 19;
+	BOOL isDarkMode = 1;
+	DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &isDarkMode, sizeof(isDarkMode));
+	ShowWindow(hwnd, SW_HIDE);
+	ShowWindow(hwnd, SW_SHOW);
+
+	glfwMakeContextCurrent(TexView::Window);
 	glfwSwapInterval(1); // Enable vsync
-	glfwSetWindowRefreshCallback(window, TexView::WindowRefreshFun);
-	glfwSetKeyCallback(window, TexView::KeyCallback);
+	glfwSetWindowRefreshCallback(TexView::Window, TexView::WindowRefreshFun);
+	glfwSetKeyCallback(TexView::Window, TexView::KeyCallback);
 
 	GLenum err = glewInit();
 	if (err != GLEW_OK)
@@ -570,7 +601,7 @@ int main(int argc, char** argv)
 	ImGui::StyleColorsDark();
 
 	// Setup platform/renderer bindings.
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplGlfw_InitForOpenGL(TexView::Window, true);
 	ImGui_ImplOpenGL2_Init();
 
 	glEnable(GL_BLEND);
@@ -587,9 +618,9 @@ int main(int argc, char** argv)
 		TexView::SetCurrentImage();
 
 	// Main loop.
-	while (!glfwWindowShouldClose(window))
+	while (!glfwWindowShouldClose(TexView::Window))
 	{
-		TexView::DoFrame(window);
+		TexView::DoFrame(TexView::Window);
 	}
 
 	// Cleanup.
@@ -597,7 +628,7 @@ int main(int argc, char** argv)
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
-	glfwDestroyWindow(window);
+	glfwDestroyWindow(TexView::Window);
 	glfwTerminate();
 	return 0;
 }
