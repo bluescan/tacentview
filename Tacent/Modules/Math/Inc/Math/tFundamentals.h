@@ -85,6 +85,7 @@ inline int tFloatToInt(float val)																						{ return int(val + 0.5f);
 // tCeiling and tFloor both need to change the FPU from round mode to truncate. Could have performance hit.
 inline float tCeiling(float v)																							{ return ceilf(v); }
 inline float tFloor(float v)																							{ return floorf(v); }
+inline float tRound(float v)																							{ return floorf(v + 0.5f); }
 inline float tMod(float n, float d)																						{ return fmodf(n,d); }
 inline int tAbs(int val)																								{ return (val < 0) ? -val : val; }
 inline float tAbs(float val)																							{ return (val < 0.0f) ? -val : val; }

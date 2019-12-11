@@ -192,12 +192,6 @@ void TacitImage::BindLayers(const tList<tLayer>& layers)
 }
 
 
-//bool TacitImage::IsBound() const
-//{
-//	return (GLTextureID != 0);
-//}
-
-
 void TacitImage::GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFormat, bool& compressed, tPixelFormat pixelFormat)
 {
 	srcFormat = GL_RGBA;

@@ -377,11 +377,11 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 			hmargin = 0.0f;
 		}
 
-		// Semitransparent checker BG.
+		// Semitransparent checker background.
 		int x = 0;
 		int y = 0;
 		bool lineStartToggle = false;
-		float checkSize = 25.0f;
+		float checkSize = 16.0f;
 		while (y*checkSize < drawh)
 		{
 			bool colourToggle = lineStartToggle;
@@ -402,11 +402,16 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 				if ((y+1)*checkSize > drawh)
 					h -= (y+1)*checkSize - drawh;
 
+				float l = tMath::tRound(hmargin+x*checkSize);
+				float r = tMath::tRound(hmargin+x*checkSize+w);
+				float b = tMath::tRound(vmargin+y*checkSize);
+				float t = tMath::tRound(vmargin+y*checkSize+h);
+
 				glBegin(GL_QUADS);
-				glVertex2f(hmargin+x*checkSize, vmargin+y*checkSize);
-				glVertex2f(hmargin+x*checkSize, vmargin+y*checkSize+h);
-				glVertex2f(hmargin+x*checkSize+w, vmargin+y*checkSize+h);
-				glVertex2f(hmargin+x*checkSize+w, vmargin+y*checkSize);
+				glVertex2f(l, b);
+				glVertex2f(l, t);
+				glVertex2f(r, t);
+				glVertex2f(r, b);
 				glEnd();
 
 				x++;
@@ -420,12 +425,17 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 
 		CurrImage->Bind();
 		glEnable(GL_TEXTURE_2D);
-		glBegin(GL_QUADS);
 
-		glTexCoord2i(0, 0); glVertex2f(hmargin, vmargin);
-		glTexCoord2i(0, 1); glVertex2f(hmargin, vmargin+drawh);
-		glTexCoord2i(1, 1); glVertex2f(hmargin+draww, vmargin+drawh);
-		glTexCoord2i(1, 0); glVertex2f(hmargin+draww, vmargin);
+		float l = tMath::tRound(hmargin);
+		float r = tMath::tRound(hmargin+draww);
+		float b = tMath::tRound(vmargin);
+		float t = tMath::tRound(vmargin+drawh);
+
+		glBegin(GL_QUADS);
+		glTexCoord2i(0, 0); glVertex2f(l, b);
+		glTexCoord2i(0, 1); glVertex2f(l, t);
+		glTexCoord2i(1, 1); glVertex2f(r, t);
+		glTexCoord2i(1, 0); glVertex2f(r, b);
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
 
