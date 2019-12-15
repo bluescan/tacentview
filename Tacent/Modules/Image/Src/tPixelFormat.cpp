@@ -3,7 +3,7 @@
 // Pixel formats in Tacent. Not all formats are fully supported. Certainly BC 4, 5, and 7 may not have extensive HW
 // support at this time.
 //
-// Copyright (c) 2004-2006, 2017 Tristan Grimmer.
+// Copyright (c) 2004-2006, 2017, 2019 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -98,7 +98,9 @@ const char* tGetPixelFormatName(tPixelFormat pixelFormat)
 		"G4B4A4R4",
 		"G3B5R5G3",
 		"L8A8",
-
+		"R32F",
+		"G32R32F",
+		"A32B32G32R32F",
 		"BC1_DXT1",
 		"BC1_DXT1BA",
 		"BC2_DXT3",

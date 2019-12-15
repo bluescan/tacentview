@@ -9,7 +9,7 @@
 // A good viewer for dds files (and targas) is called ddsview. It is one of the few viewers that displays alphas
 // correctly for both file formats.  It can be used to display all faces of dds cubemaps as well.
 //
-// Copyright (c) 2006, 2017 Tristan Grimmer.
+// Copyright (c) 2006, 2017, 2019 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -22,6 +22,7 @@
 #include <Foundation/tString.h>
 #include "Image/tFileDDS.h"
 #define STRICT_DDS_HEADER_CHECKING
+#define FourCC(ch0, ch1, ch2, ch3) (uint(uint8(ch0)) | (uint(uint8(ch1)) << 8) | (uint(uint8(ch2)) << 16) | (uint(uint8(ch3)) << 24))
 namespace tImage
 {
 
@@ -234,6 +235,90 @@ enum tDDSFlag
 	tDDSFlag_MipmapCount		= 0x00020000,
 	tDDSFlag_LinearSize			= 0x00080000,
 	tDDSFlag_Depth				= 0x00800000
+};
+
+
+enum tD3DFORMAT
+{
+	tD3DFMT_UNKNOWN				=  0,
+
+	tD3DFMT_R8G8B8				= 20,
+	tD3DFMT_A8R8G8B8			= 21,
+	tD3DFMT_X8R8G8B8			= 22,
+	tD3DFMT_R5G6B5				= 23,
+	tD3DFMT_X1R5G5B5			= 24,
+	tD3DFMT_A1R5G5B5			= 25,
+	tD3DFMT_A4R4G4B4			= 26,
+	tD3DFMT_R3G3B2				= 27,
+	tD3DFMT_A8					= 28,
+	tD3DFMT_A8R3G3B2			= 29,
+	tD3DFMT_X4R4G4B4			= 30,
+	tD3DFMT_A2B10G10R10			= 31,
+	tD3DFMT_A8B8G8R8			= 32,
+	tD3DFMT_X8B8G8R8			= 33,
+	tD3DFMT_G16R16				= 34,
+	tD3DFMT_A2R10G10B10			= 35,
+	tD3DFMT_A16B16G16R16		= 36,
+
+	tD3DFMT_A8P8				= 40,
+	tD3DFMT_P8					= 41,
+
+	tD3DFMT_L8					= 50,
+	tD3DFMT_A8L8				= 51,
+	tD3DFMT_A4L4				= 52,
+
+	tD3DFMT_V8U8				= 60,
+	tD3DFMT_L6V5U5				= 61,
+	tD3DFMT_X8L8V8U8			= 62,
+	tD3DFMT_Q8W8V8U8			= 63,
+	tD3DFMT_V16U16				= 64,
+	tD3DFMT_A2W10V10U10			= 67,
+
+	tD3DFMT_UYVY				= FourCC('U', 'Y', 'V', 'Y'),
+	tD3DFMT_R8G8_B8G8			= FourCC('R', 'G', 'B', 'G'),
+	tD3DFMT_YUY2				= FourCC('Y', 'U', 'Y', '2'),
+	tD3DFMT_G8R8_G8B8			= FourCC('G', 'R', 'G', 'B'),
+	tD3DFMT_DXT1				= FourCC('D', 'X', 'T', '1'),
+	tD3DFMT_DXT2				= FourCC('D', 'X', 'T', '2'),
+	tD3DFMT_DXT3				= FourCC('D', 'X', 'T', '3'),
+	tD3DFMT_DXT4				= FourCC('D', 'X', 'T', '4'),
+	tD3DFMT_DXT5				= FourCC('D', 'X', 'T', '5'),
+
+	tD3DFMT_D16_LOCKABLE		= 70,
+	tD3DFMT_D32					= 71,
+	tD3DFMT_D15S1				= 73,
+	tD3DFMT_D24S8				= 75,
+	tD3DFMT_D24X8				= 77,
+	tD3DFMT_D24X4S4				= 79,
+	tD3DFMT_D16					= 80,
+
+	tD3DFMT_D32F_LOCKABLE		= 82,
+	tD3DFMT_D24FS8				= 83,
+
+	tD3DFMT_D32_LOCKABLE		= 84,
+	tD3DFMT_S8_LOCKABLE			= 85,
+
+	tD3DFMT_L16					= 81,
+
+	tD3DFMT_VERTEXDATA			= 100,
+	tD3DFMT_INDEX16				= 101,
+	tD3DFMT_INDEX32				= 102,
+
+	tD3DFMT_Q16W16V16U16		= 110,
+
+	tD3DFMT_MULTI2_ARGB8		= FourCC('M','E','T','1'),
+
+	tD3DFMT_R16F				= 111,
+	tD3DFMT_G16R16F				= 112,
+	tD3DFMT_A16B16G16R16F		= 113,
+
+	tD3DFMT_R32F				= 114,
+	tD3DFMT_G32R32F				= 115,
+	tD3DFMT_A32B32G32R32F		= 116,
+
+	tD3DFMT_CxV8U8				= 117,
+
+	tD3DFMT_FORCE_DWORD			= 0x7fffffff
 };
 
 
@@ -487,20 +572,33 @@ void tFileDDS::LoadFromMemory(const uint8* ddsData, int ddsSizeBytes, bool rever
 	{
 		switch (format.FourCC)
 		{
-			case '1TXD':
+			case FourCC('D','X','T','1'):
 				// Note that during inspecition of the individual layer data, the DXT1 pixel format might be modified
 				// to DXT1BA (binary alpha).
 				PixelFormat = tPixelFormat::BC1_DXT1;
 				break;
 
-			case '3TXD':
+			case FourCC('D','X','T','3'):
 				PixelFormat = tPixelFormat::BC2_DXT3;
 				break;
 
-			case '5TXD':
+			case FourCC('D','X','T','5'):
 				PixelFormat = tPixelFormat::BC3_DXT5;
 				break;
 
+			case tD3DFMT_R32F:
+				PixelFormat = tPixelFormat::R32F;
+				break;
+
+			case tD3DFMT_G32R32F:
+				PixelFormat = tPixelFormat::G32R32F;
+				break;
+
+			case tD3DFMT_A32B32G32R32F:
+				PixelFormat = tPixelFormat::A32B32G32R32F;
+				break;
+
+			case FourCC('D','X','1','0'):
 			default:
 				delete[] ddsData;
 				throw tDDSError(tDDSError::tCode::UnsupportedFourCCPixelFormat, baseName);
@@ -752,6 +850,14 @@ void tFileDDS::LoadFromMemory(const uint8* ddsData, int ddsSizeBytes, bool rever
 							break;
 						}
 
+						case tPixelFormat::R32F:
+						case tPixelFormat::G32R32F:
+						case tPixelFormat::A32B32G32R32F:
+						{
+							delete[] ddsData;
+							throw tDDSError(tDDSError::tCode::UnsuportedFloatingPointPixelFormat, baseName);
+						}
+
 						default:
 						{
 							delete[] ddsData;
@@ -824,7 +930,8 @@ bool tFileDDS::DoDXT1BlocksHaveBinaryAlpha(tDXT1Block* block, int numBlocks)
 const char* tDDSError::CodeStrings[tCode::NumCodes] =
 {
 	"Unknown.",
-	"Incorrect DDS extension",
+	"File doesn't exist.",
+	"Incorrect DDS extension.",
 	"Filesize incorrect.",
 	"Magic FourCC Incorrect.",
 	"Incorrect DDS header size.",
@@ -832,10 +939,11 @@ const char* tDDSError::CodeStrings[tCode::NumCodes] =
 	"Volume textures unsupported.",
 	"Pixel format size incorrect.",
 	"Pixel format must be either an RGB format or a FourCC format.",
-	"Unsupported FourCC pixel format.  Supported FourCC formats include DXT1, DXT3, DXT5.",
-	"Unsupported RGB pixel format.  Supported formats include A1R5G5B5, A4R4G4B4, R5G6B5, R8G8B8, and A8R8G8B8.",
+	"Unsupported FourCC pixel format. Supported FourCC formats include DXT1, DXT3, DXT5.",
+	"Unsupported RGB pixel format. Supported formats include A1R5G5B5, A4R4G4B4, R5G6B5, R8G8B8, and A8R8G8B8.",
 	"Incorrect DXT pixel data size.",
 	"DXT Texture dimensions must be divisible by 4.",
 	"Current DDS loader only supports power-of-2 dimensions.",
-	"Maximum number of mipmap levels exceeded."
+	"Maximum number of mipmap levels exceeded.",
+	"Floating point pixel formats not supported yet."
 };

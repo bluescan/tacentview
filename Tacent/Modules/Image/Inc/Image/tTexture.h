@@ -12,7 +12,7 @@
 // useful at both pipeline and for runtime loading. To save to a tChunk file format a tTexture will call the Save
 // method of all the tLayers.
 //
-// Copyright (c) 2006, 2016, 2017 Tristan Grimmer.
+// Copyright (c) 2006, 2016, 2017, 2019 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -125,7 +125,7 @@ public:
 	int GetNumMipmaps() const																							{ return Layers.GetNumItems(); }
 	tLayer* GetFirstLayer() const																						{ return Layers.First(); }
 	tLayer* GetMainLayer() const																						{ return Layers.First(); }
-	void StealLayers(tList<tLayer>&);						// Leaves the object invalid.
+	void StealLayers(tList<tLayer>&);																					// Leaves the object invalid.
 	const tList<tLayer>& GetLayers()																					{ return Layers; }
 	int GetTotalPixelDataSize() const;
 

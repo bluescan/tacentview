@@ -3,7 +3,7 @@
 // Pixel formats in Tacent. Not all formats are fully supported. Certainly BC 4, 5, and 7 may not have extensive HW
 // support at this time.
 //
-// Copyright (c) 2004-2006, 2017 Tristan Grimmer.
+// Copyright (c) 2004-2006, 2017, 2019 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -35,7 +35,10 @@ enum class tPixelFormat
 	G4B4A4R4,							// 16 bit. 12 colour. 4 bit alpha.
 	G3B5R5G3,							// 16 bit. No alpha. The first 3 green bits are the low order ones.
 	L8A8,								// 16 bit. Luminance and alpha.
-	LastNormal			= L8A8,
+	R32F,
+	G32R32F,
+	A32B32G32R32F,
+	LastNormal			= A32B32G32R32F,
 
 	FirstBlock,
 	BC1_DXT1			= FirstBlock,	// BC 1, DXT1. No alpha.

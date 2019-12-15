@@ -58,6 +58,8 @@ namespace TexView
 	void DoFrame(GLFWwindow* window, bool dopoll = true);
 	void WindowRefreshFun(GLFWwindow* window)																			{ DoFrame(window, false); }
 	void KeyCallback(GLFWwindow*, int key, int scancode, int action, int modifiers);
+	void MouseButtonCallback(GLFWwindow*, int mouseButton, int x, int y);
+	void CursorPosCallback(GLFWwindow*, double x, double y);
 }
 
 
@@ -389,9 +391,9 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 			while (x*checkSize < draww)
 			{
 				if (colourToggle)
-					glColor4f(1.0f,1.0f,1.0f,1.0f);
+					glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 				else
-					glColor4f(0.8f,0.7f,0.6f,1.0f);
+					glColor4f(0.8f, 0.7f, 0.6f, 1.0f);
 				colourToggle = !colourToggle;
 
 				float w = checkSize;
@@ -431,11 +433,12 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 		float b = tMath::tRound(vmargin);
 		float t = tMath::tRound(vmargin+drawh);
 
+		// WIP. Modify the UVs here to magnify.
 		glBegin(GL_QUADS);
-		glTexCoord2i(0, 0); glVertex2f(l, b);
-		glTexCoord2i(0, 1); glVertex2f(l, t);
-		glTexCoord2i(1, 1); glVertex2f(r, t);
-		glTexCoord2i(1, 0); glVertex2f(r, b);
+		glTexCoord2f(0.0f, 0.0f); glVertex2f(l, b);
+		glTexCoord2f(0.0f, 1.0f); glVertex2f(l, t);
+		glTexCoord2f(1.0f, 1.0f); glVertex2f(r, t);
+		glTexCoord2f(1.0f, 0.0f); glVertex2f(r, b);
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
 
@@ -483,9 +486,7 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 			contactDialog = !contactDialog;
 
 		if (contactDialog)
-		{
 			ShowContactSheetDialog(&contactDialog);
-		}
 
 		tFileType fileType = tFileType::Unknown;
 		if (CurrImage && CurrImage->IsLoaded())
@@ -560,6 +561,18 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 }
 
 
+void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press, int mods)
+{
+	// tPrintf("MB: %d  XY: %d %d\n", mouseButton, press, mods);
+}
+
+
+void TexView::CursorPosCallback(GLFWwindow* window, double x, double y)
+{
+	// tPrintf("Cursor: %f %f\n", x, y);
+}
+
+
 int main(int argc, char** argv)
 {
 	tSystem::tSetStdoutRedirectCallback(TexView::PrintRedirectCallback);	
@@ -591,6 +604,8 @@ int main(int argc, char** argv)
 	glfwSwapInterval(1); // Enable vsync
 	glfwSetWindowRefreshCallback(TexView::Window, TexView::WindowRefreshFun);
 	glfwSetKeyCallback(TexView::Window, TexView::KeyCallback);
+	glfwSetMouseButtonCallback(TexView::Window, TexView::MouseButtonCallback);
+	glfwSetCursorPosCallback(TexView::Window, TexView::CursorPosCallback);
 
 	GLenum err = glewInit();
 	if (err != GLEW_OK)
@@ -629,9 +644,7 @@ int main(int argc, char** argv)
 
 	// Main loop.
 	while (!glfwWindowShouldClose(TexView::Window))
-	{
 		TexView::DoFrame(TexView::Window);
-	}
 
 	// Cleanup.
 	ImGui_ImplOpenGL2_Shutdown();
