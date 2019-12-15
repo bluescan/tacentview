@@ -43,6 +43,10 @@ namespace TexView
 	tList<TacitImage> Images;
 	TacitImage* CurrImage		= nullptr;
 	GLFWwindow* Window			= nullptr;
+	bool LMBDown				= false;
+	int DragAnchorX				= 0;
+	int DragAnchorY				= 0;
+	float ZoomPercent			= 100.0f;
 
 	void DrawTextureViewerLog(float x, float y, float w, float h);
 	void PrintRedirectCallback(const char* text, int numChars)															{ LogWindow.AddLog("%s", text); }
@@ -434,11 +438,24 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 		float t = tMath::tRound(vmargin+drawh);
 
 		// WIP. Modify the UVs here to magnify.
+		float uvOffsetX = 0.0f;
+		float uvOffsetY = 0.0f;
+		if (LMBDown)
+		{
+			int deltaX, deltaY;
+			double xpos, ypos;
+			glfwGetCursorPos(window, &xpos, &ypos);
+			deltaX = int(xpos) - DragAnchorX;
+			deltaY = int(ypos) - DragAnchorY;
+			uvOffsetX = -float(deltaX) / draww;
+			uvOffsetY = float(deltaY) / drawh;
+		}
+		float zoomOffset = (1.0f - (100.0f / ZoomPercent)) / 2.0f;
 		glBegin(GL_QUADS);
-		glTexCoord2f(0.0f, 0.0f); glVertex2f(l, b);
-		glTexCoord2f(0.0f, 1.0f); glVertex2f(l, t);
-		glTexCoord2f(1.0f, 1.0f); glVertex2f(r, t);
-		glTexCoord2f(1.0f, 0.0f); glVertex2f(r, b);
+		glTexCoord2f(0.0f + zoomOffset + uvOffsetX, 0.0f + zoomOffset + uvOffsetY); glVertex2f(l, b);
+		glTexCoord2f(0.0f + zoomOffset + uvOffsetX, 1.0f - zoomOffset + uvOffsetY); glVertex2f(l, t);
+		glTexCoord2f(1.0f - zoomOffset + uvOffsetX, 1.0f - zoomOffset + uvOffsetY); glVertex2f(r, t);
+		glTexCoord2f(1.0f - zoomOffset + uvOffsetX, 0.0f + zoomOffset + uvOffsetY); glVertex2f(r, b);
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
 
@@ -513,6 +530,15 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 				}
 			}
 		}
+		ImGui::PushItemWidth(200);
+		ImGui::SliderFloat("", &ZoomPercent, 50.0f, 2000.0f, " Zoom %.3f");
+		ImGui::PopItemWidth();
+
+		if (ZoomPercent != 100.0)
+		{
+			if (ImGui::Button("Reset"))
+				ZoomPercent = 100.0f;
+		}
 	}
 
 	ImGui::EndMainMenuBar();
@@ -563,7 +589,17 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 
 void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press, int mods)
 {
-	// tPrintf("MB: %d  XY: %d %d\n", mouseButton, press, mods);
+	if (mouseButton != 1)
+		return;
+
+	LMBDown = press ? true : false;
+	if (LMBDown)
+	{
+		double xpos, ypos;
+		glfwGetCursorPos(window, &xpos, &ypos);
+		DragAnchorX = int(xpos);
+		DragAnchorY = int(ypos);
+	}
 }
 
 
