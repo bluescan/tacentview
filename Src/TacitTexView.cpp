@@ -47,6 +47,9 @@ namespace TexView
 	int DragAnchorX				= 0;
 	int DragAnchorY				= 0;
 	float ZoomPercent			= 100.0f;
+	bool RecomputeZoom			= false;
+	int Dispw					= 1;
+	int Disph					= 1;
 
 	void DrawTextureViewerLog(float x, float y, float w, float h);
 	void PrintRedirectCallback(const char* text, int numChars)															{ LogWindow.AddLog("%s", text); }
@@ -59,6 +62,8 @@ namespace TexView
 	void ShowHelpMark(const char* desc);
 	void ShowContactSheetDialog(bool* popen);
 	void SetWindowTitle();
+	bool OnPrevious();
+	bool OnNext();
 	void DoFrame(GLFWwindow* window, bool dopoll = true);
 	void WindowRefreshFun(GLFWwindow* window)																			{ DoFrame(window, false); }
 	void KeyCallback(GLFWwindow*, int key, int scancode, int action, int modifiers);
@@ -126,7 +131,36 @@ void TexView::SetCurrentImage(const tString& currFilename)
 		CurrImage->Load();
 		CurrImage->PrintInfo();
 		SetWindowTitle();
+		RecomputeZoom = true;
 	}
+}
+
+
+bool TexView::OnPrevious()
+{
+	if (!CurrImage || !CurrImage->Prev())
+		return false;
+
+	CurrImage = CurrImage->Prev();
+	CurrImage->Load();
+	CurrImage->PrintInfo();
+	SetWindowTitle();
+	RecomputeZoom = true;
+	return true;
+}
+
+
+bool TexView::OnNext()
+{
+	if (!CurrImage || !CurrImage->Next())
+		return false;
+
+	CurrImage = CurrImage->Next();
+	CurrImage->Load();
+	CurrImage->PrintInfo();
+	SetWindowTitle();
+	RecomputeZoom = true;
+	return true;
 }
 
 
@@ -344,12 +378,17 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 	// Start the Dear ImGui frame.
 	ImGui_ImplOpenGL2_NewFrame();		
 	ImGui_ImplGlfw_NewFrame();
-
 	int dispw, disph;
 	glfwGetFramebufferSize(window, &dispw, &disph);
+	if ((dispw != Dispw) || (disph != Disph))
+	{
+		Dispw = dispw;
+		Disph = disph;
+		RecomputeZoom = true;
+	}
 
-	int workAreaW = dispw;
-	int workAreaH = disph - bottomUIHeight - topUIHeight;
+	int workAreaW = Dispw;
+	int workAreaH = Disph - bottomUIHeight - topUIHeight;
 	float workAreaAspect = float(workAreaW)/float(workAreaH);
 
 	glViewport(0, bottomUIHeight, workAreaW, workAreaH);
@@ -357,15 +396,17 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 	glLoadIdentity();
 	glOrtho(0, workAreaW, 0, workAreaH, -1, 1);
 	glMatrixMode(GL_MODELVIEW);
+	float draww = 1.0f;
+	float drawh = 1.0f;
+	float iw = 1.0f;
+	float ih = 1.0f;
 
 	if (CurrImage)
 	{
-		int w = CurrImage->GetWidth();
-		int h = CurrImage->GetHeight();
-		float picAspect = float(w)/float(h);
+		iw = float(CurrImage->GetWidth());
+		ih = float(CurrImage->GetHeight());
+		float picAspect = iw/ih;
 
-		float drawh = 0.0f;
-		float draww = 0.0f;
 		float hmargin = 0.0f;
 		float vmargin = 0.0f;
 		if (workAreaAspect > picAspect)
@@ -400,18 +441,18 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 					glColor4f(0.8f, 0.7f, 0.6f, 1.0f);
 				colourToggle = !colourToggle;
 
-				float w = checkSize;
+				float cw = checkSize;
 				if ((x+1)*checkSize > draww)
-					w -= (x+1)*checkSize - draww;
+					cw -= (x+1)*checkSize - draww;
 
-				float h = checkSize;
+				float ch = checkSize;
 				if ((y+1)*checkSize > drawh)
-					h -= (y+1)*checkSize - drawh;
+					ch -= (y+1)*checkSize - drawh;
 
 				float l = tMath::tRound(hmargin+x*checkSize);
-				float r = tMath::tRound(hmargin+x*checkSize+w);
+				float r = tMath::tRound(hmargin+x*checkSize+cw);
 				float b = tMath::tRound(vmargin+y*checkSize);
-				float t = tMath::tRound(vmargin+y*checkSize+h);
+				float t = tMath::tRound(vmargin+y*checkSize+ch);
 
 				glBegin(GL_QUADS);
 				glVertex2f(l, b);
@@ -432,30 +473,62 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 		CurrImage->Bind();
 		glEnable(GL_TEXTURE_2D);
 
+		// w and h are the image width and height. draww and drawh are the drawable area width and height.
 		float l = tMath::tRound(hmargin);
 		float r = tMath::tRound(hmargin+draww);
 		float b = tMath::tRound(vmargin);
 		float t = tMath::tRound(vmargin+drawh);
 
-		// WIP. Modify the UVs here to magnify.
 		float uvOffsetX = 0.0f;
 		float uvOffsetY = 0.0f;
-		if (LMBDown)
+		float uvHMargin = 0.0f;
+		float uvVMargin = 0.0f;
+
+		if (RecomputeZoom)
 		{
-			int deltaX, deltaY;
+			ZoomPercent = 100.0f;
+			if (draww < iw)
+				ZoomPercent = 100.0f * draww / iw;
+			RecomputeZoom = false;
+		}
+
+		float w = iw * ZoomPercent/100.0f;
+		float h = ih * ZoomPercent/100.0f;
+
+		// If the image is smaller than the drawable area we draw a quad of the correct size with full 0..1 range in the uvs.
+		if (w < draww)
+		{
+			float offsetW = (draww - w) / 2.0f;
+			l += offsetW;
+			r -= offsetW;
+			float offsetH = (drawh - h) / 2.0f;
+			b += offsetH;
+			t -= offsetH;
+		}
+		else
+		{
+			float propw = draww / w;
+			uvHMargin = (1.0f - propw)/2.0f;
+			float proph = drawh / h;
+			uvVMargin = (1.0f - proph)/2.0f;
+		}
+
+		// WIP. Modify the UVs here to magnify.
+		if (LMBDown && (draww < w))
+		{
 			double xpos, ypos;
 			glfwGetCursorPos(window, &xpos, &ypos);
-			deltaX = int(xpos) - DragAnchorX;
-			deltaY = int(ypos) - DragAnchorY;
-			uvOffsetX = -float(deltaX) / draww;
-			uvOffsetY = float(deltaY) / drawh;
+			int deltaX = int(xpos) - DragAnchorX;
+			int deltaY = int(ypos) - DragAnchorY;
+			uvOffsetX = -float(deltaX) / w;
+			uvOffsetY = float(deltaY) / h;
 		}
-		float zoomOffset = (1.0f - (100.0f / ZoomPercent)) / 2.0f;
+
 		glBegin(GL_QUADS);
-		glTexCoord2f(0.0f + zoomOffset + uvOffsetX, 0.0f + zoomOffset + uvOffsetY); glVertex2f(l, b);
-		glTexCoord2f(0.0f + zoomOffset + uvOffsetX, 1.0f - zoomOffset + uvOffsetY); glVertex2f(l, t);
-		glTexCoord2f(1.0f - zoomOffset + uvOffsetX, 1.0f - zoomOffset + uvOffsetY); glVertex2f(r, t);
-		glTexCoord2f(1.0f - zoomOffset + uvOffsetX, 0.0f + zoomOffset + uvOffsetY); glVertex2f(r, b);
+		glTexCoord2f(0.0f + uvHMargin + uvOffsetX, 0.0f + uvVMargin + uvOffsetY); glVertex2f(l, b);
+		glTexCoord2f(0.0f + uvHMargin + uvOffsetX, 1.0f - uvVMargin + uvOffsetY); glVertex2f(l, t);
+		glTexCoord2f(1.0f - uvHMargin + uvOffsetX, 1.0f - uvVMargin + uvOffsetY); glVertex2f(r, t);
+		glTexCoord2f(1.0f - uvHMargin + uvOffsetX, 0.0f + uvVMargin + uvOffsetY); glVertex2f(r, b);
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
 
@@ -477,26 +550,10 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 	ImGui::BeginMainMenuBar();
 	{
 		if (ImGui::Button("Prev"))
-		{
-			if (CurrImage && CurrImage->Prev())
-			{
-				CurrImage = CurrImage->Prev();
-				CurrImage->Load();
-				CurrImage->PrintInfo();
-				SetWindowTitle();
-			}
-		}
+			OnPrevious();
 
 		if (ImGui::Button("Next"))
-		{
-			if (CurrImage && CurrImage->Next())
-			{
-				CurrImage = CurrImage->Next();
-				CurrImage->Load();
-				CurrImage->PrintInfo();
-				SetWindowTitle();
-			}
-		}
+			OnNext();
 
 		static bool contactDialog = false;
 		if (ImGui::Button("Contact Sheet"))
@@ -531,13 +588,19 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 			}
 		}
 		ImGui::PushItemWidth(200);
-		ImGui::SliderFloat("", &ZoomPercent, 50.0f, 2000.0f, " Zoom %.3f");
+		ImGui::SliderFloat("", &ZoomPercent, 50.0f, 2000.0f, " Zoom %.2f");
 		ImGui::PopItemWidth();
 
-		if (ZoomPercent != 100.0)
+		float zp = 100.0f;
+		if (draww < iw)
+			zp = 100.0f * draww / iw;
+		if ((zp != ZoomPercent) && ImGui::Button("Reset"))
+			RecomputeZoom = true;
+
+		if ((ZoomPercent != 100.0f) && ImGui::Button("100%"))
 		{
-			if (ImGui::Button("Reset"))
-				ZoomPercent = 100.0f;
+			RecomputeZoom = false;
+			ZoomPercent = 100.0f;
 		}
 	}
 
@@ -565,23 +628,11 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 	switch (key)
 	{
 		case GLFW_KEY_LEFT:
-			if (CurrImage && CurrImage->Prev())
-			{
-				CurrImage = CurrImage->Prev();
-				CurrImage->Load();
-				CurrImage->PrintInfo();
-				SetWindowTitle();
-			}
+			OnPrevious();
 			break;
 
 		case GLFW_KEY_RIGHT:
-			if (CurrImage && CurrImage->Next())
-			{
-				CurrImage = CurrImage->Next();
-				CurrImage->Load();
-				CurrImage->PrintInfo();
-				SetWindowTitle();
-			}
+			OnNext();
 			break;
 	}
 }
