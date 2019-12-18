@@ -50,6 +50,10 @@ namespace TexView
 	bool RecomputeZoom			= false;
 	int Dispw					= 1;
 	int Disph					= 1;
+	int PanOffsetX				= 0;
+	int PanOffsetY				= 0;
+	int DragDownOffsetX			= 0;
+	int DragDownOffsetY			= 0;
 
 	void DrawTextureViewerLog(float x, float y, float w, float h);
 	void PrintRedirectCallback(const char* text, int numChars)															{ LogWindow.AddLog("%s", text); }
@@ -132,6 +136,10 @@ void TexView::SetCurrentImage(const tString& currFilename)
 		CurrImage->PrintInfo();
 		SetWindowTitle();
 		RecomputeZoom = true;
+		PanOffsetX = 0;
+		PanOffsetY = 0;
+		DragDownOffsetX = 0;
+		DragDownOffsetY = 0;
 	}
 }
 
@@ -146,6 +154,10 @@ bool TexView::OnPrevious()
 	CurrImage->PrintInfo();
 	SetWindowTitle();
 	RecomputeZoom = true;
+	PanOffsetX = 0;
+	PanOffsetY = 0;
+	DragDownOffsetX = 0;
+	DragDownOffsetY = 0;
 	return true;
 }
 
@@ -160,6 +172,10 @@ bool TexView::OnNext()
 	CurrImage->PrintInfo();
 	SetWindowTitle();
 	RecomputeZoom = true;
+	PanOffsetX = 0;
+	PanOffsetY = 0;
+	DragDownOffsetX = 0;
+	DragDownOffsetY = 0;
 	return true;
 }
 
@@ -373,7 +389,7 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 	glClearColor(clearColour.x, clearColour.y, clearColour.z, clearColour.w);
 	glClear(GL_COLOR_BUFFER_BIT);
 	int bottomUIHeight = 150;
-	int topUIHeight = 20;
+	int topUIHeight = 22;
 
 	// Start the Dear ImGui frame.
 	ImGui_ImplOpenGL2_NewFrame();		
@@ -384,7 +400,14 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 	{
 		Dispw = dispw;
 		Disph = disph;
-		RecomputeZoom = true;
+		if ((PanOffsetX+DragDownOffsetX == 0) && (PanOffsetY+DragDownOffsetY == 0))
+		{
+			RecomputeZoom = true;
+			PanOffsetX = 0;
+			PanOffsetY = 0;
+			DragDownOffsetX = 0;
+			DragDownOffsetY = 0;
+		}
 	}
 
 	int workAreaW = Dispw;
@@ -479,8 +502,6 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 		float b = tMath::tRound(vmargin);
 		float t = tMath::tRound(vmargin+drawh);
 
-		float uvOffsetX = 0.0f;
-		float uvOffsetY = 0.0f;
 		float uvHMargin = 0.0f;
 		float uvVMargin = 0.0f;
 
@@ -514,21 +535,34 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 		}
 
 		// WIP. Modify the UVs here to magnify.
-		if (LMBDown && (draww < w))
+		if (draww < w)
 		{
-			double xpos, ypos;
-			glfwGetCursorPos(window, &xpos, &ypos);
-			int deltaX = int(xpos) - DragAnchorX;
-			int deltaY = int(ypos) - DragAnchorY;
-			uvOffsetX = -float(deltaX) / w;
-			uvOffsetY = float(deltaY) / h;
+			if (LMBDown)
+			{
+				double xpos, ypos;
+				glfwGetCursorPos(window, &xpos, &ypos);
+				DragDownOffsetX = int(xpos) - DragAnchorX;
+				DragDownOffsetY = int(ypos) - DragAnchorY;
+			}
+
+			if (float(PanOffsetX+DragDownOffsetX) > (w-draww)/2.0f)
+				DragDownOffsetX = int((w-draww)/2.0f) - PanOffsetX;
+			if (float(PanOffsetX+DragDownOffsetX) < -(w-draww)/2.0f)
+				DragDownOffsetX = int(-(w-draww)/2.0f) - PanOffsetX;
+
+			if (float(PanOffsetY+DragDownOffsetY) > (h-drawh)/2.0f)
+				DragDownOffsetY = int((h-drawh)/2.0f) - PanOffsetY;
+			if (float(PanOffsetY+DragDownOffsetY) < -(h-drawh)/2.0f)
+				DragDownOffsetY = int(-(h-drawh)/2.0f) - PanOffsetY;
 		}
 
+		float uOffset = -float(PanOffsetX+DragDownOffsetX)/w;
+		float vOffset =  float(PanOffsetY+DragDownOffsetY)/h;
 		glBegin(GL_QUADS);
-		glTexCoord2f(0.0f + uvHMargin + uvOffsetX, 0.0f + uvVMargin + uvOffsetY); glVertex2f(l, b);
-		glTexCoord2f(0.0f + uvHMargin + uvOffsetX, 1.0f - uvVMargin + uvOffsetY); glVertex2f(l, t);
-		glTexCoord2f(1.0f - uvHMargin + uvOffsetX, 1.0f - uvVMargin + uvOffsetY); glVertex2f(r, t);
-		glTexCoord2f(1.0f - uvHMargin + uvOffsetX, 0.0f + uvVMargin + uvOffsetY); glVertex2f(r, b);
+		glTexCoord2f(0.0f + uvHMargin + uOffset, 0.0f + uvVMargin + vOffset); glVertex2f(l, b);
+		glTexCoord2f(0.0f + uvHMargin + uOffset, 1.0f - uvVMargin + vOffset); glVertex2f(l, t);
+		glTexCoord2f(1.0f - uvHMargin + uOffset, 1.0f - uvVMargin + vOffset); glVertex2f(r, t);
+		glTexCoord2f(1.0f - uvHMargin + uOffset, 0.0f + uvVMargin + vOffset); glVertex2f(r, b);
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
 
@@ -588,19 +622,29 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 			}
 		}
 		ImGui::PushItemWidth(200);
-		ImGui::SliderFloat("", &ZoomPercent, 50.0f, 2000.0f, " Zoom %.2f");
+		ImGui::SliderFloat("", &ZoomPercent, 20.0f, 2000.0f, " Zoom %.2f");
 		ImGui::PopItemWidth();
 
 		float zp = 100.0f;
 		if (draww < iw)
 			zp = 100.0f * draww / iw;
 		if ((zp != ZoomPercent) && ImGui::Button("Reset"))
+		{
 			RecomputeZoom = true;
+			PanOffsetX = 0;
+			PanOffsetY = 0;
+			DragDownOffsetX = 0;
+			DragDownOffsetY = 0;
+		}
 
 		if ((ZoomPercent != 100.0f) && ImGui::Button("100%"))
 		{
 			RecomputeZoom = false;
 			ZoomPercent = 100.0f;
+			PanOffsetX = 0;
+			PanOffsetY = 0;
+			DragDownOffsetX = 0;
+			DragDownOffsetY = 0;
 		}
 	}
 
@@ -618,7 +662,7 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 
 void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int modifiers)
 {
-	if (action != GLFW_PRESS)
+	if ((action != GLFW_PRESS) && (action != GLFW_REPEAT))
 		return;
 
 	ImGuiIO& io = ImGui::GetIO();
@@ -633,6 +677,22 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 
 		case GLFW_KEY_RIGHT:
 			OnNext();
+			break;
+
+		case GLFW_KEY_EQUAL:
+			if (modifiers == 2)
+			{
+				ZoomPercent = tMath::tFloor(ZoomPercent*0.1f + 1.0f) * 10.0f;
+				tMath::tClamp(ZoomPercent, 20.0f, 2000.0f);
+			}
+			break;
+
+		case GLFW_KEY_MINUS:
+			if (modifiers == 2)
+			{
+				ZoomPercent = tMath::tCeiling(ZoomPercent*0.1f - 1.0f) * 10.0f;
+				tMath::tClamp(ZoomPercent, 20.0f, 2000.0f);
+			}
 			break;
 	}
 }
@@ -650,6 +710,10 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 		glfwGetCursorPos(window, &xpos, &ypos);
 		DragAnchorX = int(xpos);
 		DragAnchorY = int(ypos);
+		PanOffsetX += DragDownOffsetX;
+		PanOffsetY += DragDownOffsetY;
+		DragDownOffsetX = 0;
+		DragDownOffsetY = 0;
 	}
 }
 
