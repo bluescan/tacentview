@@ -47,7 +47,7 @@ namespace TexView
 	int DragAnchorX				= 0;
 	int DragAnchorY				= 0;
 	float ZoomPercent			= 100.0f;
-	bool RecomputeZoom			= false;
+	bool AutoZoomMode			= true;
 	int Dispw					= 1;
 	int Disph					= 1;
 	int PanOffsetX				= 0;
@@ -73,6 +73,7 @@ namespace TexView
 	void KeyCallback(GLFWwindow*, int key, int scancode, int action, int modifiers);
 	void MouseButtonCallback(GLFWwindow*, int mouseButton, int x, int y);
 	void CursorPosCallback(GLFWwindow*, double x, double y);
+	void ScrollWheelCallback(GLFWwindow*, double x, double y);
 }
 
 
@@ -135,7 +136,7 @@ void TexView::SetCurrentImage(const tString& currFilename)
 		CurrImage->Load();
 		CurrImage->PrintInfo();
 		SetWindowTitle();
-		RecomputeZoom = true;
+		AutoZoomMode = true;
 		PanOffsetX = 0;
 		PanOffsetY = 0;
 		DragDownOffsetX = 0;
@@ -153,7 +154,7 @@ bool TexView::OnPrevious()
 	CurrImage->Load();
 	CurrImage->PrintInfo();
 	SetWindowTitle();
-	RecomputeZoom = true;
+	AutoZoomMode = true;
 	PanOffsetX = 0;
 	PanOffsetY = 0;
 	DragDownOffsetX = 0;
@@ -171,7 +172,7 @@ bool TexView::OnNext()
 	CurrImage->Load();
 	CurrImage->PrintInfo();
 	SetWindowTitle();
-	RecomputeZoom = true;
+	AutoZoomMode = true;
 	PanOffsetX = 0;
 	PanOffsetY = 0;
 	DragDownOffsetX = 0;
@@ -402,7 +403,6 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 		Disph = disph;
 		if ((PanOffsetX+DragDownOffsetX == 0) && (PanOffsetY+DragDownOffsetY == 0))
 		{
-			RecomputeZoom = true;
 			PanOffsetX = 0;
 			PanOffsetY = 0;
 			DragDownOffsetX = 0;
@@ -459,9 +459,10 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 			while (x*checkSize < draww)
 			{
 				if (colourToggle)
-					glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+					glColor4f(0.3f, 0.3f, 0.35f, 1.0f);
 				else
-					glColor4f(0.8f, 0.7f, 0.6f, 1.0f);
+					glColor4f(0.4f, 0.4f, 0.45f, 1.0f);
+
 				colourToggle = !colourToggle;
 
 				float cw = checkSize;
@@ -505,12 +506,11 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 		float uvHMargin = 0.0f;
 		float uvVMargin = 0.0f;
 
-		if (RecomputeZoom)
+		if (AutoZoomMode)
 		{
 			ZoomPercent = 100.0f;
 			if (draww < iw)
 				ZoomPercent = 100.0f * draww / iw;
-			RecomputeZoom = false;
 		}
 
 		float w = iw * ZoomPercent/100.0f;
@@ -534,7 +534,7 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 			uvVMargin = (1.0f - proph)/2.0f;
 		}
 
-		// WIP. Modify the UVs here to magnify.
+		// Modify the UVs here to magnify.
 		if (draww < w)
 		{
 			if (LMBDown)
@@ -542,18 +542,38 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 				double xpos, ypos;
 				glfwGetCursorPos(window, &xpos, &ypos);
 				DragDownOffsetX = int(xpos) - DragAnchorX;
-				DragDownOffsetY = int(ypos) - DragAnchorY;
 			}
 
 			if (float(PanOffsetX+DragDownOffsetX) > (w-draww)/2.0f)
 				DragDownOffsetX = int((w-draww)/2.0f) - PanOffsetX;
 			if (float(PanOffsetX+DragDownOffsetX) < -(w-draww)/2.0f)
 				DragDownOffsetX = int(-(w-draww)/2.0f) - PanOffsetX;
+		}
 
-			if (float(PanOffsetY+DragDownOffsetY) > (h-drawh)/2.0f)
-				DragDownOffsetY = int((h-drawh)/2.0f) - PanOffsetY;
-			if (float(PanOffsetY+DragDownOffsetY) < -(h-drawh)/2.0f)
-				DragDownOffsetY = int(-(h-drawh)/2.0f) - PanOffsetY;
+		if (drawh < h)
+		{
+			if (LMBDown)
+			{
+				double xpos, ypos;
+				glfwGetCursorPos(window, &xpos, &ypos);
+				DragDownOffsetY = int(ypos) - DragAnchorY;
+			}
+
+			if (float(PanOffsetY + DragDownOffsetY) > (h - drawh) / 2.0f)
+				DragDownOffsetY = int((h - drawh) / 2.0f) - PanOffsetY;
+			if (float(PanOffsetY + DragDownOffsetY) < -(h - drawh) / 2.0f)
+				DragDownOffsetY = int(-(h - drawh) / 2.0f) - PanOffsetY;
+		}
+
+		if (draww > w)
+		{
+			PanOffsetX = 0;
+			DragDownOffsetX = 0;
+		}
+		if (drawh > h)
+		{
+			PanOffsetY = 0;
+			DragDownOffsetY = 0;
 		}
 
 		float uOffset = -float(PanOffsetX+DragDownOffsetX)/w;
@@ -622,30 +642,35 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 			}
 		}
 		ImGui::PushItemWidth(200);
-		ImGui::SliderFloat("", &ZoomPercent, 20.0f, 2000.0f, " Zoom %.2f");
+		if (ImGui::SliderFloat("", &ZoomPercent, 20.0f, 2000.0f, " Zoom %.2f"))
+			AutoZoomMode = false;
+
 		ImGui::PopItemWidth();
 
 		float zp = 100.0f;
 		if (draww < iw)
 			zp = 100.0f * draww / iw;
-		if ((zp != ZoomPercent) && ImGui::Button("Reset"))
+
+		if (ImGui::Button("Reset"))
 		{
-			RecomputeZoom = true;
+			AutoZoomMode = true;
 			PanOffsetX = 0;
 			PanOffsetY = 0;
 			DragDownOffsetX = 0;
 			DragDownOffsetY = 0;
 		}
 
-		if ((ZoomPercent != 100.0f) && ImGui::Button("100%"))
+		if (ImGui::Button("1:1"))
 		{
-			RecomputeZoom = false;
+			AutoZoomMode = false;
 			ZoomPercent = 100.0f;
 			PanOffsetX = 0;
 			PanOffsetY = 0;
 			DragDownOffsetX = 0;
 			DragDownOffsetY = 0;
 		}
+
+		ImGui::Checkbox("AutoZoom", &AutoZoomMode);
 	}
 
 	ImGui::EndMainMenuBar();
@@ -679,17 +704,21 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 			OnNext();
 			break;
 
+		// Ctrl +
 		case GLFW_KEY_EQUAL:
 			if (modifiers == 2)
 			{
+				AutoZoomMode = false;
 				ZoomPercent = tMath::tFloor(ZoomPercent*0.1f + 1.0f) * 10.0f;
 				tMath::tClamp(ZoomPercent, 20.0f, 2000.0f);
 			}
 			break;
 
+		// Ctrl -
 		case GLFW_KEY_MINUS:
 			if (modifiers == 2)
 			{
+				AutoZoomMode = false;
 				ZoomPercent = tMath::tCeiling(ZoomPercent*0.1f - 1.0f) * 10.0f;
 				tMath::tClamp(ZoomPercent, 20.0f, 2000.0f);
 			}
@@ -721,6 +750,17 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 void TexView::CursorPosCallback(GLFWwindow* window, double x, double y)
 {
 	// tPrintf("Cursor: %f %f\n", x, y);
+}
+
+
+void TexView::ScrollWheelCallback(GLFWwindow* window, double x, double y)
+{
+	AutoZoomMode = false;
+	float zoomDelta = ZoomPercent * 0.1f * float(y);
+	ZoomPercent += zoomDelta;
+
+	ZoomPercent = tMath::tRound(ZoomPercent*10.0f) / 10.0f;
+	tMath::tClamp(ZoomPercent, 20.0f, 2000.0f);
 }
 
 
@@ -757,6 +797,7 @@ int main(int argc, char** argv)
 	glfwSetKeyCallback(TexView::Window, TexView::KeyCallback);
 	glfwSetMouseButtonCallback(TexView::Window, TexView::MouseButtonCallback);
 	glfwSetCursorPosCallback(TexView::Window, TexView::CursorPosCallback);
+	glfwSetScrollCallback(TexView::Window, TexView::ScrollWheelCallback);
 
 	GLenum err = glewInit();
 	if (err != GLEW_OK)
