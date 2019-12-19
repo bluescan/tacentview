@@ -685,6 +685,14 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 			DragDownOffsetX = 0;
 			DragDownOffsetY = 0;
 		}
+
+		int colourFlags = 0;		// ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_NoDragDrop | ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_NoOptions;
+		tColourf floatCol = tColourf::cyan;
+		ImGui::Text("Pixel:");
+
+		ImGui::PushItemWidth(200);
+		ImGui::ColorEdit4("MyColor##2f", floatCol.E, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | colourFlags);
+		ImGui::PopItemWidth();
 	}
 
 	ImGui::EndMainMenuBar();
