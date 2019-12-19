@@ -43,11 +43,11 @@ namespace TexView
 	tList<TacitImage> Images;
 	TacitImage* CurrImage		= nullptr;
 	GLFWwindow* Window			= nullptr;
-	bool LMBDown				= false;
+	bool RMBDown				= false;
 	int DragAnchorX				= 0;
 	int DragAnchorY				= 0;
 	float ZoomPercent			= 100.0f;
-	bool AutoZoomMode			= true;
+	bool FitMode				= true;
 	int Dispw					= 1;
 	int Disph					= 1;
 	int PanOffsetX				= 0;
@@ -143,7 +143,7 @@ void TexView::SetCurrentImage(const tString& currFilename)
 		CurrImage->Load();
 		CurrImage->PrintInfo();
 		SetWindowTitle();
-		AutoZoomMode = true;
+		FitMode = true;
 		PanOffsetX = 0;
 		PanOffsetY = 0;
 		DragDownOffsetX = 0;
@@ -161,7 +161,7 @@ bool TexView::OnPrevious()
 	CurrImage->Load();
 	CurrImage->PrintInfo();
 	SetWindowTitle();
-	AutoZoomMode = true;
+	FitMode = true;
 	PanOffsetX = 0;
 	PanOffsetY = 0;
 	DragDownOffsetX = 0;
@@ -179,7 +179,7 @@ bool TexView::OnNext()
 	CurrImage->Load();
 	CurrImage->PrintInfo();
 	SetWindowTitle();
-	AutoZoomMode = true;
+	FitMode = true;
 	PanOffsetX = 0;
 	PanOffsetY = 0;
 	DragDownOffsetX = 0;
@@ -513,7 +513,7 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 		float uvHMargin = 0.0f;
 		float uvVMargin = 0.0f;
 
-		if (AutoZoomMode)
+		if (FitMode)
 		{
 			ZoomPercent = 100.0f;
 			if (draww < iw)
@@ -526,10 +526,10 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 		// If the image is smaller than the drawable area we draw a quad of the correct size with full 0..1 range in the uvs.
 		if (w < draww)
 		{
-			float offsetW = (draww - w) / 2.0f;
+			float offsetW = tMath::tRound((draww - w) / 2.0f);
 			l += offsetW;
 			r -= offsetW;
-			float offsetH = (drawh - h) / 2.0f;
+			float offsetH = tMath::tRound((drawh - h) / 2.0f);
 			b += offsetH;
 			t -= offsetH;
 		}
@@ -544,7 +544,7 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 		// Modify the UVs here to magnify.
 		if (draww < w)
 		{
-			if (LMBDown)
+			if (RMBDown)
 			{
 				double xpos, ypos;
 				glfwGetCursorPos(window, &xpos, &ypos);
@@ -559,7 +559,7 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 
 		if (drawh < h)
 		{
-			if (LMBDown)
+			if (RMBDown)
 			{
 				double xpos, ypos;
 				glfwGetCursorPos(window, &xpos, &ypos);
@@ -627,40 +627,37 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 		if (CurrImage && CurrImage->IsLoaded())
 			fileType = CurrImage->Filetype;
 
-		if ((fileType != tFileType::Unknown) && (fileType != tFileType::Targa) && (fileType != tFileType::DDS))
+		static bool rleCompression = false;
+
+		tString tgaFile = CurrImage->Filename;
+		tgaFile.ExtractLastWord('.');
+		tgaFile += "_Saved.tga";
+		if (ImGui::Button("Save TGA"))
 		{
-			tString tgaFile = CurrImage->Filename;
-			tgaFile.ExtractLastWord('.');
-			tgaFile += ".tga";
-			if (ImGui::Button("Save As Targa"))
+			if (tFileExists(tgaFile))
 			{
-				if (tFileExists(tgaFile))
-				{
-					tPrintf("Targa %s already exists. Will not overwrite.\n", tgaFile.ConstText());
-				}
+				tPrintf("Targa %s already exists. Will not overwrite.\n", tgaFile.ConstText());
+			}
+			else
+			{
+				bool success = CurrImage->PictureImage.SaveTGA(tgaFile, tImage::tFileTGA::tFormat::Auto, rleCompression ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
+				if (success)
+					tPrintf("Saved tga as : %s\n", tgaFile.ConstText());
 				else
-				{
-					bool success = CurrImage->PictureImage.SaveTGA(tgaFile, tImage::tFileTGA::tFormat::Auto, tImage::tFileTGA::tCompression::None);
-					if (success)
-						tPrintf("Saved targa as : %s\n", tgaFile.ConstText());
-					else
-						tPrintf("Failed to save targa %s\n", tgaFile.ConstText());
-				}
+					tPrintf("Failed to save tga %s\n", tgaFile.ConstText());
 			}
 		}
+
+		ImGui::Checkbox("RLE", &rleCompression);
 		ImGui::PushItemWidth(200);
 		if (ImGui::SliderFloat("", &ZoomPercent, 20.0f, 2000.0f, " Zoom %.2f"))
-			AutoZoomMode = false;
+			FitMode = false;
 
 		ImGui::PopItemWidth();
 
-		float zp = 100.0f;
-		if (draww < iw)
-			zp = 100.0f * draww / iw;
-
 		if (ImGui::Button("Reset"))
 		{
-			AutoZoomMode = true;
+			FitMode = true;
 			PanOffsetX = 0;
 			PanOffsetY = 0;
 			DragDownOffsetX = 0;
@@ -669,7 +666,7 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 
 		if (ImGui::Button("1:1"))
 		{
-			AutoZoomMode = false;
+			FitMode = false;
 			ZoomPercent = 100.0f;
 			PanOffsetX = 0;
 			PanOffsetY = 0;
@@ -677,7 +674,7 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 			DragDownOffsetY = 0;
 		}
 
-		ImGui::Checkbox("AutoZoom", &AutoZoomMode);
+		ImGui::Checkbox("Fit", &FitMode);
 	}
 
 	ImGui::EndMainMenuBar();
@@ -715,7 +712,7 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 		case GLFW_KEY_EQUAL:
 			if (modifiers == 2)
 			{
-				AutoZoomMode = false;
+				FitMode = false;
 				ZoomPercent = tMath::tFloor(ZoomPercent*0.1f + 1.0f) * 10.0f;
 				tMath::tClamp(ZoomPercent, 20.0f, 2000.0f);
 			}
@@ -725,7 +722,7 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 		case GLFW_KEY_MINUS:
 			if (modifiers == 2)
 			{
-				AutoZoomMode = false;
+				FitMode = false;
 				ZoomPercent = tMath::tCeiling(ZoomPercent*0.1f - 1.0f) * 10.0f;
 				tMath::tClamp(ZoomPercent, 20.0f, 2000.0f);
 			}
@@ -739,8 +736,8 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 	if (mouseButton != 1)
 		return;
 
-	LMBDown = press ? true : false;
-	if (LMBDown)
+	RMBDown = press ? true : false;
+	if (RMBDown)
 	{
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
@@ -762,7 +759,7 @@ void TexView::CursorPosCallback(GLFWwindow* window, double x, double y)
 
 void TexView::ScrollWheelCallback(GLFWwindow* window, double x, double y)
 {
-	AutoZoomMode = false;
+	FitMode = false;
 	float zoomDelta = ZoomPercent * 0.1f * float(y);
 	ZoomPercent += zoomDelta;
 
