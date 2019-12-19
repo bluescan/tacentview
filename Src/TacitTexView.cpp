@@ -37,7 +37,7 @@ namespace TexView
 {
 	int MajorVersion			= 0;
 	int MinorVersion			= 9;
-	int Revision				= 0;
+	int Revision				= 1;
 	bool LogWindowOpen			= true;
 	TexView::ImGuiLog LogWindow;
 	tList<TacitImage> Images;
@@ -627,28 +627,32 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 		if (CurrImage && CurrImage->IsLoaded())
 			fileType = CurrImage->Filetype;
 
-		static bool rleCompression = false;
-
-		tString tgaFile = CurrImage->Filename;
-		tgaFile.ExtractLastWord('.');
-		tgaFile += "_Saved.tga";
-		if (ImGui::Button("Save TGA"))
+		if (fileType != tFileType::Unknown)
 		{
-			if (tFileExists(tgaFile))
+			static bool rleCompression = false;
+
+			tString tgaFile = CurrImage->Filename;
+			tgaFile.ExtractLastWord('.');
+			tgaFile += "_Saved.tga";
+			if (ImGui::Button("Save TGA"))
 			{
-				tPrintf("Targa %s already exists. Will not overwrite.\n", tgaFile.ConstText());
-			}
-			else
-			{
-				bool success = CurrImage->PictureImage.SaveTGA(tgaFile, tImage::tFileTGA::tFormat::Auto, rleCompression ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
-				if (success)
-					tPrintf("Saved tga as : %s\n", tgaFile.ConstText());
+				if (tFileExists(tgaFile))
+				{
+					tPrintf("Targa %s already exists. Will not overwrite.\n", tgaFile.ConstText());
+				}
 				else
-					tPrintf("Failed to save tga %s\n", tgaFile.ConstText());
+				{
+					bool success = CurrImage->PictureImage.SaveTGA(tgaFile, tImage::tFileTGA::tFormat::Auto, rleCompression ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
+					if (success)
+						tPrintf("Saved tga as : %s\n", tgaFile.ConstText());
+					else
+						tPrintf("Failed to save tga %s\n", tgaFile.ConstText());
+				}
 			}
+
+			ImGui::Checkbox("RLE", &rleCompression);
 		}
 
-		ImGui::Checkbox("RLE", &rleCompression);
 		ImGui::PushItemWidth(200);
 		if (ImGui::SliderFloat("", &ZoomPercent, 20.0f, 2000.0f, " Zoom %.2f"))
 			FitMode = false;
@@ -674,7 +678,13 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 			DragDownOffsetY = 0;
 		}
 
-		ImGui::Checkbox("Fit", &FitMode);
+		if (ImGui::Checkbox("Fit", &FitMode) && FitMode)
+		{
+			PanOffsetX = 0;
+			PanOffsetY = 0;
+			DragDownOffsetX = 0;
+			DragDownOffsetY = 0;
+		}
 	}
 
 	ImGui::EndMainMenuBar();
@@ -786,11 +796,6 @@ void TexView::FileDropCallback(GLFWwindow* window, int count, const char** files
 int main(int argc, char** argv)
 {
 	tSystem::tSetStdoutRedirectCallback(TexView::PrintRedirectCallback);	
-
-	tPrintf("Tacit Texture Viewer Version %d.%d.%d\n", TexView::MajorVersion, TexView::MinorVersion, TexView::Revision);
-	tPrintf("Tacent Version %d.%d.%d\n", tVersion::Major, tVersion::Minor, tVersion::Revision);
-	tPrintf("Dear IMGUI Version %s (%d)\n", IMGUI_VERSION, IMGUI_VERSION_NUM);
-	tPrintf("GLEW Version %s\n", glewGetString(GLEW_VERSION));
 	tCommand::tParse(argc, argv);
 
 	// Setup window
@@ -798,7 +803,16 @@ int main(int argc, char** argv)
 	if (!glfwInit())
 		return 1;
 
-	TexView::Window = glfwCreateWindow(1280, 720, "Tacit Viewer", NULL, NULL);
+	int glfwMajor = 0; int glfwMinor = 0; int glfwRev = 0;
+	glfwGetVersion(&glfwMajor, &glfwMinor, &glfwRev);
+
+	tPrintf("Tacit Viewer V %d.%d.%d\n", TexView::MajorVersion, TexView::MinorVersion, TexView::Revision);
+	tPrintf("Tacent Library V %d.%d.%d\n", tVersion::Major, tVersion::Minor, tVersion::Revision);
+	tPrintf("Dear ImGui V %s\n", IMGUI_VERSION);
+	tPrintf("GLEW V %s\n", glewGetString(GLEW_VERSION));
+	tPrintf("GLFW V %d.%d.%d\n", glfwMajor, glfwMinor, glfwRev);
+
+	TexView::Window = glfwCreateWindow(1280, 720, "Tacit Viewer", nullptr, nullptr);
 	if (!TexView::Window)
 		return 1;
 
