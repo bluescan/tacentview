@@ -74,6 +74,7 @@ namespace TexView
 	void MouseButtonCallback(GLFWwindow*, int mouseButton, int x, int y);
 	void CursorPosCallback(GLFWwindow*, double x, double y);
 	void ScrollWheelCallback(GLFWwindow*, double x, double y);
+	void FileDropCallback(GLFWwindow*, int count, const char** paths);
 }
 
 
@@ -129,7 +130,13 @@ void TexView::SetCurrentImage(const tString& currFilename)
 	}
 
 	if (!CurrImage)
+	{
 		CurrImage = Images.First();
+		if (!currFilename.IsEmpty())
+			tPrintf("Could not display [%s].\n", tSystem::tGetFileName(currFilename).ConstText());
+		if (CurrImage && !CurrImage->Filename.IsEmpty())
+			tPrintf("Displaying [%s] instead.\n", tSystem::tGetFileName(CurrImage->Filename).ConstText());
+	}
 
 	if (CurrImage)
 	{
@@ -764,6 +771,21 @@ void TexView::ScrollWheelCallback(GLFWwindow* window, double x, double y)
 }
 
 
+void TexView::FileDropCallback(GLFWwindow* window, int count, const char** files)
+{
+	if (count < 1)
+		return;
+
+	tString file = tString(files[0]);
+	tString path = tSystem::tGetDir(file);
+
+	ImageFileParam.Param = file;
+	Images.Clear();
+	FindTextureFiles();
+	SetCurrentImage(file);
+}
+
+
 int main(int argc, char** argv)
 {
 	tSystem::tSetStdoutRedirectCallback(TexView::PrintRedirectCallback);	
@@ -798,6 +820,7 @@ int main(int argc, char** argv)
 	glfwSetMouseButtonCallback(TexView::Window, TexView::MouseButtonCallback);
 	glfwSetCursorPosCallback(TexView::Window, TexView::CursorPosCallback);
 	glfwSetScrollCallback(TexView::Window, TexView::ScrollWheelCallback);
+	glfwSetDropCallback(TexView::Window, TexView::FileDropCallback);
 
 	GLenum err = glewInit();
 	if (err != GLEW_OK)
