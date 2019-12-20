@@ -23,13 +23,15 @@
 class TacitImage : public tLink<TacitImage>
 {
 public:
+	TacitImage();
 	TacitImage(const tString& filename);
 
-	bool Load();					// Load into main memory.
+	bool Load();						// Load into main memory.
+	bool Load(const tString& filename);
 	bool IsLoaded() const;
 
-	bool Bind();					// Bind to a particulr texture ID and load into VRAM. If image is already in VRAM, it only binds (makes texture current).
-
+	bool Bind();						// Bind to a particulr texture ID and load into VRAM. If image is already in
+										// VRAM, it only binds (makes texture current).
 	int GetWidth() const;
 	int GetHeight() const;
 

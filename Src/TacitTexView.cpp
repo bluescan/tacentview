@@ -42,6 +42,7 @@ namespace TexView
 	TexView::ImGuiLog LogWindow;
 	tList<TacitImage> Images;
 	TacitImage* CurrImage		= nullptr;
+	TacitImage CursorImage;
 	GLFWwindow* Window			= nullptr;
 	bool RMBDown				= false;
 	int DragAnchorX				= 0;
@@ -54,6 +55,8 @@ namespace TexView
 	int PanOffsetY				= 0;
 	int DragDownOffsetX			= 0;
 	int DragDownOffsetY			= 0;
+	int CursorX					= -1;
+	int CursorY					= -1;
 
 	void DrawTextureViewerLog(float x, float y, float w, float h);
 	void PrintRedirectCallback(const char* text, int numChars)															{ LogWindow.AddLog("%s", text); }
@@ -593,6 +596,22 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
 
+		CursorImage.Bind();
+		glEnable(GL_TEXTURE_2D);
+
+		float cw = float(CursorImage.GetWidth());
+		float ch = float(CursorImage.GetHeight());
+		float cx = float(CursorX);
+		float cy = float(CursorY);
+
+		glBegin(GL_QUADS);
+		glTexCoord2f(0.0f, 0.0f); glVertex2f(cx, workAreaH-cy);
+		glTexCoord2f(0.0f, 1.0f); glVertex2f(cx, workAreaH-cy+ch);
+		glTexCoord2f(1.0f, 1.0f); glVertex2f(cx+cw, workAreaH-cy+ch);
+		glTexCoord2f(1.0f, 0.0f); glVertex2f(cx+cw, workAreaH-cy);
+		glEnd();
+
+		glDisable(GL_TEXTURE_2D);
 		glFlush(); // Don't need this with GLUT_DOUBLE and glutSwapBuffers.
 	}
 
@@ -601,10 +620,11 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 	glOrtho(0, dispw, 0, disph, -1, 1);
 	glMatrixMode(GL_MODELVIEW);
 
+
 	ImGui::NewFrame();
 
 	// Show the big demo window. You can browse its code to learn more about Dear ImGui.
-	static bool showDemoWindow = false;
+	static bool showDemoWindow = true;
 	if (showDemoWindow)
 		ImGui::ShowDemoWindow(&showDemoWindow);
 
@@ -691,7 +711,7 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 		ImGui::Text("Pixel:");
 
 		ImGui::PushItemWidth(200);
-		ImGui::ColorEdit4("MyColor##2f", floatCol.E, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | colourFlags);
+		ImGui::ColorEdit4("Colour##2f", floatCol.E, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | colourFlags);
 		ImGui::PopItemWidth();
 	}
 
@@ -751,20 +771,39 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 
 void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press, int mods)
 {
-	if (mouseButton != 1)
-		return;
+	bool down = press ? true : false;
+	double xpos, ypos;
+	glfwGetCursorPos(window, &xpos, &ypos);
 
-	RMBDown = press ? true : false;
-	if (RMBDown)
+	switch (mouseButton)
 	{
-		double xpos, ypos;
-		glfwGetCursorPos(window, &xpos, &ypos);
-		DragAnchorX = int(xpos);
-		DragAnchorY = int(ypos);
-		PanOffsetX += DragDownOffsetX;
-		PanOffsetY += DragDownOffsetY;
-		DragDownOffsetX = 0;
-		DragDownOffsetY = 0;
+		// Left mouse button.
+		case 0:
+		{
+			if (down)
+			{
+				CursorX = int(xpos);
+				CursorY = int(ypos);
+				tPrintf("CursorPos: %d %d\n", CursorX, CursorY);
+			}
+			break;
+		}
+
+		// Right mouse button.
+		case 1:
+		{
+			RMBDown = down;
+			if (RMBDown)
+			{
+				DragAnchorX = int(xpos);
+				DragAnchorY = int(ypos);
+				PanOffsetX += DragDownOffsetX;
+				PanOffsetY += DragDownOffsetY;
+				DragDownOffsetX = 0;
+				DragDownOffsetY = 0;
+			}
+			break;
+		}
 	}
 }
 
@@ -869,6 +908,10 @@ int main(int argc, char** argv)
 	tString fontFile = tSystem::tGetProgramDir() + "Data/Roboto-Medium.ttf";
 	if (tFileExists(fontFile))
 		io.Fonts->AddFontFromFileTTF(fontFile.ConstText(), 14.0f);
+
+	tString cursorFile = tSystem::tGetProgramDir() + "Data/PixelCursor.png";
+	TexView::CursorImage.Load(cursorFile);
+	TexView::CursorImage.Bind();
 
 	TexView::FindTextureFiles();
 	if (ImageFileParam.IsPresent())

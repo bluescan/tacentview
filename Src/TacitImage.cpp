@@ -22,12 +22,30 @@ using namespace tSystem;
 using namespace tImage;
 
 
+TacitImage::TacitImage() :
+	Filename(),
+	GLTextureID(0)
+{
+	Filetype = tFileType::Unknown;
+}
+
+
 TacitImage::TacitImage(const tString& filename) :
 	Filename(filename),
 	GLTextureID(0)
 {
 	Filetype = tGetFileType(Filename);
-	// tPrintf("Filename: %s Filetype: %d\n", filename.ConstText(), int(Filetype));
+}
+
+
+bool TacitImage::Load(const tString& filename)
+{
+	if (filename.IsEmpty())
+		return false;
+
+	Filename = filename;
+	Filetype = tGetFileType(Filename);
+	Load();
 }
 
 
@@ -60,6 +78,7 @@ bool TacitImage::IsLoaded() const
 {
 	return (TextureImage.IsValid() || PictureImage.IsValid());
 }
+
 
 int TacitImage::GetWidth() const
 {
@@ -113,7 +132,6 @@ bool TacitImage::Bind()
 		return false;
 
 	glGenTextures(1, &GLTextureID);
-	//tPrintf("TextureID %d\n", GLTextureID);
 	if (GLTextureID == 0)
 		return false;
 
