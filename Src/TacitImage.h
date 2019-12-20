@@ -34,6 +34,7 @@ public:
 										// VRAM, it only binds (makes texture current).
 	int GetWidth() const;
 	int GetHeight() const;
+	tColouri GetPixel(int x, int y) const;
 
 	void PrintInfo();
 

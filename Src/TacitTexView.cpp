@@ -57,6 +57,7 @@ namespace TexView
 	int DragDownOffsetY			= 0;
 	int CursorX					= -1;
 	int CursorY					= -1;
+	tColouri PixelColour		= tColouri::black;
 
 	void DrawTextureViewerLog(float x, float y, float w, float h);
 	void PrintRedirectCallback(const char* text, int numChars)															{ LogWindow.AddLog("%s", text); }
@@ -87,7 +88,7 @@ void TexView::DrawTextureViewerLog(float x, float y, float w, float h)
 	ImGui::SetNextWindowSize(ImVec2(w, h), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(ImVec2(x, y), ImGuiCond_Always);
 
-	ImGui::Begin("Info", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+	ImGui::Begin("Info", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
 	LogWindow.Draw("Log", &LogWindowOpen);
 	ImGui::End();
 }
@@ -599,20 +600,26 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 		CursorImage.Bind();
 		glEnable(GL_TEXTURE_2D);
 
-		float cw = float(CursorImage.GetWidth());
-		float ch = float(CursorImage.GetHeight());
+		float cw = float((CursorImage.GetWidth()-1)>>1);
+		float ch = float((CursorImage.GetHeight()-1)>>1);
 		float cx = float(CursorX);
 		float cy = float(CursorY);
+		float areaH = float(workAreaH) + topUIHeight;
 
 		glBegin(GL_QUADS);
-		glTexCoord2f(0.0f, 0.0f); glVertex2f(cx, workAreaH-cy);
-		glTexCoord2f(0.0f, 1.0f); glVertex2f(cx, workAreaH-cy+ch);
-		glTexCoord2f(1.0f, 1.0f); glVertex2f(cx+cw, workAreaH-cy+ch);
-		glTexCoord2f(1.0f, 0.0f); glVertex2f(cx+cw, workAreaH-cy);
+		glTexCoord2f(0.0f, 0.0f); glVertex2f(cx-cw, areaH-(cy+ch));
+		glTexCoord2f(0.0f, 1.0f); glVertex2f(cx-cw, areaH-(cy-ch));
+		glTexCoord2f(1.0f, 1.0f); glVertex2f(cx+cw, areaH-(cy-ch));
+		glTexCoord2f(1.0f, 0.0f); glVertex2f(cx+cw, areaH-(cy+ch));
 		glEnd();
 
 		glDisable(GL_TEXTURE_2D);
 		glFlush(); // Don't need this with GLUT_DOUBLE and glutSwapBuffers.
+
+		float picX = cx - l;
+		float picY = (areaH - cy) - b;
+		if ((picX >= 0.0f) && (picX <= r - l - 1.0f) && (picY >= 0.0f) && (picY <= t - b - 1.0f))
+			PixelColour = CurrImage->GetPixel(int(picX), int(picY));
 	}
 
 	glMatrixMode(GL_PROJECTION);
@@ -620,11 +627,10 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 	glOrtho(0, dispw, 0, disph, -1, 1);
 	glMatrixMode(GL_MODELVIEW);
 
-
 	ImGui::NewFrame();
 
 	// Show the big demo window. You can browse its code to learn more about Dear ImGui.
-	static bool showDemoWindow = true;
+	static bool showDemoWindow = false;
 	if (showDemoWindow)
 		ImGui::ShowDemoWindow(&showDemoWindow);
 
@@ -707,10 +713,10 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 		}
 
 		int colourFlags = 0;		// ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_NoDragDrop | ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_NoOptions;
-		tColourf floatCol = tColourf::cyan;
+		tColourf floatCol(PixelColour);
 		ImGui::Text("Pixel:");
 
-		ImGui::PushItemWidth(200);
+		ImGui::PushItemWidth(180);
 		ImGui::ColorEdit4("Colour##2f", floatCol.E, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | colourFlags);
 		ImGui::PopItemWidth();
 	}
@@ -784,7 +790,6 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 			{
 				CursorX = int(xpos);
 				CursorY = int(ypos);
-				tPrintf("CursorPos: %d %d\n", CursorX, CursorY);
 			}
 			break;
 		}

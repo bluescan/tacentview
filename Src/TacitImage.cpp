@@ -104,6 +104,16 @@ int TacitImage::GetHeight() const
 }
 
 
+tColouri TacitImage::GetPixel(int x, int y) const
+{
+	if (PictureImage.IsValid())
+		return PictureImage.GetPixel(x, y);
+
+	// @todo Don't yet know how to handle TextureImage as the format is for HW.
+	return tColouri::black;
+}
+
+
 void TacitImage::PrintInfo()
 {
 	tPixelFormat format = tPixelFormat::Invalid;
