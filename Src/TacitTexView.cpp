@@ -68,7 +68,7 @@ namespace TexView
 
 	// Helper to display a little (?) mark which shows a tooltip when hovered.
 	void ShowHelpMark(const char* desc);
-	void ShowContactSheetDialog(bool* popen);
+	void ShowContactSheetDialog(bool* popen, bool justOpened);
 	void SetWindowTitle();
 	bool OnPrevious();
 	bool OnNext();
@@ -206,14 +206,14 @@ void TexView::ShowHelpMark(const char* desc)
 }
 
 
-void TexView::ShowContactSheetDialog(bool* popen)
+void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 {
 	ImGuiWindowFlags windowFlags = 0;
 
 	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
 	// do it to make the Demo applications a little more welcoming.
 	ImGui::SetNextWindowPos(ImVec2(200, 150), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(380, 220), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(380, 266), ImGuiCond_FirstUseEver);
 
 	// Main body of the Demo window starts here.
 	if (!ImGui::Begin("Contact Sheet Generator", popen, windowFlags))
@@ -222,26 +222,61 @@ void TexView::ShowContactSheetDialog(bool* popen)
 		return;
 	}
 
-	static int contactWidth = 1024;
-	static int contactHeight = 1024;
+	static int frameWidth = 256;
+	static int frameHeight = 256;
 	static int numRows = 4;
-	static int numColumns = 4;
+	static int numCols = 4;
+	static int finalWidth = 2048;
+	static int finalHeight = 2048;
+	if (justOpened && CurrImage)
+	{
+		frameWidth = CurrImage->GetWidth();
+		frameHeight = CurrImage->GetHeight();
+		numRows = int(tMath::tCeiling(tMath::tSqrt(float(Images.Count()))));
+		numCols = int(tMath::tCeiling(tMath::tSqrt(float(Images.Count()))));
+	}
 
-	ImGui::InputInt("Width", &contactWidth);
-	ImGui::SameLine();
-	ShowHelpMark("Contact sheet width in pixels.");
+	int contactWidth = frameWidth * numCols;
+	int contactHeight = frameHeight * numRows;
+	if (justOpened && CurrImage)
+	{
+		finalWidth = contactWidth;
+		finalHeight = contactHeight;
+	}
 
-	ImGui::InputInt("Height", &contactHeight);
+	ImGui::InputInt("Frame Width", &frameWidth);
 	ImGui::SameLine();
-	ShowHelpMark("Contact sheet height in pixels.");
+	ShowHelpMark("Single frame width in pixels.");
 
-	ImGui::InputInt("Columns", &numColumns);
+	ImGui::InputInt("Frame Height", &frameHeight);
 	ImGui::SameLine();
-	ShowHelpMark("Number of columns. The width must be divisible by this number.");
+	ShowHelpMark("Single frame height in pixels.");
+
+	ImGui::InputInt("Columns", &numCols);
+	ImGui::SameLine();
+	ShowHelpMark("Number of columns. Determines overall width.");
  
 	ImGui::InputInt("Rows", &numRows);
 	ImGui::SameLine();
-	ShowHelpMark("Number of rows. The height must be divisible by this number.");
+	ShowHelpMark("Number of rows. Determines overall height.");
+
+	tString contactSizeStr;
+	tsPrintf(contactSizeStr, "Sheet Width:%d Height:%d", contactWidth, contactHeight);
+	ImGui::Text(contactSizeStr.ConstText());
+
+	ImGui::InputInt("Final Width", &finalWidth);
+	ImGui::SameLine();
+	ShowHelpMark("Final scaled output sheet height in pixels.");
+
+	ImGui::InputInt("Final Height", &finalHeight);
+	ImGui::SameLine();
+	ShowHelpMark("Final scaled output sheet height in pixels.");
+
+	if (ImGui::Button("Pow2"))
+	{
+		finalWidth = tMath::tNextHigherPower2(contactWidth);
+		finalHeight = tMath::tNextHigherPower2(contactHeight);
+	}
 
     const char* fileTypeItems[] = { "TGA", "PNG", "BMP", "JPG", "GIF" };
     static int itemCurrent = 0;
@@ -263,108 +298,81 @@ void TexView::ShowContactSheetDialog(bool* popen)
 	ImGui::InputText("Filename", filename, IM_ARRAYSIZE(filename));
 	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
 
-	bool canGenerate = true;
-	if ((contactWidth <= 0) || (contactHeight <= 0) || (numRows <= 0) || (numColumns <= 0))
+	if (ImGui::Button("Generate"))
 	{
-		ImGui::Text("Error: Width, Height, Rows, and Columns must all be bigger than 0.");
-		canGenerate = false;
-	}
+		tString imagesDir = tSystem::tGetCurrentDir();
+		if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
+			imagesDir = tSystem::tGetDir(ImageFileParam.Get());
+		tString outFile = imagesDir + tString(filename) + extension;
 
-	if (canGenerate)
-	{
-		if (contactWidth % numColumns)
-		{
-			ImGui::Text("Error: Width must be a multiple of Columns.");
-			canGenerate = false;
-		}
-		else
-		{
-			ImGui::Text("Each frame will have width %d.", contactWidth / numColumns);
-		}
-		if (contactHeight % numRows)
-		{
-			ImGui::Text("Error: Height must be a multiple of Rows.");
-			canGenerate = false;
-		}
-		else
-		{
-			ImGui::Text("Each frame will have height %d.", contactHeight / numRows);
-		}
-	}
+		tImage::tPicture outPic(contactWidth, contactHeight);
+		outPic.SetAll(tColouri(0, 0, 0, 0));
 
-	if (canGenerate)
-	{
-		if (ImGui::Button("Generate"))
+		// Do the work.
+		int frameWidth = contactWidth / numCols;
+		int frameHeight = contactHeight / numRows;
+		int ix = 0;
+		int iy = 0;
+		int frame = 0;
+
+		tPrintf("Loading all frames...\n");
+		bool allOpaque = true;
+		for (TacitImage* img = Images.First(); img; img = img->Next())
 		{
-			tString imagesDir = tSystem::tGetCurrentDir();
-			if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
-				imagesDir = tSystem::tGetDir(ImageFileParam.Get());
-			tString outFile = imagesDir + tString(filename) + extension;
-			tImage::tPicture outPic(contactWidth, contactHeight);
-			outPic.SetAll(tColouri(0, 0, 0, 0));
+			if (!img->IsLoaded())
+				img->Load();
 
-			// Do the work.
-			int frameWidth = contactWidth / numColumns;
-			int frameHeight = contactHeight / numRows;
-			int ix = 0;
-			int iy = 0;
-			int frame = 0;
+			if (img->IsLoaded() && img->PictureImage.IsValid() && !img->PictureImage.IsOpaque())
+				allOpaque = false;
+		}
 
-			tPrintf("Loading all frames...\n");
-			bool allOpaque = true;
-			for (TacitImage* img = Images.First(); img; img = img->Next())
+		TacitImage* currImg = Images.First();
+		while (currImg)
+		{
+			if (!currImg->PictureImage.IsValid())
 			{
-				if (!img->IsLoaded())
-					img->Load();
-
-				if (img->IsLoaded() && img->PictureImage.IsValid() && !img->PictureImage.IsOpaque())
-					allOpaque = false;
-			}
-
-			TacitImage* currImg = Images.First();
-			while (currImg)
-			{
-				if (!currImg->PictureImage.IsValid())
-				{
-					currImg = currImg->Next();
-					continue;
-				}
-
-				if (tSystem::tGetFileBaseName(currImg->Filename) == tSystem::tGetFileBaseName(outFile))
-				{
-					currImg = currImg->Next();
-					continue;
-				}
-
-				tPrintf("Processing frame %d : %s at (%d, %d).\n", frame, currImg->Filename.ConstText(), ix, iy);
-				frame++;
-
-				tImage::tPicture resampled(currImg->PictureImage);
-				resampled.Resample(frameWidth, frameHeight);
-
-				// Copy resampled frame into place.
-				for (int y = 0; y < frameHeight; y++)
-					for (int x = 0; x < frameWidth; x++)
-						outPic.SetPixel(x + (ix*frameWidth), y + ((numRows-1-iy)*frameHeight), resampled.GetPixel(x, y));						
-
 				currImg = currImg->Next();
-
-				ix++;
-				if (ix >= numColumns)
-				{
-					ix = 0;
-					iy++;
-					if (iy >= numRows)
-						break;
-				}
+				continue;
 			}
 
-			tImage::tPicture::tColourFormat colourFmt = allOpaque ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-			outPic.Save(outFile, colourFmt);
-			Images.Clear();
-			FindTextureFiles();
-			SetCurrentImage(outFile);
+			if (tSystem::tGetFileBaseName(currImg->Filename) == tSystem::tGetFileBaseName(outFile))
+			{
+				currImg = currImg->Next();
+				continue;
+			}
+
+			tPrintf("Processing frame %d : %s at (%d, %d).\n", frame, currImg->Filename.ConstText(), ix, iy);
+			frame++;
+
+			tImage::tPicture resampled(currImg->PictureImage);
+			resampled.Resample(frameWidth, frameHeight);
+
+			// Copy resampled frame into place.
+			for (int y = 0; y < frameHeight; y++)
+				for (int x = 0; x < frameWidth; x++)
+					outPic.SetPixel(x + (ix*frameWidth), y + ((numRows-1-iy)*frameHeight), resampled.GetPixel(x, y));						
+
+			currImg = currImg->Next();
+
+			ix++;
+			if (ix >= numCols)
+			{
+				ix = 0;
+				iy++;
+				if (iy >= numRows)
+					break;
+			}
 		}
+
+		tImage::tPicture finalResampled(outPic);
+		if ((finalWidth != contactWidth) || (finalHeight != contactHeight))
+			finalResampled.Resample(finalWidth, finalHeight);
+
+		tImage::tPicture::tColourFormat colourFmt = allOpaque ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
+		finalResampled.Save(outFile, colourFmt);
+		Images.Clear();
+		FindTextureFiles();
+		SetCurrentImage(outFile);
 	}
 
 	ImGui::End();
@@ -643,11 +651,16 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 			OnNext();
 
 		static bool contactDialog = false;
+		bool justOpenedContactDialog = false;
 		if (ImGui::Button("Contact Sheet"))
+		{
 			contactDialog = !contactDialog;
+			if (contactDialog)
+				justOpenedContactDialog = true;
+		}
 
 		if (contactDialog)
-			ShowContactSheetDialog(&contactDialog);
+			ShowContactSheetDialog(&contactDialog, justOpenedContactDialog);
 
 		tFileType fileType = tFileType::Unknown;
 		if (CurrImage && CurrImage->IsLoaded())
