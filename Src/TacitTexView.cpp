@@ -213,7 +213,7 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
 	// do it to make the Demo applications a little more welcoming.
 	ImGui::SetNextWindowPos(ImVec2(200, 150), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(380, 266), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(370, 254), ImGuiCond_FirstUseEver);
 
 	// Main body of the Demo window starts here.
 	if (!ImGui::Begin("Contact Sheet Generator", popen, windowFlags))
@@ -260,10 +260,6 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 	ImGui::SameLine();
 	ShowHelpMark("Number of rows. Determines overall height.");
 
-	tString contactSizeStr;
-	tsPrintf(contactSizeStr, "Sheet Width:%d Height:%d", contactWidth, contactHeight);
-	ImGui::Text(contactSizeStr.ConstText());
-
 	ImGui::InputInt("Final Width", &finalWidth);
 	ImGui::SameLine();
 	ShowHelpMark("Final scaled output sheet height in pixels.");
@@ -272,10 +268,22 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 	ImGui::SameLine();
 	ShowHelpMark("Final scaled output sheet height in pixels.");
 
-	if (ImGui::Button("Pow2"))
+	if (ImGui::Button("Prev Pow2"))
+	{
+		finalWidth = tMath::tNextLowerPower2(contactWidth);
+		finalHeight = tMath::tNextLowerPower2(contactHeight);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Next Pow2"))
 	{
 		finalWidth = tMath::tNextHigherPower2(contactWidth);
 		finalHeight = tMath::tNextHigherPower2(contactHeight);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Reset"))
+	{
+		finalWidth = contactWidth;
+		finalHeight = contactHeight;
 	}
 
     const char* fileTypeItems[] = { "TGA", "PNG", "BMP", "JPG", "GIF" };
@@ -364,12 +372,17 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 			}
 		}
 
-		tImage::tPicture finalResampled(outPic);
-		if ((finalWidth != contactWidth) || (finalHeight != contactHeight))
-			finalResampled.Resample(finalWidth, finalHeight);
-
 		tImage::tPicture::tColourFormat colourFmt = allOpaque ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-		finalResampled.Save(outFile, colourFmt);
+		if ((finalWidth == contactWidth) && (finalHeight == contactHeight))
+		{
+			outPic.Save(outFile, colourFmt);
+		}
+		else
+		{
+			tImage::tPicture finalResampled(outPic);
+			finalResampled.Resample(finalWidth, finalHeight);
+			finalResampled.Save(outFile, colourFmt);
+		}
 		Images.Clear();
 		FindTextureFiles();
 		SetCurrentImage(outFile);
@@ -608,8 +621,8 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 		CursorImage.Bind();
 		glEnable(GL_TEXTURE_2D);
 
-		float cw = float((CursorImage.GetWidth()-1)>>1);
-		float ch = float((CursorImage.GetHeight()-1)>>1);
+		float cw = float((CursorImage.GetWidth() - 1) >> 1);
+		float ch = float((CursorImage.GetHeight() - 1) >> 1);
 		float cx = float(CursorX);
 		float cy = float(CursorY);
 		float areaH = float(workAreaH) + topUIHeight;
