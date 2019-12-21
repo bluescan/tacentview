@@ -51,7 +51,7 @@ public:
 	tPicture(const tString& imageFile)																					{ Load(imageFile); }
 
 	// Copy constructor.
-	tPicture(const tPicture& src)																						: tPicture() { if (src.Pixels) { Set(src.Width, src.Height, src.Pixels); Filename = src.Filename; } }
+	tPicture(const tPicture& src)																						: tPicture() { Set(src); }
 
 	virtual ~tPicture()																									{ Clear(); }
 	bool IsValid() const																								{ return Pixels ? true : false; }
@@ -69,6 +69,7 @@ public:
 	// tPicture. In this case the tPicture will delete[] the buffer for you when appropriate. In all cases, existing
 	// pixel data is lost.
 	void Set(int width, int height, tPixel* pixelBuffer, bool copyPixels = true);
+	void Set(const tPicture& src)																						{ if (src.Pixels) { Set(src.Width, src.Height, src.Pixels); Filename = src.Filename; } }
 
 	// Can this class save the the filetype supplied?
 	static bool CanSave(const tString& imageFile);

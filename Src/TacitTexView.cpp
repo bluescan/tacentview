@@ -337,7 +337,8 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 		TacitImage* currImg = Images.First();
 		while (currImg)
 		{
-			if (!currImg->PictureImage.IsValid())
+			tImage::tPicture& currPic = currImg->PictureImage;
+			if (!currPic.IsValid())
 			{
 				currImg = currImg->Next();
 				continue;
@@ -352,13 +353,22 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 			tPrintf("Processing frame %d : %s at (%d, %d).\n", frame, currImg->Filename.ConstText(), ix, iy);
 			frame++;
 
-			tImage::tPicture resampled(currImg->PictureImage);
-			resampled.Resample(frameWidth, frameHeight);
+			tImage::tPicture resampled;
+			if ((currPic.GetWidth() != frameWidth) || (currPic.GetHeight() != frameHeight))
+			{
+				resampled.Set(currPic);
+				resampled.Resample(frameWidth, frameHeight);
+			}
 
 			// Copy resampled frame into place.
 			for (int y = 0; y < frameHeight; y++)
 				for (int x = 0; x < frameWidth; x++)
-					outPic.SetPixel(x + (ix*frameWidth), y + ((numRows-1-iy)*frameHeight), resampled.GetPixel(x, y));						
+					outPic.SetPixel
+					(
+						x + (ix*frameWidth),
+						y + ((numRows-1-iy)*frameHeight),
+						resampled.IsValid() ? resampled.GetPixel(x, y) : currPic.GetPixel(x, y)
+					);
 
 			currImg = currImg->Next();
 
