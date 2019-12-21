@@ -398,14 +398,14 @@ void tProcess::CreateChildProcess(const tString& cmdLine, const tString& working
 	// This struct gets filled out.
 	PROCESS_INFORMATION procInfo;
 
-	// The environment block sets the environment variables for the command.  Here we make sure that there
-	// are effectively none of them if the user requested such.  This ensures that the running bahaviour
-	// is identical on any machine no matter what system env variables might be set.  A null env block
-	// (Environment) means inherit from the parent process which is what we are trying to avoid in some cases.
+	// The environment block sets the environment variables for the command. Here we make sure that there are
+	// effectively none of them if the user requested such. This ensures that the running bahaviour is identical on any
+	// machine no matter what system env variables might be set. A null env block (Environment) means inherit from the
+	// parent process which is what we are trying to avoid in some cases.
 	char* envBlock = Environment;
 
-	// Assign a default env block in this case.  We could probably call it with "\0\0", but this seems safer
-	// as the windows docs to not explicitely mention passing in an empty block.
+	// Assign a default env block in this case. We could probably call it with "\0\0", but this seems safer as the
+	// windows docs to not explicitely mention passing in an empty block.
 	if (ClearEnvironment)
 		envBlock = "PIPELINE=true\0";
 
@@ -416,7 +416,7 @@ void tProcess::CreateChildProcess(const tString& cmdLine, const tString& working
 		if (ExitCode)
 			*ExitCode = 1;
 
-		throw tError("CreateProcess failed with %d. Possibly due to windows security settings.", lastError);
+		throw tError("CreateProcess failed with %d (0x%08X). Possibly due to windows security settings or invalid working dir.", lastError, lastError);
 	}
 	ChildProcess = procInfo.hProcess;
 	ChildThread = procInfo.hThread;
@@ -430,8 +430,7 @@ void tProcess::CreateChildProcess(const tString& cmdLine, const tString& working
 	}
 	else
 	{
-		// 
-		// Create Monitor threads.... these ones send the messages or print the output.
+		// Create Monitor threads. These ones send the messages or print the output.
 		ulong threadID;
 		MonitorProcessExitThread = CreateThread(0, 0, tProcess::MonitorExitBridge, this, 0, &threadID);
 		MonitorProcessStdOutThread = CreateThread(0, 0, tProcess::MonitorStdOutBridge, this, 0, &threadID);

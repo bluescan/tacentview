@@ -5,7 +5,7 @@
 // different type sizes and can print integral types in a variety of bases. Redirection via a callback as well as
 // visibility channels are also supported.
 //
-// Copyright (c) 2004-2006, 2015, 2017 Tristan Grimmer.
+// Copyright (c) 2004-2006, 2015, 2017, 2019 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -99,7 +99,7 @@ namespace tSystem
 		FormatSpec(const FormatSpec& src)																				: Flags(src.Flags), Width(src.Width), Precision(src.Precision), TypeSizeBytes(src.TypeSizeBytes) { }
 		FormatSpec& operator=(const FormatSpec& src)																	{ Flags = src.Flags; Width = src.Width; Precision = src.Precision; TypeSizeBytes = src.TypeSizeBytes; return *this; }
 
-		uint Flags;
+		uint32 Flags;
 		int Width;
 		int Precision;
 		int TypeSizeBytes;				// Defaults to 0, not set.
@@ -142,7 +142,10 @@ namespace tSystem
 		NeedsSpace,
 		NoZeros,
 	};
-	PrologHelperFloat HandlerHelper_FloatNormal(tArray<char>&, const FormatSpec&, double value);
+	PrologHelperFloat HandlerHelper_FloatNormal
+	(
+		tArray<char>&, const FormatSpec&, double value, bool treatPrecisionAsSigDigits = false
+	);
 	bool HandlerHelper_HandleSpecialFloatTypes(tArray<char>&, double value);
 	int  HandlerHelper_FloatComputeExponent(double value);
 	void HandlerHelper_Vector(Receiver&, const FormatSpec&, const float* components, int numComponents);
@@ -1305,12 +1308,13 @@ bool tSystem::HandlerHelper_HandleSpecialFloatTypes(tArray<char>& convBuf, doubl
 	tStd::tFloatType ft = tStd::tGetFloatType(value);
 	switch (ft)
 	{
-		case tStd::tFloatType::PSNAN:	convBuf.Append("0.#SNAN", 7);	return true;
-		case tStd::tFloatType::PNAN:	convBuf.Append("0.#QNAN", 7);	return true;
-		case tStd::tFloatType::NSNAN:	convBuf.Append("-0.#SNAN", 8);	return true;
-		case tStd::tFloatType::NNAN:	convBuf.Append("-0.#QNAN", 8);	return true;
-		case tStd::tFloatType::PINF:	convBuf.Append("+1.#INF", 7);	return true;
-		case tStd::tFloatType::NINF:	convBuf.Append("-1.#INF", 7);	return true;
+		case tStd::tFloatType::PSNAN:	convBuf.Append("nan(snan)", 9);		return true;
+		case tStd::tFloatType::PQNAN:	convBuf.Append("nan", 3);			return true;
+		case tStd::tFloatType::NSNAN:	convBuf.Append("-nan(snan)", 10);	return true;
+		case tStd::tFloatType::NQNAN:	convBuf.Append("-nan", 4);			return true;
+		case tStd::tFloatType::IQNAN:	convBuf.Append("-nan(ind)", 9);		return true;
+		case tStd::tFloatType::PINF:	convBuf.Append("inf", 3);			return true;
+		case tStd::tFloatType::NINF:	convBuf.Append("-inf", 4);			return true;
 		default:
 		case tStd::tFloatType::NORM:
 			break;
@@ -1414,23 +1418,18 @@ void tSystem::Handler_e(Receiver& receiver, const FormatSpec& spec, void* data)
 		expBuf[n] = digit;
 	}
 
-	bool stillLeadingZero = true;
-	for (int n = 0; n < expWidthMax; n++)
-	{
-		int digit = expBuf[n];
-		if (digit != 0)
-			stillLeadingZero = false;
-		if ((digit != 0) || !stillLeadingZero)
-			*curr++ = '0' + digit;
-	}
+	// We always include the last two least-significant digits of the base 10 exponent, even if they are both zeroes.
+	// We only include the first digit if it is non-zero. This can only happen with doubles, not floats which max at 38.
+	if (expBuf[0] != 0)
+		*curr++ = '0' + expBuf[0];
+	*curr++ = '0' + expBuf[1];
+	*curr++ = '0' + expBuf[2];
 	*curr++ = '\0';
 	
-	//int count = curr - (result + maxLeadingZeroes);
-	curr = result + maxLeadingZeroes;
-
 	// If there are no leading zeroes any possible plus or negative sign must go beside the first valid character of the
 	// converted string. However, if there ARE leading zeroes, we still need to place the plus or negative based on the
 	// width.
+	curr = result + maxLeadingZeroes;
 	if (!(spec.Flags & Flag_LeadingZeros))
 	{
 		if (negative)
@@ -1458,7 +1457,7 @@ void tSystem::Handler_e(Receiver& receiver, const FormatSpec& spec, void* data)
 }
 
 
-tSystem::PrologHelperFloat tSystem::HandlerHelper_FloatNormal(tArray<char>& convBuf, const FormatSpec& spec, double value)
+tSystem::PrologHelperFloat tSystem::HandlerHelper_FloatNormal(tArray<char>& convBuf, const FormatSpec& spec, double value, bool treatPrecisionAsSigDigits)
 {
 	tArray<char> buf(64, 32);
 	buf.Append('0');
@@ -1495,6 +1494,8 @@ tSystem::PrologHelperFloat tSystem::HandlerHelper_FloatNormal(tArray<char>& conv
 		char digit = char(value / dec);
 		value -= digit * dec;
 		buf.Append(digit + '0');
+		if (treatPrecisionAsSigDigits && (precision > 0))
+			precision--;
 		dec /= 10.0;
 		hasMantissa = true;
 	}
@@ -1503,7 +1504,7 @@ tSystem::PrologHelperFloat tSystem::HandlerHelper_FloatNormal(tArray<char>& conv
 	if (!hasMantissa)
 		buf.Append('0');
 
-	if (precision != 0)
+	if (precision > 0)
 		buf.Append('.');
 
 	// We're now after the decimal point... how far we go depends on precision.
@@ -1609,38 +1610,167 @@ void tSystem::Handler_f(Receiver& receiver, const FormatSpec& spec, void* data)
 
 void tSystem::Handler_g(Receiver& receiver, const FormatSpec& spec, void* data)
 {
-	// Variable arg rules say you must treat the data as double. It converts automatically. That's why %f is always 64 bits.
-	double value = *((double*)data);
-	tArray<char> convFloat(64, 32);
+	// Variable argument specifies data should be treated data as double. i.e. %f is 64 bits.
+	double v = *((double*)data);
+	tArray<char> convBuf(64, 32);
+
+	// Default floating point printf precision. ANSI is 6, ours is 4.
+	// For %g, the precision is treated as significant digits, not number of digits after the decimal point.
+	int precision = spec.Precision;
+	if (precision == -1)
+		precision = DefaultPrecision;
+
+	double noExpFormatThreshold = tPow(10.0, double(precision));
+	if (v < noExpFormatThreshold)
+	{
+		// Check for early exit infinities and NANs.
+		PrologHelperFloat res = PrologHelperFloat::None;
+		if (HandlerHelper_HandleSpecialFloatTypes(convBuf, v))
+			res = PrologHelperFloat::NoZeros;
+		else
+			res = HandlerHelper_FloatNormal(convBuf, spec, v, true);
+
+		FormatSpec modSpec(spec);
+		int effectiveLength = convBuf.GetNumElements();
+		switch (res)
+		{
+			case PrologHelperFloat::NeedsNeg:		receiver.Receive('-');	effectiveLength++;	break;
+			case PrologHelperFloat::NeedsPlus:		receiver.Receive('+');	effectiveLength++;	break;
+			case PrologHelperFloat::NeedsSpace:		receiver.Receive(' ');	effectiveLength++;	break;
+			case PrologHelperFloat::NoZeros:		modSpec.Flags &= ~Flag_LeadingZeros;		break;
+			case PrologHelperFloat::None:														break;
+		}
+
+		HandlerHelper_JustificationProlog(receiver, effectiveLength, modSpec);
+		receiver.Receive(convBuf);
+		HandlerHelper_JustificationEpilog(receiver, effectiveLength, modSpec);
+		return;
+	}
 
 	// Check for early exit infinities and NANs.
-	PrologHelperFloat res = PrologHelperFloat::None;
-	if (HandlerHelper_HandleSpecialFloatTypes(convFloat, value))
+	if (HandlerHelper_HandleSpecialFloatTypes(convBuf, v))
 	{
-		res = PrologHelperFloat::NoZeros;
+		receiver.Receive(convBuf);
+		return;
+	}
+
+	// @todo Fix this like the Handler_f was fixed so it can handle appending directly into appending to the dynamically growing convBuf.
+	char result[64];
+	const int maxLeadingZeroes = 16;
+	char* curr = result + maxLeadingZeroes;
+	bool negative = false;
+
+	if (v < 0.0f)
+	{
+		v = -v;
+		negative = true;
+	}
+
+	double val = double(v);
+	int exponent = HandlerHelper_FloatComputeExponent(val);
+
+	// Convert val so it is a single non-zero digit before the decimal point.
+	double power10 = 1.0;
+	int absExp = (exponent < 0) ? -exponent : exponent;
+	for (int e = 0; e < absExp; e++)
+		power10 *= 10.0;
+
+	if (exponent != 0)
+		val = (exponent < 0) ? (val * power10) : (val / power10);
+
+	// Sometimes errors can cause 9.999999 -> 10.0.
+	while (val >= 10.0)
+	{
+		val /= 10.0;
+		exponent++;
+	}
+
+	power10 = 1.0;
+	for (int e = 0; e < precision; e++)
+		power10 *= 10.0;
+	double precisionRound = 0.5 / power10;
+	val += precisionRound;
+
+	bool firstDigit = true;
+	while (precision)
+	{
+		int digit = int(val);
+		val -= digit;
+		val *= 10.0;
+		precision--;
+		// Round the last digit up if necessary. There's a subtle error here: if the digit is
+		// 9 we just truncate, whereas we really need another rounding loop to carry the round upwards
+		// through the 9s.
+		if ((precision == 0) && (int(val) >= 5) && (digit < 9))
+			digit++;
+		*curr++ = '0' + digit;
+
+		if (firstDigit)
+			*curr++ = '.';
+
+		firstDigit = false;
+	}
+
+	*curr++ = 'e';			// Need to pass in an uppercase boolean.
+	if (exponent >= 0)
+	{
+		*curr++ = '+';
 	}
 	else
 	{
-		int exponent = HandlerHelper_FloatComputeExponent(value);
-
-		// @todo Decide based on exponent value and precision.
-		res = HandlerHelper_FloatNormal(convFloat, spec, value);
+		*curr++ = '-';
+		exponent = -exponent;
 	}
 
-	FormatSpec modSpec(spec);
-	int effectiveLength = convFloat.GetNumElements();
-	switch (res)
+	// @todo Make width here controllable by opt display flag.
+	const int expWidthMax = 3;
+
+	// First we need to write the exponent characters into a temp buffer backwards. This is so we have to whole thing
+	// before we don't process leading zeroes.
+	int expBuf[expWidthMax] = { 0, 0, 0 };
+	for (int n = expWidthMax-1; n >= 0; n--)
 	{
-		case PrologHelperFloat::NeedsNeg:		receiver.Receive('-');	effectiveLength++;	break;
-		case PrologHelperFloat::NeedsPlus:		receiver.Receive('+');	effectiveLength++;	break;
-		case PrologHelperFloat::NeedsSpace:		receiver.Receive(' ');	effectiveLength++;	break;
-		case PrologHelperFloat::NoZeros:		modSpec.Flags &= ~Flag_LeadingZeros;		break;
-		case PrologHelperFloat::None:														break;
+		int digit = exponent % 10;
+		exponent /= 10;
+		expBuf[n] = digit;
 	}
 
-	HandlerHelper_JustificationProlog(receiver, effectiveLength, modSpec);
-	receiver.Receive(convFloat);
-	HandlerHelper_JustificationEpilog(receiver, effectiveLength, modSpec);
+	// We always include the last two least-significant digits of the base 10 exponent, even if they are both zeroes.
+	// We only include the first digit if it is non-zero. This can only happen with doubles, not floats which max at 38.
+	if (expBuf[0] != 0)
+		*curr++ = '0' + expBuf[0];
+	*curr++ = '0' + expBuf[1];
+	*curr++ = '0' + expBuf[2];
+	*curr++ = '\0';
+	
+	// If there are no leading zeroes any possible plus or negative sign must go beside the first valid character of the
+	// converted string. However, if there ARE leading zeroes, we still need to place the plus or negative based on the
+	// width.
+	curr = result + maxLeadingZeroes;
+	if (!(spec.Flags & Flag_LeadingZeros))
+	{
+		if (negative)
+			*--curr = '-';
+		else if (spec.Flags & Flag_ForcePosOrNegSign)
+			*--curr = '+';
+		else if (!negative && (spec.Flags & Flag_SpaceForPosSign))
+			*--curr = ' ';
+	}
+	else
+	{
+		int numZeroes = spec.Width - tStd::tStrlen(curr);
+		if (numZeroes > maxLeadingZeroes)
+			numZeroes = maxLeadingZeroes;
+		while (numZeroes-- > 0)
+			*--curr = '0';
+
+		if (negative)
+			*curr = '-';
+		else if (spec.Flags & Flag_ForcePosOrNegSign)
+			*curr = '+';
+	}
+
+	receiver.Receive(curr, tStd::tStrlen(curr));
 }
 
 

@@ -131,7 +131,7 @@ public:
 private:
 	void CreateChildProcess(const tString& cmdLine, const tString& workingDir, bool detached = false);
 
-	// If Parent is valid, output gets sent via messages to that window handle.  If OutputString is valid output gets
+	// If Parent is valid, output gets sent via messages to that window handle. If OutputString is valid output gets
 	// appended to it.
 	WindowHandle Parent;
 	tString* OutputString;

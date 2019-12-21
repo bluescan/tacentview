@@ -123,6 +123,7 @@ inline float tLog(float x)									/* Natural logarithm. */									{ return log
 // Log2(2) = 1, Log2(3) = 1, and Log2(4) = 2.
 inline int tLog2(int v);
 inline float tPow(float a, float b)																						{ return powf(a, b); }
+inline double tPow(double a, double b)																					{ return pow(a, b); }
 
 inline bool tIsPower2(int v)																							{ if (v < 1) return false; return (v & (v-1)) ? false : true; }
 inline uint tNextLowerPower2(uint v)																					{ uint pow2 = 1; while (pow2 < v) pow2 <<= 1; pow2 >>= 1; return pow2 ? pow2 : 1; }

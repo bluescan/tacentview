@@ -139,23 +139,47 @@ tDiv64t tDiv64(int64 numerator, int64 denominator);
 struct tDivU64t																										{ uint64 Quotient; uint64 Remainder; };
 tDivU64t tDivU64(uint64 numerator, uint64 denominator);
 
+// NAN means not a number. P for positive. N for negative. I for indefinite. S for signaling. Q for quiet.
 enum class tFloatType
 {
-	NORM,																											// A normal floating point value. Must be first type.
-	PSNAN,																											// Positive Signaling Not-A-Number. This must be the first NAN type.
+	NORM,																											// A normal floating point value (normalized or denormalized). Must be first type.
+	FIRST_SPECIAL,
+	FIRST_NAN																				= FIRST_SPECIAL,
+	PSNAN																					= FIRST_NAN,			// Positive Signaling Not-A-Number. This must be the first NAN type.
 	NSNAN,																											// Negative Signaling Not-A-Number.
-	PNAN,																											// Positive non-signaling (quiet) Not-A-Number (QNAN).
-	NNAN,																											// Negative non-signaling (quiet) Not-A-Number (QNAN). Must be the last NAN type.
+	PQNAN,																											// Positive non-signaling (quiet) Not-A-Number (QNAN).
+	NQNAN,																											// Negative non-signaling (quiet) Not-A-Number (QNAN). Must be the last NAN type.
+	IQNAN,																											// Indefinite QNAN. For AMD64 processors only a single NQNAN is used for Indefinite. 
+	LAST_NAN																				= IQNAN,
 	PINF,																											// Positive INFinity.
-	NINF																											// Negative INFinity.
+	NINF,																											// Negative INFinity.
+	LAST_SPECIAL																			= NINF
 };
 tFloatType tGetFloatType(float);																					// Single precision get float type.
 tFloatType tGetFloatType(double);																					// Double precision get float type.
-inline bool tIsNAN(float v)																							{ tFloatType t = tGetFloatType(v); return ((int(t) <= int(tFloatType::NNAN)) && (int(t) >= int(tFloatType::PSNAN))) ? true : false; }
-inline bool tIsNAN(double v)																						{ tFloatType t = tGetFloatType(v); return ((int(t) <= int(tFloatType::NNAN)) && (int(t) >= int(tFloatType::PSNAN))) ? true : false; }
-inline bool tIsSpecial(float v)																						{ return (tGetFloatType(v) != tFloatType::NORM) ? true : false; }
-inline bool tIsSpecial(double v)																					{ return (tGetFloatType(v) != tFloatType::NORM) ? true : false; }
+inline bool tIsNAN(float v)																							{ tFloatType t = tGetFloatType(v); return ((int(t) >= int(tFloatType::FIRST_NAN)) && (int(t) <= int(tFloatType::LAST_NAN))) ? true : false; }
+inline bool tIsNAN(double v)																						{ tFloatType t = tGetFloatType(v); return ((int(t) >= int(tFloatType::FIRST_NAN)) && (int(t) <= int(tFloatType::LAST_NAN))) ? true : false; }
+inline bool tIsSpecial(float v)																						{ tFloatType t = tGetFloatType(v); return ((int(t) >= int(tFloatType::FIRST_SPECIAL)) && (int(t) <= int(tFloatType::LAST_SPECIAL))) ? true : false; }
+inline bool tIsSpecial(double v)																					{ tFloatType t = tGetFloatType(v); return ((int(t) >= int(tFloatType::FIRST_SPECIAL)) && (int(t) <= int(tFloatType::LAST_SPECIAL))) ? true : false; }
 inline float tFrexp(float arg, int* exp)																			{ return frexpf(arg, exp); }
+
+// Examples of non-NORM float types. These are only examples as in many cases there are multiple bitpatterns for the
+// same tFloatType. For example a PSNAN can have any bitpattern between 0x7F800001 and 0x7FBFFFFF (inclusive).
+inline float tFloatPSNAN()																							{ union LU { float Nan; uint32 B; } v; v.B = 0x7F800001; return v.Nan; }
+inline float tFloatNSNAN()																							{ union LU { float Nan; uint32 B; } v; v.B = 0xFF800001; return v.Nan; }
+inline float tFloatPQNAN()																							{ union LU { float Nan; uint32 B; } v; v.B = 0x7FC00000; return v.Nan; }
+inline float tFloatIQNAN()																							{ union LU { float Nan; uint32 B; } v; v.B = 0xFFC00000; return v.Nan; }
+inline float tFloatNQNAN()																							{ union LU { float Nan; uint32 B; } v; v.B = 0xFFC00001; return v.Nan; }
+inline float tFloatPINF()																							{ union LU { float Inf; uint32 B; } v; v.B = 0x7F800000; return v.Inf; }
+inline float tFloatNINF()																							{ union LU { float Inf; uint32 B; } v; v.B = 0xFF800000; return v.Inf; }
+
+inline double tDoublePSNAN()																						{ union LU { double Nan; uint64 B; } v; v.B = 0x7FF0000000000001ULL; return v.Nan; }
+inline double tDoubleNSNAN()																						{ union LU { double Nan; uint64 B; } v; v.B = 0xFFF0000000000001ULL; return v.Nan; }
+inline double tDoublePQNAN()																						{ union LU { double Nan; uint64 B; } v; v.B = 0x7FF8000000000000ULL; return v.Nan; }
+inline double tDoubleIQNAN()																						{ union LU { double Nan; uint64 B; } v; v.B = 0xFFF8000000000000ULL; return v.Nan; }
+inline double tDoubleNQNAN()																						{ union LU { double Nan; uint64 B; } v; v.B = 0xFFF8000000000001ULL; return v.Nan; }
+inline double tDoublePINF()																							{ union LU { double Inf; uint64 B; } v; v.B = 0x7FF0000000000000ULL; return v.Inf; }
+inline double tDoubleNINF()																							{ union LU { double Inf; uint64 B; } v; v.B = 0xFFF0000000000000ULL; return v.Inf; }
 
 // These ASCII separators may be used for things like replacing characters in strings for subsequent manipulation.
 const char SeparatorSub																								= 26;	// 0x1A
@@ -363,10 +387,13 @@ inline tStd::tFloatType tStd::tGetFloatType(float v)
 		return tFloatType::NSNAN;
 
 	if ((b >= 0x7FC00000) && (b <= 0x7FFFFFFF))
-		return tFloatType::PNAN;
+		return tFloatType::PQNAN;
 
-	if ((b >= 0xFFC00000) && (b <= 0xFFFFFFFF))
-		return tFloatType::NNAN;
+	if (b == 0xFFC00000)
+		return tFloatType::IQNAN;
+
+	if ((b >= 0xFFC00001) && (b <= 0xFFFFFFFF))
+		return tFloatType::NQNAN;
 
 	if (b == 0x7F800000)
 		return tFloatType::PINF;
@@ -389,10 +416,13 @@ inline tStd::tFloatType tStd::tGetFloatType(double v)
 		return tFloatType::NSNAN;
 
 	if ((b >= 0x7FF8000000000000ULL) && (b <= 0x7FFFFFFFFFFFFFFFULL))
-		return tFloatType::PNAN;
+		return tFloatType::PQNAN;
 
-	if ((b >= 0xFFF8000000000000ULL) && (b <= 0xFFFFFFFFFFFFFFFFULL))
-		return tFloatType::NNAN;
+	if (b == 0xFFF8000000000000ULL)
+		return tFloatType::IQNAN;
+
+	if ((b >= 0xFFF8000000000001ULL) && (b <= 0xFFFFFFFFFFFFFFFFULL))
+		return tFloatType::NQNAN;
 
 	if (b == 0x7FF0000000000000ULL)
 		return tFloatType::PINF;
