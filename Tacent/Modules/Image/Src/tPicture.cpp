@@ -406,6 +406,9 @@ bool tPicture::Resample(int width, int height, tFilter filter)
 	int origHeight = GetHeight(); 
 	tAssert((origWidth > 0) && (origHeight > 0));
 
+	if ((width == origWidth) && (height == origHeight))
+		return true;
+
 	// For now we're using CxImage because it's there.
 	CxImage image(origWidth, origHeight, 32);
 
