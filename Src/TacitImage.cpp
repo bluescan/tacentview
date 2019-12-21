@@ -45,7 +45,8 @@ bool TacitImage::Load(const tString& filename)
 
 	Filename = filename;
 	Filetype = tGetFileType(Filename);
-	Load();
+
+	return Load();
 }
 
 
