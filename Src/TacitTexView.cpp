@@ -465,6 +465,8 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 	float drawh = 1.0f;
 	float iw = 1.0f;
 	float ih = 1.0f;
+	static int imgxi = 0;
+	static int imgyi = 0;
 
 	if (CurrImage)
 	{
@@ -626,10 +628,6 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 		glTexCoord2f(1.0f - uvHMargin + uOffset, 1.0f - uvVMargin + vOffset); glVertex2f(r, t);
 		glTexCoord2f(1.0f - uvHMargin + uOffset, 0.0f + uvVMargin + vOffset); glVertex2f(r, b);
 		glEnd();
-		glDisable(GL_TEXTURE_2D);
-
-		CursorImage.Bind();
-		glEnable(GL_TEXTURE_2D);
 
 		float cw = float((CursorImage.GetWidth() - 1) >> 1);
 		float ch = float((CursorImage.GetHeight() - 1) >> 1);
@@ -637,20 +635,46 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 		float cy = float(CursorY);
 		float areaH = float(workAreaH) + topUIHeight;
 
-		glBegin(GL_QUADS);
-		glTexCoord2f(0.0f, 0.0f); glVertex2f(cx-cw, areaH-(cy+ch));
-		glTexCoord2f(0.0f, 1.0f); glVertex2f(cx-cw, areaH-(cy-ch));
-		glTexCoord2f(1.0f, 1.0f); glVertex2f(cx+cw, areaH-(cy-ch));
-		glTexCoord2f(1.0f, 0.0f); glVertex2f(cx+cw, areaH-(cy+ch));
-		glEnd();
+		float picX = cx - l;
+		float picY = (areaH - cy) - b;
+		float normX = picX / (r-l);
+		float normY = picY / (t-b);
+		bool insideRect = tMath::tInRange(normX, 0.0f, 1.0f) && tMath::tInRange(normY, 0.0f, 1.0f);
+		bool showCursor = true;
+		if (insideRect)
+		{
+			float imgx = iw * tMath::tLesc
+			(
+				tMath::tGetSaturate(normX),
+				0.0f + uvHMargin + uOffset, 1.0f - uvHMargin + uOffset
+			);
+			float imgy = ih * tMath::tLesc
+			(
+				tMath::tGetSaturate(normY),
+				0.0f + uvVMargin + vOffset, 1.0f - uvVMargin + vOffset
+			);
+			imgxi = tMath::tGetClamp(int(imgx), 0, CurrImage->GetWidth()-1);
+			imgyi = tMath::tGetClamp(int(imgy), 0, CurrImage->GetHeight()-1);
+			PixelColour = CurrImage->GetPixel(imgxi, imgyi);
+		}
+		else
+		{
+			showCursor = false;
+		}
+
+		if (showCursor)
+		{
+			CursorImage.Bind();
+			glBegin(GL_QUADS);
+			glTexCoord2f(0.0f, 0.0f); glVertex2f(cx-cw, areaH-(cy+ch));
+			glTexCoord2f(0.0f, 1.0f); glVertex2f(cx-cw, areaH-(cy-ch));
+			glTexCoord2f(1.0f, 1.0f); glVertex2f(cx+cw, areaH-(cy-ch));
+			glTexCoord2f(1.0f, 0.0f); glVertex2f(cx+cw, areaH-(cy+ch));
+			glEnd();
+		}
 
 		glDisable(GL_TEXTURE_2D);
 		glFlush(); // Don't need this with GLUT_DOUBLE and glutSwapBuffers.
-
-		float picX = cx - l;
-		float picY = (areaH - cy) - b;
-		if ((picX >= 0.0f) && (picX <= r - l - 1.0f) && (picY >= 0.0f) && (picY <= t - b - 1.0f))
-			PixelColour = CurrImage->GetPixel(int(picX), int(picY));
 	}
 
 	glMatrixMode(GL_PROJECTION);
@@ -716,7 +740,7 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 		}
 
 		ImGui::PushItemWidth(200);
-		if (ImGui::SliderFloat("", &ZoomPercent, 20.0f, 2000.0f, " Zoom %.2f"))
+		if (ImGui::SliderFloat("", &ZoomPercent, 20.0f, 2500.0f, " Zoom %.2f"))
 			FitMode = false;
 
 		ImGui::PopItemWidth();
@@ -750,11 +774,10 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 
 		int colourFlags = 0;		// ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_NoDragDrop | ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_NoOptions;
 		tColourf floatCol(PixelColour);
-		ImGui::Text("Pixel:");
-
 		ImGui::PushItemWidth(180);
-		ImGui::ColorEdit4("Colour##2f", floatCol.E, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | colourFlags);
+		ImGui::ColorEdit4("Colour##2f", floatCol.E, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | colourFlags);
 		ImGui::PopItemWidth();
+		ImGui::Text("PXL(%d,%d)",imgxi, imgyi);
 	}
 
 	ImGui::EndMainMenuBar();
@@ -794,7 +817,7 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 			{
 				FitMode = false;
 				ZoomPercent = tMath::tFloor(ZoomPercent*0.1f + 1.0f) * 10.0f;
-				tMath::tClamp(ZoomPercent, 20.0f, 2000.0f);
+				tMath::tClamp(ZoomPercent, 20.0f, 2500.0f);
 			}
 			break;
 
@@ -804,7 +827,7 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 			{
 				FitMode = false;
 				ZoomPercent = tMath::tCeiling(ZoomPercent*0.1f - 1.0f) * 10.0f;
-				tMath::tClamp(ZoomPercent, 20.0f, 2000.0f);
+				tMath::tClamp(ZoomPercent, 20.0f, 2500.0f);
 			}
 			break;
 	}
@@ -813,6 +836,9 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 
 void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press, int mods)
 {
+	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
+		return;
+
 	bool down = press ? true : false;
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
@@ -862,7 +888,7 @@ void TexView::ScrollWheelCallback(GLFWwindow* window, double x, double y)
 	ZoomPercent += zoomDelta;
 
 	ZoomPercent = tMath::tRound(ZoomPercent*10.0f) / 10.0f;
-	tMath::tClamp(ZoomPercent, 20.0f, 2000.0f);
+	tMath::tClamp(ZoomPercent, 20.0f, 2500.0f);
 }
 
 

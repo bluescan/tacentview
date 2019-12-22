@@ -403,7 +403,7 @@ bool tPicture::Resample(int width, int height, tFilter filter)
 		return false;
 
 	int origWidth = GetWidth();
-	int origHeight = GetHeight(); 
+	int origHeight = GetHeight();
 	tAssert((origWidth > 0) && (origHeight > 0));
 
 	if ((width == origWidth) && (height == origHeight))
