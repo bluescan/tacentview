@@ -41,8 +41,9 @@ public:
 	tString Filename;
 	tSystem::tFileType Filetype;
 
-	// Only one of these will be valid at a time. This is because dds files are special and already in HW ready format.
-	// The tTexture will store any dds files, while tPicture stores other types (tga, gif, jpg, bmp, tif, png, etc).
+	// Dds files are special and already in HW ready format. The tTexture will store any dds files, while tPicture stores
+	// other types (tga, gif, jpg, bmp, tif, png, etc). If the image is a dds file, the tTexture is valid and in order to
+	// read pixel data, the image is fetched from the framebuffer to ALSO make a valid PictureImage.
 	tImage::tTexture TextureImage;
 	tImage::tPicture PictureImage;
 
@@ -52,4 +53,6 @@ public:
 private:
 	void GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFormat, bool& compressed, tImage::tPixelFormat);
 	void BindLayers(const tList<tImage::tLayer>&);
+
+	bool ConvertTextureToPicture();
 };

@@ -71,6 +71,9 @@ bool TacitImage::Load()
 		success = false;
 	}
 
+	if (Filetype == tSystem::tFileType::DDS)
+		ConvertTextureToPicture();
+
 	return success;
 }
 
@@ -110,7 +113,8 @@ tColouri TacitImage::GetPixel(int x, int y) const
 	if (PictureImage.IsValid())
 		return PictureImage.GetPixel(x, y);
 
-	// @todo Don't yet know how to handle TextureImage as the format is for HW.
+	// Generally the PictureImage should always be valid. When dds files (tTextures) are loaded, they get
+	// uncompressed into valid PictureImage files so the pixel info can be read.
 	return tColouri::black;
 }
 
@@ -146,6 +150,14 @@ bool TacitImage::Bind()
 	if (GLTextureID == 0)
 		return false;
 
+	// We try to bind the native tTexture first if possible.
+	if (TextureImage.IsValid())
+	{
+		const tList<tLayer>& layers = TextureImage.GetLayers();
+		BindLayers(layers);
+		return true;
+	}
+
 	// glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, gPicture.GetWidth(), gPicture.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, gPicture.GetPixelPointer());
 	if (PictureImage.IsValid())
 	{
@@ -163,14 +175,6 @@ bool TacitImage::Bind()
 		return true;
 	}
 
-	if (TextureImage.IsValid())
-	{
-		const tList<tLayer>& layers = TextureImage.GetLayers();
-		//TextureImage.StealLayers(layers);
-		BindLayers(layers);
-		return true;
-	}
-
 	return false;
 }
 
@@ -183,9 +187,9 @@ void TacitImage::BindLayers(const tList<tLayer>& layers)
 	glBindTexture(GL_TEXTURE_2D, GLTextureID);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	// If the texture format is a mipmapped one, we need to set up OpenGL slightly differently.
@@ -303,3 +307,17 @@ void TacitImage::GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFo
 	}
 }
 
+
+bool TacitImage::ConvertTextureToPicture()
+{
+	if (!(TextureImage.IsValid() && !PictureImage.IsValid()))
+		return false;
+
+	int w = TextureImage.GetWidth();
+	int h = TextureImage.GetHeight();
+	Bind();
+	uint8* rgbaData = new uint8[w * h * 4];
+	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgbaData);
+	PictureImage.Set(w, h, (tPixel*)rgbaData, false);
+	return true;
+}
