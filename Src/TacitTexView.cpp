@@ -43,6 +43,8 @@ namespace TexView
 	tList<TacitImage> Images;
 	TacitImage* CurrImage		= nullptr;
 	TacitImage CursorImage;
+	TacitImage PrevImage;
+	TacitImage NextImage;
 	GLFWwindow* Window			= nullptr;
 	bool RMBDown				= false;
 	int DragAnchorX				= 0;
@@ -467,7 +469,6 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 	float ih = 1.0f;
 	static int imgxi = 0;
 	static int imgyi = 0;
-
 	if (CurrImage)
 	{
 		iw = float(CurrImage->GetWidth());
@@ -686,16 +687,51 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
 
 	// Show the big demo window. You can browse its code to learn more about Dear ImGui.
 	static bool showDemoWindow = false;
+	// static bool showDemoWindow = true;
 	if (showDemoWindow)
 		ImGui::ShowDemoWindow(&showDemoWindow);
 
+
+    ImGuiWindowFlags window_flags = 0;
+    window_flags |= ImGuiWindowFlags_NoTitleBar;
+    window_flags |= ImGuiWindowFlags_NoScrollbar;
+    //window_flags |= ImGuiWindowFlags_MenuBar;
+    window_flags |= ImGuiWindowFlags_NoMove;
+    window_flags |= ImGuiWindowFlags_NoResize;
+    window_flags |= ImGuiWindowFlags_NoCollapse;
+	window_flags |= ImGuiWindowFlags_NoNav;
+    window_flags |= ImGuiWindowFlags_NoBackground;
+    window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+
+	ImGui::SetNextWindowPos(ImVec2(0, float(topUIHeight) + float(workAreaH)*0.5f - 35.0f));
+	ImGui::SetNextWindowSize(ImVec2(18,70), ImGuiCond_Always);
+	ImGui::Begin("Prev", nullptr, window_flags);
+	ImGui::SetCursorPos(ImVec2(0, 0));
+	if (ImGui::ImageButton(ImTextureID(uint64(PrevImage.GLTextureID)), ImVec2(16,64), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+		OnPrevious();
+	ImGui::End();
+
+	ImGui::SetNextWindowPos(ImVec2(workAreaW-31.0f, float(topUIHeight) + float(workAreaH)*0.5f - 35.0f));
+	ImGui::SetNextWindowSize(ImVec2(18,70), ImGuiCond_Always);
+	ImGui::Begin("Next", nullptr, window_flags);
+	ImGui::SetCursorPos(ImVec2(0, 0));
+	if (ImGui::ImageButton(ImTextureID(uint64(NextImage.GLTextureID)), ImVec2(16,64), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+		OnNext();
+	ImGui::End();
+
+//	ImGui::SetCursorPos(ImVec2(workAreaW-31.0f, float(workAreaH)*0.5f - 36.0f));
+//	if (ImGui::ImageButton(ImTextureID(uint64(NextImage.GLTextureID)), ImVec2(16,64), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+//		OnNext();
+
+
+	ImGui::SetNextWindowPos(ImVec2(0, 0));
 	ImGui::BeginMainMenuBar();
 	{
-		if (ImGui::Button("Prev"))
-			OnPrevious();
+//		if (ImGui::Button("Prev"))
+//			OnPrevious();
 
-		if (ImGui::Button("Next"))
-			OnNext();
+//		if (ImGui::Button("Next"))
+//			OnNext();
 
 		static bool contactDialog = false;
 		bool justOpenedContactDialog = false;
@@ -836,13 +872,27 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 
 void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press, int mods)
 {
+	ImGuiIO& io = ImGui::GetIO();
+//	if (io.WantCaptureMouse)
+//		return;
 	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
 		return;
+	//ImGui::Get
+//	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows))
+//		return;
+	
+//	if (ImGui::IsWindowFocused(ImGuiHoFlags_AnyWindow))
+//		return;
 
-	bool down = press ? true : false;
+//		ImGui::IsItemHovered(
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
 
+//	double topUIHeight = 22.0;
+//	if (ypos <= topUIHeight)
+//		return;
+
+	bool down = press ? true : false;
 	switch (mouseButton)
 	{
 		// Left mouse button.
@@ -979,6 +1029,14 @@ int main(int argc, char** argv)
 	tString cursorFile = tSystem::tGetProgramDir() + "Data/PixelCursor.png";
 	TexView::CursorImage.Load(cursorFile);
 	TexView::CursorImage.Bind();
+
+	tString prevFile = tSystem::tGetProgramDir() + "Data/PrevArrow.png";
+	TexView::PrevImage.Load(prevFile);
+	TexView::PrevImage.Bind();
+
+	tString nextFile = tSystem::tGetProgramDir() + "Data/NextArrow.png";
+	TexView::NextImage.Load(nextFile);
+	TexView::NextImage.Bind();
 
 	TexView::FindTextureFiles();
 	if (ImageFileParam.IsPresent())
