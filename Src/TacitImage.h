@@ -29,6 +29,7 @@ public:
 	bool Load();						// Load into main memory.
 	bool Load(const tString& filename);
 	bool IsLoaded() const;
+	bool IsOpaque() const;
 
 	bool Bind();						// Bind to a particulr texture ID and load into VRAM. If image is already in
 										// VRAM, it only binds (makes texture current).
@@ -37,15 +38,18 @@ public:
 	tColouri GetPixel(int x, int y) const;
 
 	void PrintInfo();
+	bool ConvertTextureToPicture();
 
 	tString Filename;
 	tSystem::tFileType Filetype;
 
-	// Dds files are special and already in HW ready format. The tTexture will store any dds files, while tPicture stores
-	// other types (tga, gif, jpg, bmp, tif, png, etc). If the image is a dds file, the tTexture is valid and in order to
-	// read pixel data, the image is fetched from the framebuffer to ALSO make a valid PictureImage.
+	// Dds files are special and already in HW ready format. The tTexture can store dds files, while tPicture stores
+	// other types (tga, gif, jpg, bmp, tif, png, etc). If the image is a dds file, the tTexture is valid and in order
+	// to read pixel data, the image is fetched from the framebuffer to ALSO make a valid PictureImage.
+	//
+	// Note: A tTexture contains all mipmap levels while a tPicture does not. That's why we have a list of tPictures.
 	tImage::tTexture TextureImage;
-	tImage::tPicture PictureImage;
+	tList<tImage::tPicture> PictureImages;
 
 	// Zero is invalid and means texture has never been bound and loaded into VRAM.
 	uint GLTextureID;
@@ -53,6 +57,4 @@ public:
 private:
 	void GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFormat, bool& compressed, tImage::tPixelFormat);
 	void BindLayers(const tList<tImage::tLayer>&);
-
-	bool ConvertTextureToPicture();
 };

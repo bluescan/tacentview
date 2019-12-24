@@ -333,15 +333,14 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 			if (!img->IsLoaded())
 				img->Load();
 
-			if (img->IsLoaded() && img->PictureImage.IsValid() && !img->PictureImage.IsOpaque())
+			if (img->IsLoaded() && !img->IsOpaque())
 				allOpaque = false;
 		}
 
 		TacitImage* currImg = Images.First();
 		while (currImg)
 		{
-			tImage::tPicture& currPic = currImg->PictureImage;
-			if (!currPic.IsValid())
+			if (!currImg->IsLoaded())
 			{
 				currImg = currImg->Next();
 				continue;
@@ -355,11 +354,12 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 
 			tPrintf("Processing frame %d : %s at (%d, %d).\n", frame, currImg->Filename.ConstText(), ix, iy);
 			frame++;
+			tImage::tPicture* currPic = currImg->PictureImages.First();
 
 			tImage::tPicture resampled;
-			if ((currPic.GetWidth() != frameWidth) || (currPic.GetHeight() != frameHeight))
+			if ((currImg->GetWidth() != frameWidth) || (currImg->GetHeight() != frameHeight))
 			{
-				resampled.Set(currPic);
+				resampled.Set(*currPic);
 				resampled.Resample(frameWidth, frameHeight);
 			}
 
@@ -370,7 +370,7 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 					(
 						x + (ix*frameWidth),
 						y + ((numRows-1-iy)*frameHeight),
-						resampled.IsValid() ? resampled.GetPixel(x, y) : currPic.GetPixel(x, y)
+						resampled.IsValid() ? resampled.GetPixel(x, y) : currPic->GetPixel(x, y)
 					);
 
 			currImg = currImg->Next();
@@ -758,7 +758,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				}
 				else
 				{
-					bool success = CurrImage->PictureImage.SaveTGA(tgaFile, tImage::tFileTGA::tFormat::Auto, rleCompression ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
+					bool success = CurrImage->PictureImages.First()->SaveTGA(tgaFile, tImage::tFileTGA::tFormat::Auto, rleCompression ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
 					if (success)
 						tPrintf("Saved tga as : %s\n", tgaFile.ConstText());
 					else

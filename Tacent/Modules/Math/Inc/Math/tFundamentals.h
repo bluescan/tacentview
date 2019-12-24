@@ -63,6 +63,10 @@ template<typename T> inline T tMin(const T& a, const T& b, const T& c, const T& 
 template<typename T> inline T tMax(const T& a, const T& b, const T& c, const T& d)										{ T ab = a > b ? a : b; T cd = c > d ? c : d; return ab > cd ? ab : cd; }
 template<typename T> inline T tGetClamp(T val, T min, T max)															{ return (val < min) ? min : ((val > max) ? max : val); }
 template<typename T> inline void tClamp(T& val, T min, T max)															{ val = (val < min) ? min : ((val > max) ? max : val); }
+template<typename T> inline T tGetClampMin(T val, T min)																{ return (val < min) ? min : val; }
+template<typename T> inline void tClampMin(T& val, T min)																{ val = (val < min) ? min : val; }
+template<typename T> inline T tGetClampMax(T val, T max)																{ return (val > max) ? max : val; }
+template<typename T> inline void tClampMax(T& val, T max)																{ val = (val > max) ? max : val; }
 template<typename T> inline T tGetSaturate(T val)																		{ return (val < T(0)) ? T(0) : ((val > T(1)) ? T(1) : val); }
 template<typename T> inline void tSaturate(T& val)																		{ val = (val < T(0)) ? T(0) : ((val > T(1)) ? T(1) : val); }
 template<typename T> inline bool tInRange(const T val, const T min, const T max)		/* Returns val E [min, max]	*/	{ return tInIntervalII(val, min, max); }

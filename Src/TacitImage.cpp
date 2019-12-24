@@ -62,9 +62,15 @@ bool TacitImage::Load()
 	try
 	{
 		if (Filetype == tSystem::tFileType::DDS)
+		{
 			success = TextureImage.Load(Filename);
+		}
 		else
-			success = PictureImage.Load(Filename);
+		{
+			tPicture* picture = new tPicture();
+			PictureImages.Append(picture);
+			success = picture->Load(Filename);
+		}
 	}
 	catch (tError error)
 	{
@@ -80,14 +86,28 @@ bool TacitImage::Load()
 
 bool TacitImage::IsLoaded() const
 {
-	return (TextureImage.IsValid() || PictureImage.IsValid());
+	return (TextureImage.IsValid() || (PictureImages.Count() > 0));
+}
+
+
+bool TacitImage::IsOpaque() const
+{
+	if (TextureImage.IsValid())
+		return TextureImage.IsOpaque();
+
+	tPicture* picture = PictureImages.First();
+	if (picture && picture->IsValid())
+		return picture->IsOpaque();
+
+	return true;
 }
 
 
 int TacitImage::GetWidth() const
 {
-	if (PictureImage.IsValid())
-		return PictureImage.GetWidth();
+	tPicture* picture = PictureImages.First();
+	if (picture && picture->IsValid())
+		return picture->GetWidth();
 
 	if (TextureImage.IsValid())
 		return TextureImage.GetWidth();
@@ -98,8 +118,9 @@ int TacitImage::GetWidth() const
 
 int TacitImage::GetHeight() const
 {
-	if (PictureImage.IsValid())
-		return PictureImage.GetHeight();
+	tPicture* picture = PictureImages.First();
+	if (picture && picture->IsValid())
+		return picture->GetHeight();
 
 	if (TextureImage.IsValid())
 		return TextureImage.GetHeight();
@@ -110,8 +131,9 @@ int TacitImage::GetHeight() const
 
 tColouri TacitImage::GetPixel(int x, int y) const
 {
-	if (PictureImage.IsValid())
-		return PictureImage.GetPixel(x, y);
+	tPicture* picture = PictureImages.First();
+	if (picture && picture->IsValid())
+		return picture->GetPixel(x, y);
 
 	// Generally the PictureImage should always be valid. When dds files (tTextures) are loaded, they get
 	// uncompressed into valid PictureImage files so the pixel info can be read.
@@ -123,9 +145,16 @@ void TacitImage::PrintInfo()
 {
 	tPixelFormat format = tPixelFormat::Invalid;
 	if (Filetype == tSystem::tFileType::DDS)
+	{
 		format = TextureImage.GetPixelFormat();
+	}
 	else
-		format = PictureImage.IsOpaque() ? tPixelFormat::R8G8B8 : tPixelFormat::R8G8B8A8;
+	{
+		tPicture* picture = PictureImages.First();
+		if (picture)
+			format = picture->IsOpaque() ? tPixelFormat::R8G8B8 : tPixelFormat::R8G8B8A8;
+	}
+
 	tPrintf
 	(
 		"Image: %s Width: %d Height: %d PixelFormat: %s\n",
@@ -159,15 +188,16 @@ bool TacitImage::Bind()
 	}
 
 	// glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, gPicture.GetWidth(), gPicture.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, gPicture.GetPixelPointer());
-	if (PictureImage.IsValid())
+	tPicture* picture = PictureImages.First();
+	if (picture && picture->IsValid())
 	{
 		tList<tLayer> layers;
 		layers.Append
 		(
 			new tLayer
 			(
-				tPixelFormat::R8G8B8A8, PictureImage.GetWidth(), PictureImage.GetHeight(),
-				(uint8*)PictureImage.GetPixelPointer()
+				tPixelFormat::R8G8B8A8, picture->GetWidth(), picture->GetHeight(),
+				(uint8*)picture->GetPixelPointer()
 			)
 		);
 
@@ -208,6 +238,7 @@ void TacitImage::BindLayers(const tList<tLayer>& layers)
 		tPixelFormat pixelFormat = layers.First()->PixelFormat;
 		GetGLFormatInfo(srcFormat, srcType, dstFormat, compressed, pixelFormat);
 
+		//tPrintf("MipLevel %d\n", mipmapLevel);
 		if (compressed)
 		{
 			// For each layer (non-mipmapped formats will only have one) we need to submit the texture data.
@@ -310,14 +341,23 @@ void TacitImage::GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFo
 
 bool TacitImage::ConvertTextureToPicture()
 {
-	if (!(TextureImage.IsValid() && !PictureImage.IsValid()))
+	if (!(TextureImage.IsValid() && (PictureImages.Count() <= 0)))
 		return false;
 
 	int w = TextureImage.GetWidth();
 	int h = TextureImage.GetHeight();
 	Bind();
-	uint8* rgbaData = new uint8[w * h * 4];
-	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgbaData);
-	PictureImage.Set(w, h, (tPixel*)rgbaData, false);
+
+	int numMipmaps = TextureImage.GetNumLayers();
+	for (int level = 0; level < numMipmaps; level++)
+	{
+		int mipW = w >> level;
+		tMath::tClampMin(mipW, 1);
+		int mipH = h >> level;
+		tMath::tClampMin(mipH, 1);
+		uint8* rgbaData = new uint8[mipW * mipH * 4];
+		glGetTexImage(GL_TEXTURE_2D, level, GL_RGBA, GL_UNSIGNED_BYTE, rgbaData);
+		PictureImages.Append(new tPicture(mipW, mipH, (tPixel*)rgbaData, false));
+	}
 	return true;
 }
