@@ -704,18 +704,18 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
     window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
 
 	ImGui::SetNextWindowPos(ImVec2(0, float(topUIHeight) + float(workAreaH)*0.5f - 35.0f));
-	ImGui::SetNextWindowSize(ImVec2(18,70), ImGuiCond_Always);
+	ImGui::SetNextWindowSize(ImVec2(18,72), ImGuiCond_Always);
 	ImGui::Begin("Prev", nullptr, window_flags);
-	ImGui::SetCursorPos(ImVec2(0, 0));
-	if (ImGui::ImageButton(ImTextureID(uint64(PrevImage.GLTextureID)), ImVec2(16,64), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+	ImGui::SetCursorPos(ImVec2(4, 1));
+	if (ImGui::ImageButton(ImTextureID(uint64(PrevImage.GLTextureID)), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 		OnPrevious();
 	ImGui::End();
 
 	ImGui::SetNextWindowPos(ImVec2(workAreaW-31.0f, float(topUIHeight) + float(workAreaH)*0.5f - 35.0f));
-	ImGui::SetNextWindowSize(ImVec2(18,70), ImGuiCond_Always);
+	ImGui::SetNextWindowSize(ImVec2(18,72), ImGuiCond_Always);
 	ImGui::Begin("Next", nullptr, window_flags);
 	ImGui::SetCursorPos(ImVec2(0, 0));
-	if (ImGui::ImageButton(ImTextureID(uint64(NextImage.GLTextureID)), ImVec2(16,64), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+	if (ImGui::ImageButton(ImTextureID(uint64(NextImage.GLTextureID)), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 		OnNext();
 	ImGui::End();
 
