@@ -45,6 +45,7 @@ namespace TexView
 	TacitImage CursorImage;
 	TacitImage PrevImage;
 	TacitImage NextImage;
+	double NextPrevDisappear	= 1.0;
 	GLFWwindow* Window			= nullptr;
 	bool RMBDown				= false;
 	int DragAnchorX				= 0;
@@ -74,8 +75,8 @@ namespace TexView
 	void SetWindowTitle();
 	bool OnPrevious();
 	bool OnNext();
-	void DoFrame(GLFWwindow* window, bool dopoll = true);
-	void WindowRefreshFun(GLFWwindow* window)																			{ DoFrame(window, false); }
+	void Update(GLFWwindow* window, double dt, bool dopoll = true);
+	void WindowRefreshFun(GLFWwindow* window)																			{ Update(window, 0.0, false); }
 	void KeyCallback(GLFWwindow*, int key, int scancode, int action, int modifiers);
 	void MouseButtonCallback(GLFWwindow*, int mouseButton, int x, int y);
 	void CursorPosCallback(GLFWwindow*, double x, double y);
@@ -417,7 +418,7 @@ void TexView::SetWindowTitle()
 }
 
 
-void TexView::DoFrame(GLFWwindow* window, bool dopoll)
+void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 {
 	// Poll and handle events like inputs, window resize, etc. You can read the io.WantCaptureMouse,
 	// io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -703,36 +704,29 @@ void TexView::DoFrame(GLFWwindow* window, bool dopoll)
     window_flags |= ImGuiWindowFlags_NoBackground;
     window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
 
-	ImGui::SetNextWindowPos(ImVec2(0, float(topUIHeight) + float(workAreaH)*0.5f - 35.0f));
-	ImGui::SetNextWindowSize(ImVec2(18,72), ImGuiCond_Always);
-	ImGui::Begin("Prev", nullptr, window_flags);
-	ImGui::SetCursorPos(ImVec2(4, 1));
-	if (ImGui::ImageButton(ImTextureID(uint64(PrevImage.GLTextureID)), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
-		OnPrevious();
-	ImGui::End();
+	NextPrevDisappear -= dt;
+	if (NextPrevDisappear > 0.0)
+	{
+		ImGui::SetNextWindowPos(ImVec2(0, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
+		ImGui::SetNextWindowSize(ImVec2(18,72), ImGuiCond_Always);
+		ImGui::Begin("Prev", nullptr, window_flags);
+		ImGui::SetCursorPos(ImVec2(4, 2));
+		if (ImGui::ImageButton(ImTextureID(uint64(PrevImage.GLTextureID)), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			OnPrevious();
+		ImGui::End();
 
-	ImGui::SetNextWindowPos(ImVec2(workAreaW-31.0f, float(topUIHeight) + float(workAreaH)*0.5f - 35.0f));
-	ImGui::SetNextWindowSize(ImVec2(18,72), ImGuiCond_Always);
-	ImGui::Begin("Next", nullptr, window_flags);
-	ImGui::SetCursorPos(ImVec2(0, 0));
-	if (ImGui::ImageButton(ImTextureID(uint64(NextImage.GLTextureID)), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
-		OnNext();
-	ImGui::End();
-
-//	ImGui::SetCursorPos(ImVec2(workAreaW-31.0f, float(workAreaH)*0.5f - 36.0f));
-//	if (ImGui::ImageButton(ImTextureID(uint64(NextImage.GLTextureID)), ImVec2(16,64), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
-//		OnNext();
-
+		ImGui::SetNextWindowPos(ImVec2(workAreaW-32.0f, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
+		ImGui::SetNextWindowSize(ImVec2(18,72), ImGuiCond_Always);
+		ImGui::Begin("Next", nullptr, window_flags);
+		ImGui::SetCursorPos(ImVec2(4, 2));
+		if (ImGui::ImageButton(ImTextureID(uint64(NextImage.GLTextureID)), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			OnNext();
+		ImGui::End();
+	}
 
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
 	ImGui::BeginMainMenuBar();
 	{
-//		if (ImGui::Button("Prev"))
-//			OnPrevious();
-
-//		if (ImGui::Button("Next"))
-//			OnNext();
-
 		static bool contactDialog = false;
 		bool justOpenedContactDialog = false;
 		if (ImGui::Button("Contact Sheet"))
@@ -837,6 +831,7 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 	if (io.WantTextInput)
 		return;
 
+	NextPrevDisappear = 4.0;
 	switch (key)
 	{
 		case GLFW_KEY_LEFT:
@@ -872,25 +867,17 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 
 void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press, int mods)
 {
+	NextPrevDisappear = 4.0;
 	ImGuiIO& io = ImGui::GetIO();
-//	if (io.WantCaptureMouse)
-//		return;
 	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
 		return;
-	//ImGui::Get
-//	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows))
-//		return;
-	
-//	if (ImGui::IsWindowFocused(ImGuiHoFlags_AnyWindow))
-//		return;
 
-//		ImGui::IsItemHovered(
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
 
-//	double topUIHeight = 22.0;
-//	if (ypos <= topUIHeight)
-//		return;
+	double topUIHeight = 22.0;
+	if (ypos <= topUIHeight)
+		return;
 
 	bool down = press ? true : false;
 	switch (mouseButton)
@@ -927,12 +914,15 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 
 void TexView::CursorPosCallback(GLFWwindow* window, double x, double y)
 {
+	NextPrevDisappear = 4.0;
 	// tPrintf("Cursor: %f %f\n", x, y);
 }
 
 
 void TexView::ScrollWheelCallback(GLFWwindow* window, double x, double y)
 {
+	NextPrevDisappear = 4.0;
+
 	FitMode = false;
 	float zoomDelta = ZoomPercent * 0.1f * float(y);
 	ZoomPercent += zoomDelta;
@@ -1045,9 +1035,16 @@ int main(int argc, char** argv)
 		TexView::SetCurrentImage();
 
 	// Main loop.
+	static double lastUpdateTime = glfwGetTime();
 	while (!glfwWindowShouldClose(TexView::Window))
-		TexView::DoFrame(TexView::Window);
+	{
+		double currUpdateTime = glfwGetTime();
+		TexView::Update(TexView::Window, currUpdateTime - lastUpdateTime);
+		lastUpdateTime = currUpdateTime;
+	}
+	
 
+	
 	// Cleanup.
 	ImGui_ImplOpenGL2_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
