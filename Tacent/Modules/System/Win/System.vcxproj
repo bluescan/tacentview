@@ -28,7 +28,7 @@
     <ClInclude Include="..\Inc\System\tStream.h" />
     <ClInclude Include="..\Inc\System\tTask.h" />
     <ClInclude Include="..\Inc\System\tThrow.h" />
-    <ClInclude Include="..\Inc\System\tTimer.h" />
+    <ClInclude Include="..\Inc\System\tTime.h" />
     <ClInclude Include="..\Inc\System\tUtil.h" />
   </ItemGroup>
   <ItemGroup>
@@ -40,7 +40,7 @@
     <ClCompile Include="..\Src\tScript.cpp" />
     <ClCompile Include="..\Src\tTask.cpp" />
     <ClCompile Include="..\Src\tThrow.cpp" />
-    <ClCompile Include="..\Src\tTimer.cpp" />
+    <ClCompile Include="..\Src\tTime.cpp" />
     <ClCompile Include="..\Src\tUtil.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

@@ -76,8 +76,8 @@ public:
 	T* First() const																									{ return (T*)HeadItem; }
 	T* Last() const																										{ return (T*)TailItem; }
 
-	T* NextCirc(const T* here) const						/* Circular. Gets item after here. */ 						{ return l->NextItem ? l->NextItem : HeadItem; }
-	T* PrevCirc(const T* here) const						/* Circular. Gets item before here. */						{ return l->PrevItem ? l->PrevItem : TailItem; }
+	T* NextCirc(const T* here) const						/* Circular. Gets item after here. */ 						{ return here->NextItem ? (T*)here->NextItem : (T*)HeadItem; }
+	T* PrevCirc(const T* here) const						/* Circular. Gets item before here. */						{ return here->PrevItem ? (T*)here->PrevItem : (T*)TailItem; }
 
 	int GetNumItems() const																								{ return ItemCount; }
 	int NumItems() const																								{ return ItemCount; }
@@ -147,8 +147,8 @@ public:
 	T* First() const																									{ return (T*)HeadItem; }
 	T* Last() const																										{ return (T*)TailItem; }
 
-	T* NextCirc(const T* here) const						/* Circular. Gets item after here. */						{ return l->NextItem ? l->NextItem : HeadItem; }
-	T* PrevCirc(const T* here) const						/* Circular. Gets item before here. */						{ return l->PrevItem ? l->PrevItem : TailItem; }
+	T* NextCirc(const T* here) const						/* Circular. Gets item after here. */						{ return here->NextItem ? (T*)here->NextItem : (T*)HeadItem; }
+	T* PrevCirc(const T* here) const						/* Circular. Gets item before here. */						{ return here->PrevItem ? (T*)here->PrevItem : (T*)TailItem; }
 
 	int GetNumItems() const																								{ return ItemCount; }
 	int NumItems() const																								{ return ItemCount; }

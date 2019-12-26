@@ -16,10 +16,14 @@
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL definitions.
 #include <Image/tTexture.h>
 #include <System/tFile.h>
+#include <System/tTime.h>
 #include "TacitImage.h"
 using namespace tStd;
 using namespace tSystem;
 using namespace tImage;
+
+
+int TacitImage::NumLoaded = 0;
 
 
 TacitImage::TacitImage() :
@@ -80,7 +84,28 @@ bool TacitImage::Load()
 	if (Filetype == tSystem::tFileType::DDS)
 		ConvertTextureToPicture();
 
+	if (success)
+	{
+		LoadedTime = tSystem::tGetTime();
+		NumLoaded++;
+	}
+
 	return success;
+}
+
+
+bool TacitImage::Unload()
+{
+	if (!IsLoaded())
+		return true;
+
+	glDeleteTextures(1, &GLTextureID);
+	GLTextureID = 0;
+	TextureImage.Clear();
+	PictureImages.Clear();
+	NumLoaded--;
+	LoadedTime = -1.0f;
+	return true;
 }
 
 

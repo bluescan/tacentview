@@ -3,7 +3,7 @@
 // This module contains a class for spawning other processes and receiving their exit-codes as well as some simple
 // commands for spawning one or many processes at once. Windows platform only.
 //
-// Copyright (c) 2005, 2017 Tristan Grimmer.
+// Copyright (c) 2005, 2017, 2019 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -15,7 +15,7 @@
 
 #include <System/tThrow.h>
 #include <System/tPrint.h>
-#include <System/tUtil.h>
+#include <System/tTime.h>
 #include <Math/tFundamentals.h>
 #include "Build/tProcess.h"
 using namespace tBuild;

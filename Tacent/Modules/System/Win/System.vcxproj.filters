@@ -41,7 +41,7 @@
     <ClInclude Include="..\Inc\System\tCommand.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Inc\System\tTimer.h">
+    <ClInclude Include="..\Inc\System\tTime.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -73,7 +73,7 @@
     <ClCompile Include="..\Src\tCommand.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Src\tTimer.cpp">
+    <ClCompile Include="..\Src\tTime.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

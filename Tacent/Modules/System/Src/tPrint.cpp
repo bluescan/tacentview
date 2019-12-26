@@ -23,6 +23,7 @@
 #include <Math/tLinearAlgebra.h>
 #include <Math/tHash.h>
 #include "System/tUtil.h"
+#include "System/tTime.h"
 #include "System/tFile.h"
 #include "System/tPrint.h"
 using namespace tMath;

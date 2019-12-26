@@ -37,27 +37,7 @@ tString tGetIPAddress();
 #ifdef PLATFORM_WIN
 // Returns the number of cores (processors) the current machine has.
 int tGetNumCores();
-
-// Gets the current local time in 100ns intervals since Jan 1, 1601. @todo Move to tTime.h
-uint64 tGetTimeLocal();
-
-// Gets the Universal Time Coordinated, formerly known as Greenwich Mean Time. Units are in 100ns intervals since
-// Jan 1, 1601.
-uint64 tGetTimeUTC();
-uint64 tGetTimeGMT();
-
-// Return the time as a string.
-enum class tTimeFormat
-{
-	Extended,
-	Standard
-};
-tString tConvertTimeToString(uint64, tTimeFormat = tTimeFormat::Extended);
-#endif // PLATFORM_WIN
-// High accuracy cross platform timing functions.
-int64 tGetHardwareTimerFrequency();
-int64 tGetHardwareTimerCount();
-void tSleep(int milliSeconds);
+#endif
 
 
 }

@@ -30,9 +30,12 @@ public:
 	bool Load(const tString& filename);
 	bool IsLoaded() const;
 	bool IsOpaque() const;
+	bool Unload();
+	float GetLoadedTime() const																							{ return LoadedTime; }
+	static int GetNumLoaded()																							{ return NumLoaded; }
 
-	bool Bind();						// Bind to a particulr texture ID and load into VRAM. If image is already in
-										// VRAM, it only binds (makes texture current).
+	// Bind to a particulr texture ID and load into VRAM. If already in VRAM, it only binds (makes texture current).
+	bool Bind();
 	int GetWidth() const;
 	int GetHeight() const;
 	tColouri GetPixel(int x, int y) const;
@@ -57,4 +60,7 @@ public:
 private:
 	void GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFormat, bool& compressed, tImage::tPixelFormat);
 	void BindLayers(const tList<tImage::tLayer>&);
+
+	float LoadedTime = -1.0f;
+	static int NumLoaded;
 };

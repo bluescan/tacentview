@@ -21,6 +21,7 @@
 #include <System/tCommand.h>
 #include <Image/tPicture.h>
 #include <System/tFile.h>
+#include <System/tTime.h>
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl2.h"
@@ -61,6 +62,8 @@ namespace TexView
 	int CursorX					= -1;
 	int CursorY					= -1;
 	tColouri PixelColour		= tColouri::black;
+	const int MaxLoadedCount	= 19;			// If more images that this loaded we start unloading to free mem.
+	TacitImage* UnloadImage		= nullptr;
 
 	void DrawTextureViewerLog(float x, float y, float w, float h);
 	void PrintRedirectCallback(const char* text, int numChars)															{ LogWindow.AddLog("%s", text); }
@@ -119,6 +122,7 @@ void TexView::FindTextureFiles()
 		Images.Append(new TacitImage(*filename));
 
 	CurrImage = nullptr;
+	UnloadImage = nullptr;
 }
 
 
@@ -132,6 +136,7 @@ void TexView::SetCurrentImage(const tString& currFilename)
 		if (tStricmp(siName.ConstText(), imgName.ConstText()) == 0)
 		{
 			CurrImage = si;
+			UnloadImage = si;
 			break;
 		}
 	}
@@ -139,6 +144,7 @@ void TexView::SetCurrentImage(const tString& currFilename)
 	if (!CurrImage)
 	{
 		CurrImage = Images.First();
+		UnloadImage = CurrImage;
 		if (!currFilename.IsEmpty())
 			tPrintf("Could not display [%s].\n", tSystem::tGetFileName(currFilename).ConstText());
 		if (CurrImage && !CurrImage->Filename.IsEmpty())
@@ -165,6 +171,7 @@ bool TexView::OnPrevious()
 		return false;
 
 	CurrImage = CurrImage->Prev();
+	UnloadImage = CurrImage;
 	CurrImage->Load();
 	CurrImage->PrintInfo();
 	SetWindowTitle();
@@ -183,6 +190,7 @@ bool TexView::OnNext()
 		return false;
 
 	CurrImage = CurrImage->Next();
+	UnloadImage = CurrImage;
 	CurrImage->Load();
 	CurrImage->PrintInfo();
 	SetWindowTitle();
@@ -692,7 +700,6 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (showDemoWindow)
 		ImGui::ShowDemoWindow(&showDemoWindow);
 
-
     ImGuiWindowFlags window_flags = 0;
     window_flags |= ImGuiWindowFlags_NoTitleBar;
     window_flags |= ImGuiWindowFlags_NoScrollbar;
@@ -819,6 +826,16 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	glfwMakeContextCurrent(window);
 	glfwSwapBuffers(window);
+
+	// Consider unloading some images to keep memory down. The numToCheck roughly means it will take
+	// 3 seconds to check all the files assuming a 60Hz update frequency.
+	int numToCheck = tMath::tGetClampMin( Images.NumItems() / (3*60), 1 );
+	for (int c = 0; c < numToCheck; c++)
+	{
+		if ((TacitImage::GetNumLoaded() > MaxLoadedCount) && UnloadImage && (UnloadImage != CurrImage) && UnloadImage->IsLoaded())
+			UnloadImage->Unload();
+		UnloadImage = Images.NextCirc(UnloadImage);
+	}
 }
 
 
