@@ -706,7 +706,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	// Show the big demo window. You can browse its code to learn more about Dear ImGui.
 	static bool showDemoWindow = false;
-	// static bool showDemoWindow = true;
+	//static bool showDemoWindow = true;
 	if (showDemoWindow)
 		ImGui::ShowDemoWindow(&showDemoWindow);
 
@@ -747,15 +747,32 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	{
 		ImGui::BeginMainMenuBar();
 		{
-			static bool contactDialog = false;
-			bool justOpenedContactDialog = false;
-			if (ImGui::Button("Contact Sheet"))
+			if (ImGui::BeginMenu("File"))
 			{
-				contactDialog = !contactDialog;
-				if (contactDialog)
-					justOpenedContactDialog = true;
+				// Show file menu items...
+				if (ImGui::MenuItem("Save As..."))
+				{
+				}
+				ImGui::Separator();
+			    if (ImGui::MenuItem("Quit", "Alt+F4"))
+					glfwSetWindowShouldClose(Window, 1);
+
+				ImGui::EndMenu();
 			}
 
+			static bool contactDialog = false;
+			bool justOpenedContactDialog = false;
+			if (ImGui::BeginMenu("Edit"))
+			{
+				// Show file menu items...
+				if (ImGui::MenuItem("Contact Sheet..."))
+				{
+					contactDialog = !contactDialog;
+					if (contactDialog)
+						justOpenedContactDialog = true;
+				}
+				ImGui::EndMenu();
+			}
 			if (contactDialog)
 				ShowContactSheetDialog(&contactDialog, justOpenedContactDialog);
 
