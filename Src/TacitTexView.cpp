@@ -79,6 +79,7 @@ namespace TexView
 	// Helper to display a little (?) mark which shows a tooltip when hovered.
 	void ShowHelpMark(const char* desc);
 	void ShowContactSheetDialog(bool* popen, bool justOpened);
+	void ShowSaveAsDialog(bool* popen, bool justOpened);
 	void SetWindowTitle();
 	bool OnPrevious();
 	bool OnNext();
@@ -219,6 +220,125 @@ void TexView::ShowHelpMark(const char* desc)
 	ImGui::TextUnformatted(desc);
 	ImGui::PopTextWrapPos();
 	ImGui::EndTooltip();
+}
+
+
+void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
+{
+	ImGuiWindowFlags windowFlags = 0;
+
+	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
+	// do it to make the Demo applications a little more welcoming.
+	ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(370, 184), ImGuiCond_FirstUseEver);
+
+	// Main body of the Demo window starts here.
+	if (!ImGui::Begin("Save As", popen, windowFlags))
+	{
+		ImGui::End();
+		return;
+	}
+
+	static int finalWidth = 512;
+	static int finalHeight = 512;
+	if (justOpened && CurrImage)
+	{
+		finalWidth = CurrImage->GetWidth();
+		finalHeight = CurrImage->GetHeight();
+	}
+	ImGui::InputInt("Final Width", &finalWidth);
+	ImGui::SameLine();
+	ShowHelpMark("Final scaled output sheet height in pixels.");
+
+	ImGui::InputInt("Final Height", &finalHeight);
+	ImGui::SameLine();
+	ShowHelpMark("Final scaled output sheet height in pixels.");
+
+	if (ImGui::Button("Prev Pow2"))
+	{
+		finalWidth = tMath::tNextLowerPower2(CurrImage->GetWidth());
+		finalHeight = tMath::tNextLowerPower2(CurrImage->GetHeight());
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Next Pow2"))
+	{
+		finalWidth = tMath::tNextHigherPower2(CurrImage->GetWidth());
+		finalHeight = tMath::tNextHigherPower2(CurrImage->GetHeight());
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Reset"))
+	{
+		finalWidth = CurrImage->GetWidth();
+		finalHeight = CurrImage->GetHeight();
+	}
+
+    const char* fileTypeItems[] = { "TGA", "PNG", "BMP", "JPG", "GIF" };
+    static int itemCurrent = 0;
+    ImGui::Combo("File Type", &itemCurrent, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
+    ImGui::SameLine();
+	ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
+
+	tString extension = ".tga";
+	switch (itemCurrent)
+	{
+		case 0: extension = ".tga"; break;
+		case 1: extension = ".png"; break;
+		case 2: extension = ".bmp"; break;
+		case 3: extension = ".jpg"; break;
+		case 4: extension = ".gif"; break;
+	}
+
+	static bool rleCompression = false;
+	if (itemCurrent == 0)
+		ImGui::Checkbox("RLE Compression", &rleCompression);
+
+	static char filename[128] = "Filename";
+	if (justOpened)
+	{
+		tString baseName = tSystem::tGetFileBaseName(CurrImage->Filename);
+		tStrcpy(filename, baseName.ConstText());
+	}
+	ImGui::InputText("Filename", filename, IM_ARRAYSIZE(filename));
+	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
+
+	if (ImGui::Button("Save"))
+	{
+		tString imagesDir = tSystem::tGetCurrentDir();
+		if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
+			imagesDir = tSystem::tGetDir(ImageFileParam.Get());
+		tString outFile = imagesDir + tString(filename) + extension;
+
+		tImage::tPicture outPic(CurrImage->GetWidth(), CurrImage->GetHeight());
+		outPic.Set(*CurrImage->PictureImages.First());
+
+		if ((outPic.GetWidth() != finalWidth) || (outPic.GetHeight() != finalHeight))
+			outPic.Resample(finalWidth, finalHeight);
+
+		if (tFileExists(outFile))
+		{
+			tPrintf("File %s already exists. Will not overwrite.\n", outFile.ConstText());
+		}
+		else
+		{
+			bool success = false;
+			tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
+			if (itemCurrent == 0)
+				success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, rleCompression ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
+			else
+				success = outPic.Save(outFile, colourFmt);
+
+			if (success)
+				tPrintf("Saved image as : %s\n", outFile.ConstText());
+			else
+				tPrintf("Failed to save image %s\n", outFile.ConstText());
+		}
+
+		Images.Clear();
+		FindTextureFiles();
+		SetCurrentImage(outFile);
+	}
+
+	ImGui::End();
 }
 
 
@@ -747,11 +867,16 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	{
 		ImGui::BeginMainMenuBar();
 		{
+			static bool saveAsDialog = false;
+			bool justOpenedSaveAsDialog = false;
 			if (ImGui::BeginMenu("File"))
 			{
 				// Show file menu items...
 				if (ImGui::MenuItem("Save As..."))
 				{
+					saveAsDialog = !saveAsDialog;
+					if (saveAsDialog)
+						justOpenedSaveAsDialog = true;
 				}
 				ImGui::Separator();
 			    if (ImGui::MenuItem("Quit", "Alt+F4"))
@@ -759,12 +884,13 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 				ImGui::EndMenu();
 			}
+			if (saveAsDialog)
+				ShowSaveAsDialog(&saveAsDialog, justOpenedSaveAsDialog);
 
 			static bool contactDialog = false;
 			bool justOpenedContactDialog = false;
 			if (ImGui::BeginMenu("Edit"))
 			{
-				// Show file menu items...
 				if (ImGui::MenuItem("Contact Sheet..."))
 				{
 					contactDialog = !contactDialog;
@@ -775,36 +901,6 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			if (contactDialog)
 				ShowContactSheetDialog(&contactDialog, justOpenedContactDialog);
-
-			tFileType fileType = tFileType::Unknown;
-			if (CurrImage && CurrImage->IsLoaded())
-				fileType = CurrImage->Filetype;
-
-			if (fileType != tFileType::Unknown)
-			{
-				static bool rleCompression = false;
-
-				tString tgaFile = CurrImage->Filename;
-				tgaFile.ExtractLastWord('.');
-				tgaFile += "_Saved.tga";
-				if (ImGui::Button("Save TGA"))
-				{
-					if (tFileExists(tgaFile))
-					{
-						tPrintf("Targa %s already exists. Will not overwrite.\n", tgaFile.ConstText());
-					}
-					else
-					{
-						bool success = CurrImage->PictureImages.First()->SaveTGA(tgaFile, tImage::tFileTGA::tFormat::Auto, rleCompression ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
-						if (success)
-							tPrintf("Saved tga as : %s\n", tgaFile.ConstText());
-						else
-							tPrintf("Failed to save tga %s\n", tgaFile.ConstText());
-					}
-				}
-
-				ImGui::Checkbox("RLE", &rleCompression);
-			}
 
 			ImGui::PushItemWidth(200);
 			if (ImGui::SliderFloat("", &ZoomPercent, 20.0f, 2500.0f, " Zoom %.2f"))
@@ -896,6 +992,7 @@ bool TexView::ChangeScreenMode(bool fullscreen)
 		glfwSetWindowMonitor(TexView::Window, nullptr, TexView::Config.WindowX, TexView::Config.WindowY, TexView::Config.WindowW, TexView::Config.WindowH, mode->refreshRate);
 
 	FullscreenMode = fullscreen;
+	return true;
 }
 
 
