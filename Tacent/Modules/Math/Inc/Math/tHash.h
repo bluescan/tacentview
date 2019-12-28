@@ -47,36 +47,40 @@ const tuint256 HashIV256 = 0;
 // concatenated string/data-set to get its hash, you simply chain multiple calls together. The fast hash functions
 // are the only ones that guarantee the same hash value whether computed in parts or as a single data-set.
 uint32 tHashDataFast32(const uint8* data, int length, uint32 iv = HashIV32);
-uint32 tHashStringFast32(const char* string, uint32 iv = HashIV32);
-uint32 tHashStringFast32(const tString& s, uint32 iv = HashIV32);
-uint32 tHashString(const char* s);
+uint32 tHashStringFast32(const char*, uint32 iv = HashIV32);
+uint32 tHashStringFast32(const tString&, uint32 iv = HashIV32);
+uint32 tHashString(const char*);
+
+// The CT (Compile Time) variant uses the fast-hash algorithm. It is super handy for use in the 'case' part of switch
+// statements or any time you know the string literal explicitly. In these cases the compiler can do all the work.
+constexpr uint32 tHashCT(const char*, uint32 iv = HashIV32);
 
 // The HashData32/64/128/256 and variants do _not_ guarantee the same hash value if they are chained together. This is
 // because the entire state is not stored in the hash itself since these are much better hash functions than the Fast32
 // versions. Chaining is still useful as uniqueness is still guaranteed and if any data changes in any of the sources
 // the end result will vary. Chaining is performed in the same manner as HashDataFast32.
 uint32 tHashData32(const uint8* data, int length, uint32 iv = HashIV32);
-uint32 tHashString32(const char* string, uint32 iv = HashIV32);
-uint32 tHashString32(const tString& s, uint32 iv = HashIV32);
+uint32 tHashString32(const char*, uint32 iv = HashIV32);
+uint32 tHashString32(const tString&, uint32 iv = HashIV32);
 
 uint64 tHashData64(const uint8* data, int length, uint64 iv = HashIV64);
-uint64 tHashString64(const char* string, uint64 iv = HashIV64);
-uint64 tHashString64(const tString& s, uint64 iv = HashIV64);
+uint64 tHashString64(const char*, uint64 iv = HashIV64);
+uint64 tHashString64(const tString&, uint64 iv = HashIV64);
 
 // The MD5 functions are used by the HashData128 functions. For reference and testing:
 // MD5("The quick brown fox jumps over the lazy dog") = 9e107d9d372bb6826bd81d3542a419d6
 // MD5("The quick brown fox jumps over the lazy dog.") = e4d909c290d0fb1ca068ffaddf22cbd0
 tuint128 tHashDataMD5(const uint8* data, int length, tuint128 iv = HashIV128);
-tuint128 tHashStringMD5(const char* string, tuint128 iv = HashIV128);
-tuint128 tHashStringMD5(const tString& s, tuint128 iv = HashIV128);
+tuint128 tHashStringMD5(const char*, tuint128 iv = HashIV128);
+tuint128 tHashStringMD5(const tString&, tuint128 iv = HashIV128);
 
 tuint128 tHashData128(const uint8* data, int length, tuint128 iv = HashIV128);
-tuint128 tHashString128(const char* string, tuint128 iv = HashIV128);
-tuint128 tHashString128(const tString& s, tuint128 iv = HashIV128);
+tuint128 tHashString128(const char*, tuint128 iv = HashIV128);
+tuint128 tHashString128(const tString&, tuint128 iv = HashIV128);
 
 tuint256 tHashData256(const uint8* data, int length, tuint256 iv = HashIV256);
-tuint256 tHashString256(const char* string, const tuint256& iv = HashIV256);
-tuint256 tHashString256(const tString& s, const tuint256& iv = HashIV256);
+tuint256 tHashString256(const char*, const tuint256& iv = HashIV256);
+tuint256 tHashString256(const tString&, const tuint256& iv = HashIV256);
 
 
 // Implementation below this line.
@@ -90,6 +94,7 @@ inline uint32 tHashStringFast32(const char* string, uint32 iv)
 }
 
 
+inline constexpr uint32 tHashCT(const char* s, uint32 hash)																{ return *s ? tHashCT(s + 1, hash + (hash << 5) + uint8(*s)) : hash; }
 inline uint32 tHashStringFast32(const tString& s, uint32 iv)															{ return tHashStringFast32(s.ConstText(), iv); }
 inline uint32 tHashString(const char* s)																				{ return tHashStringFast32(s); }
 inline uint32 tHashString32(const char* string, uint32 iv)																{ return tHashData32((uint8*)string, tStd::tStrlen(string), iv); }

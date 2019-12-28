@@ -22,11 +22,13 @@
 #include <Image/tPicture.h>
 #include <System/tFile.h>
 #include <System/tTime.h>
+#include <System/tScript.h>
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl2.h"
 #include "TacitImage.h"
 #include "ImGuiLogWindow.h"
+#include "Settings.h"
 using namespace tStd;
 using namespace tSystem;
 
@@ -39,6 +41,7 @@ namespace TexView
 	int MajorVersion			= 0;
 	int MinorVersion			= 9;
 	int Revision				= 1;
+	Settings Config;
 	bool LogWindowOpen			= true;
 	TexView::ImGuiLog LogWindow;
 	tList<TacitImage> Images;
@@ -48,6 +51,7 @@ namespace TexView
 	TacitImage NextImage;
 	double NextPrevDisappear	= 1.0;
 	GLFWwindow* Window			= nullptr;
+	bool FullscreenMode			= false;
 	bool RMBDown				= false;
 	int DragAnchorX				= 0;
 	int DragAnchorY				= 0;
@@ -62,7 +66,7 @@ namespace TexView
 	int CursorX					= -1;
 	int CursorY					= -1;
 	tColouri PixelColour		= tColouri::black;
-	const int MaxLoadedCount	= 19;			// If more images that this loaded we start unloading to free mem.
+	const int MaxLoadedCount	= 35;			// If more images that this loaded we start unloading to free mem.
 	TacitImage* UnloadImage		= nullptr;
 
 	void DrawTextureViewerLog(float x, float y, float w, float h);
@@ -78,6 +82,7 @@ namespace TexView
 	void SetWindowTitle();
 	bool OnPrevious();
 	bool OnNext();
+	bool ChangeScreenMode(bool fullscreeen);
 	void Update(GLFWwindow* window, double dt, bool dopoll = true);
 	void WindowRefreshFun(GLFWwindow* window)																			{ Update(window, 0.0, false); }
 	void KeyCallback(GLFWwindow*, int key, int scancode, int action, int modifiers);
@@ -444,6 +449,11 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	glClear(GL_COLOR_BUFFER_BIT);
 	int bottomUIHeight = 150;
 	int topUIHeight = 22;
+	if (FullscreenMode)
+	{
+		bottomUIHeight = 0;
+		topUIHeight = 0;
+	}
 
 	// Start the Dear ImGui frame.
 	ImGui_ImplOpenGL2_NewFrame();		
@@ -700,31 +710,31 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (showDemoWindow)
 		ImGui::ShowDemoWindow(&showDemoWindow);
 
-    ImGuiWindowFlags window_flags = 0;
-    window_flags |= ImGuiWindowFlags_NoTitleBar;
-    window_flags |= ImGuiWindowFlags_NoScrollbar;
-    //window_flags |= ImGuiWindowFlags_MenuBar;
-    window_flags |= ImGuiWindowFlags_NoMove;
-    window_flags |= ImGuiWindowFlags_NoResize;
-    window_flags |= ImGuiWindowFlags_NoCollapse;
-	window_flags |= ImGuiWindowFlags_NoNav;
-    window_flags |= ImGuiWindowFlags_NoBackground;
-    window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+    ImGuiWindowFlags flagsNextPrev = 0;
+    flagsNextPrev |= ImGuiWindowFlags_NoTitleBar;
+    flagsNextPrev |= ImGuiWindowFlags_NoScrollbar;
+    //flagsNextPrev |= ImGuiWindowFlags_MenuBar;
+    flagsNextPrev |= ImGuiWindowFlags_NoMove;
+    flagsNextPrev |= ImGuiWindowFlags_NoResize;
+    flagsNextPrev |= ImGuiWindowFlags_NoCollapse;
+	flagsNextPrev |= ImGuiWindowFlags_NoNav;
+    flagsNextPrev |= ImGuiWindowFlags_NoBackground;
+    flagsNextPrev |= ImGuiWindowFlags_NoBringToFrontOnFocus;
 
 	NextPrevDisappear -= dt;
 	if (NextPrevDisappear > 0.0)
 	{
 		ImGui::SetNextWindowPos(ImVec2(0, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
-		ImGui::SetNextWindowSize(ImVec2(18,72), ImGuiCond_Always);
-		ImGui::Begin("Prev", nullptr, window_flags);
+		ImGui::SetNextWindowSize(ImVec2(18, 72), ImGuiCond_Always);
+		ImGui::Begin("Prev", nullptr, flagsNextPrev);
 		ImGui::SetCursorPos(ImVec2(4, 2));
 		if (ImGui::ImageButton(ImTextureID(uint64(PrevImage.GLTextureID)), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 			OnPrevious();
 		ImGui::End();
 
 		ImGui::SetNextWindowPos(ImVec2(workAreaW-32.0f, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
-		ImGui::SetNextWindowSize(ImVec2(18,72), ImGuiCond_Always);
-		ImGui::Begin("Next", nullptr, window_flags);
+		ImGui::SetNextWindowSize(ImVec2(18, 72), ImGuiCond_Always);
+		ImGui::Begin("Next", nullptr, flagsNextPrev);
 		ImGui::SetCursorPos(ImVec2(4, 2));
 		if (ImGui::ImageButton(ImTextureID(uint64(NextImage.GLTextureID)), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 			OnNext();
@@ -732,93 +742,99 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	}
 
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
-	ImGui::BeginMainMenuBar();
+
+	if (!FullscreenMode)
 	{
-		static bool contactDialog = false;
-		bool justOpenedContactDialog = false;
-		if (ImGui::Button("Contact Sheet"))
+		ImGui::BeginMainMenuBar();
 		{
-			contactDialog = !contactDialog;
-			if (contactDialog)
-				justOpenedContactDialog = true;
-		}
-
-		if (contactDialog)
-			ShowContactSheetDialog(&contactDialog, justOpenedContactDialog);
-
-		tFileType fileType = tFileType::Unknown;
-		if (CurrImage && CurrImage->IsLoaded())
-			fileType = CurrImage->Filetype;
-
-		if (fileType != tFileType::Unknown)
-		{
-			static bool rleCompression = false;
-
-			tString tgaFile = CurrImage->Filename;
-			tgaFile.ExtractLastWord('.');
-			tgaFile += "_Saved.tga";
-			if (ImGui::Button("Save TGA"))
+			static bool contactDialog = false;
+			bool justOpenedContactDialog = false;
+			if (ImGui::Button("Contact Sheet"))
 			{
-				if (tFileExists(tgaFile))
-				{
-					tPrintf("Targa %s already exists. Will not overwrite.\n", tgaFile.ConstText());
-				}
-				else
-				{
-					bool success = CurrImage->PictureImages.First()->SaveTGA(tgaFile, tImage::tFileTGA::tFormat::Auto, rleCompression ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
-					if (success)
-						tPrintf("Saved tga as : %s\n", tgaFile.ConstText());
-					else
-						tPrintf("Failed to save tga %s\n", tgaFile.ConstText());
-				}
+				contactDialog = !contactDialog;
+				if (contactDialog)
+					justOpenedContactDialog = true;
 			}
 
-			ImGui::Checkbox("RLE", &rleCompression);
+			if (contactDialog)
+				ShowContactSheetDialog(&contactDialog, justOpenedContactDialog);
+
+			tFileType fileType = tFileType::Unknown;
+			if (CurrImage && CurrImage->IsLoaded())
+				fileType = CurrImage->Filetype;
+
+			if (fileType != tFileType::Unknown)
+			{
+				static bool rleCompression = false;
+
+				tString tgaFile = CurrImage->Filename;
+				tgaFile.ExtractLastWord('.');
+				tgaFile += "_Saved.tga";
+				if (ImGui::Button("Save TGA"))
+				{
+					if (tFileExists(tgaFile))
+					{
+						tPrintf("Targa %s already exists. Will not overwrite.\n", tgaFile.ConstText());
+					}
+					else
+					{
+						bool success = CurrImage->PictureImages.First()->SaveTGA(tgaFile, tImage::tFileTGA::tFormat::Auto, rleCompression ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
+						if (success)
+							tPrintf("Saved tga as : %s\n", tgaFile.ConstText());
+						else
+							tPrintf("Failed to save tga %s\n", tgaFile.ConstText());
+					}
+				}
+
+				ImGui::Checkbox("RLE", &rleCompression);
+			}
+
+			ImGui::PushItemWidth(200);
+			if (ImGui::SliderFloat("", &ZoomPercent, 20.0f, 2500.0f, " Zoom %.2f"))
+				FitMode = false;
+
+			ImGui::PopItemWidth();
+
+			if (ImGui::Button("Reset"))
+			{
+				FitMode = true;
+				PanOffsetX = 0;
+				PanOffsetY = 0;
+				DragDownOffsetX = 0;
+				DragDownOffsetY = 0;
+			}
+
+			if (ImGui::Button("1:1"))
+			{
+				FitMode = false;
+				ZoomPercent = 100.0f;
+				PanOffsetX = 0;
+				PanOffsetY = 0;
+				DragDownOffsetX = 0;
+				DragDownOffsetY = 0;
+			}
+
+			if (ImGui::Checkbox("Fit", &FitMode) && FitMode)
+			{
+				PanOffsetX = 0;
+				PanOffsetY = 0;
+				DragDownOffsetX = 0;
+				DragDownOffsetY = 0;
+			}
+
+			int colourFlags = 0;		// ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_NoDragDrop | ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_NoOptions;
+			tColourf floatCol(PixelColour);
+			ImGui::PushItemWidth(180);
+			ImGui::ColorEdit4("Colour##2f", floatCol.E, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | colourFlags);
+			ImGui::PopItemWidth();
+			ImGui::Text("PXL(%d,%d)",imgxi, imgyi);
 		}
 
-		ImGui::PushItemWidth(200);
-		if (ImGui::SliderFloat("", &ZoomPercent, 20.0f, 2500.0f, " Zoom %.2f"))
-			FitMode = false;
-
-		ImGui::PopItemWidth();
-
-		if (ImGui::Button("Reset"))
-		{
-			FitMode = true;
-			PanOffsetX = 0;
-			PanOffsetY = 0;
-			DragDownOffsetX = 0;
-			DragDownOffsetY = 0;
-		}
-
-		if (ImGui::Button("1:1"))
-		{
-			FitMode = false;
-			ZoomPercent = 100.0f;
-			PanOffsetX = 0;
-			PanOffsetY = 0;
-			DragDownOffsetX = 0;
-			DragDownOffsetY = 0;
-		}
-
-		if (ImGui::Checkbox("Fit", &FitMode) && FitMode)
-		{
-			PanOffsetX = 0;
-			PanOffsetY = 0;
-			DragDownOffsetX = 0;
-			DragDownOffsetY = 0;
-		}
-
-		int colourFlags = 0;		// ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_NoDragDrop | ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_NoOptions;
-		tColourf floatCol(PixelColour);
-		ImGui::PushItemWidth(180);
-		ImGui::ColorEdit4("Colour##2f", floatCol.E, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | colourFlags);
-		ImGui::PopItemWidth();
-		ImGui::Text("PXL(%d,%d)",imgxi, imgyi);
+		ImGui::EndMainMenuBar();
 	}
 
-	ImGui::EndMainMenuBar();
-	TexView::DrawTextureViewerLog(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
+	if (!FullscreenMode)
+		TexView::DrawTextureViewerLog(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
 
 	ImGui::Render();
 	glViewport(0, 0, dispw, disph);
@@ -836,6 +852,33 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			UnloadImage->Unload();
 		UnloadImage = Images.NextCirc(UnloadImage);
 	}
+}
+
+
+bool TexView::ChangeScreenMode(bool fullscreen)
+{
+	if (TexView::FullscreenMode == fullscreen)
+		return false;
+
+	// If currently in windowed mode, remember our window geometry.
+	if (!FullscreenMode)
+	{
+		glfwGetWindowPos(TexView::Window, &TexView::Config.WindowX, &TexView::Config.WindowY);
+		glfwGetWindowSize(TexView::Window, &TexView::Config.WindowW, &TexView::Config.WindowH);
+	}
+
+	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+	const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+	glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+	glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+	glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+	glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+	if (fullscreen)
+		glfwSetWindowMonitor(TexView::Window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+	else
+		glfwSetWindowMonitor(TexView::Window, nullptr, TexView::Config.WindowX, TexView::Config.WindowY, TexView::Config.WindowW, TexView::Config.WindowH, mode->refreshRate);
+
+	FullscreenMode = fullscreen;
 }
 
 
@@ -861,7 +904,7 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 
 		// Ctrl +
 		case GLFW_KEY_EQUAL:
-			if (modifiers == 2)
+			if (modifiers == GLFW_MOD_CONTROL)
 			{
 				FitMode = false;
 				ZoomPercent = tMath::tFloor(ZoomPercent*0.1f + 1.0f) * 10.0f;
@@ -871,12 +914,21 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 
 		// Ctrl -
 		case GLFW_KEY_MINUS:
-			if (modifiers == 2)
+			if (modifiers == GLFW_MOD_CONTROL)
 			{
 				FitMode = false;
 				ZoomPercent = tMath::tCeiling(ZoomPercent*0.1f - 1.0f) * 10.0f;
 				tMath::tClamp(ZoomPercent, 20.0f, 2500.0f);
 			}
+			break;
+
+		case GLFW_KEY_ENTER:
+			if (modifiers == GLFW_MOD_ALT)
+				ChangeScreenMode(!FullscreenMode);
+			break;
+
+		case GLFW_KEY_ESCAPE:
+			ChangeScreenMode(false);
 			break;
 	}
 }
@@ -983,9 +1035,16 @@ int main(int argc, char** argv)
 	tPrintf("GLEW V %s\n", glewGetString(GLEW_VERSION));
 	tPrintf("GLFW V %d.%d.%d\n", glfwMajor, glfwMinor, glfwRev);
 
-	TexView::Window = glfwCreateWindow(1280, 720, "Tacit Viewer", nullptr, nullptr);
+	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+	const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+	tString cfgFile = tSystem::tGetProgramDir() + "Data/Settings.cfg";
+	TexView::Config.Load(cfgFile, mode->width, mode->height);
+	TexView::Window = glfwCreateWindow(TexView::Config.WindowW, TexView::Config.WindowH, "Tacit Viewer", nullptr, nullptr);
 	if (!TexView::Window)
 		return 1;
+
+	glfwSetWindowPos(TexView::Window, TexView::Config.WindowX, TexView::Config.WindowY);
 
 	// Make the window title bar show up in black.
 	HWND hwnd = glfwGetWin32Window(TexView::Window);
@@ -1059,9 +1118,12 @@ int main(int argc, char** argv)
 		TexView::Update(TexView::Window, currUpdateTime - lastUpdateTime);
 		lastUpdateTime = currUpdateTime;
 	}
-	
 
-	
+	// Save current window geometry to config file.
+	glfwGetWindowPos(TexView::Window, &TexView::Config.WindowX, &TexView::Config.WindowY);
+	glfwGetWindowSize(TexView::Window, &TexView::Config.WindowW, &TexView::Config.WindowH);
+	TexView::Config.Save(cfgFile);
+
 	// Cleanup.
 	ImGui_ImplOpenGL2_Shutdown();
 	ImGui_ImplGlfw_Shutdown();

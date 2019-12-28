@@ -34,13 +34,15 @@ inline void* tMemset(void* dest, uint8 val, int numBytes)															{ return
 inline int tMemcmp(const void* a, const void* b, int numBytes)														{ return memcmp(a, b, numBytes); }
 
 // For character strings we support regular 8 bit characters (ASCII) and full unicode via UTF8. We do not support
-// either USC2 or UTF16.
+// either USC2 or UTF16. The CT (Compile-Time) strlen variant below can compute the string length at compile-time
+// for constant string literals.
 const int tCharInvalid																								= 0xFF;
 inline int tStrcmp(const char* a, const char* b)																	{ tAssert(a && b); return strcmp(a, b); }
 inline int tStricmp(const char* a, const char* b)																	{ tAssert(a && b); return stricmp(a, b); }
 inline int tStrncmp(const char* a, const char* b, int n)															{ tAssert(a && b && n >= 0); return strncmp(a, b, n); }
 inline int tStrnicmp(const char* a, const char* b, int n)															{ tAssert(a && b && n >= 0); return strnicmp(a, b, n); }
 inline int tStrlen(const char* s)																					{ tAssert(s); return int(strlen(s)); }
+inline constexpr int tStrlenCT(const char* s)																		{ return *s ? 1 + tStrlenCT(s + 1) : 0; }
 inline char* tStrcpy(char* dst, const char* src)																	{ tAssert(dst && src); return strcpy(dst, src); }
 inline char* tStrncpy(char* dst, const char* src, int n)															{ tAssert(dst && src && n >= 0); return strncpy(dst, src, n); }
 inline const char* tStrchr(const char* s, int c)																	{ tAssert(s && c >= 0 && c < 0x100); return strchr(s, c); }

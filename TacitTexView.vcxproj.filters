@@ -51,6 +51,9 @@
     <ClInclude Include="Src\ImGuiLogWindow.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Settings.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\TacitTexView.cpp">
@@ -81,6 +84,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\ImGuiLogWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Settings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

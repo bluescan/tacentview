@@ -946,16 +946,6 @@ void tScriptWriter::NewLine()
 }
 
 
-void tScriptWriter::WriteItem(const tString& name, const tString& value)
-{
-	int numTabs = CurrIndent / IndentDelta;
-	for (int t = 0; t < numTabs; t++)
-		tfPrintf(ScriptFile, "\t");
-
-	tfPrintf(ScriptFile,"[%s %s]\n", name.ConstText(), value.ConstText());
-}
-
-
 // Next follow the types for the functional scripts of the form f(a, b).
 tFunExtression::tFunExtression(const char* function)
 {
