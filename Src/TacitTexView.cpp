@@ -52,11 +52,22 @@ namespace TexView
 	double NextPrevDisappear	= 1.0;
 	GLFWwindow* Window			= nullptr;
 	bool FullscreenMode			= false;
+	bool ShowLog				= false;
 	bool RMBDown				= false;
 	int DragAnchorX				= 0;
 	int DragAnchorY				= 0;
+
+	enum class ZoomMode
+	{
+		User,
+		Fit,
+		Downscale,
+		OneToOne
+	};
+	ZoomMode CurrZoomMode		= ZoomMode::Downscale;
+
 	float ZoomPercent			= 100.0f;
-	bool FitMode				= true;
+
 	int Dispw					= 1;
 	int Disph					= 1;
 	int PanOffsetX				= 0;
@@ -162,7 +173,7 @@ void TexView::SetCurrentImage(const tString& currFilename)
 		CurrImage->Load();
 		CurrImage->PrintInfo();
 		SetWindowTitle();
-		FitMode = true;
+		CurrZoomMode = ZoomMode::Downscale;
 		PanOffsetX = 0;
 		PanOffsetY = 0;
 		DragDownOffsetX = 0;
@@ -181,7 +192,7 @@ bool TexView::OnPrevious()
 	CurrImage->Load();
 	CurrImage->PrintInfo();
 	SetWindowTitle();
-	FitMode = true;
+	//CurrZoomMode = ZoomMode::Downscale;
 	PanOffsetX = 0;
 	PanOffsetY = 0;
 	DragDownOffsetX = 0;
@@ -200,7 +211,7 @@ bool TexView::OnNext()
 	CurrImage->Load();
 	CurrImage->PrintInfo();
 	SetWindowTitle();
-	FitMode = true;
+	//CurrZoomMode = ZoomMode::Downscale;
 	PanOffsetX = 0;
 	PanOffsetY = 0;
 	DragDownOffsetX = 0;
@@ -248,11 +259,11 @@ void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 	}
 	ImGui::InputInt("Final Width", &finalWidth);
 	ImGui::SameLine();
-	ShowHelpMark("Final scaled output sheet height in pixels.");
+	ShowHelpMark("Final scaled output height in pixels.");
 
 	ImGui::InputInt("Final Height", &finalHeight);
 	ImGui::SameLine();
-	ShowHelpMark("Final scaled output sheet height in pixels.");
+	ShowHelpMark("Final scaled output height in pixels.");
 
 	if (ImGui::Button("Prev Pow2"))
 	{
@@ -574,6 +585,10 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		bottomUIHeight = 0;
 		topUIHeight = 0;
 	}
+	else if (!ShowLog)
+	{
+		bottomUIHeight = 0;
+	}
 
 	// Start the Dear ImGui frame.
 	ImGui_ImplOpenGL2_NewFrame();		
@@ -690,11 +705,15 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		float uvHMargin = 0.0f;
 		float uvVMargin = 0.0f;
 
-		if (FitMode)
+		if (CurrZoomMode == ZoomMode::Downscale)
 		{
 			ZoomPercent = 100.0f;
 			if (draww < iw)
 				ZoomPercent = 100.0f * draww / iw;
+		}
+		else if (CurrZoomMode == ZoomMode::Fit)
+		{
+			ZoomPercent = 100.0f * draww / iw;
 		}
 
 		float w = iw * ZoomPercent/100.0f;
@@ -879,7 +898,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 						justOpenedSaveAsDialog = true;
 				}
 				ImGui::Separator();
-			    if (ImGui::MenuItem("Quit", "Alt+F4"))
+				if (ImGui::MenuItem("Quit", "Alt+F4"))
 					glfwSetWindowShouldClose(Window, 1);
 
 				ImGui::EndMenu();
@@ -902,51 +921,85 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (contactDialog)
 				ShowContactSheetDialog(&contactDialog, justOpenedContactDialog);
 
-			ImGui::PushItemWidth(200);
-			if (ImGui::SliderFloat("", &ZoomPercent, 20.0f, 2500.0f, " Zoom %.2f"))
-				FitMode = false;
-
-			ImGui::PopItemWidth();
-
-			if (ImGui::Button("Reset"))
+			if (ImGui::BeginMenu("View"))
 			{
-				FitMode = true;
-				PanOffsetX = 0;
-				PanOffsetY = 0;
-				DragDownOffsetX = 0;
-				DragDownOffsetY = 0;
-			}
+				ImGui::MenuItem("Show Log", "", &ShowLog, true);
 
-			if (ImGui::Button("1:1"))
-			{
-				FitMode = false;
-				ZoomPercent = 100.0f;
-				PanOffsetX = 0;
-				PanOffsetY = 0;
-				DragDownOffsetX = 0;
-				DragDownOffsetY = 0;
-			}
+				static bool showInfo = false;
+				ImGui::MenuItem("Show Info", "", &showInfo, true);
+				//static int zoomMode = 0;
+				//ImGui::Combo("Zoom", &zoomMode, "Fit\0" "Downscale\0" "1:1\0\0");
 
-			if (ImGui::Checkbox("Fit", &FitMode) && FitMode)
-			{
-				PanOffsetX = 0;
-				PanOffsetY = 0;
-				DragDownOffsetX = 0;
-				DragDownOffsetY = 0;
+				ImGui::PushItemWidth(200);
+				if (ImGui::SliderFloat("", &ZoomPercent, 20.0f, 2500.0f, " Zoom %.2f"))
+					CurrZoomMode = ZoomMode::User;
+				ImGui::PopItemWidth();
+
+				bool userMode = CurrZoomMode == ZoomMode::User;
+				if (ImGui::MenuItem("Zoom User", "", &userMode, true))
+				{
+					PanOffsetX = 0;
+					PanOffsetY = 0;
+					DragDownOffsetX = 0;
+					DragDownOffsetY = 0;
+					CurrZoomMode = ZoomMode::User;
+				}
+
+				bool fitMode = CurrZoomMode == ZoomMode::Fit;
+				if (ImGui::MenuItem("Zoom Fit", "", &fitMode, true))
+				{
+					PanOffsetX = 0;
+					PanOffsetY = 0;
+					DragDownOffsetX = 0;
+					DragDownOffsetY = 0;
+					CurrZoomMode = ZoomMode::Fit;
+				}
+
+				bool downscale = CurrZoomMode == ZoomMode::Downscale;
+				if (ImGui::MenuItem("Zoom Downscale", "", &downscale, true))
+				{
+					PanOffsetX = 0;
+					PanOffsetY = 0;
+					DragDownOffsetX = 0;
+					DragDownOffsetY = 0;
+					CurrZoomMode = ZoomMode::Downscale;
+				}
+
+				bool oneToOne = CurrZoomMode == ZoomMode::OneToOne;
+				if (ImGui::MenuItem("Zoom 1:1", "", &oneToOne, true))
+				{
+					ZoomPercent = 100.0f;
+					PanOffsetX = 0;
+					PanOffsetY = 0;
+					DragDownOffsetX = 0;
+					DragDownOffsetY = 0;
+					CurrZoomMode = ZoomMode::OneToOne;
+				}
+
+				if (ImGui::Button("Reset Pan"))
+				{
+					//CurrZoomMode = ZoomMode::Downscale;
+					PanOffsetX = 0;
+					PanOffsetY = 0;
+					DragDownOffsetX = 0;
+					DragDownOffsetY = 0;
+				}
+
+				ImGui::EndMenu();
 			}
 
 			int colourFlags = 0;		// ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_NoDragDrop | ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_NoOptions;
 			tColourf floatCol(PixelColour);
+			ImGui::Text("Colour (%d,%d)",imgxi, imgyi);
 			ImGui::PushItemWidth(180);
 			ImGui::ColorEdit4("Colour##2f", floatCol.E, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | colourFlags);
 			ImGui::PopItemWidth();
-			ImGui::Text("PXL(%d,%d)",imgxi, imgyi);
 		}
 
 		ImGui::EndMainMenuBar();
 	}
 
-	if (!FullscreenMode)
+	if (!FullscreenMode && ShowLog)
 		TexView::DrawTextureViewerLog(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
 
 	ImGui::Render();
@@ -1020,7 +1073,7 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 		case GLFW_KEY_EQUAL:
 			if (modifiers == GLFW_MOD_CONTROL)
 			{
-				FitMode = false;
+				CurrZoomMode = ZoomMode::User;
 				ZoomPercent = tMath::tFloor(ZoomPercent*0.1f + 1.0f) * 10.0f;
 				tMath::tClamp(ZoomPercent, 20.0f, 2500.0f);
 			}
@@ -1030,7 +1083,7 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 		case GLFW_KEY_MINUS:
 			if (modifiers == GLFW_MOD_CONTROL)
 			{
-				FitMode = false;
+				CurrZoomMode = ZoomMode::User;
 				ZoomPercent = tMath::tCeiling(ZoomPercent*0.1f - 1.0f) * 10.0f;
 				tMath::tClamp(ZoomPercent, 20.0f, 2500.0f);
 			}
@@ -1098,7 +1151,6 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 void TexView::CursorPosCallback(GLFWwindow* window, double x, double y)
 {
 	NextPrevDisappear = 4.0;
-	// tPrintf("Cursor: %f %f\n", x, y);
 }
 
 
@@ -1106,7 +1158,7 @@ void TexView::ScrollWheelCallback(GLFWwindow* window, double x, double y)
 {
 	NextPrevDisappear = 4.0;
 
-	FitMode = false;
+	CurrZoomMode = ZoomMode::User;
 	float zoomDelta = ZoomPercent * 0.1f * float(y);
 	ZoomPercent += zoomDelta;
 
