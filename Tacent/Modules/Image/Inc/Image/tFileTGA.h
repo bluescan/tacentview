@@ -81,6 +81,7 @@ public:
 	// invalid afterwards.
 	tPixel* StealPixels();
 	tPixel* GetPixels() const																							{ return Pixels; }
+	int SrcFileBitDepth = 32;
 
 private:
 	bool SaveUncompressed(const tString& tgaFile, tFormat) const;

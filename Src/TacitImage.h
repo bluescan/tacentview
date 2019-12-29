@@ -39,10 +39,22 @@ public:
 	int GetWidth() const;
 	int GetHeight() const;
 	tColouri GetPixel(int x, int y) const;
-
-	void PrintInfo();
 	bool ConvertTextureToPicture();
 
+	struct ImgInfo
+	{
+		bool IsValid() const	{ return (Width > 0) && (Height > 0); }
+		int Width				= 0;
+		int Height				= 0;
+		tString PixelFormat;
+		int SrcFileBitDepth		= -1;
+		bool Opaque				= false;
+		int SizeBytes			= 0;
+		int Mipmaps				= 0;
+	};
+	void PrintInfo();
+
+	ImgInfo Info;
 	tString Filename;
 	tSystem::tFileType Filetype;
 

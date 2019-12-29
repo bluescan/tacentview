@@ -53,6 +53,7 @@ namespace TexView
 	GLFWwindow* Window			= nullptr;
 	bool FullscreenMode			= false;
 	bool ShowLog				= false;
+	bool ShowInfo				= false;
 	bool RMBDown				= false;
 	int DragAnchorX				= 0;
 	int DragAnchorY				= 0;
@@ -91,6 +92,8 @@ namespace TexView
 	void ShowHelpMark(const char* desc);
 	void ShowContactSheetDialog(bool* popen, bool justOpened);
 	void ShowSaveAsDialog(bool* popen, bool justOpened);
+	void ShowInfoOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY);
+
 	void SetWindowTitle();
 	bool OnPrevious();
 	bool OnNext();
@@ -283,10 +286,10 @@ void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 		finalHeight = CurrImage->GetHeight();
 	}
 
-    const char* fileTypeItems[] = { "TGA", "PNG", "BMP", "JPG", "GIF" };
-    static int itemCurrent = 0;
-    ImGui::Combo("File Type", &itemCurrent, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
-    ImGui::SameLine();
+	const char* fileTypeItems[] = { "TGA", "PNG", "BMP", "JPG", "GIF" };
+	static int itemCurrent = 0;
+	ImGui::Combo("File Type", &itemCurrent, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
+	ImGui::SameLine();
 	ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
 
 	tString extension = ".tga";
@@ -433,10 +436,10 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 		finalHeight = contactHeight;
 	}
 
-    const char* fileTypeItems[] = { "TGA", "PNG", "BMP", "JPG", "GIF" };
-    static int itemCurrent = 0;
-    ImGui::Combo("File Type", &itemCurrent, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
-    ImGui::SameLine();
+	const char* fileTypeItems[] = { "TGA", "PNG", "BMP", "JPG", "GIF" };
+	static int itemCurrent = 0;
+	ImGui::Combo("File Type", &itemCurrent, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
+	ImGui::SameLine();
 	ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
 
 	tString extension = ".tga";
@@ -549,6 +552,59 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 }
 
 
+void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY)
+{
+	const float margin = 10.0f;
+	static int corner = 0;
+
+	ImVec2 window_pos = ImVec2
+	(
+		x + ((corner & 1) ? w - margin : margin),
+		y + ((corner & 2) ? h - margin : margin)
+	);
+	ImVec2 window_pos_pivot = ImVec2
+	(
+		(corner & 1) ? 1.0f : 0.0f,
+		(corner & 2) ? 1.0f : 0.0f
+	);
+	ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+	ImGui::SetNextWindowBgAlpha(0.6f);
+	ImGuiWindowFlags flags =
+		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
+		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+
+	if (ImGui::Begin("Info", popen, flags))
+	{
+		ImGui::Text("Image Info. Right-click change position.");
+		ImGui::Separator();
+
+		if (CurrImage)
+		{
+			TacitImage::ImgInfo& info = CurrImage->Info;
+			ImGui::Text("Size: %dx%d", info.Width, info.Height);
+			ImGui::Text("Pixel Format: %s", info.PixelFormat.ConstText());
+			ImGui::Text("Bit Depth: %d", info.SrcFileBitDepth);
+			ImGui::Text("Opaque: %s", info.Opaque ? "true" : "false");
+			ImGui::Text("Mipmaps: %d", info.Mipmaps);
+			ImGui::Text("File Size (B): %d", info.SizeBytes);
+			ImGui::Text("Cursor: (%d, %d)", cursorX, cursorY);
+		}
+
+		if (ImGui::BeginPopupContextWindow())
+		{
+			if (ImGui::MenuItem("Top-left",		nullptr, corner == 0)) corner = 0;
+			if (ImGui::MenuItem("Top-right",	nullptr, corner == 1)) corner = 1;
+			if (ImGui::MenuItem("Bottom-left",  nullptr, corner == 2)) corner = 2;
+			if (ImGui::MenuItem("Bottom-right", nullptr, corner == 3)) corner = 3;
+			if (popen && ImGui::MenuItem("Close")) *popen = false;
+			ImGui::EndPopup();
+		}
+	}
+	ImGui::End();
+}
+
+
 void TexView::SetWindowTitle()
 {
 	if (!Window)
@@ -623,14 +679,14 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	float ih = 1.0f;
 	static int imgxi = 0;
 	static int imgyi = 0;
+	float hmargin = 0.0f;
+	float vmargin = 0.0f;
 	if (CurrImage)
 	{
 		iw = float(CurrImage->GetWidth());
 		ih = float(CurrImage->GetHeight());
 		float picAspect = iw/ih;
 
-		float hmargin = 0.0f;
-		float vmargin = 0.0f;
 		if (workAreaAspect > picAspect)
 		{
 			drawh = float(workAreaH);
@@ -849,16 +905,16 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (showDemoWindow)
 		ImGui::ShowDemoWindow(&showDemoWindow);
 
-    ImGuiWindowFlags flagsNextPrev = 0;
-    flagsNextPrev |= ImGuiWindowFlags_NoTitleBar;
-    flagsNextPrev |= ImGuiWindowFlags_NoScrollbar;
-    //flagsNextPrev |= ImGuiWindowFlags_MenuBar;
-    flagsNextPrev |= ImGuiWindowFlags_NoMove;
-    flagsNextPrev |= ImGuiWindowFlags_NoResize;
-    flagsNextPrev |= ImGuiWindowFlags_NoCollapse;
+	ImGuiWindowFlags flagsNextPrev = 0;
+	flagsNextPrev |= ImGuiWindowFlags_NoTitleBar;
+	flagsNextPrev |= ImGuiWindowFlags_NoScrollbar;
+	//flagsNextPrev |= ImGuiWindowFlags_MenuBar;
+	flagsNextPrev |= ImGuiWindowFlags_NoMove;
+	flagsNextPrev |= ImGuiWindowFlags_NoResize;
+	flagsNextPrev |= ImGuiWindowFlags_NoCollapse;
 	flagsNextPrev |= ImGuiWindowFlags_NoNav;
-    flagsNextPrev |= ImGuiWindowFlags_NoBackground;
-    flagsNextPrev |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+	flagsNextPrev |= ImGuiWindowFlags_NoBackground;
+	flagsNextPrev |= ImGuiWindowFlags_NoBringToFrontOnFocus;
 
 	NextPrevDisappear -= dt;
 	if (NextPrevDisappear > 0.0)
@@ -924,11 +980,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::BeginMenu("View"))
 			{
 				ImGui::MenuItem("Show Log", "", &ShowLog, true);
-
-				static bool showInfo = false;
-				ImGui::MenuItem("Show Info", "", &showInfo, true);
-				//static int zoomMode = 0;
-				//ImGui::Combo("Zoom", &zoomMode, "Fit\0" "Downscale\0" "1:1\0\0");
+				ImGui::MenuItem("Show Info", "", &ShowInfo, true);
 
 				ImGui::PushItemWidth(200);
 				if (ImGui::SliderFloat("", &ZoomPercent, 20.0f, 2500.0f, " Zoom %.2f"))
@@ -990,7 +1042,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			int colourFlags = 0;		// ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_NoDragDrop | ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_NoOptions;
 			tColourf floatCol(PixelColour);
-			ImGui::Text("Colour (%d,%d)",imgxi, imgyi);
+			ImGui::Text("Colour");
 			ImGui::PushItemWidth(180);
 			ImGui::ColorEdit4("Colour##2f", floatCol.E, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | colourFlags);
 			ImGui::PopItemWidth();
@@ -1001,6 +1053,9 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	if (!FullscreenMode && ShowLog)
 		TexView::DrawTextureViewerLog(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
+
+	if (!FullscreenMode && ShowInfo)
+		TexView::ShowInfoOverlay(&ShowInfo, hmargin, float(topUIHeight)+vmargin, float(dispw)-2.0f*hmargin, float(disph - bottomUIHeight - topUIHeight)-2.0f*vmargin, imgxi, imgyi);
 
 	ImGui::Render();
 	glViewport(0, 0, dispw, disph);

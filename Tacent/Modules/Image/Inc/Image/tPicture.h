@@ -159,6 +159,7 @@ public:
 	bool operator!=(const tPicture&) const;
 
 	tString Filename;
+	int SrcFileBitDepth = 32;
 
 private:
 	static int GetCxFormat(tSystem::tFileType);

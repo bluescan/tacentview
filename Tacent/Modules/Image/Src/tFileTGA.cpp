@@ -88,7 +88,7 @@ bool tFileTGA::Set(const uint8* tgaFileInMemory, int numBytes)
 		Clear();
 		return false;
 	}
-
+	SrcFileBitDepth = bitDepth;
 	uint8* srcData = (uint8*)(header + 1);
 
 	// These usually are zero. In most cases the pixel data will follow directly after the header. iColourMapType is a

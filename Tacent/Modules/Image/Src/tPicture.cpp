@@ -176,6 +176,7 @@ bool tPicture::Load(const tString& imageFile)
 		Width = targa.GetWidth();
 		Height = targa.GetHeight();
 		Pixels = targa.StealPixels();
+		SrcFileBitDepth = targa.SrcFileBitDepth;
 		return true;
 	}
 
@@ -199,6 +200,8 @@ bool tPicture::Load(const tString& imageFile)
 	// for the alpha, which is incorrect as alpha is normally interpreted as opacity, not transparency. It should be
 	// returning full opacity. That's why we need imageHasValidAlphas -- so we can check if the channel exists at all.
 	bool imageHasValidAlphas = image.AlphaIsValid();
+	SrcFileBitDepth = imageHasValidAlphas ? 32 : 24;
+
 	int index = 0;
 	for (int y = 0; y < height; y++)
 	{

@@ -63,17 +63,22 @@ bool TacitImage::Load()
 		return false;
 
 	bool success = false;
+	int srcFileBitdepth = -1;
 	try
 	{
 		if (Filetype == tSystem::tFileType::DDS)
 		{
 			success = TextureImage.Load(Filename);
+			tImage::tPixelFormat pfmt = TextureImage.GetPixelFormat();
+			if (tIsNormalFormat(pfmt))
+				srcFileBitdepth = tGetBytesPerPixel(pfmt) * 8;
 		}
 		else
 		{
 			tPicture* picture = new tPicture();
 			PictureImages.Append(picture);
 			success = picture->Load(Filename);
+			srcFileBitdepth = picture->SrcFileBitDepth;
 		}
 	}
 	catch (tError error)
@@ -88,6 +93,28 @@ bool TacitImage::Load()
 	{
 		LoadedTime = tSystem::tGetTime();
 		NumLoaded++;
+
+		// Fill in info struct.
+		Info.Width			= GetWidth();
+		Info.Height			= GetHeight();
+
+		tPixelFormat format = tPixelFormat::Invalid;
+		if (Filetype == tSystem::tFileType::DDS)
+		{
+			format = TextureImage.GetPixelFormat();
+		}
+		else
+		{
+			tPicture* picture = PictureImages.First();
+			if (picture)
+				format = (srcFileBitdepth == 24) ? tPixelFormat::R8G8B8 : tPixelFormat::R8G8B8A8;
+		}
+
+		Info.PixelFormat		= tImage::tGetPixelFormatName(format);
+		Info.SrcFileBitDepth	= srcFileBitdepth;
+		Info.Opaque				= IsOpaque();
+		Info.SizeBytes			= tSystem::tGetFileSize(Filename);
+		Info.Mipmaps			= PictureImages.GetNumItems();
 	}
 
 	return success;
