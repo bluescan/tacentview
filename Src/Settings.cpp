@@ -27,6 +27,8 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 		WindowH = 720;
 		WindowX = (screenW - WindowW) >> 1;
 		WindowY = (screenH - WindowH) >> 1;
+		OverlayShow = false;
+		OverlayCorner = 3;
 	}
 	else
 	{
@@ -50,6 +52,14 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 				case tHashCT("WindowH"):
 					WindowH = e.Arg1();
 					break;
+
+				case tHashCT("OverlayShow"):
+					OverlayShow = e.Arg1();
+					break;
+
+				case tHashCT("OverlayCorner"):
+					OverlayCorner = e.Arg1();
+					break;
 			}
 		}
 	}
@@ -58,6 +68,7 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 	tClamp(WindowH, 360, screenH);
 	tClamp(WindowX, 0, screenW - WindowW);
 	tClamp(WindowY, 0, screenH - WindowH);
+	tClamp(OverlayCorner, 0, 3);
 }
 
 
@@ -71,6 +82,8 @@ bool Settings::Save(const tString& filename)
 	writer.Comp("WindowY", WindowY);
 	writer.Comp("WindowW", WindowW);
 	writer.Comp("WindowH", WindowH);
+	writer.Comp("OverlayShow", OverlayShow);
+	writer.Comp("OverlayCorner", OverlayCorner);
 
 	return true;
 }

@@ -22,6 +22,8 @@ struct Settings
 	int WindowY							= 100;
 	int WindowW							= 1280;
 	int WindowH							= 720;
+	bool OverlayShow					= false;
+	int OverlayCorner					= 3;
 
 	void Load(const tString& filename, int screenWidth, int screenHeight);
 	bool Save(const tString& filename);

@@ -53,7 +53,6 @@ namespace TexView
 	GLFWwindow* Window			= nullptr;
 	bool FullscreenMode			= false;
 	bool ShowLog				= false;
-	bool ShowOverlay			= false;
 	bool ShowCheatSheet			= false;
 	bool ShowAbout				= false;
 	bool RMBDown				= false;
@@ -551,17 +550,16 @@ void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, i
 {
 	// This overlay function is pretty much taken from the DearImGui demo code.
 	const float margin = 10.0f;
-	static int corner = 3;
 
 	ImVec2 windowPos = ImVec2
 	(
-		x + ((corner & 1) ? w - margin : margin),
-		y + ((corner & 2) ? h - margin : margin)
+		x + ((Config.OverlayCorner & 1) ? w - margin : margin),
+		y + ((Config.OverlayCorner & 2) ? h - margin : margin)
 	);
 	ImVec2 windowPivot = ImVec2
 	(
-		(corner & 1) ? 1.0f : 0.0f,
-		(corner & 2) ? 1.0f : 0.0f
+		(Config.OverlayCorner & 1) ? 1.0f : 0.0f,
+		(Config.OverlayCorner & 2) ? 1.0f : 0.0f
 	);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, windowPivot);
 	ImGui::SetNextWindowBgAlpha(0.6f);
@@ -593,10 +591,10 @@ void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, i
 
 		if (ImGui::BeginPopupContextWindow())
 		{
-			if (ImGui::MenuItem("Top-left",		nullptr, corner == 0)) corner = 0;
-			if (ImGui::MenuItem("Top-right",	nullptr, corner == 1)) corner = 1;
-			if (ImGui::MenuItem("Bottom-left",  nullptr, corner == 2)) corner = 2;
-			if (ImGui::MenuItem("Bottom-right", nullptr, corner == 3)) corner = 3;
+			if (ImGui::MenuItem("Top-left",		nullptr, Config.OverlayCorner == 0)) Config.OverlayCorner = 0;
+			if (ImGui::MenuItem("Top-right",	nullptr, Config.OverlayCorner == 1)) Config.OverlayCorner = 1;
+			if (ImGui::MenuItem("Bottom-left",  nullptr, Config.OverlayCorner == 2)) Config.OverlayCorner = 2;
+			if (ImGui::MenuItem("Bottom-right", nullptr, Config.OverlayCorner == 3)) Config.OverlayCorner = 3;
 			if (popen && ImGui::MenuItem("Close")) *popen = false;
 			ImGui::EndPopup();
 		}
@@ -1049,7 +1047,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::BeginMenu("View"))
 			{
 				ImGui::MenuItem("Show Log", "", &ShowLog, true);
-				ImGui::MenuItem("Show Overlay", "", &ShowOverlay, true);
+				ImGui::MenuItem("Show Overlay", "", &TexView::Config.OverlayShow, true);
 
 				ImGui::PushItemWidth(200);
 				if (ImGui::SliderFloat("", &ZoomPercent, 20.0f, 2500.0f, " Zoom %.2f"))
@@ -1114,8 +1112,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		TexView::DrawTextureViewerLog(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
 
 	// We allow the overlay and cheatsheet in fullscreen.
-	if (ShowOverlay)
-		TexView::ShowInfoOverlay(&ShowOverlay, hmargin, float(topUIHeight)+vmargin, float(dispw)-2.0f*hmargin, float(disph - bottomUIHeight - topUIHeight)-2.0f*vmargin, imgxi, imgyi);
+	if (TexView::Config.OverlayShow)
+		TexView::ShowInfoOverlay(&TexView::Config.OverlayShow, hmargin, float(topUIHeight)+vmargin, float(dispw)-2.0f*hmargin, float(disph - bottomUIHeight - topUIHeight)-2.0f*vmargin, imgxi, imgyi);
 
 	if (ShowCheatSheet)
 		TexView::ShowCheatSheetPopup(&ShowCheatSheet, float(dispw), float(topUIHeight));
@@ -1215,7 +1213,7 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 			if (modifiers == GLFW_MOD_ALT)
 				ChangeScreenMode(!FullscreenMode);
 			else
-				ShowOverlay = !ShowOverlay;			
+				TexView::Config.OverlayShow = !TexView::Config.OverlayShow;			
 			break;
 
 		case GLFW_KEY_F1:
