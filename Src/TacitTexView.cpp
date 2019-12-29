@@ -53,7 +53,9 @@ namespace TexView
 	GLFWwindow* Window			= nullptr;
 	bool FullscreenMode			= false;
 	bool ShowLog				= false;
-	bool ShowInfo				= false;
+	bool ShowOverlay			= false;
+	bool ShowCheatSheet			= false;
+	bool ShowAbout				= false;
 	bool RMBDown				= false;
 	int DragAnchorX				= 0;
 	int DragAnchorY				= 0;
@@ -93,12 +95,16 @@ namespace TexView
 	void ShowContactSheetDialog(bool* popen, bool justOpened);
 	void ShowSaveAsDialog(bool* popen, bool justOpened);
 	void ShowInfoOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY);
+	void ShowCheatSheetPopup(bool* popen, float right, float top);
+	void ShowAboutPopup(bool* popen, float right, float top);
 
 	void SetWindowTitle();
 	bool OnPrevious();
 	bool OnNext();
 	bool ChangeScreenMode(bool fullscreeen);
+	void ResetPan(bool resetX = true, bool resetY = true);
 	void Update(GLFWwindow* window, double dt, bool dopoll = true);
+
 	void WindowRefreshFun(GLFWwindow* window)																			{ Update(window, 0.0, false); }
 	void KeyCallback(GLFWwindow*, int key, int scancode, int action, int modifiers);
 	void MouseButtonCallback(GLFWwindow*, int mouseButton, int x, int y);
@@ -177,10 +183,7 @@ void TexView::SetCurrentImage(const tString& currFilename)
 		CurrImage->PrintInfo();
 		SetWindowTitle();
 		CurrZoomMode = ZoomMode::Downscale;
-		PanOffsetX = 0;
-		PanOffsetY = 0;
-		DragDownOffsetX = 0;
-		DragDownOffsetY = 0;
+		ResetPan();
 	}
 }
 
@@ -195,11 +198,7 @@ bool TexView::OnPrevious()
 	CurrImage->Load();
 	CurrImage->PrintInfo();
 	SetWindowTitle();
-	//CurrZoomMode = ZoomMode::Downscale;
-	PanOffsetX = 0;
-	PanOffsetY = 0;
-	DragDownOffsetX = 0;
-	DragDownOffsetY = 0;
+	ResetPan();
 	return true;
 }
 
@@ -214,11 +213,7 @@ bool TexView::OnNext()
 	CurrImage->Load();
 	CurrImage->PrintInfo();
 	SetWindowTitle();
-	//CurrZoomMode = ZoomMode::Downscale;
-	PanOffsetX = 0;
-	PanOffsetY = 0;
-	DragDownOffsetX = 0;
-	DragDownOffsetY = 0;
+	ResetPan();
 	return true;
 }
 
@@ -554,20 +549,21 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 
 void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY)
 {
+	// This overlay function is pretty much taken from the DearImGui demo code.
 	const float margin = 10.0f;
-	static int corner = 0;
+	static int corner = 3;
 
-	ImVec2 window_pos = ImVec2
+	ImVec2 windowPos = ImVec2
 	(
 		x + ((corner & 1) ? w - margin : margin),
 		y + ((corner & 2) ? h - margin : margin)
 	);
-	ImVec2 window_pos_pivot = ImVec2
+	ImVec2 windowPivot = ImVec2
 	(
 		(corner & 1) ? 1.0f : 0.0f,
 		(corner & 2) ? 1.0f : 0.0f
 	);
-	ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, windowPivot);
 	ImGui::SetNextWindowBgAlpha(0.6f);
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
@@ -576,19 +572,23 @@ void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, i
 
 	if (ImGui::Begin("Info", popen, flags))
 	{
-		ImGui::Text("Image Info. Right-click change position.");
+		ImGui::Text("Image Info - Enter to Toggle");
+		ImGui::Text("Right-Click to change position.");
 		ImGui::Separator();
 
 		if (CurrImage)
 		{
 			TacitImage::ImgInfo& info = CurrImage->Info;
-			ImGui::Text("Size: %dx%d", info.Width, info.Height);
-			ImGui::Text("Pixel Format: %s", info.PixelFormat.ConstText());
-			ImGui::Text("Bit Depth: %d", info.SrcFileBitDepth);
-			ImGui::Text("Opaque: %s", info.Opaque ? "true" : "false");
-			ImGui::Text("Mipmaps: %d", info.Mipmaps);
-			ImGui::Text("File Size (B): %d", info.SizeBytes);
-			ImGui::Text("Cursor: (%d, %d)", cursorX, cursorY);
+			if (info.IsValid())
+			{
+				ImGui::Text("Size: %dx%d", info.Width, info.Height);
+				ImGui::Text("Pixel Format: %s", info.PixelFormat.ConstText());
+				ImGui::Text("Bit Depth: %d", info.SrcFileBitDepth);
+				ImGui::Text("Opaque: %s", info.Opaque ? "true" : "false");
+				ImGui::Text("Mipmaps: %d", info.Mipmaps);
+				ImGui::Text("File Size (B): %d", info.SizeBytes);
+				ImGui::Text("Cursor: (%d, %d)", cursorX, cursorY);
+			}
 		}
 
 		if (ImGui::BeginPopupContextWindow())
@@ -605,6 +605,69 @@ void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, i
 }
 
 
+void TexView::ShowCheatSheetPopup(bool* popen, float right, float top)
+{
+	const float margin = 32.0f;
+	ImVec2 windowPos = ImVec2(right - margin, top + margin);
+	ImVec2 windowPivot = ImVec2(1.0f, 0.0f);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, windowPivot);
+	ImGui::SetNextWindowBgAlpha(0.6f);
+	ImGuiWindowFlags flags =
+		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
+		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+
+	if (ImGui::Begin("Cheat Sheet", popen, flags))
+	{
+		float col = ImGui::GetCursorPosX() + 80.0f;
+		ImGui::Text("Left Arrow");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Previous Image");
+		ImGui::Text("Right Arrow");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Next Image");
+		ImGui::Text("Space");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Next Image");
+		ImGui::Text("Ctrl+");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom In");
+		ImGui::Text("Ctrl-");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom Out");
+		ImGui::Text("F1");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Cheat Sheet");
+		ImGui::Text("F11");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Fullscreen");
+		ImGui::Text("Alt-Enter");   ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Fullscreen");
+		ImGui::Text("Esc");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Exit Fullscreen");
+		ImGui::Text("Enter");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Overlay");
+		ImGui::Text("LMB-Click");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Set Colour Reticle Pos");
+		ImGui::Text("RMB-Drag");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Pan Image");
+		ImGui::Text("Alt-F4");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Quit");
+	}
+	ImGui::End();
+}
+
+
+void TexView::ShowAboutPopup(bool* popen, float right, float top)
+{
+	const float margin = 32.0f;
+	ImVec2 windowPos = ImVec2(margin, top + margin);
+	ImVec2 windowPivot = ImVec2(0.0f, 0.0f);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, windowPivot);
+	ImGui::SetNextWindowBgAlpha(0.6f);
+	ImGuiWindowFlags flags =
+		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
+		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+
+	if (ImGui::Begin("About", popen, flags))
+	{
+		int glfwMajor = 0; int glfwMinor = 0; int glfwRev = 0;
+		glfwGetVersion(&glfwMajor, &glfwMinor, &glfwRev);
+		ImGui::Text("Tacit Viewer V %d.%d.%d by Tristan Grimmer", TexView::MajorVersion, TexView::MinorVersion, TexView::Revision);
+		ImGui::Separator();
+		ImGui::Text("The following amazing and liberally licenced frameworks are used by this tool.");
+		ImGui::Text("Dear ImGui V %s", IMGUI_VERSION);
+		ImGui::Text("GLEW V %s", glewGetString(GLEW_VERSION));
+		ImGui::Text("GLFW V %d.%d.%d", glfwMajor, glfwMinor, glfwRev);
+		ImGui::Text("CxImage");
+		ImGui::Text("nVidia Texture Tools");
+		ImGui::Text("Tacent Library V %d.%d.%d", tVersion::Major, tVersion::Minor, tVersion::Revision);
+	}
+	ImGui::End();
+}
+
+
 void TexView::SetWindowTitle()
 {
 	if (!Window)
@@ -615,6 +678,22 @@ void TexView::SetWindowTitle()
 		title = title + " - " + tGetFileName(CurrImage->Filename);
 
 	glfwSetWindowTitle(Window, title.ConstText());
+}
+
+
+void TexView::ResetPan(bool resetX, bool resetY)
+{
+	if (resetX)
+	{
+		PanOffsetX = 0;
+		DragDownOffsetX = 0;
+	}
+
+	if (resetY)
+	{
+		PanOffsetY = 0;
+		DragDownOffsetY = 0;
+	}
 }
 
 
@@ -656,12 +735,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		Dispw = dispw;
 		Disph = disph;
 		if ((PanOffsetX+DragDownOffsetX == 0) && (PanOffsetY+DragDownOffsetY == 0))
-		{
-			PanOffsetX = 0;
-			PanOffsetY = 0;
-			DragDownOffsetX = 0;
-			DragDownOffsetY = 0;
-		}
+			ResetPan();
 	}
 
 	int workAreaW = Dispw;
@@ -825,15 +899,10 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 
 		if (draww > w)
-		{
-			PanOffsetX = 0;
-			DragDownOffsetX = 0;
-		}
+			ResetPan(true, false);
+
 		if (drawh > h)
-		{
-			PanOffsetY = 0;
-			DragDownOffsetY = 0;
-		}
+			ResetPan(false, true);
 
 		float uOffset = -float(PanOffsetX+DragDownOffsetX)/w;
 		float vOffset =  float(PanOffsetY+DragDownOffsetY)/h;
@@ -980,7 +1049,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::BeginMenu("View"))
 			{
 				ImGui::MenuItem("Show Log", "", &ShowLog, true);
-				ImGui::MenuItem("Show Info", "", &ShowInfo, true);
+				ImGui::MenuItem("Show Overlay", "", &ShowOverlay, true);
 
 				ImGui::PushItemWidth(200);
 				if (ImGui::SliderFloat("", &ZoomPercent, 20.0f, 2500.0f, " Zoom %.2f"))
@@ -990,30 +1059,21 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				bool userMode = CurrZoomMode == ZoomMode::User;
 				if (ImGui::MenuItem("Zoom User", "", &userMode, true))
 				{
-					PanOffsetX = 0;
-					PanOffsetY = 0;
-					DragDownOffsetX = 0;
-					DragDownOffsetY = 0;
+					ResetPan();
 					CurrZoomMode = ZoomMode::User;
 				}
 
 				bool fitMode = CurrZoomMode == ZoomMode::Fit;
 				if (ImGui::MenuItem("Zoom Fit", "", &fitMode, true))
 				{
-					PanOffsetX = 0;
-					PanOffsetY = 0;
-					DragDownOffsetX = 0;
-					DragDownOffsetY = 0;
+					ResetPan();
 					CurrZoomMode = ZoomMode::Fit;
 				}
 
 				bool downscale = CurrZoomMode == ZoomMode::Downscale;
 				if (ImGui::MenuItem("Zoom Downscale", "", &downscale, true))
 				{
-					PanOffsetX = 0;
-					PanOffsetY = 0;
-					DragDownOffsetX = 0;
-					DragDownOffsetY = 0;
+					ResetPan();
 					CurrZoomMode = ZoomMode::Downscale;
 				}
 
@@ -1021,27 +1081,26 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				if (ImGui::MenuItem("Zoom 1:1", "", &oneToOne, true))
 				{
 					ZoomPercent = 100.0f;
-					PanOffsetX = 0;
-					PanOffsetY = 0;
-					DragDownOffsetX = 0;
-					DragDownOffsetY = 0;
+					ResetPan();
 					CurrZoomMode = ZoomMode::OneToOne;
 				}
 
 				if (ImGui::Button("Reset Pan"))
-				{
-					//CurrZoomMode = ZoomMode::Downscale;
-					PanOffsetX = 0;
-					PanOffsetY = 0;
-					DragDownOffsetX = 0;
-					DragDownOffsetY = 0;
-				}
+					ResetPan();
 
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("Help"))
+			{
+				ImGui::MenuItem("Cheat Sheet", "", &ShowCheatSheet, true);
+				ImGui::MenuItem("About", "", &ShowAbout, true);
 				ImGui::EndMenu();
 			}
 
 			int colourFlags = 0;		// ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_NoDragDrop | ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_NoOptions;
 			tColourf floatCol(PixelColour);
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 40.0f);
 			ImGui::Text("Colour");
 			ImGui::PushItemWidth(180);
 			ImGui::ColorEdit4("Colour##2f", floatCol.E, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | colourFlags);
@@ -1054,8 +1113,15 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (!FullscreenMode && ShowLog)
 		TexView::DrawTextureViewerLog(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
 
-	if (!FullscreenMode && ShowInfo)
-		TexView::ShowInfoOverlay(&ShowInfo, hmargin, float(topUIHeight)+vmargin, float(dispw)-2.0f*hmargin, float(disph - bottomUIHeight - topUIHeight)-2.0f*vmargin, imgxi, imgyi);
+	// We allow the overlay and cheatsheet in fullscreen.
+	if (ShowOverlay)
+		TexView::ShowInfoOverlay(&ShowOverlay, hmargin, float(topUIHeight)+vmargin, float(dispw)-2.0f*hmargin, float(disph - bottomUIHeight - topUIHeight)-2.0f*vmargin, imgxi, imgyi);
+
+	if (ShowCheatSheet)
+		TexView::ShowCheatSheetPopup(&ShowCheatSheet, float(dispw), float(topUIHeight));
+
+	if (ShowAbout)
+		TexView::ShowAboutPopup(&ShowAbout, float(dispw), float(topUIHeight));
 
 	ImGui::Render();
 	glViewport(0, 0, dispw, disph);
@@ -1121,6 +1187,7 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 			break;
 
 		case GLFW_KEY_RIGHT:
+		case GLFW_KEY_SPACE:
 			OnNext();
 			break;
 
@@ -1147,6 +1214,16 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 		case GLFW_KEY_ENTER:
 			if (modifiers == GLFW_MOD_ALT)
 				ChangeScreenMode(!FullscreenMode);
+			else
+				ShowOverlay = !ShowOverlay;			
+			break;
+
+		case GLFW_KEY_F1:
+			ShowCheatSheet = !ShowCheatSheet;
+			break;
+
+		case GLFW_KEY_F11:
+			ChangeScreenMode(!FullscreenMode);
 			break;
 
 		case GLFW_KEY_ESCAPE:
