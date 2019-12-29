@@ -266,8 +266,8 @@ public:
 	// The Comp (Compose) functions write a list of 2 to 5 atoms (a command followed by 1 to 4 arguments). They are
 	// convenience functions to write expressions of the form [s a b] followed by a carraige return. The first atom is
 	// always a string and remaining atoms are always of the same type. Before the expression is written, the correct
-	// number of indents is inserted. Ex. To write a vector 4:
-	// Comp("vec4", 4.0f, 2.0f, -2.0f, 1.0f);
+	// number of indents is inserted. Ex. To write 4 integers:
+	// Comp("LeftRightTopBottom", 4, 2, -2, 1);
 	template<typename T> void Comp(const tString& s, const T& a)														{ WriteIndents(); Begin(); Atom(s); Atom(a); End(); CR(); }
 	template<typename T> void Comp(const tString& s, const T& a, const T& b)											{ WriteIndents(); Begin(); Atom(s); Atom(a); Atom(b); End(); CR(); }
 	template<typename T> void Comp(const tString& s, const T& a, const T& b, const T& c)								{ WriteIndents(); Begin(); Atom(s); Atom(a); Atom(b); Atom(c); End(); CR(); }

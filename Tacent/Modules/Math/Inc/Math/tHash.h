@@ -6,7 +6,7 @@
 // data sources like strings, binary data, or files, you do NOT need to consolidate all the source data into one buffer
 // first. Just set the initialization vector to the hash computed from the previous step.
 //
-// Copyright (c) 2004-2006, 2015, 2017 Tristan Grimmer.
+// Copyright (c) 2004-2006, 2015, 2017, 2019 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
