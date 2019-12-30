@@ -52,6 +52,13 @@ namespace TexView
 	TacitImage FlipVImage;
 	TacitImage RotateACWImage;
 	TacitImage RotateCWImage;
+	TacitImage FullscreenImage;
+	TacitImage WindowedImage;
+	TacitImage SkipBeginImage;
+	TacitImage SkipEndImage;
+	TacitImage MipmapsImage;
+	TacitImage CubemapImage;
+
 	double NextPrevDisappear	= 1.0;
 	GLFWwindow* Window			= nullptr;
 	bool FullscreenMode			= false;
@@ -562,7 +569,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	NextPrevDisappear -= dt;
 	if (NextPrevDisappear > 0.0)
 	{
-		ImGui::SetNextWindowPos(ImVec2(0, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
+		ImGui::SetNextWindowPos(ImVec2(0.0f, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
 		ImGui::SetNextWindowSize(ImVec2(18, 72), ImGuiCond_Always);
 		ImGui::Begin("Prev", nullptr, flagsNextPrev);
 		ImGui::SetCursorPos(ImVec2(4, 2));
@@ -576,6 +583,14 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::SetCursorPos(ImVec2(4, 2));
 		if (ImGui::ImageButton(ImTextureID(uint64(NextImage.GLTextureID)), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 			OnNext();
+		ImGui::End();
+
+		ImGui::SetNextWindowPos(ImVec2((workAreaW>>1)-22.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+		ImGui::SetNextWindowSize(ImVec2(40, 40), ImGuiCond_Always);
+		ImGui::Begin("Fullscreen", nullptr, flagsNextPrev);
+		uint64 imageID = FullscreenMode ? uint64(WindowedImage.GLTextureID) : uint64(FullscreenImage.GLTextureID);
+		if (ImGui::ImageButton(ImTextureID(imageID), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			ChangeScreenMode(!FullscreenMode);
 		ImGui::End();
 	}
 
@@ -1055,6 +1070,24 @@ int main(int argc, char** argv)
 
 	TexView::RotateCWImage.Load(tSystem::tGetProgramDir() + "Data/RotCW.png");
 	TexView::RotateCWImage.Bind();
+
+	TexView::FullscreenImage.Load(tSystem::tGetProgramDir() + "Data/Fullscreen.png");
+	TexView::FullscreenImage.Bind();
+
+	TexView::WindowedImage.Load(tSystem::tGetProgramDir() + "Data/Windowed.png");
+	TexView::WindowedImage.Bind();
+
+	TexView::SkipBeginImage.Load(tSystem::tGetProgramDir() + "Data/SkipBegin.png");
+	TexView::SkipBeginImage.Bind();
+
+	TexView::SkipEndImage.Load(tSystem::tGetProgramDir() + "Data/SkipEnd.png");
+	TexView::SkipEndImage.Bind();
+
+	TexView::MipmapsImage.Load(tSystem::tGetProgramDir() + "Data/Mipmaps.png");
+	TexView::MipmapsImage.Bind();
+
+	TexView::CubemapImage.Load(tSystem::tGetProgramDir() + "Data/Cubemap.png");
+	TexView::CubemapImage.Bind();
 
 	TexView::FindTextureFiles();
 	if (TexView::ImageFileParam.IsPresent())
