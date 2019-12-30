@@ -13,6 +13,7 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #pragma once
+#include <GL/glew.h>
 #include <Foundation/tList.h>
 #include <Foundation/tString.h>
 #include <System/tFile.h>

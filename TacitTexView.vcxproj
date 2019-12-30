@@ -180,9 +180,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\ContactSheet.h" />
+    <ClInclude Include="Src\Dialogs.h" />
     <ClInclude Include="Src\ImGuiLogWindow.h" />
     <ClInclude Include="Src\Settings.h" />
     <ClInclude Include="Src\TacitImage.h" />
+    <ClInclude Include="Src\TacitTexView.h" />
     <ClInclude Include="Tacent\Contrib\imgui\examples\imgui_impl_glfw.h" />
     <ClInclude Include="Tacent\Contrib\imgui\examples\imgui_impl_opengl2.h" />
     <ClInclude Include="Tacent\Contrib\imgui\imconfig.h" />
@@ -194,6 +197,8 @@
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\ContactSheet.cpp" />
+    <ClCompile Include="Src\Dialogs.cpp" />
     <ClCompile Include="Src\ImGuiLogWindow.cpp" />
     <ClCompile Include="Src\Settings.cpp" />
     <ClCompile Include="Src\TacitImage.cpp" />

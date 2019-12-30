@@ -26,6 +26,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl2.h"
+#include "TacitTexView.h"
 #include "TacitImage.h"
 #include "ImGuiLogWindow.h"
 #include "Settings.h"
@@ -33,11 +34,9 @@ using namespace tStd;
 using namespace tSystem;
 
 
-tCommand::tParam ImageFileParam(1, "ImageFile", "File to open.");
-
-
 namespace TexView
 {
+	tCommand::tParam ImageFileParam(1, "ImageFile", "File to open.");
 	int MajorVersion			= 0;
 	int MinorVersion			= 10;
 	int Revision				= 0;
@@ -86,11 +85,7 @@ namespace TexView
 	void PrintRedirectCallback(const char* text, int numChars)															{ LogWindow.AddLog("%s", text); }
 	void GlfwErrorCallback(int error, const char* description)															{ tPrintf("Glfw Error %d: %s\n", error, description); }
 	bool CompareFunc(const tStringItem& a, const tStringItem& b)														{ return tStrcmp(a.ConstText(), b.ConstText()) < 0; }
-	void FindTextureFiles();
-	void SetCurrentImage(const tString& currFilename = tString());
 
-	// Helper to display a little (?) mark which shows a tooltip when hovered.
-	void ShowHelpMark(const char* desc);
 	void ShowContactSheetDialog(bool* popen, bool justOpened);
 	void ShowSaveAsDialog(bool* popen, bool justOpened);
 	void ShowInfoOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY);
@@ -231,441 +226,6 @@ void TexView::ShowHelpMark(const char* desc)
 }
 
 
-void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
-{
-	ImGuiWindowFlags windowFlags = 0;
-
-	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
-	// do it to make the Demo applications a little more welcoming.
-	ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(370, 184), ImGuiCond_FirstUseEver);
-
-	// Main body of the Demo window starts here.
-	if (!ImGui::Begin("Save As", popen, windowFlags))
-	{
-		ImGui::End();
-		return;
-	}
-
-	static int finalWidth = 512;
-	static int finalHeight = 512;
-	if (justOpened && CurrImage)
-	{
-		finalWidth = CurrImage->GetWidth();
-		finalHeight = CurrImage->GetHeight();
-	}
-	ImGui::InputInt("Final Width", &finalWidth);
-	ImGui::SameLine();
-	ShowHelpMark("Final scaled output height in pixels.");
-
-	ImGui::InputInt("Final Height", &finalHeight);
-	ImGui::SameLine();
-	ShowHelpMark("Final scaled output height in pixels.");
-
-	if (ImGui::Button("Prev Pow2"))
-	{
-		finalWidth = tMath::tNextLowerPower2(CurrImage->GetWidth());
-		finalHeight = tMath::tNextLowerPower2(CurrImage->GetHeight());
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Next Pow2"))
-	{
-		finalWidth = tMath::tNextHigherPower2(CurrImage->GetWidth());
-		finalHeight = tMath::tNextHigherPower2(CurrImage->GetHeight());
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Reset"))
-	{
-		finalWidth = CurrImage->GetWidth();
-		finalHeight = CurrImage->GetHeight();
-	}
-
-	const char* fileTypeItems[] = { "TGA", "PNG", "BMP", "JPG", "GIF" };
-	static int itemCurrent = 0;
-	ImGui::Combo("File Type", &itemCurrent, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
-	ImGui::SameLine();
-	ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
-
-	tString extension = ".tga";
-	switch (itemCurrent)
-	{
-		case 0: extension = ".tga"; break;
-		case 1: extension = ".png"; break;
-		case 2: extension = ".bmp"; break;
-		case 3: extension = ".jpg"; break;
-		case 4: extension = ".gif"; break;
-	}
-
-	static bool rleCompression = false;
-	if (itemCurrent == 0)
-		ImGui::Checkbox("RLE Compression", &rleCompression);
-
-	static char filename[128] = "Filename";
-	if (justOpened)
-	{
-		tString baseName = tSystem::tGetFileBaseName(CurrImage->Filename);
-		tStrcpy(filename, baseName.ConstText());
-	}
-	ImGui::InputText("Filename", filename, IM_ARRAYSIZE(filename));
-	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
-
-	if (ImGui::Button("Save"))
-	{
-		tString imagesDir = tSystem::tGetCurrentDir();
-		if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
-			imagesDir = tSystem::tGetDir(ImageFileParam.Get());
-		tString outFile = imagesDir + tString(filename) + extension;
-
-		tImage::tPicture outPic(CurrImage->GetWidth(), CurrImage->GetHeight());
-		outPic.Set(*CurrImage->PictureImages.First());
-
-		if ((outPic.GetWidth() != finalWidth) || (outPic.GetHeight() != finalHeight))
-			outPic.Resample(finalWidth, finalHeight);
-
-		if (tFileExists(outFile))
-		{
-			tPrintf("File %s already exists. Will not overwrite.\n", outFile.ConstText());
-		}
-		else
-		{
-			bool success = false;
-			tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-			if (itemCurrent == 0)
-				success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, rleCompression ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
-			else
-				success = outPic.Save(outFile, colourFmt);
-
-			if (success)
-				tPrintf("Saved image as : %s\n", outFile.ConstText());
-			else
-				tPrintf("Failed to save image %s\n", outFile.ConstText());
-		}
-
-		Images.Clear();
-		FindTextureFiles();
-		SetCurrentImage(outFile);
-	}
-
-	ImGui::End();
-}
-
-
-void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
-{
-	ImGuiWindowFlags windowFlags = 0;
-
-	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
-	// do it to make the Demo applications a little more welcoming.
-	ImGui::SetNextWindowPos(ImVec2(200, 150), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(370, 254), ImGuiCond_FirstUseEver);
-
-	// Main body of the Demo window starts here.
-	if (!ImGui::Begin("Contact Sheet Generator", popen, windowFlags))
-	{
-		ImGui::End();
-		return;
-	}
-
-	static int frameWidth = 256;
-	static int frameHeight = 256;
-	static int numRows = 4;
-	static int numCols = 4;
-	static int finalWidth = 2048;
-	static int finalHeight = 2048;
-	if (justOpened && CurrImage)
-	{
-		frameWidth = CurrImage->GetWidth();
-		frameHeight = CurrImage->GetHeight();
-		numRows = int(tMath::tCeiling(tMath::tSqrt(float(Images.Count()))));
-		numCols = int(tMath::tCeiling(tMath::tSqrt(float(Images.Count()))));
-	}
-
-	int contactWidth = frameWidth * numCols;
-	int contactHeight = frameHeight * numRows;
-	if (justOpened && CurrImage)
-	{
-		finalWidth = contactWidth;
-		finalHeight = contactHeight;
-	}
-
-	ImGui::InputInt("Frame Width", &frameWidth);
-	ImGui::SameLine();
-	ShowHelpMark("Single frame width in pixels.");
-
-	ImGui::InputInt("Frame Height", &frameHeight);
-	ImGui::SameLine();
-	ShowHelpMark("Single frame height in pixels.");
-
-	ImGui::InputInt("Columns", &numCols);
-	ImGui::SameLine();
-	ShowHelpMark("Number of columns. Determines overall width.");
- 
-	ImGui::InputInt("Rows", &numRows);
-	ImGui::SameLine();
-	ShowHelpMark("Number of rows. Determines overall height.");
-
-	ImGui::InputInt("Final Width", &finalWidth);
-	ImGui::SameLine();
-	ShowHelpMark("Final scaled output sheet height in pixels.");
-
-	ImGui::InputInt("Final Height", &finalHeight);
-	ImGui::SameLine();
-	ShowHelpMark("Final scaled output sheet height in pixels.");
-
-	if (ImGui::Button("Prev Pow2"))
-	{
-		finalWidth = tMath::tNextLowerPower2(contactWidth);
-		finalHeight = tMath::tNextLowerPower2(contactHeight);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Next Pow2"))
-	{
-		finalWidth = tMath::tNextHigherPower2(contactWidth);
-		finalHeight = tMath::tNextHigherPower2(contactHeight);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Reset"))
-	{
-		finalWidth = contactWidth;
-		finalHeight = contactHeight;
-	}
-
-	const char* fileTypeItems[] = { "TGA", "PNG", "BMP", "JPG", "GIF" };
-	static int itemCurrent = 0;
-	ImGui::Combo("File Type", &itemCurrent, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
-	ImGui::SameLine();
-	ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
-
-	tString extension = ".tga";
-	switch (itemCurrent)
-	{
-		case 0: extension = ".tga"; break;
-		case 1: extension = ".png"; break;
-		case 2: extension = ".bmp"; break;
-		case 3: extension = ".jpg"; break;
-		case 4: extension = ".gif"; break;
-	}
-
-	static char filename[128] = "ContactSheet";
-	ImGui::InputText("Filename", filename, IM_ARRAYSIZE(filename));
-	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
-
-	if (ImGui::Button("Generate"))
-	{
-		tString imagesDir = tSystem::tGetCurrentDir();
-		if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
-			imagesDir = tSystem::tGetDir(ImageFileParam.Get());
-		tString outFile = imagesDir + tString(filename) + extension;
-
-		tImage::tPicture outPic(contactWidth, contactHeight);
-		outPic.SetAll(tColouri(0, 0, 0, 0));
-
-		// Do the work.
-		int frameWidth = contactWidth / numCols;
-		int frameHeight = contactHeight / numRows;
-		int ix = 0;
-		int iy = 0;
-		int frame = 0;
-
-		tPrintf("Loading all frames...\n");
-		bool allOpaque = true;
-		for (TacitImage* img = Images.First(); img; img = img->Next())
-		{
-			if (!img->IsLoaded())
-				img->Load();
-
-			if (img->IsLoaded() && !img->IsOpaque())
-				allOpaque = false;
-		}
-
-		TacitImage* currImg = Images.First();
-		while (currImg)
-		{
-			if (!currImg->IsLoaded())
-			{
-				currImg = currImg->Next();
-				continue;
-			}
-
-			if (tSystem::tGetFileBaseName(currImg->Filename) == tSystem::tGetFileBaseName(outFile))
-			{
-				currImg = currImg->Next();
-				continue;
-			}
-
-			tPrintf("Processing frame %d : %s at (%d, %d).\n", frame, currImg->Filename.ConstText(), ix, iy);
-			frame++;
-			tImage::tPicture* currPic = currImg->PictureImages.First();
-
-			tImage::tPicture resampled;
-			if ((currImg->GetWidth() != frameWidth) || (currImg->GetHeight() != frameHeight))
-			{
-				resampled.Set(*currPic);
-				resampled.Resample(frameWidth, frameHeight);
-			}
-
-			// Copy resampled frame into place.
-			for (int y = 0; y < frameHeight; y++)
-				for (int x = 0; x < frameWidth; x++)
-					outPic.SetPixel
-					(
-						x + (ix*frameWidth),
-						y + ((numRows-1-iy)*frameHeight),
-						resampled.IsValid() ? resampled.GetPixel(x, y) : currPic->GetPixel(x, y)
-					);
-
-			currImg = currImg->Next();
-
-			ix++;
-			if (ix >= numCols)
-			{
-				ix = 0;
-				iy++;
-				if (iy >= numRows)
-					break;
-			}
-		}
-
-		tImage::tPicture::tColourFormat colourFmt = allOpaque ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-		if ((finalWidth == contactWidth) && (finalHeight == contactHeight))
-		{
-			outPic.Save(outFile, colourFmt);
-		}
-		else
-		{
-			tImage::tPicture finalResampled(outPic);
-			finalResampled.Resample(finalWidth, finalHeight);
-			finalResampled.Save(outFile, colourFmt);
-		}
-		Images.Clear();
-		FindTextureFiles();
-		SetCurrentImage(outFile);
-	}
-
-	ImGui::End();
-}
-
-
-void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY)
-{
-	// This overlay function is pretty much taken from the DearImGui demo code.
-	const float margin = 10.0f;
-
-	ImVec2 windowPos = ImVec2
-	(
-		x + ((Config.OverlayCorner & 1) ? w - margin : margin),
-		y + ((Config.OverlayCorner & 2) ? h - margin : margin)
-	);
-	ImVec2 windowPivot = ImVec2
-	(
-		(Config.OverlayCorner & 1) ? 1.0f : 0.0f,
-		(Config.OverlayCorner & 2) ? 1.0f : 0.0f
-	);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, windowPivot);
-	ImGui::SetNextWindowBgAlpha(0.6f);
-	ImGuiWindowFlags flags =
-		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
-		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-
-	if (ImGui::Begin("Info", popen, flags))
-	{
-		ImGui::Text("Image Info - Enter to Toggle");
-		ImGui::Text("Right-Click to change position.");
-		ImGui::Separator();
-
-		if (CurrImage)
-		{
-			TacitImage::ImgInfo& info = CurrImage->Info;
-			if (info.IsValid())
-			{
-				ImGui::Text("Size: %dx%d", info.Width, info.Height);
-				ImGui::Text("Pixel Format: %s", info.PixelFormat.ConstText());
-				ImGui::Text("Bit Depth: %d", info.SrcFileBitDepth);
-				ImGui::Text("Opaque: %s", info.Opaque ? "true" : "false");
-				ImGui::Text("Mipmaps: %d", info.Mipmaps);
-				ImGui::Text("File Size (B): %d", info.SizeBytes);
-				ImGui::Text("Cursor: (%d, %d)", cursorX, cursorY);
-			}
-		}
-
-		if (ImGui::BeginPopupContextWindow())
-		{
-			if (ImGui::MenuItem("Top-left",		nullptr, Config.OverlayCorner == 0)) Config.OverlayCorner = 0;
-			if (ImGui::MenuItem("Top-right",	nullptr, Config.OverlayCorner == 1)) Config.OverlayCorner = 1;
-			if (ImGui::MenuItem("Bottom-left",  nullptr, Config.OverlayCorner == 2)) Config.OverlayCorner = 2;
-			if (ImGui::MenuItem("Bottom-right", nullptr, Config.OverlayCorner == 3)) Config.OverlayCorner = 3;
-			if (popen && ImGui::MenuItem("Close")) *popen = false;
-			ImGui::EndPopup();
-		}
-	}
-	ImGui::End();
-}
-
-
-void TexView::ShowCheatSheetPopup(bool* popen, float right, float top)
-{
-	const float margin = 32.0f;
-	ImVec2 windowPos = ImVec2(right - margin, top + margin);
-	ImVec2 windowPivot = ImVec2(1.0f, 0.0f);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, windowPivot);
-	ImGui::SetNextWindowBgAlpha(0.6f);
-	ImGuiWindowFlags flags =
-		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
-		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
-		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-
-	if (ImGui::Begin("Cheat Sheet", popen, flags))
-	{
-		float col = ImGui::GetCursorPosX() + 80.0f;
-		ImGui::Text("Left Arrow");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Previous Image");
-		ImGui::Text("Right Arrow");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Next Image");
-		ImGui::Text("Space");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Next Image");
-		ImGui::Text("Ctrl+");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom In");
-		ImGui::Text("Ctrl-");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom Out");
-		ImGui::Text("F1");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Cheat Sheet");
-		ImGui::Text("F11");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Fullscreen");
-		ImGui::Text("Alt-Enter");   ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Fullscreen");
-		ImGui::Text("Esc");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Exit Fullscreen");
-		ImGui::Text("Enter");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Overlay");
-		ImGui::Text("LMB-Click");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Set Colour Reticle Pos");
-		ImGui::Text("RMB-Drag");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Pan Image");
-		ImGui::Text("Alt-F4");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Quit");
-	}
-	ImGui::End();
-}
-
-
-void TexView::ShowAboutPopup(bool* popen, float right, float top)
-{
-	const float margin = 32.0f;
-	ImVec2 windowPos = ImVec2(margin, top + margin);
-	ImVec2 windowPivot = ImVec2(0.0f, 0.0f);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, windowPivot);
-	ImGui::SetNextWindowBgAlpha(0.6f);
-	ImGuiWindowFlags flags =
-		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
-		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
-		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-
-	if (ImGui::Begin("About", popen, flags))
-	{
-		int glfwMajor = 0; int glfwMinor = 0; int glfwRev = 0;
-		glfwGetVersion(&glfwMajor, &glfwMinor, &glfwRev);
-		ImGui::Text("Tacit Viewer V %d.%d.%d by Tristan Grimmer", TexView::MajorVersion, TexView::MinorVersion, TexView::Revision);
-		ImGui::Separator();
-		ImGui::Text("The following amazing and liberally licenced frameworks are used by this tool.");
-		ImGui::Text("Dear ImGui V %s", IMGUI_VERSION);
-		ImGui::Text("GLEW V %s", glewGetString(GLEW_VERSION));
-		ImGui::Text("GLFW V %d.%d.%d", glfwMajor, glfwMinor, glfwRev);
-		ImGui::Text("CxImage");
-		ImGui::Text("nVidia Texture Tools");
-		ImGui::Text("Tacent Library V %d.%d.%d", tVersion::Major, tVersion::Minor, tVersion::Revision);
-	}
-	ImGui::End();
-}
-
-
 void TexView::SetWindowTitle()
 {
 	if (!Window)
@@ -712,7 +272,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	glClearColor(clearColour.x, clearColour.y, clearColour.z, clearColour.w);
 	glClear(GL_COLOR_BUFFER_BIT);
 	int bottomUIHeight = 150;
-	int topUIHeight = 22;
+	int topUIHeight = 20;
 	if (FullscreenMode)
 	{
 		bottomUIHeight = 0;
@@ -918,7 +478,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		float areaH = float(workAreaH) + topUIHeight;
 
 		float picX = cx - l;
-		float picY = (areaH - cy) - b;
+		float picY = (areaH - cy - 1) - b;
 		float normX = picX / (r-l);
 		float normY = picY / (t-b);
 		bool insideRect = tMath::tInRange(normX, 0.0f, 1.0f) && tMath::tInRange(normY, 0.0f, 1.0f);
@@ -975,7 +535,6 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	ImGuiWindowFlags flagsNextPrev = 0;
 	flagsNextPrev |= ImGuiWindowFlags_NoTitleBar;
 	flagsNextPrev |= ImGuiWindowFlags_NoScrollbar;
-	//flagsNextPrev |= ImGuiWindowFlags_MenuBar;
 	flagsNextPrev |= ImGuiWindowFlags_NoMove;
 	flagsNextPrev |= ImGuiWindowFlags_NoResize;
 	flagsNextPrev |= ImGuiWindowFlags_NoCollapse;
@@ -1241,8 +800,8 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
 
-	double topUIHeight = 22.0;
-	if (ypos <= topUIHeight)
+	double topUIHeight = 20.0;
+	if ((ypos <= topUIHeight) && !FullscreenMode)
 		return;
 
 	bool down = press ? true : false;
@@ -1401,8 +960,8 @@ int main(int argc, char** argv)
 	TexView::NextImage.Bind();
 
 	TexView::FindTextureFiles();
-	if (ImageFileParam.IsPresent())
-		TexView::SetCurrentImage(ImageFileParam.Get());
+	if (TexView::ImageFileParam.IsPresent())
+		TexView::SetCurrentImage(TexView::ImageFileParam.Get());
 	else
 		TexView::SetCurrentImage();
 
