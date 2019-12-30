@@ -305,6 +305,42 @@ void tPicture::Crop(int newWidth, int newHeight)
 }
 
 
+void tPicture::Rotate90(bool antiClockwise)
+{
+	tAssert((Width > 0) && (Height > 0) && Pixels);
+	int newW = Height;
+	int newH = Width;
+	tPixel* newPixels = new tPixel[newW * newH];
+
+	for (int y = 0; y < Height; y++)
+		for (int x = 0; x < Width; x++)
+			newPixels[ GetIndex(y, x, newW, newH) ] = Pixels[ GetIndex(antiClockwise ? x : Width-1-x, antiClockwise ? Height-1-y : y) ];
+
+	Clear();
+	Width = newW;
+	Height = newH;
+	Pixels = newPixels;
+}
+
+
+void tPicture::Flip(bool horizontal)
+{
+	tAssert((Width > 0) && (Height > 0) && Pixels);
+	int newW = Width;
+	int newH = Height;
+	tPixel* newPixels = new tPixel[newW * newH];
+
+	for (int y = 0; y < Height; y++)
+		for (int x = 0; x < Width; x++)
+			newPixels[ GetIndex(x, y) ] = Pixels[ GetIndex(horizontal ? Width-1-x : x, horizontal ? y : Height-1-y) ];
+
+	Clear();
+	Width = newW;
+	Height = newH;
+	Pixels = newPixels;
+}
+
+
 bool tPicture::ScaleHalf()
 {
 	if (!IsValid())

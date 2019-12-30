@@ -48,6 +48,10 @@ namespace TexView
 	TacitImage CursorImage;
 	TacitImage PrevImage;
 	TacitImage NextImage;
+	TacitImage FlipHImage;
+	TacitImage FlipVImage;
+	TacitImage RotateACWImage;
+	TacitImage RotateCWImage;
 	double NextPrevDisappear	= 1.0;
 	GLFWwindow* Window			= nullptr;
 	bool FullscreenMode			= false;
@@ -226,6 +230,19 @@ void TexView::ShowHelpMark(const char* desc)
 }
 
 
+void TexView::ShowToolTip(const char* desc)
+{
+	if (!ImGui::IsItemHovered())
+		return;
+
+	ImGui::BeginTooltip();
+	ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+	ImGui::TextUnformatted(desc);
+	ImGui::PopTextWrapPos();
+	ImGui::EndTooltip();
+}
+
+
 void TexView::SetWindowTitle()
 {
 	if (!Window)
@@ -272,7 +289,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	glClearColor(clearColour.x, clearColour.y, clearColour.z, clearColour.w);
 	glClear(GL_COLOR_BUFFER_BIT);
 	int bottomUIHeight = 150;
-	int topUIHeight = 20;
+	int topUIHeight = 26;
 	if (FullscreenMode)
 	{
 		bottomUIHeight = 0;
@@ -566,6 +583,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	if (!FullscreenMode)
 	{
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,6));
 		ImGui::BeginMainMenuBar();
 		{
 			static bool saveAsDialog = false;
@@ -655,16 +673,87 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				ImGui::EndMenu();
 			}
 
-			int colourFlags = 0;		// ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_NoDragDrop | ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_NoOptions;
+			//int colourFlags = 0;		// ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_NoDragDrop | ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_NoOptions;
 			tColourf floatCol(PixelColour);
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 40.0f);
-			ImGui::Text("Colour");
-			ImGui::PushItemWidth(180);
-			ImGui::ColorEdit4("Colour##2f", floatCol.E, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | colourFlags);
-			ImGui::PopItemWidth();
+
+			ImVec4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
+			
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
+			if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, ImVec2(20,20)))
+				ImGui::OpenPopup("CopyColourAs");
+
+			if (ImGui::BeginPopup("CopyColourAs"))
+			{
+				ImGui::Text("Copy As...");
+				int ri = PixelColour.R; int gi = PixelColour.G; int bi = PixelColour.B; int ai = PixelColour.A;
+				float rf = floatCol.R; float gf = floatCol.G; float bf = floatCol.B; float af = floatCol.A;
+				tString cpyTxt;
+				tsPrintf(cpyTxt, "%02X%02X%02X%02X", ri, gi, bi, ai);
+				if (ImGui::Selectable(cpyTxt.ConstText()))
+					ImGui::SetClipboardText(cpyTxt.ConstText());
+				tsPrintf(cpyTxt, "%02X%02X%02X", ri, gi, bi);
+				if (ImGui::Selectable(cpyTxt.ConstText()))
+					ImGui::SetClipboardText(cpyTxt.ConstText());
+				tsPrintf(cpyTxt, "#%02X%02X%02X%02X", ri, gi, bi, ai);
+				if (ImGui::Selectable(cpyTxt.ConstText()))
+					ImGui::SetClipboardText(cpyTxt.ConstText());
+				tsPrintf(cpyTxt, "#%02X%02X%02X", ri, gi, bi);
+				if (ImGui::Selectable(cpyTxt.ConstText()))
+					ImGui::SetClipboardText(cpyTxt.ConstText());
+				tsPrintf(cpyTxt, "0x%02X%02X%02X%02X", ri, gi, bi, ai);
+				if (ImGui::Selectable(cpyTxt.ConstText()))
+					ImGui::SetClipboardText(cpyTxt.ConstText());
+				tsPrintf(cpyTxt, "%.3f, %.3f, %.3f, %.3f", rf, gf, bf, af);
+				if (ImGui::Selectable(cpyTxt.ConstText()))
+					ImGui::SetClipboardText(cpyTxt.ConstText());
+				tsPrintf(cpyTxt, "%.3ff, %.3ff, %.3ff, %.3ff", rf, gf, bf, af);
+				if (ImGui::Selectable(cpyTxt.ConstText()))
+					ImGui::SetClipboardText(cpyTxt.ConstText());
+				tsPrintf(cpyTxt, "(%.3f, %.3f, %.3f, %.3f)", rf, gf, bf, af);
+				if (ImGui::Selectable(cpyTxt.ConstText()))
+					ImGui::SetClipboardText(cpyTxt.ConstText());
+				tsPrintf(cpyTxt, "(%.3ff, %.3ff, %.3ff, %.3ff)", rf, gf, bf, af);
+				if (ImGui::Selectable(cpyTxt.ConstText()))
+					ImGui::SetClipboardText(cpyTxt.ConstText());
+				ImGui::EndPopup();
+			}
+
+			if (ImGui::ImageButton(ImTextureID(uint64(FlipHImage.GLTextureID)), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			{
+				CurrImage->Unbind();
+				CurrImage->Flip(true);
+				CurrImage->Bind();
+			}
+			ShowToolTip("Flip Horizontally");
+
+			if (ImGui::ImageButton(ImTextureID(uint64(FlipVImage.GLTextureID)), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			{
+				CurrImage->Unbind();
+				CurrImage->Flip(false);
+				CurrImage->Bind();
+			}
+			ShowToolTip("Flip Vertically");
+
+			if (ImGui::ImageButton(ImTextureID(uint64(RotateACWImage.GLTextureID)), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			{
+				CurrImage->Unbind();
+				CurrImage->Rotate90(true);
+				CurrImage->Bind();
+			}
+			ShowToolTip("Rotate 90 Anticlockwise");
+
+			if (ImGui::ImageButton(ImTextureID(uint64(RotateCWImage.GLTextureID)), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			{
+				CurrImage->Unbind();
+				CurrImage->Rotate90(false);
+				CurrImage->Bind();
+			}
+			ShowToolTip("Rotate 90 Clockwise");
 		}
 
 		ImGui::EndMainMenuBar();
+		ImGui::PopStyleVar();
 	}
 
 	if (!FullscreenMode && ShowLog)
@@ -800,7 +889,7 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
 
-	double topUIHeight = 20.0;
+	double topUIHeight = 26.0;
 	if ((ypos <= topUIHeight) && !FullscreenMode)
 		return;
 
@@ -944,20 +1033,28 @@ int main(int argc, char** argv)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	tString fontFile = tSystem::tGetProgramDir() + "Data/Roboto-Medium.ttf";
-	if (tFileExists(fontFile))
-		io.Fonts->AddFontFromFileTTF(fontFile.ConstText(), 14.0f);
+	io.Fonts->AddFontFromFileTTF(fontFile.ConstText(), 14.0f);
 
-	tString cursorFile = tSystem::tGetProgramDir() + "Data/PixelCursor.png";
-	TexView::CursorImage.Load(cursorFile);
+	TexView::CursorImage.Load(tSystem::tGetProgramDir() + "Data/PixelCursor.png");
 	TexView::CursorImage.Bind();
 
-	tString prevFile = tSystem::tGetProgramDir() + "Data/PrevArrow.png";
-	TexView::PrevImage.Load(prevFile);
+	TexView::PrevImage.Load(tSystem::tGetProgramDir() + "Data/PrevArrow.png");
 	TexView::PrevImage.Bind();
 
-	tString nextFile = tSystem::tGetProgramDir() + "Data/NextArrow.png";
-	TexView::NextImage.Load(nextFile);
+	TexView::NextImage.Load(tSystem::tGetProgramDir() + "Data/NextArrow.png");
 	TexView::NextImage.Bind();
+
+	TexView::FlipHImage.Load(tSystem::tGetProgramDir() + "Data/FlipH.png");
+	TexView::FlipHImage.Bind();
+
+	TexView::FlipVImage.Load(tSystem::tGetProgramDir() + "Data/FlipV.png");
+	TexView::FlipVImage.Bind();
+
+	TexView::RotateACWImage.Load(tSystem::tGetProgramDir() + "Data/RotACW.png");
+	TexView::RotateACWImage.Bind();
+
+	TexView::RotateCWImage.Load(tSystem::tGetProgramDir() + "Data/RotCW.png");
+	TexView::RotateCWImage.Bind();
 
 	TexView::FindTextureFiles();
 	if (TexView::ImageFileParam.IsPresent())

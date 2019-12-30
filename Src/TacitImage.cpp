@@ -126,13 +126,22 @@ bool TacitImage::Unload()
 	if (!IsLoaded())
 		return true;
 
-	glDeleteTextures(1, &GLTextureID);
-	GLTextureID = 0;
+	Unbind();
 	TextureImage.Clear();
 	PictureImages.Clear();
 	NumLoaded--;
 	LoadedTime = -1.0f;
 	return true;
+}
+
+
+void TacitImage::Unbind()
+{
+	if (GLTextureID != 0)
+	{
+		glDeleteTextures(1, &GLTextureID);
+		GLTextureID = 0;
+	}
 }
 
 
@@ -190,6 +199,20 @@ tColouri TacitImage::GetPixel(int x, int y) const
 	// Generally the PictureImage should always be valid. When dds files (tTextures) are loaded, they get
 	// uncompressed into valid PictureImage files so the pixel info can be read.
 	return tColouri::black;
+}
+
+
+void TacitImage::Rotate90(bool antiClockWise)
+{
+	for (tPicture* picture = PictureImages.First(); picture; picture = picture->Next())
+		picture->Rotate90(antiClockWise);
+}
+
+
+void TacitImage::Flip(bool horizontal)
+{
+	for (tPicture* picture = PictureImages.First(); picture; picture = picture->Next())
+		picture->Flip(horizontal);
 }
 
 

@@ -126,6 +126,8 @@ public:
 	// Cropping. If width or height are smaller than the current size the image is cropped. (0, 0) is the anchor. If
 	// larger, opaque black pixels are added. You can also use this to change the current image size.
 	void Crop(int width, int height);
+	void Rotate90(bool antiClockWise);
+	void Flip(bool horizontal);
 
 	// This function scales the image by half. Useful for generating mipmaps. Only use this if speed is an issue.
 	// Offline mipmap generation should use a higher quality filter like Lanczos-Windowed or Kaiser or Kaiser-Gamma. I
@@ -164,6 +166,7 @@ public:
 private:
 	static int GetCxFormat(tSystem::tFileType);
 	int GetIndex(int x, int y) const																					{ tAssert((x >= 0) && (y >= 0) && (x < Width) && (y < Height)); return y * Width + x; }
+	static int GetIndex(int x, int y, int w, int h)																		{ tAssert((x >= 0) && (y >= 0) && (x < w) && (y < h)); return y * w + x; }
 
 	int Width = 0;
 	int Height = 0;

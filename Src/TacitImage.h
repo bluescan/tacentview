@@ -37,10 +37,14 @@ public:
 
 	// Bind to a particulr texture ID and load into VRAM. If already in VRAM, it only binds (makes texture current).
 	bool Bind();
+	void Unbind();
 	int GetWidth() const;
 	int GetHeight() const;
 	tColouri GetPixel(int x, int y) const;
 	bool ConvertTextureToPicture();
+
+	void Rotate90(bool antiClockWise);
+	void Flip(bool horizontal);
 
 	struct ImgInfo
 	{

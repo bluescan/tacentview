@@ -136,9 +136,10 @@ void TexView::ShowAboutPopup(bool* popen, float right, float top)
 		ImGui::Text("Dear ImGui V %s", IMGUI_VERSION);
 		ImGui::Text("GLEW V %s", glewGetString(GLEW_VERSION));
 		ImGui::Text("GLFW V %d.%d.%d", glfwMajor, glfwMinor, glfwRev);
+		ImGui::Text("Tacent Library V %d.%d.%d", tVersion::Major, tVersion::Minor, tVersion::Revision);
 		ImGui::Text("CxImage");
 		ImGui::Text("nVidia Texture Tools");
-		ImGui::Text("Tacent Library V %d.%d.%d", tVersion::Major, tVersion::Minor, tVersion::Revision);
+		ImGui::Text("Ionicons");
 	}
 	ImGui::End();
 }
