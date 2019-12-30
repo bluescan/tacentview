@@ -98,6 +98,8 @@ void TexView::ShowCheatSheetPopup(bool* popen, float right, float top)
 		float col = ImGui::GetCursorPosX() + 80.0f;
 		ImGui::Text("Left Arrow");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Previous Image");
 		ImGui::Text("Right Arrow");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Next Image");
+		ImGui::Text("Ctrl-Left");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Skip to First Image");
+		ImGui::Text("Ctrl-Right");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Skip to Last Image");
 		ImGui::Text("Space");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Next Image");
 		ImGui::Text("Ctrl+");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom In");
 		ImGui::Text("Ctrl-");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom Out");

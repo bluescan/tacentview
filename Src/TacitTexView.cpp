@@ -89,7 +89,7 @@ namespace TexView
 	int CursorX					= -1;
 	int CursorY					= -1;
 	tColouri PixelColour		= tColouri::black;
-	const int MaxLoadedCount	= 35;			// If more images that this loaded we start unloading to free mem.
+	const int MaxLoadedCount	= 40;			// If more images that this loaded we start unloading to free mem.
 	TacitImage* UnloadImage		= nullptr;
 
 	void DrawTextureViewerLog(float x, float y, float w, float h);
@@ -106,6 +106,8 @@ namespace TexView
 	void SetWindowTitle();
 	bool OnPrevious();
 	bool OnNext();
+	bool OnSkipBegin();
+	bool OnSkipEnd();
 	bool ChangeScreenMode(bool fullscreeen);
 	void ResetPan(bool resetX = true, bool resetY = true);
 	void Update(GLFWwindow* window, double dt, bool dopoll = true);
@@ -214,6 +216,36 @@ bool TexView::OnNext()
 		return false;
 
 	CurrImage = CurrImage->Next();
+	UnloadImage = CurrImage;
+	CurrImage->Load();
+	CurrImage->PrintInfo();
+	SetWindowTitle();
+	ResetPan();
+	return true;
+}
+
+
+bool TexView::OnSkipBegin()
+{
+	if (!CurrImage || !Images.First())
+		return false;
+
+	CurrImage = Images.First();
+	UnloadImage = CurrImage;
+	CurrImage->Load();
+	CurrImage->PrintInfo();
+	SetWindowTitle();
+	ResetPan();
+	return true;
+}
+
+
+bool TexView::OnSkipEnd()
+{
+	if (!CurrImage || !Images.Last())
+		return false;
+
+	CurrImage = Images.Last();
 	UnloadImage = CurrImage;
 	CurrImage->Load();
 	CurrImage->PrintInfo();
@@ -569,22 +601,40 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	NextPrevDisappear -= dt;
 	if (NextPrevDisappear > 0.0)
 	{
-		ImGui::SetNextWindowPos(ImVec2(0.0f, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
-		ImGui::SetNextWindowSize(ImVec2(18, 72), ImGuiCond_Always);
-		ImGui::Begin("Prev", nullptr, flagsNextPrev);
-		ImGui::SetCursorPos(ImVec2(4, 2));
-		if (ImGui::ImageButton(ImTextureID(uint64(PrevImage.GLTextureID)), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
-			OnPrevious();
-		ImGui::End();
+		if (CurrImage != Images.First())
+		{
+			ImGui::SetNextWindowPos(ImVec2(0.0f, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
+			ImGui::SetNextWindowSize(ImVec2(18, 72), ImGuiCond_Always);
+			ImGui::Begin("Prev", nullptr, flagsNextPrev);
+			ImGui::SetCursorPos(ImVec2(4, 2));
+			if (ImGui::ImageButton(ImTextureID(uint64(PrevImage.GLTextureID)), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+				OnPrevious();
+			ImGui::End();
+		}
 
-		ImGui::SetNextWindowPos(ImVec2(workAreaW-32.0f, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
-		ImGui::SetNextWindowSize(ImVec2(18, 72), ImGuiCond_Always);
-		ImGui::Begin("Next", nullptr, flagsNextPrev);
-		ImGui::SetCursorPos(ImVec2(4, 2));
-		if (ImGui::ImageButton(ImTextureID(uint64(NextImage.GLTextureID)), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
-			OnNext();
-		ImGui::End();
+		if (CurrImage != Images.Last())
+		{
+			ImGui::SetNextWindowPos(ImVec2(workAreaW-32.0f, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
+			ImGui::SetNextWindowSize(ImVec2(18, 72), ImGuiCond_Always);
+			ImGui::Begin("Next", nullptr, flagsNextPrev);
+			ImGui::SetCursorPos(ImVec2(4, 2));
+			if (ImGui::ImageButton(ImTextureID(uint64(NextImage.GLTextureID)), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+				OnNext();
+			ImGui::End();
+		}
 
+		// Skip to beginning button.
+		if (CurrImage != Images.First())
+		{
+			ImGui::SetNextWindowPos(ImVec2((workAreaW>>1)-22.0f-40.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+			ImGui::SetNextWindowSize(ImVec2(40, 40), ImGuiCond_Always);
+			ImGui::Begin("SkipBegin", nullptr, flagsNextPrev);
+			if (ImGui::ImageButton(ImTextureID(uint64(SkipBeginImage.GLTextureID)), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+				OnSkipBegin();
+			ImGui::End();
+		}
+
+		// Fullscreen / Windowed button.
 		ImGui::SetNextWindowPos(ImVec2((workAreaW>>1)-22.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
 		ImGui::SetNextWindowSize(ImVec2(40, 40), ImGuiCond_Always);
 		ImGui::Begin("Fullscreen", nullptr, flagsNextPrev);
@@ -592,6 +642,17 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton(ImTextureID(imageID), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 			ChangeScreenMode(!FullscreenMode);
 		ImGui::End();
+
+		// Skip to end button.
+		if (CurrImage != Images.Last())
+		{
+			ImGui::SetNextWindowPos(ImVec2((workAreaW>>1)-22.0f+40.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+			ImGui::SetNextWindowSize(ImVec2(40, 40), ImGuiCond_Always);
+			ImGui::Begin("SkipEnd", nullptr, flagsNextPrev);
+			if (ImGui::ImageButton(ImTextureID(uint64(SkipEndImage.GLTextureID)), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+				OnSkipEnd();
+			ImGui::End();
+		}
 	}
 
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -844,10 +905,19 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 	switch (key)
 	{
 		case GLFW_KEY_LEFT:
-			OnPrevious();
+			if (modifiers == GLFW_MOD_CONTROL)
+				OnSkipBegin();
+			else
+				OnPrevious();
 			break;
 
 		case GLFW_KEY_RIGHT:
+			if (modifiers == GLFW_MOD_CONTROL)
+				OnSkipEnd();
+			else
+				OnNext();
+			break;
+
 		case GLFW_KEY_SPACE:
 			OnNext();
 			break;
