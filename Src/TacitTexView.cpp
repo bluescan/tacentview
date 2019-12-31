@@ -39,8 +39,8 @@ using namespace tSystem;
 namespace TexView
 {
 	tCommand::tParam ImageFileParam(1, "ImageFile", "File to open.");
-	int MajorVersion			= 0;
-	int MinorVersion			= 10;
+	int MajorVersion			= 1;
+	int MinorVersion			= 0;
 	int Revision				= 0;
 	Settings Config;
 	bool LogWindowOpen			= true;
