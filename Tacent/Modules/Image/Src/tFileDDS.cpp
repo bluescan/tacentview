@@ -705,6 +705,13 @@ void tFileDDS::LoadFromMemory(const uint8* ddsData, int ddsSizeBytes, bool rever
 		}
 	}
 
+	// @todo We do not yet support these formats.
+	if ((PixelFormat == tPixelFormat::R32F) || (PixelFormat == tPixelFormat::G32R32F) || (PixelFormat == tPixelFormat::A32B32G32R32F))
+	{
+		delete[] ddsData;
+		throw tDDSError(tDDSError::tCode::UnsupportedFourCCPixelFormat, baseName);
+	}
+
 	tAssert(PixelFormat != tPixelFormat::Invalid);
 	if (!rgbFormat && ((mainWidth%4) || (mainHeight%4)))
 	{

@@ -756,7 +756,13 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::BeginPopup("CopyColourAs"))
 				TexView::ColourCopyAs();
 
-			if (ImGui::ImageButton(ImTextureID(FlipHImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			bool buttonAvail = !CurrImage->IsAltImageEnabled();
+
+			if
+			(
+				ImGui::ImageButton(ImTextureID(FlipHImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0),
+				buttonAvail ? ImVec4(1.00f, 1.00f, 1.00f, 1.00f) : ImVec4(0.46f, 0.46f, 0.58f, 1.00f)) && buttonAvail
+			)
 			{
 				CurrImage->Unbind();
 				CurrImage->Flip(true);
@@ -764,7 +770,11 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			ShowToolTip("Flip Horizontally");
 
-			if (ImGui::ImageButton(ImTextureID(FlipVImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			if
+			(
+				ImGui::ImageButton(ImTextureID(FlipVImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0),
+				buttonAvail ? ImVec4(1.00f, 1.00f, 1.00f, 1.00f) : ImVec4(0.46f, 0.46f, 0.58f, 1.00f)) && buttonAvail
+			)
 			{
 				CurrImage->Unbind();
 				CurrImage->Flip(false);
@@ -772,7 +782,11 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			ShowToolTip("Flip Vertically");
 
-			if (ImGui::ImageButton(ImTextureID(RotateACWImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			if
+			(
+				ImGui::ImageButton(ImTextureID(RotateACWImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0),
+				buttonAvail ? ImVec4(1.00f, 1.00f, 1.00f, 1.00f) : ImVec4(0.46f, 0.46f, 0.58f, 1.00f)) && buttonAvail
+			)
 			{
 				CurrImage->Unbind();
 				CurrImage->Rotate90(true);
@@ -780,7 +794,11 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			ShowToolTip("Rotate 90 Anticlockwise");
 
-			if (ImGui::ImageButton(ImTextureID(RotateCWImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			if
+			(
+				ImGui::ImageButton(ImTextureID(RotateCWImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0),
+				buttonAvail ? ImVec4(1.00f, 1.00f, 1.00f, 1.00f) : ImVec4(0.46f, 0.46f, 0.58f, 1.00f)) && buttonAvail
+			)
 			{
 				CurrImage->Unbind();
 				CurrImage->Rotate90(false);
@@ -788,22 +806,39 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			ShowToolTip("Rotate 90 Clockwise");
 
-			bool altImgAvail = CurrImage->IsAltImageAvail();
-			bool altImgEnabl = CurrImage->IsAltImageEnabled();
+			bool altMipmapsImgAvail = CurrImage->IsAltMipmapsImageAvail();
+			bool altMipmapsImgEnabl = altMipmapsImgAvail && CurrImage->IsAltImageEnabled();
 			if
 			(
 				ImGui::ImageButton
 				(
 					ImTextureID(MipmapsImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
-					altImgEnabl ? ImVec4(0.45f, 0.45f, 0.60f, 1.00f) : ImVec4(0.00f, 0.00f, 0.00f, 0.00f),
-					altImgAvail ? ImVec4(1.00f, 1.00f, 1.00f, 1.00f) : ImVec4(0.46f, 0.46f, 0.58f, 1.00f)
-				) && altImgAvail
+					altMipmapsImgEnabl ? ImVec4(0.45f, 0.45f, 0.60f, 1.00f) : ImVec4(0.00f, 0.00f, 0.00f, 0.00f),
+					altMipmapsImgAvail ? ImVec4(1.00f, 1.00f, 1.00f, 1.00f) : ImVec4(0.46f, 0.46f, 0.58f, 1.00f)
+				) && altMipmapsImgAvail
 			)
 			{
-				CurrImage->EnableAltImage(!altImgEnabl);
+				CurrImage->EnableAltImage(!altMipmapsImgEnabl);
 				CurrImage->Bind();
 			}
 			ShowToolTip("Display Mipmaps");
+
+			bool altCubemapImgAvail = CurrImage->IsAltCubemapImageAvail();
+			bool altCubemapImgEnabl = altCubemapImgAvail && CurrImage->IsAltImageEnabled();
+			if
+			(
+				ImGui::ImageButton
+				(
+					ImTextureID(CubemapImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
+					altCubemapImgEnabl ? ImVec4(0.45f, 0.45f, 0.60f, 1.00f) : ImVec4(0.00f, 0.00f, 0.00f, 0.00f),
+					altCubemapImgAvail ? ImVec4(1.00f, 1.00f, 1.00f, 1.00f) : ImVec4(0.46f, 0.46f, 0.58f, 1.00f)
+				) && altCubemapImgAvail
+			)
+			{
+				CurrImage->EnableAltImage(!altCubemapImgEnabl);
+				CurrImage->Bind();
+			}
+			ShowToolTip("Display Cubemap");
 		}
 
 		ImGui::EndMainMenuBar();

@@ -70,10 +70,20 @@ bool TacitImage::Load()
 	{
 		if (Filetype == tSystem::tFileType::DDS)
 		{
-			success = TextureImage.Load(Filename);
-			tImage::tPixelFormat pfmt = TextureImage.GetPixelFormat();
-			if (tIsNormalFormat(pfmt))
-				srcFileBitdepth = tGetBytesPerPixel(pfmt) * 8;
+			success = DDSCubemap.Load(Filename);
+			if (success)
+			{
+				tImage::tPixelFormat pfmt = DDSCubemap.GetSide(tImage::tCubemap::tSide::PosX)->GetPixelFormat();
+				if (tIsNormalFormat(pfmt))
+					srcFileBitdepth = tGetBytesPerPixel(pfmt) * 8;
+			}
+			else
+			{
+				success = DDSTexture2D.Load(Filename);
+				tImage::tPixelFormat pfmt = DDSTexture2D.GetPixelFormat();
+				if (tIsNormalFormat(pfmt))
+					srcFileBitdepth = tGetBytesPerPixel(pfmt) * 8;
+			}
 		}
 		else
 		{
@@ -89,7 +99,12 @@ bool TacitImage::Load()
 	}
 
 	if (Filetype == tSystem::tFileType::DDS)
-		ConvertTextureToPicture();
+	{
+		if (DDSCubemap.IsValid())
+			ConvertCubemapToPicture();
+		else if (DDSTexture2D.IsValid())
+			ConvertTexture2DToPicture();
+	}
 
 	if (success)
 	{
@@ -103,7 +118,10 @@ bool TacitImage::Load()
 		tPixelFormat format = tPixelFormat::Invalid;
 		if (Filetype == tSystem::tFileType::DDS)
 		{
-			format = TextureImage.GetPixelFormat();
+			if (DDSCubemap.IsValid())
+				format = DDSCubemap.GetSide(tCubemap::tSide::PosX)->GetPixelFormat();
+			else
+				format = DDSTexture2D.GetPixelFormat();
 		}
 		else
 		{
@@ -118,16 +136,18 @@ bool TacitImage::Load()
 		Info.SizeBytes			= tSystem::tGetFileSize(Filename);
 		Info.Mipmaps			= Images.GetNumItems();
 
-		// Create alt picture if possible.
-		if (Info.Mipmaps > 1)
-			CreateAltPictureMipmaps();
+		// Create alt image if possible.
+		if (DDSCubemap.IsValid())
+			CreateAltImageDDSCubemap();
+		else if (DDSTexture2D.IsValid() && (Info.Mipmaps > 1))
+			CreateAltImageDDS2DMipmaps();
 	}
 
 	return success;
 }
 
 
-void TacitImage::CreateAltPictureMipmaps()
+void TacitImage::CreateAltImageDDS2DMipmaps()
 {
 	int width = 0;
 	for (tPicture* layer = Images.First(); layer; layer = layer->Next())
@@ -152,14 +172,68 @@ void TacitImage::CreateAltPictureMipmaps()
 }
 
 
+void TacitImage::CreateAltImageDDSCubemap()
+{
+	int width = Images.First()->GetWidth();
+	int height = Images.First()->GetHeight();
+
+	AltImage.Set(width*4, height*3, tPixel::transparent);
+	int originX, originY;
+	
+	// PosZ
+	tPicture* pic = Images.First();
+	originX = width; originY = height;
+	for (int y = 0; y < pic->GetHeight(); y++)
+		for (int x = 0; x < pic->GetWidth(); x++)
+			AltImage.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+
+	// NegZ
+	pic = pic->Next();
+	originX = 3*width; originY = height;
+	for (int y = 0; y < pic->GetHeight(); y++)
+		for (int x = 0; x < pic->GetWidth(); x++)
+			AltImage.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+
+	// PosX
+	pic = pic->Next();
+	originX = 2*width; originY = height;
+	for (int y = 0; y < pic->GetHeight(); y++)
+		for (int x = 0; x < pic->GetWidth(); x++)
+			AltImage.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+
+	// NegX
+	pic = pic->Next();
+	originX = 0; originY = height;
+	for (int y = 0; y < pic->GetHeight(); y++)
+		for (int x = 0; x < pic->GetWidth(); x++)
+			AltImage.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+
+	// PosY
+	pic = pic->Next();
+	originX = width; originY = 2*height;
+	for (int y = 0; y < pic->GetHeight(); y++)
+		for (int x = 0; x < pic->GetWidth(); x++)
+			AltImage.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+
+	// NegY
+	pic = pic->Next();
+	originX = width; originY = 0;
+	for (int y = 0; y < pic->GetHeight(); y++)
+		for (int x = 0; x < pic->GetWidth(); x++)
+			AltImage.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+}
+
+
 bool TacitImage::Unload()
 {
 	if (!IsLoaded())
 		return true;
 
 	Unbind();
-	TextureImage.Clear();
+	DDSTexture2D.Clear();
+	DDSCubemap.Clear();
 	AltImage.Clear();
+	AltImageEnabled = false;
 	Images.Clear();
 
 	NumLoaded--;
@@ -195,14 +269,17 @@ uint64 TacitImage::GetTexID() const
 
 bool TacitImage::IsLoaded() const
 {
-	return (TextureImage.IsValid() || (Images.Count() > 0));
+	return (Images.Count() > 0);
 }
 
 
 bool TacitImage::IsOpaque() const
 {
-	if (TextureImage.IsValid())
-		return TextureImage.IsOpaque();
+	if (DDSCubemap.IsValid())
+		return DDSCubemap.AllSidesOpaque();
+
+	if (DDSTexture2D.IsValid())
+		return DDSTexture2D.IsOpaque();
 
 	tPicture* picture = Images.First();
 	if (picture && picture->IsValid())
@@ -221,9 +298,6 @@ int TacitImage::GetWidth() const
 	if (picture && picture->IsValid())
 		return picture->GetWidth();
 
-	if (TextureImage.IsValid())
-		return TextureImage.GetWidth();
-
 	return 0;
 }
 
@@ -236,9 +310,6 @@ int TacitImage::GetHeight() const
 	tPicture* picture = Images.First();
 	if (picture && picture->IsValid())
 		return picture->GetHeight();
-
-	if (TextureImage.IsValid())
-		return TextureImage.GetHeight();
 
 	return 0;
 }
@@ -278,7 +349,10 @@ void TacitImage::PrintInfo()
 	tPixelFormat format = tPixelFormat::Invalid;
 	if (Filetype == tSystem::tFileType::DDS)
 	{
-		format = TextureImage.GetPixelFormat();
+		if (DDSCubemap.IsValid())
+			format = DDSCubemap.GetSide(tCubemap::tSide::PosX)->GetPixelFormat();
+		else
+			format = DDSTexture2D.GetPixelFormat();
 	}
 	else
 	{
@@ -338,14 +412,22 @@ bool TacitImage::Bind()
 		return false;
 
 	// We try to bind the native tTexture first if possible.
-	if (TextureImage.IsValid())
+	if (AltImageEnabled)
 	{
-		const tList<tLayer>& layers = TextureImage.GetLayers();
-		BindLayers(layers, TexIDPrimary);
-		return true;
+		if (DDSCubemap.IsValid())
+		{
+			const tList<tLayer>& layers = DDSCubemap.GetSide(tCubemap::tSide::PosZ)->GetLayers();
+			BindLayers(layers, TexIDPrimary);
+			return true;
+		}
+		else if (DDSTexture2D.IsValid())
+		{
+			const tList<tLayer>& layers = DDSTexture2D.GetLayers();
+			BindLayers(layers, TexIDPrimary);
+			return true;
+		}
 	}
 
-	// glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, gPicture.GetWidth(), gPicture.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, gPicture.GetPixelPointer());
 	tPicture* picture = Images.First();
 	if (picture && picture->IsValid())
 	{
@@ -496,16 +578,24 @@ void TacitImage::GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFo
 }
 
 
-bool TacitImage::ConvertTextureToPicture()
+bool TacitImage::ConvertTexture2DToPicture()
 {
-	if (!(TextureImage.IsValid() && (Images.Count() <= 0)))
+	if (!DDSTexture2D.IsValid() || !(Images.Count() <= 0))
 		return false;
 
-	int w = TextureImage.GetWidth();
-	int h = TextureImage.GetHeight();
-	Bind();
+	int w = DDSTexture2D.GetWidth();
+	int h = DDSTexture2D.GetHeight();
 
-	int numMipmaps = TextureImage.GetNumLayers();
+	// We need to get the data into the GPU so we cat read the uncompressed version back.
+	uint tempTexID = 0;
+	glGenTextures(1, &tempTexID);
+	if (tempTexID == 0)
+		return false;
+
+	const tList<tLayer>& layers = DDSTexture2D.GetLayers();
+	BindLayers(layers, tempTexID);
+
+	int numMipmaps = DDSTexture2D.GetNumLayers();
 	for (int level = 0; level < numMipmaps; level++)
 	{
 		int mipW = w >> level;
@@ -515,6 +605,50 @@ bool TacitImage::ConvertTextureToPicture()
 		uint8* rgbaData = new uint8[mipW * mipH * 4];
 		glGetTexImage(GL_TEXTURE_2D, level, GL_RGBA, GL_UNSIGNED_BYTE, rgbaData);
 		Images.Append(new tPicture(mipW, mipH, (tPixel*)rgbaData, false));
+	}
+
+	glDeleteTextures(1, &tempTexID);
+	return true;
+}
+
+
+bool TacitImage::ConvertCubemapToPicture()
+{
+	if (!DDSCubemap.IsValid() || !(Images.Count() <= 0))
+		return false;
+
+	tTexture* tex = DDSCubemap.GetSide(tCubemap::tSide::PosX);
+	int w = tex->GetWidth();
+	int h = tex->GetHeight();
+
+	// We want the front (+Z) to be the first image.
+	int sideOrder[int(tCubemap::tSide::NumSides)] =
+	{
+		int(tCubemap::tSide::PosZ),
+		int(tCubemap::tSide::NegZ),
+		int(tCubemap::tSide::PosX),
+		int(tCubemap::tSide::NegX),
+		int(tCubemap::tSide::PosY),
+		int(tCubemap::tSide::NegY)
+	};
+
+	for (int s = 0; s < int(tCubemap::tSide::NumSides); s++)
+	{
+		int side = sideOrder[s];
+		uint tempTexID = 0;
+		glGenTextures(1, &tempTexID);
+
+		tTexture* tex = DDSCubemap.GetSide(tCubemap::tSide(side));
+		tList<tLayer> layers;
+		layers.Append(new tLayer(*tex->GetLayers().First()));
+		BindLayers(layers, tempTexID);
+
+		uint8* rgbaData = new uint8[w * h * 4];
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgbaData);
+		Images.Append(new tPicture(w, h, (tPixel*)rgbaData, false));
+
+		layers.Empty();
+		glDeleteTextures(1, &tempTexID);
 	}
 	return true;
 }

@@ -19,6 +19,7 @@
 #include <System/tFile.h>
 #include <Image/tPicture.h>
 #include <Image/tTexture.h>
+#include <Image/tCubemap.h>
 
 
 class TacitImage : public tLink<TacitImage>
@@ -59,7 +60,9 @@ public:
 	};
 	void PrintInfo();
 	tImage::tPicture* GetPrimaryPicture()																				{ return Images.First(); }
-	bool IsAltImageAvail() const																						{ return AltImage.IsValid(); }
+
+	bool IsAltMipmapsImageAvail() const																					{ return DDSTexture2D.IsValid() && AltImage.IsValid(); }
+	bool IsAltCubemapImageAvail() const																					{ return DDSCubemap.IsValid() && AltImage.IsValid(); }
 	void EnableAltImage(bool enabled)																					{ AltImageEnabled = enabled; }
 	bool IsAltImageEnabled() const																						{ return AltImageEnabled; }
 
@@ -73,7 +76,9 @@ private:
 	// to read pixel data, the image is fetched from the framebuffer to ALSO make a valid PictureImage.
 	//
 	// Note: A tTexture contains all mipmap levels while a tPicture does not. That's why we have a list of tPictures.
-	tImage::tTexture TextureImage;
+	tImage::tTexture DDSTexture2D;
+	tImage::tCubemap DDSCubemap;
+
 	tList<tImage::tPicture> Images;
 
 	// The 'alternative' picture is valid when there is another valid way of displaying the image.
@@ -85,10 +90,12 @@ private:
 	uint TexIDPrimary;
 	uint TexIDAlt;
 
-	bool ConvertTextureToPicture();
+	bool ConvertTexture2DToPicture();
+	bool ConvertCubemapToPicture();
 	void GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFormat, bool& compressed, tImage::tPixelFormat);
 	void BindLayers(const tList<tImage::tLayer>&, uint texID);
-	void CreateAltPictureMipmaps();
+	void CreateAltImageDDS2DMipmaps();
+	void CreateAltImageDDSCubemap();
 
 	float LoadedTime = -1.0f;
 	static int NumLoaded;

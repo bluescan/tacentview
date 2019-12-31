@@ -81,7 +81,7 @@ public:
 	bool AllSidesOpaque() const;
 
 	// The load and set calls all return success. If the input is non const, it invalidates the passed in object.
-	bool Load(const tString& ddsFile);
+	bool Load(const tString& ddsFile, bool reverseRowOrder = true);
 	bool Load
 	(
 		const tString& imageFilePosX, const tString& imageFileNegX,

@@ -20,7 +20,7 @@
 // i.e. It seems the faces should always be specified using a LH coord system. The OpenGL calls for specifying a
 // cubemap are also left handed which is inconsistent with other parts of the OpenGL API.
 //
-// Copyright (c) 2006, 2017 Tristan Grimmer.
+// Copyright (c) 2006, 2017, 2019 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -64,15 +64,14 @@ void tCubemap::Clear()
 }
 
 
-bool tCubemap::Load(const tString& ddsFile)
+bool tCubemap::Load(const tString& ddsFile, bool reverseRowOrder)
 {
 	Clear();
 	if ((tSystem::tGetFileType(ddsFile) != tSystem::tFileType::DDS) || !tSystem::tFileExists(ddsFile))
 		return false;
 
-	bool correctRowOrder = false;
-	tFileDDS dds(ddsFile, correctRowOrder);
-	if (dds.IsValid() || !dds.IsCubemap())
+	tFileDDS dds(ddsFile, reverseRowOrder);
+	if (!dds.IsValid() || !dds.IsCubemap())
 		return false;
 
 	return Set(dds);
@@ -82,7 +81,7 @@ bool tCubemap::Load(const tString& ddsFile)
 bool tCubemap::Set(tFileDDS& dds)
 {
 	Clear();
-	if (dds.IsValid() || !dds.IsCubemap())
+	if (!dds.IsValid() || !dds.IsCubemap())
 		return false;
 
 	tList<tLayer> layerSet[tFileDDS::tSurfIndex_NumSurfaces];
@@ -160,6 +159,15 @@ bool tCubemap::Set
 	}
 
 	return true;
+}
+
+
+tTexture* tCubemap::GetSide(tSide side)
+{
+	if (!IsValid())
+		return nullptr;
+
+	return &Sides[int(side)].Texture;
 }
 
 
