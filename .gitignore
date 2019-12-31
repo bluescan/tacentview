@@ -60,3 +60,4 @@ Tacent/Modules/ModuleDependencies\.txt
 Tacent/Modules/WoboqTacent\.cfg
 
 tacit-texview\.zip
+*.vcxproj.FileListAbsolute.txt

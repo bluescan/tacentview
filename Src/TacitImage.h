@@ -38,10 +38,10 @@ public:
 	// Bind to a particulr texture ID and load into VRAM. If already in VRAM, it only binds (makes texture current).
 	bool Bind();
 	void Unbind();
+	uint64 GetTexID() const;
 	int GetWidth() const;
 	int GetHeight() const;
 	tColouri GetPixel(int x, int y) const;
-	bool ConvertTextureToPicture();
 
 	void Rotate90(bool antiClockWise);
 	void Flip(bool horizontal);
@@ -58,25 +58,37 @@ public:
 		int Mipmaps				= 0;
 	};
 	void PrintInfo();
+	tImage::tPicture* GetPrimaryPicture()																				{ return Images.First(); }
+	bool IsAltImageAvail() const																						{ return AltImage.IsValid(); }
+	void EnableAltImage(bool enabled)																					{ AltImageEnabled = enabled; }
+	bool IsAltImageEnabled() const																						{ return AltImageEnabled; }
 
 	ImgInfo Info;
 	tString Filename;
 	tSystem::tFileType Filetype;
 
+private:
 	// Dds files are special and already in HW ready format. The tTexture can store dds files, while tPicture stores
 	// other types (tga, gif, jpg, bmp, tif, png, etc). If the image is a dds file, the tTexture is valid and in order
 	// to read pixel data, the image is fetched from the framebuffer to ALSO make a valid PictureImage.
 	//
 	// Note: A tTexture contains all mipmap levels while a tPicture does not. That's why we have a list of tPictures.
 	tImage::tTexture TextureImage;
-	tList<tImage::tPicture> PictureImages;
+	tList<tImage::tPicture> Images;
+
+	// The 'alternative' picture is valid when there is another valid way of displaying the image.
+	// Specifically for cubemaps and dds files with mipmaps this offers an alternative view.
+	bool AltImageEnabled = false;
+	tImage::tPicture AltImage;
 
 	// Zero is invalid and means texture has never been bound and loaded into VRAM.
-	uint GLTextureID;
+	uint TexIDPrimary;
+	uint TexIDAlt;
 
-private:
+	bool ConvertTextureToPicture();
 	void GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFormat, bool& compressed, tImage::tPixelFormat);
-	void BindLayers(const tList<tImage::tLayer>&);
+	void BindLayers(const tList<tImage::tLayer>&, uint texID);
+	void CreateAltPictureMipmaps();
 
 	float LoadedTime = -1.0f;
 	static int NumLoaded;

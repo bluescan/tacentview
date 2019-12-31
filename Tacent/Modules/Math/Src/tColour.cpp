@@ -18,33 +18,35 @@ using namespace tMath;
 
 
 // Uses C++11 aggregate initialization syntax so construction happens earlier.
-const tColouri tColouri::black		= { 0x00, 0x00, 0x00 };
-const tColouri tColouri::white		= { 0xFF, 0xFF, 0xFF };
-const tColouri tColouri::pink		= { 0xFF, 0x80, 0x80 };
-const tColouri tColouri::red		= { 0xFF, 0x00, 0x00 };
-const tColouri tColouri::green		= { 0x00, 0xFF, 0x00 };
-const tColouri tColouri::blue		= { 0x00, 0x00, 0xFF };
-const tColouri tColouri::grey		= { 0x80, 0x80, 0x80 };
-const tColouri tColouri::lightgrey	= { 0xC0, 0xC0, 0xC0 };
-const tColouri tColouri::darkgrey	= { 0x40, 0x40, 0x40 };
-const tColouri tColouri::cyan		= { 0x00, 0xFF, 0xFF };
-const tColouri tColouri::magenta	= { 0xFF, 0x00, 0xFF };
-const tColouri tColouri::yellow		= { 0xFF, 0xFF, 0x00 };
+const tColouri tColouri::black			= { 0x00, 0x00, 0x00 };
+const tColouri tColouri::white			= { 0xFF, 0xFF, 0xFF };
+const tColouri tColouri::pink			= { 0xFF, 0x80, 0x80 };
+const tColouri tColouri::red			= { 0xFF, 0x00, 0x00 };
+const tColouri tColouri::green			= { 0x00, 0xFF, 0x00 };
+const tColouri tColouri::blue			= { 0x00, 0x00, 0xFF };
+const tColouri tColouri::grey			= { 0x80, 0x80, 0x80 };
+const tColouri tColouri::lightgrey		= { 0xC0, 0xC0, 0xC0 };
+const tColouri tColouri::darkgrey		= { 0x40, 0x40, 0x40 };
+const tColouri tColouri::cyan			= { 0x00, 0xFF, 0xFF };
+const tColouri tColouri::magenta		= { 0xFF, 0x00, 0xFF };
+const tColouri tColouri::yellow			= { 0xFF, 0xFF, 0x00 };
+const tColouri tColouri::transparent	= { 0x00, 0x00, 0x00, 0x00 };
 
 
-const tColourf tColourf::invalid	= { -1.0f, -1.0f, -1.0f, -1.0f };
-const tColourf tColourf::black		= { 0.0f, 0.0f, 0.0f };
-const tColourf tColourf::white		= { 1.0f, 1.0f, 1.0f };
-const tColourf tColourf::hotpink	= { 1.0f, 0.5f, 0.5f };
-const tColourf tColourf::red		= { 1.0f, 0.0f, 0.0f };
-const tColourf tColourf::green		= { 0.0f, 1.0f, 0.0f };
-const tColourf tColourf::blue		= { 0.0f, 0.0f, 1.0f };
-const tColourf tColourf::grey		= { 0.5f, 0.5f, 0.5f };
-const tColourf tColourf::lightgrey	= { 0.75f, 0.75f, 0.75f };
-const tColourf tColourf::darkgrey	= { 0.25f, 0.25f, 0.25f };
-const tColourf tColourf::cyan		= { 0.0f, 1.0f, 1.0f };
-const tColourf tColourf::magenta	= { 1.0f, 0.0f, 1.0f };
-const tColourf tColourf::yellow		= { 1.0f, 1.0f, 0.0f };
+const tColourf tColourf::invalid		= { -1.0f, -1.0f, -1.0f, -1.0f };
+const tColourf tColourf::black			= { 0.0f, 0.0f, 0.0f };
+const tColourf tColourf::white			= { 1.0f, 1.0f, 1.0f };
+const tColourf tColourf::hotpink		= { 1.0f, 0.5f, 0.5f };
+const tColourf tColourf::red			= { 1.0f, 0.0f, 0.0f };
+const tColourf tColourf::green			= { 0.0f, 1.0f, 0.0f };
+const tColourf tColourf::blue			= { 0.0f, 0.0f, 1.0f };
+const tColourf tColourf::grey			= { 0.5f, 0.5f, 0.5f };
+const tColourf tColourf::lightgrey		= { 0.75f, 0.75f, 0.75f };
+const tColourf tColourf::darkgrey		= { 0.25f, 0.25f, 0.25f };
+const tColourf tColourf::cyan			= { 0.0f, 1.0f, 1.0f };
+const tColourf tColourf::magenta		= { 1.0f, 0.0f, 1.0f };
+const tColourf tColourf::yellow			= { 1.0f, 1.0f, 0.0f };
+const tColourf tColourf::transparent	= { 0.0f, 0.0f, 0.0f, 0.0f };
 
 
 void tRGBToHSV(int& h, int& s, int& v, int r, int g, int b, tAngleMode angleMode)

@@ -24,7 +24,7 @@ using namespace tImage;
 using namespace tSystem;
 
 
-void tPicture::Set(int width, int height)
+void tPicture::Set(int width, int height, const tPixel& colour)
 {
 	tAssert((width > 0) && (height > 0));
 
@@ -37,7 +37,7 @@ void tPicture::Set(int width, int height)
 	Width = width;
 	Height = height;
 	for (int pixel = 0; pixel < (Width*Height); pixel++)
-		Pixels[pixel].MakeBlack();	
+		Pixels[pixel] = colour;
 }
 
 

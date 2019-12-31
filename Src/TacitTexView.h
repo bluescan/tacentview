@@ -16,6 +16,7 @@
 #include <System/tCommand.h>
 #include "Settings.h"
 class TacitImage;
+class tColouri;
 
 
 namespace TexView
@@ -28,6 +29,7 @@ namespace TexView
 	extern TacitImage* CurrImage;
 	extern tList<TacitImage> Images;
 	extern tCommand::tParam ImageFileParam;
+	extern tColouri PixelColour;
 
 	// Helper to display a little (?) mark which shows a tooltip when hovered.
 	void ShowHelpMark(const char* desc);

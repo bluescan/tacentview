@@ -61,7 +61,7 @@ public:
 
 	// Sets the image to the dimensions provided. Image will be opaque black after this call. Internally, if the
 	// existing buffer is the right size, it is reused. In all cases, the entire image is cleared to black.
-	void Set(int width, int height);
+	void Set(int width, int height, const tPixel& colour = tPixel::black);
 
 	// Sets the image to the dimensions provided. allows you to specify an external buffer of pixels to use. If
 	// copyPixels is true, it simply copies the values from the buffer you supply. In this case it will attempt to

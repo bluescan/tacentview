@@ -54,6 +54,15 @@ void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, i
 
 		if (CurrImage)
 		{
+			tColourf floatCol(PixelColour);
+			ImVec4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
+			ImGui::Text("Colour"); ImGui::SameLine();
+			if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, ImVec2(15,15)))
+				ImGui::OpenPopup("CopyColourOverlayAs");
+
+			if (ImGui::BeginPopup("CopyColourOverlayAs"))
+				ColourCopyAs();
+
 			TacitImage::ImgInfo& info = CurrImage->Info;
 			if (info.IsValid())
 			{
@@ -78,6 +87,44 @@ void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, i
 		}
 	}
 	ImGui::End();
+}
+
+
+void TexView::ColourCopyAs()
+{
+	tColourf floatCol(PixelColour);
+	ImGui::Text("Copy As...");
+	int ri = PixelColour.R; int gi = PixelColour.G; int bi = PixelColour.B; int ai = PixelColour.A;
+	float rf = floatCol.R; float gf = floatCol.G; float bf = floatCol.B; float af = floatCol.A;
+	tString cpyTxt;
+	tsPrintf(cpyTxt, "%02X%02X%02X%02X", ri, gi, bi, ai);
+	if (ImGui::Selectable(cpyTxt.ConstText()))
+		ImGui::SetClipboardText(cpyTxt.ConstText());
+	tsPrintf(cpyTxt, "%02X%02X%02X", ri, gi, bi);
+	if (ImGui::Selectable(cpyTxt.ConstText()))
+		ImGui::SetClipboardText(cpyTxt.ConstText());
+	tsPrintf(cpyTxt, "#%02X%02X%02X%02X", ri, gi, bi, ai);
+	if (ImGui::Selectable(cpyTxt.ConstText()))
+		ImGui::SetClipboardText(cpyTxt.ConstText());
+	tsPrintf(cpyTxt, "#%02X%02X%02X", ri, gi, bi);
+	if (ImGui::Selectable(cpyTxt.ConstText()))
+		ImGui::SetClipboardText(cpyTxt.ConstText());
+	tsPrintf(cpyTxt, "0x%02X%02X%02X%02X", ri, gi, bi, ai);
+	if (ImGui::Selectable(cpyTxt.ConstText()))
+		ImGui::SetClipboardText(cpyTxt.ConstText());
+	tsPrintf(cpyTxt, "%.3f, %.3f, %.3f, %.3f", rf, gf, bf, af);
+	if (ImGui::Selectable(cpyTxt.ConstText()))
+		ImGui::SetClipboardText(cpyTxt.ConstText());
+	tsPrintf(cpyTxt, "%.3ff, %.3ff, %.3ff, %.3ff", rf, gf, bf, af);
+	if (ImGui::Selectable(cpyTxt.ConstText()))
+		ImGui::SetClipboardText(cpyTxt.ConstText());
+	tsPrintf(cpyTxt, "(%.3f, %.3f, %.3f, %.3f)", rf, gf, bf, af);
+	if (ImGui::Selectable(cpyTxt.ConstText()))
+		ImGui::SetClipboardText(cpyTxt.ConstText());
+	tsPrintf(cpyTxt, "(%.3ff, %.3ff, %.3ff, %.3ff)", rf, gf, bf, af);
+	if (ImGui::Selectable(cpyTxt.ConstText()))
+		ImGui::SetClipboardText(cpyTxt.ConstText());
+	ImGui::EndPopup();
 }
 
 
@@ -233,7 +280,7 @@ void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 		tString outFile = imagesDir + tString(filename) + extension;
 
 		tImage::tPicture outPic(CurrImage->GetWidth(), CurrImage->GetHeight());
-		outPic.Set(*CurrImage->PictureImages.First());
+		outPic.Set(*CurrImage->GetPrimaryPicture());
 
 		if ((outPic.GetWidth() != finalWidth) || (outPic.GetHeight() != finalHeight))
 			outPic.Resample(finalWidth, finalHeight);

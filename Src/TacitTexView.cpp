@@ -28,6 +28,8 @@
 #include "imgui_impl_opengl2.h"
 #include "TacitTexView.h"
 #include "TacitImage.h"
+#include "Dialogs.h"
+#include "ContactSheet.h"
 #include "ImGuiLogWindow.h"
 #include "Settings.h"
 using namespace tStd;
@@ -96,12 +98,6 @@ namespace TexView
 	void PrintRedirectCallback(const char* text, int numChars)															{ LogWindow.AddLog("%s", text); }
 	void GlfwErrorCallback(int error, const char* description)															{ tPrintf("Glfw Error %d: %s\n", error, description); }
 	bool CompareFunc(const tStringItem& a, const tStringItem& b)														{ return tStrcmp(a.ConstText(), b.ConstText()) < 0; }
-
-	void ShowContactSheetDialog(bool* popen, bool justOpened);
-	void ShowSaveAsDialog(bool* popen, bool justOpened);
-	void ShowInfoOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY);
-	void ShowCheatSheetPopup(bool* popen, float right, float top);
-	void ShowAboutPopup(bool* popen, float right, float top);
 
 	void SetWindowTitle();
 	bool OnPrevious();
@@ -339,7 +335,6 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		bottomUIHeight = 0;
 	}
 
-	// Start the Dear ImGui frame.
 	ImGui_ImplOpenGL2_NewFrame();		
 	ImGui_ImplGlfw_NewFrame();
 	int dispw, disph;
@@ -607,7 +602,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::SetNextWindowSize(ImVec2(18, 72), ImGuiCond_Always);
 			ImGui::Begin("Prev", nullptr, flagsNextPrev);
 			ImGui::SetCursorPos(ImVec2(4, 2));
-			if (ImGui::ImageButton(ImTextureID(uint64(PrevImage.GLTextureID)), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			if (ImGui::ImageButton(ImTextureID(PrevImage.GetTexID()), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 				OnPrevious();
 			ImGui::End();
 		}
@@ -618,7 +613,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::SetNextWindowSize(ImVec2(18, 72), ImGuiCond_Always);
 			ImGui::Begin("Next", nullptr, flagsNextPrev);
 			ImGui::SetCursorPos(ImVec2(4, 2));
-			if (ImGui::ImageButton(ImTextureID(uint64(NextImage.GLTextureID)), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			if (ImGui::ImageButton(ImTextureID(NextImage.GetTexID()), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 				OnNext();
 			ImGui::End();
 		}
@@ -629,7 +624,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::SetNextWindowPos(ImVec2((workAreaW>>1)-22.0f-40.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
 			ImGui::SetNextWindowSize(ImVec2(40, 40), ImGuiCond_Always);
 			ImGui::Begin("SkipBegin", nullptr, flagsNextPrev);
-			if (ImGui::ImageButton(ImTextureID(uint64(SkipBeginImage.GLTextureID)), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			if (ImGui::ImageButton(ImTextureID(SkipBeginImage.GetTexID()), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 				OnSkipBegin();
 			ImGui::End();
 		}
@@ -638,7 +633,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::SetNextWindowPos(ImVec2((workAreaW>>1)-22.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
 		ImGui::SetNextWindowSize(ImVec2(40, 40), ImGuiCond_Always);
 		ImGui::Begin("Fullscreen", nullptr, flagsNextPrev);
-		uint64 imageID = FullscreenMode ? uint64(WindowedImage.GLTextureID) : uint64(FullscreenImage.GLTextureID);
+		uint64 imageID = FullscreenMode ? WindowedImage.GetTexID() : FullscreenImage.GetTexID();
 		if (ImGui::ImageButton(ImTextureID(imageID), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 			ChangeScreenMode(!FullscreenMode);
 		ImGui::End();
@@ -649,7 +644,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::SetNextWindowPos(ImVec2((workAreaW>>1)-22.0f+40.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
 			ImGui::SetNextWindowSize(ImVec2(40, 40), ImGuiCond_Always);
 			ImGui::Begin("SkipEnd", nullptr, flagsNextPrev);
-			if (ImGui::ImageButton(ImTextureID(uint64(SkipEndImage.GLTextureID)), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			if (ImGui::ImageButton(ImTextureID(SkipEndImage.GetTexID()), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 				OnSkipEnd();
 			ImGui::End();
 		}
@@ -749,7 +744,6 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				ImGui::EndMenu();
 			}
 
-			//int colourFlags = 0;		// ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_NoDragDrop | ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_NoOptions;
 			tColourf floatCol(PixelColour);
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 40.0f);
 
@@ -760,42 +754,9 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				ImGui::OpenPopup("CopyColourAs");
 
 			if (ImGui::BeginPopup("CopyColourAs"))
-			{
-				ImGui::Text("Copy As...");
-				int ri = PixelColour.R; int gi = PixelColour.G; int bi = PixelColour.B; int ai = PixelColour.A;
-				float rf = floatCol.R; float gf = floatCol.G; float bf = floatCol.B; float af = floatCol.A;
-				tString cpyTxt;
-				tsPrintf(cpyTxt, "%02X%02X%02X%02X", ri, gi, bi, ai);
-				if (ImGui::Selectable(cpyTxt.ConstText()))
-					ImGui::SetClipboardText(cpyTxt.ConstText());
-				tsPrintf(cpyTxt, "%02X%02X%02X", ri, gi, bi);
-				if (ImGui::Selectable(cpyTxt.ConstText()))
-					ImGui::SetClipboardText(cpyTxt.ConstText());
-				tsPrintf(cpyTxt, "#%02X%02X%02X%02X", ri, gi, bi, ai);
-				if (ImGui::Selectable(cpyTxt.ConstText()))
-					ImGui::SetClipboardText(cpyTxt.ConstText());
-				tsPrintf(cpyTxt, "#%02X%02X%02X", ri, gi, bi);
-				if (ImGui::Selectable(cpyTxt.ConstText()))
-					ImGui::SetClipboardText(cpyTxt.ConstText());
-				tsPrintf(cpyTxt, "0x%02X%02X%02X%02X", ri, gi, bi, ai);
-				if (ImGui::Selectable(cpyTxt.ConstText()))
-					ImGui::SetClipboardText(cpyTxt.ConstText());
-				tsPrintf(cpyTxt, "%.3f, %.3f, %.3f, %.3f", rf, gf, bf, af);
-				if (ImGui::Selectable(cpyTxt.ConstText()))
-					ImGui::SetClipboardText(cpyTxt.ConstText());
-				tsPrintf(cpyTxt, "%.3ff, %.3ff, %.3ff, %.3ff", rf, gf, bf, af);
-				if (ImGui::Selectable(cpyTxt.ConstText()))
-					ImGui::SetClipboardText(cpyTxt.ConstText());
-				tsPrintf(cpyTxt, "(%.3f, %.3f, %.3f, %.3f)", rf, gf, bf, af);
-				if (ImGui::Selectable(cpyTxt.ConstText()))
-					ImGui::SetClipboardText(cpyTxt.ConstText());
-				tsPrintf(cpyTxt, "(%.3ff, %.3ff, %.3ff, %.3ff)", rf, gf, bf, af);
-				if (ImGui::Selectable(cpyTxt.ConstText()))
-					ImGui::SetClipboardText(cpyTxt.ConstText());
-				ImGui::EndPopup();
-			}
+				TexView::ColourCopyAs();
 
-			if (ImGui::ImageButton(ImTextureID(uint64(FlipHImage.GLTextureID)), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			if (ImGui::ImageButton(ImTextureID(FlipHImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 			{
 				CurrImage->Unbind();
 				CurrImage->Flip(true);
@@ -803,7 +764,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			ShowToolTip("Flip Horizontally");
 
-			if (ImGui::ImageButton(ImTextureID(uint64(FlipVImage.GLTextureID)), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			if (ImGui::ImageButton(ImTextureID(FlipVImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 			{
 				CurrImage->Unbind();
 				CurrImage->Flip(false);
@@ -811,7 +772,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			ShowToolTip("Flip Vertically");
 
-			if (ImGui::ImageButton(ImTextureID(uint64(RotateACWImage.GLTextureID)), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			if (ImGui::ImageButton(ImTextureID(RotateACWImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 			{
 				CurrImage->Unbind();
 				CurrImage->Rotate90(true);
@@ -819,13 +780,30 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			ShowToolTip("Rotate 90 Anticlockwise");
 
-			if (ImGui::ImageButton(ImTextureID(uint64(RotateCWImage.GLTextureID)), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			if (ImGui::ImageButton(ImTextureID(RotateCWImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 			{
 				CurrImage->Unbind();
 				CurrImage->Rotate90(false);
 				CurrImage->Bind();
 			}
 			ShowToolTip("Rotate 90 Clockwise");
+
+			bool altImgAvail = CurrImage->IsAltImageAvail();
+			bool altImgEnabl = CurrImage->IsAltImageEnabled();
+			if
+			(
+				ImGui::ImageButton
+				(
+					ImTextureID(MipmapsImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
+					altImgEnabl ? ImVec4(0.45f, 0.45f, 0.60f, 1.00f) : ImVec4(0.00f, 0.00f, 0.00f, 0.00f),
+					altImgAvail ? ImVec4(1.00f, 1.00f, 1.00f, 1.00f) : ImVec4(0.46f, 0.46f, 0.58f, 1.00f)
+				) && altImgAvail
+			)
+			{
+				CurrImage->EnableAltImage(!altImgEnabl);
+				CurrImage->Bind();
+			}
+			ShowToolTip("Display Mipmaps");
 		}
 
 		ImGui::EndMainMenuBar();
@@ -901,7 +879,6 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 	if (io.WantTextInput)
 		return;
 
-	NextPrevDisappear = 4.0;
 	switch (key)
 	{
 		case GLFW_KEY_LEFT:
@@ -973,7 +950,6 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
-
 	double topUIHeight = 26.0;
 	if ((ypos <= topUIHeight) && !FullscreenMode)
 		return;

@@ -28,7 +28,8 @@ int TacitImage::NumLoaded = 0;
 
 TacitImage::TacitImage() :
 	Filename(),
-	GLTextureID(0)
+	TexIDPrimary(0),
+	TexIDAlt(0)
 {
 	Filetype = tFileType::Unknown;
 }
@@ -36,7 +37,8 @@ TacitImage::TacitImage() :
 
 TacitImage::TacitImage(const tString& filename) :
 	Filename(filename),
-	GLTextureID(0)
+	TexIDPrimary(0),
+	TexIDAlt(0)
 {
 	Filetype = tGetFileType(Filename);
 }
@@ -76,7 +78,7 @@ bool TacitImage::Load()
 		else
 		{
 			tPicture* picture = new tPicture();
-			PictureImages.Append(picture);
+			Images.Append(picture);
 			success = picture->Load(Filename);
 			srcFileBitdepth = picture->SrcFileBitDepth;
 		}
@@ -105,7 +107,7 @@ bool TacitImage::Load()
 		}
 		else
 		{
-			tPicture* picture = PictureImages.First();
+			tPicture* picture = Images.First();
 			if (picture)
 				format = (srcFileBitdepth == 24) ? tPixelFormat::R8G8B8 : tPixelFormat::R8G8B8A8;
 		}
@@ -114,10 +116,39 @@ bool TacitImage::Load()
 		Info.SrcFileBitDepth	= srcFileBitdepth;
 		Info.Opaque				= IsOpaque();
 		Info.SizeBytes			= tSystem::tGetFileSize(Filename);
-		Info.Mipmaps			= PictureImages.GetNumItems();
+		Info.Mipmaps			= Images.GetNumItems();
+
+		// Create alt picture if possible.
+		if (Info.Mipmaps > 1)
+			CreateAltPictureMipmaps();
 	}
 
 	return success;
+}
+
+
+void TacitImage::CreateAltPictureMipmaps()
+{
+	int width = 0;
+	for (tPicture* layer = Images.First(); layer; layer = layer->Next())
+		width += layer->GetWidth();
+	int height = GetHeight();
+
+	AltImage.Set(width, height, tPixel::transparent);
+	int originY = 0;
+	int originX = 0;
+	for (tPicture* layer = Images.First(); layer; layer = layer->Next())
+	{
+		for (int y = 0; y < layer->GetHeight(); y++)
+		{
+			for (int x = 0; x < layer->GetWidth(); x++)
+			{
+				tPixel pixel = layer->GetPixel(x, y);
+				AltImage.SetPixel(originX + x, y, pixel);
+			}
+		}
+		originX += layer->GetWidth();
+	}
 }
 
 
@@ -128,7 +159,9 @@ bool TacitImage::Unload()
 
 	Unbind();
 	TextureImage.Clear();
-	PictureImages.Clear();
+	AltImage.Clear();
+	Images.Clear();
+
 	NumLoaded--;
 	LoadedTime = -1.0f;
 	return true;
@@ -137,17 +170,32 @@ bool TacitImage::Unload()
 
 void TacitImage::Unbind()
 {
-	if (GLTextureID != 0)
+	if (TexIDPrimary != 0)
 	{
-		glDeleteTextures(1, &GLTextureID);
-		GLTextureID = 0;
+		glDeleteTextures(1, &TexIDPrimary);
+		TexIDPrimary = 0;
 	}
+
+	if (TexIDAlt != 0)
+	{
+		glDeleteTextures(1, &TexIDAlt);
+		TexIDAlt = 0;
+	}
+}
+
+
+uint64 TacitImage::GetTexID() const
+{
+	if (AltImageEnabled)
+		return uint64(TexIDAlt);
+	else
+		return uint64(TexIDPrimary);
 }
 
 
 bool TacitImage::IsLoaded() const
 {
-	return (TextureImage.IsValid() || (PictureImages.Count() > 0));
+	return (TextureImage.IsValid() || (Images.Count() > 0));
 }
 
 
@@ -156,7 +204,7 @@ bool TacitImage::IsOpaque() const
 	if (TextureImage.IsValid())
 		return TextureImage.IsOpaque();
 
-	tPicture* picture = PictureImages.First();
+	tPicture* picture = Images.First();
 	if (picture && picture->IsValid())
 		return picture->IsOpaque();
 
@@ -166,7 +214,10 @@ bool TacitImage::IsOpaque() const
 
 int TacitImage::GetWidth() const
 {
-	tPicture* picture = PictureImages.First();
+	if (AltImage.IsValid() && AltImageEnabled)
+		return AltImage.GetWidth();
+
+	tPicture* picture = Images.First();
 	if (picture && picture->IsValid())
 		return picture->GetWidth();
 
@@ -179,7 +230,10 @@ int TacitImage::GetWidth() const
 
 int TacitImage::GetHeight() const
 {
-	tPicture* picture = PictureImages.First();
+	if (AltImage.IsValid() && AltImageEnabled)
+		return AltImage.GetHeight();
+
+	tPicture* picture = Images.First();
 	if (picture && picture->IsValid())
 		return picture->GetHeight();
 
@@ -192,7 +246,10 @@ int TacitImage::GetHeight() const
 
 tColouri TacitImage::GetPixel(int x, int y) const
 {
-	tPicture* picture = PictureImages.First();
+	if (AltImage.IsValid())
+		return AltImage.GetPixel(x, y);
+
+	tPicture* picture = Images.First();
 	if (picture && picture->IsValid())
 		return picture->GetPixel(x, y);
 
@@ -204,14 +261,14 @@ tColouri TacitImage::GetPixel(int x, int y) const
 
 void TacitImage::Rotate90(bool antiClockWise)
 {
-	for (tPicture* picture = PictureImages.First(); picture; picture = picture->Next())
+	for (tPicture* picture = Images.First(); picture; picture = picture->Next())
 		picture->Rotate90(antiClockWise);
 }
 
 
 void TacitImage::Flip(bool horizontal)
 {
-	for (tPicture* picture = PictureImages.First(); picture; picture = picture->Next())
+	for (tPicture* picture = Images.First(); picture; picture = picture->Next())
 		picture->Flip(horizontal);
 }
 
@@ -225,7 +282,7 @@ void TacitImage::PrintInfo()
 	}
 	else
 	{
-		tPicture* picture = PictureImages.First();
+		tPicture* picture = Images.First();
 		if (picture)
 			format = picture->IsOpaque() ? tPixelFormat::R8G8B8 : tPixelFormat::R8G8B8A8;
 	}
@@ -234,36 +291,62 @@ void TacitImage::PrintInfo()
 	(
 		"Image: %s Width: %d Height: %d PixelFormat: %s\n",
 		tSystem::tGetFileName(Filename).ConstText(),
-		GetWidth(), GetHeight(), tImage::tGetPixelFormatName(format)
+		Info.Width, Info.Height, tImage::tGetPixelFormatName(format)
 	);
 }
 
 
 bool TacitImage::Bind()
 {
-	if (GLTextureID != 0)
+	if (AltImageEnabled && AltImage.IsValid())
 	{
-		glBindTexture(GL_TEXTURE_2D, GLTextureID);
+		if (TexIDAlt != 0)
+		{
+			glBindTexture(GL_TEXTURE_2D, TexIDAlt);
+			return true;
+		}
+
+		glGenTextures(1, &TexIDAlt);
+		if (TexIDAlt == 0)
+			return false;
+
+		tList<tLayer> layers;
+		layers.Append
+		(
+			new tLayer
+			(
+				tPixelFormat::R8G8B8A8, AltImage.GetWidth(), AltImage.GetHeight(),
+				(uint8*)AltImage.GetPixelPointer()
+			)
+		);
+
+		BindLayers(layers, TexIDAlt);
+		return true;
+	}
+
+	if (TexIDPrimary != 0)
+	{
+		glBindTexture(GL_TEXTURE_2D, TexIDPrimary);
 		return true;
 	}
 
 	if (!IsLoaded())
 		return false;
 
-	glGenTextures(1, &GLTextureID);
-	if (GLTextureID == 0)
+	glGenTextures(1, &TexIDPrimary);
+	if (TexIDPrimary == 0)
 		return false;
 
 	// We try to bind the native tTexture first if possible.
 	if (TextureImage.IsValid())
 	{
 		const tList<tLayer>& layers = TextureImage.GetLayers();
-		BindLayers(layers);
+		BindLayers(layers, TexIDPrimary);
 		return true;
 	}
 
 	// glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, gPicture.GetWidth(), gPicture.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, gPicture.GetPixelPointer());
-	tPicture* picture = PictureImages.First();
+	tPicture* picture = Images.First();
 	if (picture && picture->IsValid())
 	{
 		tList<tLayer> layers;
@@ -276,7 +359,7 @@ bool TacitImage::Bind()
 			)
 		);
 
-		BindLayers(layers);
+		BindLayers(layers, TexIDPrimary);
 		return true;
 	}
 
@@ -284,12 +367,12 @@ bool TacitImage::Bind()
 }
 
 
-void TacitImage::BindLayers(const tList<tLayer>& layers)
+void TacitImage::BindLayers(const tList<tLayer>& layers, uint texID)
 {
 	if (layers.IsEmpty())
 		return;
 
-	glBindTexture(GL_TEXTURE_2D, GLTextureID);
+	glBindTexture(GL_TEXTURE_2D, texID);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
@@ -313,7 +396,6 @@ void TacitImage::BindLayers(const tList<tLayer>& layers)
 		tPixelFormat pixelFormat = layers.First()->PixelFormat;
 		GetGLFormatInfo(srcFormat, srcType, dstFormat, compressed, pixelFormat);
 
-		//tPrintf("MipLevel %d\n", mipmapLevel);
 		if (compressed)
 		{
 			// For each layer (non-mipmapped formats will only have one) we need to submit the texture data.
@@ -416,7 +498,7 @@ void TacitImage::GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFo
 
 bool TacitImage::ConvertTextureToPicture()
 {
-	if (!(TextureImage.IsValid() && (PictureImages.Count() <= 0)))
+	if (!(TextureImage.IsValid() && (Images.Count() <= 0)))
 		return false;
 
 	int w = TextureImage.GetWidth();
@@ -432,7 +514,7 @@ bool TacitImage::ConvertTextureToPicture()
 		tMath::tClampMin(mipH, 1);
 		uint8* rgbaData = new uint8[mipW * mipH * 4];
 		glGetTexImage(GL_TEXTURE_2D, level, GL_RGBA, GL_UNSIGNED_BYTE, rgbaData);
-		PictureImages.Append(new tPicture(mipW, mipH, (tPixel*)rgbaData, false));
+		Images.Append(new tPicture(mipW, mipH, (tPixel*)rgbaData, false));
 	}
 	return true;
 }

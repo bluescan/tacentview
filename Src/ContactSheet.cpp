@@ -163,7 +163,7 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 
 			tPrintf("Processing frame %d : %s at (%d, %d).\n", frame, currImg->Filename.ConstText(), ix, iy);
 			frame++;
-			tImage::tPicture* currPic = currImg->PictureImages.First();
+			tImage::tPicture* currPic = currImg->GetPrimaryPicture();
 
 			tImage::tPicture resampled;
 			if ((currImg->GetWidth() != frameWidth) || (currImg->GetHeight() != frameHeight))

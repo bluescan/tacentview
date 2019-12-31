@@ -21,4 +21,5 @@ namespace TexView
 	void ShowCheatSheetPopup(bool* popen, float right, float top);
 	void ShowAboutPopup(bool* popen, float right, float top);
 	void ShowSaveAsDialog(bool* popen, bool justOpened);
+	void ColourCopyAs();
 }

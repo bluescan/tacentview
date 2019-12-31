@@ -121,6 +121,8 @@ public:
 	const static tColouri magenta;
 	const static tColouri yellow;
 
+	const static tColouri transparent;
+
 	union
 	{
 		struct { uint8 R, G, B, A; };
@@ -238,6 +240,8 @@ public:
 	const static tColourf cyan;
 	const static tColourf magenta;
 	const static tColourf yellow;
+
+	const static tColourf transparent;
 
 	union
 	{
