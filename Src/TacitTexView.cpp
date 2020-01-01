@@ -42,7 +42,7 @@ namespace TexView
 	tCommand::tParam ImageFileParam(1, "ImageFile", "File to open.");
 	int MajorVersion			= 1;
 	int MinorVersion			= 0;
-	int Revision				= 2;
+	int Revision				= 3;
 	Settings Config;
 	bool LogWindowOpen			= true;
 	TexView::ImGuiLog LogWindow;
@@ -67,6 +67,7 @@ namespace TexView
 	double NextPrevDisappear	= 1.0;
 	GLFWwindow* Window			= nullptr;
 	bool FullscreenMode			= false;
+	bool WindowIconified		= false;
 	bool ShowLog				= false;
 	bool ShowCheatSheet			= false;
 	bool ShowAbout				= false;
@@ -120,6 +121,7 @@ namespace TexView
 	void ScrollWheelCallback(GLFWwindow*, double x, double y);
 	void FileDropCallback(GLFWwindow*, int count, const char** paths);
 	void FocusCallback(GLFWwindow*, int gotFocus);
+	void IconifyCallback(GLFWwindow*, int iconified);
 }
 
 
@@ -151,8 +153,6 @@ void TexView::FindImageFiles(tList<tStringItem>& foundFiles)
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.bmp");
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.dds");
 	foundFiles.Sort(CompareFunc, tListSortAlgorithm::Merge);
-//		//tuint256 ImagesHash			= 0;
-
 }
 
 
@@ -686,6 +686,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			bool justOpenedSaveAsDialog = false;
 			if (ImGui::BeginMenu("File"))
 			{
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
+
 				// Show file menu items...
 				if (ImGui::MenuItem("Save As...") && CurrImage)
 				{
@@ -697,28 +699,37 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				if (ImGui::MenuItem("Quit", "Alt+F4"))
 					glfwSetWindowShouldClose(Window, 1);
 
+				ImGui::PopStyleVar();
 				ImGui::EndMenu();
+
 			}
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
 			if (saveAsDialog)
 				ShowSaveAsDialog(&saveAsDialog, justOpenedSaveAsDialog);
+			ImGui::PopStyleVar();
 
 			static bool contactDialog = false;
 			bool justOpenedContactDialog = false;
 			if (ImGui::BeginMenu("Edit"))
 			{
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
 				if (ImGui::MenuItem("Contact Sheet...") && (Images.GetNumItems() > 1))
 				{
 					contactDialog = !contactDialog;
 					if (contactDialog)
 						justOpenedContactDialog = true;
 				}
+				ImGui::PopStyleVar();
 				ImGui::EndMenu();
 			}
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
 			if (contactDialog)
 				ShowContactSheetDialog(&contactDialog, justOpenedContactDialog);
+			ImGui::PopStyleVar();
 
 			if (ImGui::BeginMenu("View"))
 			{
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
 				ImGui::MenuItem("Show Log", "", &ShowLog, true);
 				ImGui::MenuItem("Show Overlay", "", &TexView::Config.OverlayShow, true);
 
@@ -769,13 +780,16 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 					ChangeScreenMode(false, true);
 				}
 
+				ImGui::PopStyleVar();
 				ImGui::EndMenu();
 			}
 
 			if (ImGui::BeginMenu("Help"))
 			{
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
 				ImGui::MenuItem("Cheat Sheet", "", &ShowCheatSheet, true);
 				ImGui::MenuItem("About", "", &ShowAbout, true);
+				ImGui::PopStyleVar();
 				ImGui::EndMenu();
 			}
 
@@ -1131,6 +1145,12 @@ void TexView::FocusCallback(GLFWwindow* window, int gotFocus)
 }
 
 
+void TexView::IconifyCallback(GLFWwindow* window, int iconified)
+{
+	WindowIconified = iconified;
+}
+
+
 int main(int argc, char** argv)
 {
 	tSystem::tSetStdoutRedirectCallback(TexView::PrintRedirectCallback);	
@@ -1196,6 +1216,7 @@ int main(int argc, char** argv)
 	glfwSetScrollCallback(TexView::Window, TexView::ScrollWheelCallback);
 	glfwSetDropCallback(TexView::Window, TexView::FileDropCallback);
 	glfwSetWindowFocusCallback(TexView::Window, TexView::FocusCallback);
+	glfwSetWindowIconifyCallback(TexView::Window, TexView::IconifyCallback);
 
 	GLenum err = glewInit();
 	if (err != GLEW_OK)
@@ -1282,8 +1303,8 @@ int main(int argc, char** argv)
 		lastUpdateTime = currUpdateTime;
 	}
 
-	// Get current window geometry to config file if we're not in fullscreen mode.
-	if (!TexView::FullscreenMode)
+	// Get current window geometry and set in config file if we're not in fullscreen mode or iconified.
+	if (!TexView::FullscreenMode && !TexView::WindowIconified)
 	{
 		glfwGetWindowPos(TexView::Window, &TexView::Config.WindowX, &TexView::Config.WindowY);
 		glfwGetWindowSize(TexView::Window, &TexView::Config.WindowW, &TexView::Config.WindowH);

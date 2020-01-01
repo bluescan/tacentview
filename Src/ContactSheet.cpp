@@ -25,7 +25,7 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
 	// do it to make the Demo applications a little more welcoming.
 	ImGui::SetNextWindowPos(ImVec2(200, 150), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(370, 254), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(370, 258), ImGuiCond_FirstUseEver);
 
 	// Main body of the Demo window starts here.
 	if (!ImGui::Begin("Contact Sheet Generator", popen, windowFlags))
@@ -72,6 +72,7 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 	ImGui::SameLine();
 	ShowHelpMark("Number of rows. Determines overall height.");
 
+	ImGui::Separator();
 	ImGui::InputInt("Final Width", &finalWidth);
 	ImGui::SameLine();
 	ShowHelpMark("Final scaled output sheet height in pixels.");
@@ -97,6 +98,7 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 		finalWidth = contactWidth;
 		finalHeight = contactHeight;
 	}
+	ImGui::Separator();
 
 	const char* fileTypeItems[] = { "TGA", "PNG", "BMP", "JPG", "GIF" };
 	static int itemCurrent = 0;
