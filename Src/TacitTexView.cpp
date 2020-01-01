@@ -2,7 +2,7 @@
 //
 // A texture viewer for various formats.
 //
-// Copyright (c) 2018, 2019 Tristan Grimmer.
+// Copyright (c) 2018, 2019, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -42,7 +42,7 @@ namespace TexView
 	tCommand::tParam ImageFileParam(1, "ImageFile", "File to open.");
 	int MajorVersion			= 1;
 	int MinorVersion			= 0;
-	int Revision				= 1;
+	int Revision				= 2;
 	Settings Config;
 	bool LogWindowOpen			= true;
 	TexView::ImGuiLog LogWindow;

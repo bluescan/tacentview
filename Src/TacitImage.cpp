@@ -2,7 +2,7 @@
 //
 // An image class that can load a file from disk into main memory and to VRAM.
 //
-// Copyright (c) 2019 Tristan Grimmer.
+// Copyright (c) 2019, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -317,7 +317,7 @@ int TacitImage::GetHeight() const
 
 tColouri TacitImage::GetPixel(int x, int y) const
 {
-	if (AltImage.IsValid())
+	if (AltImage.IsValid() && AltImageEnabled)
 		return AltImage.GetPixel(x, y);
 
 	tPicture* picture = Images.First();
