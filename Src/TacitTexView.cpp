@@ -105,7 +105,7 @@ namespace TexView
 	bool OnNext();
 	bool OnSkipBegin();
 	bool OnSkipEnd();
-	bool ChangeScreenMode(bool fullscreeen);
+	bool ChangeScreenMode(bool fullscreeen, bool force = false);
 	void ResetPan(bool resetX = true, bool resetY = true);
 	void Update(GLFWwindow* window, double dt, bool dopoll = true);
 
@@ -698,10 +698,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				ImGui::MenuItem("Show Log", "", &ShowLog, true);
 				ImGui::MenuItem("Show Overlay", "", &TexView::Config.OverlayShow, true);
 
-				ImGui::PushItemWidth(200);
-				if (ImGui::SliderFloat("", &ZoomPercent, 20.0f, 2500.0f, " Zoom %.2f"))
-					CurrZoomMode = ZoomMode::User;
-				ImGui::PopItemWidth();
+				ImGui::Separator();
 
 				bool userMode = CurrZoomMode == ZoomMode::User;
 				if (ImGui::MenuItem("Zoom User", "", &userMode, true))
@@ -732,8 +729,21 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 					CurrZoomMode = ZoomMode::OneToOne;
 				}
 
+				ImGui::PushItemWidth(200);
+				if (ImGui::SliderFloat("", &ZoomPercent, 20.0f, 2500.0f, " Zoom %.2f"))
+					CurrZoomMode = ZoomMode::User;
+				ImGui::PopItemWidth();
+
 				if (ImGui::Button("Reset Pan"))
 					ResetPan();
+
+				if (ImGui::Button("Reset UI"))
+				{
+					GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+					const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+					Config.Reset(mode->width, mode->height);
+					ChangeScreenMode(false, true);
+				}
 
 				ImGui::EndMenu();
 			}
@@ -891,13 +901,13 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 }
 
 
-bool TexView::ChangeScreenMode(bool fullscreen)
+bool TexView::ChangeScreenMode(bool fullscreen, bool force)
 {
-	if (TexView::FullscreenMode == fullscreen)
+	if (!force && (FullscreenMode == fullscreen))
 		return false;
 
 	// If currently in windowed mode, remember our window geometry.
-	if (!FullscreenMode)
+	if (!force && !FullscreenMode)
 	{
 		glfwGetWindowPos(TexView::Window, &TexView::Config.WindowX, &TexView::Config.WindowY);
 		glfwGetWindowSize(TexView::Window, &TexView::Config.WindowW, &TexView::Config.WindowH);
@@ -1092,7 +1102,8 @@ int main(int argc, char** argv)
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 	const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
-	tString cfgFile = tSystem::tGetProgramDir() + "Data/Settings.cfg";
+	tString dataDir = tSystem::tGetProgramDir() + "Data/";
+	tString cfgFile = dataDir + "Settings.cfg";
 	TexView::Config.Load(cfgFile, mode->width, mode->height);
 	TexView::Window = glfwCreateWindow(TexView::Config.WindowW, TexView::Config.WindowH, "Tacit Viewer", nullptr, nullptr);
 	if (!TexView::Window)
@@ -1108,7 +1119,6 @@ int main(int argc, char** argv)
 	ShowWindow(hwnd, SW_HIDE);
 	ShowWindow(hwnd, SW_SHOW);
 
-	tString dataDir = tSystem::tGetProgramDir() + "Data/";
 	if (!tSystem::tDirExists(dataDir))
 	{
 		::MessageBoxA
@@ -1160,49 +1170,49 @@ int main(int argc, char** argv)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	tString fontFile = tSystem::tGetProgramDir() + "Data/Roboto-Medium.ttf";
+	tString fontFile = dataDir + "Roboto-Medium.ttf";
 	io.Fonts->AddFontFromFileTTF(fontFile.ConstText(), 14.0f);
 
-	TexView::CursorImage.Load(tSystem::tGetProgramDir() + "Data/PixelCursor.png");
+	TexView::CursorImage.Load(dataDir + "PixelCursor.png");
 	TexView::CursorImage.Bind();
 
-	TexView::PrevImage.Load(tSystem::tGetProgramDir() + "Data/PrevArrow.png");
+	TexView::PrevImage.Load(dataDir + "PrevArrow.png");
 	TexView::PrevImage.Bind();
 
-	TexView::NextImage.Load(tSystem::tGetProgramDir() + "Data/NextArrow.png");
+	TexView::NextImage.Load(dataDir + "NextArrow.png");
 	TexView::NextImage.Bind();
 
-	TexView::FlipHImage.Load(tSystem::tGetProgramDir() + "Data/FlipH.png");
+	TexView::FlipHImage.Load(dataDir + "FlipH.png");
 	TexView::FlipHImage.Bind();
 
-	TexView::FlipVImage.Load(tSystem::tGetProgramDir() + "Data/FlipV.png");
+	TexView::FlipVImage.Load(dataDir + "FlipV.png");
 	TexView::FlipVImage.Bind();
 
-	TexView::RotateACWImage.Load(tSystem::tGetProgramDir() + "Data/RotACW.png");
+	TexView::RotateACWImage.Load(dataDir + "RotACW.png");
 	TexView::RotateACWImage.Bind();
 
-	TexView::RotateCWImage.Load(tSystem::tGetProgramDir() + "Data/RotCW.png");
+	TexView::RotateCWImage.Load(dataDir + "RotCW.png");
 	TexView::RotateCWImage.Bind();
 
-	TexView::FullscreenImage.Load(tSystem::tGetProgramDir() + "Data/Fullscreen.png");
+	TexView::FullscreenImage.Load(dataDir + "Fullscreen.png");
 	TexView::FullscreenImage.Bind();
 
-	TexView::WindowedImage.Load(tSystem::tGetProgramDir() + "Data/Windowed.png");
+	TexView::WindowedImage.Load(dataDir + "Windowed.png");
 	TexView::WindowedImage.Bind();
 
-	TexView::SkipBeginImage.Load(tSystem::tGetProgramDir() + "Data/SkipBegin.png");
+	TexView::SkipBeginImage.Load(dataDir + "SkipBegin.png");
 	TexView::SkipBeginImage.Bind();
 
-	TexView::SkipEndImage.Load(tSystem::tGetProgramDir() + "Data/SkipEnd.png");
+	TexView::SkipEndImage.Load(dataDir + "SkipEnd.png");
 	TexView::SkipEndImage.Bind();
 
-	TexView::MipmapsImage.Load(tSystem::tGetProgramDir() + "Data/Mipmaps.png");
+	TexView::MipmapsImage.Load(dataDir + "Mipmaps.png");
 	TexView::MipmapsImage.Bind();
 
-	TexView::CubemapImage.Load(tSystem::tGetProgramDir() + "Data/Cubemap.png");
+	TexView::CubemapImage.Load(dataDir + "Cubemap.png");
 	TexView::CubemapImage.Bind();
 
-	TexView::InfoOverlayImage.Load(tSystem::tGetProgramDir() + "Data/InfoOverlay.png");
+	TexView::InfoOverlayImage.Load(dataDir + "InfoOverlay.png");
 	TexView::InfoOverlayImage.Bind();
 
 	TexView::FindTextureFiles();
@@ -1220,9 +1230,12 @@ int main(int argc, char** argv)
 		lastUpdateTime = currUpdateTime;
 	}
 
-	// Save current window geometry to config file.
-	glfwGetWindowPos(TexView::Window, &TexView::Config.WindowX, &TexView::Config.WindowY);
-	glfwGetWindowSize(TexView::Window, &TexView::Config.WindowW, &TexView::Config.WindowH);
+	// Get current window geometry to config file if we're not in fullscreen mode.
+	if (!TexView::FullscreenMode)
+	{
+		glfwGetWindowPos(TexView::Window, &TexView::Config.WindowX, &TexView::Config.WindowY);
+		glfwGetWindowSize(TexView::Window, &TexView::Config.WindowW, &TexView::Config.WindowH);
+	}
 	TexView::Config.Save(cfgFile);
 
 	// Cleanup.

@@ -27,4 +27,5 @@ struct Settings
 
 	void Load(const tString& filename, int screenWidth, int screenHeight);
 	bool Save(const tString& filename);
+	void Reset(int screenWidth, int screenHeight);
 };

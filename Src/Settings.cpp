@@ -19,16 +19,22 @@
 using namespace tMath;
 
 
+void Settings::Reset(int screenW, int screenH)
+{
+	WindowW = 1280;
+	WindowH = 720;
+	WindowX = (screenW - WindowW) >> 1;
+	WindowY = (screenH - WindowH) >> 1;
+	OverlayShow = false;
+	OverlayCorner = 3;
+}
+
+
 void Settings::Load(const tString& filename, int screenW, int screenH)
 {
 	if (!tSystem::tFileExists(filename))
 	{
-		WindowW = 1280;
-		WindowH = 720;
-		WindowX = (screenW - WindowW) >> 1;
-		WindowY = (screenH - WindowH) >> 1;
-		OverlayShow = false;
-		OverlayCorner = 3;
+		Reset(screenW, screenH);
 	}
 	else
 	{
