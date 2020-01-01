@@ -41,7 +41,7 @@ namespace TexView
 	tCommand::tParam ImageFileParam(1, "ImageFile", "File to open.");
 	int MajorVersion			= 1;
 	int MinorVersion			= 0;
-	int Revision				= 0;
+	int Revision				= 1;
 	Settings Config;
 	bool LogWindowOpen			= true;
 	TexView::ImGuiLog LogWindow;
@@ -60,6 +60,7 @@ namespace TexView
 	TacitImage SkipEndImage;
 	TacitImage MipmapsImage;
 	TacitImage CubemapImage;
+	TacitImage InfoOverlayImage;
 
 	double NextPrevDisappear	= 1.0;
 	GLFWwindow* Window			= nullptr;
@@ -91,7 +92,7 @@ namespace TexView
 	int CursorX					= -1;
 	int CursorY					= -1;
 	tColouri PixelColour		= tColouri::black;
-	const int MaxLoadedCount	= 40;			// If more images that this loaded we start unloading to free mem.
+	const int MaxLoadedCount	= 48;			// If more images that this loaded we start unloading to free mem.
 	TacitImage* UnloadImage		= nullptr;
 
 	void DrawTextureViewerLog(float x, float y, float w, float h);
@@ -662,7 +663,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::BeginMenu("File"))
 			{
 				// Show file menu items...
-				if (ImGui::MenuItem("Save As..."))
+				if (ImGui::MenuItem("Save As...") && CurrImage)
 				{
 					saveAsDialog = !saveAsDialog;
 					if (saveAsDialog)
@@ -681,7 +682,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			bool justOpenedContactDialog = false;
 			if (ImGui::BeginMenu("Edit"))
 			{
-				if (ImGui::MenuItem("Contact Sheet..."))
+				if (ImGui::MenuItem("Contact Sheet...") && (Images.GetNumItems() > 1))
 				{
 					contactDialog = !contactDialog;
 					if (contactDialog)
@@ -756,8 +757,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::BeginPopup("CopyColourAs"))
 				TexView::ColourCopyAs();
 
-			bool buttonAvail = !CurrImage->IsAltImageEnabled();
-
+			bool buttonAvail = CurrImage ? !CurrImage->IsAltImageEnabled() : false;
 			if
 			(
 				ImGui::ImageButton(ImTextureID(FlipHImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0,0,0,0),
@@ -806,7 +806,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			ShowToolTip("Rotate 90 Clockwise");
 
-			bool altMipmapsImgAvail = CurrImage->IsAltMipmapsImageAvail();
+			bool altMipmapsImgAvail = CurrImage ? CurrImage->IsAltMipmapsImageAvail() : false;
 			bool altMipmapsImgEnabl = altMipmapsImgAvail && CurrImage->IsAltImageEnabled();
 			if
 			(
@@ -821,9 +821,9 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				CurrImage->EnableAltImage(!altMipmapsImgEnabl);
 				CurrImage->Bind();
 			}
-			ShowToolTip("Display Mipmaps");
+			ShowToolTip("Display Mipmaps\nDDS files may include mipmaps.");
 
-			bool altCubemapImgAvail = CurrImage->IsAltCubemapImageAvail();
+			bool altCubemapImgAvail = CurrImage ? CurrImage->IsAltCubemapImageAvail() : false;
 			bool altCubemapImgEnabl = altCubemapImgAvail && CurrImage->IsAltImageEnabled();
 			if
 			(
@@ -838,7 +838,18 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				CurrImage->EnableAltImage(!altCubemapImgEnabl);
 				CurrImage->Bind();
 			}
-			ShowToolTip("Display Cubemap");
+			ShowToolTip("Display Cubemap\nDDS files may be cubemaps.");
+
+			if
+			(
+				ImGui::ImageButton(ImTextureID(InfoOverlayImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
+				TexView::Config.OverlayShow ? ImVec4(0.45f, 0.45f, 0.60f, 1.00f) : ImVec4(0.00f, 0.00f, 0.00f, 0.00f),
+				ImVec4(1.00f, 1.00f, 1.00f, 1.00f))
+			)
+			{
+				TexView::Config.OverlayShow = !TexView::Config.OverlayShow;			
+			}
+			ShowToolTip("Information Overlay");
 		}
 
 		ImGui::EndMainMenuBar();
@@ -867,12 +878,15 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	// Consider unloading some images to keep memory down. The numToCheck roughly means it will take
 	// 3 seconds to check all the files assuming a 60Hz update frequency.
-	int numToCheck = tMath::tGetClampMin( Images.NumItems() / (3*60), 1 );
-	for (int c = 0; c < numToCheck; c++)
+	if (UnloadImage && (Images.NumItems() > 0))
 	{
-		if ((TacitImage::GetNumLoaded() > MaxLoadedCount) && UnloadImage && (UnloadImage != CurrImage) && UnloadImage->IsLoaded())
-			UnloadImage->Unload();
-		UnloadImage = Images.NextCirc(UnloadImage);
+		int numToCheck = tMath::tGetClampMin( Images.NumItems() / (3*60), 1 );
+		for (int c = 0; c < numToCheck; c++)
+		{
+			if ((TacitImage::GetNumLoaded() > MaxLoadedCount) && UnloadImage && (UnloadImage != CurrImage) && UnloadImage->IsLoaded())
+				UnloadImage->Unload();
+			UnloadImage = Images.NextCirc(UnloadImage);
+		}
 	}
 }
 
@@ -1094,6 +1108,24 @@ int main(int argc, char** argv)
 	ShowWindow(hwnd, SW_HIDE);
 	ShowWindow(hwnd, SW_SHOW);
 
+	tString dataDir = tSystem::tGetProgramDir() + "Data/";
+	if (!tSystem::tDirExists(dataDir))
+	{
+		::MessageBoxA
+		(
+			hwnd,
+			"Tacit Texture Viewer failed to launch because it was run from a location "
+			"that did not have the Data directory in it. The executable should be in the "
+			"same place as the Data directory.",
+			"Viewer Message",
+			MB_OK
+		);
+
+		glfwDestroyWindow(TexView::Window);
+		glfwTerminate();
+		return 1;
+	}
+
 	glfwMakeContextCurrent(TexView::Window);
 	glfwSwapInterval(1); // Enable vsync
 	glfwSetWindowRefreshCallback(TexView::Window, TexView::WindowRefreshFun);
@@ -1169,6 +1201,9 @@ int main(int argc, char** argv)
 
 	TexView::CubemapImage.Load(tSystem::tGetProgramDir() + "Data/Cubemap.png");
 	TexView::CubemapImage.Bind();
+
+	TexView::InfoOverlayImage.Load(tSystem::tGetProgramDir() + "Data/InfoOverlay.png");
+	TexView::InfoOverlayImage.Bind();
 
 	TexView::FindTextureFiles();
 	if (TexView::ImageFileParam.IsPresent())
