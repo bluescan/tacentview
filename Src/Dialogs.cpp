@@ -46,7 +46,7 @@ void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, i
 		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
 		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
 
-	if (ImGui::Begin("Info", popen, flags))
+	if (ImGui::Begin("InfoOverlay", popen, flags))
 	{
 		ImGui::Text("Image Info - Enter to Toggle");
 		ImGui::Text("Right-Click to change position.");
@@ -305,7 +305,7 @@ void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 		}
 
 		Images.Clear();
-		FindTextureFiles();
+		PopulateImages();
 		SetCurrentImage(outFile);
 	}
 

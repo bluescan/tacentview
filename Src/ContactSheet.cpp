@@ -206,7 +206,7 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 			finalResampled.Save(outFile, colourFmt);
 		}
 		Images.Clear();
-		FindTextureFiles();
+		PopulateImages();
 		SetCurrentImage(outFile);
 	}
 

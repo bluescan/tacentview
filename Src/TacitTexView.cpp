@@ -23,6 +23,7 @@
 #include <System/tFile.h>
 #include <System/tTime.h>
 #include <System/tScript.h>
+#include <Math/tHash.h>
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl2.h"
@@ -46,6 +47,7 @@ namespace TexView
 	bool LogWindowOpen			= true;
 	TexView::ImGuiLog LogWindow;
 	tList<TacitImage> Images;
+	tuint256 ImagesHash			= 0;
 	TacitImage* CurrImage		= nullptr;
 	TacitImage CursorImage;
 	TacitImage PrevImage;
@@ -107,6 +109,8 @@ namespace TexView
 	bool OnSkipEnd();
 	bool ChangeScreenMode(bool fullscreeen, bool force = false);
 	void ResetPan(bool resetX = true, bool resetY = true);
+	void FindImageFiles(tList<tStringItem>& foundFiles);
+	tuint256 ComputeImagesHash(const tList<tStringItem>& files);
 	void Update(GLFWwindow* window, double dt, bool dopoll = true);
 
 	void WindowRefreshFun(GLFWwindow* window)																			{ Update(window, 0.0, false); }
@@ -115,6 +119,7 @@ namespace TexView
 	void CursorPosCallback(GLFWwindow*, double x, double y);
 	void ScrollWheelCallback(GLFWwindow*, double x, double y);
 	void FileDropCallback(GLFWwindow*, int count, const char** paths);
+	void FocusCallback(GLFWwindow*, int gotFocus);
 }
 
 
@@ -124,21 +129,19 @@ void TexView::DrawTextureViewerLog(float x, float y, float w, float h)
 	ImGui::SetNextWindowSize(ImVec2(w, h), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(ImVec2(x, y), ImGuiCond_Always);
 
-	ImGui::Begin("Info", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
+	ImGui::Begin("InfoLog", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
 	LogWindow.Draw("Log", &LogWindowOpen);
 	ImGui::End();
 }
 
 
-void TexView::FindTextureFiles()
+void TexView::FindImageFiles(tList<tStringItem>& foundFiles)
 {
 	tString imagesDir = tSystem::tGetCurrentDir();
 	if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
 		imagesDir = tSystem::tGetDir(ImageFileParam.Get());
 
 	tPrintf("Looking for image files in %s\n", imagesDir.ConstText());
-	tList<tStringItem> foundFiles;
-
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.jpg");
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.gif");
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.tga");
@@ -148,6 +151,27 @@ void TexView::FindTextureFiles()
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.bmp");
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.dds");
 	foundFiles.Sort(CompareFunc, tListSortAlgorithm::Merge);
+//		//tuint256 ImagesHash			= 0;
+
+}
+
+
+tuint256 TexView::ComputeImagesHash(const tList<tStringItem>& files)
+{
+	tuint256 hash = 0;
+	for (tStringItem* item = files.First(); item; item = item->Next())
+		hash = tMath::tHashString256(item->ConstText(), hash);
+
+	return hash;
+}
+
+
+void TexView::PopulateImages()
+{
+	tList<tStringItem> foundFiles;
+	FindImageFiles(foundFiles);
+	ImagesHash = ComputeImagesHash(foundFiles);
+
 	for (tStringItem* filename = foundFiles.First(); filename; filename = filename->Next())
 		Images.Append(new TacitImage(*filename));
 
@@ -1075,8 +1099,35 @@ void TexView::FileDropCallback(GLFWwindow* window, int count, const char** files
 
 	ImageFileParam.Param = file;
 	Images.Clear();
-	FindTextureFiles();
+	PopulateImages();
 	SetCurrentImage(file);
+}
+
+
+void TexView::FocusCallback(GLFWwindow* window, int gotFocus)
+{
+	if (!gotFocus)
+		return;
+
+	// If we got focus, rescan the current folder to see if the hash is different.
+	tList<tStringItem> files;
+	FindImageFiles(files);
+	tuint256 hash = ComputeImagesHash(files);
+
+	if (hash != ImagesHash)
+	{
+		tPrintf("Hash mismatch. Dir contents changed. Resynching.\n");
+		Images.Clear();
+		PopulateImages();
+		if (ImageFileParam.IsPresent())
+			SetCurrentImage(TexView::ImageFileParam.Get());
+		else
+			SetCurrentImage();
+	}
+	else
+	{
+		tPrintf("Hash match. Dir contents same. Doing nothing.\n");
+	}
 }
 
 
@@ -1144,6 +1195,7 @@ int main(int argc, char** argv)
 	glfwSetCursorPosCallback(TexView::Window, TexView::CursorPosCallback);
 	glfwSetScrollCallback(TexView::Window, TexView::ScrollWheelCallback);
 	glfwSetDropCallback(TexView::Window, TexView::FileDropCallback);
+	glfwSetWindowFocusCallback(TexView::Window, TexView::FocusCallback);
 
 	GLenum err = glewInit();
 	if (err != GLEW_OK)
@@ -1215,7 +1267,7 @@ int main(int argc, char** argv)
 	TexView::InfoOverlayImage.Load(dataDir + "InfoOverlay.png");
 	TexView::InfoOverlayImage.Bind();
 
-	TexView::FindTextureFiles();
+	TexView::PopulateImages();
 	if (TexView::ImageFileParam.IsPresent())
 		TexView::SetCurrentImage(TexView::ImageFileParam.Get());
 	else

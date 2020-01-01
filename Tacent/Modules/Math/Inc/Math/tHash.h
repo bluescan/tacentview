@@ -55,10 +55,11 @@ uint32 tHashString(const char*);
 // statements or any time you know the string literal explicitly. In these cases the compiler can do all the work.
 constexpr uint32 tHashCT(const char*, uint32 iv = HashIV32);
 
-// The HashData32/64/128/256 and variants do _not_ guarantee the same hash value if they are chained together. This is
-// because the entire state is not stored in the hash itself since these are much better hash functions than the Fast32
-// versions. Chaining is still useful as uniqueness is still guaranteed and if any data changes in any of the sources
-// the end result will vary. Chaining is performed in the same manner as HashDataFast32.
+// The HashData32/64/128/256 and variants do _not_ guarantee the same hash value if they are chained together compared
+// to the hash of the same data computed as a single block. This is because the entire state is not stored in the hash
+// itself since these are much better hash functions than the Fast32 versions. Chaining is still useful as uniqueness is
+// still guaranteed and if any data changes in any of the sources the end result will vary. Chaining is performed in the
+// same manner as HashDataFast32.
 uint32 tHashData32(const uint8* data, int length, uint32 iv = HashIV32);
 uint32 tHashString32(const char*, uint32 iv = HashIV32);
 uint32 tHashString32(const tString&, uint32 iv = HashIV32);
