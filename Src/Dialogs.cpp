@@ -133,10 +133,9 @@ void TexView::ShowCheatSheetPopup(bool* popen, float right, float top)
 	const float margin = 32.0f;
 	ImVec2 windowPos = ImVec2(right - margin, top + margin);
 	ImVec2 windowPivot = ImVec2(1.0f, 0.0f);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, windowPivot);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver, windowPivot);
 	ImGui::SetNextWindowBgAlpha(0.6f);
-	ImGuiWindowFlags flags =
-		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
+	ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
 		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
 
@@ -168,10 +167,9 @@ void TexView::ShowAboutPopup(bool* popen, float right, float top)
 	const float margin = 32.0f;
 	ImVec2 windowPos = ImVec2(margin, top + margin);
 	ImVec2 windowPivot = ImVec2(0.0f, 0.0f);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, windowPivot);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver, windowPivot);
 	ImGui::SetNextWindowBgAlpha(0.6f);
-	ImGuiWindowFlags flags =
-		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
+	ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
 		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
 
