@@ -33,7 +33,9 @@ struct Settings
 		Grey,
 		White
 	};
-	int BackgroundStyle					= 1;																			// 0:None. 1:Checkerboard. 2:Black. 3:Grey. 4:White.
+	int BackgroundStyle					= 1;
+	int ResampleFilter					= 2;		// Matches tImage::tPicture::tFilter.
+
 	void Load(const tString& filename, int screenWidth, int screenHeight);
 	bool Save(const tString& filename);
 	void Reset(int screenWidth, int screenHeight);

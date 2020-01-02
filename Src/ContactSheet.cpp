@@ -25,7 +25,7 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
 	// do it to make the Demo applications a little more welcoming.
 	ImGui::SetNextWindowPos(ImVec2(200, 150), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(370, 258), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(370, 280), ImGuiCond_FirstUseEver);
 
 	// Main body of the Demo window starts here.
 	if (!ImGui::Begin("Contact Sheet Generator", popen, windowFlags))
@@ -100,6 +100,12 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 	}
 	ImGui::Separator();
 
+	// Matches tImage::tPicture::tFilter.
+	const char* filterItems[] = { "NearestNeighbour", "Box", "Bilinear", "Bicubic", "Quadratic", "Hamming" };
+	ImGui::Combo("Filter", &Config.ResampleFilter, filterItems, IM_ARRAYSIZE(filterItems));
+	ImGui::SameLine();
+	ShowHelpMark("Filtering method to use when resizing images.");
+
 	const char* fileTypeItems[] = { "TGA", "PNG", "BMP", "JPG", "GIF" };
 	static int itemCurrent = 0;
 	ImGui::Combo("File Type", &itemCurrent, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
@@ -171,7 +177,7 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 			if ((currImg->GetWidth() != frameWidth) || (currImg->GetHeight() != frameHeight))
 			{
 				resampled.Set(*currPic);
-				resampled.Resample(frameWidth, frameHeight);
+				resampled.Resample(frameWidth, frameHeight, tImage::tPicture::tFilter(Config.ResampleFilter));
 			}
 
 			// Copy resampled frame into place.
@@ -204,7 +210,7 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 		else
 		{
 			tImage::tPicture finalResampled(outPic);
-			finalResampled.Resample(finalWidth, finalHeight);
+			finalResampled.Resample(finalWidth, finalHeight, tImage::tPicture::tFilter(Config.ResampleFilter));
 			finalResampled.Save(outFile, colourFmt);
 		}
 		Images.Clear();

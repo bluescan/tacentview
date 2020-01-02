@@ -193,9 +193,9 @@ inline tPicture::tFilter tTexture::DetermineFilter(tQuality quality)
 			return tPicture::tFilter::Bilinear;
 
 		case tQuality::Production:
-			return tPicture::tFilter::Lanczos;
+			return tPicture::tFilter::Bicubic;
 	}
-	return tPicture::tFilter::Lanczos;
+	return tPicture::tFilter::Bilinear;
 }
 
 

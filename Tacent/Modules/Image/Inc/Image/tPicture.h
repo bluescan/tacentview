@@ -149,8 +149,8 @@ public:
 		Box,							// Fast pixel averaging.
 		Bilinear,						// Also known as a triangle filter.  Fast and not too bad quality.
 		Bicubic,						// Your standard good PS filter.
-		Lanczos,						// This is a good sinc-based filter.
-		Kaiser							// The more standard sinc filter.  Very close to Lanczos.
+		Quadratic,
+		Hamming
 	};
 
 	// Resizes the image using the specified filter. Returns success. If the resample fails the tPicture is unmodified.

@@ -28,6 +28,7 @@ void Settings::Reset(int screenW, int screenH)
 	OverlayShow = false;
 	OverlayCorner = 3;
 	BackgroundStyle = 1;
+	ResampleFilter = 2;
 }
 
 
@@ -71,10 +72,15 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 				case tHashCT("BackgroundStyle"):
 					BackgroundStyle = e.Arg1();
 					break;
+
+				case tHashCT("ResampleFilter"):
+					ResampleFilter = e.Arg1();
+					break;
 			}
 		}
 	}
 
+	tClamp(ResampleFilter, 0, 5);
 	tClamp(BackgroundStyle, 0, 4);
 	tClamp(WindowW, 640, screenW);
 	tClamp(WindowH, 360, screenH);
@@ -97,6 +103,7 @@ bool Settings::Save(const tString& filename)
 	writer.Comp("OverlayShow", OverlayShow);
 	writer.Comp("OverlayCorner", OverlayCorner);
 	writer.Comp("BackgroundStyle", BackgroundStyle);
+	writer.Comp("ResampleFilter", ResampleFilter);
 
 	return true;
 }

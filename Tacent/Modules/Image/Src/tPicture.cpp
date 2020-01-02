@@ -487,12 +487,12 @@ bool tPicture::Resample(int width, int height, tFilter filter)
 			interpolation = CxImage::IM_BICUBIC2;
 			break;
 
-		case tFilter::Lanczos:
-			interpolation = CxImage::IM_LANCZOS;
+		case tFilter::Quadratic:
+			interpolation = CxImage::IM_QUADRATIC;
 			break;
 
-		case tFilter::Kaiser:
-			interpolation = CxImage::IM_SINC;
+		case tFilter::Hamming:
+			interpolation = CxImage::IM_HAMMING;
 			break;
 	}
 

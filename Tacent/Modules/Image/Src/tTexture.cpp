@@ -160,11 +160,11 @@ bool tTexture::Set(tPicture& image, bool generateMipmaps, tPixelFormat pixelForm
 		switch (quality)
 		{
 			case tQuality::Fast:
-				ok = image.Resize(newWidth, newHeight, tPicture::tFilter::Box);
+				ok = image.Resize(newWidth, newHeight, tPicture::tFilter::Bilinear);
 				break;
 
 			case tQuality::Production:
-				ok = image.Resize(newWidth, newHeight, tPicture::tFilter::Lanczos);
+				ok = image.Resize(newWidth, newHeight, tPicture::tFilter::Bicubic);
 				break;
 		}
 		if (!ok)
