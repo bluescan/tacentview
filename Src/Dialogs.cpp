@@ -189,6 +189,7 @@ void TexView::ShowAboutPopup(bool* popen, float right, float top)
 		ImGui::Text("CxImage");
 		ImGui::Text("nVidia Texture Tools");
 		ImGui::Text("Ionicons");
+		ImGui::Text("Roboto Google Font");
 	}
 	ImGui::End();
 }

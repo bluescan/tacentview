@@ -27,6 +27,7 @@ void Settings::Reset(int screenW, int screenH)
 	WindowY = (screenH - WindowH) >> 1;
 	OverlayShow = false;
 	OverlayCorner = 3;
+	BackgroundStyle = 1;
 }
 
 
@@ -66,10 +67,15 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 				case tHashCT("OverlayCorner"):
 					OverlayCorner = e.Arg1();
 					break;
+
+				case tHashCT("BackgroundStyle"):
+					BackgroundStyle = e.Arg1();
+					break;
 			}
 		}
 	}
 
+	tClamp(BackgroundStyle, 0, 4);
 	tClamp(WindowW, 640, screenW);
 	tClamp(WindowH, 360, screenH);
 	tClamp(WindowX, 0, screenW - WindowW);
@@ -90,6 +96,7 @@ bool Settings::Save(const tString& filename)
 	writer.Comp("WindowH", WindowH);
 	writer.Comp("OverlayShow", OverlayShow);
 	writer.Comp("OverlayCorner", OverlayCorner);
+	writer.Comp("BackgroundStyle", BackgroundStyle);
 
 	return true;
 }

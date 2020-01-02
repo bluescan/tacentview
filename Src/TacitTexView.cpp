@@ -98,6 +98,7 @@ namespace TexView
 	const int MaxLoadedCount	= 48;			// If more images that this loaded we start unloading to free mem.
 	TacitImage* UnloadImage		= nullptr;
 
+	void DrawBackground(float draww, float drawh, float hmargin, float vmargin);
 	void DrawTextureViewerLog(float x, float y, float w, float h);
 	void PrintRedirectCallback(const char* text, int numChars)															{ LogWindow.AddLog("%s", text); }
 	void GlfwErrorCallback(int error, const char* description)															{ tPrintf("Glfw Error %d: %s\n", error, description); }
@@ -332,6 +333,90 @@ void TexView::ResetPan(bool resetX, bool resetY)
 }
 
 
+void TexView::DrawBackground(float draww, float drawh, float hmargin, float vmargin)
+{
+	switch (Config.BackgroundStyle)
+	{
+		case Settings::BGStyle::None:
+			return;
+
+		case Settings::BGStyle::Checkerboard:
+		{
+			// Semitransparent checkerboard background.
+			int x = 0;
+			int y = 0;
+			bool lineStartToggle = false;
+			float checkSize = 16.0f;
+			while (y*checkSize < drawh)
+			{
+				bool colourToggle = lineStartToggle;
+
+				while (x*checkSize < draww)
+				{
+					if (colourToggle)
+						glColor4f(0.3f, 0.3f, 0.35f, 1.0f);
+					else
+						glColor4f(0.4f, 0.4f, 0.45f, 1.0f);
+
+					colourToggle = !colourToggle;
+
+					float cw = checkSize;
+					if ((x+1)*checkSize > draww)
+						cw -= (x+1)*checkSize - draww;
+
+					float ch = checkSize;
+					if ((y+1)*checkSize > drawh)
+						ch -= (y+1)*checkSize - drawh;
+
+					float l = tMath::tRound(hmargin+x*checkSize);
+					float r = tMath::tRound(hmargin+x*checkSize+cw);
+					float b = tMath::tRound(vmargin+y*checkSize);
+					float t = tMath::tRound(vmargin+y*checkSize+ch);
+
+					glBegin(GL_QUADS);
+					glVertex2f(l, b);
+					glVertex2f(l, t);
+					glVertex2f(r, t);
+					glVertex2f(r, b);
+					glEnd();
+
+					x++;
+				}
+				x = 0;
+				y++;
+				lineStartToggle = !lineStartToggle;
+			}
+			break;
+		}
+
+		case Settings::BGStyle::Black:
+		case Settings::BGStyle::Grey:
+		case Settings::BGStyle::White:
+		{
+			switch (Config.BackgroundStyle)
+			{
+				case Settings::BGStyle::Black:	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);		break;
+				case Settings::BGStyle::Grey:	glColor4f(0.25f, 0.25f, 0.3f, 1.0f);	break;
+				case Settings::BGStyle::White:	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);		break;
+			}
+			float l = tMath::tRound(hmargin);
+			float r = tMath::tRound(hmargin+draww);
+			float b = tMath::tRound(vmargin);
+			float t = tMath::tRound(vmargin+drawh);
+
+			glBegin(GL_QUADS);
+			glVertex2f(l, b);
+			glVertex2f(l, t);
+			glVertex2f(r, t);
+			glVertex2f(r, b);
+			glEnd();
+
+			break;
+		}
+	}
+}
+
+
 void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 {
 	// Poll and handle events like inputs, window resize, etc. You can read the io.WantCaptureMouse,
@@ -410,53 +495,9 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			hmargin = 0.0f;
 		}
 
-		// Semitransparent checker background.
-		int x = 0;
-		int y = 0;
-		bool lineStartToggle = false;
-		float checkSize = 16.0f;
-		while (y*checkSize < drawh)
-		{
-			bool colourToggle = lineStartToggle;
-
-			while (x*checkSize < draww)
-			{
-				if (colourToggle)
-					glColor4f(0.3f, 0.3f, 0.35f, 1.0f);
-				else
-					glColor4f(0.4f, 0.4f, 0.45f, 1.0f);
-
-				colourToggle = !colourToggle;
-
-				float cw = checkSize;
-				if ((x+1)*checkSize > draww)
-					cw -= (x+1)*checkSize - draww;
-
-				float ch = checkSize;
-				if ((y+1)*checkSize > drawh)
-					ch -= (y+1)*checkSize - drawh;
-
-				float l = tMath::tRound(hmargin+x*checkSize);
-				float r = tMath::tRound(hmargin+x*checkSize+cw);
-				float b = tMath::tRound(vmargin+y*checkSize);
-				float t = tMath::tRound(vmargin+y*checkSize+ch);
-
-				glBegin(GL_QUADS);
-				glVertex2f(l, b);
-				glVertex2f(l, t);
-				glVertex2f(r, t);
-				glVertex2f(r, b);
-				glEnd();
-
-				x++;
-			}
-			x = 0;
-			y++;
-			lineStartToggle = !lineStartToggle;
-		}
+		DrawBackground(draww, drawh, hmargin, vmargin);
 
 		glColor4f(1.0f,1.0f,1.0f,1.0f);
-
 		CurrImage->Bind();
 		glEnable(GL_TEXTURE_2D);
 
@@ -608,15 +649,15 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (showDemoWindow)
 		ImGui::ShowDemoWindow(&showDemoWindow);
 
-	ImGuiWindowFlags flagsNextPrev = 0;
-	flagsNextPrev |= ImGuiWindowFlags_NoTitleBar;
-	flagsNextPrev |= ImGuiWindowFlags_NoScrollbar;
-	flagsNextPrev |= ImGuiWindowFlags_NoMove;
-	flagsNextPrev |= ImGuiWindowFlags_NoResize;
-	flagsNextPrev |= ImGuiWindowFlags_NoCollapse;
-	flagsNextPrev |= ImGuiWindowFlags_NoNav;
-	flagsNextPrev |= ImGuiWindowFlags_NoBackground;
-	flagsNextPrev |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+	ImGuiWindowFlags flagsImgButton = 0;
+	flagsImgButton |= ImGuiWindowFlags_NoTitleBar;
+	flagsImgButton |= ImGuiWindowFlags_NoScrollbar;
+	flagsImgButton |= ImGuiWindowFlags_NoMove;
+	flagsImgButton |= ImGuiWindowFlags_NoResize;
+	flagsImgButton |= ImGuiWindowFlags_NoCollapse;
+	flagsImgButton |= ImGuiWindowFlags_NoNav;
+	flagsImgButton |= ImGuiWindowFlags_NoBackground;
+	flagsImgButton |= ImGuiWindowFlags_NoBringToFrontOnFocus;
 
 	NextPrevDisappear -= dt;
 	if (NextPrevDisappear > 0.0)
@@ -625,7 +666,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			ImGui::SetNextWindowPos(ImVec2(0.0f, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
 			ImGui::SetNextWindowSize(ImVec2(18, 72), ImGuiCond_Always);
-			ImGui::Begin("Prev", nullptr, flagsNextPrev);
+			ImGui::Begin("Prev", nullptr, flagsImgButton);
 			ImGui::SetCursorPos(ImVec2(4, 2));
 			if (ImGui::ImageButton(ImTextureID(PrevImage.GetTexID()), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 				OnPrevious();
@@ -636,7 +677,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			ImGui::SetNextWindowPos(ImVec2(workAreaW-32.0f, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
 			ImGui::SetNextWindowSize(ImVec2(18, 72), ImGuiCond_Always);
-			ImGui::Begin("Next", nullptr, flagsNextPrev);
+			ImGui::Begin("Next", nullptr, flagsImgButton);
 			ImGui::SetCursorPos(ImVec2(4, 2));
 			if (ImGui::ImageButton(ImTextureID(NextImage.GetTexID()), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 				OnNext();
@@ -648,7 +689,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			ImGui::SetNextWindowPos(ImVec2((workAreaW>>1)-22.0f-40.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
 			ImGui::SetNextWindowSize(ImVec2(40, 40), ImGuiCond_Always);
-			ImGui::Begin("SkipBegin", nullptr, flagsNextPrev);
+			ImGui::Begin("SkipBegin", nullptr, flagsImgButton);
 			if (ImGui::ImageButton(ImTextureID(SkipBeginImage.GetTexID()), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 				OnSkipBegin();
 			ImGui::End();
@@ -657,7 +698,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		// Fullscreen / Windowed button.
 		ImGui::SetNextWindowPos(ImVec2((workAreaW>>1)-22.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
 		ImGui::SetNextWindowSize(ImVec2(40, 40), ImGuiCond_Always);
-		ImGui::Begin("Fullscreen", nullptr, flagsNextPrev);
+		ImGui::Begin("Fullscreen", nullptr, flagsImgButton);
 		uint64 imageID = FullscreenMode ? WindowedImage.GetTexID() : FullscreenImage.GetTexID();
 		if (ImGui::ImageButton(ImTextureID(imageID), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 			ChangeScreenMode(!FullscreenMode);
@@ -668,7 +709,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			ImGui::SetNextWindowPos(ImVec2((workAreaW>>1)-22.0f+40.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
 			ImGui::SetNextWindowSize(ImVec2(40, 40), ImGuiCond_Always);
-			ImGui::Begin("SkipEnd", nullptr, flagsNextPrev);
+			ImGui::Begin("SkipEnd", nullptr, flagsImgButton);
 			if (ImGui::ImageButton(ImTextureID(SkipEndImage.GetTexID()), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 				OnSkipEnd();
 			ImGui::End();
@@ -767,6 +808,12 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				ImGui::PushItemWidth(200);
 				if (ImGui::SliderFloat("", &ZoomPercent, 20.0f, 2500.0f, " Zoom %.2f"))
 					CurrZoomMode = ZoomMode::User;
+				ImGui::PopItemWidth();
+
+				ImGui::Separator();
+				ImGui::PushItemWidth(108.0f);
+				const char* backgroundItems[] = { "None", "Checkerboard", "Black", "Grey", "White" };
+				ImGui::Combo("Background", &Config.BackgroundStyle, backgroundItems, IM_ARRAYSIZE(backgroundItems));
 				ImGui::PopItemWidth();
 
 				if (ImGui::Button("Reset Pan"))

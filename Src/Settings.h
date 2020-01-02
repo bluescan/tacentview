@@ -25,6 +25,15 @@ struct Settings
 	bool OverlayShow					= false;
 	int OverlayCorner					= 3;
 
+	enum class BGStyle
+	{
+		None,
+		Checkerboard,
+		Black,
+		Grey,
+		White
+	};
+	int BackgroundStyle					= 1;																			// 0:None. 1:Checkerboard. 2:Black. 3:Grey. 4:White.
 	void Load(const tString& filename, int screenWidth, int screenHeight);
 	bool Save(const tString& filename);
 	void Reset(int screenWidth, int screenHeight);
