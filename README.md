@@ -23,3 +23,5 @@ Tacit-texview can be used to generate contact sheets for flip-book animation. If
 
 ![Tacent Texture Viewer](https://raw.githubusercontent.com/bluescan/tacit-texview/master/Screenshots/Screenshot_ContactSheet.png)
  
+ Finally, obligatory flip and rotate-by-90-degrees buttons are available. Tacit-TexView will not auto-save -- you must save explicitly. Note that any time you perform a save or generate a contact-sheet, if the file already exists it will not be overwritten. Select View->ShowLog to see an activity log of viewer operations and their status.
+ 
