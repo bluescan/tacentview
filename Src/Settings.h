@@ -22,6 +22,7 @@ struct Settings
 	int WindowY							= 100;
 	int WindowW							= 1280;
 	int WindowH							= 720;
+	bool ShowLog						= false;
 	bool OverlayShow					= false;
 	int OverlayCorner					= 3;
 	bool Tile							= false;

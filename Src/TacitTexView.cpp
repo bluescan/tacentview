@@ -65,11 +65,10 @@ namespace TexView
 	TacitImage InfoOverlayImage;
 	TacitImage TileImage;
 
-	double NextPrevDisappear	= 1.0;
+	double DisappearCountdown	= 1.0;
 	GLFWwindow* Window			= nullptr;
 	bool FullscreenMode			= false;
 	bool WindowIconified		= false;
-	bool ShowLog				= false;
 	bool ShowCheatSheet			= false;
 	bool ShowAbout				= false;
 	bool RMBDown				= false;
@@ -441,7 +440,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		bottomUIHeight = 0;
 		topUIHeight = 0;
 	}
-	else if (!ShowLog)
+	else if (!Config.ShowLog)
 	{
 		bottomUIHeight = 0;
 	}
@@ -471,10 +470,11 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	float drawh = 1.0f;
 	float iw = 1.0f;
 	float ih = 1.0f;
-	static int imgxi = 0;
-	static int imgyi = 0;
 	float hmargin = 0.0f;
 	float vmargin = 0.0f;
+	static int imgxi = 0;
+	static int imgyi = 0;
+
 	if (CurrImage)
 	{
 		iw = float(CurrImage->GetWidth());
@@ -595,13 +595,14 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			float repU = draww/(r-l);	float offU = (1.0f-repU)/2.0f;
 			float repV = drawh/(t-b);	float offV = (1.0f-repV)/2.0f;
-			glTexCoord2f(offU +       0.0f + uvUMarg + uvUOff,	offV +       0.0f + uvVMarg + uvVOff);	glVertex2f(hmargin,       vmargin);
-			glTexCoord2f(offU +       0.0f + uvUMarg + uvUOff,	offV + repV*(1.0f) - uvVMarg + uvVOff);	glVertex2f(hmargin,       vmargin+drawh);
-			glTexCoord2f(offU + repU*(1.0f) - uvUMarg + uvUOff,	offV + repV*(1.0f) - uvVMarg + uvVOff);	glVertex2f(hmargin+draww, vmargin+drawh);
-			glTexCoord2f(offU + repU*(1.0f) - uvUMarg + uvUOff,	offV +       0.0f + uvVMarg + uvVOff);	glVertex2f(hmargin+draww, vmargin);
+			glTexCoord2f(offU + 0.0f + uvUMarg + uvUOff,	offV + 0.0f + uvVMarg + uvVOff);	glVertex2f(hmargin,       vmargin);
+			glTexCoord2f(offU + 0.0f + uvUMarg + uvUOff,	offV + repV - uvVMarg + uvVOff);	glVertex2f(hmargin,       vmargin+drawh);
+			glTexCoord2f(offU + repU - uvUMarg + uvUOff,	offV + repV - uvVMarg + uvVOff);	glVertex2f(hmargin+draww, vmargin+drawh);
+			glTexCoord2f(offU + repU - uvUMarg + uvUOff,	offV + 0.0f + uvVMarg + uvVOff);	glVertex2f(hmargin+draww, vmargin);
 		}
 		glEnd();
 
+		// Show cursor colour inspector crosshairs.
 		float cw = float((CursorImage.GetWidth() - 1) >> 1);
 		float ch = float((CursorImage.GetHeight() - 1) >> 1);
 		float cx = float(CursorX);
@@ -612,30 +613,35 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		float picY = (areaH - cy - 1) - b;
 		float normX = picX / (r-l);
 		float normY = picY / (t-b);
-		bool insideRect = tMath::tInRange(normX, 0.0f, 1.0f) && tMath::tInRange(normY, 0.0f, 1.0f);
-		bool showCursor = true;
-		if (insideRect) // || Config.Tile)
+		if (Config.Tile)
 		{
-			float imgx = iw * tMath::tLesc
-			(
-				tMath::tGetSaturate(normX),
-				0.0f + uvUMarg + uvUOff, 1.0f - uvUMarg + uvUOff
-			);
-			float imgy = ih * tMath::tLesc
-			(
-				tMath::tGetSaturate(normY),
-				0.0f + uvVMarg + uvVOff, 1.0f - uvVMarg + uvVOff
-			);
-			imgxi = tMath::tGetClamp(int(imgx), 0, CurrImage->GetWidth()-1);
-			imgyi = tMath::tGetClamp(int(imgy), 0, CurrImage->GetHeight()-1);
-			PixelColour = CurrImage->GetPixel(imgxi, imgyi);
+			normX = tMath::tMod(normX, 1.0f);
+			if (normX < 0.0f) normX += 1.0f;
+
+			normY = tMath::tMod(normY, 1.0f);
+			if (normY < 0.0f) normY += 1.0f;
+		}
+		float imgx = iw * tMath::tLesc(normX, 0.0f + uvUMarg + uvUOff, 1.0f - uvUMarg + uvUOff);
+		float imgy = ih * tMath::tLesc(normY, 0.0f + uvVMarg + uvVOff, 1.0f - uvVMarg + uvVOff);
+
+		imgxi = int(imgx);
+		imgyi = int(imgy);
+
+		if (!Config.Tile)
+		{
+			tMath::tClamp(imgxi, 0, CurrImage->GetWidth() - 1);
+			tMath::tClamp(imgyi, 0, CurrImage->GetHeight() - 1);
 		}
 		else
 		{
-			showCursor = false;
+			imgxi %= CurrImage->GetWidth();
+			if (imgxi < 0) imgxi += CurrImage->GetWidth();
+			imgyi %= CurrImage->GetHeight();
+			if (imgyi < 0) imgyi += CurrImage->GetHeight();
 		}
+		PixelColour = CurrImage->GetPixel(imgxi, imgyi);
 
-		if (showCursor)
+		if ((DisappearCountdown > 0.0) || Config.OverlayShow)
 		{
 			CursorImage.Bind();
 			glBegin(GL_QUADS);
@@ -663,18 +669,12 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (showDemoWindow)
 		ImGui::ShowDemoWindow(&showDemoWindow);
 
-	ImGuiWindowFlags flagsImgButton = 0;
-	flagsImgButton |= ImGuiWindowFlags_NoTitleBar;
-	flagsImgButton |= ImGuiWindowFlags_NoScrollbar;
-	flagsImgButton |= ImGuiWindowFlags_NoMove;
-	flagsImgButton |= ImGuiWindowFlags_NoResize;
-	flagsImgButton |= ImGuiWindowFlags_NoCollapse;
-	flagsImgButton |= ImGuiWindowFlags_NoNav;
-	flagsImgButton |= ImGuiWindowFlags_NoBackground;
-	flagsImgButton |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+	ImGuiWindowFlags flagsImgButton =
+		ImGuiWindowFlags_NoTitleBar		|	ImGuiWindowFlags_NoScrollbar	|	ImGuiWindowFlags_NoMove			| ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoCollapse		|	ImGuiWindowFlags_NoNav			|	ImGuiWindowFlags_NoBackground	| ImGuiWindowFlags_NoBringToFrontOnFocus;
 
-	NextPrevDisappear -= dt;
-	if (NextPrevDisappear > 0.0)
+	DisappearCountdown -= dt;
+	if (DisappearCountdown > 0.0)
 	{
 		if (CurrImage != Images.First())
 		{
@@ -785,7 +785,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::BeginMenu("View"))
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
-				ImGui::MenuItem("Show Log", "", &ShowLog, true);
+				ImGui::MenuItem("Show Log", "", &Config.ShowLog, true);
 				ImGui::MenuItem("Show Overlay", "", &Config.OverlayShow, true);
 
 				ImGui::Separator();
@@ -979,7 +979,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::PopStyleVar();
 	}
 
-	if (!FullscreenMode && ShowLog)
+	if (!FullscreenMode && Config.ShowLog)
 		DrawTextureViewerLog(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
 
 	// We allow the overlay and cheatsheet in fullscreen.
@@ -1121,7 +1121,7 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 
 void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press, int mods)
 {
-	NextPrevDisappear = 4.0;
+	DisappearCountdown = 4.0;
 	ImGuiIO& io = ImGui::GetIO();
 	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
 		return;
@@ -1167,13 +1167,13 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 
 void TexView::CursorPosCallback(GLFWwindow* window, double x, double y)
 {
-	NextPrevDisappear = 4.0;
+	DisappearCountdown = 4.0;
 }
 
 
 void TexView::ScrollWheelCallback(GLFWwindow* window, double x, double y)
 {
-	NextPrevDisappear = 4.0;
+	DisappearCountdown = 4.0;
 
 	CurrZoomMode = ZoomMode::User;
 	float zoomDelta = ZoomPercent * 0.1f * float(y);
