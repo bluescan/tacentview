@@ -98,7 +98,7 @@ namespace TexView
 	const int MaxLoadedCount	= 48;			// If more images that this loaded we start unloading to free mem.
 	TacitImage* UnloadImage		= nullptr;
 
-	void DrawBackground(float bgW, float bgH, float bgX, float bgY);
+	void DrawBackground(float bgX, float bgY, float bgW, float bgH);
 	void DrawTextureViewerLog(float x, float y, float w, float h);
 	void PrintRedirectCallback(const char* text, int numChars)															{ LogWindow.AddLog("%s", text); }
 	void GlfwErrorCallback(int error, const char* description)															{ tPrintf("Glfw Error %d: %s\n", error, description); }
@@ -333,8 +333,7 @@ void TexView::ResetPan(bool resetX, bool resetY)
 }
 
 
-//void TexView::DrawBackground(float draww, float drawh, float hmargin, float vmargin)
-void TexView::DrawBackground(float bgW, float bgH, float bgX, float bgY)
+void TexView::DrawBackground(float bgX, float bgY, float bgW, float bgH)
 {
 	switch (Config.BackgroundStyle)
 	{
@@ -502,7 +501,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		float b = tMath::tRound(vmargin);
 		float t = tMath::tRound(vmargin+drawh);
 
-		float uvHMargin = 0.0f;
+		float uvUMargin = 0.0f;
 		float uvVMargin = 0.0f;
 
 		if (CurrZoomMode == ZoomMode::Downscale)
@@ -532,7 +531,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		else
 		{
 			float propw = draww / w;
-			uvHMargin = (1.0f - propw)/2.0f;
+			uvUMargin = (1.0f - propw)/2.0f;
 			float proph = drawh / h;
 			uvVMargin = (1.0f - proph)/2.0f;
 		}
@@ -574,24 +573,36 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (drawh > h)
 			ResetPan(false, true);
 
-		float uOffset = -float(PanOffsetX+DragDownOffsetX)/w;
-		float vOffset =  float(PanOffsetY+DragDownOffsetY)/h;
+		float uvUoffset = -float(PanOffsetX+DragDownOffsetX)/w;
+		float uvVoffset =  float(PanOffsetY+DragDownOffsetY)/h;
 
 		// Draw background.
-		if (Config.BackgroundExtend)
-			DrawBackground(draww, drawh, hmargin, vmargin);
+		if (Config.BackgroundExtend || Config.Tile)
+			DrawBackground(hmargin, vmargin, draww, drawh);
 		else
-			DrawBackground(r-l, t-b, l, b);
+			DrawBackground(l, b, r-l, t-b);
 
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		CurrImage->Bind();
 		glEnable(GL_TEXTURE_2D);
 
 		glBegin(GL_QUADS);
-		glTexCoord2f(0.0f + uvHMargin + uOffset, 0.0f + uvVMargin + vOffset); glVertex2f(l, b);
-		glTexCoord2f(0.0f + uvHMargin + uOffset, 1.0f - uvVMargin + vOffset); glVertex2f(l, t);
-		glTexCoord2f(1.0f - uvHMargin + uOffset, 1.0f - uvVMargin + vOffset); glVertex2f(r, t);
-		glTexCoord2f(1.0f - uvHMargin + uOffset, 0.0f + uvVMargin + vOffset); glVertex2f(r, b);
+		if (!Config.Tile)
+		{
+			glTexCoord2f(0.0f + uvUMargin + uvUoffset, 0.0f + uvVMargin + uvVoffset); glVertex2f(l, b);
+			glTexCoord2f(0.0f + uvUMargin + uvUoffset, 1.0f - uvVMargin + uvVoffset); glVertex2f(l, t);
+			glTexCoord2f(1.0f - uvUMargin + uvUoffset, 1.0f - uvVMargin + uvVoffset); glVertex2f(r, t);
+			glTexCoord2f(1.0f - uvUMargin + uvUoffset, 0.0f + uvVMargin + uvVoffset); glVertex2f(r, b);
+		}
+		else
+		{
+			float repU = draww/(r-l);	float offU = (1.0f-repU)/2.0f;
+			float repV = drawh/(t-b);	float offV = (1.0f-repV)/2.0f;
+			glTexCoord2f(offU +       0.0f + uvUMargin + uvUoffset,		offV +       0.0f + uvVMargin + uvVoffset);		glVertex2f(hmargin,       vmargin);
+			glTexCoord2f(offU +       0.0f + uvUMargin + uvUoffset,		offV + repV*(1.0f - uvVMargin + uvVoffset));	glVertex2f(hmargin,       vmargin+drawh);
+			glTexCoord2f(offU + repU*(1.0f - uvUMargin + uvUoffset),	offV + repV*(1.0f - uvVMargin + uvVoffset));	glVertex2f(hmargin+draww, vmargin+drawh);
+			glTexCoord2f(offU + repU*(1.0f - uvUMargin + uvUoffset),	offV +       0.0f + uvVMargin + uvVoffset);		glVertex2f(hmargin+draww, vmargin);
+		}
 		glEnd();
 
 		float cw = float((CursorImage.GetWidth() - 1) >> 1);
@@ -606,17 +617,17 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		float normY = picY / (t-b);
 		bool insideRect = tMath::tInRange(normX, 0.0f, 1.0f) && tMath::tInRange(normY, 0.0f, 1.0f);
 		bool showCursor = true;
-		if (insideRect)
+		if (insideRect) // || Config.Tile)
 		{
 			float imgx = iw * tMath::tLesc
 			(
 				tMath::tGetSaturate(normX),
-				0.0f + uvHMargin + uOffset, 1.0f - uvHMargin + uOffset
+				0.0f + uvUMargin + uvUoffset, 1.0f - uvUMargin + uvUoffset
 			);
 			float imgy = ih * tMath::tLesc
 			(
 				tMath::tGetSaturate(normY),
-				0.0f + uvVMargin + vOffset, 1.0f - uvVMargin + vOffset
+				0.0f + uvVMargin + uvVoffset, 1.0f - uvVMargin + uvVoffset
 			);
 			imgxi = tMath::tGetClamp(int(imgx), 0, CurrImage->GetWidth()-1);
 			imgyi = tMath::tGetClamp(int(imgy), 0, CurrImage->GetHeight()-1);
@@ -1087,6 +1098,10 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 
 		case GLFW_KEY_ESCAPE:
 			ChangeScreenMode(false);
+			break;
+
+		case GLFW_KEY_T:
+			Config.Tile = !Config.Tile;
 			break;
 	}
 }

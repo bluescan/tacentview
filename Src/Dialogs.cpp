@@ -2,7 +2,7 @@
 //
 // Viewer dialogs including cheatsheet, about, save-as, and the image information overlay.
 //
-// Copyright (c) 2019 Tristan Grimmer.
+// Copyright (c) 2019, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -157,6 +157,7 @@ void TexView::ShowCheatSheetPopup(bool* popen, float right, float top)
 		ImGui::Text("LMB-Click");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Set Colour Reticle Pos");
 		ImGui::Text("RMB-Drag");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Pan Image");
 		ImGui::Text("Alt-F4");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Quit");
+		ImGui::Text("T");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Tile");
 	}
 	ImGui::End();
 }

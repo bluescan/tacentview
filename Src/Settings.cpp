@@ -27,6 +27,7 @@ void Settings::Reset(int screenW, int screenH)
 	WindowY = (screenH - WindowH) >> 1;
 	OverlayShow = false;
 	OverlayCorner = 3;
+	Tile = false;
 	BackgroundExtend = false;
 	BackgroundStyle = 1;
 	ResampleFilter = 2;
@@ -70,8 +71,12 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 					OverlayCorner = e.Arg1();
 					break;
 
+				case tHashCT("Tile"):
+					Tile = e.Arg1();
+					break;
+
 				case tHashCT("BackgroundExtend"):
-					BackgroundStyle = e.Arg1();
+					BackgroundExtend = e.Arg1();
 					break;
 
 				case tHashCT("BackgroundStyle"):
@@ -107,6 +112,7 @@ bool Settings::Save(const tString& filename)
 	writer.Comp("WindowH", WindowH);
 	writer.Comp("OverlayShow", OverlayShow);
 	writer.Comp("OverlayCorner", OverlayCorner);
+	writer.Comp("Tile", Tile);
 	writer.Comp("BackgroundExtend", BackgroundExtend);
 	writer.Comp("BackgroundStyle", BackgroundStyle);
 	writer.Comp("ResampleFilter", ResampleFilter);

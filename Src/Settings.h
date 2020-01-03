@@ -24,6 +24,7 @@ struct Settings
 	int WindowH							= 720;
 	bool OverlayShow					= false;
 	int OverlayCorner					= 3;
+	bool Tile							= false;
 
 	enum class BGStyle
 	{
