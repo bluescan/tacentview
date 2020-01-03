@@ -63,6 +63,7 @@ namespace TexView
 	TacitImage MipmapsImage;
 	TacitImage CubemapImage;
 	TacitImage InfoOverlayImage;
+	TacitImage TileImage;
 
 	double NextPrevDisappear	= 1.0;
 	GLFWwindow* Window			= nullptr;
@@ -95,7 +96,7 @@ namespace TexView
 	int CursorX					= -1;
 	int CursorY					= -1;
 	tColouri PixelColour		= tColouri::black;
-	const int MaxLoadedCount	= 48;			// If more images that this loaded we start unloading to free mem.
+	const int MaxLoadedCount	= 50;			// If more images that this loaded we start unloading to free mem.
 	TacitImage* UnloadImage		= nullptr;
 
 	void DrawBackground(float bgX, float bgY, float bgW, float bgH);
@@ -501,8 +502,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		float b = tMath::tRound(vmargin);
 		float t = tMath::tRound(vmargin+drawh);
 
-		float uvUMargin = 0.0f;
-		float uvVMargin = 0.0f;
+		float uvUMarg = 0.0f;
+		float uvVMarg = 0.0f;
 
 		if (CurrZoomMode == ZoomMode::Downscale)
 		{
@@ -531,9 +532,9 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		else
 		{
 			float propw = draww / w;
-			uvUMargin = (1.0f - propw)/2.0f;
+			uvUMarg = (1.0f - propw)/2.0f;
 			float proph = drawh / h;
-			uvVMargin = (1.0f - proph)/2.0f;
+			uvVMarg = (1.0f - proph)/2.0f;
 		}
 
 		// Modify the UVs here to magnify.
@@ -573,8 +574,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (drawh > h)
 			ResetPan(false, true);
 
-		float uvUoffset = -float(PanOffsetX+DragDownOffsetX)/w;
-		float uvVoffset =  float(PanOffsetY+DragDownOffsetY)/h;
+		float uvUOff = -float(PanOffsetX+DragDownOffsetX)/w;
+		float uvVOff =  float(PanOffsetY+DragDownOffsetY)/h;
 
 		// Draw background.
 		if (Config.BackgroundExtend || Config.Tile)
@@ -589,19 +590,19 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		glBegin(GL_QUADS);
 		if (!Config.Tile)
 		{
-			glTexCoord2f(0.0f + uvUMargin + uvUoffset, 0.0f + uvVMargin + uvVoffset); glVertex2f(l, b);
-			glTexCoord2f(0.0f + uvUMargin + uvUoffset, 1.0f - uvVMargin + uvVoffset); glVertex2f(l, t);
-			glTexCoord2f(1.0f - uvUMargin + uvUoffset, 1.0f - uvVMargin + uvVoffset); glVertex2f(r, t);
-			glTexCoord2f(1.0f - uvUMargin + uvUoffset, 0.0f + uvVMargin + uvVoffset); glVertex2f(r, b);
+			glTexCoord2f(0.0f + uvUMarg + uvUOff, 0.0f + uvVMarg + uvVOff); glVertex2f(l, b);
+			glTexCoord2f(0.0f + uvUMarg + uvUOff, 1.0f - uvVMarg + uvVOff); glVertex2f(l, t);
+			glTexCoord2f(1.0f - uvUMarg + uvUOff, 1.0f - uvVMarg + uvVOff); glVertex2f(r, t);
+			glTexCoord2f(1.0f - uvUMarg + uvUOff, 0.0f + uvVMarg + uvVOff); glVertex2f(r, b);
 		}
 		else
 		{
 			float repU = draww/(r-l);	float offU = (1.0f-repU)/2.0f;
 			float repV = drawh/(t-b);	float offV = (1.0f-repV)/2.0f;
-			glTexCoord2f(offU +       0.0f + uvUMargin + uvUoffset,		offV +       0.0f + uvVMargin + uvVoffset);		glVertex2f(hmargin,       vmargin);
-			glTexCoord2f(offU +       0.0f + uvUMargin + uvUoffset,		offV + repV*(1.0f - uvVMargin + uvVoffset));	glVertex2f(hmargin,       vmargin+drawh);
-			glTexCoord2f(offU + repU*(1.0f - uvUMargin + uvUoffset),	offV + repV*(1.0f - uvVMargin + uvVoffset));	glVertex2f(hmargin+draww, vmargin+drawh);
-			glTexCoord2f(offU + repU*(1.0f - uvUMargin + uvUoffset),	offV +       0.0f + uvVMargin + uvVoffset);		glVertex2f(hmargin+draww, vmargin);
+			glTexCoord2f(offU +       0.0f + uvUMarg + uvUOff,	offV +       0.0f + uvVMarg + uvVOff);	glVertex2f(hmargin,       vmargin);
+			glTexCoord2f(offU +       0.0f + uvUMarg + uvUOff,	offV + repV*(1.0f - uvVMarg + uvVOff));	glVertex2f(hmargin,       vmargin+drawh);
+			glTexCoord2f(offU + repU*(1.0f - uvUMarg + uvUOff),	offV + repV*(1.0f - uvVMarg + uvVOff));	glVertex2f(hmargin+draww, vmargin+drawh);
+			glTexCoord2f(offU + repU*(1.0f - uvUMarg + uvUOff),	offV +       0.0f + uvVMarg + uvVOff);	glVertex2f(hmargin+draww, vmargin);
 		}
 		glEnd();
 
@@ -622,12 +623,12 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			float imgx = iw * tMath::tLesc
 			(
 				tMath::tGetSaturate(normX),
-				0.0f + uvUMargin + uvUoffset, 1.0f - uvUMargin + uvUoffset
+				0.0f + uvUMarg + uvUOff, 1.0f - uvUMarg + uvUOff
 			);
 			float imgy = ih * tMath::tLesc
 			(
 				tMath::tGetSaturate(normY),
-				0.0f + uvVMargin + uvVoffset, 1.0f - uvVMargin + uvVoffset
+				0.0f + uvVMarg + uvVOff, 1.0f - uvVMarg + uvVOff
 			);
 			imgxi = tMath::tGetClamp(int(imgx), 0, CurrImage->GetWidth()-1);
 			imgyi = tMath::tGetClamp(int(imgy), 0, CurrImage->GetHeight()-1);
@@ -789,7 +790,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
 				ImGui::MenuItem("Show Log", "", &ShowLog, true);
-				ImGui::MenuItem("Show Overlay", "", &TexView::Config.OverlayShow, true);
+				ImGui::MenuItem("Show Overlay", "", &Config.OverlayShow, true);
 
 				ImGui::Separator();
 
@@ -868,7 +869,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				ImGui::OpenPopup("CopyColourAs");
 
 			if (ImGui::BeginPopup("CopyColourAs"))
-				TexView::ColourCopyAs();
+				ColourCopyAs();
 
 			bool buttonAvail = CurrImage ? !CurrImage->IsAltImageEnabled() : false;
 			if
@@ -955,12 +956,23 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if
 			(
-				ImGui::ImageButton(ImTextureID(InfoOverlayImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
-				TexView::Config.OverlayShow ? ImVec4(0.45f, 0.45f, 0.60f, 1.00f) : ImVec4(0.00f, 0.00f, 0.00f, 0.00f),
+				ImGui::ImageButton(ImTextureID(TileImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
+				Config.Tile ? ImVec4(0.45f, 0.45f, 0.60f, 1.00f) : ImVec4(0.00f, 0.00f, 0.00f, 0.00f),
 				ImVec4(1.00f, 1.00f, 1.00f, 1.00f))
 			)
 			{
-				TexView::Config.OverlayShow = !TexView::Config.OverlayShow;			
+				Config.Tile = !Config.Tile;			
+			}
+			ShowToolTip("Show Image Tiled");
+
+			if
+			(
+				ImGui::ImageButton(ImTextureID(InfoOverlayImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
+				Config.OverlayShow ? ImVec4(0.45f, 0.45f, 0.60f, 1.00f) : ImVec4(0.00f, 0.00f, 0.00f, 0.00f),
+				ImVec4(1.00f, 1.00f, 1.00f, 1.00f))
+			)
+			{
+				Config.OverlayShow = !Config.OverlayShow;			
 			}
 			ShowToolTip("Information Overlay");
 		}
@@ -970,17 +982,17 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	}
 
 	if (!FullscreenMode && ShowLog)
-		TexView::DrawTextureViewerLog(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
+		DrawTextureViewerLog(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
 
 	// We allow the overlay and cheatsheet in fullscreen.
-	if (TexView::Config.OverlayShow)
-		TexView::ShowInfoOverlay(&TexView::Config.OverlayShow, hmargin, float(topUIHeight)+vmargin, float(dispw)-2.0f*hmargin, float(disph - bottomUIHeight - topUIHeight)-2.0f*vmargin, imgxi, imgyi);
+	if (Config.OverlayShow)
+		ShowInfoOverlay(&Config.OverlayShow, hmargin, float(topUIHeight)+vmargin, float(dispw)-2.0f*hmargin, float(disph - bottomUIHeight - topUIHeight)-2.0f*vmargin, imgxi, imgyi);
 
 	if (ShowCheatSheet)
-		TexView::ShowCheatSheetPopup(&ShowCheatSheet, float(dispw), float(topUIHeight));
+		ShowCheatSheetPopup(&ShowCheatSheet, float(dispw), float(topUIHeight));
 
 	if (ShowAbout)
-		TexView::ShowAboutPopup(&ShowAbout, float(dispw), float(topUIHeight));
+		ShowAboutPopup(&ShowAbout, float(dispw), float(topUIHeight));
 
 	ImGui::Render();
 	glViewport(0, 0, dispw, disph);
@@ -1356,6 +1368,9 @@ int main(int argc, char** argv)
 
 	TexView::InfoOverlayImage.Load(dataDir + "InfoOverlay.png");
 	TexView::InfoOverlayImage.Bind();
+
+	TexView::TileImage.Load(dataDir + "Tile.png");
+	TexView::TileImage.Bind();
 
 	TexView::PopulateImages();
 	if (TexView::ImageFileParam.IsPresent())
