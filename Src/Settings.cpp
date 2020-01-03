@@ -2,7 +2,7 @@
 //
 // Viewer settings stored as human-readable symbolic expressions.
 //
-// Copyright (c) 2019 Tristan Grimmer.
+// Copyright (c) 2019, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -27,6 +27,7 @@ void Settings::Reset(int screenW, int screenH)
 	WindowY = (screenH - WindowH) >> 1;
 	OverlayShow = false;
 	OverlayCorner = 3;
+	BackgroundExtend = false;
 	BackgroundStyle = 1;
 	ResampleFilter = 2;
 }
@@ -69,6 +70,10 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 					OverlayCorner = e.Arg1();
 					break;
 
+				case tHashCT("BackgroundExtend"):
+					BackgroundStyle = e.Arg1();
+					break;
+
 				case tHashCT("BackgroundStyle"):
 					BackgroundStyle = e.Arg1();
 					break;
@@ -102,6 +107,7 @@ bool Settings::Save(const tString& filename)
 	writer.Comp("WindowH", WindowH);
 	writer.Comp("OverlayShow", OverlayShow);
 	writer.Comp("OverlayCorner", OverlayCorner);
+	writer.Comp("BackgroundExtend", BackgroundExtend);
 	writer.Comp("BackgroundStyle", BackgroundStyle);
 	writer.Comp("ResampleFilter", ResampleFilter);
 

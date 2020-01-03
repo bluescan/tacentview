@@ -98,7 +98,7 @@ namespace TexView
 	const int MaxLoadedCount	= 48;			// If more images that this loaded we start unloading to free mem.
 	TacitImage* UnloadImage		= nullptr;
 
-	void DrawBackground(float draww, float drawh, float hmargin, float vmargin);
+	void DrawBackground(float bgW, float bgH, float bgX, float bgY);
 	void DrawTextureViewerLog(float x, float y, float w, float h);
 	void PrintRedirectCallback(const char* text, int numChars)															{ LogWindow.AddLog("%s", text); }
 	void GlfwErrorCallback(int error, const char* description)															{ tPrintf("Glfw Error %d: %s\n", error, description); }
@@ -333,7 +333,8 @@ void TexView::ResetPan(bool resetX, bool resetY)
 }
 
 
-void TexView::DrawBackground(float draww, float drawh, float hmargin, float vmargin)
+//void TexView::DrawBackground(float draww, float drawh, float hmargin, float vmargin)
+void TexView::DrawBackground(float bgW, float bgH, float bgX, float bgY)
 {
 	switch (Config.BackgroundStyle)
 	{
@@ -347,11 +348,11 @@ void TexView::DrawBackground(float draww, float drawh, float hmargin, float vmar
 			int y = 0;
 			bool lineStartToggle = false;
 			float checkSize = 16.0f;
-			while (y*checkSize < drawh)
+			while (y*checkSize < bgH)
 			{
 				bool colourToggle = lineStartToggle;
 
-				while (x*checkSize < draww)
+				while (x*checkSize < bgW)
 				{
 					if (colourToggle)
 						glColor4f(0.3f, 0.3f, 0.35f, 1.0f);
@@ -361,17 +362,17 @@ void TexView::DrawBackground(float draww, float drawh, float hmargin, float vmar
 					colourToggle = !colourToggle;
 
 					float cw = checkSize;
-					if ((x+1)*checkSize > draww)
-						cw -= (x+1)*checkSize - draww;
+					if ((x+1)*checkSize > bgW)
+						cw -= (x+1)*checkSize - bgW;
 
 					float ch = checkSize;
-					if ((y+1)*checkSize > drawh)
-						ch -= (y+1)*checkSize - drawh;
+					if ((y+1)*checkSize > bgH)
+						ch -= (y+1)*checkSize - bgH;
 
-					float l = tMath::tRound(hmargin+x*checkSize);
-					float r = tMath::tRound(hmargin+x*checkSize+cw);
-					float b = tMath::tRound(vmargin+y*checkSize);
-					float t = tMath::tRound(vmargin+y*checkSize+ch);
+					float l = tMath::tRound(bgX+x*checkSize);
+					float r = tMath::tRound(bgX+x*checkSize+cw);
+					float b = tMath::tRound(bgY+y*checkSize);
+					float t = tMath::tRound(bgY+y*checkSize+ch);
 
 					glBegin(GL_QUADS);
 					glVertex2f(l, b);
@@ -399,10 +400,10 @@ void TexView::DrawBackground(float draww, float drawh, float hmargin, float vmar
 				case Settings::BGStyle::Grey:	glColor4f(0.25f, 0.25f, 0.3f, 1.0f);	break;
 				case Settings::BGStyle::White:	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);		break;
 			}
-			float l = tMath::tRound(hmargin);
-			float r = tMath::tRound(hmargin+draww);
-			float b = tMath::tRound(vmargin);
-			float t = tMath::tRound(vmargin+drawh);
+			float l = tMath::tRound(bgX);
+			float r = tMath::tRound(bgX+bgW);
+			float b = tMath::tRound(bgY);
+			float t = tMath::tRound(bgY+bgH);
 
 			glBegin(GL_QUADS);
 			glVertex2f(l, b);
@@ -495,12 +496,6 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			hmargin = 0.0f;
 		}
 
-		DrawBackground(draww, drawh, hmargin, vmargin);
-
-		glColor4f(1.0f,1.0f,1.0f,1.0f);
-		CurrImage->Bind();
-		glEnable(GL_TEXTURE_2D);
-
 		// w and h are the image width and height. draww and drawh are the drawable area width and height.
 		float l = tMath::tRound(hmargin);
 		float r = tMath::tRound(hmargin+draww);
@@ -581,6 +576,17 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		float uOffset = -float(PanOffsetX+DragDownOffsetX)/w;
 		float vOffset =  float(PanOffsetY+DragDownOffsetY)/h;
+
+		// Draw background.
+		if (Config.BackgroundExtend)
+			DrawBackground(draww, drawh, hmargin, vmargin);
+		else
+			DrawBackground(r-l, t-b, l, b);
+
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+		CurrImage->Bind();
+		glEnable(GL_TEXTURE_2D);
+
 		glBegin(GL_QUADS);
 		glTexCoord2f(0.0f + uvHMargin + uOffset, 0.0f + uvVMargin + vOffset); glVertex2f(l, b);
 		glTexCoord2f(0.0f + uvHMargin + uOffset, 1.0f - uvVMargin + vOffset); glVertex2f(l, t);
@@ -811,10 +817,11 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				ImGui::PopItemWidth();
 
 				ImGui::Separator();
-				ImGui::PushItemWidth(108.0f);
-				const char* backgroundItems[] = { "None", "Checkerboard", "Black", "Grey", "White" };
-				ImGui::Combo("Background", &Config.BackgroundStyle, backgroundItems, IM_ARRAYSIZE(backgroundItems));
-				ImGui::PopItemWidth();
+
+				ImGui::MenuItem("Background Extend", "", &Config.BackgroundExtend, true);
+
+				const char* backgroundItems[] = { "No Background", "Checkerboard Background", "Black Background", "Grey Background", "White Background" };
+				ImGui::Combo(" ", &Config.BackgroundStyle, backgroundItems, IM_ARRAYSIZE(backgroundItems));
 
 				if (ImGui::Button("Reset Pan"))
 					ResetPan();

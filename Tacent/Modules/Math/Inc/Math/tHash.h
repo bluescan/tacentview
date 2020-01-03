@@ -95,6 +95,8 @@ inline uint32 tHashStringFast32(const char* string, uint32 iv)
 }
 
 
+// This (compile-time) constant expression relies on the odometer-style looping of unsigned ints to compute the hash.
+// Since it's inline, you may need to pragma warning(disable:4307), which warns of const integral overflow.
 inline constexpr uint32 tHashCT(const char* s, uint32 hash)																{ return *s ? tHashCT(s + 1, hash + (hash << 5) + uint8(*s)) : hash; }
 inline uint32 tHashStringFast32(const tString& s, uint32 iv)															{ return tHashStringFast32(s.ConstText(), iv); }
 inline uint32 tHashString(const char* s)																				{ return tHashStringFast32(s); }
