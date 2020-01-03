@@ -538,7 +538,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 
 		// Modify the UVs here to magnify.
-		if (draww < w)
+		if ((draww < w) || Config.Tile)
 		{
 			if (RMBDown)
 			{
@@ -547,13 +547,11 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				DragDownOffsetX = int(xpos) - DragAnchorX;
 			}
 
-			if (float(PanOffsetX+DragDownOffsetX) > (w-draww)/2.0f)
-				DragDownOffsetX = int((w-draww)/2.0f) - PanOffsetX;
-			if (float(PanOffsetX+DragDownOffsetX) < -(w-draww)/2.0f)
-				DragDownOffsetX = int(-(w-draww)/2.0f) - PanOffsetX;
+			if (!Config.Tile)
+				tMath::tClamp(DragDownOffsetX, int(-(w-draww)/2.0f) - PanOffsetX, int((w-draww)/2.0f) - PanOffsetX);
 		}
 
-		if (drawh < h)
+		if ((drawh < h) || Config.Tile)
 		{
 			if (RMBDown)
 			{
@@ -562,16 +560,14 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				DragDownOffsetY = int(ypos) - DragAnchorY;
 			}
 
-			if (float(PanOffsetY + DragDownOffsetY) > (h - drawh) / 2.0f)
-				DragDownOffsetY = int((h - drawh) / 2.0f) - PanOffsetY;
-			if (float(PanOffsetY + DragDownOffsetY) < -(h - drawh) / 2.0f)
-				DragDownOffsetY = int(-(h - drawh) / 2.0f) - PanOffsetY;
+			if (!Config.Tile)
+				tMath::tClamp(DragDownOffsetY, int(-(h-drawh)/2.0f) - PanOffsetY, int((h-drawh)/2.0f) - PanOffsetY);
 		}
 
-		if (draww > w)
+		if ((draww > w) && !Config.Tile)
 			ResetPan(true, false);
 
-		if (drawh > h)
+		if ((drawh > h) && !Config.Tile)
 			ResetPan(false, true);
 
 		float uvUOff = -float(PanOffsetX+DragDownOffsetX)/w;
@@ -600,9 +596,9 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			float repU = draww/(r-l);	float offU = (1.0f-repU)/2.0f;
 			float repV = drawh/(t-b);	float offV = (1.0f-repV)/2.0f;
 			glTexCoord2f(offU +       0.0f + uvUMarg + uvUOff,	offV +       0.0f + uvVMarg + uvVOff);	glVertex2f(hmargin,       vmargin);
-			glTexCoord2f(offU +       0.0f + uvUMarg + uvUOff,	offV + repV*(1.0f - uvVMarg + uvVOff));	glVertex2f(hmargin,       vmargin+drawh);
-			glTexCoord2f(offU + repU*(1.0f - uvUMarg + uvUOff),	offV + repV*(1.0f - uvVMarg + uvVOff));	glVertex2f(hmargin+draww, vmargin+drawh);
-			glTexCoord2f(offU + repU*(1.0f - uvUMarg + uvUOff),	offV +       0.0f + uvVMarg + uvVOff);	glVertex2f(hmargin+draww, vmargin);
+			glTexCoord2f(offU +       0.0f + uvUMarg + uvUOff,	offV + repV*(1.0f) - uvVMarg + uvVOff);	glVertex2f(hmargin,       vmargin+drawh);
+			glTexCoord2f(offU + repU*(1.0f) - uvUMarg + uvUOff,	offV + repV*(1.0f) - uvVMarg + uvVOff);	glVertex2f(hmargin+draww, vmargin+drawh);
+			glTexCoord2f(offU + repU*(1.0f) - uvUMarg + uvUOff,	offV +       0.0f + uvVMarg + uvVOff);	glVertex2f(hmargin+draww, vmargin);
 		}
 		glEnd();
 
@@ -961,7 +957,9 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				ImVec4(1.00f, 1.00f, 1.00f, 1.00f))
 			)
 			{
-				Config.Tile = !Config.Tile;			
+				Config.Tile = !Config.Tile;
+				if (!Config.Tile)
+					ResetPan();
 			}
 			ShowToolTip("Show Image Tiled");
 
@@ -1114,6 +1112,8 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 
 		case GLFW_KEY_T:
 			Config.Tile = !Config.Tile;
+			if (!Config.Tile)
+				ResetPan();
 			break;
 	}
 }
