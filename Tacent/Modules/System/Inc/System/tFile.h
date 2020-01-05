@@ -341,7 +341,7 @@ bool tDeleteDir(const tString& directory, bool deleteReadOnly = true, bool throw
 bool tCreateDir(const tString& dir);
 
 // Returns true if file existed and was deleted.
-bool tDeleteFile(const tString& filename, bool deleteReadOnly = true);
+bool tDeleteFile(const tString& filename, bool deleteReadOnly = true, bool tryUseRecycleBin = false);
 
 // If either (or both) file doesn't exist you get false. Entire files will temporarily be read into memory so it's not
 // too efficient (only for tool use).

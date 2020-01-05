@@ -74,6 +74,7 @@ public:
 	uint64 GetAtomUint64() const																						{ return GetAtomString().GetAsUInt64(); }
 	int GetAtomInt() const																								{ return GetAtomString().GetAsInt(); }
 	float GetAtomFloat() const																							{ return GetAtomString().GetAsFloat(); }
+	double GetAtomDouble() const																						{ return GetAtomString().GetAsDouble(); }
 	uint32 GetAtomHash() const																							{ return tMath::tHashString(GetAtomString()); }
 	uint32 Hash() const																									{ return GetAtomHash(); }
 
@@ -96,6 +97,7 @@ public:
 	operator uint32() const																								{ if (IsAtom()) return GetAtomUint(); else return 0; }
 	operator long() const																								{ if (IsAtom()) return long(GetAtomInt()); else return 0; }
 	operator float() const																								{ if (IsAtom()) return GetAtomFloat(); else return 0.0f; }
+	operator double() const																								{ if (IsAtom()) return GetAtomDouble(); else return 0.0; }
 	operator tMath::tVector2() const																					{ if (IsAtom()) return GetAtomVector2(); else return tMath::tVector2::zero; }
 	operator tMath::tVector3() const																					{ if (IsAtom()) return GetAtomVector3(); else return tMath::tVector3::zero; }
 	operator tMath::tVector4() const																					{ if (IsAtom()) return GetAtomVector4(); else return tMath::tVector4::zero; }
@@ -215,6 +217,7 @@ public:
 	void WriteAtom(const uint64);
 	void WriteAtom(const int);
 	void WriteAtom(const float);
+	void WriteAtom(const double);
 	void WriteAtom(const tMath::tVector2&);
 	void WriteAtom(const tMath::tVector3&);
 	void WriteAtom(const tMath::tVector4&);
@@ -245,6 +248,7 @@ public:
 	void Atom(const uint32 u)																							{ WriteAtom(u); }
 	void Atom(const int i)																								{ WriteAtom(i); }
 	void Atom(const float f)																							{ WriteAtom(f); }
+	void Atom(const double d)																							{ WriteAtom(d); }
 	void Atom(const tMath::tVector2& v)																					{ WriteAtom(v); }
 	void Atom(const tMath::tVector3& v)																					{ WriteAtom(v); }
 	void Atom(const tMath::tVector4& v)																					{ WriteAtom(v); }

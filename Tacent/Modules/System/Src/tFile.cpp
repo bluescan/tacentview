@@ -1707,17 +1707,32 @@ void tSystem::tFindDirsRecursive(tList<tStringItem>& foundDirs, const tString& p
 }
 
 
-bool tSystem::tDeleteFile(const tString& filename, bool deleteReadOnly)
+bool tSystem::tDeleteFile(const tString& filename, bool deleteReadOnly, bool useRecycleBin)
 {
 	tString file(filename);
 	file.Replace('/', '\\');
 	if (deleteReadOnly)
 		SetFileAttributes(file, FILE_ATTRIBUTE_NORMAL);
 
-	if (DeleteFile(file))
-		return true;
+	if (!useRecycleBin)
+	{
+		if (DeleteFile(file))
+			return true;
+		else
+			return false;
+	}
 	else
-		return false;
+	{
+		tString filenameDoubleNull = filename + "Z";
+		filenameDoubleNull[filenameDoubleNull.Length()-1] = '\0';
+		SHFILEOPSTRUCT operation;
+		tStd::tMemset(&operation, 0, sizeof(operation));
+		operation.wFunc = FO_DELETE;
+		operation.pFrom = filenameDoubleNull.ConstText();
+		operation.fFlags = FOF_ALLOWUNDO | FOF_NO_UI | FOF_NORECURSION;
+		int errCode = SHFileOperation(&operation);
+		return errCode ? false : true;
+	}
 }
 
 

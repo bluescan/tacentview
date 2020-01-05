@@ -32,6 +32,8 @@ void Settings::Reset(int screenW, int screenH)
 	BackgroundExtend = false;
 	BackgroundStyle = 1;
 	ResampleFilter = 2;
+	ConfirmDeletes = true;
+	SlidehowFrameDuration = 1.0/30.0;
 }
 
 
@@ -91,6 +93,14 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 				case tHashCT("ResampleFilter"):
 					ResampleFilter = e.Arg1();
 					break;
+
+				case tHashCT("ConfirmDeletes"):
+					ConfirmDeletes = e.Arg1();
+					break;
+
+				case tHashCT("SlidehowFrameDuration"):
+					SlidehowFrameDuration = e.Arg1();
+					break;
 			}
 		}
 	}
@@ -122,6 +132,8 @@ bool Settings::Save(const tString& filename)
 	writer.Comp("BackgroundExtend", BackgroundExtend);
 	writer.Comp("BackgroundStyle", BackgroundStyle);
 	writer.Comp("ResampleFilter", ResampleFilter);
-
+	writer.Comp("ConfirmDeletes", ConfirmDeletes);
+	writer.Comp("SlidehowFrameDuration", SlidehowFrameDuration);
+	
 	return true;
 }

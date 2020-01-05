@@ -38,6 +38,8 @@ struct Settings
 	bool BackgroundExtend				= false;	// Extend background past image bounds.
 	int BackgroundStyle					= 1;
 	int ResampleFilter					= 2;		// Matches tImage::tPicture::tFilter.
+	bool ConfirmDeletes					= true;
+	double SlidehowFrameDuration		= 1.0/30.0;
 
 	void Load(const tString& filename, int screenWidth, int screenHeight);
 	bool Save(const tString& filename);

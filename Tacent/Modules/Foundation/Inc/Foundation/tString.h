@@ -150,6 +150,7 @@ struct tString
 	bool GetAsBool() const																								{ return tStd::tStrtob(TextData); }
 
 	float GetAsFloat() const									/* Base 10 interpretation only. */						{ return tStd::tStrtof(TextData); }
+	double GetAsDouble() const									/* Base 10 interpretation only. */						{ return tStd::tStrtod(TextData); }
 
 	// Shorter synonyms.
 	int AsInt(int base = -1) const																						{ return GetAsInt(base); }

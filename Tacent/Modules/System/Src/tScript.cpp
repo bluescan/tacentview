@@ -694,6 +694,27 @@ void tScriptWriter::WriteAtom(const float atom)
 }
 
 
+void tScriptWriter::WriteAtom(const double atom)
+{
+	tString val(64);
+	if (tStd::tIsSpecial(atom))
+		tsPrintf(val.Text(), "0.0");
+	else
+		tsPrintf(val.Text(), "%16.16f", atom);
+
+	int l = val.Length();
+
+	// Add a trailing 0 because it looks better.
+	if (val[l-1] == '.')
+	{
+		val[l] = '0';
+		val[l+1] = '\0';
+	}
+
+	WriteAtom(val);
+}
+
+
 void tScriptWriter::WriteAtom(const tVector2& v)
 {
 	tString str("(");
