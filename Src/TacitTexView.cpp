@@ -1011,7 +1011,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	// We allow the overlay and cheatsheet in fullscreen.
 	if (Config.OverlayShow)
-		ShowInfoOverlay(&Config.OverlayShow, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), imgxi, imgyi);
+		ShowInfoOverlay(&Config.OverlayShow, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), imgxi, imgyi, ZoomPercent);
 
 	if (ShowCheatSheet)
 		ShowCheatSheetPopup(&ShowCheatSheet);

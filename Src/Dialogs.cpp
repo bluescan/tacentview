@@ -24,7 +24,7 @@ using namespace tStd;
 using namespace tSystem;
 
 
-void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY)
+void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY, float zoom)
 {
 	// This overlay function is pretty much taken from the DearImGui demo code.
 	const float margin = 6.0f;
@@ -73,6 +73,7 @@ void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, i
 				ImGui::Text("Mipmaps: %d", info.Mipmaps);
 				ImGui::Text("File Size (B): %d", info.SizeBytes);
 				ImGui::Text("Cursor: (%d, %d)", cursorX, cursorY);
+				ImGui::Text("Zoom: %.2f", zoom);
 			}
 		}
 		ImGui::Text("Images In Folder: %d", Images.GetNumItems());

@@ -17,7 +17,7 @@
 
 namespace TexView
 {
-	void ShowInfoOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY);
+	void ShowInfoOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY, float zoom);
 	void ShowCheatSheetPopup(bool* popen);
 	void ShowAboutPopup(bool* popen);
 	void ShowSaveAsDialog(bool* popen, bool justOpened);
