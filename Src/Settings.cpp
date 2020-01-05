@@ -21,19 +21,20 @@ using namespace tMath;
 
 void Settings::Reset(int screenW, int screenH)
 {
-	WindowW = 1280;
-	WindowH = 720;
-	WindowX = (screenW - WindowW) >> 1;
-	WindowY = (screenH - WindowH) >> 1;
-	ShowLog = false;
-	OverlayShow = false;
-	OverlayCorner = 3;
-	Tile = false;
-	BackgroundExtend = false;
-	BackgroundStyle = 1;
-	ResampleFilter = 2;
-	ConfirmDeletes = true;
-	SlidehowFrameDuration = 1.0/30.0;
+	WindowW					= 1280;
+	WindowH					= 720;
+	WindowX					= (screenW - WindowW) >> 1;
+	WindowY					= (screenH - WindowH) >> 1;
+	ShowLog					= false;
+	OverlayShow				= false;
+	OverlayCorner			= 3;
+	Tile					= false;
+	BackgroundExtend		= false;
+	BackgroundStyle			= 1;
+	ResampleFilter			= 2;
+	ConfirmDeletes			= true;
+	SlidehowFrameDuration	= 1.0/30.0;
+	PreferredFileSaveType	= 0;
 }
 
 
@@ -101,6 +102,10 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 				case tHashCT("SlidehowFrameDuration"):
 					SlidehowFrameDuration = e.Arg1();
 					break;
+
+				case tHashCT("PreferredFileSaveType"):
+					PreferredFileSaveType = e.Arg1();
+					break;
 			}
 		}
 	}
@@ -112,6 +117,7 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 	tClamp(WindowX, 0, screenW - WindowW);
 	tClamp(WindowY, 0, screenH - WindowH);
 	tClamp(OverlayCorner, 0, 3);
+	tClamp(PreferredFileSaveType, 0, 4);
 }
 
 
@@ -134,6 +140,7 @@ bool Settings::Save(const tString& filename)
 	writer.Comp("ResampleFilter", ResampleFilter);
 	writer.Comp("ConfirmDeletes", ConfirmDeletes);
 	writer.Comp("SlidehowFrameDuration", SlidehowFrameDuration);
+	writer.Comp("PreferredFileSaveType", PreferredFileSaveType);
 	
 	return true;
 }

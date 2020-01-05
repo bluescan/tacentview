@@ -40,6 +40,7 @@ struct Settings
 	int ResampleFilter					= 2;		// Matches tImage::tPicture::tFilter.
 	bool ConfirmDeletes					= true;
 	double SlidehowFrameDuration		= 1.0/30.0;
+	int PreferredFileSaveType			= 0;
 
 	void Load(const tString& filename, int screenWidth, int screenHeight);
 	bool Save(const tString& filename);

@@ -20,13 +20,12 @@
 
 void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 {
-	ImGuiWindowFlags windowFlags = 0;
+	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
 
 	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
 	// do it to make the Demo applications a little more welcoming.
 	ImVec2 windowPos = ImVec2(PopupMargin*4.0f, TopUIHeight + PopupMargin*4.0f);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(370, 302), ImGuiCond_FirstUseEver);
 
 	// Main body of the Demo window starts here.
 	if (!ImGui::Begin("Contact Sheet Generator", popen, windowFlags))
@@ -116,13 +115,12 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 	ShowHelpMark("Filtering method to use when resizing images.");
 
 	const char* fileTypeItems[] = { "TGA", "PNG", "BMP", "JPG", "GIF" };
-	static int itemCurrent = 0;
-	ImGui::Combo("File Type", &itemCurrent, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
+	ImGui::Combo("File Type", &Config.PreferredFileSaveType, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
 	ImGui::SameLine();
 	ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
 
 	tString extension = ".tga";
-	switch (itemCurrent)
+	switch (Config.PreferredFileSaveType)
 	{
 		case 0: extension = ".tga"; break;
 		case 1: extension = ".png"; break;
@@ -130,6 +128,10 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 		case 3: extension = ".jpg"; break;
 		case 4: extension = ".gif"; break;
 	}
+
+	static bool rleCompression = false;
+	if (Config.PreferredFileSaveType == 0)
+		ImGui::Checkbox("RLE Compression", &rleCompression);
 
 	static char filename[128] = "ContactSheet";
 	ImGui::InputText("Filename", filename, IM_ARRAYSIZE(filename));
@@ -221,13 +223,20 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 		tImage::tPicture::tColourFormat colourFmt = allOpaque ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
 		if ((finalWidth == contactWidth) && (finalHeight == contactHeight))
 		{
-			outPic.Save(outFile, colourFmt);
+			if (Config.PreferredFileSaveType == 0)
+				outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, rleCompression ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
+			else
+				outPic.Save(outFile, colourFmt);
 		}
 		else
 		{
 			tImage::tPicture finalResampled(outPic);
 			finalResampled.Resample(finalWidth, finalHeight, tImage::tPicture::tFilter(Config.ResampleFilter));
-			finalResampled.Save(outFile, colourFmt);
+
+			if (Config.PreferredFileSaveType == 0)
+				finalResampled.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, rleCompression ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
+			else
+				finalResampled.Save(outFile, colourFmt);
 		}
 		Images.Clear();
 		PopulateImages();

@@ -193,13 +193,12 @@ void TexView::ShowAboutPopup(bool* popen)
 
 void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 {
-	ImGuiWindowFlags windowFlags = 0;
+	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
 
 	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
 	// do it to make the Demo applications a little more welcoming.
 	ImVec2 windowPos = ImVec2(PopupMargin*3.0f, TopUIHeight + PopupMargin*3.0f);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(370, 210), ImGuiCond_FirstUseEver);
 
 	// Main body of the Demo window starts here.
 	if (!ImGui::Begin("Save As", popen, windowFlags))
@@ -248,13 +247,12 @@ void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 	ShowHelpMark("Filtering method to use when resizing images.");
 
 	const char* fileTypeItems[] = { "TGA", "PNG", "BMP", "JPG", "GIF" };
-	static int itemCurrent = 0;
-	ImGui::Combo("File Type", &itemCurrent, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
+	ImGui::Combo("File Type", &Config.PreferredFileSaveType, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
 	ImGui::SameLine();
 	ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
 
 	tString extension = ".tga";
-	switch (itemCurrent)
+	switch (Config.PreferredFileSaveType)
 	{
 		case 0: extension = ".tga"; break;
 		case 1: extension = ".png"; break;
@@ -264,7 +262,7 @@ void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 	}
 
 	static bool rleCompression = false;
-	if (itemCurrent == 0)
+	if (Config.PreferredFileSaveType == 0)
 		ImGui::Checkbox("RLE Compression", &rleCompression);
 
 	static char filename[128] = "Filename";
@@ -297,7 +295,7 @@ void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 		{
 			bool success = false;
 			tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-			if (itemCurrent == 0)
+			if (Config.PreferredFileSaveType == 0)
 				success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, rleCompression ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
 			else
 				success = outPic.Save(outFile, colourFmt);
@@ -319,13 +317,12 @@ void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 
 void TexView::ShowPreferencesDialog(bool* popen)
 {
-	ImGuiWindowFlags windowFlags = 0;
+	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
 
 	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
 	// do it to make the Demo applications a little more welcoming.
 	ImVec2 windowPos = ImVec2(PopupMargin*5.0f, TopUIHeight + PopupMargin*5.0f);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(290, 220), ImGuiCond_FirstUseEver);
 
 	if (!ImGui::Begin("Preferences", popen, windowFlags))
 	{
