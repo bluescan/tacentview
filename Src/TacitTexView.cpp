@@ -69,7 +69,7 @@ namespace TexView
 	TacitImage PlayImage;
 
 	GLFWwindow* Window				= nullptr;
-	double DisappearCountdown		= 1.0;
+	double DisappearCountdown		= DisappearDuration;
 	double SlideshowCountdown		= 0.0;
 	bool SlideshowPlaying			= false;
 	bool FullscreenMode				= false;
@@ -677,7 +677,9 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGuiWindowFlags_NoTitleBar		|	ImGuiWindowFlags_NoScrollbar	|	ImGuiWindowFlags_NoMove			| ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoCollapse		|	ImGuiWindowFlags_NoNav			|	ImGuiWindowFlags_NoBackground	| ImGuiWindowFlags_NoBringToFrontOnFocus;
 
-	DisappearCountdown -= dt;
+	if (!ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
+		DisappearCountdown -= dt;
+
 	if (DisappearCountdown > 0.0)
 	{
 		if ((CurrImage != Images.First()) || SlideshowPlaying)
@@ -1212,14 +1214,12 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 
 void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press, int mods)
 {
-	DisappearCountdown = 4.0;
-	ImGuiIO& io = ImGui::GetIO();
+	DisappearCountdown = DisappearDuration;
 	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
 		return;
 
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
-	//double topUIHeight = 26.0;
 	if ((ypos <= double(TopUIHeight)) && !FullscreenMode)
 		return;
 
@@ -1258,13 +1258,13 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 
 void TexView::CursorPosCallback(GLFWwindow* window, double x, double y)
 {
-	DisappearCountdown = 4.0;
+	DisappearCountdown = DisappearDuration;
 }
 
 
 void TexView::ScrollWheelCallback(GLFWwindow* window, double x, double y)
 {
-	DisappearCountdown = 4.0;
+	DisappearCountdown = DisappearDuration;
 
 	CurrZoomMode = ZoomMode::User;
 	float zoomDelta = ZoomPercent * 0.1f * float(y);

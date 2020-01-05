@@ -2,7 +2,7 @@
 //
 // Dialog that generates contact sheets and processes alpha channel properly.
 //
-// Copyright (c) 2019 Tristan Grimmer.
+// Copyright (c) 2019, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -26,7 +26,7 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 	// do it to make the Demo applications a little more welcoming.
 	ImVec2 windowPos = ImVec2(PopupMargin*4.0f, TopUIHeight + PopupMargin*4.0f);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(370, 280), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(370, 302), ImGuiCond_FirstUseEver);
 
 	// Main body of the Demo window starts here.
 	if (!ImGui::Begin("Contact Sheet Generator", popen, windowFlags))
@@ -72,6 +72,14 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 	ImGui::InputInt("Rows", &numRows);
 	ImGui::SameLine();
 	ShowHelpMark("Number of rows. Determines overall height.");
+
+	if (ImGui::Button("Read From Image") && CurrImage)
+	{
+		frameWidth = CurrImage->GetWidth();
+		frameHeight = CurrImage->GetHeight();
+		numRows = int(tMath::tCeiling(tMath::tSqrt(float(Images.Count()))));
+		numCols = int(tMath::tCeiling(tMath::tSqrt(float(Images.Count()))));
+	}
 
 	ImGui::Separator();
 	ImGui::InputInt("Final Width", &finalWidth);
@@ -127,7 +135,14 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 	ImGui::InputText("Filename", filename, IM_ARRAYSIZE(filename));
 	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
 
-	if (ImGui::Button("Generate"))
+	int numImg = Images.Count();
+	tString genMsg;
+	if (numImg >= 2)
+		tsPrintf(genMsg, "Generate Sheet With %d Frames", numImg);
+	else
+		tsPrintf(genMsg, "More Than %d Images Needed", numImg);
+
+	if (ImGui::Button(genMsg.ConstText()) && (numImg >= 2))
 	{
 		tString imagesDir = tSystem::tGetCurrentDir();
 		if (TexView::ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(TexView::ImageFileParam.Get()))
