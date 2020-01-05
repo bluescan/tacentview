@@ -75,6 +75,7 @@ void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, i
 				ImGui::Text("Cursor: (%d, %d)", cursorX, cursorY);
 			}
 		}
+		ImGui::Text("Images In Folder: %d", Images.GetNumItems());
 
 		if (ImGui::BeginPopupContextWindow())
 		{
