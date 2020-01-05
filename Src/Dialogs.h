@@ -2,7 +2,7 @@
 //
 // Viewer dialogs including cheatsheet, about, save-as, and the image information overlay.
 //
-// Copyright (c) 2019 Tristan Grimmer.
+// Copyright (c) 2019, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -18,8 +18,9 @@
 namespace TexView
 {
 	void ShowInfoOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY);
-	void ShowCheatSheetPopup(bool* popen, float right, float top);
-	void ShowAboutPopup(bool* popen, float right, float top);
+	void ShowCheatSheetPopup(bool* popen);
+	void ShowAboutPopup(bool* popen);
 	void ShowSaveAsDialog(bool* popen, bool justOpened);
+	void ShowPreferencesDialog(bool* popen);
 	void ColourCopyAs();
 }

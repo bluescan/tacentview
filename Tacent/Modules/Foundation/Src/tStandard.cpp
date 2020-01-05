@@ -35,12 +35,6 @@ const char* tStd::SeparatorDStr								= tStd::SeparatorFileStr;
 const char* tStd::SeparatorEStr								= tStd::SeparatorSubStr;
 
 
-float tStd::tStrtof(const char* text)
-{
-	return float( tStrtod(text) );
-}
-
-
 double tStd::tStrtod(const char* text)
 {
 	int l = int(tStrlen(text));

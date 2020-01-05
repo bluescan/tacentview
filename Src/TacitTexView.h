@@ -31,9 +31,13 @@ namespace TexView
 	extern tCommand::tParam ImageFileParam;
 	extern tColouri PixelColour;
 
+	const int TopUIHeight = 26;
+	const float PopupMargin = 22.0f;
+
 	// Helper to display a little (?) mark which shows a tooltip when hovered.
 	void ShowHelpMark(const char* desc);
 	void ShowToolTip(const char* desc);
 	void PopulateImages();
 	void SetCurrentImage(const tString& currFilename = tString());
+	bool ChangeScreenMode(bool fullscreeen, bool force = false);
 }

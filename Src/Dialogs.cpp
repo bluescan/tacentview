@@ -27,7 +27,7 @@ using namespace tSystem;
 void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY)
 {
 	// This overlay function is pretty much taken from the DearImGui demo code.
-	const float margin = 10.0f;
+	const float margin = 6.0f;
 
 	ImVec2 windowPos = ImVec2
 	(
@@ -128,13 +128,11 @@ void TexView::ColourCopyAs()
 }
 
 
-void TexView::ShowCheatSheetPopup(bool* popen, float right, float top)
+void TexView::ShowCheatSheetPopup(bool* popen)
 {
-	const float margin = 32.0f;
-	ImVec2 windowPos = ImVec2(right - margin, top + margin);
-	ImVec2 windowPivot = ImVec2(1.0f, 0.0f);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver, windowPivot);
-	ImGui::SetNextWindowBgAlpha(0.6f);
+	ImVec2 windowPos = ImVec2(PopupMargin*2.0f, TopUIHeight + PopupMargin*2.0f);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+	// ImGui::SetNextWindowBgAlpha(0.6f);
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
 		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
@@ -164,13 +162,11 @@ void TexView::ShowCheatSheetPopup(bool* popen, float right, float top)
 }
 
 
-void TexView::ShowAboutPopup(bool* popen, float right, float top)
+void TexView::ShowAboutPopup(bool* popen)
 {
-	const float margin = 32.0f;
-	ImVec2 windowPos = ImVec2(margin, top + margin);
-	ImVec2 windowPivot = ImVec2(0.0f, 0.0f);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver, windowPivot);
-	ImGui::SetNextWindowBgAlpha(0.6f);
+	ImVec2 windowPos = ImVec2(PopupMargin*6.0f, TopUIHeight + PopupMargin*6.0f);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+	// ImGui::SetNextWindowBgAlpha(0.6f);
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
 		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
@@ -201,7 +197,8 @@ void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 
 	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
 	// do it to make the Demo applications a little more welcoming.
-	ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);
+	ImVec2 windowPos = ImVec2(PopupMargin*3.0f, TopUIHeight + PopupMargin*3.0f);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(ImVec2(370, 210), ImGuiCond_FirstUseEver);
 
 	// Main body of the Demo window starts here.
@@ -315,6 +312,58 @@ void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 		PopulateImages();
 		SetCurrentImage(outFile);
 	}
+
+	ImGui::End();
+}
+
+
+void TexView::ShowPreferencesDialog(bool* popen)
+{
+	ImGuiWindowFlags windowFlags = 0;
+
+	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
+	// do it to make the Demo applications a little more welcoming.
+	ImVec2 windowPos = ImVec2(PopupMargin*5.0f, TopUIHeight + PopupMargin*5.0f);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(290, 220), ImGuiCond_FirstUseEver);
+
+	if (!ImGui::Begin("Preferences", popen, windowFlags))
+	{
+		ImGui::End();
+		return;
+	}
+
+	ImGui::Text("Background");
+	ImGui::Indent();
+	ImGui::Checkbox("Extend", &Config.BackgroundExtend);
+	const char* backgroundItems[] = { "None", "Checkerboard", "Black", "Grey", "White" };
+	ImGui::PushItemWidth(110);
+	ImGui::Combo("Style", &Config.BackgroundStyle, backgroundItems, IM_ARRAYSIZE(backgroundItems));
+	ImGui::PopItemWidth();
+	ImGui::Unindent();
+
+	ImGui::Separator();
+	ImGui::Text("Slideshow");
+	ImGui::Indent();
+	ImGui::PushItemWidth(110);
+	ImGui::InputDouble("Frame Duration (s)", &Config.SlidehowFrameDuration, 0.001f, 1.0f, "%.3f");
+	ImGui::PopItemWidth();
+	if (ImGui::Button("Reset Duration"))
+		Config.SlidehowFrameDuration = 1.0/30.0;
+	ImGui::Unindent();
+
+	ImGui::Separator();
+	ImGui::Text("Interface");
+	ImGui::Indent();
+	ImGui::Checkbox("Confirm Deletes", &Config.ConfirmDeletes);
+	if (ImGui::Button("Reset UI"))
+	{
+		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+		Config.Reset(mode->width, mode->height);
+		ChangeScreenMode(false, true);
+	}
+	ImGui::Unindent();
 
 	ImGui::End();
 }

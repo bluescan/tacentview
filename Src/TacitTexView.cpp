@@ -121,7 +121,6 @@ namespace TexView
 	bool OnNext(bool circ = false);
 	bool OnSkipBegin();
 	bool OnSkipEnd();
-	bool ChangeScreenMode(bool fullscreeen, bool force = false);
 	void ShowDeleteFileModal();
 	bool DeleteImageFile(const tString& imgFile);
 	void ResetPan(bool resetX = true, bool resetY = true);
@@ -686,7 +685,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::SetNextWindowPos(ImVec2(0.0f, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
 			ImGui::SetNextWindowSize(ImVec2(18, 72), ImGuiCond_Always);
 			ImGui::Begin("Prev", nullptr, flagsImgButton);
-			ImGui::SetCursorPos(ImVec2(4, 2));
+			ImGui::SetCursorPos(ImVec2(6, 2));
 			if (ImGui::ImageButton(ImTextureID(PrevImage.GetTexID()), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 				OnPrevious();
 			ImGui::End();
@@ -697,7 +696,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::SetNextWindowPos(ImVec2(workAreaW-32.0f, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
 			ImGui::SetNextWindowSize(ImVec2(18, 72), ImGuiCond_Always);
 			ImGui::Begin("Next", nullptr, flagsImgButton);
-			ImGui::SetCursorPos(ImVec2(4, 2));
+			ImGui::SetCursorPos(ImVec2(2, 2));
 			if (ImGui::ImageButton(ImTextureID(NextImage.GetTexID()), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 				OnNext();
 			ImGui::End();
@@ -778,6 +777,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::PopStyleVar();
 
 			static bool contactDialog = false;
+			static bool prefsDialog = false;
 			bool justOpenedContactDialog = false;
 			if (ImGui::BeginMenu("Edit"))
 			{
@@ -788,13 +788,18 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 					if (contactDialog)
 						justOpenedContactDialog = true;
 				}
-				ImGui::MenuItem("Confirm Deletes", "", &Config.ConfirmDeletes, true);
+				
+				if (ImGui::MenuItem("Preferences..."))
+					prefsDialog = !prefsDialog;
+
 				ImGui::PopStyleVar();
 				ImGui::EndMenu();
 			}
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
 			if (contactDialog)
 				ShowContactSheetDialog(&contactDialog, justOpenedContactDialog);
+			if (prefsDialog)
+				ShowPreferencesDialog(&prefsDialog);
 			ImGui::PopStyleVar();
 
 			if (ImGui::BeginMenu("View"))
@@ -840,30 +845,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				ImGui::PopItemWidth();
 
 				ImGui::Separator();
-
-				ImGui::MenuItem("Background Extend", "", &Config.BackgroundExtend, true);
-
-				const char* backgroundItems[] = { "No Background", "Checkerboard Background", "Black Background", "Grey Background", "White Background" };
-				ImGui::Combo(" ", &Config.BackgroundStyle, backgroundItems, IM_ARRAYSIZE(backgroundItems));
-
-				ImGui::Separator();
-				ImGui::PushItemWidth(100);
-	            ImGui::InputDouble("Frame Seconds", &Config.SlidehowFrameDuration, 0.001f, 1.0f, "%.3f");
-				ImGui::PopItemWidth();
-				if (ImGui::Button("Reset Duration"))
-					Config.SlidehowFrameDuration = 1.0/30.0;
-
-				ImGui::Separator();
 				if (ImGui::Button("Reset Pan"))
 					ResetPan();
-
-				if (ImGui::Button("Reset UI"))
-				{
-					GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-					const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-					Config.Reset(mode->width, mode->height);
-					ChangeScreenMode(false, true);
-				}
 
 				ImGui::PopStyleVar();
 				ImGui::EndMenu();
@@ -879,10 +862,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 
 			tColourf floatCol(PixelColour);
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 40.0f);
-
 			ImVec4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
-			
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 40.0f);			
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
 			if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, ImVec2(20,20)))
 				ImGui::OpenPopup("CopyColourAs");
@@ -1021,13 +1002,14 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	// We allow the overlay and cheatsheet in fullscreen.
 	if (Config.OverlayShow)
-		ShowInfoOverlay(&Config.OverlayShow, hmargin, float(topUIHeight)+vmargin, float(dispw)-2.0f*hmargin, float(disph - bottomUIHeight - topUIHeight)-2.0f*vmargin, imgxi, imgyi);
+//		ShowInfoOverlay(&Config.OverlayShow, hmargin, float(topUIHeight)+vmargin, float(dispw)-2.0f*hmargin, float(disph - bottomUIHeight - topUIHeight)-2.0f*vmargin, imgxi, imgyi);
+		ShowInfoOverlay(&Config.OverlayShow, 0.0f, float(topUIHeight)+vmargin, float(dispw), float(disph - bottomUIHeight - topUIHeight), imgxi, imgyi);
 
 	if (ShowCheatSheet)
-		ShowCheatSheetPopup(&ShowCheatSheet, float(dispw), float(topUIHeight));
+		ShowCheatSheetPopup(&ShowCheatSheet);
 
 	if (ShowAbout)
-		ShowAboutPopup(&ShowAbout, float(dispw), float(topUIHeight));
+		ShowAboutPopup(&ShowAbout);
 
 	if (DoDeleteFile)
 	{
@@ -1237,8 +1219,8 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
-	double topUIHeight = 26.0;
-	if ((ypos <= topUIHeight) && !FullscreenMode)
+	//double topUIHeight = 26.0;
+	if ((ypos <= double(TopUIHeight)) && !FullscreenMode)
 		return;
 
 	bool down = press ? true : false;
