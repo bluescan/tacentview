@@ -63,7 +63,7 @@ public:
 	// existing buffer is the right size, it is reused. In all cases, the entire image is cleared to black.
 	void Set(int width, int height, const tPixel& colour = tPixel::black);
 
-	// Sets the image to the dimensions provided. allows you to specify an external buffer of pixels to use. If
+	// Sets the image to the dimensions provided. Allows you to specify an external buffer of pixels to use. If
 	// copyPixels is true, it simply copies the values from the buffer you supply. In this case it will attempt to
 	// reuse it's existing buffer if it can. If copyPixels is false, it means you are giving the buffer to the
 	// tPicture. In this case the tPicture will delete[] the buffer for you when appropriate. In all cases, existing

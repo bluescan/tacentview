@@ -21,13 +21,9 @@
 void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
-
-	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
-	// do it to make the Demo applications a little more welcoming.
 	ImVec2 windowPos = ImVec2(PopupMargin*4.0f, TopUIHeight + PopupMargin*4.0f);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
-	// Main body of the Demo window starts here.
 	if (!ImGui::Begin("Contact Sheet Generator", popen, windowFlags))
 	{
 		ImGui::End();
@@ -83,7 +79,7 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 	ImGui::Separator();
 	ImGui::InputInt("Final Width", &finalWidth);
 	ImGui::SameLine();
-	ShowHelpMark("Final scaled output sheet height in pixels.");
+	ShowHelpMark("Final scaled output sheet width in pixels.");
 
 	ImGui::InputInt("Final Height", &finalHeight);
 	ImGui::SameLine();

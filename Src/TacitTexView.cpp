@@ -42,7 +42,7 @@ namespace TexView
 	tCommand::tParam ImageFileParam(1, "ImageFile", "File to open.");
 	int MajorVersion				= 1;
 	int MinorVersion				= 0;
-	int Revision					= 4;
+	int Revision					= 5;
 	Settings Config;
 	bool LogWindowOpen				= true;
 	TexView::ImGuiLog LogWindow;
@@ -753,18 +753,23 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::BeginMainMenuBar();
 		{
 			static bool saveAsDialog = false;
+			static bool saveAllAsDialog = false;
 			bool justOpenedSaveAsDialog = false;
 			if (ImGui::BeginMenu("File"))
 			{
+				// Show file menu items...
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
 
-				// Show file menu items...
 				if (ImGui::MenuItem("Save As...") && CurrImage)
 				{
 					saveAsDialog = !saveAsDialog;
 					if (saveAsDialog)
 						justOpenedSaveAsDialog = true;
 				}
+
+				if (ImGui::MenuItem("Save All As...") && CurrImage)
+					saveAllAsDialog = !saveAllAsDialog;
+
 				ImGui::Separator();
 				if (ImGui::MenuItem("Quit", "Alt+F4"))
 					glfwSetWindowShouldClose(Window, 1);
@@ -776,6 +781,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
 			if (saveAsDialog)
 				ShowSaveAsDialog(&saveAsDialog, justOpenedSaveAsDialog);
+			if (saveAllAsDialog)
+				ShowSaveAllAsDialog(&saveAllAsDialog);
 			ImGui::PopStyleVar();
 
 			static bool contactDialog = false;

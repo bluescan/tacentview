@@ -194,13 +194,9 @@ void TexView::ShowAboutPopup(bool* popen)
 void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
-
-	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
-	// do it to make the Demo applications a little more welcoming.
 	ImVec2 windowPos = ImVec2(PopupMargin*3.0f, TopUIHeight + PopupMargin*3.0f);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
-	// Main body of the Demo window starts here.
 	if (!ImGui::Begin("Save As", popen, windowFlags))
 	{
 		ImGui::End();
@@ -216,7 +212,7 @@ void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 	}
 	ImGui::InputInt("Final Width", &finalWidth);
 	ImGui::SameLine();
-	ShowHelpMark("Final scaled output height in pixels.");
+	ShowHelpMark("Final scaled output width in pixels.");
 
 	ImGui::InputInt("Final Height", &finalHeight);
 	ImGui::SameLine();
@@ -309,6 +305,145 @@ void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 		Images.Clear();
 		PopulateImages();
 		SetCurrentImage(outFile);
+	}
+
+	ImGui::End();
+}
+
+
+void TexView::ShowSaveAllAsDialog(bool* popen)
+{
+	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
+	ImVec2 windowPos = ImVec2(PopupMargin*7.0f, TopUIHeight + PopupMargin*7.0f);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+
+	if (!ImGui::Begin("Save All As", popen, windowFlags))
+	{
+		ImGui::End();
+		return;
+	}
+
+	tString msg;
+	tsPrintf
+	(
+		msg,
+		"Saves all %d images to the image type you select.\n"
+		"If the file already exists it is not overwritten.\n"
+		"\n"
+		"If you select force-size, all written images will\n"
+		"be resized as necessary. If You do not, each file\n"
+		"keeps its original size.\n"
+		"\n"
+		"This dialog will close when operation has completed.\n"
+		"Select 'View->Show Log' to see the results.\n",
+		Images.GetNumItems()
+	);
+	ImGui::Text(msg.ConstText());
+	ImGui::Separator();
+
+	ImGui::Text("\n");
+	static int forceWidth = 512;
+	static int forceHeight = 512;
+	static bool forceSize = false;
+	ImGui::Checkbox("Force Size", &forceSize);
+	if (forceSize)
+	{
+		ImGui::InputInt("Forced Width", &forceWidth);
+		ImGui::SameLine();
+		ShowHelpMark("Output width in pixels for all images.");
+
+		ImGui::InputInt("Forced Height", &forceHeight);
+		ImGui::SameLine();
+		ShowHelpMark("Output height in pixels for all images.");
+
+		// Matches tImage::tPicture::tFilter.
+		const char* filterItems[] = { "NearestNeighbour", "Box", "Bilinear", "Bicubic", "Quadratic", "Hamming" };
+		ImGui::Combo("Filter", &Config.ResampleFilter, filterItems, IM_ARRAYSIZE(filterItems));
+		ImGui::SameLine();
+		ShowHelpMark("Filtering method to use when resizing images.");
+	}
+	tMath::tClampMin(forceWidth, 4);
+	tMath::tClampMin(forceHeight, 4);
+
+	const char* fileTypeItems[] = { "TGA", "PNG", "BMP", "JPG", "GIF" };
+	ImGui::Combo("File Type", &Config.PreferredFileSaveType, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
+	ImGui::SameLine();
+	ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
+
+	tString extension = ".tga";
+	switch (Config.PreferredFileSaveType)
+	{
+		case 0: extension = ".tga"; break;
+		case 1: extension = ".png"; break;
+		case 2: extension = ".bmp"; break;
+		case 3: extension = ".jpg"; break;
+		case 4: extension = ".gif"; break;
+	}
+
+	static bool rleCompression = false;
+	if (Config.PreferredFileSaveType == 0)
+		ImGui::Checkbox("RLE Compression", &rleCompression);
+
+	if (ImGui::Button("Save All"))
+	{
+		tString currFile = CurrImage ? CurrImage->Filename : tString();
+		tString imagesDir = tSystem::tGetCurrentDir();
+		if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
+			imagesDir = tSystem::tGetDir(ImageFileParam.Get());
+
+		tPrintf("Begin SaveAllAs\n");
+		for (TacitImage* image = Images.First(); image; image = image->Next())
+		{
+			tString baseName = tSystem::tGetFileBaseName(image->Filename);
+			tString outFile = imagesDir + tString(baseName) + extension;
+			if (tSystem::tFileExists(outFile))
+			{
+				tPrintf("File %s exists. Will not overwrite\n", outFile.ConstText());
+				continue;
+			}
+
+			// We make sure to maintain the loaded/unloaded state of all images. This function
+			// can process many files, so we don't want them all in memory at once by indiscriminantly
+			// loading them all.
+			bool imageLoaded = image->IsLoaded();
+			if (!imageLoaded)
+				image->Load();
+			tImage::tPicture outPic; //image->GetWidth(), image->GetHeight());
+			outPic.Set(*image->GetPrimaryPicture());
+			if (!imageLoaded)
+				image->Unload();
+
+			int outWidth = outPic.GetWidth();
+			int outHeight = outPic.GetHeight();
+			if (forceSize)
+			{
+				outWidth = forceWidth;
+				outHeight = forceHeight;
+			}
+
+			if ((outPic.GetWidth() != outWidth) || (outPic.GetHeight() != outHeight))
+				outPic.Resample(outWidth, outHeight, tImage::tPicture::tFilter(Config.ResampleFilter));
+
+			bool success = false;
+			tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
+			if (Config.PreferredFileSaveType == 0)
+				success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, rleCompression ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
+			else
+				success = outPic.Save(outFile, colourFmt);
+
+			if (success)
+				tPrintf("Saved image as : %s\n", outFile.ConstText());
+			else
+				tPrintf("Failed to save image %s\n", outFile.ConstText());
+		}
+		tPrintf("End SaveAllAs\n");
+
+		Images.Clear();
+		PopulateImages();
+		SetCurrentImage(currFile);
+
+		if (popen)
+			*popen = false;
 	}
 
 	ImGui::End();
