@@ -101,13 +101,19 @@ namespace TexView
 	int CursorX						= -1;
 	int CursorY						= -1;
 	tColouri PixelColour			= tColouri::black;
-	const int MaxLoadedCount		= 50;			// If more images that this loaded we start unloading to free mem.
+
+	// If more images that this loaded we start unloading to free mem.
+	// @todo This should be memory-size based, not image count.
+	const int MaxLoadedCount		= 50;
 	TacitImage* UnloadImage			= nullptr;
 
 	const ImVec4 ColourEnabledTint	= ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 	const ImVec4 ColourDisabledTint	= ImVec4(0.46f, 0.46f, 0.58f, 1.00f);
 	const ImVec4 ColourBG			= ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
 	const ImVec4 ColourPressedBG	= ImVec4(0.45f, 0.45f, 0.60f, 1.00f);
+
+	const float ZoomMin				= 20.0f;
+	const float ZoomMax				= 2500.0f;
 
 	void DrawBackground(float bgX, float bgY, float bgW, float bgH);
 	void DrawTextureViewerLog(float x, float y, float w, float h);
@@ -124,6 +130,7 @@ namespace TexView
 	void ShowDeleteFileModal();
 	bool DeleteImageFile(const tString& imgFile);
 	void ResetPan(bool resetX = true, bool resetY = true);
+	void ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan);
 	void FindImageFiles(tList<tStringItem>& foundFiles);
 	tuint256 ComputeImagesHash(const tList<tStringItem>& files);
 	void Update(GLFWwindow* window, double dt, bool dopoll = true);
@@ -848,9 +855,14 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 					CurrZoomMode = ZoomMode::OneToOne;
 				}
 
-				ImGui::PushItemWidth(200);
-				if (ImGui::SliderFloat("", &ZoomPercent, 20.0f, 2500.0f, " Zoom %.2f"))
-					CurrZoomMode = ZoomMode::User;
+				ImGui::PushItemWidth(60);
+				const char* zoomItems[] = { "Zoom", "20%", "50%", "100%", "150%", "200%", "400%", "800%", "1200%", "1800%", "2500%"};
+				float zoomVals[] = { -1.0f, 20.0f, 50.0f, 100.0f, 150.0f, 200.0f, 400.0f, 800.0f, 1200.0f, 1800.0f, 2500.0f };
+				tString currZoomStr;
+				tsPrintf(currZoomStr, "%0.0f%%", ZoomPercent);
+				int zoomIdx = 0;
+				if (ImGui::Combo(currZoomStr.ConstText(), &zoomIdx, zoomItems, IM_ARRAYSIZE(zoomItems)) && (zoomIdx > 0))
+					ApplyZoomDelta( zoomVals[zoomIdx]-ZoomPercent, 1.0f, true);
 				ImGui::PopItemWidth();
 
 				ImGui::Separator();
@@ -1046,7 +1058,9 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	// Consider unloading some images to keep memory down. The numToCheck roughly means it will take
 	// 3 seconds to check all the files assuming a 60Hz update frequency.
-	if (UnloadImage && (Images.NumItems() > 0))
+	// We currently do not allow unloading when in slideshow and the frame duration is small.
+	bool slideshowSmallDuration = SlideshowPlaying && (Config.SlidehowFrameDuration < 0.5f);
+	if (UnloadImage && (Images.NumItems() > 0) && !slideshowSmallDuration)
 	{
 		int numToCheck = tMath::tGetClampMin( Images.NumItems() / (3*60), 1 );
 		for (int c = 0; c < numToCheck; c++)
@@ -1137,6 +1151,27 @@ bool TexView::ChangeScreenMode(bool fullscreen, bool force)
 }
 
 
+void TexView::ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan)
+{
+	CurrZoomMode = ZoomMode::User;
+	float zoomOrig = ZoomPercent;
+	ZoomPercent += zoomDelta;
+	if (((zoomOrig < 100.0f) && (ZoomPercent > 100.0f)) || ((zoomOrig > 100.0f) && (ZoomPercent < 100.0f)))
+		ZoomPercent = 100.0f;
+
+	//ZoomPercent = tMath::tRound(ZoomPercent*roundTo) / roundTo;
+	tMath::tClamp(ZoomPercent, ZoomMin, ZoomMax);
+
+	if (correctPan)
+	{
+		PanOffsetX += DragDownOffsetX; DragDownOffsetX = 0;
+		PanOffsetY += DragDownOffsetY; DragDownOffsetY = 0;
+		PanOffsetX = int(float(PanOffsetX)*ZoomPercent/zoomOrig);
+		PanOffsetY = int(float(PanOffsetY)*ZoomPercent/zoomOrig);
+	}
+}
+
+
 void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int modifiers)
 {
 	if ((action != GLFW_PRESS) && (action != GLFW_REPEAT))
@@ -1169,21 +1204,13 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 		// Ctrl +
 		case GLFW_KEY_EQUAL:
 			if (modifiers == GLFW_MOD_CONTROL)
-			{
-				CurrZoomMode = ZoomMode::User;
-				ZoomPercent = tMath::tFloor(ZoomPercent*0.1f + 1.0f) * 10.0f;
-				tMath::tClamp(ZoomPercent, 20.0f, 2500.0f);
-			}
+				ApplyZoomDelta(tMath::tRound(ZoomPercent*0.1f), 1.0f, true);
 			break;
 
 		// Ctrl -
 		case GLFW_KEY_MINUS:
 			if (modifiers == GLFW_MOD_CONTROL)
-			{
-				CurrZoomMode = ZoomMode::User;
-				ZoomPercent = tMath::tCeiling(ZoomPercent*0.1f - 1.0f) * 10.0f;
-				tMath::tClamp(ZoomPercent, 20.0f, 2500.0f);
-			}
+				ApplyZoomDelta(tMath::tRound(ZoomPercent*(0.909090909f - 1.0f)), 1.0f, true);
 			break;
 
 		case GLFW_KEY_ENTER:
@@ -1273,11 +1300,9 @@ void TexView::ScrollWheelCallback(GLFWwindow* window, double x, double y)
 	DisappearCountdown = DisappearDuration;
 
 	CurrZoomMode = ZoomMode::User;
-	float zoomDelta = ZoomPercent * 0.1f * float(y);
-	ZoomPercent += zoomDelta;
-
-	ZoomPercent = tMath::tRound(ZoomPercent*10.0f) / 10.0f;
-	tMath::tClamp(ZoomPercent, 20.0f, 2500.0f);
+	float percentChange = (y > 0.0) ? 0.1f : 1.0f-0.909090909f;
+	float zoomDelta = ZoomPercent * percentChange * float(y);
+	ApplyZoomDelta(zoomDelta, 10.0f, true);
 }
 
 

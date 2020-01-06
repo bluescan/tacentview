@@ -73,7 +73,7 @@ void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, i
 				ImGui::Text("Mipmaps: %d", info.Mipmaps);
 				ImGui::Text("File Size (B): %d", info.SizeBytes);
 				ImGui::Text("Cursor: (%d, %d)", cursorX, cursorY);
-				ImGui::Text("Zoom: %.2f", zoom);
+				ImGui::Text("Zoom: %.0f%%", zoom);
 			}
 		}
 		ImGui::Text("Images In Folder: %d", Images.GetNumItems());
