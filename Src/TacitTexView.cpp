@@ -76,6 +76,11 @@ namespace TexView
 	bool WindowIconified			= false;
 	bool ShowCheatSheet				= false;
 	bool ShowAbout					= false;
+	bool SaveAsDialog				= false;
+	bool JustOpenedSaveAsDialog		= false;
+	bool ContactDialog				= false;
+	bool JustOpenedContactDialog	= false;
+	bool PrefsDialog				= false;
 	bool DoDeleteFile				= false;
 	bool RMBDown					= false;
 	int DragAnchorX					= 0;
@@ -759,70 +764,70 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,6));
 		ImGui::BeginMainMenuBar();
 		{
-			static bool saveAsDialog = false;
 			static bool saveAllAsDialog = false;
-			bool justOpenedSaveAsDialog = false;
 			if (ImGui::BeginMenu("File"))
 			{
 				// Show file menu items...
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
 
-				if (ImGui::MenuItem("Save As...") && CurrImage)
+				if (ImGui::MenuItem("Save As...", "Ctrl-S") && CurrImage)
 				{
-					saveAsDialog = !saveAsDialog;
-					if (saveAsDialog)
-						justOpenedSaveAsDialog = true;
+					JustOpenedSaveAsDialog = !SaveAsDialog;
+					SaveAsDialog = !SaveAsDialog;
 				}
 
 				if (ImGui::MenuItem("Save All As...") && CurrImage)
 					saveAllAsDialog = !saveAllAsDialog;
 
 				ImGui::Separator();
-				if (ImGui::MenuItem("Quit", "Alt+F4"))
+				if (ImGui::MenuItem("Quit", "Alt-F4"))
 					glfwSetWindowShouldClose(Window, 1);
 
 				ImGui::PopStyleVar();
 				ImGui::EndMenu();
-
 			}
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
-			if (saveAsDialog)
-				ShowSaveAsDialog(&saveAsDialog, justOpenedSaveAsDialog);
+			if (SaveAsDialog)
+			{
+				ShowSaveAsDialog(&SaveAsDialog, JustOpenedSaveAsDialog);
+				JustOpenedSaveAsDialog = false;
+			}
 			if (saveAllAsDialog)
 				ShowSaveAllAsDialog(&saveAllAsDialog);
 			ImGui::PopStyleVar();
 
-			static bool contactDialog = false;
-			static bool prefsDialog = false;
-			bool justOpenedContactDialog = false;
 			if (ImGui::BeginMenu("Edit"))
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
-				if (ImGui::MenuItem("Contact Sheet...") && (Images.GetNumItems() > 1))
+				if (ImGui::MenuItem("Contact Sheet...", "C") && (Images.GetNumItems() > 1))
 				{
-					contactDialog = !contactDialog;
-					if (contactDialog)
-						justOpenedContactDialog = true;
+					JustOpenedContactDialog = !ContactDialog;
+					ContactDialog = !ContactDialog;
 				}
 				
-				if (ImGui::MenuItem("Preferences..."))
-					prefsDialog = !prefsDialog;
+				if (ImGui::MenuItem("Preferences...", "P"))
+					PrefsDialog = !PrefsDialog;
 
 				ImGui::PopStyleVar();
 				ImGui::EndMenu();
 			}
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
-			if (contactDialog)
-				ShowContactSheetDialog(&contactDialog, justOpenedContactDialog);
-			if (prefsDialog)
-				ShowPreferencesDialog(&prefsDialog);
+			if (ContactDialog)
+			{
+				ShowContactSheetDialog(&ContactDialog, JustOpenedContactDialog);
+				JustOpenedContactDialog = false;
+			}
+
+			if (PrefsDialog)
+				ShowPreferencesDialog(&PrefsDialog);
+
 			ImGui::PopStyleVar();
 
 			if (ImGui::BeginMenu("View"))
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
-				ImGui::MenuItem("Show Log", "", &Config.ShowLog, true);
-				ImGui::MenuItem("Show Overlay", "", &Config.OverlayShow, true);
+				ImGui::MenuItem("Show Log", "L", &Config.ShowLog, true);
+				ImGui::MenuItem("Show Overlay", "Enter", &Config.OverlayShow, true);
 
 				ImGui::Separator();
 
@@ -834,21 +839,21 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				}
 
 				bool fitMode = CurrZoomMode == ZoomMode::Fit;
-				if (ImGui::MenuItem("Zoom Fit", "", &fitMode, true))
+				if (ImGui::MenuItem("Zoom Fit", "F", &fitMode, true))
 				{
 					ResetPan();
 					CurrZoomMode = ZoomMode::Fit;
 				}
 
 				bool downscale = CurrZoomMode == ZoomMode::Downscale;
-				if (ImGui::MenuItem("Zoom Downscale", "", &downscale, true))
+				if (ImGui::MenuItem("Zoom Downscale", "D", &downscale, true))
 				{
 					ResetPan();
 					CurrZoomMode = ZoomMode::Downscale;
 				}
 
 				bool oneToOne = CurrZoomMode == ZoomMode::OneToOne;
-				if (ImGui::MenuItem("Zoom 1:1", "", &oneToOne, true))
+				if (ImGui::MenuItem("Zoom 1:1", "Z", &oneToOne, true))
 				{
 					ZoomPercent = 100.0f;
 					ResetPan();
@@ -876,7 +881,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::BeginMenu("Help"))
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
-				ImGui::MenuItem("Cheat Sheet", "", &ShowCheatSheet, true);
+				ImGui::MenuItem("Cheat Sheet", "F1", &ShowCheatSheet, true);
 				ImGui::MenuItem("About", "", &ShowAbout, true);
 				ImGui::PopStyleVar();
 				ImGui::EndMenu();
@@ -1201,14 +1206,14 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 			OnNext();
 			break;
 
-		// Ctrl +
 		case GLFW_KEY_EQUAL:
+			// Ctrl +
 			if (modifiers == GLFW_MOD_CONTROL)
 				ApplyZoomDelta(tMath::tRound(ZoomPercent*0.1f), 1.0f, true);
 			break;
 
-		// Ctrl -
 		case GLFW_KEY_MINUS:
+			// Ctrl -
 			if (modifiers == GLFW_MOD_CONTROL)
 				ApplyZoomDelta(tMath::tRound(ZoomPercent*(0.909090909f - 1.0f)), 1.0f, true);
 			break;
@@ -1240,6 +1245,46 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 			Config.Tile = !Config.Tile;
 			if (!Config.Tile)
 				ResetPan();
+			break;
+
+		case GLFW_KEY_L:
+			Config.ShowLog = !Config.ShowLog;
+			break;
+
+		case GLFW_KEY_F:
+			ResetPan();
+			CurrZoomMode = ZoomMode::Fit;
+			break;
+
+		case GLFW_KEY_D:
+			ResetPan();
+			CurrZoomMode = ZoomMode::Downscale;
+			break;
+
+		case GLFW_KEY_Z:
+			ZoomPercent = 100.0f;
+			ResetPan();
+			CurrZoomMode = ZoomMode::OneToOne;
+			break;
+
+		case GLFW_KEY_S:
+			if (CurrImage)
+			{
+				JustOpenedSaveAsDialog = !SaveAsDialog;
+				SaveAsDialog = !SaveAsDialog;
+			}
+			break;
+
+		case GLFW_KEY_C:
+			if (Images.GetNumItems() > 1)
+			{
+				JustOpenedContactDialog = !ContactDialog;
+				ContactDialog = !ContactDialog;
+			}
+			break;
+
+		case GLFW_KEY_P:
+			PrefsDialog = !PrefsDialog;
 			break;
 	}
 }
