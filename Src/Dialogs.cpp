@@ -44,7 +44,7 @@ void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, i
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
-		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollbar;
 
 	if (ImGui::Begin("InfoOverlay", popen, flags))
 	{

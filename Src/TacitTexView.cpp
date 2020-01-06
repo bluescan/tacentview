@@ -697,21 +697,21 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		if ((CurrImage != Images.First()) || SlideshowPlaying)
 		{
 			ImGui::SetNextWindowPos(ImVec2(0.0f, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
-			ImGui::SetNextWindowSize(ImVec2(18, 72), ImGuiCond_Always);
+			ImGui::SetNextWindowSize(ImVec2(16, 70), ImGuiCond_Always);
 			ImGui::Begin("Prev", nullptr, flagsImgButton);
 			ImGui::SetCursorPos(ImVec2(6, 2));
-			if (ImGui::ImageButton(ImTextureID(PrevImage.GetTexID()), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			if (ImGui::ImageButton(ImTextureID(PrevImage.GetTexID()), ImVec2(15,56), ImVec2(0,0), ImVec2(1,1), 3, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 				OnPrevious();
 			ImGui::End();
 		}
 
 		if ((CurrImage != Images.Last()) || SlideshowPlaying)
 		{
-			ImGui::SetNextWindowPos(ImVec2(workAreaW-32.0f, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
-			ImGui::SetNextWindowSize(ImVec2(18, 72), ImGuiCond_Always);
+			ImGui::SetNextWindowPos(ImVec2(workAreaW - 33.0f, float(topUIHeight) + float(workAreaH) * 0.5f - 33.0f));
+			ImGui::SetNextWindowSize(ImVec2(16, 70), ImGuiCond_Always);
 			ImGui::Begin("Next", nullptr, flagsImgButton);
-			ImGui::SetCursorPos(ImVec2(2, 2));
-			if (ImGui::ImageButton(ImTextureID(NextImage.GetTexID()), ImVec2(12,56), ImVec2(0,0), ImVec2(1,1), -1, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			ImGui::SetCursorPos(ImVec2(6, 2));
+			if (ImGui::ImageButton(ImTextureID(NextImage.GetTexID()), ImVec2(15,56), ImVec2(0,0), ImVec2(1,1), 3, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 				OnNext();
 			ImGui::End();
 		}
