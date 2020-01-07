@@ -23,9 +23,6 @@ using namespace tSystem;
 using namespace tImage;
 
 
-int TacitImage::NumLoaded = 0;
-
-
 TacitImage::TacitImage() :
 	Filename(),
 	TexIDPrimary(0),
@@ -59,7 +56,10 @@ bool TacitImage::Load(const tString& filename)
 bool TacitImage::Load()
 {
 	if (IsLoaded())
+	{
+		LoadedTime = tSystem::tGetTime();
 		return true;
+	}
 
 	if (Filetype == tFileType::Unknown)
 		return false;
@@ -88,7 +88,7 @@ bool TacitImage::Load()
 		else
 		{
 			tPicture* picture = new tPicture();
-			Images.Append(picture);
+			Pictures.Append(picture);
 			success = picture->Load(Filename);
 			srcFileBitdepth = picture->SrcFileBitDepth;
 		}
@@ -109,7 +109,6 @@ bool TacitImage::Load()
 	if (success)
 	{
 		LoadedTime = tSystem::tGetTime();
-		NumLoaded++;
 
 		// Fill in info struct.
 		Info.Width			= GetWidth();
@@ -125,7 +124,7 @@ bool TacitImage::Load()
 		}
 		else
 		{
-			tPicture* picture = Images.First();
+			tPicture* picture = Pictures.First();
 			if (picture)
 				format = (srcFileBitdepth == 24) ? tPixelFormat::R8G8B8 : tPixelFormat::R8G8B8A8;
 		}
@@ -133,38 +132,50 @@ bool TacitImage::Load()
 		Info.PixelFormat		= tImage::tGetPixelFormatName(format);
 		Info.SrcFileBitDepth	= srcFileBitdepth;
 		Info.Opaque				= IsOpaque();
-		Info.SizeBytes			= tSystem::tGetFileSize(Filename);
-		Info.Mipmaps			= Images.GetNumItems();
+		Info.FileSizeBytes		= tSystem::tGetFileSize(Filename);
+		Info.MemSizeBytes		= GetMemSizeBytes();
+		Info.Mipmaps			= Pictures.GetNumItems();
 
 		// Create alt image if possible.
 		if (DDSCubemap.IsValid())
-			CreateAltImageDDSCubemap();
+			CreateAltPictureDDSCubemap();
 		else if (DDSTexture2D.IsValid() && (Info.Mipmaps > 1))
-			CreateAltImageDDS2DMipmaps();
+			CreateAltPictureDDS2DMipmaps();
 	}
 
 	return success;
 }
 
 
-void TacitImage::CreateAltImageDDS2DMipmaps()
+int TacitImage::GetMemSizeBytes() const
+{
+	int numBytes = 0;
+	for (tPicture* pic = Pictures.First(); pic; pic = pic->Next())
+		numBytes += pic->GetNumPixels() * sizeof(tPixel);
+
+	numBytes += AltPicture.IsValid() ? AltPicture.GetNumPixels()*sizeof(tPixel) : 0;
+	return numBytes;
+}
+
+
+void TacitImage::CreateAltPictureDDS2DMipmaps()
 {
 	int width = 0;
-	for (tPicture* layer = Images.First(); layer; layer = layer->Next())
+	for (tPicture* layer = Pictures.First(); layer; layer = layer->Next())
 		width += layer->GetWidth();
 	int height = GetHeight();
 
-	AltImage.Set(width, height, tPixel::transparent);
+	AltPicture.Set(width, height, tPixel::transparent);
 	int originY = 0;
 	int originX = 0;
-	for (tPicture* layer = Images.First(); layer; layer = layer->Next())
+	for (tPicture* layer = Pictures.First(); layer; layer = layer->Next())
 	{
 		for (int y = 0; y < layer->GetHeight(); y++)
 		{
 			for (int x = 0; x < layer->GetWidth(); x++)
 			{
 				tPixel pixel = layer->GetPixel(x, y);
-				AltImage.SetPixel(originX + x, y, pixel);
+				AltPicture.SetPixel(originX + x, y, pixel);
 			}
 		}
 		originX += layer->GetWidth();
@@ -172,55 +183,55 @@ void TacitImage::CreateAltImageDDS2DMipmaps()
 }
 
 
-void TacitImage::CreateAltImageDDSCubemap()
+void TacitImage::CreateAltPictureDDSCubemap()
 {
-	int width = Images.First()->GetWidth();
-	int height = Images.First()->GetHeight();
+	int width = Pictures.First()->GetWidth();
+	int height = Pictures.First()->GetHeight();
 
-	AltImage.Set(width*4, height*3, tPixel::transparent);
+	AltPicture.Set(width*4, height*3, tPixel::transparent);
 	int originX, originY;
 	
 	// PosZ
-	tPicture* pic = Images.First();
+	tPicture* pic = Pictures.First();
 	originX = width; originY = height;
 	for (int y = 0; y < pic->GetHeight(); y++)
 		for (int x = 0; x < pic->GetWidth(); x++)
-			AltImage.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+			AltPicture.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
 
 	// NegZ
 	pic = pic->Next();
 	originX = 3*width; originY = height;
 	for (int y = 0; y < pic->GetHeight(); y++)
 		for (int x = 0; x < pic->GetWidth(); x++)
-			AltImage.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+			AltPicture.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
 
 	// PosX
 	pic = pic->Next();
 	originX = 2*width; originY = height;
 	for (int y = 0; y < pic->GetHeight(); y++)
 		for (int x = 0; x < pic->GetWidth(); x++)
-			AltImage.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+			AltPicture.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
 
 	// NegX
 	pic = pic->Next();
 	originX = 0; originY = height;
 	for (int y = 0; y < pic->GetHeight(); y++)
 		for (int x = 0; x < pic->GetWidth(); x++)
-			AltImage.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+			AltPicture.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
 
 	// PosY
 	pic = pic->Next();
 	originX = width; originY = 2*height;
 	for (int y = 0; y < pic->GetHeight(); y++)
 		for (int x = 0; x < pic->GetWidth(); x++)
-			AltImage.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+			AltPicture.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
 
 	// NegY
 	pic = pic->Next();
 	originX = width; originY = 0;
 	for (int y = 0; y < pic->GetHeight(); y++)
 		for (int x = 0; x < pic->GetWidth(); x++)
-			AltImage.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+			AltPicture.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
 }
 
 
@@ -232,11 +243,11 @@ bool TacitImage::Unload()
 	Unbind();
 	DDSTexture2D.Clear();
 	DDSCubemap.Clear();
-	AltImage.Clear();
-	AltImageEnabled = false;
-	Images.Clear();
+	AltPicture.Clear();
+	AltPictureEnabled = false;
+	Pictures.Clear();
+	Info.MemSizeBytes = 0;
 
-	NumLoaded--;
 	LoadedTime = -1.0f;
 	return true;
 }
@@ -260,7 +271,7 @@ void TacitImage::Unbind()
 
 uint64 TacitImage::GetTexID() const
 {
-	if (AltImageEnabled)
+	if (AltPictureEnabled)
 		return uint64(TexIDAlt);
 	else
 		return uint64(TexIDPrimary);
@@ -269,7 +280,7 @@ uint64 TacitImage::GetTexID() const
 
 bool TacitImage::IsLoaded() const
 {
-	return (Images.Count() > 0);
+	return (Pictures.Count() > 0);
 }
 
 
@@ -281,7 +292,7 @@ bool TacitImage::IsOpaque() const
 	if (DDSTexture2D.IsValid())
 		return DDSTexture2D.IsOpaque();
 
-	tPicture* picture = Images.First();
+	tPicture* picture = Pictures.First();
 	if (picture && picture->IsValid())
 		return picture->IsOpaque();
 
@@ -291,10 +302,10 @@ bool TacitImage::IsOpaque() const
 
 int TacitImage::GetWidth() const
 {
-	if (AltImage.IsValid() && AltImageEnabled)
-		return AltImage.GetWidth();
+	if (AltPicture.IsValid() && AltPictureEnabled)
+		return AltPicture.GetWidth();
 
-	tPicture* picture = Images.First();
+	tPicture* picture = Pictures.First();
 	if (picture && picture->IsValid())
 		return picture->GetWidth();
 
@@ -304,10 +315,10 @@ int TacitImage::GetWidth() const
 
 int TacitImage::GetHeight() const
 {
-	if (AltImage.IsValid() && AltImageEnabled)
-		return AltImage.GetHeight();
+	if (AltPicture.IsValid() && AltPictureEnabled)
+		return AltPicture.GetHeight();
 
-	tPicture* picture = Images.First();
+	tPicture* picture = Pictures.First();
 	if (picture && picture->IsValid())
 		return picture->GetHeight();
 
@@ -317,10 +328,10 @@ int TacitImage::GetHeight() const
 
 tColouri TacitImage::GetPixel(int x, int y) const
 {
-	if (AltImage.IsValid() && AltImageEnabled)
-		return AltImage.GetPixel(x, y);
+	if (AltPicture.IsValid() && AltPictureEnabled)
+		return AltPicture.GetPixel(x, y);
 
-	tPicture* picture = Images.First();
+	tPicture* picture = Pictures.First();
 	if (picture && picture->IsValid())
 		return picture->GetPixel(x, y);
 
@@ -332,14 +343,14 @@ tColouri TacitImage::GetPixel(int x, int y) const
 
 void TacitImage::Rotate90(bool antiClockWise)
 {
-	for (tPicture* picture = Images.First(); picture; picture = picture->Next())
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->Rotate90(antiClockWise);
 }
 
 
 void TacitImage::Flip(bool horizontal)
 {
-	for (tPicture* picture = Images.First(); picture; picture = picture->Next())
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->Flip(horizontal);
 }
 
@@ -356,7 +367,7 @@ void TacitImage::PrintInfo()
 	}
 	else
 	{
-		tPicture* picture = Images.First();
+		tPicture* picture = Pictures.First();
 		if (picture)
 			format = picture->IsOpaque() ? tPixelFormat::R8G8B8 : tPixelFormat::R8G8B8A8;
 	}
@@ -372,7 +383,7 @@ void TacitImage::PrintInfo()
 
 bool TacitImage::Bind()
 {
-	if (AltImageEnabled && AltImage.IsValid())
+	if (AltPictureEnabled && AltPicture.IsValid())
 	{
 		if (TexIDAlt != 0)
 		{
@@ -389,8 +400,8 @@ bool TacitImage::Bind()
 		(
 			new tLayer
 			(
-				tPixelFormat::R8G8B8A8, AltImage.GetWidth(), AltImage.GetHeight(),
-				(uint8*)AltImage.GetPixelPointer()
+				tPixelFormat::R8G8B8A8, AltPicture.GetWidth(), AltPicture.GetHeight(),
+				(uint8*)AltPicture.GetPixelPointer()
 			)
 		);
 
@@ -412,7 +423,7 @@ bool TacitImage::Bind()
 		return false;
 
 	// We try to bind the native tTexture first if possible.
-	if (AltImageEnabled)
+	if (AltPictureEnabled)
 	{
 		if (DDSCubemap.IsValid())
 		{
@@ -428,7 +439,7 @@ bool TacitImage::Bind()
 		}
 	}
 
-	tPicture* picture = Images.First();
+	tPicture* picture = Pictures.First();
 	if (picture && picture->IsValid())
 	{
 		tList<tLayer> layers;
@@ -580,7 +591,7 @@ void TacitImage::GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFo
 
 bool TacitImage::ConvertTexture2DToPicture()
 {
-	if (!DDSTexture2D.IsValid() || !(Images.Count() <= 0))
+	if (!DDSTexture2D.IsValid() || !(Pictures.Count() <= 0))
 		return false;
 
 	int w = DDSTexture2D.GetWidth();
@@ -604,7 +615,7 @@ bool TacitImage::ConvertTexture2DToPicture()
 		tMath::tClampMin(mipH, 1);
 		uint8* rgbaData = new uint8[mipW * mipH * 4];
 		glGetTexImage(GL_TEXTURE_2D, level, GL_RGBA, GL_UNSIGNED_BYTE, rgbaData);
-		Images.Append(new tPicture(mipW, mipH, (tPixel*)rgbaData, false));
+		Pictures.Append(new tPicture(mipW, mipH, (tPixel*)rgbaData, false));
 	}
 
 	glDeleteTextures(1, &tempTexID);
@@ -614,7 +625,7 @@ bool TacitImage::ConvertTexture2DToPicture()
 
 bool TacitImage::ConvertCubemapToPicture()
 {
-	if (!DDSCubemap.IsValid() || !(Images.Count() <= 0))
+	if (!DDSCubemap.IsValid() || !(Pictures.Count() <= 0))
 		return false;
 
 	tTexture* tex = DDSCubemap.GetSide(tCubemap::tSide::PosX);
@@ -645,7 +656,7 @@ bool TacitImage::ConvertCubemapToPicture()
 
 		uint8* rgbaData = new uint8[w * h * 4];
 		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgbaData);
-		Images.Append(new tPicture(w, h, (tPixel*)rgbaData, false));
+		Pictures.Append(new tPicture(w, h, (tPixel*)rgbaData, false));
 
 		layers.Empty();
 		glDeleteTextures(1, &tempTexID);

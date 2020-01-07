@@ -49,7 +49,7 @@ void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, i
 	if (ImGui::Begin("InfoOverlay", popen, flags))
 	{
 		ImGui::Text("Image Info - Enter to Toggle");
-		ImGui::Text("Right-Click to change position.");
+		ImGui::Text("Right-Click to Change Anchor");
 		ImGui::Separator();
 
 		if (CurrImage)
@@ -71,7 +71,7 @@ void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, i
 				ImGui::Text("Bit Depth: %d", info.SrcFileBitDepth);
 				ImGui::Text("Opaque: %s", info.Opaque ? "true" : "false");
 				ImGui::Text("Mipmaps: %d", info.Mipmaps);
-				ImGui::Text("File Size (B): %d", info.SizeBytes);
+				ImGui::Text("File Size (B): %d", info.FileSizeBytes);
 				ImGui::Text("Cursor: (%d, %d)", cursorX, cursorY);
 				ImGui::Text("Zoom: %.0f%%", zoom);
 			}
@@ -491,6 +491,15 @@ void TexView::ShowPreferencesDialog(bool* popen)
 	ImGui::PopItemWidth();
 	if (ImGui::Button("Reset Duration"))
 		Config.SlidehowFrameDuration = 1.0/30.0;
+	ImGui::Unindent();
+
+	ImGui::Separator();
+	ImGui::Text("System");
+	ImGui::Indent();
+	ImGui::PushItemWidth(110);
+	ImGui::InputInt("Max Mem (MB)", &Config.MaxImageMemMB);
+	ImGui::PopItemWidth();
+	tMath::tClampMin(Config.MaxImageMemMB, 256);
 	ImGui::Unindent();
 
 	ImGui::Separator();

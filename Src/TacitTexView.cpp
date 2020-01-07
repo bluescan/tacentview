@@ -40,15 +40,16 @@ using namespace tSystem;
 namespace TexView
 {
 	tCommand::tParam ImageFileParam(1, "ImageFile", "File to open.");
-	int MajorVersion				= 1;
-	int MinorVersion				= 0;
-	int Revision					= 5;
+	int MajorVersion							= 1;
+	int MinorVersion							= 0;
+	int Revision								= 5;
 	Settings Config;
-	bool LogWindowOpen				= true;
+	bool LogWindowOpen							= true;
 	TexView::ImGuiLog LogWindow;
 	tList<TacitImage> Images;
-	tuint256 ImagesHash				= 0;
-	TacitImage* CurrImage			= nullptr;
+	tItList<TacitImage> ImagesTimeSorted(false);
+	tuint256 ImagesHash							= 0;
+	TacitImage* CurrImage						= nullptr;
 	TacitImage CursorImage;
 	TacitImage PrevImage;
 	TacitImage NextImage;
@@ -68,23 +69,23 @@ namespace TexView
 	TacitImage StopImage;
 	TacitImage PlayImage;
 
-	GLFWwindow* Window				= nullptr;
-	double DisappearCountdown		= DisappearDuration;
-	double SlideshowCountdown		= 0.0;
-	bool SlideshowPlaying			= false;
-	bool FullscreenMode				= false;
-	bool WindowIconified			= false;
-	bool ShowCheatSheet				= false;
-	bool ShowAbout					= false;
-	bool SaveAsDialog				= false;
-	bool JustOpenedSaveAsDialog		= false;
-	bool ContactDialog				= false;
-	bool JustOpenedContactDialog	= false;
-	bool PrefsDialog				= false;
-	bool DoDeleteFile				= false;
-	bool RMBDown					= false;
-	int DragAnchorX					= 0;
-	int DragAnchorY					= 0;
+	GLFWwindow* Window							= nullptr;
+	double DisappearCountdown					= DisappearDuration;
+	double SlideshowCountdown					= 0.0;
+	bool SlideshowPlaying						= false;
+	bool FullscreenMode							= false;
+	bool WindowIconified						= false;
+	bool ShowCheatSheet							= false;
+	bool ShowAbout								= false;
+	bool SaveAsDialog							= false;
+	bool JustOpenedSaveAsDialog					= false;
+	bool ContactDialog							= false;
+	bool JustOpenedContactDialog				= false;
+	bool PrefsDialog							= false;
+	bool DoDeleteFile							= false;
+	bool RMBDown								= false;
+	int DragAnchorX								= 0;
+	int DragAnchorY								= 0;
 
 	enum class ZoomMode
 	{
@@ -93,32 +94,27 @@ namespace TexView
 		Downscale,
 		OneToOne
 	};
-	ZoomMode CurrZoomMode			= ZoomMode::Downscale;
+	ZoomMode CurrZoomMode						= ZoomMode::Downscale;
 
-	float ZoomPercent				= 100.0f;
+	float ZoomPercent							= 100.0f;
 
-	int Dispw						= 1;
-	int Disph						= 1;
-	int PanOffsetX					= 0;
-	int PanOffsetY					= 0;
-	int DragDownOffsetX				= 0;
-	int DragDownOffsetY				= 0;
-	int CursorX						= -1;
-	int CursorY						= -1;
-	tColouri PixelColour			= tColouri::black;
+	int Dispw									= 1;
+	int Disph									= 1;
+	int PanOffsetX								= 0;
+	int PanOffsetY								= 0;
+	int DragDownOffsetX							= 0;
+	int DragDownOffsetY							= 0;
+	int CursorX									= -1;
+	int CursorY									= -1;
+	tColouri PixelColour						= tColouri::black;
 
-	// If more images that this loaded we start unloading to free mem.
-	// @todo This should be memory-size based, not image count.
-	const int MaxLoadedCount		= 50;
-	TacitImage* UnloadImage			= nullptr;
+	const ImVec4 ColourEnabledTint				= ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+	const ImVec4 ColourDisabledTint				= ImVec4(0.46f, 0.46f, 0.58f, 1.00f);
+	const ImVec4 ColourBG						= ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	const ImVec4 ColourPressedBG				= ImVec4(0.45f, 0.45f, 0.60f, 1.00f);
 
-	const ImVec4 ColourEnabledTint	= ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-	const ImVec4 ColourDisabledTint	= ImVec4(0.46f, 0.46f, 0.58f, 1.00f);
-	const ImVec4 ColourBG			= ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-	const ImVec4 ColourPressedBG	= ImVec4(0.45f, 0.45f, 0.60f, 1.00f);
-
-	const float ZoomMin				= 20.0f;
-	const float ZoomMax				= 2500.0f;
+	const float ZoomMin							= 20.0f;
+	const float ZoomMax							= 2500.0f;
 
 	void DrawBackground(float bgX, float bgY, float bgW, float bgH);
 	void DrawTextureViewerLog(float x, float y, float w, float h);
@@ -126,7 +122,7 @@ namespace TexView
 	void GlfwErrorCallback(int error, const char* description)															{ tPrintf("Glfw Error %d: %s\n", error, description); }
 	bool CompareFunc(const tStringItem& a, const tStringItem& b)														{ return tStricmp(a.ConstText(), b.ConstText()) < 0; }
 
-	void DisplayCurrImage();
+	void LoadCurrImage();
 	void SetWindowTitle();
 	bool OnPrevious(bool circ = false);
 	bool OnNext(bool circ = false);
@@ -194,15 +190,21 @@ tuint256 TexView::ComputeImagesHash(const tList<tStringItem>& files)
 
 void TexView::PopulateImages()
 {
+	Images.Clear();
+	ImagesTimeSorted.Clear();
+
 	tList<tStringItem> foundFiles;
 	FindImageFiles(foundFiles);
 	ImagesHash = ComputeImagesHash(foundFiles);
 
 	for (tStringItem* filename = foundFiles.First(); filename; filename = filename->Next())
-		Images.Append(new TacitImage(*filename));
+	{
+		TacitImage* newImg = new TacitImage(*filename);
+		Images.Append(newImg);
+		ImagesTimeSorted.Append(newImg);
+	}
 
 	CurrImage = nullptr;
-	UnloadImage = nullptr;
 }
 
 
@@ -216,7 +218,6 @@ void TexView::SetCurrentImage(const tString& currFilename)
 		if (tStricmp(siName.ConstText(), imgName.ConstText()) == 0)
 		{
 			CurrImage = si;
-			UnloadImage = si;
 			break;
 		}
 	}
@@ -224,7 +225,6 @@ void TexView::SetCurrentImage(const tString& currFilename)
 	if (!CurrImage)
 	{
 		CurrImage = Images.First();
-		UnloadImage = CurrImage;
 		if (!currFilename.IsEmpty())
 			tPrintf("Could not display [%s].\n", tSystem::tGetFileName(currFilename).ConstText());
 		if (CurrImage && !CurrImage->Filename.IsEmpty())
@@ -234,18 +234,61 @@ void TexView::SetCurrentImage(const tString& currFilename)
 	if (CurrImage)
 	{
 		CurrZoomMode = ZoomMode::Downscale;
-		DisplayCurrImage();
+		LoadCurrImage();
 	}
 }
 
 
-void TexView::DisplayCurrImage()
+bool LessThanImageLoadTime(const TacitImage& a, const TacitImage& b)
 {
-	CurrImage->Load();
+	return a.GetLoadedTime() < b.GetLoadedTime();
+}
+
+
+void TexView::LoadCurrImage()
+{
+	tAssert(CurrImage);
+	bool imgJustLoaded = false;
+	if (!CurrImage->IsLoaded())
+		imgJustLoaded = CurrImage->Load();
+
 	if (!SlideshowPlaying)
 		CurrImage->PrintInfo();
 	SetWindowTitle();
 	ResetPan();
+
+	// We only need to consider unloading an image when a new one is loaded... in this function.
+	// We currently do not allow unloading when in slideshow and the frame duration is small.
+	bool slideshowSmallDuration = SlideshowPlaying && (Config.SlidehowFrameDuration < 0.5f);
+	if (imgJustLoaded && !slideshowSmallDuration)
+	{
+		ImagesTimeSorted.Sort(LessThanImageLoadTime);
+
+		int64 usedMem = 0;
+		for (tItList<TacitImage>::Iter iter = ImagesTimeSorted.First(); iter; iter++)
+			usedMem += int64((*iter).Info.MemSizeBytes);
+
+		int64 allowedMem = int64(Config.MaxImageMemMB) * 1024 * 1024;
+		if (usedMem > allowedMem)
+		{
+			tPrintf("Used image mem (%|64d) bigger than max (%|64d). Unloading.\n", usedMem, allowedMem);
+			for (tItList<TacitImage>::Iter iter = ImagesTimeSorted.First(); iter; iter++)
+			{
+				TacitImage* i = iter.GetObject();
+
+				// Never unload the current image.
+				if (i->IsLoaded() && (i != CurrImage))
+				{
+					tPrintf("Unloading %s freeing %d Bytes\n", tSystem::tGetFileName(i->Filename).ConstText(), i->Info.MemSizeBytes);
+					usedMem -= i->Info.MemSizeBytes;
+					i->Unload();
+					if (usedMem < allowedMem)
+						break;
+				}
+			}
+			tPrintf("Used mem %|64dB out of max %|64dB.\n", usedMem, allowedMem);
+		}
+	}
 }
 
 
@@ -255,7 +298,7 @@ bool TexView::OnPrevious(bool circ)
 		return false;
 
 	CurrImage = circ ? Images.PrevCirc(CurrImage) : CurrImage->Prev();
-	DisplayCurrImage();
+	LoadCurrImage();
 	return true;
 }
 
@@ -266,7 +309,7 @@ bool TexView::OnNext(bool circ)
 		return false;
 
 	CurrImage = circ ? Images.NextCirc(CurrImage) : CurrImage->Next();
-	DisplayCurrImage();
+	LoadCurrImage();
 	return true;
 }
 
@@ -277,7 +320,7 @@ bool TexView::OnSkipBegin()
 		return false;
 
 	CurrImage = Images.First();
-	DisplayCurrImage();
+	LoadCurrImage();
 	return true;
 }
 
@@ -288,7 +331,7 @@ bool TexView::OnSkipEnd()
 		return false;
 
 	CurrImage = Images.Last();
-	DisplayCurrImage();
+	LoadCurrImage();
 	return true;
 }
 
@@ -897,7 +940,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::BeginPopup("CopyColourAs"))
 				ColourCopyAs();
 
-			bool buttonAvail = CurrImage ? !CurrImage->IsAltImageEnabled() : false;
+			bool buttonAvail = CurrImage ? !CurrImage->IsAltPictureEnabled() : false;
 			if
 			(
 				ImGui::ImageButton(ImTextureID(FlipHImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ColourBG,
@@ -946,36 +989,36 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			ShowToolTip("Rotate 90 Clockwise");
 
-			bool altMipmapsImgAvail = CurrImage ? CurrImage->IsAltMipmapsImageAvail() : false;
-			bool altMipmapsImgEnabl = altMipmapsImgAvail && CurrImage->IsAltImageEnabled();
+			bool altMipmapsPicAvail = CurrImage ? CurrImage->IsAltMipmapsPictureAvail() : false;
+			bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
 			if
 			(
 				ImGui::ImageButton
 				(
 					ImTextureID(MipmapsImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
-					altMipmapsImgEnabl ? ColourPressedBG : ColourBG,
-					altMipmapsImgAvail ? ColourEnabledTint : ColourDisabledTint
-				) && altMipmapsImgAvail
+					altMipmapsPicEnabl ? ColourPressedBG : ColourBG,
+					altMipmapsPicAvail ? ColourEnabledTint : ColourDisabledTint
+				) && altMipmapsPicAvail
 			)
 			{
-				CurrImage->EnableAltImage(!altMipmapsImgEnabl);
+				CurrImage->EnableAltPicture(!altMipmapsPicEnabl);
 				CurrImage->Bind();
 			}
 			ShowToolTip("Display Mipmaps\nDDS files may include mipmaps.");
 
-			bool altCubemapImgAvail = CurrImage ? CurrImage->IsAltCubemapImageAvail() : false;
-			bool altCubemapImgEnabl = altCubemapImgAvail && CurrImage->IsAltImageEnabled();
+			bool altCubemapPicAvail = CurrImage ? CurrImage->IsAltCubemapPictureAvail() : false;
+			bool altCubemapPicEnabl = altCubemapPicAvail && CurrImage->IsAltPictureEnabled();
 			if
 			(
 				ImGui::ImageButton
 				(
 					ImTextureID(CubemapImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
-					altCubemapImgEnabl ? ColourPressedBG : ColourBG,
-					altCubemapImgAvail ? ColourEnabledTint : ColourDisabledTint
-				) && altCubemapImgAvail
+					altCubemapPicEnabl ? ColourPressedBG : ColourBG,
+					altCubemapPicAvail ? ColourEnabledTint : ColourDisabledTint
+				) && altCubemapPicAvail
 			)
 			{
-				CurrImage->EnableAltImage(!altCubemapImgEnabl);
+				CurrImage->EnableAltPicture(!altCubemapPicEnabl);
 				CurrImage->Bind();
 			}
 			ShowToolTip("Display Cubemap\nDDS files may be cubemaps.");
@@ -1060,24 +1103,6 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		OnNext(true);
 		SlideshowCountdown = Config.SlidehowFrameDuration;
 	}
-
-	// Consider unloading some images to keep memory down. The numToCheck roughly means it will take
-	// 3 seconds to check all the files assuming a 60Hz update frequency.
-	// We currently do not allow unloading when in slideshow and the frame duration is small.
-	bool slideshowSmallDuration = SlideshowPlaying && (Config.SlidehowFrameDuration < 0.5f);
-	if (UnloadImage && (Images.NumItems() > 0) && !slideshowSmallDuration)
-	{
-		int numToCheck = tMath::tGetClampMin( Images.NumItems() / (3*60), 1 );
-		for (int c = 0; c < numToCheck; c++)
-		{
-			if ((TacitImage::GetNumLoaded() > MaxLoadedCount) && UnloadImage && (UnloadImage != CurrImage) && UnloadImage->IsLoaded())
-			{
-				UnloadImage->Unload();
-				tPrintf("Unloaded image. Remaining %d\n", TacitImage::GetNumLoaded());
-			}
-			UnloadImage = Images.NextCirc(UnloadImage);
-		}
-	}
 }
 
 
@@ -1119,7 +1144,6 @@ bool TexView::DeleteImageFile(const tString& imgFile)
 	if (deleted)
 	{
 		ImageFileParam.Param = nextImgFile;		// We set this so if we lose and gain focus, we go back to the current image.
-		Images.Clear();
 		PopulateImages();
 		SetCurrentImage(nextImgFile);
 	}
@@ -1360,7 +1384,6 @@ void TexView::FileDropCallback(GLFWwindow* window, int count, const char** files
 	tString path = tSystem::tGetDir(file);
 
 	ImageFileParam.Param = file;
-	Images.Clear();
 	PopulateImages();
 	SetCurrentImage(file);
 }
@@ -1379,7 +1402,6 @@ void TexView::FocusCallback(GLFWwindow* window, int gotFocus)
 	if (hash != ImagesHash)
 	{
 		tPrintf("Hash mismatch. Dir contents changed. Resynching.\n");
-		Images.Clear();
 		PopulateImages();
 		if (ImageFileParam.IsPresent())
 			SetCurrentImage(TexView::ImageFileParam.Get());

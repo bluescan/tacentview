@@ -34,7 +34,6 @@ public:
 	bool IsOpaque() const;
 	bool Unload();
 	float GetLoadedTime() const																							{ return LoadedTime; }
-	static int GetNumLoaded()																							{ return NumLoaded; }
 
 	// Bind to a particulr texture ID and load into VRAM. If already in VRAM, it only binds (makes texture current).
 	bool Bind();
@@ -55,16 +54,17 @@ public:
 		tString PixelFormat;
 		int SrcFileBitDepth		= -1;
 		bool Opaque				= false;
-		int SizeBytes			= 0;
+		int FileSizeBytes		= 0;
+		int MemSizeBytes		= 0;
 		int Mipmaps				= 0;
 	};
 	void PrintInfo();
-	tImage::tPicture* GetPrimaryPicture()																				{ return Images.First(); }
+	tImage::tPicture* GetPrimaryPicture()																				{ return Pictures.First(); }
 
-	bool IsAltMipmapsImageAvail() const																					{ return DDSTexture2D.IsValid() && AltImage.IsValid(); }
-	bool IsAltCubemapImageAvail() const																					{ return DDSCubemap.IsValid() && AltImage.IsValid(); }
-	void EnableAltImage(bool enabled)																					{ AltImageEnabled = enabled; }
-	bool IsAltImageEnabled() const																						{ return AltImageEnabled; }
+	bool IsAltMipmapsPictureAvail() const																				{ return DDSTexture2D.IsValid() && AltPicture.IsValid(); }
+	bool IsAltCubemapPictureAvail() const																				{ return DDSCubemap.IsValid() && AltPicture.IsValid(); }
+	void EnableAltPicture(bool enabled)																					{ AltPictureEnabled = enabled; }
+	bool IsAltPictureEnabled() const																					{ return AltPictureEnabled; }
 
 	ImgInfo Info;
 	tString Filename;
@@ -79,24 +79,25 @@ private:
 	tImage::tTexture DDSTexture2D;
 	tImage::tCubemap DDSCubemap;
 
-	tList<tImage::tPicture> Images;
+	tList<tImage::tPicture> Pictures;
 
 	// The 'alternative' picture is valid when there is another valid way of displaying the image.
 	// Specifically for cubemaps and dds files with mipmaps this offers an alternative view.
-	bool AltImageEnabled = false;
-	tImage::tPicture AltImage;
+	bool AltPictureEnabled = false;
+	tImage::tPicture AltPicture;
 
 	// Zero is invalid and means texture has never been bound and loaded into VRAM.
 	uint TexIDPrimary;
 	uint TexIDAlt;
 
+	// Returns the approx main mem size of this image. Considers the Pictures list and the AltPicture.
+	int GetMemSizeBytes() const;
 	bool ConvertTexture2DToPicture();
 	bool ConvertCubemapToPicture();
 	void GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFormat, bool& compressed, tImage::tPixelFormat);
 	void BindLayers(const tList<tImage::tLayer>&, uint texID);
-	void CreateAltImageDDS2DMipmaps();
-	void CreateAltImageDDSCubemap();
+	void CreateAltPictureDDS2DMipmaps();
+	void CreateAltPictureDDSCubemap();
 
 	float LoadedTime = -1.0f;
-	static int NumLoaded;
 };

@@ -41,6 +41,7 @@ struct Settings
 	bool ConfirmDeletes					= true;
 	double SlidehowFrameDuration		= 1.0/30.0;
 	int PreferredFileSaveType			= 0;
+	int MaxImageMemMB					= 1024;		// Max image mem before unloading images.
 
 	void Load(const tString& filename, int screenWidth, int screenHeight);
 	bool Save(const tString& filename);

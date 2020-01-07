@@ -35,6 +35,7 @@ void Settings::Reset(int screenW, int screenH)
 	ConfirmDeletes			= true;
 	SlidehowFrameDuration	= 1.0/30.0;
 	PreferredFileSaveType	= 0;
+	MaxImageMemMB			= 1024;
 }
 
 
@@ -106,6 +107,10 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 				case tHashCT("PreferredFileSaveType"):
 					PreferredFileSaveType = e.Arg1();
 					break;
+
+				case tHashCT("MaxImageMemMB"):
+					MaxImageMemMB = e.Arg1();
+					break;
 			}
 		}
 	}
@@ -141,6 +146,7 @@ bool Settings::Save(const tString& filename)
 	writer.Comp("ConfirmDeletes", ConfirmDeletes);
 	writer.Comp("SlidehowFrameDuration", SlidehowFrameDuration);
 	writer.Comp("PreferredFileSaveType", PreferredFileSaveType);
+	writer.Comp("MaxImageMemMB", MaxImageMemMB);
 	
 	return true;
 }
