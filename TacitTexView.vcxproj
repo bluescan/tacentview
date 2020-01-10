@@ -186,6 +186,7 @@
     <ClInclude Include="Src\Settings.h" />
     <ClInclude Include="Src\TacitImage.h" />
     <ClInclude Include="Src\TacitTexView.h" />
+    <ClInclude Include="Src\ContentView.h" />
     <ClInclude Include="Tacent\Contrib\imgui\examples\imgui_impl_glfw.h" />
     <ClInclude Include="Tacent\Contrib\imgui\examples\imgui_impl_opengl2.h" />
     <ClInclude Include="Tacent\Contrib\imgui\imconfig.h" />
@@ -202,6 +203,7 @@
     <ClCompile Include="Src\ImGuiLogWindow.cpp" />
     <ClCompile Include="Src\Settings.cpp" />
     <ClCompile Include="Src\TacitImage.cpp" />
+    <ClCompile Include="Src\ContentView.cpp" />
     <ClCompile Include="Tacent\Contrib\GLEW\src\glew.c" />
     <ClCompile Include="Tacent\Contrib\imgui\examples\imgui_impl_glfw.cpp" />
     <ClCompile Include="Tacent\Contrib\imgui\examples\imgui_impl_opengl2.cpp" />

@@ -63,6 +63,9 @@
     <ClInclude Include="Src\TacitTexView.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Src\ContentView.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\TacitTexView.cpp">
@@ -102,6 +105,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Dialogs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\ContentView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

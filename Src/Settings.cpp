@@ -26,7 +26,8 @@ void Settings::Reset(int screenW, int screenH)
 	WindowX					= (screenW - WindowW) >> 1;
 	WindowY					= (screenH - WindowH) >> 1;
 	ShowLog					= false;
-	OverlayShow				= false;
+	InfoOverlayShow			= false;
+	ContentViewShow		= false;
 	OverlayCorner			= 3;
 	Tile					= false;
 	BackgroundExtend		= false;
@@ -72,8 +73,12 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 					ShowLog = e.Arg1();
 					break;
 
-				case tHashCT("OverlayShow"):
-					OverlayShow = e.Arg1();
+				case tHashCT("InfoOverlayShow"):
+					InfoOverlayShow = e.Arg1();
+					break;
+
+				case tHashCT("ContentViewShow"):
+					ContentViewShow = e.Arg1();
 					break;
 
 				case tHashCT("OverlayCorner"):
@@ -137,7 +142,8 @@ bool Settings::Save(const tString& filename)
 	writer.Comp("WindowW", WindowW);
 	writer.Comp("WindowH", WindowH);
 	writer.Comp("ShowLog", ShowLog);
-	writer.Comp("OverlayShow", OverlayShow);
+	writer.Comp("InfoOverlayShow", InfoOverlayShow);
+	writer.Comp("ContentViewShow", ContentViewShow);
 	writer.Comp("OverlayCorner", OverlayCorner);
 	writer.Comp("Tile", Tile);
 	writer.Comp("BackgroundExtend", BackgroundExtend);

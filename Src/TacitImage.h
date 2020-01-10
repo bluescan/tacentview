@@ -32,7 +32,8 @@ public:
 
 	bool Load();						// Load into main memory.
 	bool Load(const tString& filename);
-	bool IsLoaded() const;
+	bool IsLoaded() const																								{ return (Pictures.Count() > 0); }
+
 	bool IsOpaque() const;
 	bool Unload();
 	float GetLoadedTime() const																							{ return LoadedTime; }

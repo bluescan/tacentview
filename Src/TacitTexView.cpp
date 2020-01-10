@@ -31,6 +31,7 @@
 #include "TacitImage.h"
 #include "Dialogs.h"
 #include "ContactSheet.h"
+#include "ContentView.h"
 #include "ImGuiLogWindow.h"
 #include "Settings.h"
 using namespace tStd;
@@ -68,6 +69,8 @@ namespace TexView
 	TacitImage TileImage;
 	TacitImage StopImage;
 	TacitImage PlayImage;
+	TacitImage ContentViewImage;
+	TacitImage DefaultThumbnailImage;
 
 	GLFWwindow* Window							= nullptr;
 	double DisappearCountdown					= DisappearDuration;
@@ -700,7 +703,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 		PixelColour = CurrImage->GetPixel(imgxi, imgyi);
 
-		if ((DisappearCountdown > 0.0) || Config.OverlayShow)
+		if ((DisappearCountdown > 0.0) || Config.InfoOverlayShow)
 		{
 			CursorImage.Bind();
 			glBegin(GL_QUADS);
@@ -869,8 +872,9 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::BeginMenu("View"))
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
-				ImGui::MenuItem("Show Log", "L", &Config.ShowLog, true);
-				ImGui::MenuItem("Show Overlay", "Enter", &Config.OverlayShow, true);
+				ImGui::MenuItem("Log", "L", &Config.ShowLog, true);
+				ImGui::MenuItem("Info Overlay", "I", &Config.InfoOverlayShow, true);
+				ImGui::MenuItem("Content View", "V", &Config.ContentViewShow, true);
 
 				ImGui::Separator();
 
@@ -1026,8 +1030,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if
 			(
 				ImGui::ImageButton(ImTextureID(TileImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
-				Config.Tile ? ColourPressedBG : ColourBG,
-				ImVec4(1.00f, 1.00f, 1.00f, 1.00f))
+				Config.Tile ? ColourPressedBG : ColourBG, ImVec4(1.00f, 1.00f, 1.00f, 1.00f))
 			)
 			{
 				Config.Tile = !Config.Tile;
@@ -1052,12 +1055,21 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if
 			(
-				ImGui::ImageButton(ImTextureID(InfoOverlayImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
-				Config.OverlayShow ? ColourPressedBG : ColourBG,
-				ImVec4(1.00f, 1.00f, 1.00f, 1.00f))
+				ImGui::ImageButton(ImTextureID(ContentViewImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
+				Config.ContentViewShow ? ColourPressedBG : ColourBG, ImVec4(1.00f, 1.00f, 1.00f, 1.00f))
 			)
 			{
-				Config.OverlayShow = !Config.OverlayShow;			
+				Config.ContentViewShow = !Config.ContentViewShow;
+			}
+			ShowToolTip("Content Thumbnail View");
+
+			if
+			(
+				ImGui::ImageButton(ImTextureID(InfoOverlayImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
+				Config.InfoOverlayShow ? ColourPressedBG : ColourBG, ImVec4(1.00f, 1.00f, 1.00f, 1.00f))
+			)
+			{
+				Config.InfoOverlayShow = !Config.InfoOverlayShow;
 			}
 			ShowToolTip("Information Overlay");
 		}
@@ -1070,8 +1082,11 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		DrawTextureViewerLog(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
 
 	// We allow the overlay and cheatsheet in fullscreen.
-	if (Config.OverlayShow)
-		ShowInfoOverlay(&Config.OverlayShow, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), imgxi, imgyi, ZoomPercent);
+	if (Config.InfoOverlayShow)
+		ShowInfoOverlay(&Config.InfoOverlayShow, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), imgxi, imgyi, ZoomPercent);
+
+	if (!FullscreenMode && Config.ContentViewShow)
+		ShowContentViewDialog(&Config.ContentViewShow);
 
 	if (ShowCheatSheet)
 		ShowCheatSheetPopup(&ShowCheatSheet);
@@ -1245,8 +1260,6 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 		case GLFW_KEY_ENTER:
 			if (modifiers == GLFW_MOD_ALT)
 				ChangeScreenMode(!FullscreenMode);
-			else
-				TexView::Config.OverlayShow = !TexView::Config.OverlayShow;			
 			break;
 
 		case GLFW_KEY_F1:
@@ -1273,6 +1286,14 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 
 		case GLFW_KEY_L:
 			Config.ShowLog = !Config.ShowLog;
+			break;
+
+		case GLFW_KEY_I:
+			TexView::Config.InfoOverlayShow = !TexView::Config.InfoOverlayShow;
+			break;
+
+		case GLFW_KEY_V:
+			TexView::Config.ContentViewShow = !TexView::Config.ContentViewShow;
 			break;
 
 		case GLFW_KEY_F:
@@ -1578,6 +1599,8 @@ int main(int argc, char** argv)
 	TexView::TileImage.Load(dataDir + "Tile.png");
 	TexView::StopImage.Load(dataDir + "Stop.png");
 	TexView::PlayImage.Load(dataDir + "Play.png");
+	TexView::ContentViewImage.Load(dataDir + "ContentView.png");
+	TexView::DefaultThumbnailImage.Load(dataDir + "DefaultThumbnail.png");
 
 	TexView::PopulateImages();
 	if (TexView::ImageFileParam.IsPresent())

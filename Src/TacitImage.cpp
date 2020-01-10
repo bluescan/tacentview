@@ -269,12 +269,6 @@ void TacitImage::Unbind()
 }
 
 
-bool TacitImage::IsLoaded() const
-{
-	return (Pictures.Count() > 0);
-}
-
-
 bool TacitImage::IsOpaque() const
 {
 	if (DDSCubemap.IsValid())
@@ -650,4 +644,51 @@ bool TacitImage::ConvertCubemapToPicture()
 		glDeleteTextures(1, &tempTexID);
 	}
 	return true;
+}
+
+
+uint64 TacitImage::BindThumbnail()
+{
+	if (ThumbnailPicture.IsValid())
+	{
+		if (TexIDThumbnail != 0)
+		{
+			glBindTexture(GL_TEXTURE_2D, TexIDThumbnail);
+			return TexIDThumbnail;
+		}
+
+		glGenTextures(1, &TexIDThumbnail);
+		if (TexIDThumbnail == 0)
+			return 0;
+
+		tList<tLayer> layers;
+		layers.Append
+		(
+			new tLayer
+			(
+				tPixelFormat::R8G8B8A8, ThumbnailPicture.GetWidth(), ThumbnailPicture.GetHeight(),
+				(uint8*)ThumbnailPicture.GetPixelPointer()
+			)
+		);
+
+		BindLayers(layers, TexIDThumbnail);
+		return TexIDThumbnail;
+	}
+
+	return 0;
+}
+
+
+void TacitImage::RequestThumbnail()
+{
+	if (!ThumbnailPicture.IsValid() && IsLoaded())
+	{
+		tPicture* primaryPic = GetPrimaryPicture();
+		tAssert(primaryPic);
+
+		ThumbnailPicture.Set(*primaryPic);
+//		ThumbnailPicture.Resample(240, 135, tPicture::tFilter::Box);
+//		ThumbnailPicture.Resample(128, 72, tPicture::tFilter::Bilinear);
+		ThumbnailPicture.Resample(128, 128, tPicture::tFilter::NearestNeighbour);
+	}
 }

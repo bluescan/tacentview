@@ -30,6 +30,13 @@ namespace TexView
 	extern tList<TacitImage> Images;
 	extern tCommand::tParam ImageFileParam;
 	extern tColouri PixelColour;
+	extern tList<TacitImage> Images;
+	extern TacitImage DefaultThumbnailImage;
+
+	extern const ImVec4 ColourEnabledTint;
+	extern const ImVec4 ColourDisabledTint;
+	extern const ImVec4 ColourBG;
+	extern const ImVec4 ColourPressedBG;
 
 	const int TopUIHeight			= 26;
 	const float PopupMargin			= 22.0f;
