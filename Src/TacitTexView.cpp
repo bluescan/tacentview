@@ -743,7 +743,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::SetNextWindowSize(ImVec2(16, 70), ImGuiCond_Always);
 			ImGui::Begin("Prev", nullptr, flagsImgButton);
 			ImGui::SetCursorPos(ImVec2(6, 2));
-			if (ImGui::ImageButton(ImTextureID(PrevImage.GetTexID()), ImVec2(15,56), ImVec2(0,0), ImVec2(1,1), 3, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			if (ImGui::ImageButton(ImTextureID(PrevImage.Bind()), ImVec2(15,56), ImVec2(0,0), ImVec2(1,1), 3, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 				OnPrevious();
 			ImGui::End();
 		}
@@ -754,7 +754,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::SetNextWindowSize(ImVec2(16, 70), ImGuiCond_Always);
 			ImGui::Begin("Next", nullptr, flagsImgButton);
 			ImGui::SetCursorPos(ImVec2(6, 2));
-			if (ImGui::ImageButton(ImTextureID(NextImage.GetTexID()), ImVec2(15,56), ImVec2(0,0), ImVec2(1,1), 3, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			if (ImGui::ImageButton(ImTextureID(NextImage.Bind()), ImVec2(15,56), ImVec2(0,0), ImVec2(1,1), 3, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 				OnNext();
 			ImGui::End();
 		}
@@ -765,7 +765,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::SetNextWindowPos(ImVec2((workAreaW>>1)-22.0f-60.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
 			ImGui::SetNextWindowSize(ImVec2(40, 40), ImGuiCond_Always);
 			ImGui::Begin("SkipBegin", nullptr, flagsImgButton);
-			if (ImGui::ImageButton(ImTextureID(SkipBeginImage.GetTexID()), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			if (ImGui::ImageButton(ImTextureID(SkipBeginImage.Bind()), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 				OnSkipBegin();
 			ImGui::End();
 		}
@@ -774,7 +774,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::SetNextWindowPos(ImVec2((workAreaW>>1)-22.0f-20.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
 		ImGui::SetNextWindowSize(ImVec2(40, 40), ImGuiCond_Always);
 		ImGui::Begin("Slideshow", nullptr, flagsImgButton);
-		uint64 psImageID = SlideshowPlaying ? StopImage.GetTexID() : PlayImage.GetTexID();
+		uint64 psImageID = SlideshowPlaying ? StopImage.Bind() : PlayImage.Bind();
 		if (ImGui::ImageButton(ImTextureID(psImageID), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 			SlideshowPlaying = !SlideshowPlaying;
 		ImGui::End();
@@ -783,7 +783,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::SetNextWindowPos(ImVec2((workAreaW>>1)-22.0f+20.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
 		ImGui::SetNextWindowSize(ImVec2(40, 40), ImGuiCond_Always);
 		ImGui::Begin("Fullscreen", nullptr, flagsImgButton);
-		uint64 fsImageID = FullscreenMode ? WindowedImage.GetTexID() : FullscreenImage.GetTexID();
+		uint64 fsImageID = FullscreenMode ? WindowedImage.Bind() : FullscreenImage.Bind();
 		if (ImGui::ImageButton(ImTextureID(fsImageID), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 			ChangeScreenMode(!FullscreenMode);
 		ImGui::End();
@@ -794,7 +794,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::SetNextWindowPos(ImVec2((workAreaW>>1)-22.0f+60.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
 			ImGui::SetNextWindowSize(ImVec2(40, 40), ImGuiCond_Always);
 			ImGui::Begin("SkipEnd", nullptr, flagsImgButton);
-			if (ImGui::ImageButton(ImTextureID(SkipEndImage.GetTexID()), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			if (ImGui::ImageButton(ImTextureID(SkipEndImage.Bind()), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
 				OnSkipEnd();
 			ImGui::End();
 		}
@@ -943,7 +943,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			bool buttonAvail = CurrImage ? !CurrImage->IsAltPictureEnabled() : false;
 			if
 			(
-				ImGui::ImageButton(ImTextureID(FlipHImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ColourBG,
+				ImGui::ImageButton(ImTextureID(FlipHImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ColourBG,
 				buttonAvail ? ColourEnabledTint : ColourDisabledTint) && buttonAvail
 			)
 			{
@@ -955,7 +955,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if
 			(
-				ImGui::ImageButton(ImTextureID(FlipVImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ColourBG,
+				ImGui::ImageButton(ImTextureID(FlipVImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ColourBG,
 				buttonAvail ? ColourEnabledTint : ColourDisabledTint) && buttonAvail
 			)
 			{
@@ -967,7 +967,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if
 			(
-				ImGui::ImageButton(ImTextureID(RotateACWImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ColourBG,
+				ImGui::ImageButton(ImTextureID(RotateACWImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ColourBG,
 				buttonAvail ? ColourEnabledTint : ColourDisabledTint) && buttonAvail
 			)
 			{
@@ -979,7 +979,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if
 			(
-				ImGui::ImageButton(ImTextureID(RotateCWImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ColourBG,
+				ImGui::ImageButton(ImTextureID(RotateCWImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ColourBG,
 				buttonAvail ? ColourEnabledTint : ColourDisabledTint) && buttonAvail
 			)
 			{
@@ -995,7 +995,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			(
 				ImGui::ImageButton
 				(
-					ImTextureID(MipmapsImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
+					ImTextureID(MipmapsImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
 					altMipmapsPicEnabl ? ColourPressedBG : ColourBG,
 					altMipmapsPicAvail ? ColourEnabledTint : ColourDisabledTint
 				) && altMipmapsPicAvail
@@ -1012,7 +1012,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			(
 				ImGui::ImageButton
 				(
-					ImTextureID(CubemapImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
+					ImTextureID(CubemapImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
 					altCubemapPicEnabl ? ColourPressedBG : ColourBG,
 					altCubemapPicAvail ? ColourEnabledTint : ColourDisabledTint
 				) && altCubemapPicAvail
@@ -1025,7 +1025,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if
 			(
-				ImGui::ImageButton(ImTextureID(TileImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
+				ImGui::ImageButton(ImTextureID(TileImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
 				Config.Tile ? ColourPressedBG : ColourBG,
 				ImVec4(1.00f, 1.00f, 1.00f, 1.00f))
 			)
@@ -1041,7 +1041,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			(
 				ImGui::ImageButton
 				(
-					ImTextureID(RecycleImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0.00f, 0.00f, 0.00f, 0.00f),
+					ImTextureID(RecycleImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0.00f, 0.00f, 0.00f, 0.00f),
 					recycleAvail ? ColourEnabledTint : ColourDisabledTint
 				) && recycleAvail
 			)
@@ -1052,7 +1052,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if
 			(
-				ImGui::ImageButton(ImTextureID(InfoOverlayImage.GetTexID()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
+				ImGui::ImageButton(ImTextureID(InfoOverlayImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
 				Config.OverlayShow ? ColourPressedBG : ColourBG,
 				ImVec4(1.00f, 1.00f, 1.00f, 1.00f))
 			)
@@ -1421,15 +1421,59 @@ void TexView::IconifyCallback(GLFWwindow* window, int iconified)
 }
 
 
+/////////////////////////////
+#include <thread>
+#include <mutex>
+#include <atomic>
+#include <chrono>
+
+void thread_function()
+{
+	for (int i = 0; i < 10; i++)
+	{
+		tPrintf("H%d", i);
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	}
+}
+ 
+
 int main(int argc, char** argv)
 {
-	tSystem::tSetStdoutRedirectCallback(TexView::PrintRedirectCallback);	
+	tSystem::tSetStdoutRedirectCallback(TexView::PrintRedirectCallback);
 	tCommand::tParse(argc, argv);
 
 	// Setup window
 	glfwSetErrorCallback(TexView::GlfwErrorCallback);
 	if (!glfwInit())
 		return 1;
+
+	//std::mutex mutx;
+	//mutx.lock();
+
+	/* Thread testing using non-locking atomic.
+	std::atomic_flag threadRunning = ATOMIC_FLAG_INIT;
+
+	threadRunning.test_and_set();
+	std::thread threadObj([&threadRunning] { thread_function(); threadRunning.clear(); });
+
+	tPrintf("Main thread test.\n");
+	while (1)
+	{
+		if (threadRunning.test_and_set())
+		{
+			tPrintf(".");
+		}
+		else
+		{
+			tPrintf("\nMain thread test. Helper thread finished.\n");
+			break;
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	}
+
+	threadObj.join();
+	//threadObj.get_id();
+	*/
 
 	int glfwMajor = 0; int glfwMinor = 0; int glfwRev = 0;
 	glfwGetVersion(&glfwMajor, &glfwMinor, &glfwRev);
@@ -1516,24 +1560,24 @@ int main(int argc, char** argv)
 	tString fontFile = dataDir + "Roboto-Medium.ttf";
 	io.Fonts->AddFontFromFileTTF(fontFile.ConstText(), 14.0f);
 
-	TexView::CursorImage.Load(dataDir + "PixelCursor.png");			TexView::CursorImage.Bind();
-	TexView::PrevImage.Load(dataDir + "PrevArrow.png");				TexView::PrevImage.Bind();
-	TexView::NextImage.Load(dataDir + "NextArrow.png");				TexView::NextImage.Bind();
-	TexView::FlipHImage.Load(dataDir + "FlipH.png");				TexView::FlipHImage.Bind();
-	TexView::FlipVImage.Load(dataDir + "FlipV.png");				TexView::FlipVImage.Bind();
-	TexView::RotateACWImage.Load(dataDir + "RotACW.png");			TexView::RotateACWImage.Bind();
-	TexView::RotateCWImage.Load(dataDir + "RotCW.png");				TexView::RotateCWImage.Bind();
-	TexView::FullscreenImage.Load(dataDir + "Fullscreen.png");		TexView::FullscreenImage.Bind();
-	TexView::WindowedImage.Load(dataDir + "Windowed.png");			TexView::WindowedImage.Bind();
-	TexView::SkipBeginImage.Load(dataDir + "SkipBegin.png");		TexView::SkipBeginImage.Bind();
-	TexView::SkipEndImage.Load(dataDir + "SkipEnd.png");			TexView::SkipEndImage.Bind();
-	TexView::MipmapsImage.Load(dataDir + "Mipmaps.png");			TexView::MipmapsImage.Bind();
-	TexView::CubemapImage.Load(dataDir + "Cubemap.png");			TexView::CubemapImage.Bind();
-	TexView::RecycleImage.Load(dataDir + "Recycle.png");			TexView::RecycleImage.Bind();
-	TexView::InfoOverlayImage.Load(dataDir + "InfoOverlay.png");	TexView::InfoOverlayImage.Bind();
-	TexView::TileImage.Load(dataDir + "Tile.png");					TexView::TileImage.Bind();
-	TexView::StopImage.Load(dataDir + "Stop.png");					TexView::StopImage.Bind();
-	TexView::PlayImage.Load(dataDir + "Play.png");					TexView::PlayImage.Bind();
+	TexView::CursorImage.Load(dataDir + "PixelCursor.png");
+	TexView::PrevImage.Load(dataDir + "PrevArrow.png");
+	TexView::NextImage.Load(dataDir + "NextArrow.png");
+	TexView::FlipHImage.Load(dataDir + "FlipH.png");
+	TexView::FlipVImage.Load(dataDir + "FlipV.png");
+	TexView::RotateACWImage.Load(dataDir + "RotACW.png");
+	TexView::RotateCWImage.Load(dataDir + "RotCW.png");
+	TexView::FullscreenImage.Load(dataDir + "Fullscreen.png");
+	TexView::WindowedImage.Load(dataDir + "Windowed.png");
+	TexView::SkipBeginImage.Load(dataDir + "SkipBegin.png");
+	TexView::SkipEndImage.Load(dataDir + "SkipEnd.png");
+	TexView::MipmapsImage.Load(dataDir + "Mipmaps.png");
+	TexView::CubemapImage.Load(dataDir + "Cubemap.png");
+	TexView::RecycleImage.Load(dataDir + "Recycle.png");
+	TexView::InfoOverlayImage.Load(dataDir + "InfoOverlay.png");
+	TexView::TileImage.Load(dataDir + "Tile.png");
+	TexView::StopImage.Load(dataDir + "Stop.png");
+	TexView::PlayImage.Load(dataDir + "Play.png");
 
 	TexView::PopulateImages();
 	if (TexView::ImageFileParam.IsPresent())

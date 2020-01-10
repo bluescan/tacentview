@@ -269,15 +269,6 @@ void TacitImage::Unbind()
 }
 
 
-uint64 TacitImage::GetTexID() const
-{
-	if (AltPictureEnabled)
-		return uint64(TexIDAlt);
-	else
-		return uint64(TexIDPrimary);
-}
-
-
 bool TacitImage::IsLoaded() const
 {
 	return (Pictures.Count() > 0);
@@ -381,19 +372,19 @@ void TacitImage::PrintInfo()
 }
 
 
-bool TacitImage::Bind()
+uint64 TacitImage::Bind()
 {
 	if (AltPictureEnabled && AltPicture.IsValid())
 	{
 		if (TexIDAlt != 0)
 		{
 			glBindTexture(GL_TEXTURE_2D, TexIDAlt);
-			return true;
+			return TexIDAlt;
 		}
 
 		glGenTextures(1, &TexIDAlt);
 		if (TexIDAlt == 0)
-			return false;
+			return 0;
 
 		tList<tLayer> layers;
 		layers.Append
@@ -406,21 +397,21 @@ bool TacitImage::Bind()
 		);
 
 		BindLayers(layers, TexIDAlt);
-		return true;
+		return TexIDAlt;
 	}
 
 	if (TexIDPrimary != 0)
 	{
 		glBindTexture(GL_TEXTURE_2D, TexIDPrimary);
-		return true;
+		return TexIDPrimary;
 	}
 
 	if (!IsLoaded())
-		return false;
+		return 0;
 
 	glGenTextures(1, &TexIDPrimary);
 	if (TexIDPrimary == 0)
-		return false;
+		return 0;
 
 	// We try to bind the native tTexture first if possible.
 	if (AltPictureEnabled)
@@ -429,13 +420,13 @@ bool TacitImage::Bind()
 		{
 			const tList<tLayer>& layers = DDSCubemap.GetSide(tCubemap::tSide::PosZ)->GetLayers();
 			BindLayers(layers, TexIDPrimary);
-			return true;
+			return TexIDPrimary;
 		}
 		else if (DDSTexture2D.IsValid())
 		{
 			const tList<tLayer>& layers = DDSTexture2D.GetLayers();
 			BindLayers(layers, TexIDPrimary);
-			return true;
+			return TexIDPrimary;
 		}
 	}
 
@@ -453,10 +444,10 @@ bool TacitImage::Bind()
 		);
 
 		BindLayers(layers, TexIDPrimary);
-		return true;
+		return TexIDPrimary;
 	}
 
-	return false;
+	return 0;
 }
 
 
@@ -468,9 +459,6 @@ void TacitImage::BindLayers(const tList<tLayer>& layers, uint texID)
 	glBindTexture(GL_TEXTURE_2D, texID);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	// If the texture format is a mipmapped one, we need to set up OpenGL slightly differently.
