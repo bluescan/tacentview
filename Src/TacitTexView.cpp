@@ -125,7 +125,6 @@ namespace TexView
 	void GlfwErrorCallback(int error, const char* description)															{ tPrintf("Glfw Error %d: %s\n", error, description); }
 	bool CompareFunc(const tStringItem& a, const tStringItem& b)														{ return tStricmp(a.ConstText(), b.ConstText()) < 0; }
 
-	void LoadCurrImage();
 	void SetWindowTitle();
 	bool OnPrevious(bool circ = false);
 	bool OnNext(bool circ = false);
@@ -149,6 +148,11 @@ namespace TexView
 	void IconifyCallback(GLFWwindow*, int iconified);
 }
 
+
+ImVec2 TexView::GetDialogOrigin(float index)
+{
+	return ImVec2(DialogOrigin + DialogMargin*float(index), DialogOrigin + TopUIHeight + DialogMargin*float(index));
+}
 
 void TexView::DrawTextureViewerLog(float x, float y, float w, float h)
 {
@@ -1085,7 +1089,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (Config.InfoOverlayShow)
 		ShowInfoOverlay(&Config.InfoOverlayShow, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), imgxi, imgyi, ZoomPercent);
 
-	if (!FullscreenMode && Config.ContentViewShow)
+	if (Config.ContentViewShow)
 		ShowContentViewDialog(&Config.ContentViewShow);
 
 	if (ShowCheatSheet)

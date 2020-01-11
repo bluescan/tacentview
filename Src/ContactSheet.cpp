@@ -21,7 +21,7 @@
 void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
-	ImVec2 windowPos = ImVec2(PopupMargin*4.0f, TopUIHeight + PopupMargin*4.0f);
+	ImVec2 windowPos = GetDialogOrigin(3);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	if (!ImGui::Begin("Contact Sheet Generator", popen, windowFlags))

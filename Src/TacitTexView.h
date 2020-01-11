@@ -30,8 +30,6 @@ namespace TexView
 	extern tList<TacitImage> Images;
 	extern tCommand::tParam ImageFileParam;
 	extern tColouri PixelColour;
-	extern TacitImage* CurrImage;
-	extern tList<TacitImage> Images;
 	extern TacitImage DefaultThumbnailImage;
 
 	extern const ImVec4 ColourEnabledTint;
@@ -40,7 +38,8 @@ namespace TexView
 	extern const ImVec4 ColourPressedBG;
 
 	const int TopUIHeight			= 26;
-	const float PopupMargin			= 22.0f;
+	const float DialogOrigin		= 30.0f;
+	const float DialogMargin		= 19.0f;
 	const double DisappearDuration	= 4.0;
 
 	// Helper to display a little (?) mark which shows a tooltip when hovered.
@@ -48,5 +47,7 @@ namespace TexView
 	void ShowToolTip(const char* desc);
 	void PopulateImages();
 	void SetCurrentImage(const tString& currFilename = tString());
+	void LoadCurrImage();
 	bool ChangeScreenMode(bool fullscreeen, bool force = false);
+	ImVec2 GetDialogOrigin(float index);
 }

@@ -132,7 +132,7 @@ void TexView::ColourCopyAs()
 
 void TexView::ShowCheatSheetPopup(bool* popen)
 {
-	ImVec2 windowPos = ImVec2(PopupMargin*2.0f, TopUIHeight + PopupMargin*2.0f);
+	ImVec2 windowPos = GetDialogOrigin(1);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	// ImGui::SetNextWindowBgAlpha(0.6f);
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize |
@@ -174,7 +174,7 @@ void TexView::ShowCheatSheetPopup(bool* popen)
 
 void TexView::ShowAboutPopup(bool* popen)
 {
-	ImVec2 windowPos = ImVec2(PopupMargin*6.0f, TopUIHeight + PopupMargin*6.0f);
+	ImVec2 windowPos = GetDialogOrigin(5);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	// ImGui::SetNextWindowBgAlpha(0.6f);
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize |
@@ -204,7 +204,7 @@ void TexView::ShowAboutPopup(bool* popen)
 void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
-	ImVec2 windowPos = ImVec2(PopupMargin*3.0f, TopUIHeight + PopupMargin*3.0f);
+	ImVec2 windowPos = GetDialogOrigin(2);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	if (!ImGui::Begin("Save As", popen, windowFlags))
@@ -324,7 +324,7 @@ void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 void TexView::ShowSaveAllAsDialog(bool* popen)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
-	ImVec2 windowPos = ImVec2(PopupMargin*7.0f, TopUIHeight + PopupMargin*7.0f);
+	ImVec2 windowPos = GetDialogOrigin(6);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	if (!ImGui::Begin("Save All As", popen, windowFlags))
@@ -466,7 +466,7 @@ void TexView::ShowPreferencesDialog(bool* popen)
 
 	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
 	// do it to make the Demo applications a little more welcoming.
-	ImVec2 windowPos = ImVec2(PopupMargin*5.0f, TopUIHeight + PopupMargin*5.0f);
+	ImVec2 windowPos = GetDialogOrigin(4);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	if (!ImGui::Begin("Preferences", popen, windowFlags))

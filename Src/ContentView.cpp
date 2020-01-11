@@ -20,9 +20,11 @@
 
 void TexView::ShowContentViewDialog(bool* popen)
 {
-	ImGuiWindowFlags windowFlags = 0; // ImGuiWindowFlags_AlwaysAutoResize;
-	ImVec2 windowPos = ImVec2(PopupMargin*4.0f, TopUIHeight + PopupMargin*4.0f);
+	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar;
+	ImVec2 windowPos = GetDialogOrigin(0);
+	
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(640, 366), ImGuiCond_FirstUseEver);
 
 	if (!ImGui::Begin("Content View", popen, windowFlags))
 	{
@@ -30,30 +32,59 @@ void TexView::ShowContentViewDialog(bool* popen)
 		return;
 	}
 
-	int cols = 0;
-	for (TacitImage* i = Images.First(); i; i = i->Next())
+	ImGuiWindowFlags thumbWindowFlags = 0;
+	ImGui::BeginChild("Thumbnails", ImVec2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight()-61.0f), false, thumbWindowFlags);
+	
+	ImGuiStyle& style = ImGui::GetStyle();
+	float visibleW = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+	static float thumbWidth = 72.0f;
+
+	float minSpacing = 4.0f;
+	float numPerRowF = ImGui::GetWindowContentRegionMax().x / (thumbWidth + minSpacing);
+	int numPerRow = tMath::tGetClampMin(int(numPerRowF), 1);
+	float extra = ImGui::GetWindowContentRegionMax().x - (float(numPerRow) * (thumbWidth + minSpacing));
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(minSpacing + extra/float(numPerRow), minSpacing));
+	ImVec2 thumbButtonSize(thumbWidth, thumbWidth*9.0f/16.0f); // 64 36, 32 18,
+	int thumbNum = 0;
+	for (TacitImage* i = Images.First(); i; i = i->Next(), thumbNum++)
 	{
-//		TacitImage* i = CurrImage;
+		ImVec2 cursor = ImGui::GetCursorPos();
+		if ((thumbNum % numPerRow) == 0)
+			ImGui::SetCursorPos(ImVec2(0.5f*extra/float(numPerRow), cursor.y));
+
 		i->RequestThumbnail();
 		uint64 thumbnailTexID = i->BindThumbnail();
 		if (!thumbnailTexID)
 			thumbnailTexID = DefaultThumbnailImage.Bind();
 
+		ImGui::PushID(thumbNum);
+
 		if
 		(
 			thumbnailTexID &&
-//			ImGui::ImageButton(ImTextureID(thumbnailTexID), ImVec2(240,135), ImVec2(0,1), ImVec2(1,0), -1,
-//			ImGui::ImageButton(ImTextureID(thumbnailTexID), ImVec2(200,100), ImVec2(0,1), ImVec2(1,0), 0)
-			ImGui::ImageButton(ImTextureID(thumbnailTexID), ImVec2(128,72), ImVec2(0,1), ImVec2(1,0), 0,
+			ImGui::ImageButton(ImTextureID(thumbnailTexID), thumbButtonSize, ImVec2(0,1), ImVec2(1,0), 0,
 			ColourBG, ImVec4(1.00f, 1.00f, 1.00f, 1.00f))
 		)
 		{
-			// WIP. Goto image.
+			CurrImage = i;
+			LoadCurrImage();
 		}
+		tString filename = tSystem::tGetFileName(i->Filename);
+		ShowToolTip(filename.ConstText());
 
-		if (++cols % 5)
+		if ((thumbNum+1) % numPerRow)
 			ImGui::SameLine();
+
+		ImGui::PopID();
 	}
+	ImGui::PopStyleVar(1);
+	ImGui::EndChild();
+
+	ImGuiWindowFlags viewOptionsWindowFlags = ImGuiWindowFlags_NoScrollbar;
+	ImGui::BeginChild("ViewOptions", ImVec2(ImGui::GetWindowContentRegionWidth(), 40), false, viewOptionsWindowFlags);
+	ImGui::SetCursorPos(ImVec2(0.0f, 3.0f));
+	ImGui::SliderFloat("Thumbnail Size", &thumbWidth, 64.0f, 240.0f, "");
+	ImGui::EndChild();
 
 	ImGui::End();
 }
