@@ -41,7 +41,7 @@ void TexView::ShowContentViewDialog(bool* popen)
 
 	float minSpacing = 4.0f;
 	float numPerRowF = ImGui::GetWindowContentRegionMax().x / (thumbWidth + minSpacing);
-	int numPerRow = tMath::tGetClampMin(int(numPerRowF), 1);
+	int numPerRow = tMath::tClampMin(int(numPerRowF), 1);
 	float extra = ImGui::GetWindowContentRegionMax().x - (float(numPerRow) * (thumbWidth + minSpacing));
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(minSpacing + extra/float(numPerRow), minSpacing));
 	ImVec2 thumbButtonSize(thumbWidth, thumbWidth*9.0f/16.0f); // 64 36, 32 18,

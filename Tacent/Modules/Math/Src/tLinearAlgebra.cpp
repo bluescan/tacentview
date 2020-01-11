@@ -936,14 +936,14 @@ bool tMath::tExtractRotationEulerXYZ
 	if (!gimbalNeg && !gimbalPos)
 	{
 		sol1.y = -tArcSin(rot.a31);							// [-Pi/2, Pi/2]
-		sol2.y = tGetNormalizedAngle( Pi - sol1.y, bias );
+		sol2.y = tNormalizedAngle( Pi - sol1.y, bias );
 
 		float ct1 = tCos(sol1.y);							// Cos(theta1)
 		float ct2 = tCos(sol2.y);							// Cos(theta2)
-		sol1.x = tGetNormalizedAngle( tArcTan(rot.a32/ct1, rot.a33/ct1), bias );
-		sol2.x = tGetNormalizedAngle( tArcTan(rot.a32/ct2, rot.a33/ct2), bias );
-		sol1.z = tGetNormalizedAngle( tArcTan(rot.a21/ct1, rot.a11/ct1), bias );
-		sol2.z = tGetNormalizedAngle( tArcTan(rot.a21/ct2, rot.a11/ct2), bias );
+		sol1.x = tNormalizedAngle( tArcTan(rot.a32/ct1, rot.a33/ct1), bias );
+		sol2.x = tNormalizedAngle( tArcTan(rot.a32/ct2, rot.a33/ct2), bias );
+		sol1.z = tNormalizedAngle( tArcTan(rot.a21/ct1, rot.a11/ct1), bias );
+		sol2.z = tNormalizedAngle( tArcTan(rot.a21/ct2, rot.a11/ct2), bias );
 	}
 	else
 	{
@@ -952,12 +952,12 @@ bool tMath::tExtractRotationEulerXYZ
 		if (gimbalNeg)
 		{
 			sol1.y = PiOver2;
-			sol1.x = tGetNormalizedAngle(sol1.z + tArcTan(rot.a12, rot.a13), bias);
+			sol1.x = tNormalizedAngle(sol1.z + tArcTan(rot.a12, rot.a13), bias);
 		}
 		else
 		{
 			sol1.y = -PiOver2;
-			sol1.x = tGetNormalizedAngle(-sol1.z + tArcTan(-rot.a12, -rot.a13), bias);
+			sol1.x = tNormalizedAngle(-sol1.z + tArcTan(-rot.a12, -rot.a13), bias);
 		}
 		sol2 = sol1;
 	}

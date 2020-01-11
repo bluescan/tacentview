@@ -40,7 +40,7 @@ class tColouri
 public:
 	tColouri()												/* Does NOT set the colour values. */						{ }
 	tColouri(const tColouri& c)																							: BP(c.BP) { }
-	tColouri(int r, int g, int b, int a = 0xFF)																			{ R = tMath::tGetClamp(r, 0, 0xFF); G = tMath::tGetClamp(g, 0, 0xFF); B = tMath::tGetClamp(b, 0, 0xFF); A = tMath::tGetClamp(a, 0, 0xFF); }
+	tColouri(int r, int g, int b, int a = 0xFF)																			{ R = tMath::tClamp(r, 0, 0xFF); G = tMath::tClamp(g, 0, 0xFF); B = tMath::tClamp(b, 0, 0xFF); A = tMath::tClamp(a, 0, 0xFF); }
 	tColouri(uint8 r, uint8 g, uint8 b, uint8 a = 0xFF)																	: R(r), G(g), B(b), A(a) { }
 	tColouri(uint32 bits)																								: BP(bits) { }
 	tColouri(const tColourf& c)																							{ Set(c); }
@@ -52,10 +52,10 @@ public:
 	void Set(const tColourf& c);
 	void Set(const float* src)																							{ SetR(src[0]); SetG(src[1]); SetB(src[2]); SetA(src[3]); }
 	void Set(float r, float g, float b, float a = 1.0f)																	{ SetR(r); SetG(g); SetB(b); SetA(a); }
-	void SetR(float r)																									{ R = tMath::tGetClamp( tMath::tFloatToInt(r*255.0f), 0, 0xFF ); }
-	void SetG(float g)																									{ G = tMath::tGetClamp( tMath::tFloatToInt(g*255.0f), 0, 0xFF ); }
-	void SetB(float b)																									{ B = tMath::tGetClamp( tMath::tFloatToInt(b*255.0f), 0, 0xFF ); }
-	void SetA(float a)																									{ A = tMath::tGetClamp( tMath::tFloatToInt(a*255.0f), 0, 0xFF ); }
+	void SetR(float r)																									{ R = tMath::tClamp( tMath::tFloatToInt(r*255.0f), 0, 0xFF ); }
+	void SetG(float g)																									{ G = tMath::tClamp( tMath::tFloatToInt(g*255.0f), 0, 0xFF ); }
+	void SetB(float b)																									{ B = tMath::tClamp( tMath::tFloatToInt(b*255.0f), 0, 0xFF ); }
+	void SetA(float a)																									{ A = tMath::tClamp( tMath::tFloatToInt(a*255.0f), 0, 0xFF ); }
 
 	// The floating point get and set methods use a range of [0.0, 1.0] for each component.
 	float GetR() const																									{ return float(R) / 255.0f; }

@@ -374,19 +374,19 @@ bool tPicture::ScaleHalf()
 
 			int p0r = Pixels[p2].R;
 			int p1r = Pixels[p2 + 1].R;
-			newPixels[p].R = tMath::tGetClamp((p0r + p1r)>>1, 0, 255);
+			newPixels[p].R = tMath::tClamp((p0r + p1r)>>1, 0, 255);
 
 			int p0g = Pixels[p2].G;
 			int p1g = Pixels[p2 + 1].G;
-			newPixels[p].G = tMath::tGetClamp((p0g + p1g)>>1, 0, 255);
+			newPixels[p].G = tMath::tClamp((p0g + p1g)>>1, 0, 255);
 
 			int p0b = Pixels[p2].B;
 			int p1b = Pixels[p2 + 1].B;
-			newPixels[p].B = tMath::tGetClamp((p0b + p1b)>>1, 0, 255);
+			newPixels[p].B = tMath::tClamp((p0b + p1b)>>1, 0, 255);
 
 			int p0a = Pixels[p2].A;
 			int p1a = Pixels[p2 + 1].A;
-			newPixels[p].A = tMath::tGetClamp((p0a + p1a)>>1, 0, 255);
+			newPixels[p].A = tMath::tClamp((p0a + p1a)>>1, 0, 255);
 		}
 	}
 
@@ -405,25 +405,25 @@ bool tPicture::ScaleHalf()
 				int p1r = Pixels[y2*Width + x2 + 1].R;
 				int p2r = Pixels[(y2+1)*Width + x2].R;
 				int p3r = Pixels[(y2+1)*Width + x2 + 1].R;
-				newPixels[y*newWidth + x].R = tMath::tGetClamp((p0r + p1r + p2r + p3r)>>2, 0, 255);
+				newPixels[y*newWidth + x].R = tMath::tClamp((p0r + p1r + p2r + p3r)>>2, 0, 255);
 
 				int p0g = Pixels[y2*Width + x2].G;
 				int p1g = Pixels[y2*Width + x2 + 1].G;
 				int p2g = Pixels[(y2+1)*Width + x2].G;
 				int p3g = Pixels[(y2+1)*Width + x2 + 1].G;
-				newPixels[y*newWidth + x].G = tMath::tGetClamp((p0g + p1g + p2g + p3g)>>2, 0, 255);
+				newPixels[y*newWidth + x].G = tMath::tClamp((p0g + p1g + p2g + p3g)>>2, 0, 255);
 
 				int p0b = Pixels[y2*Width + x2].B;
 				int p1b = Pixels[y2*Width + x2 + 1].B;
 				int p2b = Pixels[(y2+1)*Width + x2].B;
 				int p3b = Pixels[(y2+1)*Width + x2 + 1].B;
-				newPixels[y*newWidth + x].B = tMath::tGetClamp((p0b + p1b + p2b + p3b)>>2, 0, 255);
+				newPixels[y*newWidth + x].B = tMath::tClamp((p0b + p1b + p2b + p3b)>>2, 0, 255);
 
 				int p0a = Pixels[y2*Width + x2].A;
 				int p1a = Pixels[y2*Width + x2 + 1].A;
 				int p2a = Pixels[(y2+1)*Width + x2].A;
 				int p3a = Pixels[(y2+1)*Width + x2 + 1].A;
-				newPixels[y*newWidth + x].A = tMath::tGetClamp((p0a + p1a + p2a + p3a)>>2, 0, 255);
+				newPixels[y*newWidth + x].A = tMath::tClamp((p0a + p1a + p2a + p3a)>>2, 0, 255);
 			}
 		}
 	}

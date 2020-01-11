@@ -55,21 +55,16 @@ enum class tIntervalBias
 std::function<bool(float,float)> tBiasLess(tIntervalBias);
 std::function<bool(float,float)> tBiasGreater(tIntervalBias);
 
-// For the 'ti' versions of the below functions, the 'i' means 'in-place' (ref var) rather than returning the value.
 template<typename T> inline T tMin(const T& a, const T& b)																{ return a < b ? a : b; }
 template<typename T> inline T tMax(const T& a, const T& b)																{ return a > b ? a : b; }
 template<typename T> inline T tMin(const T& a, const T& b, const T& c)													{ T ab = a < b ? a : b; return ab < c ? ab : c; }
 template<typename T> inline T tMax(const T& a, const T& b, const T& c)													{ T ab = a > b ? a : b; return ab > c ? ab : c; }
 template<typename T> inline T tMin(const T& a, const T& b, const T& c, const T& d)										{ T ab = a < b ? a : b; T cd = c < d ? c : d; return ab < cd ? ab : cd; }
 template<typename T> inline T tMax(const T& a, const T& b, const T& c, const T& d)										{ T ab = a > b ? a : b; T cd = c > d ? c : d; return ab > cd ? ab : cd; }
-template<typename T> inline T tGetClamp(T val, T min, T max)															{ return (val < min) ? min : ((val > max) ? max : val); }
-template<typename T> inline void tiClamp(T& val, T min, T max)															{ val = (val < min) ? min : ((val > max) ? max : val); }
-template<typename T> inline T tGetClampMin(T val, T min)																{ return (val < min) ? min : val; }
-template<typename T> inline void tiClampMin(T& val, T min)																{ val = (val < min) ? min : val; }
-template<typename T> inline T tGetClampMax(T val, T max)																{ return (val > max) ? max : val; }
-template<typename T> inline void tiClampMax(T& val, T max)																{ val = (val > max) ? max : val; }
-template<typename T> inline T tGetSaturate(T val)																		{ return (val < T(0)) ? T(0) : ((val > T(1)) ? T(1) : val); }
-template<typename T> inline void tiSaturate(T& val)																		{ val = (val < T(0)) ? T(0) : ((val > T(1)) ? T(1) : val); }
+template<typename T> inline T tClamp(T val, T min, T max)																{ return (val < min) ? min : ((val > max) ? max : val); }
+template<typename T> inline T tClampMin(T val, T min)																	{ return (val < min) ? min : val; }
+template<typename T> inline T tClampMax(T val, T max)																	{ return (val > max) ? max : val; }
+template<typename T> inline T tSaturate(T val)																			{ return (val < T(0)) ? T(0) : ((val > T(1)) ? T(1) : val); }
 template<typename T> inline bool tInRange(const T val, const T min, const T max)		/* Returns val E [min, max]	*/	{ return tInIntervalII(val, min, max); }
 template<typename T> inline bool tInInterval(const T val, const T min, const T max)		/* Returns val E [min, max]	*/	{ return tInIntervalII(val, min, max); }
 template<typename T> inline bool tInIntervalII(const T val, const T min, const T max)									{ if ((val >= min) && (val <= max)) return true; return false; }	// Implements val E [min, max]
@@ -83,6 +78,12 @@ template<typename T> inline bool tApproxEqual(T a, T b, float e = Epsilon)						
 template<typename T> inline bool tEquals(T a, T b)																		{ return a == b; }
 template<typename T> inline bool tNotEqual(T a, T b)																	{ return a != b; }
 
+// For the 'ti' versions of the below functions, the 'i' means 'in-place' (ref var) rather than returning the value.
+template<typename T> inline void tiClamp(T& val, T min, T max)															{ val = (val < min) ? min : ((val > max) ? max : val); }
+template<typename T> inline void tiClampMin(T& val, T min)																{ val = (val < min) ? min : val; }
+template<typename T> inline void tiClampMax(T& val, T max)																{ val = (val > max) ? max : val; }
+template<typename T> inline void tiSaturate(T& val)																		{ val = (val < T(0)) ? T(0) : ((val > T(1)) ? T(1) : val); }
+
 // Use this instead of casting to int. The only difference is it rounds instead of truncating and is way faster -- The
 // FPU stays in rounding mode so pipeline not flushed.
 inline int tFloatToInt(float val)																						{ return int(val + 0.5f); }
@@ -95,6 +96,14 @@ inline float tMod(float n, float d)																						{ return fmodf(n,d); }
 inline int tAbs(int val)																								{ return (val < 0) ? -val : val; }
 inline float tAbs(float val)																							{ return (val < 0.0f) ? -val : val; }
 inline double tAbs(double val)																							{ return (val < 0.0) ? -val : val; }
+
+// For the 'ti' versions of the below functions, the 'i' means 'in-place' (ref var) rather than returning the value.
+inline void tiCeiling(float& v)																							{ v = ceilf(v); }
+inline void tiFloor(float& v)																							{ v = floorf(v); }
+inline void tiRound(float& v)																							{ v = floorf(v + 0.5f); }
+inline void tiAbs(int& val)																								{ val = (val < 0) ? -val : val; }
+inline void tiAbs(float& val)																							{ val = (val < 0.0f) ? -val : val; }
+inline void tiAbs(double& val)																							{ val = (val < 0.0) ? -val : val; }
 
 // The following Abs function deserves a little explanation. Some linear algebra texts use the term absolute value and
 // norm interchangeably. Others suggest that the absolute value of a matrix is the matrix with each component
@@ -123,6 +132,10 @@ inline float tArcTan(float m)																							{ return atanf(m); }
 inline float tExp(float x)																								{ return expf(x); }
 inline float tLog(float x)									/* Natural logarithm. */									{ return logf(x); }
 
+// For the 'ti' versions of the below functions, the 'i' means 'in-place' (ref var) rather than returning the value.
+inline void tiDegToRad(float& ang)																						{ ang = ang * Pi / 180.0f; }
+inline void tiRadToDeg(float& ang)																						{ ang = ang * 180.0f / Pi; }
+
 // Returns integral base 2 logarithm. If v is <= 0 returns MinInt32. If v is a power of 2 you will get an exact
 // result. If v is not a power of two it will return the logarithm of the next lowest power of 2. For example,
 // Log2(2) = 1, Log2(3) = 1, and Log2(4) = 2.
@@ -130,14 +143,18 @@ inline int tLog2(int v);
 inline float tPow(float a, float b)																						{ return powf(a, b); }
 inline double tPow(double a, double b)																					{ return pow(a, b); }
 
+// For the 'ti' versions of the functions, the 'i' means 'in-place' (ref var) rather than returning the value.
 inline bool tIsPower2(int v)																							{ if (v < 1) return false; return (v & (v-1)) ? false : true; }
+inline void tiNextLowerPower2(uint& v)																					{ uint pow2 = 1; while (pow2 < v) pow2 <<= 1; pow2 >>= 1; v = pow2 ? pow2 : 1; }
 inline uint tNextLowerPower2(uint v)																					{ uint pow2 = 1; while (pow2 < v) pow2 <<= 1; pow2 >>= 1; return pow2 ? pow2 : 1; }
+inline void tiNextHigherPower2(uint& v)																					{ uint pow2 = 1; while (pow2 <= v) pow2 <<= 1; v = pow2; }
 inline uint tNextHigherPower2(uint v)																					{ uint pow2 = 1; while (pow2 <= v) pow2 <<= 1; return pow2; }
+inline void tiClosestPower2(uint& v)																					{ if (tIsPower2(v)) return; int h = tNextHigherPower2(v); int l = tNextLowerPower2(v); v = ((h - v) < (v - l)) ? h : l; }
 inline uint tClosestPower2(uint v)																						{ if (tIsPower2(v)) return v; int h = tNextHigherPower2(v); int l = tNextLowerPower2(v); return ((h - v) < (v - l)) ? h : l; }
-void tNormalizeAngle(float& angle, tIntervalBias = tIntervalBias::Low);		// Results in angle E [(-Pi,Pi)].
-void tNormalizeAngle2Pi(float& angle, tIntervalBias = tIntervalBias::Low);	// Results in angle E [(0,2Pi)].
-inline float tGetNormalizedAngle(float angle, tIntervalBias bias = tIntervalBias::Low)									{ tNormalizeAngle(angle, bias); return angle; }
-inline float tGetNormalizedAngle2Pi(float angle, tIntervalBias bias = tIntervalBias::Low)								{ tNormalizeAngle2Pi(angle, bias); return angle; }
+void tiNormalizeAngle(float& angle, tIntervalBias = tIntervalBias::Low);		// Results in angle E [(-Pi,Pi)].
+inline float tNormalizedAngle(float angle, tIntervalBias bias = tIntervalBias::Low)										{ tiNormalizeAngle(angle, bias); return angle; }
+void tiNormalizeAngle2Pi(float& angle, tIntervalBias = tIntervalBias::Low);		// Results in angle E [(0,2Pi)].
+inline float tNormalizedAngle2Pi(float angle, tIntervalBias bias = tIntervalBias::Low)									{ tiNormalizeAngle2Pi(angle, bias); return angle; }
 
 // Gets the range (y) value of a normal distribution with mean = 0, and given variance. Pass in the domain (x) value.
 inline float tNormalDist(float variance, float x)																		{ return tPow(2*Pi*variance, -0.5f) * tExp(-tPow(x, 2.0f) / (2.0f*variance)); }
@@ -273,7 +290,7 @@ inline int tMath::tLog2(int x)
 }
 
 
-inline void tMath::tNormalizeAngle(float& a, tIntervalBias bias)
+inline void tMath::tiNormalizeAngle(float& a, tIntervalBias bias)
 {
 	std::function<bool(float,float)> less = tBiasLess(bias);
 	std::function<bool(float,float)> greater = tBiasGreater(bias);
@@ -282,7 +299,7 @@ inline void tMath::tNormalizeAngle(float& a, tIntervalBias bias)
 }
 
 
-inline void tMath::tNormalizeAngle2Pi(float& a, tIntervalBias bias)
+inline void tMath::tiNormalizeAngle2Pi(float& a, tIntervalBias bias)
 {
 	std::function<bool(float,float)> less = tBiasLess(bias);
 	std::function<bool(float,float)> greater = tBiasGreater(bias);

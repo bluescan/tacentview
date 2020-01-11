@@ -2,7 +2,7 @@
 //
 // Version numbers for Tacent.
 //
-// Copyright (c) 2004-2006, 2016, 2017, 2019 Tristan Grimmer.
+// Copyright (c) 2004-2006, 2016, 2017, 2019, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -28,7 +28,7 @@ namespace tVersion
 
 	// The revision number, also called a patch number, is for minor bug fixes and the like. It Resets to 0 when the
 	// minor version increments.
-	const uint Revision = 2;
+	const uint Revision = 3;
 
 	// Additionally, a change number is specified on Tacent releases. This is a monotonically increasing number that
 	// never resets. @todo At some point I'll make a versioning tool so that this file, including the ChangeNumber
