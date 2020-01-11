@@ -33,6 +33,7 @@ void TexView::ShowContentViewDialog(bool* popen)
 	int cols = 0;
 	for (TacitImage* i = Images.First(); i; i = i->Next())
 	{
+//		TacitImage* i = CurrImage;
 		i->RequestThumbnail();
 		uint64 thumbnailTexID = i->BindThumbnail();
 		if (!thumbnailTexID)
@@ -42,15 +43,16 @@ void TexView::ShowContentViewDialog(bool* popen)
 		(
 			thumbnailTexID &&
 //			ImGui::ImageButton(ImTextureID(thumbnailTexID), ImVec2(240,135), ImVec2(0,1), ImVec2(1,0), -1,
-			ImGui::ImageButton(ImTextureID(thumbnailTexID), ImVec2(200,100), ImVec2(0,1), ImVec2(1,0), 0)
-//			ImGui::ImageButton(ImTextureID(thumbnailTexID), ImVec2(128,72), ImVec2(0,1), ImVec2(1,0), 0)
-//			ColourBG, ImVec4(1.00f, 1.00f, 1.00f, 1.00f))
+//			ImGui::ImageButton(ImTextureID(thumbnailTexID), ImVec2(200,100), ImVec2(0,1), ImVec2(1,0), 0)
+			ImGui::ImageButton(ImTextureID(thumbnailTexID), ImVec2(128,72), ImVec2(0,1), ImVec2(1,0), 0,
+			ColourBG, ImVec4(1.00f, 1.00f, 1.00f, 1.00f))
 		)
 		{
 			// WIP. Goto image.
 		}
-//		if (cols % 5)
-//			ImGui::SameLine();
+
+		if (++cols % 5)
+			ImGui::SameLine();
 	}
 
 	ImGui::End();

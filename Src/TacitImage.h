@@ -108,9 +108,9 @@ private:
 	tImage::tPicture ThumbnailPicture;
 
 	// Zero is invalid and means texture has never been bound and loaded into VRAM.
-	uint TexIDPrimary;
-	uint TexIDAlt;
-	uint TexIDThumbnail;
+	uint TexIDPrimary	= 0;
+	uint TexIDAlt		= 0;
+	uint TexIDThumbnail	= 0;
 
 	// Returns the approx main mem size of this image. Considers the Pictures list and the AltPicture.
 	int GetMemSizeBytes() const;

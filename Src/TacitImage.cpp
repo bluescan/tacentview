@@ -24,18 +24,14 @@ using namespace tImage;
 
 
 TacitImage::TacitImage() :
-	Filename(),
-	TexIDPrimary(0),
-	TexIDAlt(0)
+	Filename()
 {
 	Filetype = tFileType::Unknown;
 }
 
 
 TacitImage::TacitImage(const tString& filename) :
-	Filename(filename),
-	TexIDPrimary(0),
-	TexIDAlt(0)
+	Filename(filename)
 {
 	Filetype = tGetFileType(Filename);
 }
@@ -687,8 +683,9 @@ void TacitImage::RequestThumbnail()
 		tAssert(primaryPic);
 
 		ThumbnailPicture.Set(*primaryPic);
-//		ThumbnailPicture.Resample(240, 135, tPicture::tFilter::Box);
+
+		ThumbnailPicture.Resample(240, 135, tPicture::tFilter::Box);
 //		ThumbnailPicture.Resample(128, 72, tPicture::tFilter::Bilinear);
-		ThumbnailPicture.Resample(128, 128, tPicture::tFilter::NearestNeighbour);
+//		ThumbnailPicture.Resample(128, 128, tPicture::tFilter::NearestNeighbour);
 	}
 }

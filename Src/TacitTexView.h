@@ -30,6 +30,7 @@ namespace TexView
 	extern tList<TacitImage> Images;
 	extern tCommand::tParam ImageFileParam;
 	extern tColouri PixelColour;
+	extern TacitImage* CurrImage;
 	extern tList<TacitImage> Images;
 	extern TacitImage DefaultThumbnailImage;
 

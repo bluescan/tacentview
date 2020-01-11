@@ -48,7 +48,7 @@ void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, i
 
 	if (ImGui::Begin("InfoOverlay", popen, flags))
 	{
-		ImGui::Text("Image Info - Enter to Toggle");
+		ImGui::Text("Information Overlay");
 		ImGui::Text("Right-Click to Change Anchor");
 		ImGui::Separator();
 
