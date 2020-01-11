@@ -1391,6 +1391,9 @@ void TexView::CursorPosCallback(GLFWwindow* window, double x, double y)
 
 void TexView::ScrollWheelCallback(GLFWwindow* window, double x, double y)
 {
+	if (ImGui::GetIO().WantCaptureMouse)
+		return;
+
 	DisappearCountdown = DisappearDuration;
 
 	CurrZoomMode = ZoomMode::User;
