@@ -372,8 +372,8 @@ void TexView::ShowSaveAllAsDialog(bool* popen)
 		ImGui::SameLine();
 		ShowHelpMark("Filtering method to use when resizing images.");
 	}
-	tMath::tClampMin(forceWidth, 4);
-	tMath::tClampMin(forceHeight, 4);
+	tMath::tiClampMin(forceWidth, 4);
+	tMath::tiClampMin(forceHeight, 4);
 
 	const char* fileTypeItems[] = { "TGA", "PNG", "BMP", "JPG", "GIF" };
 	ImGui::Combo("File Type", &Config.PreferredFileSaveType, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
@@ -500,7 +500,7 @@ void TexView::ShowPreferencesDialog(bool* popen)
 	ImGui::PushItemWidth(110);
 	ImGui::InputInt("Max Mem (MB)", &Config.MaxImageMemMB);
 	ImGui::PopItemWidth();
-	tMath::tClampMin(Config.MaxImageMemMB, 256);
+	tMath::tiClampMin(Config.MaxImageMemMB, 256);
 	ImGui::Unindent();
 
 	ImGui::Separator();

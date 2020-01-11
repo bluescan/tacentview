@@ -614,7 +614,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 
 			if (!Config.Tile)
-				tMath::tClamp(DragDownOffsetX, int(-(w-draww)/2.0f) - PanOffsetX, int((w-draww)/2.0f) - PanOffsetX);
+				tMath::tiClamp(DragDownOffsetX, int(-(w-draww)/2.0f) - PanOffsetX, int((w-draww)/2.0f) - PanOffsetX);
 		}
 
 		if ((drawh < h) || Config.Tile)
@@ -627,7 +627,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 
 			if (!Config.Tile)
-				tMath::tClamp(DragDownOffsetY, int(-(h-drawh)/2.0f) - PanOffsetY, int((h-drawh)/2.0f) - PanOffsetY);
+				tMath::tiClamp(DragDownOffsetY, int(-(h-drawh)/2.0f) - PanOffsetY, int((h-drawh)/2.0f) - PanOffsetY);
 		}
 
 		if ((draww > w) && !Config.Tile)
@@ -695,8 +695,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		if (!Config.Tile)
 		{
-			tMath::tClamp(imgxi, 0, CurrImage->GetWidth() - 1);
-			tMath::tClamp(imgyi, 0, CurrImage->GetHeight() - 1);
+			tMath::tiClamp(imgxi, 0, CurrImage->GetWidth() - 1);
+			tMath::tiClamp(imgyi, 0, CurrImage->GetHeight() - 1);
 		}
 		else
 		{
@@ -1207,8 +1207,7 @@ void TexView::ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan)
 	if (((zoomOrig < 100.0f) && (ZoomPercent > 100.0f)) || ((zoomOrig > 100.0f) && (ZoomPercent < 100.0f)))
 		ZoomPercent = 100.0f;
 
-	//ZoomPercent = tMath::tRound(ZoomPercent*roundTo) / roundTo;
-	tMath::tClamp(ZoomPercent, ZoomMin, ZoomMax);
+	tMath::tiClamp(ZoomPercent, ZoomMin, ZoomMax);
 
 	if (correctPan)
 	{

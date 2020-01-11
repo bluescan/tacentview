@@ -3,7 +3,7 @@
 // Colour and pixel classes. Both a 32 bit integral representation as well as a 4 component floating point one can be
 // found in this file.
 //
-// Copyright (c) 2006, 2011, 2017 Tristan Grimmer.
+// Copyright (c) 2006, 2011, 2017, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -102,9 +102,9 @@ void tHSVToRGB(int& r, int& g, int& b, int h, int s, int v, tAngleMode angleMode
 	while (h < 0)
 		h += fullCircle;
 
-	tClamp(h, 0, fullCircle-1);
-	tClamp(s, 0, 255);
-	tClamp(v, 0, 255);
+	tiClamp(h, 0, fullCircle-1);
+	tiClamp(s, 0, 255);
+	tiClamp(v, 0, 255);
 
 	if (!h && !s)
 	{

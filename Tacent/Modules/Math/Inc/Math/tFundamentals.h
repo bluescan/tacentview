@@ -3,7 +3,7 @@
 // Core math functions needed by the rest or of the module as well as for external use. Functions include trigonometric
 // functions, intervals, angle manipulation, power functions, and other analytic functions.
 //
-// Copyright (c) 2004, 2017, 2019 Tristan Grimmer.
+// Copyright (c) 2004, 2017, 2019, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -55,6 +55,7 @@ enum class tIntervalBias
 std::function<bool(float,float)> tBiasLess(tIntervalBias);
 std::function<bool(float,float)> tBiasGreater(tIntervalBias);
 
+// For the 'ti' versions of the below functions, the 'i' means 'in-place' (ref var) rather than returning the value.
 template<typename T> inline T tMin(const T& a, const T& b)																{ return a < b ? a : b; }
 template<typename T> inline T tMax(const T& a, const T& b)																{ return a > b ? a : b; }
 template<typename T> inline T tMin(const T& a, const T& b, const T& c)													{ T ab = a < b ? a : b; return ab < c ? ab : c; }
@@ -62,13 +63,13 @@ template<typename T> inline T tMax(const T& a, const T& b, const T& c)										
 template<typename T> inline T tMin(const T& a, const T& b, const T& c, const T& d)										{ T ab = a < b ? a : b; T cd = c < d ? c : d; return ab < cd ? ab : cd; }
 template<typename T> inline T tMax(const T& a, const T& b, const T& c, const T& d)										{ T ab = a > b ? a : b; T cd = c > d ? c : d; return ab > cd ? ab : cd; }
 template<typename T> inline T tGetClamp(T val, T min, T max)															{ return (val < min) ? min : ((val > max) ? max : val); }
-template<typename T> inline void tClamp(T& val, T min, T max)															{ val = (val < min) ? min : ((val > max) ? max : val); }
+template<typename T> inline void tiClamp(T& val, T min, T max)															{ val = (val < min) ? min : ((val > max) ? max : val); }
 template<typename T> inline T tGetClampMin(T val, T min)																{ return (val < min) ? min : val; }
-template<typename T> inline void tClampMin(T& val, T min)																{ val = (val < min) ? min : val; }
+template<typename T> inline void tiClampMin(T& val, T min)																{ val = (val < min) ? min : val; }
 template<typename T> inline T tGetClampMax(T val, T max)																{ return (val > max) ? max : val; }
-template<typename T> inline void tClampMax(T& val, T max)																{ val = (val > max) ? max : val; }
+template<typename T> inline void tiClampMax(T& val, T max)																{ val = (val > max) ? max : val; }
 template<typename T> inline T tGetSaturate(T val)																		{ return (val < T(0)) ? T(0) : ((val > T(1)) ? T(1) : val); }
-template<typename T> inline void tSaturate(T& val)																		{ val = (val < T(0)) ? T(0) : ((val > T(1)) ? T(1) : val); }
+template<typename T> inline void tiSaturate(T& val)																		{ val = (val < T(0)) ? T(0) : ((val > T(1)) ? T(1) : val); }
 template<typename T> inline bool tInRange(const T val, const T min, const T max)		/* Returns val E [min, max]	*/	{ return tInIntervalII(val, min, max); }
 template<typename T> inline bool tInInterval(const T val, const T min, const T max)		/* Returns val E [min, max]	*/	{ return tInIntervalII(val, min, max); }
 template<typename T> inline bool tInIntervalII(const T val, const T min, const T max)									{ if ((val >= min) && (val <= max)) return true; return false; }	// Implements val E [min, max]
@@ -292,7 +293,7 @@ inline void tMath::tNormalizeAngle2Pi(float& a, tIntervalBias bias)
 
 inline float tMath::tUnitSin(float x, uint32 flip)
 {
-	tClamp(x, 0.0f, 1.0f);
+	tiClamp(x, 0.0f, 1.0f);
 	x = (flip & tUnitFlip_X) ? 1.0f-x : x;
 	float y = (tSin(x*Pi - PiOver2) + 1.0f)/2.0f;
 	y = (flip & tUnitFlip_Y) ? 1.0f-y : y;
@@ -302,7 +303,7 @@ inline float tMath::tUnitSin(float x, uint32 flip)
 
 inline float tMath::tUnitSinHalf(float x, uint32 flip)
 {
-	tClamp(x, 0.0f, 1.0f);
+	tiClamp(x, 0.0f, 1.0f);
 	x = (flip & tUnitFlip_X) ? 1.0f-x : x;
 	float y = tSin(x*PiOver2);
 	y = (flip & tUnitFlip_Y) ? 1.0f-y : y;
@@ -312,7 +313,7 @@ inline float tMath::tUnitSinHalf(float x, uint32 flip)
 
 inline float tMath::tUnitPow(float x, float c, uint32 flip)
 {
-	tClamp(x, 0.0f, 1.0f);
+	tiClamp(x, 0.0f, 1.0f);
 	x = (flip & tUnitFlip_X) ? 1.0f-x : x;
 	float y = tPow(x, c);
 	y = (flip & tUnitFlip_Y) ? 1.0f-y : y;
@@ -322,7 +323,7 @@ inline float tMath::tUnitPow(float x, float c, uint32 flip)
 
 inline float tMath::tUnitPowPlateau(float x, float c, uint32 flip)
 {
-	tClamp(x, 0.0f, 1.0f);
+	tiClamp(x, 0.0f, 1.0f);
 	x = (flip & tUnitFlip_X) ? 1.0f-x : x;
 
 	float y = 0.0f;
@@ -338,7 +339,7 @@ inline float tMath::tUnitPowPlateau(float x, float c, uint32 flip)
 
 inline float tMath::tUnitArc(float x, uint32 flip)
 {
-	tClamp(x, 0.0f, 1.0f);
+	tiClamp(x, 0.0f, 1.0f);
 	x = (flip & tUnitFlip_X) ? 1.0f-x : x;
 	float y = tSqrt(1.0f - (1.0f-x)*(1.0f-x));
 	y = (flip & tUnitFlip_Y) ? 1.0f-y : y;

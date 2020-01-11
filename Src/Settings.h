@@ -18,15 +18,17 @@
 
 struct Settings
 {
-	int WindowX							= 100;
-	int WindowY							= 100;
-	int WindowW							= 1280;
-	int WindowH							= 720;
-	bool ShowLog						= false;
-	bool InfoOverlayShow				= false;
-	bool ContentViewShow				= false;
-	int OverlayCorner					= 3;
-	bool Tile							= false;
+	Settings()							{ Reset(); }
+	int WindowX;
+	int WindowY;
+	int WindowW;
+	int WindowH;
+	bool ShowLog;
+	bool InfoOverlayShow;
+	bool ContentViewShow;
+	float ThumbnailSize;
+	int OverlayCorner;
+	bool Tile;
 
 	enum class BGStyle
 	{
@@ -36,15 +38,16 @@ struct Settings
 		Grey,
 		White
 	};
-	bool BackgroundExtend				= false;	// Extend background past image bounds.
-	int BackgroundStyle					= 1;
-	int ResampleFilter					= 2;		// Matches tImage::tPicture::tFilter.
-	bool ConfirmDeletes					= true;
-	double SlidehowFrameDuration		= 1.0/30.0;
-	int PreferredFileSaveType			= 0;
-	int MaxImageMemMB					= 1024;		// Max image mem before unloading images.
+	bool BackgroundExtend;				// Extend background past image bounds.
+	int BackgroundStyle;
+	int ResampleFilter;					// Matches tImage::tPicture::tFilter.
+	bool ConfirmDeletes;
+	double SlidehowFrameDuration;
+	int PreferredFileSaveType;
+	int MaxImageMemMB;					// Max image mem before unloading images.
 
 	void Load(const tString& filename, int screenWidth, int screenHeight);
 	bool Save(const tString& filename);
+	void Reset();
 	void Reset(int screenWidth, int screenHeight);
 };

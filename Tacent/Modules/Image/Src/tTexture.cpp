@@ -12,7 +12,7 @@
 // useful at both pipeline and for runtime loading. To save to a tChunk file format a tTexture will call the Save
 // method of all the tLayers.
 //
-// Copyright (c) 2006, 2016, 2017 Tristan Grimmer.
+// Copyright (c) 2006, 2016, 2017, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -146,11 +146,11 @@ bool tTexture::Set(tPicture& image, bool generateMipmaps, tPixelFormat pixelForm
 	// choose from 32 and 64, but since 32 is 22 away and 64 is only 10, we choose 64.
 	int origWidth = image.GetWidth();
 	int newWidth = forceWidth ? forceWidth : tMath::tClosestPower2(origWidth);
-	tMath::tClamp(newWidth, tLayer::MinLayerDimension, tLayer::MaxLayerDimension);
+	tMath::tiClamp(newWidth, tLayer::MinLayerDimension, tLayer::MaxLayerDimension);
 
 	int origHeight = image.GetHeight();
 	int newHeight = forceHeight ? forceHeight : tMath::tClosestPower2(origHeight);
-	tMath::tClamp(newHeight, tLayer::MinLayerDimension, tLayer::MaxLayerDimension);
+	tMath::tiClamp(newHeight, tLayer::MinLayerDimension, tLayer::MaxLayerDimension);
 
 	if ((origWidth != newWidth) || (origHeight != origHeight))
 	{

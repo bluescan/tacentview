@@ -588,9 +588,9 @@ bool TacitImage::ConvertTexture2DToPicture()
 	for (int level = 0; level < numMipmaps; level++)
 	{
 		int mipW = w >> level;
-		tMath::tClampMin(mipW, 1);
+		tMath::tiClampMin(mipW, 1);
 		int mipH = h >> level;
-		tMath::tClampMin(mipH, 1);
+		tMath::tiClampMin(mipH, 1);
 		uint8* rgbaData = new uint8[mipW * mipH * 4];
 		glGetTexImage(GL_TEXTURE_2D, level, GL_RGBA, GL_UNSIGNED_BYTE, rgbaData);
 		Pictures.Append(new tPicture(mipW, mipH, (tPixel*)rgbaData, false));
@@ -684,8 +684,7 @@ void TacitImage::RequestThumbnail()
 
 		ThumbnailPicture.Set(*primaryPic);
 
-		ThumbnailPicture.Resample(240, 135, tPicture::tFilter::Box);
-//		ThumbnailPicture.Resample(128, 72, tPicture::tFilter::Bilinear);
-//		ThumbnailPicture.Resample(128, 128, tPicture::tFilter::NearestNeighbour);
+		// This is a 16:9 aspect.
+		ThumbnailPicture.Resample(256, 144, tPicture::tFilter::Box);
 	}
 }

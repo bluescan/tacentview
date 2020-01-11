@@ -83,7 +83,7 @@ void TexView::ShowContentViewDialog(bool* popen)
 	ImGuiWindowFlags viewOptionsWindowFlags = ImGuiWindowFlags_NoScrollbar;
 	ImGui::BeginChild("ViewOptions", ImVec2(ImGui::GetWindowContentRegionWidth(), 40), false, viewOptionsWindowFlags);
 	ImGui::SetCursorPos(ImVec2(0.0f, 3.0f));
-	ImGui::SliderFloat("Thumbnail Size", &thumbWidth, 64.0f, 240.0f, "");
+	ImGui::SliderFloat("Thumbnail Size", &thumbWidth, 64.0f, 256.0f, "");
 	ImGui::EndChild();
 
 	ImGui::End();

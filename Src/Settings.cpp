@@ -19,15 +19,17 @@
 using namespace tMath;
 
 
-void Settings::Reset(int screenW, int screenH)
+void Settings::Reset()
 {
 	WindowW					= 1280;
 	WindowH					= 720;
-	WindowX					= (screenW - WindowW) >> 1;
-	WindowY					= (screenH - WindowH) >> 1;
+	WindowX					= 100;
+	WindowY					= 100;
+
 	ShowLog					= false;
 	InfoOverlayShow			= false;
-	ContentViewShow		= false;
+	ContentViewShow			= false;
+	ThumbnailSize			= 72.0f;
 	OverlayCorner			= 3;
 	Tile					= false;
 	BackgroundExtend		= false;
@@ -37,6 +39,14 @@ void Settings::Reset(int screenW, int screenH)
 	SlidehowFrameDuration	= 1.0/30.0;
 	PreferredFileSaveType	= 0;
 	MaxImageMemMB			= 1024;
+}
+
+
+void Settings::Reset(int screenW, int screenH)
+{
+	Reset();
+	WindowX					= (screenW - WindowW) >> 1;
+	WindowY					= (screenH - WindowH) >> 1;
 }
 
 
@@ -81,6 +91,10 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 					ContentViewShow = e.Arg1();
 					break;
 
+				case tHashCT("ThumbnailSize"):
+					ThumbnailSize = e.Arg1();
+					break;
+
 				case tHashCT("OverlayCorner"):
 					OverlayCorner = e.Arg1();
 					break;
@@ -120,14 +134,15 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 		}
 	}
 
-	tClamp(ResampleFilter, 0, 5);
-	tClamp(BackgroundStyle, 0, 4);
-	tClamp(WindowW, 640, screenW);
-	tClamp(WindowH, 360, screenH);
-	tClamp(WindowX, 0, screenW - WindowW);
-	tClamp(WindowY, 0, screenH - WindowH);
-	tClamp(OverlayCorner, 0, 3);
-	tClamp(PreferredFileSaveType, 0, 4);
+	tiClamp(ResampleFilter, 0, 5);
+	tiClamp(BackgroundStyle, 0, 4);
+	tiClamp(WindowW, 640, screenW);
+	tiClamp(WindowH, 360, screenH);
+	tiClamp(WindowX, 0, screenW - WindowW);
+	tiClamp(WindowY, 0, screenH - WindowH);
+	tiClamp(OverlayCorner, 0, 3);
+	tiClamp(PreferredFileSaveType, 0, 4);
+	tiClamp(ThumbnailSize, 64.0f, 256.0f);
 }
 
 
@@ -144,6 +159,7 @@ bool Settings::Save(const tString& filename)
 	writer.Comp("ShowLog", ShowLog);
 	writer.Comp("InfoOverlayShow", InfoOverlayShow);
 	writer.Comp("ContentViewShow", ContentViewShow);
+	writer.Comp("ThumbnailSize", ThumbnailSize);
 	writer.Comp("OverlayCorner", OverlayCorner);
 	writer.Comp("Tile", Tile);
 	writer.Comp("BackgroundExtend", BackgroundExtend);

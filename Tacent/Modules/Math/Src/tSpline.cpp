@@ -10,7 +10,7 @@
 // word 'path' is used for a composite of Bezier curves or a composite of line segments, and we reserve the word spline
 // for paths composed of multiple cubic polynomial pieces.
 //
-// Copyright (c) 2006, 2017 Tristan Grimmer.
+// Copyright (c) 2006, 2017, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -90,7 +90,7 @@ tMath::tVector3 tMath::tPiecewiseLinearPath::GetPercentPoint(float t) const
 	if (!IsValid())
 		return tVector3::zero;
 
-	tSaturate(t);
+	tiSaturate(t);
 	tVector3* a = 0;
 	tVector3* b = 0;
 	float pa = 0.0f;
@@ -413,7 +413,7 @@ void tMath::tBezierPath::GetPoint(tVector3& point, float t) const
 	}
 	else
 	{
-		tClamp(t, 0.0f, float(NumCurveSegments));
+		tiClamp(t, 0.0f, float(NumCurveSegments));
 	}
 
 	// Segment 0 is for t E [0, 1). The last segment is for t E [NumCurveSegments-1, NumCurveSegments].
@@ -443,7 +443,7 @@ void tMath::tBezierPath::GetTangent(tVector3& v, float t) const
 	}
 	else
 	{
-		tClamp(t, 0.0f, float(NumCurveSegments));
+		tiClamp(t, 0.0f, float(NumCurveSegments));
 	}
 
 	// Segment 0 is for t E [0, 1). The last segment is for t E [NumCurveSegments-1, NumCurveSegments].
