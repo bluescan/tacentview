@@ -3840,7 +3840,7 @@ bool ImGui::ColorEdit4(const char* label, float col[4], ImGuiColorEditFlags flag
         flags = (flags & (~ImGuiColorEditFlags__InputsMask)) | ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoOptions;
 
     // Context menu: display and modify options (before defaults are applied)
-	if (!(flags & ImGuiColorEditFlags_NoOptions))
+    if (!(flags & ImGuiColorEditFlags_NoOptions))
         ColorEditOptionsPopup(col, flags);
 
     // Read stored options
@@ -4531,10 +4531,9 @@ void ImGui::ColorEditOptionsPopup(const float* col, ImGuiColorEditFlags flags)
         if (RadioButton("0.00..1.00", (opts & ImGuiColorEditFlags_Float) != 0)) opts = (opts & ~ImGuiColorEditFlags__DataTypeMask) | ImGuiColorEditFlags_Float;
     }
 
-	if (allow_opt_inputs || allow_opt_datatype)
+    if (allow_opt_inputs || allow_opt_datatype)
         Separator();
-
-    if (Button("Copy as...", ImVec2(-1,0)))
+    if (Button("Copy as..", ImVec2(-1,0)))
         OpenPopup("Copy");
     if (BeginPopup("Copy"))
     {
