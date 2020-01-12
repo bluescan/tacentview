@@ -83,11 +83,15 @@ public:
 	// threads are currently working so you may defer the request call.
 	int GetNumThumbnailThreadsRunning();
 
-	ImgInfo Info;					// Info is only valid AFTER loading.
-	tString Filename;				// Valid before load.
-	tSystem::tFileType Filetype;	// Valid before load.
-	uint64 FileModTime;				// Valid before load.
-	uint64 FileSizeB;				// Valid before load.
+	ImgInfo Info;						// Info is only valid AFTER loading.
+	tString Filename;					// Valid before load.
+	tSystem::tFileType Filetype;		// Valid before load.
+	uint64 FileModTime;					// Valid before load.
+	uint64 FileSizeB;					// Valid before load.
+
+	const static int ThumbWidth			= 256;
+	const static int ThumbHeight		= 144;
+	const static int ThumbMinDispWidth	= 64;
 
 private:
 	// Dds files are special and already in HW ready format. The tTexture can store dds files, while tPicture stores

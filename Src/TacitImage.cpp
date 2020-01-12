@@ -701,6 +701,6 @@ void TacitImage::RequestThumbnail()
 		ThumbnailPicture.Set(*primaryPic);
 
 		// This is a 16:9 aspect.
-		ThumbnailPicture.Resample(256, 144, tPicture::tFilter::Box);
+		ThumbnailPicture.Resample(ThumbWidth, ThumbHeight, tPicture::tFilter::Box);
 	}
 }

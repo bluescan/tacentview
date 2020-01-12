@@ -16,6 +16,7 @@
 #include <System/tScript.h>
 #include <Math/tFundamentals.h>
 #include "Settings.h"
+#include "TacitImage.h"
 using namespace tMath;
 #define ReadItem(name) case tHashCT(#name): name = e.Arg1(); break
 #define	WriteItem(name) writer.Comp(#name, name)
@@ -98,7 +99,7 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 	tiClamp(WindowY, 0, screenH - WindowH);
 	tiClamp(OverlayCorner, 0, 3);
 	tiClamp(PreferredFileSaveType, 0, 4);
-	tiClamp(ThumbnailWidth, 64.0f, 256.0f);
+	tiClamp(ThumbnailWidth, float(TacitImage::ThumbMinDispWidth), float(TacitImage::ThumbWidth));
 	tiClamp(SortKey, 0, 3);
 }
 

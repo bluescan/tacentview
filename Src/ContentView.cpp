@@ -106,7 +106,7 @@ void TexView::ShowContentViewDialog(bool* popen)
 	ImGui::SetCursorPos(tVector2(0.0f, 3.0f));
 
 	ImGui::PushItemWidth(200);
-	ImGui::SliderFloat("Thumbnail Size", &Config.ThumbnailWidth, 64.0f, 256.0f, ""); ImGui::SameLine();
+	ImGui::SliderFloat("Thumbnail Size", &Config.ThumbnailWidth, float(TacitImage::ThumbMinDispWidth), float(TacitImage::ThumbWidth), ""); ImGui::SameLine();
 	ImGui::PopItemWidth();
 
 	ImGui::PushItemWidth(100);
