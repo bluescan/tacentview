@@ -2,7 +2,7 @@
 //
 // Simple log window for ImGui with filter. This is a modification of ImGui's log window -- licenced under MIT below.
 //
-// Copyright (c) 2019 Tristan Grimmer.
+// Copyright (c) 2019, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -26,7 +26,10 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#include <Math/tVector2.h>
 #include "ImGuiLogWindow.h"
+using namespace tMath;
+
 
 void TexView::ImGuiLog::Clear()
 {
@@ -60,11 +63,11 @@ void TexView::ImGuiLog::Draw(const char* title, bool* popen)
 	ImGui::SameLine();
 	Filter.Draw("Filter", -100.0f);
 	ImGui::Separator();
-	ImGui::BeginChild("scrolling", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
+	ImGui::BeginChild("scrolling", tVector2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
 	if (copy)
 		ImGui::LogToClipboard();
 
-	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2(0, 0));
 	const char* buf = Buf.begin();
 	const char* bufEnd = Buf.end();
 	if (Filter.IsActive())

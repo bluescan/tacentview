@@ -24,6 +24,7 @@
 #include <System/tTime.h>
 #include <System/tScript.h>
 #include <Math/tHash.h>
+#include <Math/tVector2.h>
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl2.h"
@@ -36,6 +37,7 @@
 #include "Settings.h"
 using namespace tStd;
 using namespace tSystem;
+using namespace tMath;
 
 
 namespace TexView
@@ -48,7 +50,7 @@ namespace TexView
 	bool LogWindowOpen							= true;
 	TexView::ImGuiLog LogWindow;
 	tList<TacitImage> Images;
-	tItList<TacitImage> ImagesTimeSorted(false);
+	tItList<TacitImage> ImagesLoadTimeSorted	(false);
 	tuint256 ImagesHash							= 0;
 	TacitImage* CurrImage						= nullptr;
 	TacitImage CursorImage;
@@ -111,10 +113,10 @@ namespace TexView
 	int CursorY									= -1;
 	tColouri PixelColour						= tColouri::black;
 
-	const ImVec4 ColourEnabledTint				= ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-	const ImVec4 ColourDisabledTint				= ImVec4(0.46f, 0.46f, 0.58f, 1.00f);
-	const ImVec4 ColourBG						= ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-	const ImVec4 ColourPressedBG				= ImVec4(0.45f, 0.45f, 0.60f, 1.00f);
+	const tVector4 ColourEnabledTint			= tVector4(1.00f, 1.00f, 1.00f, 1.00f);
+	const tVector4 ColourDisabledTint			= tVector4(0.46f, 0.46f, 0.58f, 1.00f);
+	const tVector4 ColourBG						= tVector4(0.00f, 0.00f, 0.00f, 0.00f);
+	const tVector4 ColourPressedBG				= tVector4(0.45f, 0.45f, 0.60f, 1.00f);
 
 	const float ZoomMin							= 20.0f;
 	const float ZoomMax							= 2500.0f;
@@ -123,7 +125,7 @@ namespace TexView
 	void DrawTextureViewerLog(float x, float y, float w, float h);
 	void PrintRedirectCallback(const char* text, int numChars)															{ LogWindow.AddLog("%s", text); }
 	void GlfwErrorCallback(int error, const char* description)															{ tPrintf("Glfw Error %d: %s\n", error, description); }
-	bool CompareFunc(const tStringItem& a, const tStringItem& b)														{ return tStricmp(a.ConstText(), b.ConstText()) < 0; }
+	bool FilenameCompareFunc_Alphabetical(const tStringItem& a, const tStringItem& b)											{ return tStricmp(a.ConstText(), b.ConstText()) < 0; }
 
 	void SetWindowTitle();
 	bool OnPrevious(bool circ = false);
@@ -149,16 +151,16 @@ namespace TexView
 }
 
 
-ImVec2 TexView::GetDialogOrigin(float index)
+tVector2 TexView::GetDialogOrigin(float index)
 {
-	return ImVec2(DialogOrigin + DialogMargin*float(index), DialogOrigin + TopUIHeight + DialogMargin*float(index));
+	return tVector2(DialogOrigin + DialogMargin*float(index), DialogOrigin + TopUIHeight + DialogMargin*float(index));
 }
 
 void TexView::DrawTextureViewerLog(float x, float y, float w, float h)
 {
 	// We take advantage of the fact that multiple calls to Begin()/End() are appending to the same window.
-	ImGui::SetNextWindowSize(ImVec2(w, h), ImGuiCond_Always);
-	ImGui::SetNextWindowPos(ImVec2(x, y), ImGuiCond_Always);
+	ImGui::SetNextWindowSize(tVector2(w, h), ImGuiCond_Always);
+	ImGui::SetNextWindowPos(tVector2(x, y), ImGuiCond_Always);
 
 	ImGui::Begin("InfoLog", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
 	LogWindow.Draw("Log", &LogWindowOpen);
@@ -181,7 +183,6 @@ void TexView::FindImageFiles(tList<tStringItem>& foundFiles)
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.tiff");
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.bmp");
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.dds");
-	foundFiles.Sort(CompareFunc, tListSortAlgorithm::Merge);
 }
 
 
@@ -198,19 +199,23 @@ tuint256 TexView::ComputeImagesHash(const tList<tStringItem>& files)
 void TexView::PopulateImages()
 {
 	Images.Clear();
-	ImagesTimeSorted.Clear();
+	ImagesLoadTimeSorted.Clear();
 
 	tList<tStringItem> foundFiles;
 	FindImageFiles(foundFiles);
+
+	// We sort here so ComputeImagesHash always returns consistent values.
+	foundFiles.Sort(FilenameCompareFunc_Alphabetical, tListSortAlgorithm::Merge);
 	ImagesHash = ComputeImagesHash(foundFiles);
 
 	for (tStringItem* filename = foundFiles.First(); filename; filename = filename->Next())
 	{
 		TacitImage* newImg = new TacitImage(*filename);
 		Images.Append(newImg);
-		ImagesTimeSorted.Append(newImg);
+		ImagesLoadTimeSorted.Append(newImg);
 	}
 
+	// WIP SORT HERE
 	CurrImage = nullptr;
 }
 
@@ -269,17 +274,17 @@ void TexView::LoadCurrImage()
 	bool slideshowSmallDuration = SlideshowPlaying && (Config.SlidehowFrameDuration < 0.5f);
 	if (imgJustLoaded && !slideshowSmallDuration)
 	{
-		ImagesTimeSorted.Sort(LessThanImageLoadTime);
+		ImagesLoadTimeSorted.Sort(LessThanImageLoadTime);
 
 		int64 usedMem = 0;
-		for (tItList<TacitImage>::Iter iter = ImagesTimeSorted.First(); iter; iter++)
+		for (tItList<TacitImage>::Iter iter = ImagesLoadTimeSorted.First(); iter; iter++)
 			usedMem += int64((*iter).Info.MemSizeBytes);
 
 		int64 allowedMem = int64(Config.MaxImageMemMB) * 1024 * 1024;
 		if (usedMem > allowedMem)
 		{
 			tPrintf("Used image mem (%|64d) bigger than max (%|64d). Unloading.\n", usedMem, allowedMem);
-			for (tItList<TacitImage>::Iter iter = ImagesTimeSorted.First(); iter; iter++)
+			for (tItList<TacitImage>::Iter iter = ImagesLoadTimeSorted.First(); iter; iter++)
 			{
 				TacitImage* i = iter.GetObject();
 
@@ -496,7 +501,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (dopoll)
 		glfwPollEvents();
 
-	ImVec4 clearColour = ImVec4(0.10f, 0.10f, 0.12f, 1.00f);
+	tVector4 clearColour = tVector4(0.10f, 0.10f, 0.12f, 1.00f);
 	glClearColor(clearColour.x, clearColour.y, clearColour.z, clearColour.w);
 	glClear(GL_COLOR_BUFFER_BIT);
 	int bottomUIHeight = 150;
@@ -746,22 +751,22 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	{
 		if ((CurrImage != Images.First()) || SlideshowPlaying)
 		{
-			ImGui::SetNextWindowPos(ImVec2(0.0f, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
-			ImGui::SetNextWindowSize(ImVec2(16, 70), ImGuiCond_Always);
+			ImGui::SetNextWindowPos(tVector2(0.0f, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
+			ImGui::SetNextWindowSize(tVector2(16, 70), ImGuiCond_Always);
 			ImGui::Begin("Prev", nullptr, flagsImgButton);
-			ImGui::SetCursorPos(ImVec2(6, 2));
-			if (ImGui::ImageButton(ImTextureID(PrevImage.Bind()), ImVec2(15,56), ImVec2(0,0), ImVec2(1,1), 3, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			ImGui::SetCursorPos(tVector2(6, 2));
+			if (ImGui::ImageButton(ImTextureID(PrevImage.Bind()), tVector2(15,56), tVector2(0,0), tVector2(1,1), 3, tVector4(0,0,0,0), tVector4(1,1,1,1)))
 				OnPrevious();
 			ImGui::End();
 		}
 
 		if ((CurrImage != Images.Last()) || SlideshowPlaying)
 		{
-			ImGui::SetNextWindowPos(ImVec2(workAreaW - 33.0f, float(topUIHeight) + float(workAreaH) * 0.5f - 33.0f));
-			ImGui::SetNextWindowSize(ImVec2(16, 70), ImGuiCond_Always);
+			ImGui::SetNextWindowPos(tVector2(workAreaW - 33.0f, float(topUIHeight) + float(workAreaH) * 0.5f - 33.0f));
+			ImGui::SetNextWindowSize(tVector2(16, 70), ImGuiCond_Always);
 			ImGui::Begin("Next", nullptr, flagsImgButton);
-			ImGui::SetCursorPos(ImVec2(6, 2));
-			if (ImGui::ImageButton(ImTextureID(NextImage.Bind()), ImVec2(15,56), ImVec2(0,0), ImVec2(1,1), 3, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			ImGui::SetCursorPos(tVector2(6, 2));
+			if (ImGui::ImageButton(ImTextureID(NextImage.Bind()), tVector2(15,56), tVector2(0,0), tVector2(1,1), 3, tVector4(0,0,0,0), tVector4(1,1,1,1)))
 				OnNext();
 			ImGui::End();
 		}
@@ -769,56 +774,56 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		// Skip to beginning button.
 		if ((CurrImage != Images.First()) || SlideshowPlaying)
 		{
-			ImGui::SetNextWindowPos(ImVec2((workAreaW>>1)-22.0f-60.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
-			ImGui::SetNextWindowSize(ImVec2(40, 40), ImGuiCond_Always);
+			ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-60.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+			ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
 			ImGui::Begin("SkipBegin", nullptr, flagsImgButton);
-			if (ImGui::ImageButton(ImTextureID(SkipBeginImage.Bind()), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			if (ImGui::ImageButton(ImTextureID(SkipBeginImage.Bind()), tVector2(24,24), tVector2(0,0), tVector2(1,1), 2, tVector4(0,0,0,0), tVector4(1,1,1,1)))
 				OnSkipBegin();
 			ImGui::End();
 		}
 
 		// Slideshow/Stop button.
-		ImGui::SetNextWindowPos(ImVec2((workAreaW>>1)-22.0f-20.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
-		ImGui::SetNextWindowSize(ImVec2(40, 40), ImGuiCond_Always);
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-20.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
 		ImGui::Begin("Slideshow", nullptr, flagsImgButton);
 		uint64 psImageID = SlideshowPlaying ? StopImage.Bind() : PlayImage.Bind();
-		if (ImGui::ImageButton(ImTextureID(psImageID), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+		if (ImGui::ImageButton(ImTextureID(psImageID), tVector2(24,24), tVector2(0,0), tVector2(1,1), 2, tVector4(0,0,0,0), tVector4(1,1,1,1)))
 			SlideshowPlaying = !SlideshowPlaying;
 		ImGui::End();
 
 		// Fullscreen / Windowed button.
-		ImGui::SetNextWindowPos(ImVec2((workAreaW>>1)-22.0f+20.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
-		ImGui::SetNextWindowSize(ImVec2(40, 40), ImGuiCond_Always);
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+20.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
 		ImGui::Begin("Fullscreen", nullptr, flagsImgButton);
 		uint64 fsImageID = FullscreenMode ? WindowedImage.Bind() : FullscreenImage.Bind();
-		if (ImGui::ImageButton(ImTextureID(fsImageID), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+		if (ImGui::ImageButton(ImTextureID(fsImageID), tVector2(24,24), tVector2(0,0), tVector2(1,1), 2, tVector4(0,0,0,0), tVector4(1,1,1,1)))
 			ChangeScreenMode(!FullscreenMode);
 		ImGui::End();
 
 		// Skip to end button.
 		if ((CurrImage != Images.Last()) || SlideshowPlaying)
 		{
-			ImGui::SetNextWindowPos(ImVec2((workAreaW>>1)-22.0f+60.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
-			ImGui::SetNextWindowSize(ImVec2(40, 40), ImGuiCond_Always);
+			ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+60.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+			ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
 			ImGui::Begin("SkipEnd", nullptr, flagsImgButton);
-			if (ImGui::ImageButton(ImTextureID(SkipEndImage.Bind()), ImVec2(24,24), ImVec2(0,0), ImVec2(1,1), 2, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+			if (ImGui::ImageButton(ImTextureID(SkipEndImage.Bind()), tVector2(24,24), tVector2(0,0), tVector2(1,1), 2, tVector4(0,0,0,0), tVector4(1,1,1,1)))
 				OnSkipEnd();
 			ImGui::End();
 		}
 	}
 
-	ImGui::SetNextWindowPos(ImVec2(0, 0));
+	ImGui::SetNextWindowPos(tVector2(0, 0));
 
 	if (!FullscreenMode)
 	{
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,6));
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,6));
 		ImGui::BeginMainMenuBar();
 		{
 			static bool saveAllAsDialog = false;
 			if (ImGui::BeginMenu("File"))
 			{
 				// Show file menu items...
-				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 
 				if (ImGui::MenuItem("Save As...", "Ctrl-S") && CurrImage)
 				{
@@ -836,7 +841,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				ImGui::PopStyleVar();
 				ImGui::EndMenu();
 			}
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 			if (SaveAsDialog)
 			{
 				ShowSaveAsDialog(&SaveAsDialog, JustOpenedSaveAsDialog);
@@ -848,7 +853,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if (ImGui::BeginMenu("Edit"))
 			{
-				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 				if (ImGui::MenuItem("Contact Sheet...", "C") && (Images.GetNumItems() > 1))
 				{
 					JustOpenedContactDialog = !ContactDialog;
@@ -861,7 +866,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				ImGui::PopStyleVar();
 				ImGui::EndMenu();
 			}
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 			if (ContactDialog)
 			{
 				ShowContactSheetDialog(&ContactDialog, JustOpenedContactDialog);
@@ -875,7 +880,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if (ImGui::BeginMenu("View"))
 			{
-				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 				ImGui::MenuItem("Log", "L", &Config.ShowLog, true);
 				ImGui::MenuItem("Info Overlay", "I", &Config.InfoOverlayShow, true);
 				ImGui::MenuItem("Content View", "V", &Config.ContentViewShow, true);
@@ -931,7 +936,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if (ImGui::BeginMenu("Help"))
 			{
-				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4,3));
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 				ImGui::MenuItem("Cheat Sheet", "F1", &ShowCheatSheet, true);
 				ImGui::MenuItem("About", "", &ShowAbout, true);
 				ImGui::PopStyleVar();
@@ -939,10 +944,10 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 
 			tColourf floatCol(PixelColour);
-			ImVec4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
+			tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 40.0f);			
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
-			if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, ImVec2(20,20)))
+			if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, tVector2(20,20)))
 				ImGui::OpenPopup("CopyColourAs");
 
 			if (ImGui::BeginPopup("CopyColourAs"))
@@ -951,7 +956,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			bool buttonAvail = CurrImage ? !CurrImage->IsAltPictureEnabled() : false;
 			if
 			(
-				ImGui::ImageButton(ImTextureID(FlipHImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ColourBG,
+				ImGui::ImageButton(ImTextureID(FlipHImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
 				buttonAvail ? ColourEnabledTint : ColourDisabledTint) && buttonAvail
 			)
 			{
@@ -963,7 +968,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if
 			(
-				ImGui::ImageButton(ImTextureID(FlipVImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ColourBG,
+				ImGui::ImageButton(ImTextureID(FlipVImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
 				buttonAvail ? ColourEnabledTint : ColourDisabledTint) && buttonAvail
 			)
 			{
@@ -975,7 +980,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if
 			(
-				ImGui::ImageButton(ImTextureID(RotateACWImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ColourBG,
+				ImGui::ImageButton(ImTextureID(RotateACWImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
 				buttonAvail ? ColourEnabledTint : ColourDisabledTint) && buttonAvail
 			)
 			{
@@ -987,7 +992,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if
 			(
-				ImGui::ImageButton(ImTextureID(RotateCWImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ColourBG,
+				ImGui::ImageButton(ImTextureID(RotateCWImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
 				buttonAvail ? ColourEnabledTint : ColourDisabledTint) && buttonAvail
 			)
 			{
@@ -1003,7 +1008,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			(
 				ImGui::ImageButton
 				(
-					ImTextureID(MipmapsImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
+					ImTextureID(MipmapsImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
 					altMipmapsPicEnabl ? ColourPressedBG : ColourBG,
 					altMipmapsPicAvail ? ColourEnabledTint : ColourDisabledTint
 				) && altMipmapsPicAvail
@@ -1020,7 +1025,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			(
 				ImGui::ImageButton
 				(
-					ImTextureID(CubemapImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
+					ImTextureID(CubemapImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
 					altCubemapPicEnabl ? ColourPressedBG : ColourBG,
 					altCubemapPicAvail ? ColourEnabledTint : ColourDisabledTint
 				) && altCubemapPicAvail
@@ -1033,8 +1038,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if
 			(
-				ImGui::ImageButton(ImTextureID(TileImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
-				Config.Tile ? ColourPressedBG : ColourBG, ImVec4(1.00f, 1.00f, 1.00f, 1.00f))
+				ImGui::ImageButton(ImTextureID(TileImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
+				Config.Tile ? ColourPressedBG : ColourBG, tVector4(1.00f, 1.00f, 1.00f, 1.00f))
 			)
 			{
 				Config.Tile = !Config.Tile;
@@ -1048,7 +1053,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			(
 				ImGui::ImageButton
 				(
-					ImTextureID(RecycleImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2, ImVec4(0.00f, 0.00f, 0.00f, 0.00f),
+					ImTextureID(RecycleImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, tVector4(0.00f, 0.00f, 0.00f, 0.00f),
 					recycleAvail ? ColourEnabledTint : ColourDisabledTint
 				) && recycleAvail
 			)
@@ -1059,8 +1064,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if
 			(
-				ImGui::ImageButton(ImTextureID(ContentViewImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
-				Config.ContentViewShow ? ColourPressedBG : ColourBG, ImVec4(1.00f, 1.00f, 1.00f, 1.00f))
+				ImGui::ImageButton(ImTextureID(ContentViewImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
+				Config.ContentViewShow ? ColourPressedBG : ColourBG, tVector4(1.00f, 1.00f, 1.00f, 1.00f))
 			)
 			{
 				Config.ContentViewShow = !Config.ContentViewShow;
@@ -1069,8 +1074,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if
 			(
-				ImGui::ImageButton(ImTextureID(InfoOverlayImage.Bind()), ImVec2(16,16), ImVec2(0,1), ImVec2(1,0), 2,
-				Config.InfoOverlayShow ? ColourPressedBG : ColourBG, ImVec4(1.00f, 1.00f, 1.00f, 1.00f))
+				ImGui::ImageButton(ImTextureID(InfoOverlayImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
+				Config.InfoOverlayShow ? ColourPressedBG : ColourBG, tVector4(1.00f, 1.00f, 1.00f, 1.00f))
 			)
 			{
 				Config.InfoOverlayShow = !Config.InfoOverlayShow;
@@ -1138,13 +1143,13 @@ void TexView::ShowDeleteFileModal()
 		ImGui::Checkbox("Confirm next time", &Config.ConfirmDeletes);
 		ImGui::Text("\n");
 
-		if (ImGui::Button("Cancel", ImVec2(120, 0)))
+		if (ImGui::Button("Cancel", tVector2(120, 0)))
 			ImGui::CloseCurrentPopup();
 
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
 
-		if (ImGui::Button("OK", ImVec2(120, 0)))
+		if (ImGui::Button("OK", tVector2(120, 0)))
 		{
 			DeleteImageFile(fullname);
 			ImGui::CloseCurrentPopup();
@@ -1424,6 +1429,9 @@ void TexView::FocusCallback(GLFWwindow* window, int gotFocus)
 	// If we got focus, rescan the current folder to see if the hash is different.
 	tList<tStringItem> files;
 	FindImageFiles(files);
+
+	// We sort here so ComputeImagesHash always returns consistent values.
+	files.Sort(FilenameCompareFunc_Alphabetical, tListSortAlgorithm::Merge);
 	tuint256 hash = ComputeImagesHash(files);
 
 	if (hash != ImagesHash)

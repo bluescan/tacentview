@@ -12,16 +12,18 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+#include <Math/tVector2.h>
 #include "imgui.h"
 #include "ContactSheet.h"
 #include "TacitTexView.h"
 #include "TacitImage.h"
+using namespace tMath;
 
 
 void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
-	ImVec2 windowPos = GetDialogOrigin(3);
+	tVector2 windowPos = GetDialogOrigin(3);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	if (!ImGui::Begin("Contact Sheet Generator", popen, windowFlags))

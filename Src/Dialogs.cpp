@@ -14,6 +14,7 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL definitions.
+#include <Math/tVector2.h>
 #include <Foundation/tVersion.h>
 #include <System/tFile.h>
 #include "imgui.h"
@@ -22,6 +23,7 @@
 #include "TacitTexView.h"
 using namespace tStd;
 using namespace tSystem;
+using namespace tMath;
 
 
 void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY, float zoom)
@@ -29,12 +31,12 @@ void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, i
 	// This overlay function is pretty much taken from the DearImGui demo code.
 	const float margin = 6.0f;
 
-	ImVec2 windowPos = ImVec2
+	tVector2 windowPos = tVector2
 	(
 		x + ((Config.OverlayCorner & 1) ? w - margin : margin),
 		y + ((Config.OverlayCorner & 2) ? h - margin : margin)
 	);
-	ImVec2 windowPivot = ImVec2
+	tVector2 windowPivot = tVector2
 	(
 		(Config.OverlayCorner & 1) ? 1.0f : 0.0f,
 		(Config.OverlayCorner & 2) ? 1.0f : 0.0f
@@ -55,9 +57,9 @@ void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, i
 		if (CurrImage)
 		{
 			tColourf floatCol(PixelColour);
-			ImVec4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
+			tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
 			ImGui::Text("Colour"); ImGui::SameLine();
-			if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, ImVec2(15,15)))
+			if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, tVector2(15,15)))
 				ImGui::OpenPopup("CopyColourOverlayAs");
 
 			if (ImGui::BeginPopup("CopyColourOverlayAs"))
@@ -132,7 +134,7 @@ void TexView::ColourCopyAs()
 
 void TexView::ShowCheatSheetPopup(bool* popen)
 {
-	ImVec2 windowPos = GetDialogOrigin(1);
+	tVector2 windowPos = GetDialogOrigin(1);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	// ImGui::SetNextWindowBgAlpha(0.6f);
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize |
@@ -174,7 +176,7 @@ void TexView::ShowCheatSheetPopup(bool* popen)
 
 void TexView::ShowAboutPopup(bool* popen)
 {
-	ImVec2 windowPos = GetDialogOrigin(5);
+	tVector2 windowPos = GetDialogOrigin(5);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	// ImGui::SetNextWindowBgAlpha(0.6f);
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize |
@@ -204,7 +206,7 @@ void TexView::ShowAboutPopup(bool* popen)
 void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
-	ImVec2 windowPos = GetDialogOrigin(2);
+	tVector2 windowPos = GetDialogOrigin(2);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	if (!ImGui::Begin("Save As", popen, windowFlags))
@@ -324,7 +326,7 @@ void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 void TexView::ShowSaveAllAsDialog(bool* popen)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
-	ImVec2 windowPos = GetDialogOrigin(6);
+	tVector2 windowPos = GetDialogOrigin(6);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	if (!ImGui::Begin("Save All As", popen, windowFlags))
@@ -466,7 +468,7 @@ void TexView::ShowPreferencesDialog(bool* popen)
 
 	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
 	// do it to make the Demo applications a little more welcoming.
-	ImVec2 windowPos = GetDialogOrigin(4);
+	tVector2 windowPos = GetDialogOrigin(4);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	if (!ImGui::Begin("Preferences", popen, windowFlags))

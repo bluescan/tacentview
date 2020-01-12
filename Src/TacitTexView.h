@@ -2,7 +2,7 @@
 //
 // A texture viewer for various formats.
 //
-// Copyright (c) 2019 Tristan Grimmer.
+// Copyright (c) 2019, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -13,6 +13,8 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #pragma once
+#include <Math/tVector2.h>
+#include <Math/tVector4.h>
 #include <System/tCommand.h>
 #include "Settings.h"
 class TacitImage;
@@ -32,10 +34,10 @@ namespace TexView
 	extern tColouri PixelColour;
 	extern TacitImage DefaultThumbnailImage;
 
-	extern const ImVec4 ColourEnabledTint;
-	extern const ImVec4 ColourDisabledTint;
-	extern const ImVec4 ColourBG;
-	extern const ImVec4 ColourPressedBG;
+	extern const tMath::tVector4 ColourEnabledTint;
+	extern const tMath::tVector4 ColourDisabledTint;
+	extern const tMath::tVector4 ColourBG;
+	extern const tMath::tVector4 ColourPressedBG;
 
 	const int TopUIHeight			= 26;
 	const float DialogOrigin		= 30.0f;
@@ -49,5 +51,5 @@ namespace TexView
 	void SetCurrentImage(const tString& currFilename = tString());
 	void LoadCurrImage();
 	bool ChangeScreenMode(bool fullscreeen, bool force = false);
-	ImVec2 GetDialogOrigin(float index);
+	tMath::tVector2 GetDialogOrigin(float index);
 }

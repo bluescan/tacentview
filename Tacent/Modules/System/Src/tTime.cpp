@@ -79,6 +79,16 @@ tString tSystem::tConvertTimeToString(uint64 time, tTimeFormat format)
 	tString timeStr;
 	switch (format)
 	{
+		case tTimeFormat::Standard:
+			tsPrintf
+			(
+				timeStr,
+				"%04d-%02d-%02d %02d:%02d:%02d",
+				st.wYear, st.wMonth, st.wDay,
+				st.wHour, st.wMinute, st.wSecond
+			);
+			break;
+
 		case tTimeFormat::Extended:
 		{
 			tString day;
@@ -121,7 +131,7 @@ tString tSystem::tConvertTimeToString(uint64 time, tTimeFormat format)
 			break;
 		}
 
-		case tTimeFormat::Standard:
+		case tTimeFormat::Short:
 		{
 			tString day("NaD");
 			switch (st.wDayOfWeek)

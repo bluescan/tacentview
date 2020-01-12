@@ -24,16 +24,26 @@ using namespace tImage;
 
 
 TacitImage::TacitImage() :
-	Filename()
+	Filename(),
+	Filetype(tFileType::Unknown),
+	FileModTime(0),
+	FileSizeB(0)
 {
-	Filetype = tFileType::Unknown;
 }
 
 
 TacitImage::TacitImage(const tString& filename) :
-	Filename(filename)
+	Filename(filename),
+	Filetype(tGetFileType(filename)),
+	FileModTime(0),
+	FileSizeB(0)
 {
-	Filetype = tGetFileType(Filename);
+	tSystem::tFileInfo info;
+	if (tSystem::tGetFileInfo(info, filename))
+	{
+		FileModTime = info.ModificationTime;
+		FileSizeB = info.FileSize;
+	}
 }
 
 
@@ -44,6 +54,12 @@ bool TacitImage::Load(const tString& filename)
 
 	Filename = filename;
 	Filetype = tGetFileType(Filename);
+	tSystem::tFileInfo info;
+	if (tSystem::tGetFileInfo(info, filename))
+	{
+		FileModTime = info.ModificationTime;
+		FileSizeB = info.FileSize;
+	}
 
 	return Load();
 }

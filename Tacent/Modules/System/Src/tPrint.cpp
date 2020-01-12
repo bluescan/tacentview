@@ -604,7 +604,7 @@ int ttvfPrintf(tFileHandle dest, const char* format, va_list argList)
 	if (!format || !dest)
 		return 0;
 
-	tString stamp = tSystem::tConvertTimeToString(tSystem::tGetTimeLocal(), tSystem::tTimeFormat::Standard) + " ";
+	tString stamp = tSystem::tConvertTimeToString(tSystem::tGetTimeLocal(), tSystem::tTimeFormat::Short) + " ";
 	int count = tSystem::tPrint(stamp.Pod(), dest);
 
 	tArray<char> buffer;

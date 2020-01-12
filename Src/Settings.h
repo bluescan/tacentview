@@ -26,7 +26,7 @@ struct Settings
 	bool ShowLog;
 	bool InfoOverlayShow;
 	bool ContentViewShow;
-	float ThumbnailSize;
+	float ThumbnailWidth;
 	int OverlayCorner;
 	bool Tile;
 

@@ -37,10 +37,11 @@ double tGetTimeDouble();
 // Return the time as a string.
 enum class tTimeFormat
 {
-	Extended,
-	Standard
+	Standard,		// Eg. 2020-01-14 01:47:12
+	Extended,		// Eg. Tuesday January 14 2020 - 01:36:34
+	Short,			// Eg. Tue Jan 14 2020  1:38:58
 };
-tString tConvertTimeToString(uint64, tTimeFormat = tTimeFormat::Extended);
+tString tConvertTimeToString(uint64, tTimeFormat = tTimeFormat::Standard);
 #endif // PLATFORM_WIN
 
 

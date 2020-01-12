@@ -17,6 +17,8 @@
 #include <Math/tFundamentals.h>
 #include "Settings.h"
 using namespace tMath;
+#define ReadItem(name) case tHashCT(#name): name = e.Arg1(); break
+#define	WriteItem(name) writer.Comp(#name, name)
 
 
 void Settings::Reset()
@@ -29,7 +31,7 @@ void Settings::Reset()
 	ShowLog					= false;
 	InfoOverlayShow			= false;
 	ContentViewShow			= false;
-	ThumbnailSize			= 72.0f;
+	ThumbnailWidth			= 72.0f;
 	OverlayCorner			= 3;
 	Tile					= false;
 	BackgroundExtend		= false;
@@ -63,73 +65,23 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 		{
 			switch (e.Command().Hash())
 			{
-				case tHashCT("WindowX"):
-					WindowX = e.Arg1();
-					break;
-
-				case tHashCT("WindowY"):
-					WindowY = e.Arg1();
-					break;
-
-				case tHashCT("WindowW"):
-					WindowW = e.Arg1();
-					break;
-
-				case tHashCT("WindowH"):
-					WindowH = e.Arg1();
-					break;
-
-				case tHashCT("ShowLog"):
-					ShowLog = e.Arg1();
-					break;
-
-				case tHashCT("InfoOverlayShow"):
-					InfoOverlayShow = e.Arg1();
-					break;
-
-				case tHashCT("ContentViewShow"):
-					ContentViewShow = e.Arg1();
-					break;
-
-				case tHashCT("ThumbnailSize"):
-					ThumbnailSize = e.Arg1();
-					break;
-
-				case tHashCT("OverlayCorner"):
-					OverlayCorner = e.Arg1();
-					break;
-
-				case tHashCT("Tile"):
-					Tile = e.Arg1();
-					break;
-
-				case tHashCT("BackgroundExtend"):
-					BackgroundExtend = e.Arg1();
-					break;
-
-				case tHashCT("BackgroundStyle"):
-					BackgroundStyle = e.Arg1();
-					break;
-
-				case tHashCT("ResampleFilter"):
-					ResampleFilter = e.Arg1();
-					break;
-
-				case tHashCT("ConfirmDeletes"):
-					ConfirmDeletes = e.Arg1();
-					break;
-
-				case tHashCT("SlidehowFrameDuration"):
-					SlidehowFrameDuration = e.Arg1();
-					break;
-
-				case tHashCT("PreferredFileSaveType"):
-					PreferredFileSaveType = e.Arg1();
-					break;
-
-				case tHashCT("MaxImageMemMB"):
-					MaxImageMemMB = e.Arg1();
-					break;
+				ReadItem(WindowX);
+				ReadItem(WindowY);
+				ReadItem(WindowW);
+				ReadItem(WindowH);
+				ReadItem(ShowLog);
+				ReadItem(InfoOverlayShow);
+				ReadItem(ContentViewShow);
+				ReadItem(ThumbnailWidth);
+				ReadItem(OverlayCorner);
+				ReadItem(Tile);
+				ReadItem(BackgroundExtend);
+				ReadItem(BackgroundStyle);
+				ReadItem(ResampleFilter);
+				ReadItem(ConfirmDeletes);
+				ReadItem(SlidehowFrameDuration);
+				ReadItem(PreferredFileSaveType);
+				ReadItem(MaxImageMemMB);
 			}
 		}
 	}
@@ -142,7 +94,7 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 	tiClamp(WindowY, 0, screenH - WindowH);
 	tiClamp(OverlayCorner, 0, 3);
 	tiClamp(PreferredFileSaveType, 0, 4);
-	tiClamp(ThumbnailSize, 64.0f, 256.0f);
+	tiClamp(ThumbnailWidth, 64.0f, 256.0f);
 }
 
 
@@ -152,23 +104,23 @@ bool Settings::Save(const tString& filename)
 	writer.Rem("Tacit Texture Viewer Configuration File");
 	writer.CR();
 
-	writer.Comp("WindowX", WindowX);
-	writer.Comp("WindowY", WindowY);
-	writer.Comp("WindowW", WindowW);
-	writer.Comp("WindowH", WindowH);
-	writer.Comp("ShowLog", ShowLog);
-	writer.Comp("InfoOverlayShow", InfoOverlayShow);
-	writer.Comp("ContentViewShow", ContentViewShow);
-	writer.Comp("ThumbnailSize", ThumbnailSize);
-	writer.Comp("OverlayCorner", OverlayCorner);
-	writer.Comp("Tile", Tile);
-	writer.Comp("BackgroundExtend", BackgroundExtend);
-	writer.Comp("BackgroundStyle", BackgroundStyle);
-	writer.Comp("ResampleFilter", ResampleFilter);
-	writer.Comp("ConfirmDeletes", ConfirmDeletes);
-	writer.Comp("SlidehowFrameDuration", SlidehowFrameDuration);
-	writer.Comp("PreferredFileSaveType", PreferredFileSaveType);
-	writer.Comp("MaxImageMemMB", MaxImageMemMB);
+	WriteItem(WindowX);
+	WriteItem(WindowY);
+	WriteItem(WindowW);
+	WriteItem(WindowH);
+	WriteItem(ShowLog);
+	WriteItem(InfoOverlayShow);
+	WriteItem(ContentViewShow);
+	WriteItem(ThumbnailWidth);
+	WriteItem(OverlayCorner);
+	WriteItem(Tile);
+	WriteItem(BackgroundExtend);
+	WriteItem(BackgroundStyle);
+	WriteItem(ResampleFilter);
+	WriteItem(ConfirmDeletes);
+	WriteItem(SlidehowFrameDuration);
+	WriteItem(PreferredFileSaveType);
+	WriteItem(MaxImageMemMB);
 	
 	return true;
 }

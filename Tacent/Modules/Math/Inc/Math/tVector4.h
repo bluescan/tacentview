@@ -63,7 +63,7 @@ struct tVector4 : public tVec4
 
 	void Lerp(const tVec4& a, const tVec4& b, float t)		/* Also extrapolates. See tLerp comments. */				{ tLerp(*this, a, b, t); }
 	const tMat4 MulByTranspose(const tVec4& a)																			{ tMat4 d; tMulByTranspose(d, *this, a); return d; }
-	tVector3 GetCartesian() const							/* Assumes homogeneous representation. */					{ tVector3 d; tSet(d, x/w, y/w, z/w); return d; }
+	tVec3 GetCartesian() const								/* Assumes homogeneous representation. */					{ tVec3 d; tSet(d, x/w, y/w, z/w); return d; }
 	inline static int GetNumComponents()																				{ return 4; }
 
 	// Friend is used for commutative binary operators where one of the operators is a built-in type. This essentially

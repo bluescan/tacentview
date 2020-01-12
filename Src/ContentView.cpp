@@ -12,19 +12,21 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+#include <Math/tVector2.h>
 #include "imgui.h"
 #include "ContentView.h"
 #include "TacitTexView.h"
 #include "TacitImage.h"
+using namespace tMath;
 
 
 void TexView::ShowContentViewDialog(bool* popen)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar;
-	ImVec2 windowPos = GetDialogOrigin(0);
+	tVector2 windowPos = GetDialogOrigin(0);
 	
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(640, 366), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(tVector2(640, 366), ImGuiCond_FirstUseEver);
 
 	if (!ImGui::Begin("Content View", popen, windowFlags))
 	{
@@ -33,24 +35,23 @@ void TexView::ShowContentViewDialog(bool* popen)
 	}
 
 	ImGuiWindowFlags thumbWindowFlags = 0;
-	ImGui::BeginChild("Thumbnails", ImVec2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight()-61.0f), false, thumbWindowFlags);
+	ImGui::BeginChild("Thumbnails", tVector2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight()-61.0f), false, thumbWindowFlags);
 	
 	ImGuiStyle& style = ImGui::GetStyle();
 	float visibleW = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
-	static float thumbWidth = 72.0f;
 
 	float minSpacing = 4.0f;
-	float numPerRowF = ImGui::GetWindowContentRegionMax().x / (thumbWidth + minSpacing);
+	float numPerRowF = ImGui::GetWindowContentRegionMax().x / (Config.ThumbnailWidth + minSpacing);
 	int numPerRow = tMath::tClampMin(int(numPerRowF), 1);
-	float extra = ImGui::GetWindowContentRegionMax().x - (float(numPerRow) * (thumbWidth + minSpacing));
-	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(minSpacing + extra/float(numPerRow), minSpacing));
-	ImVec2 thumbButtonSize(thumbWidth, thumbWidth*9.0f/16.0f); // 64 36, 32 18,
+	float extra = ImGui::GetWindowContentRegionMax().x - (float(numPerRow) * (Config.ThumbnailWidth + minSpacing));
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2(minSpacing + extra/float(numPerRow), minSpacing));
+	tVector2 thumbButtonSize(Config.ThumbnailWidth, Config.ThumbnailWidth*9.0f/16.0f); // 64 36, 32 18,
 	int thumbNum = 0;
 	for (TacitImage* i = Images.First(); i; i = i->Next(), thumbNum++)
 	{
-		ImVec2 cursor = ImGui::GetCursorPos();
+		tVector2 cursor = ImGui::GetCursorPos();
 		if ((thumbNum % numPerRow) == 0)
-			ImGui::SetCursorPos(ImVec2(0.5f*extra/float(numPerRow), cursor.y));
+			ImGui::SetCursorPos(tVector2(0.5f*extra/float(numPerRow), cursor.y));
 
 		i->RequestThumbnail();
 		uint64 thumbnailTexID = i->BindThumbnail();
@@ -59,17 +60,23 @@ void TexView::ShowContentViewDialog(bool* popen)
 
 		ImGui::PushID(thumbNum);
 
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2::zero);
+		ImGui::BeginChild("ThumbItem", thumbButtonSize+tVector2(0.0, 28.0f), false, ImGuiWindowFlags_NoDecoration);
 		if
 		(
 			thumbnailTexID &&
-			ImGui::ImageButton(ImTextureID(thumbnailTexID), thumbButtonSize, ImVec2(0,1), ImVec2(1,0), 0,
-			ColourBG, ImVec4(1.00f, 1.00f, 1.00f, 1.00f))
+			ImGui::ImageButton(ImTextureID(thumbnailTexID), thumbButtonSize, tVector2(0,1), tVector2(1,0), 0,
+			ColourBG, ColourEnabledTint)
 		)
 		{
 			CurrImage = i;
 			LoadCurrImage();
 		}
+
 		tString filename = tSystem::tGetFileName(i->Filename);
+		ImGui::Text(filename.ConstText());
+		ImGui::EndChild();
+		ImGui::PopStyleVar();
 		ShowToolTip(filename.ConstText());
 
 		if ((thumbNum+1) % numPerRow)
@@ -77,13 +84,13 @@ void TexView::ShowContentViewDialog(bool* popen)
 
 		ImGui::PopID();
 	}
-	ImGui::PopStyleVar(1);
+	ImGui::PopStyleVar();
 	ImGui::EndChild();
 
 	ImGuiWindowFlags viewOptionsWindowFlags = ImGuiWindowFlags_NoScrollbar;
-	ImGui::BeginChild("ViewOptions", ImVec2(ImGui::GetWindowContentRegionWidth(), 40), false, viewOptionsWindowFlags);
-	ImGui::SetCursorPos(ImVec2(0.0f, 3.0f));
-	ImGui::SliderFloat("Thumbnail Size", &thumbWidth, 64.0f, 256.0f, "");
+	ImGui::BeginChild("ViewOptions", tVector2(ImGui::GetWindowContentRegionWidth(), 40), false, viewOptionsWindowFlags);
+	ImGui::SetCursorPos(tVector2(0.0f, 3.0f));
+	ImGui::SliderFloat("Thumbnail Size", &Config.ThumbnailWidth, 64.0f, 256.0f, "");
 	ImGui::EndChild();
 
 	ImGui::End();
