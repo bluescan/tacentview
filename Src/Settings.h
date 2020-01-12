@@ -27,6 +27,16 @@ struct Settings
 	bool InfoOverlayShow;
 	bool ContentViewShow;
 	float ThumbnailWidth;
+	enum class SortKeyEnum
+	{
+		Alphabetical,
+		FileModTime,
+		FileSize,
+		FileType
+	};
+	int SortKey;						// Matches SortKeyEnum values.
+	bool SortAscending;					// Sort direction.
+
 	int OverlayCorner;
 	bool Tile;
 

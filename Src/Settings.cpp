@@ -31,7 +31,9 @@ void Settings::Reset()
 	ShowLog					= false;
 	InfoOverlayShow			= false;
 	ContentViewShow			= false;
-	ThumbnailWidth			= 72.0f;
+	ThumbnailWidth			= 128.0f;
+	SortKey					= 0;
+	SortAscending			= true;
 	OverlayCorner			= 3;
 	Tile					= false;
 	BackgroundExtend		= false;
@@ -73,6 +75,8 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(InfoOverlayShow);
 				ReadItem(ContentViewShow);
 				ReadItem(ThumbnailWidth);
+				ReadItem(SortKey);
+				ReadItem(SortAscending);
 				ReadItem(OverlayCorner);
 				ReadItem(Tile);
 				ReadItem(BackgroundExtend);
@@ -95,6 +99,7 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 	tiClamp(OverlayCorner, 0, 3);
 	tiClamp(PreferredFileSaveType, 0, 4);
 	tiClamp(ThumbnailWidth, 64.0f, 256.0f);
+	tiClamp(SortKey, 0, 3);
 }
 
 
@@ -112,6 +117,8 @@ bool Settings::Save(const tString& filename)
 	WriteItem(InfoOverlayShow);
 	WriteItem(ContentViewShow);
 	WriteItem(ThumbnailWidth);
+	WriteItem(SortKey);
+	WriteItem(SortAscending);
 	WriteItem(OverlayCorner);
 	WriteItem(Tile);
 	WriteItem(BackgroundExtend);

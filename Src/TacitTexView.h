@@ -51,5 +51,6 @@ namespace TexView
 	void SetCurrentImage(const tString& currFilename = tString());
 	void LoadCurrImage();
 	bool ChangeScreenMode(bool fullscreeen, bool force = false);
+	void SortImages(Settings::SortKeyEnum, bool ascending);
 	tMath::tVector2 GetDialogOrigin(float index);
 }

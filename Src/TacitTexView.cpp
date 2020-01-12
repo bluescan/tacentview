@@ -125,7 +125,19 @@ namespace TexView
 	void DrawTextureViewerLog(float x, float y, float w, float h);
 	void PrintRedirectCallback(const char* text, int numChars)															{ LogWindow.AddLog("%s", text); }
 	void GlfwErrorCallback(int error, const char* description)															{ tPrintf("Glfw Error %d: %s\n", error, description); }
-	bool FilenameCompareFunc_Alphabetical(const tStringItem& a, const tStringItem& b)											{ return tStricmp(a.ConstText(), b.ConstText()) < 0; }
+
+	// When compare functions are used to sort, they result in ascending order if they return a < b.
+	bool Compare_AlphabeticalAscending(const tStringItem& a, const tStringItem& b)										{ return tStricmp(a.ConstText(), b.ConstText()) < 0; }
+	bool Compare_ImageLoadTimeAscending(const TacitImage& a, const TacitImage& b)										{ return a.GetLoadedTime() < b.GetLoadedTime(); }
+	bool Compare_ImageFileNameAscending(const TacitImage& a, const TacitImage& b)										{ return tStricmp(a.Filename.ConstText(), b.Filename.ConstText()) < 0; }
+	bool Compare_ImageFileNameDescending(const TacitImage& a, const TacitImage& b)										{ return tStricmp(a.Filename.ConstText(), b.Filename.ConstText()) > 0; }
+	bool Compare_ImageFileTypeAscending(const TacitImage& a, const TacitImage& b)										{ return int(a.Filetype) < int(b.Filetype); }
+	bool Compare_ImageFileTypeDescending(const TacitImage& a, const TacitImage& b)										{ return int(a.Filetype) > int(b.Filetype); }
+	bool Compare_ImageModTimeAscending(const TacitImage& a, const TacitImage& b)										{ return a.FileModTime < b.FileModTime; }
+	bool Compare_ImageModTimeDescending(const TacitImage& a, const TacitImage& b)										{ return a.FileModTime > b.FileModTime; }
+	bool Compare_ImageFileSizeAscending(const TacitImage& a, const TacitImage& b)										{ return a.FileSizeB < b.FileSizeB; }
+	bool Compare_ImageFileSizeDescending(const TacitImage& a, const TacitImage& b)										{ return a.FileSizeB > b.FileSizeB; }
+	typedef bool ImageCompareFn(const TacitImage&, const TacitImage&);
 
 	void SetWindowTitle();
 	bool OnPrevious(bool circ = false);
@@ -205,7 +217,7 @@ void TexView::PopulateImages()
 	FindImageFiles(foundFiles);
 
 	// We sort here so ComputeImagesHash always returns consistent values.
-	foundFiles.Sort(FilenameCompareFunc_Alphabetical, tListSortAlgorithm::Merge);
+	foundFiles.Sort(Compare_AlphabeticalAscending, tListSortAlgorithm::Merge);
 	ImagesHash = ComputeImagesHash(foundFiles);
 
 	for (tStringItem* filename = foundFiles.First(); filename; filename = filename->Next())
@@ -215,8 +227,34 @@ void TexView::PopulateImages()
 		ImagesLoadTimeSorted.Append(newImg);
 	}
 
-	// WIP SORT HERE
+	SortImages(Settings::SortKeyEnum(Config.SortKey), Config.SortAscending);
 	CurrImage = nullptr;
+}
+
+
+void TexView::SortImages(Settings::SortKeyEnum key, bool ascending)
+{
+	ImageCompareFn* sortFn;
+	switch (key)
+	{
+		case Settings::SortKeyEnum::Alphabetical:
+			sortFn = ascending ? Compare_ImageFileNameAscending : &Compare_ImageFileNameDescending;
+			break;
+
+		case Settings::SortKeyEnum::FileModTime:
+			sortFn = ascending ? Compare_ImageModTimeAscending : Compare_ImageModTimeDescending;
+			break;
+
+		case Settings::SortKeyEnum::FileSize:
+			sortFn = ascending ? Compare_ImageFileSizeAscending : Compare_ImageFileSizeDescending;
+			break;
+
+		case Settings::SortKeyEnum::FileType:
+			sortFn = ascending ? Compare_ImageFileTypeAscending : Compare_ImageFileTypeDescending;
+			break;
+	}
+
+	Images.Sort(sortFn);
 }
 
 
@@ -251,12 +289,6 @@ void TexView::SetCurrentImage(const tString& currFilename)
 }
 
 
-bool LessThanImageLoadTime(const TacitImage& a, const TacitImage& b)
-{
-	return a.GetLoadedTime() < b.GetLoadedTime();
-}
-
-
 void TexView::LoadCurrImage()
 {
 	tAssert(CurrImage);
@@ -274,7 +306,7 @@ void TexView::LoadCurrImage()
 	bool slideshowSmallDuration = SlideshowPlaying && (Config.SlidehowFrameDuration < 0.5f);
 	if (imgJustLoaded && !slideshowSmallDuration)
 	{
-		ImagesLoadTimeSorted.Sort(LessThanImageLoadTime);
+		ImagesLoadTimeSorted.Sort(Compare_ImageLoadTimeAscending);
 
 		int64 usedMem = 0;
 		for (tItList<TacitImage>::Iter iter = ImagesLoadTimeSorted.First(); iter; iter++)
@@ -367,11 +399,13 @@ void TexView::ShowToolTip(const char* desc)
 	if (!ImGui::IsItemHovered())
 		return;
 
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(3.0f, 3.0f));
 	ImGui::BeginTooltip();
 	ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 	ImGui::TextUnformatted(desc);
 	ImGui::PopTextWrapPos();
 	ImGui::EndTooltip();
+	ImGui::PopStyleVar();
 }
 
 
@@ -1431,7 +1465,7 @@ void TexView::FocusCallback(GLFWwindow* window, int gotFocus)
 	FindImageFiles(files);
 
 	// We sort here so ComputeImagesHash always returns consistent values.
-	files.Sort(FilenameCompareFunc_Alphabetical, tListSortAlgorithm::Merge);
+	files.Sort(Compare_AlphabeticalAscending, tListSortAlgorithm::Merge);
 	tuint256 hash = ComputeImagesHash(files);
 
 	if (hash != ImagesHash)

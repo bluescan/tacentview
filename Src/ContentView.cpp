@@ -12,6 +12,7 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+#include <System/tTime.h>
 #include <Math/tVector2.h>
 #include "imgui.h"
 #include "ContentView.h"
@@ -26,7 +27,7 @@ void TexView::ShowContentViewDialog(bool* popen)
 	tVector2 windowPos = GetDialogOrigin(0);
 	
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(tVector2(640, 366), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(tVector2(640, 374), ImGuiCond_FirstUseEver);
 
 	if (!ImGui::Begin("Content View", popen, windowFlags))
 	{
@@ -59,9 +60,9 @@ void TexView::ShowContentViewDialog(bool* popen)
 			thumbnailTexID = DefaultThumbnailImage.Bind();
 
 		ImGui::PushID(thumbNum);
-
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2::zero);
-		ImGui::BeginChild("ThumbItem", thumbButtonSize+tVector2(0.0, 28.0f), false, ImGuiWindowFlags_NoDecoration);
+		bool isCurr = (i == CurrImage);
+		ImGui::BeginChild("ThumbItem", thumbButtonSize+tVector2(0.0, 32.0f), false, ImGuiWindowFlags_NoDecoration);
 		if
 		(
 			thumbnailTexID &&
@@ -75,9 +76,21 @@ void TexView::ShowContentViewDialog(bool* popen)
 
 		tString filename = tSystem::tGetFileName(i->Filename);
 		ImGui::Text(filename.ConstText());
+
+		tString tooltipText;
+		tsPrintf
+		(
+			tooltipText, "%s\n%s\n%d Bytes",
+			filename.ConstText(),
+			tSystem::tConvertTimeToString(i->FileModTime).ConstText(),
+			i->FileSizeB
+		);
+		ShowToolTip(tooltipText.ConstText());
+
+		if (isCurr)
+			ImGui::Separator();
 		ImGui::EndChild();
 		ImGui::PopStyleVar();
-		ShowToolTip(filename.ConstText());
 
 		if ((thumbNum+1) % numPerRow)
 			ImGui::SameLine();
@@ -90,7 +103,21 @@ void TexView::ShowContentViewDialog(bool* popen)
 	ImGuiWindowFlags viewOptionsWindowFlags = ImGuiWindowFlags_NoScrollbar;
 	ImGui::BeginChild("ViewOptions", tVector2(ImGui::GetWindowContentRegionWidth(), 40), false, viewOptionsWindowFlags);
 	ImGui::SetCursorPos(tVector2(0.0f, 3.0f));
-	ImGui::SliderFloat("Thumbnail Size", &Config.ThumbnailWidth, 64.0f, 256.0f, "");
+
+	ImGui::PushItemWidth(200);
+	ImGui::SliderFloat("Thumbnail Size", &Config.ThumbnailWidth, 64.0f, 256.0f, ""); ImGui::SameLine();
+	ImGui::PopItemWidth();
+
+	ImGui::PushItemWidth(100);
+	const char* sortItems[] = { "Alphabetical", "Date", "Size", "Type" };
+	if (ImGui::Combo("Sort By", &Config.SortKey, sortItems, IM_ARRAYSIZE(sortItems)))
+		SortImages(Settings::SortKeyEnum(Config.SortKey), Config.SortAscending);
+	ImGui::SameLine();
+	if (ImGui::Checkbox("Ascending", &Config.SortAscending))
+		SortImages(Settings::SortKeyEnum(Config.SortKey), Config.SortAscending);
+
+	ImGui::PopItemWidth();
+
 	ImGui::EndChild();
 
 	ImGui::End();

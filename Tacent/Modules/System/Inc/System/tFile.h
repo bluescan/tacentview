@@ -72,13 +72,14 @@ enum class tFileType
 
 	Targa,							// Image.
 	TGA								= Targa,
-	Bitmap,							// Image.
-	BMP								= Bitmap,
 	Ping,							// Image.
 	PNG								= Ping,
-	GIF,							// Image.
+	DDS,							// TextureMap/CubeMap.
 	JPG,							// Image.
+	GIF,							// Image.
 	TIFF,							// Image.
+	Bitmap,							// Image.
+	BMP								= Bitmap,
 
 	PCX,							// Image.
 	WBMP,							// Image.
@@ -93,7 +94,6 @@ enum class tFileType
 	TacentImage,					// Image.				// A Tacent layered 2D image. (tim)
 	TacentImageCube,				// CubeImage.			// A Tacent layered Cube image. (tib)
 	TacentImageVol,					// VolumeImage.			// A Tacent layered Volume image. (tiv)
-	DDS,							// TextureMap/CubeMap.
 	TacentConfig,					// Config.
 	NumTypes
 };
