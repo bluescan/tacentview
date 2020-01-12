@@ -87,8 +87,9 @@ void TexView::ShowContentViewDialog(bool* popen)
 		);
 		ShowToolTip(tooltipText.ConstText());
 
+		// We use a separator to indicate the current item.
 		if (isCurr)
-			ImGui::Separator();
+			ImGui::Separator(2.0f);
 		ImGui::EndChild();
 		ImGui::PopStyleVar();
 

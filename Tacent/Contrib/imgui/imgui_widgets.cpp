@@ -1132,7 +1132,8 @@ void ImGui::AlignTextToFramePadding()
 }
 
 // Horizontal/vertical separating line
-void ImGui::Separator()
+// @tacent void ImGui::Separator()
+void ImGui::Separator(float thickness)
 {
     ImGuiWindow* window = GetCurrentWindow();
     if (window->SkipItems)
@@ -1166,7 +1167,7 @@ void ImGui::Separator()
         return;
     }
 
-    window->DrawList->AddLine(bb.Min, ImVec2(bb.Max.x,bb.Min.y), GetColorU32(ImGuiCol_Separator));
+    window->DrawList->AddLine(bb.Min, ImVec2(bb.Max.x,bb.Min.y), GetColorU32(ImGuiCol_Separator), thickness);
 
     if (g.LogEnabled)
         LogRenderedText(&bb.Min, "--------------------------------");
