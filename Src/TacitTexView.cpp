@@ -687,8 +687,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			normY = tMath::tMod(normY, 1.0f);
 			if (normY < 0.0f) normY += 1.0f;
 		}
-		float imgx = iw * tMath::tLesc(normX, 0.0f + uvUMarg + uvUOff, 1.0f - uvUMarg + uvUOff);
-		float imgy = ih * tMath::tLesc(normY, 0.0f + uvVMarg + uvVOff, 1.0f - uvVMarg + uvVOff);
+		float imgx = iw * tMath::tLisc(normX, 0.0f + uvUMarg + uvUOff, 1.0f - uvUMarg + uvUOff);
+		float imgy = ih * tMath::tLisc(normY, 0.0f + uvVMarg + uvVOff, 1.0f - uvVMarg + uvVOff);
 
 		imgxi = int(imgx);
 		imgyi = int(imgy);

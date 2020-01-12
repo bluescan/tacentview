@@ -714,7 +714,7 @@ bool tExtractAffineEulerXYZ
 	float gimbalZValue = 0.0f, tIntervalBias = tIntervalBias::Low
 );
 
-// Linearly interpolate value towards dest at rate. t is elapsed time. Value is updated. Returns if got to dest.
+// Linearly interpolate value towards dest at rate. t is delta time. Value is updated. Returns if got to dest.
 bool tApproach(float& value, float dest, float rate, float dt);
 
 // Angle approaches destination via shortest angular direction. Angle gets modified and will be E [0, 2Pi].
@@ -723,17 +723,21 @@ bool tApproachOrientation(tQuat& orientation, const tQuat& dest, float rate, flo
 
 // Linear scale. t = 0 returns min. t = 1 returns max. No clamping. Works for non-pod vector and matrix types, but not
 // the pod-types as they don't have the necessary operator overloading.
-template <typename T> inline T tLinScl(float t, T min, T max)															{ return min + (max - min)*t; }
-template <typename T> inline T tLesc(float t, T min, T max)																{ return min + (max - min)*t; }
+template <typename T> inline T tLinearScale(float t, T min, T max)														{ return min + (max - min)*t; }
+template <typename T> inline T tLisc(float t, T min, T max)																{ return min + (max - min)*t; }
 
-// Linear extrapolation. Requires 2 points on the line. Input the domain values (d) and it'll give you the range (r).
-// No clamping. Interpolates as well.
-template <typename T> inline T tLinExt(float d, float d0, float d1, T r0, T r1)											{ return tLinScl((d-d0)/(d1-d0), r0, r1); }
-template <typename T> inline T tLexp(float d, float d0, float d1, T r0, T r1)											{ return tLesc((d-d0)/(d1-d0), r0, r1); }
+// Many libraries have a, perhaps badly-named, Lerp (linear interpolation) function that does a linear scale. It's a bit
+// of a misnomer because in general it also extrapolates. In any case, the synonym is included here. Does same as tLisc.
+template <typename T> inline T tLerp(float t, T min, T max)																{ return min + (max - min)*t; }
 
-// Linear interpolate. Same as extrapolate except that it clamps d to [d0, d1].
-template <typename T> inline T tLinInt(float d, float d0, float d1, T r0, T r1)											{ return tLinScl(tGetSaturate((d-d0)/(d1-d0)), r0, r1); }
-template <typename T> inline T tLerp(float d, float d0, float d1, T r0, T r1)											{ return tLesc(tGetSaturate((d-d0)/(d1-d0)), r0, r1); }
+// Linear interpolation and extrapolation. Requires 2 points on the line. Input the domain values (d) and it'll give you
+// the looked-up range value (r). No clamping.
+template <typename T> inline T tLinearLookup(float d, float d0, float d1, T r0, T r1)									{ return tLinearScale((d-d0)/(d1-d0), r0, r1); }
+template <typename T> inline T tLilo(float d, float d0, float d1, T r0, T r1)											{ return tLisc((d-d0)/(d1-d0), r0, r1); }
+
+// Linear interpolate. Same as tLinearLookup except that it clamps d to [d0, d1].
+template <typename T> inline T tLinearInterp(float d, float d0, float d1, T r0, T r1)									{ return tLinearScale(tSaturate((d-d0)/(d1-d0)), r0, r1); }
+template <typename T> inline T tLiin(float d, float d0, float d1, T r0, T r1)											{ return tLisc(tSaturate((d-d0)/(d1-d0)), r0, r1); }
 
 
 }
