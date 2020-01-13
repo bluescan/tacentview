@@ -29,6 +29,7 @@ class TacitImage : public tLink<TacitImage>
 public:
 	TacitImage();
 	TacitImage(const tString& filename);
+	virtual ~TacitImage();
 
 	bool Load();						// Load into main memory.
 	bool Load(const tString& filename);
@@ -109,9 +110,12 @@ private:
 	bool AltPictureEnabled = false;
 	tImage::tPicture AltPicture;
 
-	bool ThumbnailRequested = false;
+	bool ThumbnailRequested = false;		// True if ever requested.
+	bool ThumbnailThreadRunning = false;	// Only true while worker thread going.
 	std::thread ThumbnailThread;
+	std::atomic_flag ThumbnailThreadFlag = ATOMIC_FLAG_INIT;
 	tImage::tPicture ThumbnailPicture;
+	static void GenerateThumbnail(TacitImage* tacitImage);
 
 	// Zero is invalid and means texture has never been bound and loaded into VRAM.
 	uint TexIDPrimary	= 0;

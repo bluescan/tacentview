@@ -54,42 +54,46 @@ void TexView::ShowContentViewDialog(bool* popen)
 		if ((thumbNum % numPerRow) == 0)
 			ImGui::SetCursorPos(tVector2(0.5f*extra/float(numPerRow), cursor.y));
 
-		i->RequestThumbnail();
-		uint64 thumbnailTexID = i->BindThumbnail();
-		if (!thumbnailTexID)
-			thumbnailTexID = DefaultThumbnailImage.Bind();
-
 		ImGui::PushID(thumbNum);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2::zero);
 		bool isCurr = (i == CurrImage);
-		ImGui::BeginChild("ThumbItem", thumbButtonSize+tVector2(0.0, 32.0f), false, ImGuiWindowFlags_NoDecoration);
-		if
-		(
-			thumbnailTexID &&
-			ImGui::ImageButton(ImTextureID(thumbnailTexID), thumbButtonSize, tVector2(0,1), tVector2(1,0), 0,
-			ColourBG, ColourEnabledTint)
-		)
+
+		// Unlike other widgets, BeginChild ALWAYS needs a corresponding EndChild, even if it's invisible.
+		bool visible = ImGui::BeginChild("ThumbItem", thumbButtonSize+tVector2(0.0, 32.0f), false, ImGuiWindowFlags_NoDecoration);
+		if (visible)
 		{
-			CurrImage = i;
-			LoadCurrImage();
+			i->RequestThumbnail();
+			uint64 thumbnailTexID = i->BindThumbnail();
+			if (!thumbnailTexID)
+				thumbnailTexID = DefaultThumbnailImage.Bind();
+			if
+			(
+				thumbnailTexID &&
+				ImGui::ImageButton(ImTextureID(thumbnailTexID), thumbButtonSize, tVector2(0,1), tVector2(1,0), 0,
+				ColourBG, ColourEnabledTint)
+			)
+			{
+				CurrImage = i;
+				LoadCurrImage();
+			}
+
+			tString filename = tSystem::tGetFileName(i->Filename);
+			ImGui::Text(filename.ConstText());
+
+			tString tooltipText;
+			tsPrintf
+			(
+				tooltipText, "%s\n%s\n%d Bytes",
+				filename.ConstText(),
+				tSystem::tConvertTimeToString(i->FileModTime).ConstText(),
+				i->FileSizeB
+			);
+			ShowToolTip(tooltipText.ConstText());
+
+			// We use a separator to indicate the current item.
+			if (isCurr)
+				ImGui::Separator(2.0f);
 		}
-
-		tString filename = tSystem::tGetFileName(i->Filename);
-		ImGui::Text(filename.ConstText());
-
-		tString tooltipText;
-		tsPrintf
-		(
-			tooltipText, "%s\n%s\n%d Bytes",
-			filename.ConstText(),
-			tSystem::tConvertTimeToString(i->FileModTime).ConstText(),
-			i->FileSizeB
-		);
-		ShowToolTip(tooltipText.ConstText());
-
-		// We use a separator to indicate the current item.
-		if (isCurr)
-			ImGui::Separator(2.0f);
 		ImGui::EndChild();
 		ImGui::PopStyleVar();
 

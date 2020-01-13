@@ -38,7 +38,7 @@ public:
 	// Creates an empty and initially invalid tTexture. You must manually call Set or Load.
 	tTexture()																											{ }
 
-	// This constructor is for cases wher you just have a list of layers that you want to give the tTexture. After
+	// This constructor is for cases where you just have a list of layers that you want to give the tTexture. After
 	// construction the layer list will be empty. This is used by the tCubemap class so it can grab all 6 sides of a
 	// cubemap dds and give them to 6 different tTextures.
 	tTexture(tList<tLayer>& layers)																						{ Set(layers); }

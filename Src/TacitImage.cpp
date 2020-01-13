@@ -12,6 +12,8 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+#include <mutex>
+#include <chrono>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL definitions.
 #include <Image/tTexture.h>
@@ -661,7 +663,20 @@ bool TacitImage::ConvertCubemapToPicture()
 
 uint64 TacitImage::BindThumbnail()
 {
-	if (ThumbnailPicture.IsValid())
+	if (!ThumbnailRequested)
+		return 0;
+
+	if (!ThumbnailThreadFlag.test_and_set())
+	{
+		ThumbnailThread.join();
+		ThumbnailThreadRunning = false;
+	}
+
+	if (ThumbnailThreadRunning)
+		return 0;
+
+	// We only ever access ThumbnailPicture once the worker thread is completed,
+	if (!ThumbnailThreadRunning && ThumbnailPicture.IsValid())
 	{
 		if (TexIDThumbnail != 0)
 		{
@@ -691,8 +706,57 @@ uint64 TacitImage::BindThumbnail()
 }
 
 
+void TacitImage::GenerateThumbnail(TacitImage* tacitImage)
+{
+	tPrintf("Thumbnail thread working...\n");
+	if (tacitImage->ThumbnailPicture.IsValid())
+		return;
+
+	// GLFW doesn't support creating contexts without an associated window. However, contexts with hidden
+	// windows can be created with the GLFW_VISIBLE window hint.
+	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+	GLFWwindow* offscreenContext = glfwCreateWindow(32, 32, "", NULL, NULL);
+	if (!offscreenContext)
+		return;
+
+	glfwMakeContextCurrent(offscreenContext);
+
+	TacitImage thumbLoader;
+	thumbLoader.Load(tacitImage->Filename);
+
+	tPicture* primaryPic = thumbLoader.GetPrimaryPicture();
+	tAssert(primaryPic);
+	tacitImage->ThumbnailPicture.Set(*primaryPic);
+	
+	// This is a 16:9 aspect.
+	tacitImage->ThumbnailPicture.Resample(ThumbWidth, ThumbHeight, tPicture::tFilter::Box);
+
+	glfwDestroyWindow(offscreenContext);
+	// tPrintf("Thumbnail thread done.\n");
+}
+
+
 void TacitImage::RequestThumbnail()
 {
+
+	////////////////////// tPrintf("NumCores %d\n", tSystem::tGetNumCores());
+
+	if (ThumbnailRequested)
+		return;
+
+	ThumbnailRequested = true;
+	ThumbnailThreadRunning = true;
+	ThumbnailThreadFlag.test_and_set();
+	ThumbnailThread = std::thread
+	(
+		[this]
+		{
+			GenerateThumbnail(this);
+			ThumbnailThreadFlag.clear();
+		}
+	);
+
+	/*
 	if (!ThumbnailPicture.IsValid() && IsLoaded())
 	{
 		tPicture* primaryPic = GetPrimaryPicture();
@@ -703,4 +767,14 @@ void TacitImage::RequestThumbnail()
 		// This is a 16:9 aspect.
 		ThumbnailPicture.Resample(ThumbWidth, ThumbHeight, tPicture::tFilter::Box);
 	}
+	*/
+}
+
+
+TacitImage::~TacitImage()
+{
+	// If we're being destroyed before the thumbnail thread is done, we have to wait because that thread
+	// accesses the thumbnail picture of this object... so 'this' must be valid.
+	if (ThumbnailThread.joinable())
+		ThumbnailThread.join();
 }

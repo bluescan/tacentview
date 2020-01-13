@@ -23,6 +23,7 @@
 #include <System/tFile.h>
 #include <System/tTime.h>
 #include <System/tScript.h>
+#include <System/tUtil.h>
 #include <Math/tHash.h>
 #include <Math/tVector2.h>
 #include "imgui.h"
@@ -1490,22 +1491,6 @@ void TexView::IconifyCallback(GLFWwindow* window, int iconified)
 }
 
 
-/////////////////////////////
-#include <thread>
-#include <mutex>
-#include <atomic>
-#include <chrono>
-
-void thread_function()
-{
-	for (int i = 0; i < 10; i++)
-	{
-		tPrintf("H%d", i);
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-	}
-}
- 
-
 int main(int argc, char** argv)
 {
 	tSystem::tSetStdoutRedirectCallback(TexView::PrintRedirectCallback);
@@ -1515,34 +1500,6 @@ int main(int argc, char** argv)
 	glfwSetErrorCallback(TexView::GlfwErrorCallback);
 	if (!glfwInit())
 		return 1;
-
-	//std::mutex mutx;
-	//mutx.lock();
-
-	/* Thread testing using non-locking atomic.
-	std::atomic_flag threadRunning = ATOMIC_FLAG_INIT;
-
-	threadRunning.test_and_set();
-	std::thread threadObj([&threadRunning] { thread_function(); threadRunning.clear(); });
-
-	tPrintf("Main thread test.\n");
-	while (1)
-	{
-		if (threadRunning.test_and_set())
-		{
-			tPrintf(".");
-		}
-		else
-		{
-			tPrintf("\nMain thread test. Helper thread finished.\n");
-			break;
-		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-	}
-
-	threadObj.join();
-	//threadObj.get_id();
-	*/
 
 	int glfwMajor = 0; int glfwMinor = 0; int glfwRev = 0;
 	glfwGetVersion(&glfwMajor, &glfwMinor, &glfwRev);

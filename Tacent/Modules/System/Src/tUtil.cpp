@@ -82,12 +82,21 @@ tString tSystem::tGetIPAddress()
 #ifdef PLATFORM_WIN
 int tSystem::tGetNumCores()
 {
+	// Lets cache this value as it never changes.
+	static int numCores = 0;
+	if (numCores > 0)
+		return numCores;
+
 	SYSTEM_INFO sysinfo;
 	tStd::tMemset(&sysinfo, 0, sizeof(sysinfo));
 	GetSystemInfo(&sysinfo);
+
+	// dwNumberOfProcessors is unsigned, so can't say just > 0.
 	if ((sysinfo.dwNumberOfProcessors == 0) || (sysinfo.dwNumberOfProcessors == -1))
-		return 1;
-	
-	return sysinfo.dwNumberOfProcessors;
+		numCores = 1;
+	else
+		numCores = sysinfo.dwNumberOfProcessors;
+
+	return numCores;
 }
 #endif
