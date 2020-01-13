@@ -94,6 +94,14 @@ void TexView::ShowContentViewDialog(bool* popen)
 			if (isCurr)
 				ImGui::Separator(2.0f);
 		}
+		else
+		{
+			// We need to keep calling bind even if the image is not visible. It frees up the worker threads.
+			if (i->IsThumbnailWorkerActive())
+				i->BindThumbnail();
+			else
+				i->UnrequestThumbnail();
+		}
 		ImGui::EndChild();
 		ImGui::PopStyleVar();
 

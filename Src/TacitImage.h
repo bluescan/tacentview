@@ -72,17 +72,20 @@ public:
 	void EnableAltPicture(bool enabled)																					{ AltPictureEnabled = enabled; }
 	bool IsAltPictureEnabled() const																					{ return AltPictureEnabled; }
 
-	// Thumbnail generation is done on a seperate thread. Calling RequestThumbnail start the thread. After the request
-	// BindThumbnail will at some point return a non-zero texture ID, but not necessarily right away. Just keep calling
-	// it. Before RequestThumbnail is called, BindThumbnail is guaranteed to return 0. Internally, if the image happens
-	// to be already loaded into memory, the request call will generate the thumbnail right away, otherwise a thread is
-	// started and it won't happen right away. Unloaded images remain unloaded after thumbnail generation.
+	// Thumbnail generation is done on a seperate thread. Calling RequestThumbnail starts the thread. You should call it
+	// over and over as it will only ever start one thread, and it may not start it if too mnay threads are already
+	// working. BindThumbnail will at some point return a non-zero texture ID, but not necessarily right away. Just keep
+	// calling it. Unloaded images remain unloaded after thumbnail generation.
 	void RequestThumbnail();
+
+	// You are allowed to unrequest. It will succeed if a worker was never assigned.
+	void UnrequestThumbnail();
+	bool IsThumbnailWorkerActive() const { return ThumbnailThreadRunning; }
 	uint64 BindThumbnail();
 
 	// You may want to limit the number of threads simultaneously generating thumbnails. This function returns how many
 	// threads are currently working so you may defer the request call.
-	int GetNumThumbnailThreadsRunning();
+	//int GetNumThumbnailThreadsRunning();
 
 	ImgInfo Info;						// Info is only valid AFTER loading.
 	tString Filename;					// Valid before load.
@@ -110,12 +113,16 @@ private:
 	bool AltPictureEnabled = false;
 	tImage::tPicture AltPicture;
 
-	bool ThumbnailRequested = false;		// True if ever requested.
-	bool ThumbnailThreadRunning = false;	// Only true while worker thread going.
+	bool ThumbnailRequested = false;			// True if ever requested.
+	bool ThumbnailThreadRunning = false;		// Only true while worker thread going.
+	static int ThumbnailNumThreadsRunning;		// How many worker threads active.
 	std::thread ThumbnailThread;
 	std::atomic_flag ThumbnailThreadFlag = ATOMIC_FLAG_INIT;
 	tImage::tPicture ThumbnailPicture;
-	static void GenerateThumbnail(TacitImage* tacitImage);
+
+	// These 2 functions run on a helper thread.
+	static void GenerateThumbnailBridge(TacitImage* tacitImage);
+	void GenerateThumbnail();
 
 	// Zero is invalid and means texture has never been bound and loaded into VRAM.
 	uint TexIDPrimary	= 0;

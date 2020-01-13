@@ -19,10 +19,12 @@
 #include <Image/tTexture.h>
 #include <System/tFile.h>
 #include <System/tTime.h>
+#include <System/tUtil.h>
 #include "TacitImage.h"
 using namespace tStd;
 using namespace tSystem;
 using namespace tImage;
+int TacitImage::ThumbnailNumThreadsRunning = 0;
 
 
 TacitImage::TacitImage() :
@@ -670,13 +672,15 @@ uint64 TacitImage::BindThumbnail()
 	{
 		ThumbnailThread.join();
 		ThumbnailThreadRunning = false;
+		ThumbnailNumThreadsRunning--;
 	}
 
 	if (ThumbnailThreadRunning)
 		return 0;
 
 	// We only ever access ThumbnailPicture once the worker thread is completed,
-	if (!ThumbnailThreadRunning && ThumbnailPicture.IsValid())
+	// If the worker thread failed, ThumbnailPicture will be invalid and we return 0.
+	if (ThumbnailPicture.IsValid())
 	{
 		if (TexIDThumbnail != 0)
 		{
@@ -706,68 +710,79 @@ uint64 TacitImage::BindThumbnail()
 }
 
 
-void TacitImage::GenerateThumbnail(TacitImage* tacitImage)
+void TacitImage::GenerateThumbnailBridge(TacitImage* tacitImage)
 {
-	tPrintf("Thumbnail thread working...\n");
-	if (tacitImage->ThumbnailPicture.IsValid())
+	tacitImage->GenerateThumbnail();
+}
+
+
+void TacitImage::GenerateThumbnail()
+{
+	if (ThumbnailPicture.IsValid())
+	{
+		//tPrintf("Thumbnail thread finished %s...\n", Filename.ConstText());
 		return;
+	}
 
 	// GLFW doesn't support creating contexts without an associated window. However, contexts with hidden
 	// windows can be created with the GLFW_VISIBLE window hint.
 	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-	GLFWwindow* offscreenContext = glfwCreateWindow(32, 32, "", NULL, NULL);
+	GLFWwindow* offscreenContext = glfwCreateWindow(32, 32, "", nullptr, nullptr);
 	if (!offscreenContext)
+	{
+		//tPrintf("Thumbnail thread failed on %s...\n", Filename.ConstText());
 		return;
+	}
 
 	glfwMakeContextCurrent(offscreenContext);
 
 	TacitImage thumbLoader;
-	thumbLoader.Load(tacitImage->Filename);
+	thumbLoader.Load(Filename);
 
 	tPicture* primaryPic = thumbLoader.GetPrimaryPicture();
 	tAssert(primaryPic);
-	tacitImage->ThumbnailPicture.Set(*primaryPic);
+	ThumbnailPicture.Set(*primaryPic);
 	
 	// This is a 16:9 aspect.
-	tacitImage->ThumbnailPicture.Resample(ThumbWidth, ThumbHeight, tPicture::tFilter::Box);
+	ThumbnailPicture.Resample(ThumbWidth, ThumbHeight, tPicture::tFilter::Box);
 
+	glfwMakeContextCurrent(nullptr);
 	glfwDestroyWindow(offscreenContext);
-	// tPrintf("Thumbnail thread done.\n");
+	//tPrintf("Thumbnail thread successfully finished %s \n", Filename.ConstText());
 }
 
 
 void TacitImage::RequestThumbnail()
 {
-
-	////////////////////// tPrintf("NumCores %d\n", tSystem::tGetNumCores());
-
 	if (ThumbnailRequested)
+		return;
+
+	// Leave a core free unless we are on a two core or lower machine.
+	int numThreadsMax = tMath::tClampMin(tSystem::tGetNumCores()-1, 2);
+
+	// Abort request if we are maxed out on resources.
+	if (ThumbnailNumThreadsRunning >= numThreadsMax)
 		return;
 
 	ThumbnailRequested = true;
 	ThumbnailThreadRunning = true;
+	ThumbnailNumThreadsRunning++;
 	ThumbnailThreadFlag.test_and_set();
 	ThumbnailThread = std::thread
 	(
 		[this]
 		{
-			GenerateThumbnail(this);
+			GenerateThumbnailBridge(this);
 			ThumbnailThreadFlag.clear();
 		}
 	);
+}
 
-	/*
-	if (!ThumbnailPicture.IsValid() && IsLoaded())
-	{
-		tPicture* primaryPic = GetPrimaryPicture();
-		tAssert(primaryPic);
 
-		ThumbnailPicture.Set(*primaryPic);
-
-		// This is a 16:9 aspect.
-		ThumbnailPicture.Resample(ThumbWidth, ThumbHeight, tPicture::tFilter::Box);
-	}
-	*/
+void TacitImage::UnrequestThumbnail()
+{
+	if (ThumbnailRequested && !ThumbnailThreadRunning && !ThumbnailPicture.IsValid())
+		ThumbnailRequested = false;
 }
 
 

@@ -1622,6 +1622,9 @@ int main(int argc, char** argv)
 		lastUpdateTime = currUpdateTime;
 	}
 
+	// This is important. We need the destructors to run BEFORE we shutdown GLFW.
+	TexView::Images.Clear();
+
 	// Get current window geometry and set in config file if we're not in fullscreen mode or iconified.
 	if (!TexView::FullscreenMode && !TexView::WindowIconified)
 	{
