@@ -1622,7 +1622,8 @@ int main(int argc, char** argv)
 		lastUpdateTime = currUpdateTime;
 	}
 
-	// This is important. We need the destructors to run BEFORE we shutdown GLFW.
+	// This is important. We need the destructors to run BEFORE we shutdown GLFW. Deconstructing the images may block for a bit while shutting
+	// down worker threads. We could show a 'shutting down' popup here if we wanted -- if TacitImage::ThumbnailNumThreadsRunning is > 0.
 	TexView::Images.Clear();
 
 	// Get current window geometry and set in config file if we're not in fullscreen mode or iconified.

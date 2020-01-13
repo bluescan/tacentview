@@ -718,23 +718,22 @@ void TacitImage::GenerateThumbnailBridge(TacitImage* tacitImage)
 
 void TacitImage::GenerateThumbnail()
 {
+	// This thread (only) is allowed to access ThumbnailPicture. The main thread will leave it alone until GenerateThumbnail is complete.
 	if (ThumbnailPicture.IsValid())
-	{
-		//tPrintf("Thumbnail thread finished %s...\n", Filename.ConstText());
 		return;
-	}
 
-	// GLFW doesn't support creating contexts without an associated window. However, contexts with hidden
-	// windows can be created with the GLFW_VISIBLE window hint.
-	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-	GLFWwindow* offscreenContext = glfwCreateWindow(32, 32, "", nullptr, nullptr);
-	if (!offscreenContext)
+	// We need an opengl context if we are processing dds files (for now... opengl is used for decompression). GLFW doesn't support creating
+	// contexts without an associated window. However, contexts with hidden windows can be created with the GLFW_VISIBLE window hint.
+	GLFWwindow* offscreenContext = nullptr;
+	if (Filetype == tFileType::DDS)
 	{
-		//tPrintf("Thumbnail thread failed on %s...\n", Filename.ConstText());
-		return;
-	}
+		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+		offscreenContext = glfwCreateWindow(32, 32, "", nullptr, nullptr);
+		if (!offscreenContext)
+			return;
 
-	glfwMakeContextCurrent(offscreenContext);
+		glfwMakeContextCurrent(offscreenContext);
+	}
 
 	TacitImage thumbLoader;
 	thumbLoader.Load(Filename);
@@ -742,13 +741,16 @@ void TacitImage::GenerateThumbnail()
 	tPicture* primaryPic = thumbLoader.GetPrimaryPicture();
 	tAssert(primaryPic);
 	ThumbnailPicture.Set(*primaryPic);
-	
-	// This is a 16:9 aspect.
-	ThumbnailPicture.Resample(ThumbWidth, ThumbHeight, tPicture::tFilter::Box);
 
-	glfwMakeContextCurrent(nullptr);
-	glfwDestroyWindow(offscreenContext);
-	//tPrintf("Thumbnail thread successfully finished %s \n", Filename.ConstText());
+	if (Filetype == tFileType::DDS)
+	{
+		glfwMakeContextCurrent(nullptr);
+		glfwDestroyWindow(offscreenContext);
+	}
+
+	// This is a 16:9 aspect.
+	ThumbnailPicture.Resample(ThumbWidth, ThumbHeight, tPicture::tFilter::Bilinear);
+	// std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
 
@@ -757,10 +759,8 @@ void TacitImage::RequestThumbnail()
 	if (ThumbnailRequested)
 		return;
 
-	// Leave a core free unless we are on a two core or lower machine.
-	int numThreadsMax = tMath::tClampMin(tSystem::tGetNumCores()-1, 2);
-
-	// Abort request if we are maxed out on resources.
+	// Leave two cores free unless we are on a three core or lower machine, in which case we always use a min of 2 threads.
+	int numThreadsMax = tMath::tClampMin((tSystem::tGetNumCores()) - 2, 2);
 	if (ThumbnailNumThreadsRunning >= numThreadsMax)
 		return;
 
