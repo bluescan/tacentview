@@ -68,6 +68,7 @@ public:
 	void Get(float& r, float&g, float& b, float& a) const																{ r = GetR(); g = GetG(); b = GetB(); a = GetA(); }
 	void Get(tColouri& c) const																							{ c.BP = BP; }
 
+	void MakeZero()																										{ R = 0x00; G = 0x00; B = 0x00; A = 0x00; }
 	void MakeBlack()																									{ R = 0x00; G = 0x00; B = 0x00; A = 0xFF; }
 	void MakeWhite()																									{ R = 0xFF; G = 0xFF; B = 0xFF; A = 0xFF; }
 	void MakePink()																										{ R = 0xFF; G = 0x80; B = 0x80; A = 0xFF; }

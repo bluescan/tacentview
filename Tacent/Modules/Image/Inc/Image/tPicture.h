@@ -123,11 +123,19 @@ public:
 	int GetHeight() const																								{ return Height; }
 	int GetNumPixels() const																							{ return Width*Height; }
 
-	// Cropping. If width or height are smaller than the current size the image is cropped. (0, 0) is the anchor. If
-	// larger, opaque black pixels are added. You can also use this to change the current image size.
-	void Crop(int width, int height);
 	void Rotate90(bool antiClockWise);
 	void Flip(bool horizontal);
+
+	// Cropping. If width or height are smaller than the current size the image is cropped. (0, 0) is the anchor. If
+	// larger, transparent (alpha 0) black pixels are added.
+	enum class Anchor
+	{
+		LeftTop,		MiddleTop,		RightTop,
+		LeftMiddle,		MiddleMiddle,	RightMiddle,
+		LeftBottom,		MiddleBottom,	RightBottom
+	};
+	void Crop(int newWidth, int newHeight, Anchor = Anchor::MiddleMiddle);
+	void Crop(int newWidth, int newHeight, int originX, int originY);
 
 	// This function scales the image by half. Useful for generating mipmaps. Only use this if speed is an issue.
 	// Offline mipmap generation should use a higher quality filter like Lanczos-Windowed or Kaiser or Kaiser-Gamma. I

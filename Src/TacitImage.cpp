@@ -24,6 +24,7 @@
 using namespace tStd;
 using namespace tSystem;
 using namespace tImage;
+using namespace tMath;
 int TacitImage::ThumbnailNumThreadsRunning = 0;
 
 
@@ -608,9 +609,9 @@ bool TacitImage::ConvertTexture2DToPicture()
 	for (int level = 0; level < numMipmaps; level++)
 	{
 		int mipW = w >> level;
-		tMath::tiClampMin(mipW, 1);
+		tiClampMin(mipW, 1);
 		int mipH = h >> level;
-		tMath::tiClampMin(mipH, 1);
+		tiClampMin(mipH, 1);
 		uint8* rgbaData = new uint8[mipW * mipH * 4];
 		glGetTexImage(GL_TEXTURE_2D, level, GL_RGBA, GL_UNSIGNED_BYTE, rgbaData);
 		Pictures.Append(new tPicture(mipW, mipH, (tPixel*)rgbaData, false));
@@ -738,18 +739,41 @@ void TacitImage::GenerateThumbnail()
 	TacitImage thumbLoader;
 	thumbLoader.Load(Filename);
 
-	tPicture* primaryPic = thumbLoader.GetPrimaryPicture();
-	tAssert(primaryPic);
-	ThumbnailPicture.Set(*primaryPic);
-
 	if (Filetype == tFileType::DDS)
 	{
 		glfwMakeContextCurrent(nullptr);
 		glfwDestroyWindow(offscreenContext);
 	}
 
-	// This is a 16:9 aspect.
-	ThumbnailPicture.Resample(ThumbWidth, ThumbHeight, tPicture::tFilter::Bilinear);
+
+	tPicture* srcPic = thumbLoader.GetPrimaryPicture();
+	tAssert(srcPic);
+
+	// We make the thumbnail keep its aspect ratio.
+	int srcW = srcPic->GetWidth();
+	int srcH = srcPic->GetHeight();
+	float scaleX = float(ThumbWidth)  / float(srcW);
+	float scaleY = float(ThumbHeight) / float(srcH);
+	int iw, ih;
+	if (scaleX < scaleY)
+	{
+		iw = ThumbWidth;
+		ih = int(tRound(float(srcH)*scaleX));
+	}
+	else
+	{
+		ih = ThumbHeight;
+		iw = int(tRound(float(srcW)*scaleY));
+	}
+	tAssert((iw == ThumbWidth) || (ih == ThumbHeight));
+
+	// Create an image that is big (or small) enough to exactly match either the width or height without ruining the aspect.
+	srcPic->Resample(iw, ih, tPicture::tFilter::Bilinear);
+
+	// Center-crop the image to what we need. Cropping to a bigger size adds transparent pixels.
+	srcPic->Crop(ThumbWidth, ThumbHeight);
+
+	ThumbnailPicture.Set(*srcPic);
 	// std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
@@ -760,7 +784,7 @@ void TacitImage::RequestThumbnail()
 		return;
 
 	// Leave two cores free unless we are on a three core or lower machine, in which case we always use a min of 2 threads.
-	int numThreadsMax = tMath::tClampMin((tSystem::tGetNumCores()) - 2, 2);
+	int numThreadsMax = tClampMin((tSystem::tGetNumCores()) - 2, 2);
 	if (ThumbnailNumThreadsRunning >= numThreadsMax)
 		return;
 

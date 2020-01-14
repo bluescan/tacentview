@@ -64,8 +64,7 @@ void tPicture::Set(int width, int height, tPixel* pixelBuffer, bool copyPixels)
 	Height = height;
 
 	if (copyPixels)
-		for (int pixel = 0; pixel < (Width*Height); pixel++)
-			Pixels[pixel] = pixelBuffer[pixel];	
+		tStd::tMemcpy(Pixels, pixelBuffer, Width*Height*sizeof(tPixel));
 }
 
 
@@ -276,31 +275,56 @@ void tPicture::Load(const tChunk& chunk)
 }
 
 
-void tPicture::Crop(int newWidth, int newHeight)
+void tPicture::Crop(int newW, int newH, Anchor anchor)
 {
-	tAssert((newWidth > 0) && (newHeight > 0));
-	if ((newWidth == Width) && (newHeight == Height))
+	int originx = 0;
+	int originy = 0;
+
+	switch (anchor)
+	{
+		case Anchor::LeftTop:		originx = 0;				originy = Height-newH;		break;
+		case Anchor::MiddleTop:		originx = Width/2 - newW/2;	originy = Height-newH;		break;
+		case Anchor::RightTop:		originx = Width - newW;		originy = Height-newH;		break;
+
+		case Anchor::LeftMiddle:	originx = 0;				originy = Height/2-newH/2;	break;
+		case Anchor::MiddleMiddle:	originx = Width/2 - newW/2;	originy = Height/2-newH/2;	break;
+		case Anchor::RightMiddle:	originx = Width - newW;		originy = Height/2-newH/2;	break;
+
+		case Anchor::LeftBottom:	originx = 0;				originy = 0;				break;
+		case Anchor::MiddleBottom:	originx = Width/2 - newW/2;	originy = 0;				break;
+		case Anchor::RightBottom:	originx = Width - newW;		originy = 0;				break;
+	}
+
+	Crop(newW, newH, originx, originy);
+}
+
+
+void tPicture::Crop(int newW, int newH, int originX, int originY)
+{
+	tAssert((newW > 0) && (newH > 0));
+	if ((newW == Width) && (newH == Height) && (originX == 0) && (originY == 0))
 		return;
 
-	tPixel* newPixels = new tPixel[newWidth * newHeight];
+	tPixel* newPixels = new tPixel[newW * newH];
 
 	// Set the new pixel colours.
-	for (int y = 0; y < newHeight; y++)
+	for (int y = 0; y < newH; y++)
 	{
-		for (int x = 0; x < newWidth; x++)
+		for (int x = 0; x < newW; x++)
 		{
 			// If we're in range of the old picture we just copy the colour. If the old image is invalid no problem, as
 			// we'll fall through to the else and the pixel will be set to black.
-			if ((x < Width) && (y < Height))
-				newPixels[y * newWidth + x] = GetPixel(x, y);
+			if (tMath::tInIntervalIE(originX + x, 0, Width) && tMath::tInIntervalIE(originY + y, 0, Height))
+			//if ((originX + x < Width) && (originY + y < Height))
+				newPixels[y * newW + x] = GetPixel(originX + x, originY + y);
 			else
-				newPixels[y * newWidth + x].MakeBlack();
+				newPixels[y * newW + x].MakeZero();
 		}
 	}
 
 	Clear();
-	Width = newWidth;
-	Height = newHeight;
+	Width = newW;
+	Height = newH;
 	Pixels = newPixels;
 }
 

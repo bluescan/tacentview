@@ -317,6 +317,10 @@ void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 		Images.Clear();
 		PopulateImages();
 		SetCurrentImage(outFile);
+
+		// Close dialog so we know something happened.
+		if (popen)
+			*popen = false;
 	}
 
 	ImGui::End();
