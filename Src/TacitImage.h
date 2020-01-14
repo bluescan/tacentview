@@ -83,10 +83,6 @@ public:
 	bool IsThumbnailWorkerActive() const { return ThumbnailThreadRunning; }
 	uint64 BindThumbnail();
 
-	// You may want to limit the number of threads simultaneously generating thumbnails. This function returns how many
-	// threads are currently working so you may defer the request call.
-	//int GetNumThumbnailThreadsRunning();
-
 	ImgInfo Info;						// Info is only valid AFTER loading.
 	tString Filename;					// Valid before load.
 	tSystem::tFileType Filetype;		// Valid before load.
@@ -96,6 +92,7 @@ public:
 	const static int ThumbWidth			= 256;
 	const static int ThumbHeight		= 144;
 	const static int ThumbMinDispWidth	= 64;
+	static tString ThumbCacheDir;
 
 private:
 	// Dds files are special and already in HW ready format. The tTexture can store dds files, while tPicture stores

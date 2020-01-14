@@ -16,16 +16,19 @@
 #include <chrono>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL definitions.
+#include <Math/tHash.h>
 #include <Image/tTexture.h>
 #include <System/tFile.h>
 #include <System/tTime.h>
 #include <System/tUtil.h>
+#include <System/tChunk.h>
 #include "TacitImage.h"
 using namespace tStd;
 using namespace tSystem;
 using namespace tImage;
 using namespace tMath;
 int TacitImage::ThumbnailNumThreadsRunning = 0;
+tString TacitImage::ThumbCacheDir;
 
 
 TacitImage::TacitImage() :
@@ -723,6 +726,28 @@ void TacitImage::GenerateThumbnail()
 	if (ThumbnailPicture.IsValid())
 		return;
 
+	// Retrieve from cache if possible.
+	tuint256 hash = 0;
+	int thumbVersion = 1;
+	tFileInfo fileInfo;
+	tGetFileInfo(fileInfo, Filename);
+	hash = tHashData256((uint8*)&thumbVersion, sizeof(thumbVersion));
+	hash = tHashString256(Filename, hash);
+	hash = tHashData256((uint8*)&fileInfo.FileSize, sizeof(fileInfo.FileSize), hash);
+	hash = tHashData256((uint8*)&fileInfo.CreationTime, sizeof(fileInfo.CreationTime), hash);
+	hash = tHashData256((uint8*)&fileInfo.ModificationTime, sizeof(fileInfo.ModificationTime), hash);
+	hash = tHashData256((uint8*)&ThumbWidth, sizeof(ThumbWidth), hash);
+	hash = tHashData256((uint8*)&ThumbHeight, sizeof(ThumbHeight), hash);
+	tString hashFile;
+	tsPrintf(hashFile, "%s%032|128X.bin", ThumbCacheDir.ConstText(), hash);
+	if (tFileExists(hashFile))
+	{
+		tChunkReader chunk(hashFile);
+		ThumbnailPicture.Load(chunk.First());
+		// tPrintf("Retrieved from %s\n", hashFile.ConstText());
+		return;
+	}
+
 	// We need an opengl context if we are processing dds files (for now... opengl is used for decompression). GLFW doesn't support creating
 	// contexts without an associated window. However, contexts with hidden windows can be created with the GLFW_VISIBLE window hint.
 	GLFWwindow* offscreenContext = nullptr;
@@ -774,6 +799,10 @@ void TacitImage::GenerateThumbnail()
 	srcPic->Crop(ThumbWidth, ThumbHeight);
 
 	ThumbnailPicture.Set(*srcPic);
+
+	// Write to cache file.
+	tChunkWriter writer(hashFile);
+	ThumbnailPicture.Save(writer);
 	// std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 

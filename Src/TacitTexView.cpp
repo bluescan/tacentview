@@ -1514,6 +1514,10 @@ int main(int argc, char** argv)
 	const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
 	tString dataDir = tSystem::tGetProgramDir() + "Data/";
+	TacitImage::ThumbCacheDir = dataDir + "Cache/";
+	if (!tSystem::tDirExists(TacitImage::ThumbCacheDir))
+		tSystem::tCreateDir(TacitImage::ThumbCacheDir);
+
 	tString cfgFile = dataDir + "Settings.cfg";
 	TexView::Config.Load(cfgFile, mode->width, mode->height);
 	TexView::Window = glfwCreateWindow(TexView::Config.WindowW, TexView::Config.WindowH, "Tacit Viewer", nullptr, nullptr);
