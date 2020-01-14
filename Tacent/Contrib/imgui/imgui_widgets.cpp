@@ -872,7 +872,7 @@ bool ImGui::ImageButton(ImTextureID user_texture_id, const ImVec2& size, const I
     const ImU32 col = GetColorU32((held && hovered) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
     RenderNavHighlight(bb, id);
 
-    // @tacent Moved RenderFrame down.
+    // @tacent Modded the 'true' in the line below so that could NOT draw a border if no padding.
     //RenderFrame(bb.Min, bb.Max, col, true, ImClamp((float)ImMin(padding.x, padding.y), 0.0f, style.FrameRounding));
     RenderFrame(bb.Min, bb.Max, col, frame_padding != 0, ImClamp((float)ImMin(padding.x, padding.y), 0.0f, style.FrameRounding));
     if (bg_col.w > 0.0f)
