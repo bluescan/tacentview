@@ -222,12 +222,10 @@ void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 		finalWidth = CurrImage->GetWidth();
 		finalHeight = CurrImage->GetHeight();
 	}
-	ImGui::InputInt("Final Width", &finalWidth);
-	ImGui::SameLine();
+	ImGui::InputInt("Final Width", &finalWidth); ImGui::SameLine();
 	ShowHelpMark("Final scaled output width in pixels.");
 
-	ImGui::InputInt("Final Height", &finalHeight);
-	ImGui::SameLine();
+	ImGui::InputInt("Final Height", &finalHeight); ImGui::SameLine();
 	ShowHelpMark("Final scaled output height in pixels.");
 
 	if (ImGui::Button("Prev Pow2"))
@@ -503,10 +501,18 @@ void TexView::ShowPreferencesDialog(bool* popen)
 	ImGui::Separator();
 	ImGui::Text("System");
 	ImGui::Indent();
+
 	ImGui::PushItemWidth(110);
-	ImGui::InputInt("Max Mem (MB)", &Config.MaxImageMemMB);
-	ImGui::PopItemWidth();
+
+	ImGui::InputInt("Max Mem (MB)", &Config.MaxImageMemMB); ImGui::SameLine();
+	ShowHelpMark("Approx memory use limit of this app. Minimum 256 MB.");
 	tMath::tiClampMin(Config.MaxImageMemMB, 256);
+
+	ImGui::InputInt("Max Cache Files", &Config.MaxCacheFiles); ImGui::SameLine();
+	ShowHelpMark("Maximum number of cache files that may be created. Minimum 200.");
+	tMath::tiClampMin(Config.MaxCacheFiles, 200);
+
+	ImGui::PopItemWidth();
 	ImGui::Unindent();
 
 	ImGui::Separator();

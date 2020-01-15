@@ -55,6 +55,7 @@ struct Settings
 	double SlidehowFrameDuration;
 	int PreferredFileSaveType;
 	int MaxImageMemMB;					// Max image mem before unloading images.
+	int MaxCacheFiles;					// Max number of cache files before removing oldest.
 
 	void Load(const tString& filename, int screenWidth, int screenHeight);
 	bool Save(const tString& filename);

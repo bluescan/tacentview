@@ -44,6 +44,7 @@ void Settings::Reset()
 	SlidehowFrameDuration	= 1.0/30.0;
 	PreferredFileSaveType	= 0;
 	MaxImageMemMB			= 1024;
+	MaxCacheFiles			= 7000;
 }
 
 
@@ -87,6 +88,7 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(SlidehowFrameDuration);
 				ReadItem(PreferredFileSaveType);
 				ReadItem(MaxImageMemMB);
+				ReadItem(MaxCacheFiles);
 			}
 		}
 	}
@@ -101,6 +103,8 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 	tiClamp(PreferredFileSaveType, 0, 4);
 	tiClamp(ThumbnailWidth, float(TacitImage::ThumbMinDispWidth), float(TacitImage::ThumbWidth));
 	tiClamp(SortKey, 0, 3);
+	tiClampMin(MaxImageMemMB, 256);
+	tiClampMin(MaxCacheFiles, 200);
 }
 
 
@@ -129,6 +133,7 @@ bool Settings::Save(const tString& filename)
 	WriteItem(SlidehowFrameDuration);
 	WriteItem(PreferredFileSaveType);
 	WriteItem(MaxImageMemMB);
+	WriteItem(MaxCacheFiles);
 	
 	return true;
 }

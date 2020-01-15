@@ -129,6 +129,12 @@ namespace TexView
 
 	// When compare functions are used to sort, they result in ascending order if they return a < b.
 	bool Compare_AlphabeticalAscending(const tStringItem& a, const tStringItem& b)										{ return tStricmp(a.ConstText(), b.ConstText()) < 0; }
+	bool Compare_FileCreationTimeAscending(const tStringItem& a, const tStringItem& b)
+	{
+		tFileInfo ia; tGetFileInfo(ia, a);
+		tFileInfo ib; tGetFileInfo(ib, b);
+		return ia.CreationTime < ib.CreationTime;
+	}
 	bool Compare_ImageLoadTimeAscending(const TacitImage& a, const TacitImage& b)										{ return a.GetLoadedTime() < b.GetLoadedTime(); }
 	bool Compare_ImageFileNameAscending(const TacitImage& a, const TacitImage& b)										{ return tStricmp(a.Filename.ConstText(), b.Filename.ConstText()) < 0; }
 	bool Compare_ImageFileNameDescending(const TacitImage& a, const TacitImage& b)										{ return tStricmp(a.Filename.ConstText(), b.Filename.ConstText()) > 0; }
@@ -151,8 +157,9 @@ namespace TexView
 	void ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan);
 	void FindImageFiles(tList<tStringItem>& foundFiles);
 	tuint256 ComputeImagesHash(const tList<tStringItem>& files);
-	void Update(GLFWwindow* window, double dt, bool dopoll = true);
+	int RemoveOldCacheFiles(const tString& cacheDir);																	// Returns num removed.
 
+	void Update(GLFWwindow* window, double dt, bool dopoll = true);
 	void WindowRefreshFun(GLFWwindow* window)																			{ Update(window, 0.0, false); }
 	void KeyCallback(GLFWwindow*, int key, int scancode, int action, int modifiers);
 	void MouseButtonCallback(GLFWwindow*, int mouseButton, int x, int y);
@@ -1491,6 +1498,33 @@ void TexView::IconifyCallback(GLFWwindow* window, int iconified)
 }
 
 
+int TexView::RemoveOldCacheFiles(const tString& cacheDir)
+{
+	tList<tStringItem> cacheFiles;
+	tSystem::tFindFilesInDir(cacheFiles, cacheDir, "*.bin");
+	int numFiles = cacheFiles.NumItems();
+	if (numFiles <= Config.MaxCacheFiles)
+		return 0;
+
+	cacheFiles.Sort(Compare_FileCreationTimeAscending);
+	int targetCount = tClampMin(Config.MaxCacheFiles - 100, 0);
+
+	int numToRemove = numFiles - targetCount;
+	tAssert(numToRemove >= 0);
+	int deletedCount = 0;
+	while (numToRemove)
+	{
+		tStringItem* head = cacheFiles.Remove();
+		if (tDeleteFile(*head))
+			deletedCount++;
+		delete head;
+		numToRemove--;
+	}
+
+	return deletedCount;
+}
+
+
 int main(int argc, char** argv)
 {
 	tSystem::tSetStdoutRedirectCallback(TexView::PrintRedirectCallback);
@@ -1645,5 +1679,8 @@ int main(int argc, char** argv)
 
 	glfwDestroyWindow(TexView::Window);
 	glfwTerminate();
+
+	// Before we go, lets clear out any old cache files.
+	TexView::RemoveOldCacheFiles(TacitImage::ThumbCacheDir);
 	return 0;
 }
