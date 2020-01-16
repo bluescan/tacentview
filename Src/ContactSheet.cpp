@@ -23,7 +23,7 @@ using namespace tMath;
 void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
-	tVector2 windowPos = GetDialogOrigin(3);
+	tVector2 windowPos = GetDialogOrigin(2);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	if (!ImGui::Begin("Contact Sheet Generator", popen, windowFlags))
@@ -112,13 +112,13 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 	ImGui::SameLine();
 	ShowHelpMark("Filtering method to use when resizing images.");
 
-	const char* fileTypeItems[] = { "TGA", "PNG", "BMP", "JPG", "GIF" };
-	ImGui::Combo("File Type", &Config.PreferredFileSaveType, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
+	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "gif" };
+	ImGui::Combo("File Type", &Config.FileSaveType, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
 	ImGui::SameLine();
 	ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
 
 	tString extension = ".tga";
-	switch (Config.PreferredFileSaveType)
+	switch (Config.FileSaveType)
 	{
 		case 0: extension = ".tga"; break;
 		case 1: extension = ".png"; break;
@@ -127,9 +127,8 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 		case 4: extension = ".gif"; break;
 	}
 
-	static bool rleCompression = false;
-	if (Config.PreferredFileSaveType == 0)
-		ImGui::Checkbox("RLE Compression", &rleCompression);
+	if (Config.FileSaveType == 0)
+		ImGui::Checkbox("RLE Compression", &Config.FileSaveTargaRLE);
 
 	static char filename[128] = "ContactSheet";
 	ImGui::InputText("Filename", filename, IM_ARRAYSIZE(filename));
@@ -221,8 +220,8 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 		tImage::tPicture::tColourFormat colourFmt = allOpaque ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
 		if ((finalWidth == contactWidth) && (finalHeight == contactHeight))
 		{
-			if (Config.PreferredFileSaveType == 0)
-				outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, rleCompression ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
+			if (Config.FileSaveType == 0)
+				outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.FileSaveTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
 			else
 				outPic.Save(outFile, colourFmt);
 		}
@@ -231,8 +230,8 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 			tImage::tPicture finalResampled(outPic);
 			finalResampled.Resample(finalWidth, finalHeight, tImage::tPicture::tFilter(Config.ResampleFilter));
 
-			if (Config.PreferredFileSaveType == 0)
-				finalResampled.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, rleCompression ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
+			if (Config.FileSaveType == 0)
+				finalResampled.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.FileSaveTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
 			else
 				finalResampled.Save(outFile, colourFmt);
 		}

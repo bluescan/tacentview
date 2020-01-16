@@ -20,8 +20,11 @@ namespace TexView
 	void ShowInfoOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY, float zoom);
 	void ShowCheatSheetPopup(bool* popen);
 	void ShowAboutPopup(bool* popen);
-	void ShowSaveAsDialog(bool* popen, bool justOpened);
-	void ShowSaveAllAsDialog(bool* popen);
 	void ShowPreferencesDialog(bool* popen);
 	void ColourCopyAs();
+
+	void DoSaveAsModalDialog(bool justOpened);
+	void DoDeleteFileModal();
+	void DoDeleteFileNoRecycleModal();
+	void ShowSaveAllAsDialog(bool* popen);
 }

@@ -35,13 +35,13 @@
     <ClInclude Include="..\Inc\System\tThrow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Inc\System\tUtil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Inc\System\tCommand.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Inc\System\tTime.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Inc\System\tMachine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -64,9 +64,6 @@
     <ClCompile Include="..\Src\tTask.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Src\tUtil.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\Src\tThrow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -74,6 +71,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Src\tTime.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\tMachine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

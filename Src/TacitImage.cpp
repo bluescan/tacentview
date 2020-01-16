@@ -20,7 +20,7 @@
 #include <Image/tTexture.h>
 #include <System/tFile.h>
 #include <System/tTime.h>
-#include <System/tUtil.h>
+#include <System/tMachine.h>
 #include <System/tChunk.h>
 #include "TacitImage.h"
 using namespace tStd;
@@ -744,7 +744,6 @@ void TacitImage::GenerateThumbnail()
 	{
 		tChunkReader chunk(hashFile);
 		ThumbnailPicture.Load(chunk.First());
-		// tPrintf("Retrieved from %s\n", hashFile.ConstText());
 		return;
 	}
 

@@ -23,7 +23,7 @@
 #include <System/tFile.h>
 #include <System/tTime.h>
 #include <System/tScript.h>
-#include <System/tUtil.h>
+#include <System/tMachine.h>
 #include <Math/tHash.h>
 #include <Math/tVector2.h>
 #include "imgui.h"
@@ -83,12 +83,12 @@ namespace TexView
 	bool WindowIconified						= false;
 	bool ShowCheatSheet							= false;
 	bool ShowAbout								= false;
-	bool SaveAsDialog							= false;
-	bool JustOpenedSaveAsDialog					= false;
+	bool Request_SaveAsModal					= false;
+	bool Request_DeleteFileModal				= false;
+	bool Request_DeleteFileNoRecycleModal		= false;
 	bool ContactDialog							= false;
 	bool JustOpenedContactDialog				= false;
 	bool PrefsDialog							= false;
-	bool DoDeleteFile							= false;
 	bool RMBDown								= false;
 	int DragAnchorX								= 0;
 	int DragAnchorY								= 0;
@@ -118,6 +118,7 @@ namespace TexView
 	const tVector4 ColourDisabledTint			= tVector4(0.46f, 0.46f, 0.58f, 1.00f);
 	const tVector4 ColourBG						= tVector4(0.00f, 0.00f, 0.00f, 0.00f);
 	const tVector4 ColourPressedBG				= tVector4(0.45f, 0.45f, 0.60f, 1.00f);
+	const tVector4 ColourClear					= tVector4(0.10f, 0.10f, 0.12f, 1.00f);
 
 	const float ZoomMin							= 20.0f;
 	const float ZoomMax							= 2500.0f;
@@ -151,8 +152,6 @@ namespace TexView
 	bool OnNext(bool circ = false);
 	bool OnSkipBegin();
 	bool OnSkipEnd();
-	void ShowDeleteFileModal();
-	bool DeleteImageFile(const tString& imgFile);
 	void ResetPan(bool resetX = true, bool resetY = true);
 	void ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan);
 	void FindImageFiles(tList<tStringItem>& foundFiles);
@@ -175,6 +174,7 @@ tVector2 TexView::GetDialogOrigin(float index)
 {
 	return tVector2(DialogOrigin + DialogMargin*float(index), DialogOrigin + TopUIHeight + DialogMargin*float(index));
 }
+
 
 void TexView::DrawTextureViewerLog(float x, float y, float w, float h)
 {
@@ -543,20 +543,10 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (dopoll)
 		glfwPollEvents();
 
-	tVector4 clearColour = tVector4(0.10f, 0.10f, 0.12f, 1.00f);
-	glClearColor(clearColour.x, clearColour.y, clearColour.z, clearColour.w);
+	glClearColor(ColourClear.x, ColourClear.y, ColourClear.z, ColourClear.w);
 	glClear(GL_COLOR_BUFFER_BIT);
-	int bottomUIHeight = 150;
-	int topUIHeight = 26;
-	if (FullscreenMode)
-	{
-		bottomUIHeight = 0;
-		topUIHeight = 0;
-	}
-	else if (!Config.ShowLog)
-	{
-		bottomUIHeight = 0;
-	}
+	int bottomUIHeight	= (FullscreenMode || !Config.ShowLog) ? 0 : 150;
+	int topUIHeight		= FullscreenMode ? 0 : 26;
 
 	ImGui_ImplOpenGL2_NewFrame();		
 	ImGui_ImplGlfw_NewFrame();
@@ -579,14 +569,10 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	glLoadIdentity();
 	glOrtho(0, workAreaW, 0, workAreaH, -1, 1);
 	glMatrixMode(GL_MODELVIEW);
-	float draww = 1.0f;
-	float drawh = 1.0f;
-	float iw = 1.0f;
-	float ih = 1.0f;
-	float hmargin = 0.0f;
-	float vmargin = 0.0f;
-	static int imgxi = 0;
-	static int imgyi = 0;
+	float draww = 1.0f;		float drawh = 1.0f;
+	float iw = 1.0f;		float ih = 1.0f;
+	float hmargin = 0.0f;	float vmargin = 0.0f;
+	static int imgxi = 0;	static int imgyi = 0;
 
 	if (CurrImage)
 	{
@@ -786,7 +772,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGuiWindowFlags_NoTitleBar		|	ImGuiWindowFlags_NoScrollbar	|	ImGuiWindowFlags_NoMove			| ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoCollapse		|	ImGuiWindowFlags_NoNav			|	ImGuiWindowFlags_NoBackground	| ImGuiWindowFlags_NoBringToFrontOnFocus;
 
-	if (!ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
+	if (!ImGui::GetIO().WantCaptureMouse)
 		DisappearCountdown -= dt;
 
 	if (DisappearCountdown > 0.0)
@@ -862,16 +848,15 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::BeginMainMenuBar();
 		{
 			static bool saveAllAsDialog = false;
+			bool saveAsPressed = Request_SaveAsModal;
+			Request_SaveAsModal = false;
 			if (ImGui::BeginMenu("File"))
 			{
 				// Show file menu items...
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 
 				if (ImGui::MenuItem("Save As...", "Ctrl-S") && CurrImage)
-				{
-					JustOpenedSaveAsDialog = !SaveAsDialog;
-					SaveAsDialog = !SaveAsDialog;
-				}
+					saveAsPressed = true;
 
 				if (ImGui::MenuItem("Save All As...") && CurrImage)
 					saveAllAsDialog = !saveAllAsDialog;
@@ -884,11 +869,12 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				ImGui::EndMenu();
 			}
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
-			if (SaveAsDialog)
-			{
-				ShowSaveAsDialog(&SaveAsDialog, JustOpenedSaveAsDialog);
-				JustOpenedSaveAsDialog = false;
-			}
+
+			if (saveAsPressed)
+				ImGui::OpenPopup("Save As");
+			if (ImGui::BeginPopupModal("Save As", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+				DoSaveAsModalDialog(saveAsPressed);
+
 			if (saveAllAsDialog)
 				ShowSaveAllAsDialog(&saveAllAsDialog);
 			ImGui::PopStyleVar();
@@ -1100,7 +1086,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				) && recycleAvail
 			)
 			{
-				DoDeleteFile = true;
+				Request_DeleteFileModal = true;
 			}
 			ShowToolTip("Delete Current File");
 
@@ -1145,15 +1131,24 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (ShowAbout)
 		ShowAboutPopup(&ShowAbout);
 
-	if (DoDeleteFile)
+	if (Request_DeleteFileModal)
 	{
-		DoDeleteFile = false;
+		Request_DeleteFileModal = false;
 		if (!Config.ConfirmDeletes)
-			DeleteImageFile(CurrImage->Filename);
+			DeleteImageFile(CurrImage->Filename, true);
 		else
 			ImGui::OpenPopup("Delete File");
 	}
-	ShowDeleteFileModal();
+	if (ImGui::BeginPopupModal("Delete File", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		DoDeleteFileModal();
+
+	if (Request_DeleteFileNoRecycleModal)
+	{
+		Request_DeleteFileNoRecycleModal = false;
+		ImGui::OpenPopup("Delete File Permanently");
+	}
+	if (ImGui::BeginPopupModal("Delete File Permanently", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		DoDeleteFileNoRecycleModal();
 
 	ImGui::Render();
 	glViewport(0, 0, dispw, disph);
@@ -1163,50 +1158,23 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	glfwSwapBuffers(window);
 
 	// We're done the frame. Is slideshow playing.
-	SlideshowCountdown -= dt;
-	if (SlideshowPlaying && (SlideshowCountdown <= 0.0f))
+	if (!ImGui::IsAnyPopupOpen() && SlideshowPlaying)
 	{
-		OnNext(true);
-		SlideshowCountdown = Config.SlidehowFrameDuration;
-	}
-}
-
-
-void TexView::ShowDeleteFileModal()
-{
-	if (ImGui::BeginPopupModal("Delete File", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-	{
-		tString fullname = CurrImage->Filename;
-		tString file = tSystem::tGetFileName(fullname);
-		tString dir = tSystem::tGetDir(fullname);
-		ImGui::Text("Confirm deletion of file\n%s\nin folder\n%s\n\n", file.ConstText(), dir.ConstText());
-
-		ImGui::Separator();
-		ImGui::Checkbox("Confirm next time", &Config.ConfirmDeletes);
-		ImGui::Text("\n");
-
-		if (ImGui::Button("Cancel", tVector2(120, 0)))
-			ImGui::CloseCurrentPopup();
-
-		ImGui::SetItemDefaultFocus();
-		ImGui::SameLine();
-
-		if (ImGui::Button("OK", tVector2(120, 0)))
+		SlideshowCountdown -= dt;
+		if ((SlideshowCountdown <= 0.0f))
 		{
-			DeleteImageFile(fullname);
-			ImGui::CloseCurrentPopup();
+			OnNext(true);
+			SlideshowCountdown = Config.SlidehowFrameDuration;
 		}
-
-		ImGui::EndPopup();
 	}
 }
 
 
-bool TexView::DeleteImageFile(const tString& imgFile)
+bool TexView::DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin)
 {
 	tString nextImgFile = CurrImage->Next() ? CurrImage->Next()->Filename : tString();
 
-	bool deleted = tSystem::tDeleteFile(imgFile, true, true);
+	bool deleted = tSystem::tDeleteFile(imgFile, true, tryUseRecycleBin);
 	if (deleted)
 	{
 		ImageFileParam.Param = nextImgFile;		// We set this so if we lose and gain focus, we go back to the current image.
@@ -1325,7 +1293,15 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 			break;
 
 		case GLFW_KEY_DELETE:
-			DoDeleteFile = true;
+			if (modifiers == GLFW_MOD_SHIFT)
+				Request_DeleteFileNoRecycleModal = true;
+			else
+				Request_DeleteFileModal = true;
+			break;
+
+		case GLFW_KEY_TAB:
+			if (CurrImage)
+				tSystem::tOpenSystemFileExplorer(CurrImage->Filename);
 			break;
 
 		case GLFW_KEY_T:
@@ -1364,10 +1340,7 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 
 		case GLFW_KEY_S:
 			if (CurrImage)
-			{
-				JustOpenedSaveAsDialog = !SaveAsDialog;
-				SaveAsDialog = !SaveAsDialog;
-			}
+				Request_SaveAsModal = true;
 			break;
 
 		case GLFW_KEY_C:
@@ -1387,9 +1360,10 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 
 void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press, int mods)
 {
-	DisappearCountdown = DisappearDuration;
-	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
+	if (ImGui::GetIO().WantCaptureMouse)
 		return;
+
+	DisappearCountdown = DisappearDuration;
 
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
@@ -1431,6 +1405,9 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 
 void TexView::CursorPosCallback(GLFWwindow* window, double x, double y)
 {
+	if (ImGui::GetIO().WantCaptureMouse)
+		return;
+
 	DisappearCountdown = DisappearDuration;
 }
 
@@ -1554,6 +1531,9 @@ int main(int argc, char** argv)
 
 	tString cfgFile = dataDir + "Settings.cfg";
 	TexView::Config.Load(cfgFile, mode->width, mode->height);
+
+	// We start with window invisible as DwmSetWindowAttribute won't redraw properly otherwise.
+	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 	TexView::Window = glfwCreateWindow(TexView::Config.WindowW, TexView::Config.WindowH, "Tacit Viewer", nullptr, nullptr);
 	if (!TexView::Window)
 		return 1;
@@ -1565,9 +1545,6 @@ int main(int argc, char** argv)
 	const int DWMWA_USE_IMMERSIVE_DARK_MODE = 19;
 	BOOL isDarkMode = 1;
 	DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &isDarkMode, sizeof(isDarkMode));
-	ShowWindow(hwnd, SW_HIDE);
-	ShowWindow(hwnd, SW_SHOW);
-
 	if (!tSystem::tDirExists(dataDir))
 	{
 		::MessageBoxA
@@ -1650,6 +1627,16 @@ int main(int argc, char** argv)
 		TexView::SetCurrentImage(TexView::ImageFileParam.Get());
 	else
 		TexView::SetCurrentImage();
+
+	glClearColor(TexView::ColourClear.x, TexView::ColourClear.y, TexView::ColourClear.z, TexView::ColourClear.w);
+	glClear(GL_COLOR_BUFFER_BIT);
+	int dispw, disph;
+	glfwGetFramebufferSize(TexView::Window, &dispw, &disph);
+	glViewport(0, 0, dispw, disph);
+
+	ShowWindow(hwnd, SW_SHOW);
+	glfwMakeContextCurrent(TexView::Window);
+	glfwSwapBuffers(TexView::Window);
 
 	// Main loop.
 	static double lastUpdateTime = glfwGetTime();

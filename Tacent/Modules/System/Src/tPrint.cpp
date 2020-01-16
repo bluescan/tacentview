@@ -5,7 +5,7 @@
 // different type sizes and can print integral types in a variety of bases. Redirection via a callback as well as
 // visibility channels are also supported.
 //
-// Copyright (c) 2004-2006, 2015, 2017, 2019 Tristan Grimmer.
+// Copyright (c) 2004-2006, 2015, 2017, 2019, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -22,7 +22,7 @@
 #include <Foundation/tArray.h>
 #include <Math/tLinearAlgebra.h>
 #include <Math/tHash.h>
-#include "System/tUtil.h"
+#include "System/tMachine.h"
 #include "System/tTime.h"
 #include "System/tFile.h"
 #include "System/tPrint.h"

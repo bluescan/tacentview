@@ -6646,6 +6646,13 @@ bool ImGui::IsPopupOpen(const char* str_id)
     return g.OpenPopupStack.Size > g.BeginPopupStack.Size && g.OpenPopupStack[g.BeginPopupStack.Size].PopupId == g.CurrentWindow->GetID(str_id);
 }
 
+// @tacent Added IsAnyPopupOpen
+bool ImGui::IsAnyPopupOpen()
+{
+    ImGuiContext& g = *GImGui;
+    return g.OpenPopupStack.Size > g.BeginPopupStack.Size;
+}
+
 ImGuiWindow* ImGui::GetFrontMostPopupModal()
 {
     ImGuiContext& g = *GImGui;
@@ -6679,6 +6686,7 @@ void ImGui::OpenPopupEx(ImGuiID id)
     popup_ref.OpenParentId = parent_window->IDStack.back();
     popup_ref.OpenPopupPos = NavCalcPreferredRefPos();
     popup_ref.OpenMousePos = IsMousePosValid(&g.IO.MousePos) ? g.IO.MousePos : popup_ref.OpenPopupPos;
+	///////////popup_ref.JustOpened = true;
 
     //IMGUI_DEBUG_LOG("OpenPopupEx(0x%08X)\n", g.FrameCount, id);
     if (g.OpenPopupStack.Size < current_stack_size + 1)

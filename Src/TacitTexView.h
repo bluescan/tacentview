@@ -52,5 +52,6 @@ namespace TexView
 	void LoadCurrImage();
 	bool ChangeScreenMode(bool fullscreeen, bool force = false);
 	void SortImages(Settings::SortKeyEnum, bool ascending);
+	bool DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin);
 	tMath::tVector2 GetDialogOrigin(float index);
 }

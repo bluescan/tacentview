@@ -52,8 +52,10 @@ struct Settings
 	int BackgroundStyle;
 	int ResampleFilter;					// Matches tImage::tPicture::tFilter.
 	bool ConfirmDeletes;
+	bool ConfirmFileOverwrites;
 	double SlidehowFrameDuration;
-	int PreferredFileSaveType;
+	int FileSaveType;
+	bool FileSaveTargaRLE;
 	int MaxImageMemMB;					// Max image mem before unloading images.
 	int MaxCacheFiles;					// Max number of cache files before removing oldest.
 

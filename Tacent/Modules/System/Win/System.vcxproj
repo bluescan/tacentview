@@ -29,7 +29,7 @@
     <ClInclude Include="..\Inc\System\tTask.h" />
     <ClInclude Include="..\Inc\System\tThrow.h" />
     <ClInclude Include="..\Inc\System\tTime.h" />
-    <ClInclude Include="..\Inc\System\tUtil.h" />
+    <ClInclude Include="..\Inc\System\tMachine.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Src\tChunk.cpp" />
@@ -41,7 +41,7 @@
     <ClCompile Include="..\Src\tTask.cpp" />
     <ClCompile Include="..\Src\tThrow.cpp" />
     <ClCompile Include="..\Src\tTime.cpp" />
-    <ClCompile Include="..\Src\tUtil.cpp" />
+    <ClCompile Include="..\Src\tMachine.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{E3BAD3CE-E59D-4C1F-9759-7D585C145884}</ProjectGuid>

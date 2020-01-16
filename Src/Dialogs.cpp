@@ -26,6 +26,13 @@ using namespace tSystem;
 using namespace tMath;
 
 
+namespace TexView
+{
+	void SaveImageTo(const tString& outFile, int finalWidth, int finalHeight);
+	bool DoOverwriteFileModal(const tString& outFile, int finalWidth, int finalHeight);
+}
+
+
 void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY, float zoom)
 {
 	// This overlay function is pretty much taken from the DearImGui demo code.
@@ -155,7 +162,9 @@ void TexView::ShowCheatSheetPopup(bool* popen)
 		ImGui::Text("F11");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Fullscreen");
 		ImGui::Text("Alt-Enter");   ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Fullscreen");
 		ImGui::Text("Esc");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Exit Fullscreen");
+		ImGui::Text("Tab");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Open Explorer Window");
 		ImGui::Text("Delete");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Delete Current Image");
+		ImGui::Text("Shift-Delete");ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Delete Current Image Permanently.");
 		ImGui::Text("LMB-Click");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Set Colour Reticle Pos");
 		ImGui::Text("RMB-Drag");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Pan Image");
 		ImGui::Text("Alt-F4");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Quit");
@@ -176,12 +185,13 @@ void TexView::ShowCheatSheetPopup(bool* popen)
 
 void TexView::ShowAboutPopup(bool* popen)
 {
-	tVector2 windowPos = GetDialogOrigin(5);
+	tVector2 windowPos = GetDialogOrigin(4);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	// ImGui::SetNextWindowBgAlpha(0.6f);
-	ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize |
-		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
-		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+	ImGuiWindowFlags flags =
+		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
+		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoFocusOnAppearing	|
+		ImGuiWindowFlags_NoNav;
 
 	if (ImGui::Begin("About", popen, flags))
 	{
@@ -203,18 +213,8 @@ void TexView::ShowAboutPopup(bool* popen)
 }
 
 
-void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
+void TexView::DoSaveAsModalDialog(bool justOpened)
 {
-	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
-	tVector2 windowPos = GetDialogOrigin(2);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-
-	if (!ImGui::Begin("Save As", popen, windowFlags))
-	{
-		ImGui::End();
-		return;
-	}
-
 	static int finalWidth = 512;
 	static int finalHeight = 512;
 	if (justOpened && CurrImage)
@@ -252,13 +252,13 @@ void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 	ImGui::SameLine();
 	ShowHelpMark("Filtering method to use when resizing images.");
 
-	const char* fileTypeItems[] = { "TGA", "PNG", "BMP", "JPG", "GIF" };
-	ImGui::Combo("File Type", &Config.PreferredFileSaveType, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
+	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "gif" };
+	ImGui::Combo("File Type", &Config.FileSaveType, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
 	ImGui::SameLine();
 	ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
 
 	tString extension = ".tga";
-	switch (Config.PreferredFileSaveType)
+	switch (Config.FileSaveType)
 	{
 		case 0: extension = ".tga"; break;
 		case 1: extension = ".png"; break;
@@ -267,9 +267,8 @@ void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 		case 4: extension = ".gif"; break;
 	}
 
-	static bool rleCompression = false;
-	if (Config.PreferredFileSaveType == 0)
-		ImGui::Checkbox("RLE Compression", &rleCompression);
+	if (Config.FileSaveType == 0)
+		ImGui::Checkbox("RLE Compression", &Config.FileSaveTargaRLE);
 
 	static char filename[128] = "Filename";
 	if (justOpened)
@@ -280,55 +279,71 @@ void TexView::ShowSaveAsDialog(bool* popen, bool justOpened)
 	ImGui::InputText("Filename", filename, IM_ARRAYSIZE(filename));
 	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
 
-	if (ImGui::Button("Save"))
+	ImGui::NewLine();
+	if (ImGui::Button("Cancel", tVector2(100, 0)))
+		ImGui::CloseCurrentPopup();
+	ImGui::SameLine();
+	
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+
+	tString imagesDir = tSystem::tGetCurrentDir();
+	if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
+		imagesDir = tSystem::tGetDir(ImageFileParam.Get());
+	tString outFile = imagesDir + tString(filename) + extension;
+	bool saved = false;
+	if (ImGui::Button("Save", tVector2(100, 0)))
 	{
-		tString imagesDir = tSystem::tGetCurrentDir();
-		if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
-			imagesDir = tSystem::tGetDir(ImageFileParam.Get());
-		tString outFile = imagesDir + tString(filename) + extension;
-
-		tImage::tPicture outPic(CurrImage->GetWidth(), CurrImage->GetHeight());
-		outPic.Set(*CurrImage->GetPrimaryPicture());
-
-		if ((outPic.GetWidth() != finalWidth) || (outPic.GetHeight() != finalHeight))
-			outPic.Resample(finalWidth, finalHeight, tImage::tPicture::tFilter(Config.ResampleFilter));
-
-		if (tFileExists(outFile))
-		{
-			tPrintf("File %s already exists. Will not overwrite.\n", outFile.ConstText());
-		}
+		if (tFileExists(outFile) && Config.ConfirmFileOverwrites)
+			ImGui::OpenPopup("Overwrite File");
 		else
 		{
-			bool success = false;
-			tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-			if (Config.PreferredFileSaveType == 0)
-				success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, rleCompression ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
-			else
-				success = outPic.Save(outFile, colourFmt);
-
-			if (success)
-				tPrintf("Saved image as : %s\n", outFile.ConstText());
-			else
-				tPrintf("Failed to save image %s\n", outFile.ConstText());
+			SaveImageTo(outFile, finalWidth, finalHeight);
+			saved = true;
 		}
-
-		Images.Clear();
-		PopulateImages();
-		SetCurrentImage(outFile);
-
-		// Close dialog so we know something happened.
-		if (popen)
-			*popen = false;
 	}
 
-	ImGui::End();
+	if (ImGui::BeginPopupModal("Overwrite File", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		if (DoOverwriteFileModal(outFile, finalWidth, finalHeight))
+			saved = true;
+	}
+
+	if (saved)
+		ImGui::CloseCurrentPopup();
+
+	ImGui::EndPopup();
+}
+
+
+void TexView::SaveImageTo(const tString& outFile, int finalWidth, int finalHeight)
+{
+	tImage::tPicture outPic(CurrImage->GetWidth(), CurrImage->GetHeight());
+	outPic.Set(*CurrImage->GetPrimaryPicture());
+
+	if ((outPic.GetWidth() != finalWidth) || (outPic.GetHeight() != finalHeight))
+		outPic.Resample(finalWidth, finalHeight, tImage::tPicture::tFilter(Config.ResampleFilter));
+
+	bool success = false;
+	tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
+	if (Config.FileSaveType == 0)
+		success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.FileSaveTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
+	else
+		success = outPic.Save(outFile, colourFmt);
+	if (success)
+		tPrintf("Saved image as : %s\n", outFile.ConstText());
+	else
+		tPrintf("Failed to save image %s\n", outFile.ConstText());
+
+	Images.Clear();
+	PopulateImages();
+	SetCurrentImage(outFile);
 }
 
 
 void TexView::ShowSaveAllAsDialog(bool* popen)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
-	tVector2 windowPos = GetDialogOrigin(6);
+	tVector2 windowPos = GetDialogOrigin(5);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	if (!ImGui::Begin("Save All As", popen, windowFlags))
@@ -379,13 +394,13 @@ void TexView::ShowSaveAllAsDialog(bool* popen)
 	tMath::tiClampMin(forceWidth, 4);
 	tMath::tiClampMin(forceHeight, 4);
 
-	const char* fileTypeItems[] = { "TGA", "PNG", "BMP", "JPG", "GIF" };
-	ImGui::Combo("File Type", &Config.PreferredFileSaveType, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
+	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "gif" };
+	ImGui::Combo("File Type", &Config.FileSaveType, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
 	ImGui::SameLine();
 	ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
 
 	tString extension = ".tga";
-	switch (Config.PreferredFileSaveType)
+	switch (Config.FileSaveType)
 	{
 		case 0: extension = ".tga"; break;
 		case 1: extension = ".png"; break;
@@ -394,9 +409,8 @@ void TexView::ShowSaveAllAsDialog(bool* popen)
 		case 4: extension = ".gif"; break;
 	}
 
-	static bool rleCompression = false;
-	if (Config.PreferredFileSaveType == 0)
-		ImGui::Checkbox("RLE Compression", &rleCompression);
+	if (Config.FileSaveType == 0)
+		ImGui::Checkbox("RLE Compression", &Config.FileSaveTargaRLE);
 
 	if (ImGui::Button("Save All"))
 	{
@@ -440,8 +454,8 @@ void TexView::ShowSaveAllAsDialog(bool* popen)
 
 			bool success = false;
 			tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-			if (Config.PreferredFileSaveType == 0)
-				success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, rleCompression ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
+			if (Config.FileSaveType == 0)
+				success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.FileSaveTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
 			else
 				success = outPic.Save(outFile, colourFmt);
 
@@ -470,7 +484,7 @@ void TexView::ShowPreferencesDialog(bool* popen)
 
 	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
 	// do it to make the Demo applications a little more welcoming.
-	tVector2 windowPos = GetDialogOrigin(4);
+	tVector2 windowPos = GetDialogOrigin(3);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	if (!ImGui::Begin("Preferences", popen, windowFlags))
@@ -519,6 +533,7 @@ void TexView::ShowPreferencesDialog(bool* popen)
 	ImGui::Text("Interface");
 	ImGui::Indent();
 	ImGui::Checkbox("Confirm Deletes", &Config.ConfirmDeletes);
+	ImGui::Checkbox("Confirm File Overwrites", &Config.ConfirmFileOverwrites);
 	if (ImGui::Button("Reset UI"))
 	{
 		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
@@ -529,4 +544,101 @@ void TexView::ShowPreferencesDialog(bool* popen)
 	ImGui::Unindent();
 
 	ImGui::End();
+}
+
+
+bool TexView::DoOverwriteFileModal(const tString& outFile, int finalWidth, int finalHeight)
+{
+	bool saved = false;
+	tString file = tSystem::tGetFileName(outFile);
+	tString dir = tSystem::tGetDir(outFile);
+	ImGui::Text("Overwrite file");
+		ImGui::Indent(); ImGui::Text("%s", file.ConstText()); ImGui::Unindent();
+	ImGui::Text("In Folder");
+		ImGui::Indent(); ImGui::Text("%s", dir.ConstText()); ImGui::Unindent();
+	ImGui::NewLine();
+	ImGui::Separator();
+			
+	ImGui::NewLine();
+	ImGui::Checkbox("Confirm file overwrites in the future?", &Config.ConfirmFileOverwrites);
+	ImGui::NewLine();
+
+	if (ImGui::Button("Cancel", tVector2(100, 0)))
+		ImGui::CloseCurrentPopup();
+
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	if (ImGui::Button("OK", tVector2(100, 0)))
+	{
+		SaveImageTo(outFile, finalWidth, finalHeight);
+		saved = true;
+		ImGui::CloseCurrentPopup();
+	}
+	ImGui::EndPopup();
+	return saved;
+}
+
+
+void TexView::DoDeleteFileModal()
+{
+	tString fullname = CurrImage->Filename;
+	tString file = tSystem::tGetFileName(fullname);
+	tString dir = tSystem::tGetDir(fullname);
+	ImGui::Text("Delete File");
+		ImGui::Indent(); ImGui::Text("%s", file.ConstText()); ImGui::Unindent();
+	ImGui::Text("In Folder");
+		ImGui::Indent(); ImGui::Text("%s", dir.ConstText()); ImGui::Unindent();
+	ImGui::NewLine();
+	ImGui::Separator();
+
+	ImGui::NewLine();
+	ImGui::Checkbox("Confirm file deletions in the future?", &Config.ConfirmDeletes);
+	ImGui::NewLine();
+
+	if (ImGui::Button("Cancel", tVector2(100, 0)))
+		ImGui::CloseCurrentPopup();
+
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+
+	if (ImGui::Button("OK", tVector2(100, 0)))
+	{
+		DeleteImageFile(fullname, true);
+		ImGui::CloseCurrentPopup();
+	}
+	ImGui::SetItemDefaultFocus();
+	ImGui::EndPopup();
+}
+
+
+void TexView::DoDeleteFileNoRecycleModal()
+{
+	tString fullname = CurrImage->Filename;
+	tString file = tSystem::tGetFileName(fullname);
+	tString dir = tSystem::tGetDir(fullname);
+	ImGui::Text("Delete File");
+		ImGui::Indent(); ImGui::Text("%s", file.ConstText()); ImGui::Unindent();
+	ImGui::Text("In Folder");
+		ImGui::Indent(); ImGui::Text("%s", dir.ConstText()); ImGui::Unindent();
+	ImGui::NewLine();
+	ImGui::Separator();
+	ImGui::NewLine();
+
+	ImGui::Text("This operation cannot be undone. The file\nwill be deleted permanently.");
+	ImGui::NewLine();
+
+	if (ImGui::Button("Cancel", tVector2(100, 0)))
+		ImGui::CloseCurrentPopup();
+
+	ImGui::SetItemDefaultFocus();
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+
+	if (ImGui::Button("OK", tVector2(100, 0)))
+	{
+		DeleteImageFile(fullname, false);
+		ImGui::CloseCurrentPopup();
+	}
+
+	ImGui::EndPopup();
 }

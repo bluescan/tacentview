@@ -118,20 +118,19 @@ void TexView::ShowContentViewDialog(bool* popen)
 	ImGui::SetCursorPos(tVector2(0.0f, 3.0f));
 
 	ImGui::PushItemWidth(200);
-	ImGui::SliderFloat("Thumbnail Size", &Config.ThumbnailWidth, float(TacitImage::ThumbMinDispWidth), float(TacitImage::ThumbWidth), ""); ImGui::SameLine();
+	ImGui::SliderFloat("Size", &Config.ThumbnailWidth, float(TacitImage::ThumbMinDispWidth), float(TacitImage::ThumbWidth), "%.0f");
+	ImGui::SameLine();
 	ImGui::PopItemWidth();
 
 	ImGui::PushItemWidth(100);
 	const char* sortItems[] = { "Alphabetical", "Date", "Size", "Type" };
-	if (ImGui::Combo("Sort By", &Config.SortKey, sortItems, IM_ARRAYSIZE(sortItems)))
+	if (ImGui::Combo("Sort", &Config.SortKey, sortItems, IM_ARRAYSIZE(sortItems)))
 		SortImages(Settings::SortKeyEnum(Config.SortKey), Config.SortAscending);
 	ImGui::SameLine();
 	if (ImGui::Checkbox("Ascending", &Config.SortAscending))
 		SortImages(Settings::SortKeyEnum(Config.SortKey), Config.SortAscending);
 
 	ImGui::PopItemWidth();
-
 	ImGui::EndChild();
-
 	ImGui::End();
 }
