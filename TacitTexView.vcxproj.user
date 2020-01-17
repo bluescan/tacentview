@@ -3,13 +3,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerCommand>$(ProjectDir)$(TargetFileName)</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>explosion01-light-frame011.png</LocalDebuggerCommandArguments>
-    <LocalDebuggerWorkingDirectory>C:\FB</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerCommandArguments>explosion01-light-frame020.png</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>$(ProjectDir)\TestImages\FlipBook</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerCommand>$(ProjectDir)$(TargetFileName)</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>explosion01-light-frame011.png</LocalDebuggerCommandArguments>
-    <LocalDebuggerWorkingDirectory>C:\FB</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerCommandArguments>explosion01-light-frame020.png</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>$(ProjectDir)\TestImages\FlipBook</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
 </Project>
