@@ -24,7 +24,7 @@ namespace TexView
 	void ColourCopyAs();
 
 	void DoSaveAsModalDialog(bool justOpened);
+	void DoSaveAllModalDialog(bool justOpened);
 	void DoDeleteFileModal();
 	void DoDeleteFileNoRecycleModal();
-	void ShowSaveAllAsDialog(bool* popen);
 }

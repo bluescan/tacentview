@@ -156,8 +156,8 @@ void TexView::ShowCheatSheetPopup(bool* popen)
 		ImGui::Text("Ctrl-Left");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Skip to First Image");
 		ImGui::Text("Ctrl-Right");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Skip to Last Image");
 		ImGui::Text("Space");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Next Image");
-		ImGui::Text("Ctrl+");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom In");
-		ImGui::Text("Ctrl-");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom Out");
+		ImGui::Text("Ctrl +");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom In");
+		ImGui::Text("Ctrl -");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom Out");
 		ImGui::Text("F1");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Cheat Sheet");
 		ImGui::Text("F11");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Fullscreen");
 		ImGui::Text("Alt-Enter");   ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Fullscreen");
@@ -168,13 +168,14 @@ void TexView::ShowCheatSheetPopup(bool* popen)
 		ImGui::Text("LMB-Click");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Set Colour Reticle Pos");
 		ImGui::Text("RMB-Drag");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Pan Image");
 		ImGui::Text("Alt-F4");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Quit");
+		ImGui::Text("Ctrl-S");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Save As...");
+		ImGui::Text("Alt-S");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Save All...");
 		ImGui::Text("I");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Info Overlay");
 		ImGui::Text("T");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Tile");
 		ImGui::Text("L");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Log");
 		ImGui::Text("F");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom Fit");
 		ImGui::Text("D");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom Downscale Only");
 		ImGui::Text("Z");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom 1:1 Pixels");
-		ImGui::Text("S");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Save As...");
 		ImGui::Text("C");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Contact Sheet...");
 		ImGui::Text("P");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Preferences...");
 		ImGui::Text("V");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Content Thumbnail View...");
@@ -209,6 +210,75 @@ void TexView::ShowAboutPopup(bool* popen)
 		ImGui::Text("Ionicons");
 		ImGui::Text("Roboto Google Font");
 	}
+	ImGui::End();
+}
+
+
+void TexView::ShowPreferencesDialog(bool* popen)
+{
+	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
+
+	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
+	// do it to make the Demo applications a little more welcoming.
+	tVector2 windowPos = GetDialogOrigin(3);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+
+	if (!ImGui::Begin("Preferences", popen, windowFlags))
+	{
+		ImGui::End();
+		return;
+	}
+
+	ImGui::Text("Background");
+	ImGui::Indent();
+	ImGui::Checkbox("Extend", &Config.BackgroundExtend);
+	const char* backgroundItems[] = { "None", "Checkerboard", "Black", "Grey", "White" };
+	ImGui::PushItemWidth(110);
+	ImGui::Combo("Style", &Config.BackgroundStyle, backgroundItems, IM_ARRAYSIZE(backgroundItems));
+	ImGui::PopItemWidth();
+	ImGui::Unindent();
+
+	ImGui::Separator();
+	ImGui::Text("Slideshow");
+	ImGui::Indent();
+	ImGui::PushItemWidth(110);
+	ImGui::InputDouble("Frame Duration (s)", &Config.SlidehowFrameDuration, 0.001f, 1.0f, "%.3f");
+	ImGui::PopItemWidth();
+	if (ImGui::Button("Reset Duration"))
+		Config.SlidehowFrameDuration = 1.0/30.0;
+	ImGui::Unindent();
+
+	ImGui::Separator();
+	ImGui::Text("System");
+	ImGui::Indent();
+
+	ImGui::PushItemWidth(110);
+
+	ImGui::InputInt("Max Mem (MB)", &Config.MaxImageMemMB); ImGui::SameLine();
+	ShowHelpMark("Approx memory use limit of this app. Minimum 256 MB.");
+	tMath::tiClampMin(Config.MaxImageMemMB, 256);
+
+	ImGui::InputInt("Max Cache Files", &Config.MaxCacheFiles); ImGui::SameLine();
+	ShowHelpMark("Maximum number of cache files that may be created. Minimum 200.");
+	tMath::tiClampMin(Config.MaxCacheFiles, 200);
+
+	ImGui::PopItemWidth();
+	ImGui::Unindent();
+
+	ImGui::Separator();
+	ImGui::Text("Interface");
+	ImGui::Indent();
+	ImGui::Checkbox("Confirm Deletes", &Config.ConfirmDeletes);
+	ImGui::Checkbox("Confirm File Overwrites", &Config.ConfirmFileOverwrites);
+	if (ImGui::Button("Reset UI"))
+	{
+		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+		Config.Reset(mode->width, mode->height);
+		ChangeScreenMode(false, true);
+	}
+	ImGui::Unindent();
+
 	ImGui::End();
 }
 
@@ -315,43 +385,8 @@ void TexView::DoSaveAsModalDialog(bool justOpened)
 }
 
 
-void TexView::SaveImageTo(const tString& outFile, int finalWidth, int finalHeight)
+void TexView::DoSaveAllModalDialog(bool justOpened)
 {
-	tImage::tPicture outPic(CurrImage->GetWidth(), CurrImage->GetHeight());
-	outPic.Set(*CurrImage->GetPrimaryPicture());
-
-	if ((outPic.GetWidth() != finalWidth) || (outPic.GetHeight() != finalHeight))
-		outPic.Resample(finalWidth, finalHeight, tImage::tPicture::tFilter(Config.ResampleFilter));
-
-	bool success = false;
-	tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-	if (Config.FileSaveType == 0)
-		success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.FileSaveTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
-	else
-		success = outPic.Save(outFile, colourFmt);
-	if (success)
-		tPrintf("Saved image as : %s\n", outFile.ConstText());
-	else
-		tPrintf("Failed to save image %s\n", outFile.ConstText());
-
-	Images.Clear();
-	PopulateImages();
-	SetCurrentImage(outFile);
-}
-
-
-void TexView::ShowSaveAllAsDialog(bool* popen)
-{
-	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
-	tVector2 windowPos = GetDialogOrigin(5);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-
-	if (!ImGui::Begin("Save All As", popen, windowFlags))
-	{
-		ImGui::End();
-		return;
-	}
-
 	tString msg;
 	tsPrintf
 	(
@@ -412,14 +447,19 @@ void TexView::ShowSaveAllAsDialog(bool* popen)
 	if (Config.FileSaveType == 0)
 		ImGui::Checkbox("RLE Compression", &Config.FileSaveTargaRLE);
 
-	if (ImGui::Button("Save All"))
+	ImGui::NewLine();
+	if (ImGui::Button("Cancel", tVector2(100, 0)))
+		ImGui::CloseCurrentPopup();
+
+	ImGui::SameLine();	
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	if (ImGui::Button("Save All", tVector2(100, 0)))
 	{
 		tString currFile = CurrImage ? CurrImage->Filename : tString();
 		tString imagesDir = tSystem::tGetCurrentDir();
 		if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
 			imagesDir = tSystem::tGetDir(ImageFileParam.Get());
 
-		tPrintf("Begin SaveAllAs\n");
 		for (TacitImage* image = Images.First(); image; image = image->Next())
 		{
 			tString baseName = tSystem::tGetFileBaseName(image->Filename);
@@ -464,86 +504,40 @@ void TexView::ShowSaveAllAsDialog(bool* popen)
 			else
 				tPrintf("Failed to save image %s\n", outFile.ConstText());
 		}
-		tPrintf("End SaveAllAs\n");
 
 		Images.Clear();
 		PopulateImages();
 		SetCurrentImage(currFile);
 
-		if (popen)
-			*popen = false;
+		ImGui::CloseCurrentPopup();
 	}
 
-	ImGui::End();
+	ImGui::EndPopup();
 }
 
 
-void TexView::ShowPreferencesDialog(bool* popen)
+void TexView::SaveImageTo(const tString& outFile, int finalWidth, int finalHeight)
 {
-	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
+	tImage::tPicture outPic(CurrImage->GetWidth(), CurrImage->GetHeight());
+	outPic.Set(*CurrImage->GetPrimaryPicture());
 
-	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
-	// do it to make the Demo applications a little more welcoming.
-	tVector2 windowPos = GetDialogOrigin(3);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+	if ((outPic.GetWidth() != finalWidth) || (outPic.GetHeight() != finalHeight))
+		outPic.Resample(finalWidth, finalHeight, tImage::tPicture::tFilter(Config.ResampleFilter));
 
-	if (!ImGui::Begin("Preferences", popen, windowFlags))
-	{
-		ImGui::End();
-		return;
-	}
+	bool success = false;
+	tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
+	if (Config.FileSaveType == 0)
+		success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.FileSaveTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
+	else
+		success = outPic.Save(outFile, colourFmt);
+	if (success)
+		tPrintf("Saved image as : %s\n", outFile.ConstText());
+	else
+		tPrintf("Failed to save image %s\n", outFile.ConstText());
 
-	ImGui::Text("Background");
-	ImGui::Indent();
-	ImGui::Checkbox("Extend", &Config.BackgroundExtend);
-	const char* backgroundItems[] = { "None", "Checkerboard", "Black", "Grey", "White" };
-	ImGui::PushItemWidth(110);
-	ImGui::Combo("Style", &Config.BackgroundStyle, backgroundItems, IM_ARRAYSIZE(backgroundItems));
-	ImGui::PopItemWidth();
-	ImGui::Unindent();
-
-	ImGui::Separator();
-	ImGui::Text("Slideshow");
-	ImGui::Indent();
-	ImGui::PushItemWidth(110);
-	ImGui::InputDouble("Frame Duration (s)", &Config.SlidehowFrameDuration, 0.001f, 1.0f, "%.3f");
-	ImGui::PopItemWidth();
-	if (ImGui::Button("Reset Duration"))
-		Config.SlidehowFrameDuration = 1.0/30.0;
-	ImGui::Unindent();
-
-	ImGui::Separator();
-	ImGui::Text("System");
-	ImGui::Indent();
-
-	ImGui::PushItemWidth(110);
-
-	ImGui::InputInt("Max Mem (MB)", &Config.MaxImageMemMB); ImGui::SameLine();
-	ShowHelpMark("Approx memory use limit of this app. Minimum 256 MB.");
-	tMath::tiClampMin(Config.MaxImageMemMB, 256);
-
-	ImGui::InputInt("Max Cache Files", &Config.MaxCacheFiles); ImGui::SameLine();
-	ShowHelpMark("Maximum number of cache files that may be created. Minimum 200.");
-	tMath::tiClampMin(Config.MaxCacheFiles, 200);
-
-	ImGui::PopItemWidth();
-	ImGui::Unindent();
-
-	ImGui::Separator();
-	ImGui::Text("Interface");
-	ImGui::Indent();
-	ImGui::Checkbox("Confirm Deletes", &Config.ConfirmDeletes);
-	ImGui::Checkbox("Confirm File Overwrites", &Config.ConfirmFileOverwrites);
-	if (ImGui::Button("Reset UI"))
-	{
-		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-		Config.Reset(mode->width, mode->height);
-		ChangeScreenMode(false, true);
-	}
-	ImGui::Unindent();
-
-	ImGui::End();
+	Images.Clear();
+	PopulateImages();
+	SetCurrentImage(outFile);
 }
 
 

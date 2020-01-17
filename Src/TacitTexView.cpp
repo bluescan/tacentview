@@ -84,6 +84,7 @@ namespace TexView
 	bool ShowCheatSheet							= false;
 	bool ShowAbout								= false;
 	bool Request_SaveAsModal					= false;
+	bool Request_SaveAllModal					= false;
 	bool Request_DeleteFileModal				= false;
 	bool Request_DeleteFileNoRecycleModal		= false;
 	bool ContactDialog							= false;
@@ -847,9 +848,10 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,6));
 		ImGui::BeginMainMenuBar();
 		{
-			static bool saveAllAsDialog = false;
 			bool saveAsPressed = Request_SaveAsModal;
+			bool saveAllPressed = Request_SaveAllModal;
 			Request_SaveAsModal = false;
+			Request_SaveAllModal = false;
 			if (ImGui::BeginMenu("File"))
 			{
 				// Show file menu items...
@@ -858,8 +860,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				if (ImGui::MenuItem("Save As...", "Ctrl-S") && CurrImage)
 					saveAsPressed = true;
 
-				if (ImGui::MenuItem("Save All As...") && CurrImage)
-					saveAllAsDialog = !saveAllAsDialog;
+				if (ImGui::MenuItem("Save All...", "Alt-S") && CurrImage)
+					saveAllPressed = true;
 
 				ImGui::Separator();
 				if (ImGui::MenuItem("Quit", "Alt-F4"))
@@ -875,8 +877,11 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::BeginPopupModal("Save As", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 				DoSaveAsModalDialog(saveAsPressed);
 
-			if (saveAllAsDialog)
-				ShowSaveAllAsDialog(&saveAllAsDialog);
+			if (saveAllPressed)
+				ImGui::OpenPopup("Save All");
+			if (ImGui::BeginPopupModal("Save All", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+				DoSaveAllModalDialog(saveAllPressed);
+
 			ImGui::PopStyleVar();
 
 			if (ImGui::BeginMenu("Edit"))
@@ -1240,7 +1245,7 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 		return;
 
 	ImGuiIO& io = ImGui::GetIO();
-	if (io.WantTextInput)
+	if (io.WantTextInput || ImGui::IsAnyPopupOpen())
 		return;
 
 	switch (key)
@@ -1343,7 +1348,12 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 
 		case GLFW_KEY_S:
 			if (CurrImage)
-				Request_SaveAsModal = true;
+			{
+				if (modifiers == GLFW_MOD_CONTROL)
+					Request_SaveAsModal = true;
+				else if (modifiers == GLFW_MOD_ALT)
+					Request_SaveAllModal = true;
+			}
 			break;
 
 		case GLFW_KEY_C:
