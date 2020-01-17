@@ -30,6 +30,10 @@ namespace TexView
 {
 	void SaveImageTo(const tString& outFile, int finalWidth, int finalHeight);
 	bool DoOverwriteFileModal(const tString& outFile, int finalWidth, int finalHeight);
+
+	void SaveAllImages(const tString& extension, bool forceSize, int forceWidth, int forceHeight);
+	void GetFilesNeedingOverwrite(tListZ<tStringItem>& overwriteFiles, const tString& extension);
+	void DoOverwriteMultipleFilesModal(const tListZ<tStringItem>& overwriteFiles, bool& pressedOK, bool& pressedCancel);
 }
 
 
@@ -391,15 +395,12 @@ void TexView::DoSaveAllModalDialog(bool justOpened)
 	tsPrintf
 	(
 		msg,
-		"Saves all %d images to the image type you select.\n"
-		"If the file already exists it is not overwritten.\n"
+		"Save all %d images to the image type you select.\n"
 		"\n"
 		"If you select force-size, all written images will\n"
 		"be resized as necessary. If You do not, each file\n"
 		"keeps its original size.\n"
-		"\n"
-		"This dialog will close when operation has completed.\n"
-		"Select 'View->Show Log' to see the results.\n",
+		"\n",
 		Images.GetNumItems()
 	);
 	ImGui::Text(msg.ConstText());
@@ -451,68 +452,164 @@ void TexView::DoSaveAllModalDialog(bool justOpened)
 	if (ImGui::Button("Cancel", tVector2(100, 0)))
 		ImGui::CloseCurrentPopup();
 
-	ImGui::SameLine();	
+	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	static tListZ<tStringItem> overwriteFiles;
+	bool closeThisModal = false;
 	if (ImGui::Button("Save All", tVector2(100, 0)))
 	{
-		tString currFile = CurrImage ? CurrImage->Filename : tString();
-		tString imagesDir = tSystem::tGetCurrentDir();
-		if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
-			imagesDir = tSystem::tGetDir(ImageFileParam.Get());
-
-		for (TacitImage* image = Images.First(); image; image = image->Next())
+		overwriteFiles.Empty();
+		GetFilesNeedingOverwrite(overwriteFiles, extension);
+		if (!overwriteFiles.IsEmpty() && Config.ConfirmFileOverwrites)
 		{
-			tString baseName = tSystem::tGetFileBaseName(image->Filename);
-			tString outFile = imagesDir + tString(baseName) + extension;
-			if (tSystem::tFileExists(outFile))
-			{
-				tPrintf("File %s exists. Will not overwrite\n", outFile.ConstText());
-				continue;
-			}
-
-			// We make sure to maintain the loaded/unloaded state of all images. This function
-			// can process many files, so we don't want them all in memory at once by indiscriminantly
-			// loading them all.
-			bool imageLoaded = image->IsLoaded();
-			if (!imageLoaded)
-				image->Load();
-			tImage::tPicture outPic; //image->GetWidth(), image->GetHeight());
-			outPic.Set(*image->GetPrimaryPicture());
-			if (!imageLoaded)
-				image->Unload();
-
-			int outWidth = outPic.GetWidth();
-			int outHeight = outPic.GetHeight();
-			if (forceSize)
-			{
-				outWidth = forceWidth;
-				outHeight = forceHeight;
-			}
-
-			if ((outPic.GetWidth() != outWidth) || (outPic.GetHeight() != outHeight))
-				outPic.Resample(outWidth, outHeight, tImage::tPicture::tFilter(Config.ResampleFilter));
-
-			bool success = false;
-			tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-			if (Config.FileSaveType == 0)
-				success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.FileSaveTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
-			else
-				success = outPic.Save(outFile, colourFmt);
-
-			if (success)
-				tPrintf("Saved image as : %s\n", outFile.ConstText());
-			else
-				tPrintf("Failed to save image %s\n", outFile.ConstText());
+			ImGui::OpenPopup("Overwrite Multiple Files");
 		}
+		else
+		{
+			SaveAllImages(extension, forceSize, forceWidth, forceHeight);
+			closeThisModal = true;
+		}
+	}
 
-		Images.Clear();
-		PopulateImages();
-		SetCurrentImage(currFile);
+	if (ImGui::BeginPopupModal("Overwrite Multiple Files", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		bool pressedOK = false, pressedCancel = false;
+		DoOverwriteMultipleFilesModal(overwriteFiles, pressedOK, pressedCancel);
+		if (pressedOK)
+		{
+			SaveAllImages(extension, forceSize, forceWidth, forceHeight);
+			closeThisModal = true;
+		}
+		else if (pressedCancel)
+		{
+			closeThisModal = true;
+		}
+	}
 
+	if (closeThisModal)
+	{
+		overwriteFiles.Empty();
 		ImGui::CloseCurrentPopup();
 	}
 
 	ImGui::EndPopup();
+}
+
+
+void TexView::GetFilesNeedingOverwrite(tListZ<tStringItem>& overwriteFiles, const tString& extension)
+{
+	//tString currFile = CurrImage ? CurrImage->Filename : tString();
+	tString imagesDir = tSystem::tGetCurrentDir();
+	if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
+		imagesDir = tSystem::tGetDir(ImageFileParam.Get());
+
+	for (TacitImage* image = Images.First(); image; image = image->Next())
+	{
+		tString baseName = tSystem::tGetFileBaseName(image->Filename);
+		tString outFile = imagesDir + tString(baseName) + extension;
+
+		// Only add unique items to the list.
+		if (tSystem::tFileExists(outFile) && !overwriteFiles.Contains(outFile))
+			overwriteFiles.Append(new tStringItem(outFile));
+	}
+}
+
+
+void TexView::DoOverwriteMultipleFilesModal(const tListZ<tStringItem>& overwriteFiles, bool& pressedOK, bool& pressedCancel)
+{
+	tAssert(!overwriteFiles.IsEmpty());
+	tString dir = tSystem::tGetDir(*overwriteFiles.First());
+	ImGui::Text("The Following Files");
+	ImGui::Indent();
+	int fnum = 0;
+	const int maxToShow = 50;
+	for (tStringItem* filename = overwriteFiles.First(); filename && (fnum < maxToShow); filename = filename->Next(), fnum++)
+	{
+		tString file = tSystem::tGetFileName(*filename);
+		ImGui::Text("%s", file.ConstText());
+	}
+	int remaining = overwriteFiles.GetNumItems() - fnum;
+	if (remaining > 0)
+		ImGui::Text("And %d more.", remaining);
+	ImGui::Unindent();
+	ImGui::Text("Already Exist In Folder");
+	ImGui::Indent(); ImGui::Text("%s", dir.ConstText()); ImGui::Unindent();
+	ImGui::NewLine();
+	ImGui::Text("Overwrite Files?");
+	ImGui::NewLine();
+	ImGui::Separator();
+	ImGui::NewLine();
+	ImGui::Checkbox("Confirm file overwrites in the future?", &Config.ConfirmFileOverwrites);
+	ImGui::NewLine();
+
+	if (ImGui::Button("Cancel", tVector2(100, 0)))
+	{
+		pressedCancel = true;
+		ImGui::CloseCurrentPopup();
+	}
+
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	if (ImGui::Button("Overwrite", tVector2(100, 0)))
+	{
+		pressedOK = true;
+		ImGui::CloseCurrentPopup();
+	}
+
+	ImGui::EndPopup();
+}
+
+
+void TexView::SaveAllImages(const tString& extension, bool forceSize, int forceWidth, int forceHeight)
+{
+	tString currFile = CurrImage ? CurrImage->Filename : tString();
+	tString imagesDir = tSystem::tGetCurrentDir();
+	if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
+		imagesDir = tSystem::tGetDir(ImageFileParam.Get());
+
+	for (TacitImage* image = Images.First(); image; image = image->Next())
+	{
+		tString baseName = tSystem::tGetFileBaseName(image->Filename);
+		tString outFile = imagesDir + tString(baseName) + extension;
+
+		// We make sure to maintain the loaded/unloaded state of all images. This function
+		// can process many files, so we don't want them all in memory at once by indiscriminantly
+		// loading them all.
+		bool imageLoaded = image->IsLoaded();
+		if (!imageLoaded)
+			image->Load();
+		tImage::tPicture outPic; //image->GetWidth(), image->GetHeight());
+		outPic.Set(*image->GetPrimaryPicture());
+		if (!imageLoaded)
+			image->Unload();
+
+		int outWidth = outPic.GetWidth();
+		int outHeight = outPic.GetHeight();
+		if (forceSize)
+		{
+			outWidth = forceWidth;
+			outHeight = forceHeight;
+		}
+
+		if ((outPic.GetWidth() != outWidth) || (outPic.GetHeight() != outHeight))
+			outPic.Resample(outWidth, outHeight, tImage::tPicture::tFilter(Config.ResampleFilter));
+
+		bool success = false;
+		tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
+		if (Config.FileSaveType == 0)
+			success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.FileSaveTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
+		else
+			success = outPic.Save(outFile, colourFmt);
+
+		if (success)
+			tPrintf("Saved image as : %s\n", outFile.ConstText());
+		else
+			tPrintf("Failed to save image %s\n", outFile.ConstText());
+	}
+
+	Images.Clear();
+	PopulateImages();
+	SetCurrentImage(currFile);
 }
 
 

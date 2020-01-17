@@ -125,9 +125,9 @@ private:
 
 
 // A tListZ is an intrusive list implementation that relies on zero initialization of global objects at startup.
-// It can be used for global or static lists but NOT on the stack as a local var. It also does NOT delete objects
-// it contains at shutdown to avoid both the init and de-init fiasco. It also does not contain the sorting functions
-// to keep the implementation small. Transer all the unowned items over to tList after main starts if you need sorting.
+// It can be used for global or static lists but NOT on the stack as a local var. It does NOT delete objects it
+// contains on destruction to avoid both the init and de-init fiasco. It does not contain the sorting functions to
+// keep the implementation small. Transer all the items over to tList after main starts if you need sorting.
 template<typename T> class tListZ
 {
 public:
@@ -139,8 +139,9 @@ public:
 	T* Remove();											// Removes and returns head item.
 	T* Drop();												// Removes and returns tail item.
 
-	void Clear()											/* Clears the list. Same as Reset. */						{ Reset(); }
+	// There is no Clear on purpose since there is no ownership flag.
 	void Reset()											/* Resets the list. Does not delete the objects. */			{ HeadItem = nullptr; TailItem = nullptr; ItemCount = 0; }
+	void Empty()											/* Empties the list. Always deletes the objects. */			{ while (!IsEmpty()) delete Remove(); }
 
 	T* Head() const																										{ return (T*)HeadItem; }
 	T* Tail() const																										{ return (T*)TailItem; }
