@@ -1293,10 +1293,13 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 			break;
 
 		case GLFW_KEY_DELETE:
-			if (modifiers == GLFW_MOD_SHIFT)
-				Request_DeleteFileNoRecycleModal = true;
-			else
-				Request_DeleteFileModal = true;
+			if (CurrImage)
+			{
+				if (modifiers == GLFW_MOD_SHIFT)
+					Request_DeleteFileNoRecycleModal = true;
+				else
+					Request_DeleteFileModal = true;
+			}
 			break;
 
 		case GLFW_KEY_TAB:
