@@ -37,8 +37,8 @@ void Settings::Reset()
 	SortAscending			= true;
 	OverlayCorner			= 3;
 	Tile					= false;
-	BackgroundExtend		= false;
 	BackgroundStyle			= 1;
+	BackgroundExtend		= false;
 	ResampleFilter			= 2;
 	ConfirmDeletes			= true;
 	ConfirmFileOverwrites	= true;
@@ -46,6 +46,7 @@ void Settings::Reset()
 	SlidehowFrameDuration	= 1.0/30.0;
 	FileSaveType			= 0;
 	FileSaveTargaRLE		= false;
+	SaveAllSizeMode			= 0;
 	MaxImageMemMB			= 1024;
 	MaxCacheFiles			= 7000;
 }
@@ -84,14 +85,15 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(SortAscending);
 				ReadItem(OverlayCorner);
 				ReadItem(Tile);
-				ReadItem(BackgroundExtend);
 				ReadItem(BackgroundStyle);
+				ReadItem(BackgroundExtend);
 				ReadItem(ResampleFilter);
 				ReadItem(ConfirmDeletes);
 				ReadItem(ConfirmFileOverwrites);
 				ReadItem(SlidehowFrameDuration);
 				ReadItem(FileSaveType);
 				ReadItem(FileSaveTargaRLE);
+				ReadItem(SaveAllSizeMode);
 				ReadItem(MaxImageMemMB);
 				ReadItem(MaxCacheFiles);
 			}
@@ -110,6 +112,7 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 	tiClamp(SortKey, 0, 3);
 	tiClampMin(MaxImageMemMB, 256);
 	tiClampMin(MaxCacheFiles, 200);
+	tiClamp(SaveAllSizeMode, 0, 3);
 }
 
 
@@ -139,6 +142,7 @@ bool Settings::Save(const tString& filename)
 	WriteItem(SlidehowFrameDuration);
 	WriteItem(FileSaveType);
 	WriteItem(FileSaveTargaRLE);
+	WriteItem(SaveAllSizeMode);
 	WriteItem(MaxImageMemMB);
 	WriteItem(MaxCacheFiles);
 	

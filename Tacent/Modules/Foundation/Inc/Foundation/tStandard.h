@@ -3,7 +3,7 @@
 // Tacent functions and types that are standard across all platforms. Includes global functions like itoa which are not
 // available on some platforms, but are common enough that they should be.
 //
-// Copyright (c) 2004-2006, 2015, 2017 Tristan Grimmer.
+// Copyright (c) 2004-2006, 2015, 2017, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -24,11 +24,11 @@
 #pragma warning (disable: 4996)
 #pragma warning (disable: 4146)
 #pragma warning (disable: 4307)
+#define tNumElements(arr) int(sizeof(arr)/sizeof(*arr))
 
 
 namespace tStd
 {
-
 
 // The 3 XOR trick is slower in most cases so we'll use a standard swap.
 template<typename T> inline void tSwap(T& a, T& b)																		{ T t = a; a = b; b = t; }

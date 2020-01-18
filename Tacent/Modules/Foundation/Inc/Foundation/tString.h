@@ -90,6 +90,9 @@ struct tString
 	// Returns POD representation (Plain Old Data). For use with tPrintf and %s.
 	const char* Pod() const																								{ return TextData; }
 
+	// One more synonym for ConstText. For use with tPrintf and %s.
+	const char* Chars() const																							{ return TextData; }
+
 	// Returns index of first/last occurrence of char in the string. -1 if not found. Finds last if backwards flag is
 	// set. The starting point may be specified. If backwards is false, the search proceeds forwards from the starting
 	// point. If backwards is true, it proceeds backwards. If startIndex is -1, 0 is the starting point for a forward

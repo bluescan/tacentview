@@ -48,14 +48,22 @@ struct Settings
 		Grey,
 		White
 	};
-	bool BackgroundExtend;				// Extend background past image bounds.
 	int BackgroundStyle;
+	bool BackgroundExtend;				// Extend background past image bounds.
 	int ResampleFilter;					// Matches tImage::tPicture::tFilter.
 	bool ConfirmDeletes;
 	bool ConfirmFileOverwrites;
 	double SlidehowFrameDuration;
 	int FileSaveType;
 	bool FileSaveTargaRLE;
+	enum class SizeMode
+	{
+		Percent,
+		SetWidthAndHeight,
+		SetWidthRetainAspect,
+		SetHeightRetainAspect
+	};
+	int SaveAllSizeMode;
 	int MaxImageMemMB;					// Max image mem before unloading images.
 	int MaxCacheFiles;					// Max number of cache files before removing oldest.
 

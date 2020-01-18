@@ -124,7 +124,7 @@ void TexView::ShowContentViewDialog(bool* popen)
 
 	ImGui::PushItemWidth(100);
 	const char* sortItems[] = { "Alphabetical", "Date", "Size", "Type" };
-	if (ImGui::Combo("Sort", &Config.SortKey, sortItems, IM_ARRAYSIZE(sortItems)))
+	if (ImGui::Combo("Sort", &Config.SortKey, sortItems, tNumElements(sortItems)))
 		SortImages(Settings::SortKeyEnum(Config.SortKey), Config.SortAscending);
 	ImGui::SameLine();
 	if (ImGui::Checkbox("Ascending", &Config.SortAscending))

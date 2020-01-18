@@ -172,6 +172,7 @@ namespace tSystem
 	void Handler_m(Receiver& out, const FormatSpec&, void* data);
 	void Handler_c(Receiver& out, const FormatSpec&, void* data);
 	void Handler_s(Receiver& out, const FormatSpec&, void* data);
+	void Handler_z(Receiver& out, const FormatSpec&, void* data);
 }
 
 
@@ -408,6 +409,7 @@ tSystem::HandlerInfo tSystem::HandlerInfos[] =
 	{ 'm',				sizeof(tMat4),				tSystem::Handler_m },			// 13
 	{ 'c',				4,							tSystem::Handler_c },			// 14
 	{ 's',				sizeof(char*),				tSystem::Handler_s },			// 15
+	{ '%',				0,							tSystem::Handler_z },			// 16
 };
 
 // Filling this in correctly will speed things up. However, not filling it in or filling it in incorrectly will still
@@ -418,7 +420,9 @@ int tSystem::HandlerJumpTable[256] =
 {
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,		// [0, 15]
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,		// [16, 31]
-	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,		// [32, 47]
+
+	//                   %
+	-1, -1, -1, -1, -1, 16, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,		// [32, 47]
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,		// [48, 63]
 
 	//   A   B   C   D   E   F   G   H   I   J   K   L   M   N   O
@@ -800,9 +804,10 @@ void tSystem::Process(Receiver& receiver, const char* format, va_list argList)
 			struct val32type { uint8 buf[32]; } val32;		// 256 bit types (like tuint256).
 			struct val64type { uint8 buf[64]; } val64;		// 512 bit types (like tMatrix4, tuint512, and tbit512).
 
-			void* pval = 0;
+			void* pval = nullptr;
 			switch (spec.TypeSizeBytes)
 			{
+				case 0:												pval = nullptr;		break;
 				case 4:		val4 = va_arg(argList, val4type);		pval = &val4;		break;
 				case 8:		val8 = va_arg(argList, val8type);		pval = &val8;		break;
 				case 12:	val12 = va_arg(argList, val12type);		pval = &val12;		break;
@@ -1927,6 +1932,12 @@ void tSystem::Handler_c(Receiver& receiver, const FormatSpec& spec, void* data)
 {
 	const char chr = *((const char*)data);
 	receiver.Receive(chr);
+}
+
+
+void tSystem::Handler_z(Receiver& receiver, const FormatSpec& spec, void* data)
+{
+	receiver.Receive('%');
 }
 
 

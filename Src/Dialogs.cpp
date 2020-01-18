@@ -31,7 +31,7 @@ namespace TexView
 	void SaveImageTo(const tString& outFile, int finalWidth, int finalHeight);
 	bool DoOverwriteFileModal(const tString& outFile, int finalWidth, int finalHeight);
 
-	void SaveAllImages(const tString& extension, bool forceSize, int forceWidth, int forceHeight);
+	void SaveAllImages(const tString& extension, float percent, int width, int height);
 	void GetFilesNeedingOverwrite(tListZ<tStringItem>& overwriteFiles, const tString& extension);
 	void DoOverwriteMultipleFilesModal(const tListZ<tStringItem>& overwriteFiles, bool& pressedOK, bool& pressedCancel);
 }
@@ -238,7 +238,7 @@ void TexView::ShowPreferencesDialog(bool* popen)
 	ImGui::Checkbox("Extend", &Config.BackgroundExtend);
 	const char* backgroundItems[] = { "None", "Checkerboard", "Black", "Grey", "White" };
 	ImGui::PushItemWidth(110);
-	ImGui::Combo("Style", &Config.BackgroundStyle, backgroundItems, IM_ARRAYSIZE(backgroundItems));
+	ImGui::Combo("Style", &Config.BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
 	ImGui::PopItemWidth();
 	ImGui::Unindent();
 
@@ -322,12 +322,12 @@ void TexView::DoSaveAsModalDialog(bool justOpened)
 
 	// Matches tImage::tPicture::tFilter.
 	const char* filterItems[] = { "NearestNeighbour", "Box", "Bilinear", "Bicubic", "Quadratic", "Hamming" };
-	ImGui::Combo("Filter", &Config.ResampleFilter, filterItems, IM_ARRAYSIZE(filterItems));
+	ImGui::Combo("Filter", &Config.ResampleFilter, filterItems, tNumElements(filterItems));
 	ImGui::SameLine();
 	ShowHelpMark("Filtering method to use when resizing images.");
 
 	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "gif" };
-	ImGui::Combo("File Type", &Config.FileSaveType, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
+	ImGui::Combo("File Type", &Config.FileSaveType, fileTypeItems, tNumElements(fileTypeItems));
 	ImGui::SameLine();
 	ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
 
@@ -350,7 +350,7 @@ void TexView::DoSaveAsModalDialog(bool justOpened)
 		tString baseName = tSystem::tGetFileBaseName(CurrImage->Filename);
 		tStrcpy(filename, baseName.ConstText());
 	}
-	ImGui::InputText("Filename", filename, IM_ARRAYSIZE(filename));
+	ImGui::InputText("Filename", filename, tNumElements(filename));
 	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
 
 	ImGui::NewLine();
@@ -376,7 +376,9 @@ void TexView::DoSaveAsModalDialog(bool justOpened)
 		}
 	}
 
-	if (ImGui::BeginPopupModal("Overwrite File", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+	// The unused isOpen bool is just so we get a close button in ImGui. 
+	bool isOpen = true;
+	if (ImGui::BeginPopupModal("Overwrite File", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
 	{
 		if (DoOverwriteFileModal(outFile, finalWidth, finalHeight))
 			saved = true;
@@ -391,47 +393,73 @@ void TexView::DoSaveAsModalDialog(bool justOpened)
 
 void TexView::DoSaveAllModalDialog(bool justOpened)
 {
-	tString msg;
-	tsPrintf
+	ImGui::Text("Save all %d images to the image type you select.", Images.GetNumItems()); ImGui::SameLine();
+	ShowHelpMark
 	(
-		msg,
-		"Save all %d images to the image type you select.\n"
+		"Images may be resized based on the Size Mode:\n"
 		"\n"
-		"If you select force-size, all written images will\n"
-		"be resized as necessary. If You do not, each file\n"
-		"keeps its original size.\n"
-		"\n",
-		Images.GetNumItems()
+		"  Percent of Original\n"
+		"  Use 100% for no scaling/resampling. Less\n"
+		"  than 100% downscales. Greater than upscales.\n"
+		"\n"
+		"  Set Width and Height\n"
+		"  Scales all images to specified width and\n"
+		"  height, possibly non-uniformly.\n"
+		"\n"
+		"  Set Width - Retain Aspect\n"
+		"  All images will have specified width. Always\n"
+		"  uniform scale. Varying height.\n"
+		"\n"
+		"  Set Height - Retain Aspect\n"
+		"  All images will have specified height. Always\n"
+		"  uniform scale. Varying width.\n"
 	);
-	ImGui::Text(msg.ConstText());
+	ImGui::NewLine();
 	ImGui::Separator();
+	ImGui::NewLine();
 
-	ImGui::Text("\n");
-	static int forceWidth = 512;
-	static int forceHeight = 512;
-	static bool forceSize = false;
-	ImGui::Checkbox("Force Size", &forceSize);
-	if (forceSize)
+	static int width = 512;
+	static int height = 512;
+	static float percent = 100.0f;
+	const char* sizeModeNames[] = { "Percent of Original", "Set Width and Height", "Set Width - Retain Aspect", "Set Height - Retain Aspect" };
+	ImGui::Combo("Size Mode", &Config.SaveAllSizeMode, sizeModeNames, tNumElements(sizeModeNames));
+	switch (Settings::SizeMode(Config.SaveAllSizeMode))
 	{
-		ImGui::InputInt("Forced Width", &forceWidth);
-		ImGui::SameLine();
-		ShowHelpMark("Output width in pixels for all images.");
+		case Settings::SizeMode::Percent:
+			ImGui::InputFloat("Percent", &percent, 1.0f, 10.0f);	ImGui::SameLine();	ShowHelpMark("Percent of original size.");
+			break;
 
-		ImGui::InputInt("Forced Height", &forceHeight);
-		ImGui::SameLine();
-		ShowHelpMark("Output height in pixels for all images.");
+		case Settings::SizeMode::SetWidthAndHeight:
+			ImGui::InputInt("Width", &width);	ImGui::SameLine();	ShowHelpMark("Output width in pixels for all images.");
+			ImGui::InputInt("Height", &height);	ImGui::SameLine();	ShowHelpMark("Output height in pixels for all images.");
+			break;
 
+		case Settings::SizeMode::SetWidthRetainAspect:
+			ImGui::InputInt("Width", &width);	ImGui::SameLine();	ShowHelpMark("Output width in pixels for all images.");
+			break;
+
+		case Settings::SizeMode::SetHeightRetainAspect:
+			ImGui::InputInt("Height", &height);	ImGui::SameLine();	ShowHelpMark("Output height in pixels for all images.");
+			break;
+	};
+
+	if (!((Settings::SizeMode(Config.SaveAllSizeMode) == Settings::SizeMode::Percent) && (percent == 100.0f)))
+	{
 		// Matches tImage::tPicture::tFilter.
 		const char* filterItems[] = { "NearestNeighbour", "Box", "Bilinear", "Bicubic", "Quadratic", "Hamming" };
-		ImGui::Combo("Filter", &Config.ResampleFilter, filterItems, IM_ARRAYSIZE(filterItems));
+		ImGui::Combo("Filter", &Config.ResampleFilter, filterItems, tNumElements(filterItems));
 		ImGui::SameLine();
 		ShowHelpMark("Filtering method to use when resizing images.");
 	}
-	tMath::tiClampMin(forceWidth, 4);
-	tMath::tiClampMin(forceHeight, 4);
+	tMath::tiClampMin(width, 4);
+	tMath::tiClampMin(height, 4);
+
+	ImGui::NewLine();
+	ImGui::Separator();
+	ImGui::NewLine();
 
 	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "gif" };
-	ImGui::Combo("File Type", &Config.FileSaveType, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
+	ImGui::Combo("File Type", &Config.FileSaveType, fileTypeItems, tNumElements(fileTypeItems));
 	ImGui::SameLine();
 	ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
 
@@ -466,18 +494,20 @@ void TexView::DoSaveAllModalDialog(bool justOpened)
 		}
 		else
 		{
-			SaveAllImages(extension, forceSize, forceWidth, forceHeight);
+			SaveAllImages(extension, percent, width, height);
 			closeThisModal = true;
 		}
 	}
 
-	if (ImGui::BeginPopupModal("Overwrite Multiple Files", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+	// The unused isOpen bool is just so we get a close button in ImGui. 
+	bool isOpen = true;
+	if (ImGui::BeginPopupModal("Overwrite Multiple Files", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
 	{
 		bool pressedOK = false, pressedCancel = false;
 		DoOverwriteMultipleFilesModal(overwriteFiles, pressedOK, pressedCancel);
 		if (pressedOK)
 		{
-			SaveAllImages(extension, forceSize, forceWidth, forceHeight);
+			SaveAllImages(extension, percent, width, height);
 			closeThisModal = true;
 		}
 		else if (pressedCancel)
@@ -560,8 +590,9 @@ void TexView::DoOverwriteMultipleFilesModal(const tListZ<tStringItem>& overwrite
 }
 
 
-void TexView::SaveAllImages(const tString& extension, bool forceSize, int forceWidth, int forceHeight)
+void TexView::SaveAllImages(const tString& extension, float percent, int width, int height)
 {
+	float scale = percent/100.0f;
 	tString currFile = CurrImage ? CurrImage->Filename : tString();
 	tString imagesDir = tSystem::tGetCurrentDir();
 	if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
@@ -578,21 +609,44 @@ void TexView::SaveAllImages(const tString& extension, bool forceSize, int forceW
 		bool imageLoaded = image->IsLoaded();
 		if (!imageLoaded)
 			image->Load();
-		tImage::tPicture outPic; //image->GetWidth(), image->GetHeight());
+		tImage::tPicture outPic;
 		outPic.Set(*image->GetPrimaryPicture());
 		if (!imageLoaded)
 			image->Unload();
 
-		int outWidth = outPic.GetWidth();
-		int outHeight = outPic.GetHeight();
-		if (forceSize)
-		{
-			outWidth = forceWidth;
-			outHeight = forceHeight;
-		}
+		int outW = outPic.GetWidth();
+		int outH = outPic.GetHeight();
+		float aspect = float(outW) / float(outH);
 
-		if ((outPic.GetWidth() != outWidth) || (outPic.GetHeight() != outHeight))
-			outPic.Resample(outWidth, outHeight, tImage::tPicture::tFilter(Config.ResampleFilter));
+		switch (Settings::SizeMode(Config.SaveAllSizeMode))
+		{
+			case Settings::SizeMode::Percent:
+				if (tMath::tApproxEqual(scale, 1.0f, 0.01f))
+					break;
+				outW = int( float(outW)*scale );
+				outH = int( float(outH)*scale );
+				break;
+
+			case Settings::SizeMode::SetWidthAndHeight:
+				outW = width;
+				outH = height;
+				break;
+
+			case Settings::SizeMode::SetWidthRetainAspect:
+				outW = width;
+				outH = int(float(width) / aspect);
+				break;
+
+			case Settings::SizeMode::SetHeightRetainAspect:
+				outH = height;
+				outW = int(float(height) * aspect);
+				break;
+		};
+		tMath::tiClampMin(outW, 4);
+		tMath::tiClampMin(outH, 4);
+
+		if ((outPic.GetWidth() != outW) || (outPic.GetHeight() != outH))
+			outPic.Resample(outW, outH, tImage::tPicture::tFilter(Config.ResampleFilter));
 
 		bool success = false;
 		tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;

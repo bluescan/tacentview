@@ -5,7 +5,7 @@
 // different type sizes and can print integral types in a variety of bases. Redirection via a callback as well as
 // visibility channels are also supported.
 //
-// Copyright (c) 2004-2006, 2015, 2017, 2019 Tristan Grimmer.
+// Copyright (c) 2004-2006, 2015, 2017, 2019, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -105,13 +105,13 @@ namespace tSystem
 
 
 // The following print functions return the number of characters written to either stdout or to the supplied buffer.
-// Format specification strings take the form:
+// Format specification strings take the form below, with [] indicating an optional field.
 //
 // %[flags][width][.precision][:typeSizeElements][!typeSizeBytes][|typeSizeBits]type
 //
-// This matches the ANSI standard for printf except for the addition of the typesize field and support for extra flags.
-// Check google for a more thorough description of the regular ANSI behaviour. An overview including the enhancements
-// is given here:
+// The format string is a superset of the ANSI standard for printf. It adds more types (vectors and matrices),
+// consistent typesize fields and support for extra flags, including an alternative presentation flag. See
+// http://www.cplusplus.com/reference/cstdio/printf/ for the standard types supported.
 //
 // [flags]
 // Must be one or more of: - + ' ' 0 # _ (where ' ' is a space character)
@@ -172,6 +172,7 @@ namespace tSystem
 //		String:		s				You must call pod(string) or string.Pod() for tStrings, or use char*.
 //					t				Windows only. Allows passing of non-POD tString directly. Warning: You cannot pass
 //									in an tStringItem! You must either cast to an tString or call pod() and use %s.
+//		Percent:	%				Displays percent sign.
 //
 // The functions return the number of characters printed. They do NOT care about channels in that they always report
 // what would have been printed if the channel was visible. Channels are an output filter only, not something that

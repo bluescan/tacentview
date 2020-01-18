@@ -874,12 +874,18 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if (saveAsPressed)
 				ImGui::OpenPopup("Save As");
-			if (ImGui::BeginPopupModal("Save As", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+
+			// The unused isOpenSaveAs bool is just so we get a close button in ImGui. 
+			bool isOpenSaveAs = true;
+			if (ImGui::BeginPopupModal("Save As", &isOpenSaveAs, ImGuiWindowFlags_AlwaysAutoResize))
 				DoSaveAsModalDialog(saveAsPressed);
 
 			if (saveAllPressed)
 				ImGui::OpenPopup("Save All");
-			if (ImGui::BeginPopupModal("Save All", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+
+			// The unused isOpenSaveAll bool is just so we get a close button in ImGui. 
+			bool isOpenSaveAll = true;
+			if (ImGui::BeginPopupModal("Save All", &isOpenSaveAll, ImGuiWindowFlags_AlwaysAutoResize))
 				DoSaveAllModalDialog(saveAllPressed);
 
 			ImGui::PopStyleVar();
@@ -955,7 +961,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				tString currZoomStr;
 				tsPrintf(currZoomStr, "%0.0f%%", ZoomPercent);
 				int zoomIdx = 0;
-				if (ImGui::Combo(currZoomStr.ConstText(), &zoomIdx, zoomItems, IM_ARRAYSIZE(zoomItems)) && (zoomIdx > 0))
+				if (ImGui::Combo(currZoomStr.ConstText(), &zoomIdx, zoomItems, tNumElements(zoomItems)) && (zoomIdx > 0))
 					ApplyZoomDelta( zoomVals[zoomIdx]-ZoomPercent, 1.0f, true);
 				ImGui::PopItemWidth();
 
@@ -1144,7 +1150,10 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		else
 			ImGui::OpenPopup("Delete File");
 	}
-	if (ImGui::BeginPopupModal("Delete File", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+
+	// The unused isOpenDeleteFile bool is just so we get a close button in ImGui. 
+	bool isOpenDeleteFile = true;
+	if (ImGui::BeginPopupModal("Delete File", &isOpenDeleteFile, ImGuiWindowFlags_AlwaysAutoResize))
 		DoDeleteFileModal();
 
 	if (Request_DeleteFileNoRecycleModal)
@@ -1152,7 +1161,10 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		Request_DeleteFileNoRecycleModal = false;
 		ImGui::OpenPopup("Delete File Permanently");
 	}
-	if (ImGui::BeginPopupModal("Delete File Permanently", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+
+	// The unused isOpenPerm bool is just so we get a close button in ImGui. 
+	bool isOpenPerm = true;
+	if (ImGui::BeginPopupModal("Delete File Permanently", &isOpenPerm, ImGuiWindowFlags_AlwaysAutoResize))
 		DoDeleteFileNoRecycleModal();
 
 	ImGui::Render();

@@ -108,12 +108,12 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 
 	// Matches tImage::tPicture::tFilter.
 	const char* filterItems[] = { "NearestNeighbour", "Box", "Bilinear", "Bicubic", "Quadratic", "Hamming" };
-	ImGui::Combo("Filter", &Config.ResampleFilter, filterItems, IM_ARRAYSIZE(filterItems));
+	ImGui::Combo("Filter", &Config.ResampleFilter, filterItems, tNumElements(filterItems));
 	ImGui::SameLine();
 	ShowHelpMark("Filtering method to use when resizing images.");
 
 	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "gif" };
-	ImGui::Combo("File Type", &Config.FileSaveType, fileTypeItems, IM_ARRAYSIZE(fileTypeItems));
+	ImGui::Combo("File Type", &Config.FileSaveType, fileTypeItems, tNumElements(fileTypeItems));
 	ImGui::SameLine();
 	ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
 
@@ -131,7 +131,7 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 		ImGui::Checkbox("RLE Compression", &Config.FileSaveTargaRLE);
 
 	static char filename[128] = "ContactSheet";
-	ImGui::InputText("Filename", filename, IM_ARRAYSIZE(filename));
+	ImGui::InputText("Filename", filename, tNumElements(filename));
 	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
 
 	int numImg = Images.Count();
