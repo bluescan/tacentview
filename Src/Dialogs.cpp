@@ -80,7 +80,7 @@ void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, i
 			if (info.IsValid())
 			{
 				ImGui::Text("Size: %dx%d", info.Width, info.Height);
-				ImGui::Text("Pixel Format: %s", info.PixelFormat.ConstText());
+				ImGui::Text("Pixel Format: %s", info.PixelFormat.Chars());
 				ImGui::Text("Bit Depth: %d", info.SrcFileBitDepth);
 				ImGui::Text("Opaque: %s", info.Opaque ? "true" : "false");
 				ImGui::Text("Mipmaps: %d", info.Mipmaps);
@@ -113,32 +113,32 @@ void TexView::ColourCopyAs()
 	float rf = floatCol.R; float gf = floatCol.G; float bf = floatCol.B; float af = floatCol.A;
 	tString cpyTxt;
 	tsPrintf(cpyTxt, "%02X%02X%02X%02X", ri, gi, bi, ai);
-	if (ImGui::Selectable(cpyTxt.ConstText()))
-		ImGui::SetClipboardText(cpyTxt.ConstText());
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
 	tsPrintf(cpyTxt, "%02X%02X%02X", ri, gi, bi);
-	if (ImGui::Selectable(cpyTxt.ConstText()))
-		ImGui::SetClipboardText(cpyTxt.ConstText());
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
 	tsPrintf(cpyTxt, "#%02X%02X%02X%02X", ri, gi, bi, ai);
-	if (ImGui::Selectable(cpyTxt.ConstText()))
-		ImGui::SetClipboardText(cpyTxt.ConstText());
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
 	tsPrintf(cpyTxt, "#%02X%02X%02X", ri, gi, bi);
-	if (ImGui::Selectable(cpyTxt.ConstText()))
-		ImGui::SetClipboardText(cpyTxt.ConstText());
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
 	tsPrintf(cpyTxt, "0x%02X%02X%02X%02X", ri, gi, bi, ai);
-	if (ImGui::Selectable(cpyTxt.ConstText()))
-		ImGui::SetClipboardText(cpyTxt.ConstText());
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
 	tsPrintf(cpyTxt, "%.3f, %.3f, %.3f, %.3f", rf, gf, bf, af);
-	if (ImGui::Selectable(cpyTxt.ConstText()))
-		ImGui::SetClipboardText(cpyTxt.ConstText());
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
 	tsPrintf(cpyTxt, "%.3ff, %.3ff, %.3ff, %.3ff", rf, gf, bf, af);
-	if (ImGui::Selectable(cpyTxt.ConstText()))
-		ImGui::SetClipboardText(cpyTxt.ConstText());
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
 	tsPrintf(cpyTxt, "(%.3f, %.3f, %.3f, %.3f)", rf, gf, bf, af);
-	if (ImGui::Selectable(cpyTxt.ConstText()))
-		ImGui::SetClipboardText(cpyTxt.ConstText());
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
 	tsPrintf(cpyTxt, "(%.3ff, %.3ff, %.3ff, %.3ff)", rf, gf, bf, af);
-	if (ImGui::Selectable(cpyTxt.ConstText()))
-		ImGui::SetClipboardText(cpyTxt.ConstText());
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
 	ImGui::EndPopup();
 }
 
@@ -348,7 +348,7 @@ void TexView::DoSaveAsModalDialog(bool justOpened)
 	if (justOpened)
 	{
 		tString baseName = tSystem::tGetFileBaseName(CurrImage->Filename);
-		tStrcpy(filename, baseName.ConstText());
+		tStrcpy(filename, baseName.Chars());
 	}
 	ImGui::InputText("Filename", filename, tNumElements(filename));
 	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
@@ -556,14 +556,14 @@ void TexView::DoOverwriteMultipleFilesModal(const tListZ<tStringItem>& overwrite
 	for (tStringItem* filename = overwriteFiles.First(); filename && (fnum < maxToShow); filename = filename->Next(), fnum++)
 	{
 		tString file = tSystem::tGetFileName(*filename);
-		ImGui::Text("%s", file.ConstText());
+		ImGui::Text("%s", file.Chars());
 	}
 	int remaining = overwriteFiles.GetNumItems() - fnum;
 	if (remaining > 0)
 		ImGui::Text("And %d more.", remaining);
 	ImGui::Unindent();
 	ImGui::Text("Already Exist In Folder");
-	ImGui::Indent(); ImGui::Text("%s", dir.ConstText()); ImGui::Unindent();
+	ImGui::Indent(); ImGui::Text("%s", dir.Chars()); ImGui::Unindent();
 	ImGui::NewLine();
 	ImGui::Text("Overwrite Files?");
 	ImGui::NewLine();
@@ -656,9 +656,9 @@ void TexView::SaveAllImages(const tString& extension, float percent, int width, 
 			success = outPic.Save(outFile, colourFmt);
 
 		if (success)
-			tPrintf("Saved image as : %s\n", outFile.ConstText());
+			tPrintf("Saved image as : %s\n", outFile.Chars());
 		else
-			tPrintf("Failed to save image %s\n", outFile.ConstText());
+			tPrintf("Failed to save image %s\n", outFile.Chars());
 	}
 
 	Images.Clear();
@@ -682,9 +682,9 @@ void TexView::SaveImageTo(const tString& outFile, int finalWidth, int finalHeigh
 	else
 		success = outPic.Save(outFile, colourFmt);
 	if (success)
-		tPrintf("Saved image as : %s\n", outFile.ConstText());
+		tPrintf("Saved image as : %s\n", outFile.Chars());
 	else
-		tPrintf("Failed to save image %s\n", outFile.ConstText());
+		tPrintf("Failed to save image %s\n", outFile.Chars());
 
 	Images.Clear();
 	PopulateImages();
@@ -698,9 +698,9 @@ bool TexView::DoOverwriteFileModal(const tString& outFile, int finalWidth, int f
 	tString file = tSystem::tGetFileName(outFile);
 	tString dir = tSystem::tGetDir(outFile);
 	ImGui::Text("Overwrite file");
-		ImGui::Indent(); ImGui::Text("%s", file.ConstText()); ImGui::Unindent();
+		ImGui::Indent(); ImGui::Text("%s", file.Chars()); ImGui::Unindent();
 	ImGui::Text("In Folder");
-		ImGui::Indent(); ImGui::Text("%s", dir.ConstText()); ImGui::Unindent();
+		ImGui::Indent(); ImGui::Text("%s", dir.Chars()); ImGui::Unindent();
 	ImGui::NewLine();
 	ImGui::Separator();
 			
@@ -730,9 +730,9 @@ void TexView::DoDeleteFileModal()
 	tString file = tSystem::tGetFileName(fullname);
 	tString dir = tSystem::tGetDir(fullname);
 	ImGui::Text("Delete File");
-		ImGui::Indent(); ImGui::Text("%s", file.ConstText()); ImGui::Unindent();
+		ImGui::Indent(); ImGui::Text("%s", file.Chars()); ImGui::Unindent();
 	ImGui::Text("In Folder");
-		ImGui::Indent(); ImGui::Text("%s", dir.ConstText()); ImGui::Unindent();
+		ImGui::Indent(); ImGui::Text("%s", dir.Chars()); ImGui::Unindent();
 	ImGui::NewLine();
 	ImGui::Separator();
 
@@ -762,9 +762,9 @@ void TexView::DoDeleteFileNoRecycleModal()
 	tString file = tSystem::tGetFileName(fullname);
 	tString dir = tSystem::tGetDir(fullname);
 	ImGui::Text("Delete File");
-		ImGui::Indent(); ImGui::Text("%s", file.ConstText()); ImGui::Unindent();
+		ImGui::Indent(); ImGui::Text("%s", file.Chars()); ImGui::Unindent();
 	ImGui::Text("In Folder");
-		ImGui::Indent(); ImGui::Text("%s", dir.ConstText()); ImGui::Unindent();
+		ImGui::Indent(); ImGui::Text("%s", dir.Chars()); ImGui::Unindent();
 	ImGui::NewLine();
 	ImGui::Separator();
 	ImGui::NewLine();

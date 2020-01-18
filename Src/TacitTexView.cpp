@@ -130,7 +130,7 @@ namespace TexView
 	void GlfwErrorCallback(int error, const char* description)															{ tPrintf("Glfw Error %d: %s\n", error, description); }
 
 	// When compare functions are used to sort, they result in ascending order if they return a < b.
-	bool Compare_AlphabeticalAscending(const tStringItem& a, const tStringItem& b)										{ return tStricmp(a.ConstText(), b.ConstText()) < 0; }
+	bool Compare_AlphabeticalAscending(const tStringItem& a, const tStringItem& b)										{ return tStricmp(a.Chars(), b.Chars()) < 0; }
 	bool Compare_FileCreationTimeAscending(const tStringItem& a, const tStringItem& b)
 	{
 		tFileInfo ia; tGetFileInfo(ia, a);
@@ -138,8 +138,8 @@ namespace TexView
 		return ia.CreationTime < ib.CreationTime;
 	}
 	bool Compare_ImageLoadTimeAscending(const TacitImage& a, const TacitImage& b)										{ return a.GetLoadedTime() < b.GetLoadedTime(); }
-	bool Compare_ImageFileNameAscending(const TacitImage& a, const TacitImage& b)										{ return tStricmp(a.Filename.ConstText(), b.Filename.ConstText()) < 0; }
-	bool Compare_ImageFileNameDescending(const TacitImage& a, const TacitImage& b)										{ return tStricmp(a.Filename.ConstText(), b.Filename.ConstText()) > 0; }
+	bool Compare_ImageFileNameAscending(const TacitImage& a, const TacitImage& b)										{ return tStricmp(a.Filename.Chars(), b.Filename.Chars()) < 0; }
+	bool Compare_ImageFileNameDescending(const TacitImage& a, const TacitImage& b)										{ return tStricmp(a.Filename.Chars(), b.Filename.Chars()) > 0; }
 	bool Compare_ImageFileTypeAscending(const TacitImage& a, const TacitImage& b)										{ return int(a.Filetype) < int(b.Filetype); }
 	bool Compare_ImageFileTypeDescending(const TacitImage& a, const TacitImage& b)										{ return int(a.Filetype) > int(b.Filetype); }
 	bool Compare_ImageModTimeAscending(const TacitImage& a, const TacitImage& b)										{ return a.FileModTime < b.FileModTime; }
@@ -195,7 +195,7 @@ void TexView::FindImageFiles(tList<tStringItem>& foundFiles)
 	if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
 		imagesDir = tSystem::tGetDir(ImageFileParam.Get());
 
-	tPrintf("Looking for image files in %s\n", imagesDir.ConstText());
+	tPrintf("Looking for image files in %s\n", imagesDir.Chars());
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.jpg");
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.gif");
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.tga");
@@ -211,7 +211,7 @@ tuint256 TexView::ComputeImagesHash(const tList<tStringItem>& files)
 {
 	tuint256 hash = 0;
 	for (tStringItem* item = files.First(); item; item = item->Next())
-		hash = tMath::tHashString256(item->ConstText(), hash);
+		hash = tMath::tHashString256(item->Chars(), hash);
 
 	return hash;
 }
@@ -274,7 +274,7 @@ void TexView::SetCurrentImage(const tString& currFilename)
 		tString siName = tSystem::tGetFileName(si->Filename);
 		tString imgName = tSystem::tGetFileName(currFilename);
 
-		if (tStricmp(siName.ConstText(), imgName.ConstText()) == 0)
+		if (tStricmp(siName.Chars(), imgName.Chars()) == 0)
 		{
 			CurrImage = si;
 			break;
@@ -285,9 +285,9 @@ void TexView::SetCurrentImage(const tString& currFilename)
 	{
 		CurrImage = Images.First();
 		if (!currFilename.IsEmpty())
-			tPrintf("Could not display [%s].\n", tSystem::tGetFileName(currFilename).ConstText());
+			tPrintf("Could not display [%s].\n", tSystem::tGetFileName(currFilename).Chars());
 		if (CurrImage && !CurrImage->Filename.IsEmpty())
-			tPrintf("Displaying [%s] instead.\n", tSystem::tGetFileName(CurrImage->Filename).ConstText());
+			tPrintf("Displaying [%s] instead.\n", tSystem::tGetFileName(CurrImage->Filename).Chars());
 	}
 
 	if (CurrImage)
@@ -332,7 +332,7 @@ void TexView::LoadCurrImage()
 				// Never unload the current image.
 				if (i->IsLoaded() && (i != CurrImage))
 				{
-					tPrintf("Unloading %s freeing %d Bytes\n", tSystem::tGetFileName(i->Filename).ConstText(), i->Info.MemSizeBytes);
+					tPrintf("Unloading %s freeing %d Bytes\n", tSystem::tGetFileName(i->Filename).Chars(), i->Info.MemSizeBytes);
 					usedMem -= i->Info.MemSizeBytes;
 					i->Unload();
 					if (usedMem < allowedMem)
@@ -427,7 +427,7 @@ void TexView::SetWindowTitle()
 	if (CurrImage && !CurrImage->Filename.IsEmpty())
 		title = title + " - " + tGetFileName(CurrImage->Filename);
 
-	glfwSetWindowTitle(Window, title.ConstText());
+	glfwSetWindowTitle(Window, title.Chars());
 }
 
 
@@ -961,7 +961,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				tString currZoomStr;
 				tsPrintf(currZoomStr, "%0.0f%%", ZoomPercent);
 				int zoomIdx = 0;
-				if (ImGui::Combo(currZoomStr.ConstText(), &zoomIdx, zoomItems, tNumElements(zoomItems)) && (zoomIdx > 0))
+				if (ImGui::Combo(currZoomStr.Chars(), &zoomIdx, zoomItems, tNumElements(zoomItems)) && (zoomIdx > 0))
 					ApplyZoomDelta( zoomVals[zoomIdx]-ZoomPercent, 1.0f, true);
 				ImGui::PopItemWidth();
 
@@ -1624,7 +1624,7 @@ int main(int argc, char** argv)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	tString fontFile = dataDir + "Roboto-Medium.ttf";
-	io.Fonts->AddFontFromFileTTF(fontFile.ConstText(), 14.0f);
+	io.Fonts->AddFontFromFileTTF(fontFile.Chars(), 14.0f);
 
 	TexView::CursorImage.Load(dataDir + "PixelCursor.png");
 	TexView::PrevImage.Load(dataDir + "PrevArrow.png");

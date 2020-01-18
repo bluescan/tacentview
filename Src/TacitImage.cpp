@@ -380,7 +380,7 @@ void TacitImage::PrintInfo()
 	tPrintf
 	(
 		"Image: %s Width: %d Height: %d PixelFormat: %s\n",
-		tSystem::tGetFileName(Filename).ConstText(),
+		tSystem::tGetFileName(Filename).Chars(),
 		Info.Width, Info.Height, tImage::tGetPixelFormatName(format)
 	);
 }
@@ -739,7 +739,7 @@ void TacitImage::GenerateThumbnail()
 	hash = tHashData256((uint8*)&ThumbWidth, sizeof(ThumbWidth), hash);
 	hash = tHashData256((uint8*)&ThumbHeight, sizeof(ThumbHeight), hash);
 	tString hashFile;
-	tsPrintf(hashFile, "%s%032|128X.bin", ThumbCacheDir.ConstText(), hash);
+	tsPrintf(hashFile, "%s%032|128X.bin", ThumbCacheDir.Chars(), hash);
 	if (tFileExists(hashFile))
 	{
 		tChunkReader chunk(hashFile);

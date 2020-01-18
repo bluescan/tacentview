@@ -141,7 +141,7 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 	else
 		tsPrintf(genMsg, "More Than %d Images Needed", numImg);
 
-	if (ImGui::Button(genMsg.ConstText()) && (numImg >= 2))
+	if (ImGui::Button(genMsg.Chars()) && (numImg >= 2))
 	{
 		tString imagesDir = tSystem::tGetCurrentDir();
 		if (TexView::ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(TexView::ImageFileParam.Get()))
@@ -184,7 +184,7 @@ void TexView::ShowContactSheetDialog(bool* popen, bool justOpened)
 				continue;
 			}
 
-			tPrintf("Processing frame %d : %s at (%d, %d).\n", frame, currImg->Filename.ConstText(), ix, iy);
+			tPrintf("Processing frame %d : %s at (%d, %d).\n", frame, currImg->Filename.Chars(), ix, iy);
 			frame++;
 			tImage::tPicture* currPic = currImg->GetPrimaryPicture();
 

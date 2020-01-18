@@ -78,17 +78,17 @@ void TexView::ShowContentViewDialog(bool* popen)
 			}
 
 			tString filename = tSystem::tGetFileName(i->Filename);
-			ImGui::Text(filename.ConstText());
+			ImGui::Text(filename.Chars());
 
 			tString tooltipText;
 			tsPrintf
 			(
 				tooltipText, "%s\n%s\n%d Bytes",
-				filename.ConstText(),
-				tSystem::tConvertTimeToString(i->FileModTime).ConstText(),
+				filename.Chars(),
+				tSystem::tConvertTimeToString(i->FileModTime).Chars(),
 				i->FileSizeB
 			);
-			ShowToolTip(tooltipText.ConstText());
+			ShowToolTip(tooltipText.Chars());
 
 			// We use a separator to indicate the current item.
 			if (isCurr)
