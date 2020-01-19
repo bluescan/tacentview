@@ -24,11 +24,12 @@
 using namespace tStd;
 using namespace tSystem;
 using namespace tMath;
+using namespace tImage;
 
 
 namespace TexView
 {
-	void SaveImageTo(const tString& outFile, int finalWidth, int finalHeight);
+	void SaveImageTo(tPicture* picture, const tString& outFile, int finalWidth, int finalHeight);
 	void SaveAllImages(const tString& destDir, const tString& extension, float percent, int width, int height);
 	void GetFilesNeedingOverwrite(const tString& destDir, tListZ<tStringItem>& overwriteFiles, const tString& extension);
 }
@@ -286,44 +287,54 @@ void TexView::ShowPreferencesDialog(bool* popen)
 
 void TexView::DoSaveAsModalDialog(bool justOpened)
 {
-	static int finalWidth = 512;
-	static int finalHeight = 512;
-	if (justOpened && CurrImage)
-	{
-		finalWidth = CurrImage->GetWidth();
-		finalHeight = CurrImage->GetHeight();
-	}
-	ImGui::InputInt("Final Width", &finalWidth); ImGui::SameLine();
-	ShowHelpMark("Final scaled output width in pixels.");
+	tAssert(CurrImage);
+	tPicture* picture = CurrImage->GetPrimaryPicture();
+	tAssert(picture);
 
-	ImGui::InputInt("Final Height", &finalHeight); ImGui::SameLine();
-	ShowHelpMark("Final scaled output height in pixels.");
+	static int dstW = 512;
+	static int dstH = 512;
+	int srcW = picture->GetWidth();
+	int srcH = picture->GetHeight();
+
+	if (justOpened)
+	{
+		dstW = picture->GetWidth();
+		dstH = picture->GetHeight();
+	}
+	ImGui::InputInt("Width", &dstW); ImGui::SameLine();
+	ShowHelpMark("Final output width in pixels.\nIf dimensions match current no scaling.");
+
+	ImGui::InputInt("Final Height", &dstH); ImGui::SameLine();
+	ShowHelpMark("Final output height in pixels.\nIf dimensions match current no scaling.");
 
 	if (ImGui::Button("Prev Pow2"))
 	{
-		finalWidth = tMath::tNextLowerPower2(CurrImage->GetWidth());
-		finalHeight = tMath::tNextLowerPower2(CurrImage->GetHeight());
+		dstW = tMath::tNextLowerPower2(srcW);
+		dstH = tMath::tNextLowerPower2(srcH);
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Next Pow2"))
 	{
-		finalWidth = tMath::tNextHigherPower2(CurrImage->GetWidth());
-		finalHeight = tMath::tNextHigherPower2(CurrImage->GetHeight());
+		dstW = tMath::tNextHigherPower2(srcW);
+		dstH = tMath::tNextHigherPower2(srcH);
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Reset"))
 	{
-		finalWidth = CurrImage->GetWidth();
-		finalHeight = CurrImage->GetHeight();
+		dstW = srcW;
+		dstH = srcH;
 	}
 
 	ImGui::Separator();
 
-	// Matches tImage::tPicture::tFilter.
-	const char* filterItems[] = { "NearestNeighbour", "Box", "Bilinear", "Bicubic", "Quadratic", "Hamming" };
-	ImGui::Combo("Filter", &Config.ResampleFilter, filterItems, tNumElements(filterItems));
-	ImGui::SameLine();
-	ShowHelpMark("Filtering method to use when resizing images.");
+	if ((dstW != srcW) || (dstH != srcH))
+	{
+		// Matches tImage::tPicture::tFilter.
+		const char* filterItems[] = { "NearestNeighbour", "Box", "Bilinear", "Bicubic", "Quadratic", "Hamming" };
+		ImGui::Combo("Filter", &Config.ResampleFilter, filterItems, tNumElements(filterItems));
+		ImGui::SameLine();
+		ShowHelpMark("Filtering method to use when resizing images.");
+	}
 
 	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "gif" };
 	ImGui::Combo("File Type", &Config.SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
@@ -397,7 +408,7 @@ void TexView::DoSaveAsModalDialog(bool justOpened)
 			}
 			else
 			{
-				SaveImageTo(outFile, finalWidth, finalHeight);
+				SaveImageTo(picture, outFile, dstW, dstH);
 				closeThisModal = true;
 			}
 		}
@@ -410,7 +421,7 @@ void TexView::DoSaveAsModalDialog(bool justOpened)
 		bool pressedOK = false, pressedCancel = false;
 		DoOverwriteFileModal(outFile, pressedOK, pressedCancel);
 		if (pressedOK)
-			SaveImageTo(outFile, finalWidth, finalHeight);
+ 			SaveImageTo(picture, outFile, dstW, dstH);
 		if (pressedOK || pressedCancel)
 			closeThisModal = true;
 	}
@@ -716,13 +727,15 @@ void TexView::SaveAllImages(const tString& destDir, const tString& extension, fl
 }
 
 
-void TexView::SaveImageTo(const tString& outFile, int finalWidth, int finalHeight)
+void TexView::SaveImageTo(tPicture* picture, const tString& outFile, int width, int height)
 {
-	tImage::tPicture outPic(CurrImage->GetWidth(), CurrImage->GetHeight());
-	outPic.Set(*CurrImage->GetPrimaryPicture());
+	tAssert(picture);
 
-	if ((outPic.GetWidth() != finalWidth) || (outPic.GetHeight() != finalHeight))
-		outPic.Resample(finalWidth, finalHeight, tImage::tPicture::tFilter(Config.ResampleFilter));
+	// We need to make a copy in case we need to resample.
+	tImage::tPicture outPic( *picture );
+
+	if ((outPic.GetWidth() != width) || (outPic.GetHeight() != height))
+		outPic.Resample(width, height, tImage::tPicture::tFilter(Config.ResampleFilter));
 
 	bool success = false;
 	tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
