@@ -122,8 +122,8 @@ bool tPicture::Save(const tString& imageFile, tPicture::tColourFormat colourFmt,
 	image.CreateFromArray((uint8*)reorderedPixelArray, Width, Height, 32, Width*4, false);
 	delete[] reorderedPixelArray;
 
-	// @todo There is a bug in CxImage for MBP writing. If alphas all 0, it won't write
-	// a bmp with proper alphas. This is a lame workaround,
+	// @todo There is a bug in CxImage for BMP writing. If alphas all 0, it won't write
+	// a bmp with proper alphas. This is a lame workaround.
 	if (fileType == tFileType::BMP)
 	{
 		if (image.AlphaGet(0, 0) == 0)

@@ -58,6 +58,7 @@ struct Settings
 	tString SaveSubFolder;
 	int SaveFileType;
 	bool SaveFileTargaRLE;
+	float SaveFileJpgQuality;
 	enum class SizeMode
 	{
 		Percent,

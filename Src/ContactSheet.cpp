@@ -134,6 +134,8 @@ void TexView::DoContactSheetModalDialog(bool justOpened)
 
 	if (Config.SaveFileType == 0)
 		ImGui::Checkbox("RLE Compression", &Config.SaveFileTargaRLE);
+	else if (Config.SaveFileType == 3)
+		ImGui::SliderFloat("Quality", &Config.SaveFileJpgQuality, 0.0f, 100.0f, "%.1f");
 
 	ImGui::Separator();
 
@@ -292,7 +294,7 @@ void TexView::SaveContactSheetTo
 		if (Config.SaveFileType == 0)
 			outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
 		else
-			outPic.Save(outFile, colourFmt);
+			outPic.Save(outFile, colourFmt, Config.SaveFileJpgQuality);
 	}
 	else
 	{
@@ -302,7 +304,7 @@ void TexView::SaveContactSheetTo
 		if (Config.SaveFileType == 0)
 			finalResampled.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
 		else
-			finalResampled.Save(outFile, colourFmt);
+			finalResampled.Save(outFile, colourFmt, Config.SaveFileJpgQuality);
 	}
 
 	// If we saved to the same dir we are currently viewing, reload

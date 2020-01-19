@@ -47,6 +47,7 @@ void Settings::Reset()
 	SaveSubFolder			.Set("Saved");
 	SaveFileType			= 0;
 	SaveFileTargaRLE		= false;
+	SaveFileJpgQuality		= 90.0f;
 	SaveAllSizeMode			= 0;
 	MaxImageMemMB			= 1024;
 	MaxCacheFiles			= 7000;
@@ -95,6 +96,7 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(SaveSubFolder);
 				ReadItem(SaveFileType);
 				ReadItem(SaveFileTargaRLE);
+				ReadItem(SaveFileJpgQuality);
 				ReadItem(SaveAllSizeMode);
 				ReadItem(MaxImageMemMB);
 				ReadItem(MaxCacheFiles);
@@ -115,6 +117,7 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 	tiClampMin(MaxImageMemMB, 256);
 	tiClampMin(MaxCacheFiles, 200);
 	tiClamp(SaveAllSizeMode, 0, 3);
+	tiClamp(SaveFileJpgQuality, 0.0f, 100.0f);
 }
 
 
@@ -145,6 +148,7 @@ bool Settings::Save(const tString& filename)
 	WriteItem(SaveSubFolder);
 	WriteItem(SaveFileType);
 	WriteItem(SaveFileTargaRLE);
+	WriteItem(SaveFileJpgQuality);
 	WriteItem(SaveAllSizeMode);
 	WriteItem(MaxImageMemMB);
 	WriteItem(MaxCacheFiles);

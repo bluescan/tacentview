@@ -342,6 +342,8 @@ void TexView::DoSaveAsModalDialog(bool justOpened)
 
 	if (Config.SaveFileType == 0)
 		ImGui::Checkbox("RLE Compression", &Config.SaveFileTargaRLE);
+	else if (Config.SaveFileType == 3)
+		ImGui::SliderFloat("Quality", &Config.SaveFileJpgQuality, 0.0f, 100.0f, "%.1f");
 
 	ImGui::Separator();
 
@@ -500,6 +502,8 @@ void TexView::DoSaveAllModalDialog(bool justOpened)
 
 	if (Config.SaveFileType == 0)
 		ImGui::Checkbox("RLE Compression", &Config.SaveFileTargaRLE);
+	else if (Config.SaveFileType == 3)
+		ImGui::SliderFloat("Quality", &Config.SaveFileJpgQuality, 0.0f, 100.0f, "%.1f");
 
 	ImGui::Separator();
 
@@ -693,7 +697,7 @@ void TexView::SaveAllImages(const tString& destDir, const tString& extension, fl
 		if (Config.SaveFileType == 0)
 			success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
 		else
-			success = outPic.Save(outFile, colourFmt);
+			success = outPic.Save(outFile, colourFmt, Config.SaveFileJpgQuality);
 
 		if (success)
 			tPrintf("Saved image as %s\n", outFile.Chars());
@@ -725,7 +729,7 @@ void TexView::SaveImageTo(const tString& outFile, int finalWidth, int finalHeigh
 	if (Config.SaveFileType == 0)
 		success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
 	else
-		success = outPic.Save(outFile, colourFmt);
+		success = outPic.Save(outFile, colourFmt, Config.SaveFileJpgQuality);
 	if (success)
 		tPrintf("Saved image as : %s\n", outFile.Chars());
 	else
