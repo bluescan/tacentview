@@ -17,5 +17,5 @@
 
 namespace TexView
 {
-	void ShowContactSheetDialog(bool* popen, bool justOpened);
+	void DoContactSheetModalDialog(bool justOpened);
 }

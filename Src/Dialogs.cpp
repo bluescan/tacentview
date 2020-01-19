@@ -29,11 +29,8 @@ using namespace tMath;
 namespace TexView
 {
 	void SaveImageTo(const tString& outFile, int finalWidth, int finalHeight);
-	bool DoOverwriteFileModal(const tString& outFile, int finalWidth, int finalHeight);
-
-	void SaveAllImages(const tString& extension, float percent, int width, int height);
-	void GetFilesNeedingOverwrite(tListZ<tStringItem>& overwriteFiles, const tString& extension);
-	void DoOverwriteMultipleFilesModal(const tListZ<tStringItem>& overwriteFiles, bool& pressedOK, bool& pressedCancel);
+	void SaveAllImages(const tString& destDir, const tString& extension, float percent, int width, int height);
+	void GetFilesNeedingOverwrite(const tString& destDir, tListZ<tStringItem>& overwriteFiles, const tString& extension);
 }
 
 
@@ -190,7 +187,7 @@ void TexView::ShowCheatSheetPopup(bool* popen)
 
 void TexView::ShowAboutPopup(bool* popen)
 {
-	tVector2 windowPos = GetDialogOrigin(4);
+	tVector2 windowPos = GetDialogOrigin(3);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	// ImGui::SetNextWindowBgAlpha(0.6f);
 	ImGuiWindowFlags flags =
@@ -224,7 +221,7 @@ void TexView::ShowPreferencesDialog(bool* popen)
 
 	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
 	// do it to make the Demo applications a little more welcoming.
-	tVector2 windowPos = GetDialogOrigin(3);
+	tVector2 windowPos = GetDialogOrigin(2);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	if (!ImGui::Begin("Preferences", popen, windowFlags))
@@ -320,6 +317,8 @@ void TexView::DoSaveAsModalDialog(bool justOpened)
 		finalHeight = CurrImage->GetHeight();
 	}
 
+	ImGui::Separator();
+
 	// Matches tImage::tPicture::tFilter.
 	const char* filterItems[] = { "NearestNeighbour", "Box", "Bilinear", "Bicubic", "Quadratic", "Hamming" };
 	ImGui::Combo("Filter", &Config.ResampleFilter, filterItems, tNumElements(filterItems));
@@ -327,12 +326,12 @@ void TexView::DoSaveAsModalDialog(bool justOpened)
 	ShowHelpMark("Filtering method to use when resizing images.");
 
 	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "gif" };
-	ImGui::Combo("File Type", &Config.FileSaveType, fileTypeItems, tNumElements(fileTypeItems));
+	ImGui::Combo("File Type", &Config.SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
 	ImGui::SameLine();
 	ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
 
 	tString extension = ".tga";
-	switch (Config.FileSaveType)
+	switch (Config.SaveFileType)
 	{
 		case 0: extension = ".tga"; break;
 		case 1: extension = ".png"; break;
@@ -341,8 +340,28 @@ void TexView::DoSaveAsModalDialog(bool justOpened)
 		case 4: extension = ".gif"; break;
 	}
 
-	if (Config.FileSaveType == 0)
-		ImGui::Checkbox("RLE Compression", &Config.FileSaveTargaRLE);
+	if (Config.SaveFileType == 0)
+		ImGui::Checkbox("RLE Compression", &Config.SaveFileTargaRLE);
+
+	ImGui::Separator();
+
+	// Output sub-folder
+	char subFolder[256]; tMemset(subFolder, 0, 256);
+	tStrncpy(subFolder, Config.SaveSubFolder.Chars(), 255);
+	ImGui::InputText("Folder", subFolder, 256);
+	Config.SaveSubFolder.Set(subFolder);
+	tString destDir = ImagesDir;
+	if (!Config.SaveSubFolder.IsEmpty())
+		destDir += Config.SaveSubFolder + "/";
+	tString toolTipText;
+	tsPrintf(toolTipText, "Save to %s", destDir.Chars());
+	ShowToolTip(toolTipText.Chars());
+	ImGui::SameLine();
+	if (ImGui::Button("Default"))
+		Config.SaveSubFolder.Set("Saved");
+	ImGui::SameLine();
+	if (ImGui::Button("This"))
+		Config.SaveSubFolder.Clear();
 
 	static char filename[128] = "Filename";
 	if (justOpened)
@@ -360,19 +379,25 @@ void TexView::DoSaveAsModalDialog(bool justOpened)
 	
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 
-	tString imagesDir = tSystem::tGetCurrentDir();
-	if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
-		imagesDir = tSystem::tGetDir(ImageFileParam.Get());
-	tString outFile = imagesDir + tString(filename) + extension;
-	bool saved = false;
+	tString outFile = destDir + tString(filename) + extension;
+	bool closeThisModal = false;
 	if (ImGui::Button("Save", tVector2(100, 0)))
 	{
-		if (tFileExists(outFile) && Config.ConfirmFileOverwrites)
-			ImGui::OpenPopup("Overwrite File");
-		else
+		bool dirExists = tDirExists(destDir);
+		if (!dirExists)
+			dirExists = tCreateDir(destDir);
+
+		if (dirExists)
 		{
-			SaveImageTo(outFile, finalWidth, finalHeight);
-			saved = true;
+			if (tFileExists(outFile) && Config.ConfirmFileOverwrites)
+			{
+				ImGui::OpenPopup("Overwrite File");
+			}
+			else
+			{
+				SaveImageTo(outFile, finalWidth, finalHeight);
+				closeThisModal = true;
+			}
 		}
 	}
 
@@ -380,11 +405,15 @@ void TexView::DoSaveAsModalDialog(bool justOpened)
 	bool isOpen = true;
 	if (ImGui::BeginPopupModal("Overwrite File", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
 	{
-		if (DoOverwriteFileModal(outFile, finalWidth, finalHeight))
-			saved = true;
+		bool pressedOK = false, pressedCancel = false;
+		DoOverwriteFileModal(outFile, pressedOK, pressedCancel);
+		if (pressedOK)
+			SaveImageTo(outFile, finalWidth, finalHeight);
+		if (pressedOK || pressedCancel)
+			closeThisModal = true;
 	}
 
-	if (saved)
+	if (closeThisModal)
 		ImGui::CloseCurrentPopup();
 
 	ImGui::EndPopup();
@@ -414,9 +443,8 @@ void TexView::DoSaveAllModalDialog(bool justOpened)
 		"  All images will have specified height. Always\n"
 		"  uniform scale. Varying width.\n"
 	);
-	ImGui::NewLine();
+
 	ImGui::Separator();
-	ImGui::NewLine();
 
 	static int width = 512;
 	static int height = 512;
@@ -426,7 +454,7 @@ void TexView::DoSaveAllModalDialog(bool justOpened)
 	switch (Settings::SizeMode(Config.SaveAllSizeMode))
 	{
 		case Settings::SizeMode::Percent:
-			ImGui::InputFloat("Percent", &percent, 1.0f, 10.0f);	ImGui::SameLine();	ShowHelpMark("Percent of original size.");
+			ImGui::InputFloat("Percent", &percent, 1.0f, 10.0f, "%.1f");	ImGui::SameLine();	ShowHelpMark("Percent of original size.");
 			break;
 
 		case Settings::SizeMode::SetWidthAndHeight:
@@ -443,6 +471,7 @@ void TexView::DoSaveAllModalDialog(bool justOpened)
 			break;
 	};
 
+	ImGui::Separator();
 	if (!((Settings::SizeMode(Config.SaveAllSizeMode) == Settings::SizeMode::Percent) && (percent == 100.0f)))
 	{
 		// Matches tImage::tPicture::tFilter.
@@ -454,17 +483,13 @@ void TexView::DoSaveAllModalDialog(bool justOpened)
 	tMath::tiClampMin(width, 4);
 	tMath::tiClampMin(height, 4);
 
-	ImGui::NewLine();
-	ImGui::Separator();
-	ImGui::NewLine();
-
 	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "gif" };
-	ImGui::Combo("File Type", &Config.FileSaveType, fileTypeItems, tNumElements(fileTypeItems));
+	ImGui::Combo("File Type", &Config.SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
 	ImGui::SameLine();
 	ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
 
 	tString extension = ".tga";
-	switch (Config.FileSaveType)
+	switch (Config.SaveFileType)
 	{
 		case 0: extension = ".tga"; break;
 		case 1: extension = ".png"; break;
@@ -473,8 +498,28 @@ void TexView::DoSaveAllModalDialog(bool justOpened)
 		case 4: extension = ".gif"; break;
 	}
 
-	if (Config.FileSaveType == 0)
-		ImGui::Checkbox("RLE Compression", &Config.FileSaveTargaRLE);
+	if (Config.SaveFileType == 0)
+		ImGui::Checkbox("RLE Compression", &Config.SaveFileTargaRLE);
+
+	ImGui::Separator();
+
+	// Output sub-folder
+	char subFolder[256]; tMemset(subFolder, 0, 256);
+	tStrncpy(subFolder, Config.SaveSubFolder.Chars(), 255);
+	ImGui::InputText("Folder", subFolder, 256);
+	Config.SaveSubFolder.Set(subFolder);
+	tString destDir = ImagesDir;
+	if (!Config.SaveSubFolder.IsEmpty())
+		destDir += Config.SaveSubFolder + "/";
+	tString toolTipText;
+	tsPrintf(toolTipText, "Save to %s", destDir.Chars());
+	ShowToolTip(toolTipText.Chars());
+	ImGui::SameLine();
+	if (ImGui::Button("Default"))
+		Config.SaveSubFolder.Set("Saved");
+	ImGui::SameLine();
+	if (ImGui::Button("This"))
+		Config.SaveSubFolder.Clear();
 
 	ImGui::NewLine();
 	if (ImGui::Button("Cancel", tVector2(100, 0)))
@@ -486,16 +531,23 @@ void TexView::DoSaveAllModalDialog(bool justOpened)
 	bool closeThisModal = false;
 	if (ImGui::Button("Save All", tVector2(100, 0)))
 	{
-		overwriteFiles.Empty();
-		GetFilesNeedingOverwrite(overwriteFiles, extension);
-		if (!overwriteFiles.IsEmpty() && Config.ConfirmFileOverwrites)
+		bool dirExists = tDirExists(destDir);
+		if (!dirExists)
+			dirExists = tCreateDir(destDir);
+
+		if (dirExists)
 		{
-			ImGui::OpenPopup("Overwrite Multiple Files");
-		}
-		else
-		{
-			SaveAllImages(extension, percent, width, height);
-			closeThisModal = true;
+			overwriteFiles.Empty();
+			GetFilesNeedingOverwrite(destDir, overwriteFiles, extension);
+			if (!overwriteFiles.IsEmpty() && Config.ConfirmFileOverwrites)
+			{
+				ImGui::OpenPopup("Overwrite Multiple Files");
+			}
+			else
+			{
+				SaveAllImages(destDir, extension, percent, width, height);
+				closeThisModal = true;
+			}
 		}
 	}
 
@@ -506,14 +558,10 @@ void TexView::DoSaveAllModalDialog(bool justOpened)
 		bool pressedOK = false, pressedCancel = false;
 		DoOverwriteMultipleFilesModal(overwriteFiles, pressedOK, pressedCancel);
 		if (pressedOK)
-		{
-			SaveAllImages(extension, percent, width, height);
+			SaveAllImages(destDir, extension, percent, width, height);
+
+		if (pressedOK || pressedCancel)
 			closeThisModal = true;
-		}
-		else if (pressedCancel)
-		{
-			closeThisModal = true;
-		}
 	}
 
 	if (closeThisModal)
@@ -526,17 +574,12 @@ void TexView::DoSaveAllModalDialog(bool justOpened)
 }
 
 
-void TexView::GetFilesNeedingOverwrite(tListZ<tStringItem>& overwriteFiles, const tString& extension)
+void TexView::GetFilesNeedingOverwrite(const tString& destDir, tListZ<tStringItem>& overwriteFiles, const tString& extension)
 {
-	//tString currFile = CurrImage ? CurrImage->Filename : tString();
-	tString imagesDir = tSystem::tGetCurrentDir();
-	if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
-		imagesDir = tSystem::tGetDir(ImageFileParam.Get());
-
 	for (TacitImage* image = Images.First(); image; image = image->Next())
 	{
 		tString baseName = tSystem::tGetFileBaseName(image->Filename);
-		tString outFile = imagesDir + tString(baseName) + extension;
+		tString outFile = destDir + tString(baseName) + extension;
 
 		// Only add unique items to the list.
 		if (tSystem::tFileExists(outFile) && !overwriteFiles.Contains(outFile))
@@ -552,7 +595,7 @@ void TexView::DoOverwriteMultipleFilesModal(const tListZ<tStringItem>& overwrite
 	ImGui::Text("The Following Files");
 	ImGui::Indent();
 	int fnum = 0;
-	const int maxToShow = 50;
+	const int maxToShow = 6;
 	for (tStringItem* filename = overwriteFiles.First(); filename && (fnum < maxToShow); filename = filename->Next(), fnum++)
 	{
 		tString file = tSystem::tGetFileName(*filename);
@@ -590,18 +633,15 @@ void TexView::DoOverwriteMultipleFilesModal(const tListZ<tStringItem>& overwrite
 }
 
 
-void TexView::SaveAllImages(const tString& extension, float percent, int width, int height)
+void TexView::SaveAllImages(const tString& destDir, const tString& extension, float percent, int width, int height)
 {
 	float scale = percent/100.0f;
 	tString currFile = CurrImage ? CurrImage->Filename : tString();
-	tString imagesDir = tSystem::tGetCurrentDir();
-	if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
-		imagesDir = tSystem::tGetDir(ImageFileParam.Get());
 
 	for (TacitImage* image = Images.First(); image; image = image->Next())
 	{
 		tString baseName = tSystem::tGetFileBaseName(image->Filename);
-		tString outFile = imagesDir + tString(baseName) + extension;
+		tString outFile = destDir + tString(baseName) + extension;
 
 		// We make sure to maintain the loaded/unloaded state of all images. This function
 		// can process many files, so we don't want them all in memory at once by indiscriminantly
@@ -623,8 +663,8 @@ void TexView::SaveAllImages(const tString& extension, float percent, int width, 
 			case Settings::SizeMode::Percent:
 				if (tMath::tApproxEqual(scale, 1.0f, 0.01f))
 					break;
-				outW = int( float(outW)*scale );
-				outH = int( float(outH)*scale );
+				outW = int( tRound(float(outW)*scale) );
+				outH = int( tRound(float(outH)*scale) );
 				break;
 
 			case Settings::SizeMode::SetWidthAndHeight:
@@ -634,12 +674,12 @@ void TexView::SaveAllImages(const tString& extension, float percent, int width, 
 
 			case Settings::SizeMode::SetWidthRetainAspect:
 				outW = width;
-				outH = int(float(width) / aspect);
+				outH = int( tRound(float(width) / aspect) );
 				break;
 
 			case Settings::SizeMode::SetHeightRetainAspect:
 				outH = height;
-				outW = int(float(height) * aspect);
+				outW = int( tRound(float(height) * aspect) );
 				break;
 		};
 		tMath::tiClampMin(outW, 4);
@@ -650,20 +690,25 @@ void TexView::SaveAllImages(const tString& extension, float percent, int width, 
 
 		bool success = false;
 		tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-		if (Config.FileSaveType == 0)
-			success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.FileSaveTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
+		if (Config.SaveFileType == 0)
+			success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
 		else
 			success = outPic.Save(outFile, colourFmt);
 
 		if (success)
-			tPrintf("Saved image as : %s\n", outFile.Chars());
+			tPrintf("Saved image as %s\n", outFile.Chars());
 		else
 			tPrintf("Failed to save image %s\n", outFile.Chars());
 	}
 
-	Images.Clear();
-	PopulateImages();
-	SetCurrentImage(currFile);
+	// If we saved to the same dir we are currently viewing we need to
+	// reload and set the current image again.
+	if (ImagesDir.IsEqualCI(destDir))
+	{
+		Images.Clear();
+		PopulateImages();
+		SetCurrentImage(currFile);
+	}
 }
 
 
@@ -677,8 +722,8 @@ void TexView::SaveImageTo(const tString& outFile, int finalWidth, int finalHeigh
 
 	bool success = false;
 	tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-	if (Config.FileSaveType == 0)
-		success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.FileSaveTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
+	if (Config.SaveFileType == 0)
+		success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
 	else
 		success = outPic.Save(outFile, colourFmt);
 	if (success)
@@ -686,15 +731,19 @@ void TexView::SaveImageTo(const tString& outFile, int finalWidth, int finalHeigh
 	else
 		tPrintf("Failed to save image %s\n", outFile.Chars());
 
-	Images.Clear();
-	PopulateImages();
-	SetCurrentImage(outFile);
+	// If we saved to the same dir we are currently viewing, reload
+	// and set the current image to the generated one.
+	if (ImagesDir.IsEqualCI( tGetDir(outFile) ))
+	{
+		Images.Clear();
+		PopulateImages();
+		SetCurrentImage(outFile);
+	}
 }
 
 
-bool TexView::DoOverwriteFileModal(const tString& outFile, int finalWidth, int finalHeight)
+void TexView::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool& pressedCancel)
 {
-	bool saved = false;
 	tString file = tSystem::tGetFileName(outFile);
 	tString dir = tSystem::tGetDir(outFile);
 	ImGui::Text("Overwrite file");
@@ -703,24 +752,25 @@ bool TexView::DoOverwriteFileModal(const tString& outFile, int finalWidth, int f
 		ImGui::Indent(); ImGui::Text("%s", dir.Chars()); ImGui::Unindent();
 	ImGui::NewLine();
 	ImGui::Separator();
-			
+
 	ImGui::NewLine();
 	ImGui::Checkbox("Confirm file overwrites in the future?", &Config.ConfirmFileOverwrites);
 	ImGui::NewLine();
 
 	if (ImGui::Button("Cancel", tVector2(100, 0)))
+	{
+		pressedCancel = true;
 		ImGui::CloseCurrentPopup();
+	}
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 	if (ImGui::Button("OK", tVector2(100, 0)))
 	{
-		SaveImageTo(outFile, finalWidth, finalHeight);
-		saved = true;
+		pressedOK = true;
 		ImGui::CloseCurrentPopup();
 	}
 	ImGui::EndPopup();
-	return saved;
 }
 
 

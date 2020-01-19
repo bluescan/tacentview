@@ -50,6 +50,7 @@ namespace TexView
 	Settings Config;
 	bool LogWindowOpen							= true;
 	TexView::ImGuiLog LogWindow;
+	tString ImagesDir;
 	tList<TacitImage> Images;
 	tItList<TacitImage> ImagesLoadTimeSorted	(false);
 	tuint256 ImagesHash							= 0;
@@ -85,10 +86,11 @@ namespace TexView
 	bool ShowAbout								= false;
 	bool Request_SaveAsModal					= false;
 	bool Request_SaveAllModal					= false;
+	bool Request_ContactSheetModal				= false;
 	bool Request_DeleteFileModal				= false;
 	bool Request_DeleteFileNoRecycleModal		= false;
-	bool ContactDialog							= false;
-	bool JustOpenedContactDialog				= false;
+	//bool ContactDialog							= false;
+	//bool JustOpenedContactDialog				= false;
 	bool PrefsDialog							= false;
 	bool RMBDown								= false;
 	int DragAnchorX								= 0;
@@ -155,7 +157,7 @@ namespace TexView
 	bool OnSkipEnd();
 	void ResetPan(bool resetX = true, bool resetY = true);
 	void ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan);
-	void FindImageFiles(tList<tStringItem>& foundFiles);
+	tString FindImageFiles(tList<tStringItem>& foundFiles);					// Returns the image folder.
 	tuint256 ComputeImagesHash(const tList<tStringItem>& files);
 	int RemoveOldCacheFiles(const tString& cacheDir);																	// Returns num removed.
 
@@ -189,7 +191,7 @@ void TexView::DrawTextureViewerLog(float x, float y, float w, float h)
 }
 
 
-void TexView::FindImageFiles(tList<tStringItem>& foundFiles)
+tString TexView::FindImageFiles(tList<tStringItem>& foundFiles)
 {
 	tString imagesDir = tSystem::tGetCurrentDir();
 	if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
@@ -204,6 +206,8 @@ void TexView::FindImageFiles(tList<tStringItem>& foundFiles)
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.tiff");
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.bmp");
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.dds");
+
+	return imagesDir;
 }
 
 
@@ -223,7 +227,7 @@ void TexView::PopulateImages()
 	ImagesLoadTimeSorted.Clear();
 
 	tList<tStringItem> foundFiles;
-	FindImageFiles(foundFiles);
+	ImagesDir = FindImageFiles(foundFiles);
 
 	// We sort here so ComputeImagesHash always returns consistent values.
 	foundFiles.Sort(Compare_AlphabeticalAscending, tListSortAlgorithm::Merge);
@@ -848,6 +852,9 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,6));
 		ImGui::BeginMainMenuBar();
 		{
+			//
+			// File Menu.
+			//
 			bool saveAsPressed = Request_SaveAsModal;
 			bool saveAllPressed = Request_SaveAllModal;
 			Request_SaveAsModal = false;
@@ -874,7 +881,6 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if (saveAsPressed)
 				ImGui::OpenPopup("Save As");
-
 			// The unused isOpenSaveAs bool is just so we get a close button in ImGui. 
 			bool isOpenSaveAs = true;
 			if (ImGui::BeginPopupModal("Save As", &isOpenSaveAs, ImGuiWindowFlags_AlwaysAutoResize))
@@ -882,7 +888,6 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if (saveAllPressed)
 				ImGui::OpenPopup("Save All");
-
 			// The unused isOpenSaveAll bool is just so we get a close button in ImGui. 
 			bool isOpenSaveAll = true;
 			if (ImGui::BeginPopupModal("Save All", &isOpenSaveAll, ImGuiWindowFlags_AlwaysAutoResize))
@@ -890,15 +895,18 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			ImGui::PopStyleVar();
 
+			//
+			// Edit Menu.
+			//
+			bool contactSheetPressed = Request_ContactSheetModal;
+			Request_ContactSheetModal = false;
 			if (ImGui::BeginMenu("Edit"))
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
+
 				if (ImGui::MenuItem("Contact Sheet...", "C") && (Images.GetNumItems() > 1))
-				{
-					JustOpenedContactDialog = !ContactDialog;
-					ContactDialog = !ContactDialog;
-				}
-				
+					contactSheetPressed = true;
+
 				if (ImGui::MenuItem("Preferences...", "P"))
 					PrefsDialog = !PrefsDialog;
 
@@ -906,17 +914,22 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				ImGui::EndMenu();
 			}
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
-			if (ContactDialog)
-			{
-				ShowContactSheetDialog(&ContactDialog, JustOpenedContactDialog);
-				JustOpenedContactDialog = false;
-			}
+
+			if (contactSheetPressed)
+				ImGui::OpenPopup("Contact Sheet");
+			// The unused isOpenContactSheet bool is just so we get a close button in ImGui. 
+			bool isOpenContactSheet = true;
+			if (ImGui::BeginPopupModal("Contact Sheet", &isOpenContactSheet, ImGuiWindowFlags_AlwaysAutoResize))
+				DoContactSheetModalDialog(contactSheetPressed);
 
 			if (PrefsDialog)
 				ShowPreferencesDialog(&PrefsDialog);
 
 			ImGui::PopStyleVar();
 
+			//
+			// View Menu.
+			//
 			if (ImGui::BeginMenu("View"))
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
@@ -973,6 +986,9 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				ImGui::EndMenu();
 			}
 
+			//
+			// Help Menu.
+			//
 			if (ImGui::BeginMenu("Help"))
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
@@ -982,6 +998,9 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				ImGui::EndMenu();
 			}
 
+			//
+			// Toolbar.
+			//
 			tColourf floatCol(PixelColour);
 			tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 40.0f);			
@@ -1370,10 +1389,7 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 
 		case GLFW_KEY_C:
 			if (Images.GetNumItems() > 1)
-			{
-				JustOpenedContactDialog = !ContactDialog;
-				ContactDialog = !ContactDialog;
-			}
+				Request_ContactSheetModal = true;
 			break;
 
 		case GLFW_KEY_P:
@@ -1472,7 +1488,7 @@ void TexView::FocusCallback(GLFWwindow* window, int gotFocus)
 
 	// If we got focus, rescan the current folder to see if the hash is different.
 	tList<tStringItem> files;
-	FindImageFiles(files);
+	ImagesDir = FindImageFiles(files);
 
 	// We sort here so ComputeImagesHash always returns consistent values.
 	files.Sort(Compare_AlphabeticalAscending, tListSortAlgorithm::Merge);

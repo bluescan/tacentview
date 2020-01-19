@@ -98,7 +98,7 @@ bool tPicture::CanLoad(tFileType fileType)
 }
 
 
-bool tPicture::Save(const tString& imageFile, tPicture::tColourFormat colourFmt)
+bool tPicture::Save(const tString& imageFile, tPicture::tColourFormat colourFmt, float quality)
 {
 	if (!IsValid())
 		return false;
@@ -122,6 +122,14 @@ bool tPicture::Save(const tString& imageFile, tPicture::tColourFormat colourFmt)
 	image.CreateFromArray((uint8*)reorderedPixelArray, Width, Height, 32, Width*4, false);
 	delete[] reorderedPixelArray;
 
+	// @todo There is a bug in CxImage for MBP writing. If alphas all 0, it won't write
+	// a bmp with proper alphas. This is a lame workaround,
+	if (fileType == tFileType::BMP)
+	{
+		if (image.AlphaGet(0, 0) == 0)
+			image.AlphaSet(0, 0, 1);
+	}
+
 	uint32 cxImgFormat = CXIMAGE_FORMAT_PNG;
 	switch (fileType)
 	{
@@ -135,6 +143,9 @@ bool tPicture::Save(const tString& imageFile, tPicture::tColourFormat colourFmt)
 		image.AlphaDelete();
 	else if ((colourFmt == tPicture::tColourFormat::Auto) && IsOpaque())
 		image.AlphaDelete();
+
+	if (cxImgFormat == CXIMAGE_FORMAT_JPG)
+		image.SetJpegQualityF(quality);
 
 	return image.Save(imageFile.ConstText(), cxImgFormat);
 }

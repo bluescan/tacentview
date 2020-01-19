@@ -13,6 +13,8 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #pragma once
+#include <Foundation/tList.h>
+#include <Foundation/tString.h>
 
 
 namespace TexView
@@ -27,4 +29,7 @@ namespace TexView
 	void DoSaveAllModalDialog(bool justOpened);
 	void DoDeleteFileModal();
 	void DoDeleteFileNoRecycleModal();
+
+	void DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool& pressedCancel);
+	void DoOverwriteMultipleFilesModal(const tListZ<tStringItem>& overwriteFiles, bool& pressedOK, bool& pressedCancel);
 }

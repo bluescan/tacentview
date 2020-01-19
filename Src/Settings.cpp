@@ -44,8 +44,9 @@ void Settings::Reset()
 	ConfirmFileOverwrites	= true;
 
 	SlidehowFrameDuration	= 1.0/30.0;
-	FileSaveType			= 0;
-	FileSaveTargaRLE		= false;
+	SaveSubFolder			.Set("Saved");
+	SaveFileType			= 0;
+	SaveFileTargaRLE		= false;
 	SaveAllSizeMode			= 0;
 	MaxImageMemMB			= 1024;
 	MaxCacheFiles			= 7000;
@@ -91,8 +92,9 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(ConfirmDeletes);
 				ReadItem(ConfirmFileOverwrites);
 				ReadItem(SlidehowFrameDuration);
-				ReadItem(FileSaveType);
-				ReadItem(FileSaveTargaRLE);
+				ReadItem(SaveSubFolder);
+				ReadItem(SaveFileType);
+				ReadItem(SaveFileTargaRLE);
 				ReadItem(SaveAllSizeMode);
 				ReadItem(MaxImageMemMB);
 				ReadItem(MaxCacheFiles);
@@ -107,7 +109,7 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 	tiClamp(WindowX, 0, screenW - WindowW);
 	tiClamp(WindowY, 0, screenH - WindowH);
 	tiClamp(OverlayCorner, 0, 3);
-	tiClamp(FileSaveType, 0, 4);
+	tiClamp(SaveFileType, 0, 4);
 	tiClamp(ThumbnailWidth, float(TacitImage::ThumbMinDispWidth), float(TacitImage::ThumbWidth));
 	tiClamp(SortKey, 0, 3);
 	tiClampMin(MaxImageMemMB, 256);
@@ -140,8 +142,9 @@ bool Settings::Save(const tString& filename)
 	WriteItem(ConfirmDeletes);
 	WriteItem(ConfirmFileOverwrites);
 	WriteItem(SlidehowFrameDuration);
-	WriteItem(FileSaveType);
-	WriteItem(FileSaveTargaRLE);
+	WriteItem(SaveSubFolder);
+	WriteItem(SaveFileType);
+	WriteItem(SaveFileTargaRLE);
 	WriteItem(SaveAllSizeMode);
 	WriteItem(MaxImageMemMB);
 	WriteItem(MaxCacheFiles);

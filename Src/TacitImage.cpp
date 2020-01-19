@@ -844,4 +844,7 @@ TacitImage::~TacitImage()
 	// accesses the thumbnail picture of this object... so 'this' must be valid.
 	if (ThumbnailThread.joinable())
 		ThumbnailThread.join();
+
+	// Free GPU image mem and texture IDs.
+	Unload();
 }

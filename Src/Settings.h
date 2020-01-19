@@ -54,8 +54,10 @@ struct Settings
 	bool ConfirmDeletes;
 	bool ConfirmFileOverwrites;
 	double SlidehowFrameDuration;
-	int FileSaveType;
-	bool FileSaveTargaRLE;
+
+	tString SaveSubFolder;
+	int SaveFileType;
+	bool SaveFileTargaRLE;
 	enum class SizeMode
 	{
 		Percent,

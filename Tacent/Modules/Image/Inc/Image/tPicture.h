@@ -89,8 +89,8 @@ public:
 
 	// Saves to the image file you specify and examines the extension to determine filetype. Supports tga, png, bmp, jpg,
 	// and gif. If tColourFormat is set to auto, the opacity/alpha channel will be excluded if all pixels are opaque.
-	// Alpha channels are not supported for gif and jpg files.
-	bool Save(const tString& imageFile, tColourFormat = tColourFormat::Auto);
+	// Alpha channels are not supported for gif and jpg files. Quality (used for jpg) is in [0.0, 100.0].
+	bool Save(const tString& imageFile, tColourFormat = tColourFormat::Auto, float quality = 90.0f);
 
 	bool SaveTGA
 	(

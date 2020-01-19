@@ -590,7 +590,7 @@ void tScriptWriter::WriteAtom(const tString& atom)
 
 	// Here we determine whether to use quotes if necessary. If the atom is a tuple (a vector or matrix etc) then we do
 	// not use quotes even if spaces are present.
-	bool useQuotes = hasSpace && !isTuple;
+	bool useQuotes = (hasSpace && !isTuple) || atom.IsEmpty();
 	int numWritten = 0;
 	if (useQuotes)
 		numWritten += tSystem::tWriteFile(ScriptFile, &qu, 1);

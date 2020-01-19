@@ -21,6 +21,9 @@ bool CxImageBMP::Encode(CxFile * hFile)
 
 	BITMAPFILEHEADER	hdr;
 
+	// @tacent
+	memset(&hdr, 0, sizeof(hdr));
+
 	hdr.bfType = 0x4d42;   // 'BM' WINDOWS_BITMAP_SIGNATURE
 	hdr.bfSize = GetSize() + 14 /*sizeof(BITMAPFILEHEADER)*/;
 	hdr.bfReserved1 = hdr.bfReserved2 = 0;

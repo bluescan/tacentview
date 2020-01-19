@@ -29,6 +29,7 @@ namespace TexView
 
 	extern Settings Config;
 	extern TacitImage* CurrImage;
+	extern tString ImagesDir;
 	extern tList<TacitImage> Images;
 	extern tCommand::tParam ImageFileParam;
 	extern tColouri PixelColour;
