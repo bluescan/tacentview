@@ -30,10 +30,12 @@ namespace TexView
 	extern Settings Config;
 	extern TacitImage* CurrImage;
 	extern tString ImagesDir;
+	extern tList<tStringItem> ImagesSubDirs;
 	extern tList<TacitImage> Images;
 	extern tCommand::tParam ImageFileParam;
 	extern tColouri PixelColour;
 	extern TacitImage DefaultThumbnailImage;
+	extern TacitImage UpFolderImage;
 
 	extern const tMath::tVector4 ColourEnabledTint;
 	extern const tMath::tVector4 ColourDisabledTint;
@@ -54,5 +56,6 @@ namespace TexView
 	bool ChangeScreenMode(bool fullscreeen, bool force = false);
 	void SortImages(Settings::SortKeyEnum, bool ascending);
 	bool DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin);
+	void SetWindowTitle();
 	tMath::tVector2 GetDialogOrigin(float index);
 }

@@ -25,7 +25,7 @@
 using namespace tMath;
 
 
-void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY, float zoom)
+void TexView::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY, float zoom)
 {
 	// This overlay function is pretty much taken from the DearImGui demo code.
 	const float margin = 6.0f;
@@ -47,10 +47,10 @@ void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, i
 		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
 		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollbar;
 
-	if (ImGui::Begin("InfoOverlay", popen, flags))
+	if (ImGui::Begin("ImageDetails", popen, flags))
 	{
-		ImGui::Text("Information Overlay");
-		ImGui::Text("Right-Click to Change Anchor");
+		ImGui::Text("Image Details");
+		ShowToolTip("Right-Click to Change Anchor");
 		ImGui::Separator();
 
 		if (CurrImage)
@@ -123,10 +123,11 @@ void TexView::ShowCheatSheetPopup(bool* popen)
 		ImGui::Text("Alt-F4");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Quit");
 		ImGui::Text("Ctrl-S");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Save As...");
 		ImGui::Text("Alt-S");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Save All...");
-		ImGui::Text("I");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Info Overlay");
+		ImGui::Text("I");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Image Details");
 		ImGui::Text("T");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Tile");
-		ImGui::Text("L");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Log");
+		ImGui::Text("N");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Nav Bar");
 		ImGui::Text("F");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom Fit");
+		ImGui::Text("L");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Show Debug Log");
 		ImGui::Text("D");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom Downscale Only");
 		ImGui::Text("Z");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom 1:1 Pixels");
 		ImGui::Text("C");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Contact Sheet...");
@@ -338,69 +339,111 @@ void TexView::DoDeleteFileNoRecycleModal()
 }
 
 
-// This licence applies to the ViewerLog class.
-//
-// Copyright (c) 2014-2019 Omar Cornut
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
-// documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
-// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
-// permit persons to whom the Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
-// Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-// WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-void TexView::ViewerLog::Clear()
+// Parts of this class are a modification of the one that ships with Dear ImGui. The DearImGui
+// licence (MIT) may be found in the txt file Licence_DearImGui_MIT.txt in the Data folder.
+void TexView::NavLogBar::ClearLog()
 {
-	Buf.clear();
-	LineOffsets.clear();
-	LineOffsets.push_back(0);
+	LogBuf.clear();
+	LogLineOffsets.clear();
+	LogLineOffsets.push_back(0);
 }
 
 
-void TexView::ViewerLog::AddLog(const char* fmt, ...)
+void TexView::NavLogBar::AddLog(const char* fmt, ...)
 {
-	int oldSize = Buf.size();
+	int oldSize = LogBuf.size();
 	va_list args;
 	va_start(args, fmt);
-	Buf.appendfv(fmt, args);
+	LogBuf.appendfv(fmt, args);
 	va_end(args);
 
-	for (int newSize = Buf.size(); oldSize < newSize; oldSize++)
-		if (Buf[oldSize] == '\n')
-			LineOffsets.push_back(oldSize + 1);
+	for (int newSize = LogBuf.size(); oldSize < newSize; oldSize++)
+		if (LogBuf[oldSize] == '\n')
+			LogLineOffsets.push_back(oldSize + 1);
 
-	ScrollToBottom = true;
+	LogScrollToBottom = true;
 }
 
 
-void TexView::ViewerLog::Draw(const char* title, bool* popen)
+void TexView::NavLogBar::Draw()
+{
+	ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 14.0f);
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
+
+	if
+	(
+		ImGui::ImageButton(ImTextureID(UpFolderImage.Bind()), tVector2(17,17), tVector2(0,1), tVector2(1,0), 1,
+		TexView::ColourBG, tVector4(1.00f, 1.00f, 1.00f, 1.00f))
+	)
+	{
+		tString upDir = tSystem::tGetUpDir(ImagesDir);
+		if (!upDir.IsEmpty())
+		{
+			ImageFileParam.Param = upDir + "dummyfile.txt";
+			PopulateImages();
+			SetCurrentImage();
+			SetWindowTitle();
+		}
+	}
+	ImGui::SameLine();
+
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
+
+	ImGui::Text("%s", ImagesDir.Chars());
+	ImGui::SameLine();
+
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
+
+	if (ImagesSubDirs.NumItems() > 0)
+	{
+		if (ImGui::BeginCombo("##combo", nullptr, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightLargest | ImGuiComboFlags_NoPreview))
+		{
+			for (tStringItem* subDir = ImagesSubDirs.First(); subDir; subDir = subDir->Next())
+			{
+				bool isSelected = false;
+				if (ImGui::Selectable(subDir->Chars(), isSelected))
+				{
+					// Selection made. This only runs once.
+					ImageFileParam.Param = ImagesDir + *subDir + "/" + "dummyfile.txt";
+					PopulateImages();
+					SetCurrentImage();
+					SetWindowTitle();
+					break;
+				}
+			}
+			ImGui::EndCombo();
+		}
+	}
+
+	if (ShowLog)
+		DrawLog();
+}
+
+
+void TexView::NavLogBar::DrawLog()
 {
 	if (ImGui::Button("Clear"))
-		Clear();
+		ClearLog();
 
 	ImGui::SameLine();
 	bool copy = ImGui::Button("Copy");
 	ImGui::SameLine();
-	Filter.Draw("Filter", -100.0f);
+	LogFilter.Draw("Filter", -100.0f);
 	ImGui::Separator();
 	ImGui::BeginChild("scrolling", tVector2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
 	if (copy)
 		ImGui::LogToClipboard();
 
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2(0, 0));
-	const char* buf = Buf.begin();
-	const char* bufEnd = Buf.end();
-	if (Filter.IsActive())
+	const char* buf = LogBuf.begin();
+	const char* bufEnd = LogBuf.end();
+	if (LogFilter.IsActive())
 	{
-		for (int lineNo = 0; lineNo < LineOffsets.Size; lineNo++)
+		for (int lineNo = 0; lineNo < LogLineOffsets.Size; lineNo++)
 		{
-			const char* lineStart = buf + LineOffsets[lineNo];
-			const char* lineEnd = (lineNo + 1 < LineOffsets.Size) ? (buf + LineOffsets[lineNo + 1] - 1) : bufEnd;
-			if (Filter.PassFilter(lineStart, lineEnd))
+			const char* lineStart = buf + LogLineOffsets[lineNo];
+			const char* lineEnd = (lineNo + 1 < LogLineOffsets.Size) ? (buf + LogLineOffsets[lineNo + 1] - 1) : bufEnd;
+			if (LogFilter.PassFilter(lineStart, lineEnd))
 				ImGui::TextUnformatted(lineStart, lineEnd);
 		}
 	}
@@ -418,13 +461,13 @@ void TexView::ViewerLog::Draw(const char* title, bool* popen)
 		// don't use the clipper. Storing or skimming through the search result would make it possible and would be
 		// recommended if you want to search through tens of thousands of entries.
 		ImGuiListClipper clipper;
-		clipper.Begin(LineOffsets.Size);
+		clipper.Begin(LogLineOffsets.Size);
 		while (clipper.Step())
 		{
 			for (int lineNo = clipper.DisplayStart; lineNo < clipper.DisplayEnd; lineNo++)
 			{
-				const char* lineStart = buf + LineOffsets[lineNo];
-				const char* lineEnd = (lineNo + 1 < LineOffsets.Size) ? (buf + LineOffsets[lineNo + 1] - 1) : bufEnd;
+				const char* lineStart = buf + LogLineOffsets[lineNo];
+				const char* lineEnd = (lineNo + 1 < LogLineOffsets.Size) ? (buf + LogLineOffsets[lineNo + 1] - 1) : bufEnd;
 				ImGui::TextUnformatted(lineStart, lineEnd);
 			}
 		}
@@ -432,9 +475,9 @@ void TexView::ViewerLog::Draw(const char* title, bool* popen)
 	}
 	ImGui::PopStyleVar();
 
-	if (ScrollToBottom)
+	if (LogScrollToBottom)
 		ImGui::SetScrollHereY(1.0f);
 
-	ScrollToBottom = false;
+	LogScrollToBottom = false;
 	ImGui::EndChild();
 }

@@ -25,8 +25,8 @@ namespace TexView
 		int WindowY;
 		int WindowW;
 		int WindowH;
-		bool ShowLog;
-		bool InfoOverlayShow;
+		bool ShowNavBar;
+		bool ShowImageDetails;
 		bool ContentViewShow;
 		float ThumbnailWidth;
 		enum class SortKeyEnum

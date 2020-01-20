@@ -17,7 +17,7 @@
 
 namespace TexView
 {
-	void ShowInfoOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY, float zoom);
+	void ShowImageDetailsOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY, float zoom);
 	void ShowCheatSheetPopup(bool* popen);
 	void ShowAboutPopup(bool* popen);
 	void ShowPreferencesDialog(bool* popen);
@@ -25,34 +25,27 @@ namespace TexView
 	void DoDeleteFileModal();
 	void DoDeleteFileNoRecycleModal();
 
-	// This class is a modification of the one that ships with Dear ImGui. I ahve included the orginal licence below.
-	//
-	// Copyright (c) 2014-2019 Omar Cornut
-	// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
-	// documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
-	// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
-	// permit persons to whom the Software is furnished to do so, subject to the following conditions:
-	//
-	// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
-	// Software.
-	//
-	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-	// WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-	// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-	struct ViewerLog
+	// Parts of this class are a modification of the one that ships with Dear ImGui. The DearImGui
+	// licence (MIT) may be found in the txt file Licence_DearImGui_MIT.txt in the Data folder.
+	class NavLogBar
 	{
-		ViewerLog()																											: ScrollToBottom(true) { Clear(); }
-
-		void Clear();
+	public:
+		NavLogBar()												: LogScrollToBottom(true) { ClearLog(); }
+		void Draw();
+		void SetShowLog(bool enabled)							{ ShowLog = enabled; }
+		bool GetShowLog() const									{ return ShowLog; }
 		void AddLog(const char* fmt, ...) IM_FMTARGS(2);
-		void Draw(const char* title, bool* popen = nullptr);
 
-		ImGuiTextBuffer Buf;
-		ImGuiTextFilter Filter;
+	private:
+		void ClearLog();
+		void DrawLog();
+
+		bool ShowLog = false;
+		ImGuiTextBuffer LogBuf;
+		ImGuiTextFilter LogFilter;
 
 		// Index to lines offset. We maintain this with AddLog() calls, allowing us to have a random access on lines.
-		ImVector<int> LineOffsets;
-		bool ScrollToBottom;
+		ImVector<int> LogLineOffsets;
+		bool LogScrollToBottom;
 	};
 }

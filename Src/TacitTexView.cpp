@@ -47,9 +47,9 @@ namespace TexView
 	int MajorVersion							= 1;
 	int MinorVersion							= 0;
 	int Revision								= 5;
-	bool LogWindowOpen							= true;
-	ViewerLog LogWindow;
+	NavLogBar NavBar;
 	tString ImagesDir;
+	tList<tStringItem> ImagesSubDirs;
 	tList<TacitImage> Images;
 	tItList<TacitImage> ImagesLoadTimeSorted	(false);
 	tuint256 ImagesHash							= 0;
@@ -73,6 +73,7 @@ namespace TexView
 	TacitImage StopImage;
 	TacitImage PlayImage;
 	TacitImage ContentViewImage;
+	TacitImage UpFolderImage;
 	TacitImage DefaultThumbnailImage;
 
 	GLFWwindow* Window							= nullptr;
@@ -88,8 +89,6 @@ namespace TexView
 	bool Request_ContactSheetModal				= false;
 	bool Request_DeleteFileModal				= false;
 	bool Request_DeleteFileNoRecycleModal		= false;
-	//bool ContactDialog							= false;
-	//bool JustOpenedContactDialog				= false;
 	bool PrefsDialog							= false;
 	bool RMBDown								= false;
 	int DragAnchorX								= 0;
@@ -126,8 +125,9 @@ namespace TexView
 	const float ZoomMax							= 2500.0f;
 
 	void DrawBackground(float bgX, float bgY, float bgW, float bgH);
-	void DrawTextureViewerLog(float x, float y, float w, float h);
-	void PrintRedirectCallback(const char* text, int numChars)															{ LogWindow.AddLog("%s", text); }
+	void DrawNavBar(float x, float y, float w, float h);
+	int GetNavBarHeight();
+	void PrintRedirectCallback(const char* text, int numChars)															{ NavBar.AddLog("%s", text); }
 	void GlfwErrorCallback(int error, const char* description)															{ tPrintf("Glfw Error %d: %s\n", error, description); }
 
 	// When compare functions are used to sort, they result in ascending order if they return a < b.
@@ -149,7 +149,7 @@ namespace TexView
 	bool Compare_ImageFileSizeDescending(const TacitImage& a, const TacitImage& b)										{ return a.FileSizeB > b.FileSizeB; }
 	typedef bool ImageCompareFn(const TacitImage&, const TacitImage&);
 
-	void SetWindowTitle();
+	void PopulateImagesSubDirs();
 	bool OnPrevious(bool circ = false);
 	bool OnNext(bool circ = false);
 	bool OnSkipBegin();
@@ -178,15 +178,31 @@ tVector2 TexView::GetDialogOrigin(float index)
 }
 
 
-void TexView::DrawTextureViewerLog(float x, float y, float w, float h)
+int TexView::GetNavBarHeight()
+{
+	if (FullscreenMode || !Config.ShowNavBar)
+		return 0;
+
+	return NavBar.GetShowLog() ? 150 : 24;
+}
+
+
+void TexView::DrawNavBar(float x, float y, float w, float h)
 {
 	// We take advantage of the fact that multiple calls to Begin()/End() are appending to the same window.
 	ImGui::SetNextWindowSize(tVector2(w, h), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(tVector2(x, y), ImGuiCond_Always);
 
-	ImGui::Begin("InfoLog", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
-	LogWindow.Draw("Log", &LogWindowOpen);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(1, 1));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
+	ImGui::Begin("NavBar", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar);
+	NavBar.Draw();
 	ImGui::End();
+
+	ImGui::PopStyleVar(3);
+
 }
 
 
@@ -220,6 +236,24 @@ tuint256 TexView::ComputeImagesHash(const tList<tStringItem>& files)
 }
 
 
+void TexView::PopulateImagesSubDirs()
+{
+	ImagesSubDirs.Clear();
+
+	tList<tStringItem> foundDirs;
+	tFindDirs(foundDirs, ImagesDir, false);
+	for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
+	{
+		tString relPath = tGetRelativePath(ImagesDir, *dir);
+		relPath = tGetSimplifiedPath(relPath);
+		if (relPath[relPath.Length()-1] == '/')
+			relPath.ExtractSuffix(1);
+
+		ImagesSubDirs.Append(new tStringItem(relPath));
+	}
+}
+
+
 void TexView::PopulateImages()
 {
 	Images.Clear();
@@ -227,6 +261,7 @@ void TexView::PopulateImages()
 
 	tList<tStringItem> foundFiles;
 	ImagesDir = FindImageFiles(foundFiles);
+	PopulateImagesSubDirs();
 
 	// We sort here so ComputeImagesHash always returns consistent values.
 	foundFiles.Sort(Compare_AlphabeticalAscending, tListSortAlgorithm::Merge);
@@ -549,7 +584,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	glClearColor(ColourClear.x, ColourClear.y, ColourClear.z, ColourClear.w);
 	glClear(GL_COLOR_BUFFER_BIT);
-	int bottomUIHeight	= (FullscreenMode || !Config.ShowLog) ? 0 : 150;
+	int bottomUIHeight	= GetNavBarHeight();
 	int topUIHeight		= FullscreenMode ? 0 : 26;
 
 	ImGui_ImplOpenGL2_NewFrame();		
@@ -744,7 +779,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 		PixelColour = CurrImage->GetPixel(imgxi, imgyi);
 
-		if ((DisappearCountdown > 0.0) || Config.InfoOverlayShow)
+		if ((DisappearCountdown > 0.0) || Config.ShowImageDetails)
 		{
 			CursorImage.Bind();
 			glBegin(GL_QUADS);
@@ -932,8 +967,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::BeginMenu("View"))
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
-				ImGui::MenuItem("Log", "L", &Config.ShowLog, true);
-				ImGui::MenuItem("Info Overlay", "I", &Config.InfoOverlayShow, true);
+				ImGui::MenuItem("Nav Bar", "N", &Config.ShowNavBar, true);
+				ImGui::MenuItem("Image Details", "I", &Config.ShowImageDetails, true);
 				ImGui::MenuItem("Content View", "V", &Config.ContentViewShow, true);
 
 				ImGui::Separator();
@@ -1132,10 +1167,10 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if
 			(
 				ImGui::ImageButton(ImTextureID(InfoOverlayImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
-				Config.InfoOverlayShow ? ColourPressedBG : ColourBG, tVector4(1.00f, 1.00f, 1.00f, 1.00f))
+				Config.ShowImageDetails ? ColourPressedBG : ColourBG, tVector4(1.00f, 1.00f, 1.00f, 1.00f))
 			)
 			{
-				Config.InfoOverlayShow = !Config.InfoOverlayShow;
+				Config.ShowImageDetails = !Config.ShowImageDetails;
 			}
 			ShowToolTip("Information Overlay");
 		}
@@ -1144,12 +1179,12 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::PopStyleVar();
 	}
 
-	if (!FullscreenMode && Config.ShowLog)
-		DrawTextureViewerLog(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
+	if (!FullscreenMode && Config.ShowNavBar)
+		DrawNavBar(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
 
 	// We allow the overlay and cheatsheet in fullscreen.
-	if (Config.InfoOverlayShow)
-		ShowInfoOverlay(&Config.InfoOverlayShow, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), imgxi, imgyi, ZoomPercent);
+	if (Config.ShowImageDetails)
+		ShowImageDetailsOverlay(&Config.ShowImageDetails, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), imgxi, imgyi, ZoomPercent);
 
 	if (Config.ContentViewShow)
 		ShowContentViewDialog(&Config.ContentViewShow);
@@ -1348,16 +1383,22 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 				ResetPan();
 			break;
 
-		case GLFW_KEY_L:
-			Config.ShowLog = !Config.ShowLog;
+		case GLFW_KEY_N:
+			Config.ShowNavBar = !Config.ShowNavBar;
 			break;
 
 		case GLFW_KEY_I:
-			TexView::Config.InfoOverlayShow = !TexView::Config.InfoOverlayShow;
+			TexView::Config.ShowImageDetails = !TexView::Config.ShowImageDetails;
 			break;
 
 		case GLFW_KEY_V:
 			TexView::Config.ContentViewShow = !TexView::Config.ContentViewShow;
+			break;
+
+		case GLFW_KEY_L:
+			NavBar.SetShowLog( !NavBar.GetShowLog() );
+			if (NavBar.GetShowLog() && !Config.ShowNavBar)
+				Config.ShowNavBar = true;
 			break;
 
 		case GLFW_KEY_F:
@@ -1472,7 +1513,7 @@ void TexView::FileDropCallback(GLFWwindow* window, int count, const char** files
 		return;
 
 	tString file = tString(files[0]);
-	tString path = tSystem::tGetDir(file);
+	//tString path = tSystem::tGetDir(file);
 
 	ImageFileParam.Param = file;
 	PopulateImages();
@@ -1488,6 +1529,7 @@ void TexView::FocusCallback(GLFWwindow* window, int gotFocus)
 	// If we got focus, rescan the current folder to see if the hash is different.
 	tList<tStringItem> files;
 	ImagesDir = FindImageFiles(files);
+	PopulateImagesSubDirs();
 
 	// We sort here so ComputeImagesHash always returns consistent values.
 	files.Sort(Compare_AlphabeticalAscending, tListSortAlgorithm::Merge);
@@ -1660,6 +1702,7 @@ int main(int argc, char** argv)
 	TexView::StopImage.Load(dataDir + "Stop.png");
 	TexView::PlayImage.Load(dataDir + "Play.png");
 	TexView::ContentViewImage.Load(dataDir + "ContentView.png");
+	TexView::UpFolderImage.Load(dataDir + "UpFolder.png");
 	TexView::DefaultThumbnailImage.Load(dataDir + "DefaultThumbnail.png");
 
 	TexView::PopulateImages();

@@ -35,8 +35,8 @@ void TexView::Settings::Reset()
 	WindowX					= 100;
 	WindowY					= 100;
 
-	ShowLog					= false;
-	InfoOverlayShow			= false;
+	ShowNavBar				= true;
+	ShowImageDetails		= true;
 	ContentViewShow			= false;
 	ThumbnailWidth			= 128.0f;
 	SortKey					= 0;
@@ -85,8 +85,8 @@ void TexView::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(WindowY);
 				ReadItem(WindowW);
 				ReadItem(WindowH);
-				ReadItem(ShowLog);
-				ReadItem(InfoOverlayShow);
+				ReadItem(ShowNavBar);
+				ReadItem(ShowImageDetails);
 				ReadItem(ContentViewShow);
 				ReadItem(ThumbnailWidth);
 				ReadItem(SortKey);
@@ -137,8 +137,8 @@ bool TexView::Settings::Save(const tString& filename)
 	WriteItem(WindowY);
 	WriteItem(WindowW);
 	WriteItem(WindowH);
-	WriteItem(ShowLog);
-	WriteItem(InfoOverlayShow);
+	WriteItem(ShowNavBar);
+	WriteItem(ShowImageDetails);
 	WriteItem(ContentViewShow);
 	WriteItem(ThumbnailWidth);
 	WriteItem(SortKey);
