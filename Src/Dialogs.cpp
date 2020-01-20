@@ -386,16 +386,13 @@ void TexView::NavLogBar::Draw()
 		}
 	}
 	ImGui::SameLine();
-
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
-
 	ImGui::Text("%s", ImagesDir.Chars());
-	ImGui::SameLine();
-
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
 
 	if (ImagesSubDirs.NumItems() > 0)
 	{
+		ImGui::SameLine();
 		if (ImGui::BeginCombo("##combo", nullptr, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightLargest | ImGuiComboFlags_NoPreview))
 		{
 			for (tStringItem* subDir = ImagesSubDirs.First(); subDir; subDir = subDir->Next())
