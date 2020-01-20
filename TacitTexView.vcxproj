@@ -181,8 +181,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\ContactSheet.h" />
+    <ClInclude Include="Src\SaveDialogs.h" />
     <ClInclude Include="Src\Dialogs.h" />
-    <ClInclude Include="Src\ImGuiLogWindow.h" />
     <ClInclude Include="Src\Settings.h" />
     <ClInclude Include="Src\TacitImage.h" />
     <ClInclude Include="Src\TacitTexView.h" />
@@ -199,8 +199,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\ContactSheet.cpp" />
+    <ClCompile Include="Src\SaveDialogs.cpp" />
     <ClCompile Include="Src\Dialogs.cpp" />
-    <ClCompile Include="Src\ImGuiLogWindow.cpp" />
     <ClCompile Include="Src\Settings.cpp" />
     <ClCompile Include="Src\TacitImage.cpp" />
     <ClCompile Include="Src\ContentView.cpp" />

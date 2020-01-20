@@ -15,12 +15,13 @@
 #include <Math/tVector2.h>
 #include "imgui.h"
 #include "ContactSheet.h"
-#include "Dialogs.h"
+#include "SaveDialogs.h"
 #include "TacitTexView.h"
 #include "TacitImage.h"
 using namespace tStd;
 using namespace tMath;
 using namespace tSystem;
+using namespace tImage;
 
 
 namespace TexView
@@ -43,17 +44,22 @@ void TexView::DoContactSheetModalDialog(bool justOpened)
 	static int numCols = 4;
 	static int finalWidth = 2048;
 	static int finalHeight = 2048;
-	if (justOpened && CurrImage)
+	tAssert(CurrImage);
+	tPicture* picture = CurrImage->GetPrimaryPicture();
+	tAssert(picture);
+	int picW = picture->GetWidth();
+	int picH = picture->GetHeight();
+	if (justOpened)
 	{
-		frameWidth = CurrImage->GetWidth();
-		frameHeight = CurrImage->GetHeight();
+		frameWidth = picW;
+		frameHeight = picH;
 		numRows = int(tMath::tCeiling(tMath::tSqrt(float(Images.Count()))));
 		numCols = int(tMath::tCeiling(tMath::tSqrt(float(Images.Count()))));
 	}
 
 	int contactWidth = frameWidth * numCols;
 	int contactHeight = frameHeight * numRows;
-	if (justOpened && CurrImage)
+	if (justOpened)
 	{
 		finalWidth = contactWidth;
 		finalHeight = contactHeight;
@@ -77,8 +83,8 @@ void TexView::DoContactSheetModalDialog(bool justOpened)
 
 	if (ImGui::Button("Read From Image") && CurrImage)
 	{
-		frameWidth = CurrImage->GetWidth();
-		frameHeight = CurrImage->GetHeight();
+		frameWidth = picW;
+		frameHeight = picH;
 		numRows = int(tMath::tCeiling(tMath::tSqrt(float(Images.Count()))));
 		numCols = int(tMath::tCeiling(tMath::tSqrt(float(Images.Count()))));
 	}
@@ -117,45 +123,9 @@ void TexView::DoContactSheetModalDialog(bool justOpened)
 	ImGui::SameLine();
 	ShowHelpMark("Filtering method to use when resizing images.");
 
-	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "gif" };
-	ImGui::Combo("File Type", &Config.SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
-	ImGui::SameLine();
-	ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
-
-	tString extension = ".tga";
-	switch (Config.SaveFileType)
-	{
-		case 0: extension = ".tga"; break;
-		case 1: extension = ".png"; break;
-		case 2: extension = ".bmp"; break;
-		case 3: extension = ".jpg"; break;
-		case 4: extension = ".gif"; break;
-	}
-
-	if (Config.SaveFileType == 0)
-		ImGui::Checkbox("RLE Compression", &Config.SaveFileTargaRLE);
-	else if (Config.SaveFileType == 3)
-		ImGui::SliderFloat("Quality", &Config.SaveFileJpgQuality, 0.0f, 100.0f, "%.1f");
-
+	tString extension = DoSaveFiletype();
 	ImGui::Separator();
-
-	// Output sub-folder
-	char subFolder[256]; tMemset(subFolder, 0, 256);
-	tStrncpy(subFolder, Config.SaveSubFolder.Chars(), 255);
-	ImGui::InputText("Folder", subFolder, 256);
-	Config.SaveSubFolder.Set(subFolder);
-	tString destDir = ImagesDir;
-	if (!Config.SaveSubFolder.IsEmpty())
-		destDir += Config.SaveSubFolder + "/";
-	tString toolTipText;
-	tsPrintf(toolTipText, "Save to %s", destDir.Chars());
-	ShowToolTip(toolTipText.Chars());
-	ImGui::SameLine();
-	if (ImGui::Button("Default"))
-		Config.SaveSubFolder.Set("Saved");
-	ImGui::SameLine();
-	if (ImGui::Button("This"))
-		Config.SaveSubFolder.Clear();
+	tString destDir = DoSubFolder();
 
 	static char filename[128] = "ContactSheet";
 	ImGui::InputText("Filename", filename, tNumElements(filename));

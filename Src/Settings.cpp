@@ -22,7 +22,13 @@ using namespace tMath;
 #define	WriteItem(name) writer.Comp(#name, name)
 
 
-void Settings::Reset()
+namespace TexView
+{
+	Settings Config;
+}
+
+
+void TexView::Settings::Reset()
 {
 	WindowW					= 1280;
 	WindowH					= 720;
@@ -54,7 +60,7 @@ void Settings::Reset()
 }
 
 
-void Settings::Reset(int screenW, int screenH)
+void TexView::Settings::Reset(int screenW, int screenH)
 {
 	Reset();
 	WindowX					= (screenW - WindowW) >> 1;
@@ -62,7 +68,7 @@ void Settings::Reset(int screenW, int screenH)
 }
 
 
-void Settings::Load(const tString& filename, int screenW, int screenH)
+void TexView::Settings::Load(const tString& filename, int screenW, int screenH)
 {
 	if (!tSystem::tFileExists(filename))
 	{
@@ -121,7 +127,7 @@ void Settings::Load(const tString& filename, int screenW, int screenH)
 }
 
 
-bool Settings::Save(const tString& filename)
+bool TexView::Settings::Save(const tString& filename)
 {
 	tScriptWriter writer(filename);
 	writer.Rem("Tacit Texture Viewer Configuration File");

@@ -16,62 +16,68 @@
 #include <Foundation/tString.h>
 
 
-struct Settings
+namespace TexView
 {
-	Settings()							{ Reset(); }
-	int WindowX;
-	int WindowY;
-	int WindowW;
-	int WindowH;
-	bool ShowLog;
-	bool InfoOverlayShow;
-	bool ContentViewShow;
-	float ThumbnailWidth;
-	enum class SortKeyEnum
+	struct Settings
 	{
-		Alphabetical,
-		FileModTime,
-		FileSize,
-		FileType
+		Settings()							{ Reset(); }
+		int WindowX;
+		int WindowY;
+		int WindowW;
+		int WindowH;
+		bool ShowLog;
+		bool InfoOverlayShow;
+		bool ContentViewShow;
+		float ThumbnailWidth;
+		enum class SortKeyEnum
+		{
+			Alphabetical,
+			FileModTime,
+			FileSize,
+			FileType
+		};
+		int SortKey;						// Matches SortKeyEnum values.
+		bool SortAscending;					// Sort direction.
+
+		int OverlayCorner;
+		bool Tile;
+
+		enum class BGStyle
+		{
+			None,
+			Checkerboard,
+			Black,
+			Grey,
+			White
+		};
+		int BackgroundStyle;
+		bool BackgroundExtend;				// Extend background past image bounds.
+		int ResampleFilter;					// Matches tImage::tPicture::tFilter.
+		bool ConfirmDeletes;
+		bool ConfirmFileOverwrites;
+		double SlidehowFrameDuration;
+
+		tString SaveSubFolder;
+		int SaveFileType;
+		bool SaveFileTargaRLE;
+		float SaveFileJpgQuality;
+		enum class SizeMode
+		{
+			Percent,
+			SetWidthAndHeight,
+			SetWidthRetainAspect,
+			SetHeightRetainAspect
+		};
+		int SaveAllSizeMode;
+		int MaxImageMemMB;					// Max image mem before unloading images.
+		int MaxCacheFiles;					// Max number of cache files before removing oldest.
+
+		void Load(const tString& filename, int screenWidth, int screenHeight);
+		bool Save(const tString& filename);
+		void Reset();
+		void Reset(int screenWidth, int screenHeight);
 	};
-	int SortKey;						// Matches SortKeyEnum values.
-	bool SortAscending;					// Sort direction.
 
-	int OverlayCorner;
-	bool Tile;
+	extern Settings Config;
+}
 
-	enum class BGStyle
-	{
-		None,
-		Checkerboard,
-		Black,
-		Grey,
-		White
-	};
-	int BackgroundStyle;
-	bool BackgroundExtend;				// Extend background past image bounds.
-	int ResampleFilter;					// Matches tImage::tPicture::tFilter.
-	bool ConfirmDeletes;
-	bool ConfirmFileOverwrites;
-	double SlidehowFrameDuration;
-
-	tString SaveSubFolder;
-	int SaveFileType;
-	bool SaveFileTargaRLE;
-	float SaveFileJpgQuality;
-	enum class SizeMode
-	{
-		Percent,
-		SetWidthAndHeight,
-		SetWidthRetainAspect,
-		SetHeightRetainAspect
-	};
-	int SaveAllSizeMode;
-	int MaxImageMemMB;					// Max image mem before unloading images.
-	int MaxCacheFiles;					// Max number of cache files before removing oldest.
-
-	void Load(const tString& filename, int screenWidth, int screenHeight);
-	bool Save(const tString& filename);
-	void Reset();
-	void Reset(int screenWidth, int screenHeight);
-};

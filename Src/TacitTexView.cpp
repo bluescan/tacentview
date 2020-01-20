@@ -34,7 +34,7 @@
 #include "Dialogs.h"
 #include "ContactSheet.h"
 #include "ContentView.h"
-#include "ImGuiLogWindow.h"
+#include "SaveDialogs.h"
 #include "Settings.h"
 using namespace tStd;
 using namespace tSystem;
@@ -47,9 +47,8 @@ namespace TexView
 	int MajorVersion							= 1;
 	int MinorVersion							= 0;
 	int Revision								= 5;
-	Settings Config;
 	bool LogWindowOpen							= true;
-	TexView::ImGuiLog LogWindow;
+	ViewerLog LogWindow;
 	tString ImagesDir;
 	tList<TacitImage> Images;
 	tItList<TacitImage> ImagesLoadTimeSorted	(false);

@@ -1,6 +1,6 @@
-// Dialogs.h
+// Dialogs.cpp
 //
-// Viewer dialogs including cheatsheet, about, save-as, and the image information overlay.
+// Various dialogs and helpers including a log window, info overlay, cheatsheet, help window, about window, and prefs.
 //
 // Copyright (c) 2019, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
@@ -12,27 +12,17 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL definitions.
-#include <Math/tVector2.h>
 #include <Foundation/tVersion.h>
-#include <System/tFile.h>
+#include <Math/tVector2.h>
+#include <Math/tColour.h>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include "imgui.h"
 #include "Dialogs.h"
+#include "Settings.h"
 #include "TacitImage.h"
 #include "TacitTexView.h"
-using namespace tStd;
-using namespace tSystem;
 using namespace tMath;
-using namespace tImage;
-
-
-namespace TexView
-{
-	void SaveImageTo(tPicture* picture, const tString& outFile, int finalWidth, int finalHeight);
-	void SaveAllImages(const tString& destDir, const tString& extension, float percent, int width, int height);
-	void GetFilesNeedingOverwrite(const tString& destDir, tListZ<tStringItem>& overwriteFiles, const tString& extension);
-}
 
 
 void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY, float zoom)
@@ -103,49 +93,10 @@ void TexView::ShowInfoOverlay(bool* popen, float x, float y, float w, float h, i
 }
 
 
-void TexView::ColourCopyAs()
-{
-	tColourf floatCol(PixelColour);
-	ImGui::Text("Copy As...");
-	int ri = PixelColour.R; int gi = PixelColour.G; int bi = PixelColour.B; int ai = PixelColour.A;
-	float rf = floatCol.R; float gf = floatCol.G; float bf = floatCol.B; float af = floatCol.A;
-	tString cpyTxt;
-	tsPrintf(cpyTxt, "%02X%02X%02X%02X", ri, gi, bi, ai);
-	if (ImGui::Selectable(cpyTxt.Chars()))
-		ImGui::SetClipboardText(cpyTxt.Chars());
-	tsPrintf(cpyTxt, "%02X%02X%02X", ri, gi, bi);
-	if (ImGui::Selectable(cpyTxt.Chars()))
-		ImGui::SetClipboardText(cpyTxt.Chars());
-	tsPrintf(cpyTxt, "#%02X%02X%02X%02X", ri, gi, bi, ai);
-	if (ImGui::Selectable(cpyTxt.Chars()))
-		ImGui::SetClipboardText(cpyTxt.Chars());
-	tsPrintf(cpyTxt, "#%02X%02X%02X", ri, gi, bi);
-	if (ImGui::Selectable(cpyTxt.Chars()))
-		ImGui::SetClipboardText(cpyTxt.Chars());
-	tsPrintf(cpyTxt, "0x%02X%02X%02X%02X", ri, gi, bi, ai);
-	if (ImGui::Selectable(cpyTxt.Chars()))
-		ImGui::SetClipboardText(cpyTxt.Chars());
-	tsPrintf(cpyTxt, "%.3f, %.3f, %.3f, %.3f", rf, gf, bf, af);
-	if (ImGui::Selectable(cpyTxt.Chars()))
-		ImGui::SetClipboardText(cpyTxt.Chars());
-	tsPrintf(cpyTxt, "%.3ff, %.3ff, %.3ff, %.3ff", rf, gf, bf, af);
-	if (ImGui::Selectable(cpyTxt.Chars()))
-		ImGui::SetClipboardText(cpyTxt.Chars());
-	tsPrintf(cpyTxt, "(%.3f, %.3f, %.3f, %.3f)", rf, gf, bf, af);
-	if (ImGui::Selectable(cpyTxt.Chars()))
-		ImGui::SetClipboardText(cpyTxt.Chars());
-	tsPrintf(cpyTxt, "(%.3ff, %.3ff, %.3ff, %.3ff)", rf, gf, bf, af);
-	if (ImGui::Selectable(cpyTxt.Chars()))
-		ImGui::SetClipboardText(cpyTxt.Chars());
-	ImGui::EndPopup();
-}
-
-
 void TexView::ShowCheatSheetPopup(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(1);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	// ImGui::SetNextWindowBgAlpha(0.6f);
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
 		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
@@ -190,7 +141,6 @@ void TexView::ShowAboutPopup(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(3);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	// ImGui::SetNextWindowBgAlpha(0.6f);
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
 		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoFocusOnAppearing	|
@@ -285,508 +235,40 @@ void TexView::ShowPreferencesDialog(bool* popen)
 }
 
 
-void TexView::DoSaveAsModalDialog(bool justOpened)
+void TexView::ColourCopyAs()
 {
-	tAssert(CurrImage);
-	tPicture* picture = CurrImage->GetPrimaryPicture();
-	tAssert(picture);
-
-	static int dstW = 512;
-	static int dstH = 512;
-	int srcW = picture->GetWidth();
-	int srcH = picture->GetHeight();
-
-	if (justOpened)
-	{
-		dstW = picture->GetWidth();
-		dstH = picture->GetHeight();
-	}
-	ImGui::InputInt("Width", &dstW); ImGui::SameLine();
-	ShowHelpMark("Final output width in pixels.\nIf dimensions match current no scaling.");
-
-	ImGui::InputInt("Final Height", &dstH); ImGui::SameLine();
-	ShowHelpMark("Final output height in pixels.\nIf dimensions match current no scaling.");
-
-	if (ImGui::Button("Prev Pow2"))
-	{
-		dstW = tMath::tNextLowerPower2(srcW);
-		dstH = tMath::tNextLowerPower2(srcH);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Next Pow2"))
-	{
-		dstW = tMath::tNextHigherPower2(srcW);
-		dstH = tMath::tNextHigherPower2(srcH);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Reset"))
-	{
-		dstW = srcW;
-		dstH = srcH;
-	}
-
-	ImGui::Separator();
-
-	if ((dstW != srcW) || (dstH != srcH))
-	{
-		// Matches tImage::tPicture::tFilter.
-		const char* filterItems[] = { "NearestNeighbour", "Box", "Bilinear", "Bicubic", "Quadratic", "Hamming" };
-		ImGui::Combo("Filter", &Config.ResampleFilter, filterItems, tNumElements(filterItems));
-		ImGui::SameLine();
-		ShowHelpMark("Filtering method to use when resizing images.");
-	}
-
-	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "gif" };
-	ImGui::Combo("File Type", &Config.SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
-	ImGui::SameLine();
-	ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
-
-	tString extension = ".tga";
-	switch (Config.SaveFileType)
-	{
-		case 0: extension = ".tga"; break;
-		case 1: extension = ".png"; break;
-		case 2: extension = ".bmp"; break;
-		case 3: extension = ".jpg"; break;
-		case 4: extension = ".gif"; break;
-	}
-
-	if (Config.SaveFileType == 0)
-		ImGui::Checkbox("RLE Compression", &Config.SaveFileTargaRLE);
-	else if (Config.SaveFileType == 3)
-		ImGui::SliderFloat("Quality", &Config.SaveFileJpgQuality, 0.0f, 100.0f, "%.1f");
-
-	ImGui::Separator();
-
-	// Output sub-folder
-	char subFolder[256]; tMemset(subFolder, 0, 256);
-	tStrncpy(subFolder, Config.SaveSubFolder.Chars(), 255);
-	ImGui::InputText("Folder", subFolder, 256);
-	Config.SaveSubFolder.Set(subFolder);
-	tString destDir = ImagesDir;
-	if (!Config.SaveSubFolder.IsEmpty())
-		destDir += Config.SaveSubFolder + "/";
-	tString toolTipText;
-	tsPrintf(toolTipText, "Save to %s", destDir.Chars());
-	ShowToolTip(toolTipText.Chars());
-	ImGui::SameLine();
-	if (ImGui::Button("Default"))
-		Config.SaveSubFolder.Set("Saved");
-	ImGui::SameLine();
-	if (ImGui::Button("This"))
-		Config.SaveSubFolder.Clear();
-
-	static char filename[128] = "Filename";
-	if (justOpened)
-	{
-		tString baseName = tSystem::tGetFileBaseName(CurrImage->Filename);
-		tStrcpy(filename, baseName.Chars());
-	}
-	ImGui::InputText("Filename", filename, tNumElements(filename));
-	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
-
-	ImGui::NewLine();
-	if (ImGui::Button("Cancel", tVector2(100, 0)))
-		ImGui::CloseCurrentPopup();
-	ImGui::SameLine();
-	
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-
-	tString outFile = destDir + tString(filename) + extension;
-	bool closeThisModal = false;
-	if (ImGui::Button("Save", tVector2(100, 0)))
-	{
-		bool dirExists = tDirExists(destDir);
-		if (!dirExists)
-			dirExists = tCreateDir(destDir);
-
-		if (dirExists)
-		{
-			if (tFileExists(outFile) && Config.ConfirmFileOverwrites)
-			{
-				ImGui::OpenPopup("Overwrite File");
-			}
-			else
-			{
-				SaveImageTo(picture, outFile, dstW, dstH);
-				closeThisModal = true;
-			}
-		}
-	}
-
-	// The unused isOpen bool is just so we get a close button in ImGui. 
-	bool isOpen = true;
-	if (ImGui::BeginPopupModal("Overwrite File", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
-	{
-		bool pressedOK = false, pressedCancel = false;
-		DoOverwriteFileModal(outFile, pressedOK, pressedCancel);
-		if (pressedOK)
- 			SaveImageTo(picture, outFile, dstW, dstH);
-		if (pressedOK || pressedCancel)
-			closeThisModal = true;
-	}
-
-	if (closeThisModal)
-		ImGui::CloseCurrentPopup();
-
-	ImGui::EndPopup();
-}
-
-
-void TexView::DoSaveAllModalDialog(bool justOpened)
-{
-	ImGui::Text("Save all %d images to the image type you select.", Images.GetNumItems()); ImGui::SameLine();
-	ShowHelpMark
-	(
-		"Images may be resized based on the Size Mode:\n"
-		"\n"
-		"  Percent of Original\n"
-		"  Use 100% for no scaling/resampling. Less\n"
-		"  than 100% downscales. Greater than upscales.\n"
-		"\n"
-		"  Set Width and Height\n"
-		"  Scales all images to specified width and\n"
-		"  height, possibly non-uniformly.\n"
-		"\n"
-		"  Set Width - Retain Aspect\n"
-		"  All images will have specified width. Always\n"
-		"  uniform scale. Varying height.\n"
-		"\n"
-		"  Set Height - Retain Aspect\n"
-		"  All images will have specified height. Always\n"
-		"  uniform scale. Varying width.\n"
-	);
-
-	ImGui::Separator();
-
-	static int width = 512;
-	static int height = 512;
-	static float percent = 100.0f;
-	const char* sizeModeNames[] = { "Percent of Original", "Set Width and Height", "Set Width - Retain Aspect", "Set Height - Retain Aspect" };
-	ImGui::Combo("Size Mode", &Config.SaveAllSizeMode, sizeModeNames, tNumElements(sizeModeNames));
-	switch (Settings::SizeMode(Config.SaveAllSizeMode))
-	{
-		case Settings::SizeMode::Percent:
-			ImGui::InputFloat("Percent", &percent, 1.0f, 10.0f, "%.1f");	ImGui::SameLine();	ShowHelpMark("Percent of original size.");
-			break;
-
-		case Settings::SizeMode::SetWidthAndHeight:
-			ImGui::InputInt("Width", &width);	ImGui::SameLine();	ShowHelpMark("Output width in pixels for all images.");
-			ImGui::InputInt("Height", &height);	ImGui::SameLine();	ShowHelpMark("Output height in pixels for all images.");
-			break;
-
-		case Settings::SizeMode::SetWidthRetainAspect:
-			ImGui::InputInt("Width", &width);	ImGui::SameLine();	ShowHelpMark("Output width in pixels for all images.");
-			break;
-
-		case Settings::SizeMode::SetHeightRetainAspect:
-			ImGui::InputInt("Height", &height);	ImGui::SameLine();	ShowHelpMark("Output height in pixels for all images.");
-			break;
-	};
-
-	ImGui::Separator();
-	if (!((Settings::SizeMode(Config.SaveAllSizeMode) == Settings::SizeMode::Percent) && (percent == 100.0f)))
-	{
-		// Matches tImage::tPicture::tFilter.
-		const char* filterItems[] = { "NearestNeighbour", "Box", "Bilinear", "Bicubic", "Quadratic", "Hamming" };
-		ImGui::Combo("Filter", &Config.ResampleFilter, filterItems, tNumElements(filterItems));
-		ImGui::SameLine();
-		ShowHelpMark("Filtering method to use when resizing images.");
-	}
-	tMath::tiClampMin(width, 4);
-	tMath::tiClampMin(height, 4);
-
-	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "gif" };
-	ImGui::Combo("File Type", &Config.SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
-	ImGui::SameLine();
-	ShowHelpMark("Output image format. JPG and GIF do not support alpha channel.");
-
-	tString extension = ".tga";
-	switch (Config.SaveFileType)
-	{
-		case 0: extension = ".tga"; break;
-		case 1: extension = ".png"; break;
-		case 2: extension = ".bmp"; break;
-		case 3: extension = ".jpg"; break;
-		case 4: extension = ".gif"; break;
-	}
-
-	if (Config.SaveFileType == 0)
-		ImGui::Checkbox("RLE Compression", &Config.SaveFileTargaRLE);
-	else if (Config.SaveFileType == 3)
-		ImGui::SliderFloat("Quality", &Config.SaveFileJpgQuality, 0.0f, 100.0f, "%.1f");
-
-	ImGui::Separator();
-
-	// Output sub-folder
-	char subFolder[256]; tMemset(subFolder, 0, 256);
-	tStrncpy(subFolder, Config.SaveSubFolder.Chars(), 255);
-	ImGui::InputText("Folder", subFolder, 256);
-	Config.SaveSubFolder.Set(subFolder);
-	tString destDir = ImagesDir;
-	if (!Config.SaveSubFolder.IsEmpty())
-		destDir += Config.SaveSubFolder + "/";
-	tString toolTipText;
-	tsPrintf(toolTipText, "Save to %s", destDir.Chars());
-	ShowToolTip(toolTipText.Chars());
-	ImGui::SameLine();
-	if (ImGui::Button("Default"))
-		Config.SaveSubFolder.Set("Saved");
-	ImGui::SameLine();
-	if (ImGui::Button("This"))
-		Config.SaveSubFolder.Clear();
-
-	ImGui::NewLine();
-	if (ImGui::Button("Cancel", tVector2(100, 0)))
-		ImGui::CloseCurrentPopup();
-
-	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	static tListZ<tStringItem> overwriteFiles;
-	bool closeThisModal = false;
-	if (ImGui::Button("Save All", tVector2(100, 0)))
-	{
-		bool dirExists = tDirExists(destDir);
-		if (!dirExists)
-			dirExists = tCreateDir(destDir);
-
-		if (dirExists)
-		{
-			overwriteFiles.Empty();
-			GetFilesNeedingOverwrite(destDir, overwriteFiles, extension);
-			if (!overwriteFiles.IsEmpty() && Config.ConfirmFileOverwrites)
-			{
-				ImGui::OpenPopup("Overwrite Multiple Files");
-			}
-			else
-			{
-				SaveAllImages(destDir, extension, percent, width, height);
-				closeThisModal = true;
-			}
-		}
-	}
-
-	// The unused isOpen bool is just so we get a close button in ImGui. 
-	bool isOpen = true;
-	if (ImGui::BeginPopupModal("Overwrite Multiple Files", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
-	{
-		bool pressedOK = false, pressedCancel = false;
-		DoOverwriteMultipleFilesModal(overwriteFiles, pressedOK, pressedCancel);
-		if (pressedOK)
-			SaveAllImages(destDir, extension, percent, width, height);
-
-		if (pressedOK || pressedCancel)
-			closeThisModal = true;
-	}
-
-	if (closeThisModal)
-	{
-		overwriteFiles.Empty();
-		ImGui::CloseCurrentPopup();
-	}
-
-	ImGui::EndPopup();
-}
-
-
-void TexView::GetFilesNeedingOverwrite(const tString& destDir, tListZ<tStringItem>& overwriteFiles, const tString& extension)
-{
-	for (TacitImage* image = Images.First(); image; image = image->Next())
-	{
-		tString baseName = tSystem::tGetFileBaseName(image->Filename);
-		tString outFile = destDir + tString(baseName) + extension;
-
-		// Only add unique items to the list.
-		if (tSystem::tFileExists(outFile) && !overwriteFiles.Contains(outFile))
-			overwriteFiles.Append(new tStringItem(outFile));
-	}
-}
-
-
-void TexView::DoOverwriteMultipleFilesModal(const tListZ<tStringItem>& overwriteFiles, bool& pressedOK, bool& pressedCancel)
-{
-	tAssert(!overwriteFiles.IsEmpty());
-	tString dir = tSystem::tGetDir(*overwriteFiles.First());
-	ImGui::Text("The Following Files");
-	ImGui::Indent();
-	int fnum = 0;
-	const int maxToShow = 6;
-	for (tStringItem* filename = overwriteFiles.First(); filename && (fnum < maxToShow); filename = filename->Next(), fnum++)
-	{
-		tString file = tSystem::tGetFileName(*filename);
-		ImGui::Text("%s", file.Chars());
-	}
-	int remaining = overwriteFiles.GetNumItems() - fnum;
-	if (remaining > 0)
-		ImGui::Text("And %d more.", remaining);
-	ImGui::Unindent();
-	ImGui::Text("Already Exist In Folder");
-	ImGui::Indent(); ImGui::Text("%s", dir.Chars()); ImGui::Unindent();
-	ImGui::NewLine();
-	ImGui::Text("Overwrite Files?");
-	ImGui::NewLine();
-	ImGui::Separator();
-	ImGui::NewLine();
-	ImGui::Checkbox("Confirm file overwrites in the future?", &Config.ConfirmFileOverwrites);
-	ImGui::NewLine();
-
-	if (ImGui::Button("Cancel", tVector2(100, 0)))
-	{
-		pressedCancel = true;
-		ImGui::CloseCurrentPopup();
-	}
-
-	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("Overwrite", tVector2(100, 0)))
-	{
-		pressedOK = true;
-		ImGui::CloseCurrentPopup();
-	}
-
-	ImGui::EndPopup();
-}
-
-
-void TexView::SaveAllImages(const tString& destDir, const tString& extension, float percent, int width, int height)
-{
-	float scale = percent/100.0f;
-	tString currFile = CurrImage ? CurrImage->Filename : tString();
-
-	for (TacitImage* image = Images.First(); image; image = image->Next())
-	{
-		tString baseName = tSystem::tGetFileBaseName(image->Filename);
-		tString outFile = destDir + tString(baseName) + extension;
-
-		// We make sure to maintain the loaded/unloaded state of all images. This function
-		// can process many files, so we don't want them all in memory at once by indiscriminantly
-		// loading them all.
-		bool imageLoaded = image->IsLoaded();
-		if (!imageLoaded)
-			image->Load();
-		tImage::tPicture outPic;
-		outPic.Set(*image->GetPrimaryPicture());
-		if (!imageLoaded)
-			image->Unload();
-
-		int outW = outPic.GetWidth();
-		int outH = outPic.GetHeight();
-		float aspect = float(outW) / float(outH);
-
-		switch (Settings::SizeMode(Config.SaveAllSizeMode))
-		{
-			case Settings::SizeMode::Percent:
-				if (tMath::tApproxEqual(scale, 1.0f, 0.01f))
-					break;
-				outW = int( tRound(float(outW)*scale) );
-				outH = int( tRound(float(outH)*scale) );
-				break;
-
-			case Settings::SizeMode::SetWidthAndHeight:
-				outW = width;
-				outH = height;
-				break;
-
-			case Settings::SizeMode::SetWidthRetainAspect:
-				outW = width;
-				outH = int( tRound(float(width) / aspect) );
-				break;
-
-			case Settings::SizeMode::SetHeightRetainAspect:
-				outH = height;
-				outW = int( tRound(float(height) * aspect) );
-				break;
-		};
-		tMath::tiClampMin(outW, 4);
-		tMath::tiClampMin(outH, 4);
-
-		if ((outPic.GetWidth() != outW) || (outPic.GetHeight() != outH))
-			outPic.Resample(outW, outH, tImage::tPicture::tFilter(Config.ResampleFilter));
-
-		bool success = false;
-		tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-		if (Config.SaveFileType == 0)
-			success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
-		else
-			success = outPic.Save(outFile, colourFmt, Config.SaveFileJpgQuality);
-
-		if (success)
-			tPrintf("Saved image as %s\n", outFile.Chars());
-		else
-			tPrintf("Failed to save image %s\n", outFile.Chars());
-	}
-
-	// If we saved to the same dir we are currently viewing we need to
-	// reload and set the current image again.
-	if (ImagesDir.IsEqualCI(destDir))
-	{
-		Images.Clear();
-		PopulateImages();
-		SetCurrentImage(currFile);
-	}
-}
-
-
-void TexView::SaveImageTo(tPicture* picture, const tString& outFile, int width, int height)
-{
-	tAssert(picture);
-
-	// We need to make a copy in case we need to resample.
-	tImage::tPicture outPic( *picture );
-
-	if ((outPic.GetWidth() != width) || (outPic.GetHeight() != height))
-		outPic.Resample(width, height, tImage::tPicture::tFilter(Config.ResampleFilter));
-
-	bool success = false;
-	tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-	if (Config.SaveFileType == 0)
-		success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
-	else
-		success = outPic.Save(outFile, colourFmt, Config.SaveFileJpgQuality);
-	if (success)
-		tPrintf("Saved image as : %s\n", outFile.Chars());
-	else
-		tPrintf("Failed to save image %s\n", outFile.Chars());
-
-	// If we saved to the same dir we are currently viewing, reload
-	// and set the current image to the generated one.
-	if (ImagesDir.IsEqualCI( tGetDir(outFile) ))
-	{
-		Images.Clear();
-		PopulateImages();
-		SetCurrentImage(outFile);
-	}
-}
-
-
-void TexView::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool& pressedCancel)
-{
-	tString file = tSystem::tGetFileName(outFile);
-	tString dir = tSystem::tGetDir(outFile);
-	ImGui::Text("Overwrite file");
-		ImGui::Indent(); ImGui::Text("%s", file.Chars()); ImGui::Unindent();
-	ImGui::Text("In Folder");
-		ImGui::Indent(); ImGui::Text("%s", dir.Chars()); ImGui::Unindent();
-	ImGui::NewLine();
-	ImGui::Separator();
-
-	ImGui::NewLine();
-	ImGui::Checkbox("Confirm file overwrites in the future?", &Config.ConfirmFileOverwrites);
-	ImGui::NewLine();
-
-	if (ImGui::Button("Cancel", tVector2(100, 0)))
-	{
-		pressedCancel = true;
-		ImGui::CloseCurrentPopup();
-	}
-
-	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("OK", tVector2(100, 0)))
-	{
-		pressedOK = true;
-		ImGui::CloseCurrentPopup();
-	}
+	tColourf floatCol(PixelColour);
+	ImGui::Text("Copy As...");
+	int ri = PixelColour.R; int gi = PixelColour.G; int bi = PixelColour.B; int ai = PixelColour.A;
+	float rf = floatCol.R; float gf = floatCol.G; float bf = floatCol.B; float af = floatCol.A;
+	tString cpyTxt;
+	tsPrintf(cpyTxt, "%02X%02X%02X%02X", ri, gi, bi, ai);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "%02X%02X%02X", ri, gi, bi);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "#%02X%02X%02X%02X", ri, gi, bi, ai);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "#%02X%02X%02X", ri, gi, bi);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "0x%02X%02X%02X%02X", ri, gi, bi, ai);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "%.3f, %.3f, %.3f, %.3f", rf, gf, bf, af);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "%.3ff, %.3ff, %.3ff, %.3ff", rf, gf, bf, af);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "(%.3f, %.3f, %.3f, %.3f)", rf, gf, bf, af);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "(%.3ff, %.3ff, %.3ff, %.3ff)", rf, gf, bf, af);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
 	ImGui::EndPopup();
 }
 
@@ -853,4 +335,106 @@ void TexView::DoDeleteFileNoRecycleModal()
 	}
 
 	ImGui::EndPopup();
+}
+
+
+// This licence applies to the ViewerLog class.
+//
+// Copyright (c) 2014-2019 Omar Cornut
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+// documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+// Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+// WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+void TexView::ViewerLog::Clear()
+{
+	Buf.clear();
+	LineOffsets.clear();
+	LineOffsets.push_back(0);
+}
+
+
+void TexView::ViewerLog::AddLog(const char* fmt, ...)
+{
+	int oldSize = Buf.size();
+	va_list args;
+	va_start(args, fmt);
+	Buf.appendfv(fmt, args);
+	va_end(args);
+
+	for (int newSize = Buf.size(); oldSize < newSize; oldSize++)
+		if (Buf[oldSize] == '\n')
+			LineOffsets.push_back(oldSize + 1);
+
+	ScrollToBottom = true;
+}
+
+
+void TexView::ViewerLog::Draw(const char* title, bool* popen)
+{
+	if (ImGui::Button("Clear"))
+		Clear();
+
+	ImGui::SameLine();
+	bool copy = ImGui::Button("Copy");
+	ImGui::SameLine();
+	Filter.Draw("Filter", -100.0f);
+	ImGui::Separator();
+	ImGui::BeginChild("scrolling", tVector2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
+	if (copy)
+		ImGui::LogToClipboard();
+
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2(0, 0));
+	const char* buf = Buf.begin();
+	const char* bufEnd = Buf.end();
+	if (Filter.IsActive())
+	{
+		for (int lineNo = 0; lineNo < LineOffsets.Size; lineNo++)
+		{
+			const char* lineStart = buf + LineOffsets[lineNo];
+			const char* lineEnd = (lineNo + 1 < LineOffsets.Size) ? (buf + LineOffsets[lineNo + 1] - 1) : bufEnd;
+			if (Filter.PassFilter(lineStart, lineEnd))
+				ImGui::TextUnformatted(lineStart, lineEnd);
+		}
+	}
+	else
+	{
+		// The simplest way to display the entire buffer is with ImGui::TextUnformatted(buf, buf_end); TextUnformatted
+		// has specialization for large blobs of text and will fast-forward to skip non-visible lines. Here we instead
+		// demonstrate using the clipper to only process lines that are within the visible area. If you have tens of
+		// thousands of items and their processing cost is non-negligible, coarse clipping them on your side is
+		// recommended.
+		//
+		// ImGuiListClipper requires a) random access into your data, and b) items all being the same height, both of
+		// which we can handle since we an array pointing to the beginning of each line of text. When using the filter
+		// (in the block of code above) we don't have random access into the data to display anymore, which is why we
+		// don't use the clipper. Storing or skimming through the search result would make it possible and would be
+		// recommended if you want to search through tens of thousands of entries.
+		ImGuiListClipper clipper;
+		clipper.Begin(LineOffsets.Size);
+		while (clipper.Step())
+		{
+			for (int lineNo = clipper.DisplayStart; lineNo < clipper.DisplayEnd; lineNo++)
+			{
+				const char* lineStart = buf + LineOffsets[lineNo];
+				const char* lineEnd = (lineNo + 1 < LineOffsets.Size) ? (buf + LineOffsets[lineNo + 1] - 1) : bufEnd;
+				ImGui::TextUnformatted(lineStart, lineEnd);
+			}
+		}
+		clipper.End();
+	}
+	ImGui::PopStyleVar();
+
+	if (ScrollToBottom)
+		ImGui::SetScrollHereY(1.0f);
+
+	ScrollToBottom = false;
+	ImGui::EndChild();
 }
