@@ -28,27 +28,20 @@ namespace TexView
 }
 
 
-void TexView::Settings::Reset()
+void TexView::Settings::Reset(int screenW, int screenH)
 {
-	WindowW					= 1280;
-	WindowH					= 720;
-	WindowX					= 100;
-	WindowY					= 100;
+	ResetUISettings(screenW, screenH);
+	ResetBehaviourSettings();
+}
 
-	ShowNavBar				= true;
-	ShowImageDetails		= true;
-	ContentViewShow			= false;
-	ThumbnailWidth			= 128.0f;
+
+void TexView::Settings::ResetBehaviourSettings()
+{
 	SortKey					= 0;
 	SortAscending			= true;
-	OverlayCorner			= 3;
-	Tile					= false;
-	BackgroundStyle			= 1;
-	BackgroundExtend		= false;
 	ResampleFilter			= 2;
 	ConfirmDeletes			= true;
 	ConfirmFileOverwrites	= true;
-
 	SlidehowFrameDuration	= 1.0/30.0;
 	SaveSubFolder			.Set("Saved");
 	SaveFileType			= 0;
@@ -60,13 +53,33 @@ void TexView::Settings::Reset()
 }
 
 
+void TexView::Settings::ResetUISettings(int screenW, int screenH)
+{
+	WindowW					= 1280;
+	WindowH					= 720;
+	WindowX					= (screenW - WindowW) >> 1;
+	WindowY					= (screenH - WindowH) >> 1;
+
+	ShowNavBar				= true;
+	ShowImageDetails		= true;
+	ContentViewShow			= false;
+	ThumbnailWidth			= 128.0f;
+	OverlayCorner			= 3;
+	Tile					= false;
+	BackgroundStyle			= 1;
+	BackgroundExtend		= false;
+
+}
+
+
+/*
 void TexView::Settings::Reset(int screenW, int screenH)
 {
 	Reset();
 	WindowX					= (screenW - WindowW) >> 1;
 	WindowY					= (screenH - WindowH) >> 1;
 }
-
+*/
 
 void TexView::Settings::Load(const tString& filename, int screenW, int screenH)
 {

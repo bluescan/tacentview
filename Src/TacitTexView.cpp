@@ -74,6 +74,7 @@ namespace TexView
 	TacitImage PlayImage;
 	TacitImage ContentViewImage;
 	TacitImage UpFolderImage;
+	TacitImage CropImage;
 	TacitImage DefaultThumbnailImage;
 
 	GLFWwindow* Window							= nullptr;
@@ -90,6 +91,7 @@ namespace TexView
 	bool Request_DeleteFileModal				= false;
 	bool Request_DeleteFileNoRecycleModal		= false;
 	bool PrefsDialog							= false;
+	bool CropMode								= false;
 	bool RMBDown								= false;
 	int DragAnchorX								= 0;
 	int DragAnchorY								= 0;
@@ -123,6 +125,7 @@ namespace TexView
 
 	const float ZoomMin							= 20.0f;
 	const float ZoomMax							= 2500.0f;
+	uint64 FrameNumber							= 0;
 
 	void DrawBackground(float bgX, float bgY, float bgW, float bgH);
 	void DrawNavBar(float x, float y, float w, float h);
@@ -343,8 +346,11 @@ void TexView::LoadCurrImage()
 	if (!CurrImage->IsLoaded())
 		imgJustLoaded = CurrImage->Load();
 
+	#ifdef CONFIG_DEBUG
 	if (!SlideshowPlaying)
 		CurrImage->PrintInfo();
+	#endif
+
 	SetWindowTitle();
 	ResetPan();
 
@@ -1094,6 +1100,21 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			ShowToolTip("Rotate 90 Clockwise");
 
+			if
+			(
+				ImGui::ImageButton(ImTextureID(CropImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
+				CropMode ? ColourPressedBG : ColourBG,
+				buttonAvail ? ColourEnabledTint : ColourDisabledTint) && buttonAvail
+			)
+			{
+				CropMode = !CropMode;
+			}
+			ShowToolTip("Crop");
+
+			if (CropMode && buttonAvail && ImGui::Button("Apply Crop", tVector2(80, 20)))
+			{
+			}
+
 			bool altMipmapsPicAvail = CurrImage ? CurrImage->IsAltMipmapsPictureAvail() : false;
 			bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
 			if
@@ -1131,7 +1152,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if
 			(
 				ImGui::ImageButton(ImTextureID(TileImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
-				Config.Tile ? ColourPressedBG : ColourBG, tVector4(1.00f, 1.00f, 1.00f, 1.00f))
+				Config.Tile ? ColourPressedBG : ColourBG, ColourEnabledTint)
 			)
 			{
 				Config.Tile = !Config.Tile;
@@ -1226,6 +1247,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	glfwMakeContextCurrent(window);
 	glfwSwapBuffers(window);
+	FrameNumber++;
 
 	// We're done the frame. Is slideshow playing.
 	if (!ImGui::IsAnyPopupOpen() && SlideshowPlaying)
@@ -1312,6 +1334,16 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 	ImGuiIO& io = ImGui::GetIO();
 	if (io.WantTextInput || ImGui::IsAnyPopupOpen())
 		return;
+
+	// Don't let key repeats starve the update loop. Ignore repeats if there hasn't
+	// been a frame between them.
+	static uint64 lastRepeatFrameNum = 0;
+	if (action == GLFW_REPEAT)
+	{
+		if (lastRepeatFrameNum == FrameNumber)
+			return;
+		lastRepeatFrameNum = FrameNumber;
+	}
 
 	switch (key)
 	{
@@ -1703,6 +1735,7 @@ int main(int argc, char** argv)
 	TexView::PlayImage.Load(dataDir + "Play.png");
 	TexView::ContentViewImage.Load(dataDir + "ContentView.png");
 	TexView::UpFolderImage.Load(dataDir + "UpFolder.png");
+	TexView::CropImage.Load(dataDir + "Crop.png");
 	TexView::DefaultThumbnailImage.Load(dataDir + "DefaultThumbnail.png");
 
 	TexView::PopulateImages();

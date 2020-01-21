@@ -223,13 +223,22 @@ void TexView::ShowPreferencesDialog(bool* popen)
 	ImGui::Indent();
 	ImGui::Checkbox("Confirm Deletes", &Config.ConfirmDeletes);
 	ImGui::Checkbox("Confirm File Overwrites", &Config.ConfirmFileOverwrites);
-	if (ImGui::Button("Reset UI"))
+	ImGui::Unindent();
+	ImGui::Separator();
+	if (ImGui::Button("Reset UI Settings"))
 	{
 		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-		Config.Reset(mode->width, mode->height);
+		Config.ResetUISettings(mode->width, mode->height);
 		ChangeScreenMode(false, true);
 	}
+	ShowToolTip("Resets window dimensions/position, nav bar, content view, tiling, background, details, etc.");
+	ImGui::SameLine();
+	if (ImGui::Button("Reset Behaviour Settings"))
+	{
+		Config.ResetBehaviourSettings();
+	}
+	ShowToolTip("Resets sort order, resample filter, confirmations, preferred file type, cache size, etc.");
 	ImGui::Unindent();
 
 	ImGui::End();
@@ -388,11 +397,11 @@ void TexView::NavLogBar::Draw()
 	ImGui::SameLine();
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 	ImGui::Text("%s", ImagesDir.Chars());
-	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
 
 	if (ImagesSubDirs.NumItems() > 0)
 	{
 		ImGui::SameLine();
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
 		if (ImGui::BeginCombo("##combo", nullptr, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightLargest | ImGuiComboFlags_NoPreview))
 		{
 			for (tStringItem* subDir = ImagesSubDirs.First(); subDir; subDir = subDir->Next())

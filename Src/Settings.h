@@ -74,8 +74,9 @@ namespace TexView
 
 		void Load(const tString& filename, int screenWidth, int screenHeight);
 		bool Save(const tString& filename);
-		void Reset();
-		void Reset(int screenWidth, int screenHeight);
+		void Reset(int screenWidth = 1280, int screenHeight = 720);
+		void ResetBehaviourSettings();
+		void ResetUISettings(int screenWidth, int screenHeight);
 	};
 
 	extern Settings Config;
