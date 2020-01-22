@@ -797,6 +797,35 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 
 		glDisable(GL_TEXTURE_2D);
+
+		if (CropMode)
+		{
+			glColor4f(ColourClear.x, ColourClear.y, ColourClear.z, 0.8f);
+			float cropLineL = l + 100;
+			float cropLineR = r - 100;
+			float cropLineT = t - 50;
+			float cropLineB = b + 50;
+			glBegin(GL_QUAD_STRIP);
+			glVertex2f(l, b);
+			glVertex2f(cropLineL, cropLineB);
+			glVertex2f(r, b);
+			glVertex2f(cropLineR, cropLineB);
+
+			glVertex2f(r, t);
+			glVertex2f(cropLineR, cropLineT);
+
+			glVertex2f(l, t);
+			glVertex2f(cropLineL, cropLineT);
+
+			glVertex2f(l, b);
+			glVertex2f(cropLineL, cropLineB);
+			//			glVertex2f(hmargin, vmargin);
+//			glVertex2f(l, b);
+//			glVertex2f(hmargin+draww, vmargin);
+//			glVertex2f(r, b);
+			glEnd();
+		}
+
 		glFlush(); // Don't need this with GLUT_DOUBLE and glutSwapBuffers.
 	}
 
