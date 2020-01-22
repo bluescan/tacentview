@@ -177,7 +177,7 @@ namespace TexView
 
 tVector2 TexView::GetDialogOrigin(float index)
 {
-	return tVector2(DialogOrigin + DialogMargin*float(index), DialogOrigin + TopUIHeight + DialogMargin*float(index));
+	return tVector2(DialogOrigin + DialogDelta*float(index), DialogOrigin + TopUIHeight + DialogDelta*float(index));
 }
 
 
@@ -800,7 +800,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		if (CropMode)
 		{
-			glColor4f(ColourClear.x, ColourClear.y, ColourClear.z, 0.8f);
+			glColor4f(ColourClear.x, ColourClear.y, ColourClear.z, 0.75f);
 			float cropLineL = l + 100;
 			float cropLineR = r - 100;
 			float cropLineT = t - 50;
@@ -810,29 +810,22 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			glVertex2f(cropLineL, cropLineB);
 			glVertex2f(r, b);
 			glVertex2f(cropLineR, cropLineB);
-
 			glVertex2f(r, t);
 			glVertex2f(cropLineR, cropLineT);
-
 			glVertex2f(l, t);
 			glVertex2f(cropLineL, cropLineT);
-
 			glVertex2f(l, b);
 			glVertex2f(cropLineL, cropLineB);
-			//			glVertex2f(hmargin, vmargin);
-//			glVertex2f(l, b);
-//			glVertex2f(hmargin+draww, vmargin);
-//			glVertex2f(r, b);
 			glEnd();
 		}
 
-		glFlush(); // Don't need this with GLUT_DOUBLE and glutSwapBuffers.
+//		glFlush(); // Don't need this with GLUT_DOUBLE and glutSwapBuffers.
 	}
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, dispw, 0, disph, -1, 1);
-	glMatrixMode(GL_MODELVIEW);
+//	glMatrixMode(GL_PROJECTION);
+//	glLoadIdentity();
+//	glOrtho(0, dispw, 0, disph, -1, 1);
+//	glMatrixMode(GL_MODELVIEW);
 
 	ImGui::NewFrame();
 	
@@ -926,8 +919,10 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			//
 			bool saveAsPressed = Request_SaveAsModal;
 			bool saveAllPressed = Request_SaveAllModal;
+			bool saveContactSheetPressed = Request_ContactSheetModal;
 			Request_SaveAsModal = false;
 			Request_SaveAllModal = false;
+			Request_ContactSheetModal = false;
 			if (ImGui::BeginMenu("File"))
 			{
 				// Show file menu items...
@@ -938,6 +933,9 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 				if (ImGui::MenuItem("Save All...", "Alt-S") && CurrImage)
 					saveAllPressed = true;
+
+				if (ImGui::MenuItem("Save Contact Sheet...", "C") && (Images.GetNumItems() > 1))
+					saveContactSheetPressed = true;
 
 				ImGui::Separator();
 				if (ImGui::MenuItem("Quit", "Alt-F4"))
@@ -962,19 +960,56 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::BeginPopupModal("Save All", &isOpenSaveAll, ImGuiWindowFlags_AlwaysAutoResize))
 				DoSaveAllModalDialog(saveAllPressed);
 
+			if (saveContactSheetPressed)
+				ImGui::OpenPopup("Contact Sheet");
+			// The unused isOpenContactSheet bool is just so we get a close button in ImGui. 
+			bool isOpenContactSheet = true;
+			if (ImGui::BeginPopupModal("Contact Sheet", &isOpenContactSheet, ImGuiWindowFlags_AlwaysAutoResize))
+				DoContactSheetModalDialog(saveContactSheetPressed);
+
 			ImGui::PopStyleVar();
 
 			//
 			// Edit Menu.
 			//
-			bool contactSheetPressed = Request_ContactSheetModal;
-			Request_ContactSheetModal = false;
 			if (ImGui::BeginMenu("Edit"))
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 
-				if (ImGui::MenuItem("Contact Sheet...", "C") && (Images.GetNumItems() > 1))
-					contactSheetPressed = true;
+				if (ImGui::MenuItem("Flip Vertically", "Ctrl <", false, CurrImage && !CurrImage->IsAltPictureEnabled()))
+				{
+					CurrImage->Unbind();
+					CurrImage->Flip(false);
+					CurrImage->Bind();
+				}
+
+				if (ImGui::MenuItem("Flip Horizontally", "Ctrl >", false, CurrImage && !CurrImage->IsAltPictureEnabled()))
+				{
+					CurrImage->Unbind();
+					CurrImage->Flip(true);
+					CurrImage->Bind();
+				}
+
+				if (ImGui::MenuItem("Rotate Anti-Clockwise", "<", false, CurrImage && !CurrImage->IsAltPictureEnabled()))
+				{
+					CurrImage->Unbind();
+					CurrImage->Rotate90(true);
+					CurrImage->Bind();
+				}
+
+				if (ImGui::MenuItem("Rotate Clockwise", ">", false, CurrImage && !CurrImage->IsAltPictureEnabled()))
+				{
+					CurrImage->Unbind();
+					CurrImage->Rotate90(false);
+					CurrImage->Bind();
+				}
+
+				if (ImGui::MenuItem("Crop", "/", false, CurrImage))
+				{
+					CropMode = !CropMode;
+				}
+
+				ImGui::Separator();
 
 				if (ImGui::MenuItem("Preferences...", "P"))
 					PrefsDialog = !PrefsDialog;
@@ -983,13 +1018,6 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				ImGui::EndMenu();
 			}
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
-
-			if (contactSheetPressed)
-				ImGui::OpenPopup("Contact Sheet");
-			// The unused isOpenContactSheet bool is just so we get a close button in ImGui. 
-			bool isOpenContactSheet = true;
-			if (ImGui::BeginPopupModal("Contact Sheet", &isOpenContactSheet, ImGuiWindowFlags_AlwaysAutoResize))
-				DoContactSheetModalDialog(contactSheetPressed);
 
 			if (PrefsDialog)
 				ShowPreferencesDialog(&PrefsDialog);
@@ -1081,17 +1109,6 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				ColourCopyAs();
 
 			bool buttonAvail = CurrImage ? !CurrImage->IsAltPictureEnabled() : false;
-			if
-			(
-				ImGui::ImageButton(ImTextureID(FlipHImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
-				buttonAvail ? ColourEnabledTint : ColourDisabledTint) && buttonAvail
-			)
-			{
-				CurrImage->Unbind();
-				CurrImage->Flip(true);
-				CurrImage->Bind();
-			}
-			ShowToolTip("Flip Horizontally");
 
 			if
 			(
@@ -1104,6 +1121,18 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				CurrImage->Bind();
 			}
 			ShowToolTip("Flip Vertically");
+
+			if
+			(
+				ImGui::ImageButton(ImTextureID(FlipHImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
+				buttonAvail ? ColourEnabledTint : ColourDisabledTint) && buttonAvail
+			)
+			{
+				CurrImage->Unbind();
+				CurrImage->Flip(true);
+				CurrImage->Bind();
+			}
+			ShowToolTip("Flip Horizontally");
 
 			if
 			(
@@ -1436,6 +1465,34 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 		case GLFW_KEY_TAB:
 			if (CurrImage)
 				tSystem::tOpenSystemFileExplorer(CurrImage->Filename);
+			break;
+
+		case GLFW_KEY_COMMA:
+			if (CurrImage && !CurrImage->IsAltPictureEnabled())
+			{
+				CurrImage->Unbind();
+				if (modifiers == GLFW_MOD_CONTROL)
+					CurrImage->Flip(false);
+				else
+					CurrImage->Rotate90(true);
+				CurrImage->Bind();
+			}
+			break;
+
+		case GLFW_KEY_PERIOD:
+			if (CurrImage && !CurrImage->IsAltPictureEnabled())
+			{
+				CurrImage->Unbind();
+				if (modifiers == GLFW_MOD_CONTROL)
+					CurrImage->Flip(true);
+				else
+					CurrImage->Rotate90(false);
+				CurrImage->Bind();
+			}
+			break;
+
+		case GLFW_KEY_SLASH:
+			CropMode = !CropMode;
 			break;
 
 		case GLFW_KEY_T:
