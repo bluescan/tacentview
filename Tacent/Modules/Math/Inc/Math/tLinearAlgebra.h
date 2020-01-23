@@ -76,6 +76,7 @@ struct tVec2
 	{
 		struct { float x, y; };
 		struct { float a, b; };
+		struct { float u, v; };
 		float E[2];											// E for elements.
 		uint64 B;											// B for bits.
 	};
@@ -102,6 +103,7 @@ struct tVec4
 	{
 		struct { float x, y, z, w; };
 		struct { float a, b, c, d; };
+		struct { float L, R, T, B; };
 		float E[4];
 		struct { uint64 B0, B1; };
 	};

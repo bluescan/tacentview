@@ -161,8 +161,13 @@ namespace TexView
 	void ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan);
 	tString FindImageFiles(tList<tStringItem>& foundFiles);					// Returns the image folder.
 	tuint256 ComputeImagesHash(const tList<tStringItem>& files);
-	int RemoveOldCacheFiles(const tString& cacheDir);																	// Returns num removed.
+	int RemoveOldCacheFiles(const tString& cacheDir);						// Returns num removed.
 
+	tVector2 ConvertScreenPosToImagePos
+	(
+		const tVector2& scrPos, const tVector4& lrtb,
+		const tVector2& uvMarg, const tVector2& uvOff
+	);
 	void Update(GLFWwindow* window, double dt, bool dopoll = true);
 	void WindowRefreshFun(GLFWwindow* window)																			{ Update(window, 0.0, false); }
 	void KeyCallback(GLFWwindow*, int key, int scancode, int action, int modifiers);
@@ -575,6 +580,36 @@ void TexView::DrawBackground(float bgX, float bgY, float bgW, float bgH)
 }
 
 
+tVector2 TexView::ConvertScreenPosToImagePos
+(
+	const tVector2& scrPos, const tVector4& lrtb,
+	const tVector2& uvMarg, const tVector2& uvOff
+)
+{
+	float workH = float(Disph - GetNavBarHeight());
+
+	float picX = scrPos.x - lrtb.L;
+	float picY = (workH - scrPos.y - 1) - lrtb.B;
+	float normX = picX / (lrtb.R-lrtb.L);
+	float normY = picY / (lrtb.T-lrtb.B);
+	if (Config.Tile)
+	{
+		normX = tMath::tMod(normX, 1.0f);
+		if (normX < 0.0f) normX += 1.0f;
+
+		normY = tMath::tMod(normY, 1.0f);
+		if (normY < 0.0f) normY += 1.0f;
+	}
+
+	float imagew = float(CurrImage->GetWidth());
+	float imageh = float(CurrImage->GetHeight());
+
+	float imposX = imagew * tMath::tLisc(normX, 0.0f + uvMarg.u + uvOff.u, 1.0f - uvMarg.u + uvOff.u);
+	float imposY = imageh * tMath::tLisc(normY, 0.0f + uvMarg.v + uvOff.v, 1.0f - uvMarg.v + uvOff.v);
+	return tVector2(imposX, imposY);
+}
+
+
 void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 {
 	// Poll and handle events like inputs, window resize, etc. You can read the io.WantCaptureMouse,
@@ -617,7 +652,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	float draww = 1.0f;		float drawh = 1.0f;
 	float iw = 1.0f;		float ih = 1.0f;
 	float hmargin = 0.0f;	float vmargin = 0.0f;
-	static int imgxi = 0;	static int imgyi = 0;
+	static int imgx = 0;	static int imgy = 0;
 
 	if (CurrImage)
 	{
@@ -747,52 +782,43 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		glEnd();
 
 		// Show cursor colour inspector crosshairs.
-		float cw = float((CursorImage.GetWidth() - 1) >> 1);
-		float ch = float((CursorImage.GetHeight() - 1) >> 1);
-		float cx = float(CursorX);
-		float cy = float(CursorY);
-		float areaH = float(workAreaH) + topUIHeight;
+		tVector2 scrCursorPos((float)CursorX, (float)CursorY);
+		tVector2 imagePos = ConvertScreenPosToImagePos
+		(
+			scrCursorPos, tVector4(l, r, t, b),
+			tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
+		);
 
-		float picX = cx - l;
-		float picY = (areaH - cy - 1) - b;
-		float normX = picX / (r-l);
-		float normY = picY / (t-b);
-		if (Config.Tile)
-		{
-			normX = tMath::tMod(normX, 1.0f);
-			if (normX < 0.0f) normX += 1.0f;
-
-			normY = tMath::tMod(normY, 1.0f);
-			if (normY < 0.0f) normY += 1.0f;
-		}
-		float imgx = iw * tMath::tLisc(normX, 0.0f + uvUMarg + uvUOff, 1.0f - uvUMarg + uvUOff);
-		float imgy = ih * tMath::tLisc(normY, 0.0f + uvVMarg + uvVOff, 1.0f - uvVMarg + uvVOff);
-
-		imgxi = int(imgx);
-		imgyi = int(imgy);
-
+		imgx = int( imagePos.x );
+		imgy = int( imagePos.y );
 		if (!Config.Tile)
 		{
-			tMath::tiClamp(imgxi, 0, CurrImage->GetWidth() - 1);
-			tMath::tiClamp(imgyi, 0, CurrImage->GetHeight() - 1);
+			tMath::tiClamp(imgx, 0, CurrImage->GetWidth() - 1);
+			tMath::tiClamp(imgy, 0, CurrImage->GetHeight() - 1);
 		}
 		else
 		{
-			imgxi %= CurrImage->GetWidth();
-			if (imgxi < 0) imgxi += CurrImage->GetWidth();
-			imgyi %= CurrImage->GetHeight();
-			if (imgyi < 0) imgyi += CurrImage->GetHeight();
+			imgx %= CurrImage->GetWidth();
+			if (imgx < 0) imgx += CurrImage->GetWidth();
+			imgy %= CurrImage->GetHeight();
+			if (imgy < 0) imgy += CurrImage->GetHeight();
 		}
-		PixelColour = CurrImage->GetPixel(imgxi, imgyi);
+		PixelColour = CurrImage->GetPixel(imgx, imgy);
 
 		if ((DisappearCountdown > 0.0) || Config.ShowImageDetails)
 		{
+			float cw = float((CursorImage.GetWidth() - 1) >> 1);
+			float ch = float((CursorImage.GetHeight() - 1) >> 1);
+			float cx = float(CursorX);
+			float cy = float(CursorY);
+
+			float workH = float(Disph - GetNavBarHeight());
 			CursorImage.Bind();
 			glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 0.0f); glVertex2f(cx-cw, areaH-(cy+ch));
-			glTexCoord2f(0.0f, 1.0f); glVertex2f(cx-cw, areaH-(cy-ch));
-			glTexCoord2f(1.0f, 1.0f); glVertex2f(cx+cw, areaH-(cy-ch));
-			glTexCoord2f(1.0f, 0.0f); glVertex2f(cx+cw, areaH-(cy+ch));
+			glTexCoord2f(0.0f, 0.0f); glVertex2f(cx-cw, workH-(cy+ch));
+			glTexCoord2f(0.0f, 1.0f); glVertex2f(cx-cw, workH-(cy-ch));
+			glTexCoord2f(1.0f, 1.0f); glVertex2f(cx+cw, workH-(cy-ch));
+			glTexCoord2f(1.0f, 0.0f); glVertex2f(cx+cw, workH-(cy+ch));
 			glEnd();
 		}
 
@@ -1108,12 +1134,12 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::BeginPopup("CopyColourAs"))
 				ColourCopyAs();
 
-			bool buttonAvail = CurrImage ? !CurrImage->IsAltPictureEnabled() : false;
+			bool transAvail = CurrImage ? !CurrImage->IsAltPictureEnabled() : false;
 
 			if
 			(
 				ImGui::ImageButton(ImTextureID(FlipVImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
-				buttonAvail ? ColourEnabledTint : ColourDisabledTint) && buttonAvail
+				transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 			)
 			{
 				CurrImage->Unbind();
@@ -1125,7 +1151,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if
 			(
 				ImGui::ImageButton(ImTextureID(FlipHImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
-				buttonAvail ? ColourEnabledTint : ColourDisabledTint) && buttonAvail
+				transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 			)
 			{
 				CurrImage->Unbind();
@@ -1137,7 +1163,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if
 			(
 				ImGui::ImageButton(ImTextureID(RotateACWImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
-				buttonAvail ? ColourEnabledTint : ColourDisabledTint) && buttonAvail
+				transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 			)
 			{
 				CurrImage->Unbind();
@@ -1149,7 +1175,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if
 			(
 				ImGui::ImageButton(ImTextureID(RotateCWImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
-				buttonAvail ? ColourEnabledTint : ColourDisabledTint) && buttonAvail
+				transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 			)
 			{
 				CurrImage->Unbind();
@@ -1158,22 +1184,23 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			ShowToolTip("Rotate 90 Clockwise");
 
+			bool cropAvail = transAvail && !Config.Tile;
 			if
 			(
 				ImGui::ImageButton(ImTextureID(CropImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
 				CropMode ? ColourPressedBG : ColourBG,
-				buttonAvail ? ColourEnabledTint : ColourDisabledTint) && buttonAvail
+				cropAvail ? ColourEnabledTint : ColourDisabledTint) && cropAvail
 			)
 			{
 				CropMode = !CropMode;
 			}
 			ShowToolTip("Crop");
 
-			if (CropMode && buttonAvail && ImGui::Button("Apply Crop", tVector2(80, 20)))
+			if (CropMode && cropAvail && ImGui::Button("Apply Crop", tVector2(80, 20)))
 			{
 			}
 
-			bool altMipmapsPicAvail = CurrImage ? CurrImage->IsAltMipmapsPictureAvail() : false;
+			bool altMipmapsPicAvail = CurrImage ? CurrImage->IsAltMipmapsPictureAvail() && !CropMode : false;
 			bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
 			if
 			(
@@ -1190,7 +1217,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			ShowToolTip("Display Mipmaps\nDDS files may include mipmaps.");
 
-			bool altCubemapPicAvail = CurrImage ? CurrImage->IsAltCubemapPictureAvail() : false;
+			bool altCubemapPicAvail = CurrImage ? CurrImage->IsAltCubemapPictureAvail() && !CropMode : false;
 			bool altCubemapPicEnabl = altCubemapPicAvail && CurrImage->IsAltPictureEnabled();
 			if
 			(
@@ -1207,10 +1234,15 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			ShowToolTip("Display Cubemap\nDDS files may be cubemaps.");
 
+			bool tileAvail = CurrImage ? CurrImage->IsAltPictureEnabled() && !CropMode : false;
 			if
 			(
-				ImGui::ImageButton(ImTextureID(TileImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
-				Config.Tile ? ColourPressedBG : ColourBG, ColourEnabledTint)
+				ImGui::ImageButton
+				(
+					ImTextureID(TileImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
+					Config.Tile ? ColourPressedBG : ColourBG,
+					tileAvail ? ColourEnabledTint : ColourDisabledTint
+				) && tileAvail
 			)
 			{
 				Config.Tile = !Config.Tile;
@@ -1263,7 +1295,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	// We allow the overlay and cheatsheet in fullscreen.
 	if (Config.ShowImageDetails)
-		ShowImageDetailsOverlay(&Config.ShowImageDetails, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), imgxi, imgyi, ZoomPercent);
+		ShowImageDetailsOverlay(&Config.ShowImageDetails, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), imgx, imgy, ZoomPercent);
 
 	if (Config.ContentViewShow)
 		ShowContentViewDialog(&Config.ContentViewShow);
