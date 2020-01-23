@@ -844,14 +844,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			glVertex2f(cropLineL, cropLineB);
 			glEnd();
 		}
-
-//		glFlush(); // Don't need this with GLUT_DOUBLE and glutSwapBuffers.
 	}
 
-//	glMatrixMode(GL_PROJECTION);
-//	glLoadIdentity();
-//	glOrtho(0, dispw, 0, disph, -1, 1);
-//	glMatrixMode(GL_MODELVIEW);
 
 	ImGui::NewFrame();
 	
@@ -1030,10 +1024,12 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 					CurrImage->Bind();
 				}
 
+#ifdef FEATURE_CROP
 				if (ImGui::MenuItem("Crop", "/", false, CurrImage))
 				{
 					CropMode = !CropMode;
 				}
+#endif
 
 				ImGui::Separator();
 
@@ -1184,6 +1180,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			ShowToolTip("Rotate 90 Clockwise");
 
+#ifdef FEATURE_CROP
 			bool cropAvail = transAvail && !Config.Tile;
 			if
 			(
@@ -1199,6 +1196,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (CropMode && cropAvail && ImGui::Button("Apply Crop", tVector2(80, 20)))
 			{
 			}
+#endif
 
 			bool altMipmapsPicAvail = CurrImage ? CurrImage->IsAltMipmapsPictureAvail() && !CropMode : false;
 			bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
@@ -1234,7 +1232,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			ShowToolTip("Display Cubemap\nDDS files may be cubemaps.");
 
-			bool tileAvail = CurrImage ? CurrImage->IsAltPictureEnabled() && !CropMode : false;
+			bool tileAvail = CurrImage ? (!CurrImage->IsAltPictureEnabled() && !CropMode) : false;
 			if
 			(
 				ImGui::ImageButton
@@ -1523,9 +1521,11 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 			}
 			break;
 
+#ifdef FEATURE_CROP
 		case GLFW_KEY_SLASH:
 			CropMode = !CropMode;
 			break;
+#endif
 
 		case GLFW_KEY_T:
 			Config.Tile = !Config.Tile;
