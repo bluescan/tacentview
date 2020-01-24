@@ -39,6 +39,7 @@
 using namespace tStd;
 using namespace tSystem;
 using namespace tMath;
+//#define FEATURE_CROP
 
 
 namespace TexView
@@ -92,6 +93,8 @@ namespace TexView
 	bool Request_DeleteFileNoRecycleModal		= false;
 	bool PrefsDialog							= false;
 	bool CropMode								= false;
+	tVector4 CropLines							= tVector4::zero;
+	bool LMBDown								= false;
 	bool RMBDown								= false;
 	int DragAnchorX								= 0;
 	int DragAnchorY								= 0;
@@ -111,8 +114,8 @@ namespace TexView
 	int Disph									= 1;
 	int PanOffsetX								= 0;
 	int PanOffsetY								= 0;
-	int DragDownOffsetX							= 0;
-	int DragDownOffsetY							= 0;
+	int PanDragDownOffsetX						= 0;
+	int PanDragDownOffsetY						= 0;
 	int CursorX									= -1;
 	int CursorY									= -1;
 	tColouri PixelColour						= tColouri::black;
@@ -485,13 +488,13 @@ void TexView::ResetPan(bool resetX, bool resetY)
 	if (resetX)
 	{
 		PanOffsetX = 0;
-		DragDownOffsetX = 0;
+		PanDragDownOffsetX = 0;
 	}
 
 	if (resetY)
 	{
 		PanOffsetY = 0;
-		DragDownOffsetY = 0;
+		PanDragDownOffsetY = 0;
 	}
 }
 
@@ -636,7 +639,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	{
 		Dispw = dispw;
 		Disph = disph;
-		if ((PanOffsetX+DragDownOffsetX == 0) && (PanOffsetY+DragDownOffsetY == 0))
+		if ((PanOffsetX+PanDragDownOffsetX == 0) && (PanOffsetY+PanDragDownOffsetY == 0))
 			ResetPan();
 	}
 
@@ -716,31 +719,26 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			uvVMarg = (1.0f - proph)/2.0f;
 		}
 
+		double xpos, ypos;
+		glfwGetCursorPos(window, &xpos, &ypos);
+
 		// Modify the UVs here to magnify.
 		if ((draww < w) || Config.Tile)
 		{
 			if (RMBDown)
-			{
-				double xpos, ypos;
-				glfwGetCursorPos(window, &xpos, &ypos);
-				DragDownOffsetX = int(xpos) - DragAnchorX;
-			}
+				PanDragDownOffsetX = int(xpos) - DragAnchorX;
 
 			if (!Config.Tile)
-				tMath::tiClamp(DragDownOffsetX, int(-(w-draww)/2.0f) - PanOffsetX, int((w-draww)/2.0f) - PanOffsetX);
+				tMath::tiClamp(PanDragDownOffsetX, int(-(w-draww)/2.0f) - PanOffsetX, int((w-draww)/2.0f) - PanOffsetX);
 		}
 
 		if ((drawh < h) || Config.Tile)
 		{
 			if (RMBDown)
-			{
-				double xpos, ypos;
-				glfwGetCursorPos(window, &xpos, &ypos);
-				DragDownOffsetY = int(ypos) - DragAnchorY;
-			}
+				PanDragDownOffsetY = int(ypos) - DragAnchorY;
 
 			if (!Config.Tile)
-				tMath::tiClamp(DragDownOffsetY, int(-(h-drawh)/2.0f) - PanOffsetY, int((h-drawh)/2.0f) - PanOffsetY);
+				tMath::tiClamp(PanDragDownOffsetY, int(-(h-drawh)/2.0f) - PanOffsetY, int((h-drawh)/2.0f) - PanOffsetY);
 		}
 
 		if ((draww > w) && !Config.Tile)
@@ -749,11 +747,11 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		if ((drawh > h) && !Config.Tile)
 			ResetPan(false, true);
 
-		float uvUOff = -float(PanOffsetX+DragDownOffsetX)/w;
-		float uvVOff =  float(PanOffsetY+DragDownOffsetY)/h;
+		float uvUOff = -float(PanOffsetX+PanDragDownOffsetX)/w;
+		float uvVOff =  float(PanOffsetY+PanDragDownOffsetY)/h;
 
 		// Draw background.
-		if (Config.BackgroundExtend || Config.Tile)
+		if ((Config.BackgroundExtend || Config.Tile) && !CropMode)
 			DrawBackground(hmargin, vmargin, draww, drawh);
 		else
 			DrawBackground(l, b, r-l, t-b);
@@ -827,10 +825,10 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (CropMode)
 		{
 			glColor4f(ColourClear.x, ColourClear.y, ColourClear.z, 0.75f);
-			float cropLineL = l + 100;
-			float cropLineR = r - 100;
-			float cropLineT = t - 50;
-			float cropLineB = b + 50;
+			float cropLineL = l; //+ 100;
+			float cropLineR = r; //- 100;
+			float cropLineT = t; //- 50;
+			float cropLineB = b; //+ 50;
 			glBegin(GL_QUAD_STRIP);
 			glVertex2f(l, b);
 			glVertex2f(cropLineL, cropLineB);
@@ -842,6 +840,40 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			glVertex2f(cropLineL, cropLineT);
 			glVertex2f(l, b);
 			glVertex2f(cropLineL, cropLineB);
+			glEnd();
+
+			glColor4f(tColourf::white.R, tColourf::white.G, tColourf::white.B, 1.00f);
+			glBegin(GL_LINE_LOOP);
+			glVertex2f(cropLineL, cropLineB-1);
+			glVertex2f(cropLineR+1, cropLineB-1);
+			glVertex2f(cropLineR+1, cropLineT);
+			glVertex2f(cropLineL, cropLineT);
+			glVertex2f(cropLineL, cropLineB-1);
+			glEnd();
+
+			glBegin(GL_QUADS);
+
+			// Each of the 4 crop lines need to be a seperate class.
+			glVertex2f(cropLineL-7, cropLineB-7);
+			glVertex2f(cropLineL+0, cropLineB-7);
+			glVertex2f(cropLineL+0, cropLineB+0);
+			glVertex2f(cropLineL-7, cropLineB+0);
+
+			// glColor4f(tColourf::blue.R, tColourf::blue.G, tColourf::blue.B, 1.00f);
+			glVertex2f(cropLineR-0, cropLineB-7);
+			glVertex2f(cropLineR+7, cropLineB-7);
+			glVertex2f(cropLineR+7, cropLineB+0);
+			glVertex2f(cropLineR-0, cropLineB+0);
+
+			glVertex2f(cropLineR-0, cropLineT-0);
+			glVertex2f(cropLineR+7, cropLineT-0);
+			glVertex2f(cropLineR+7, cropLineT+7);
+			glVertex2f(cropLineR-0, cropLineT+7);
+
+			glVertex2f(cropLineL-7, cropLineT+7);
+			glVertex2f(cropLineL+0, cropLineT+7);
+			glVertex2f(cropLineL+0, cropLineT+0);
+			glVertex2f(cropLineL-7, cropLineT+0);
 			glEnd();
 		}
 	}
@@ -1406,8 +1438,8 @@ void TexView::ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan)
 
 	if (correctPan)
 	{
-		PanOffsetX += DragDownOffsetX; DragDownOffsetX = 0;
-		PanOffsetY += DragDownOffsetY; DragDownOffsetY = 0;
+		PanOffsetX += PanDragDownOffsetX; PanDragDownOffsetX = 0;
+		PanOffsetY += PanDragDownOffsetY; PanDragDownOffsetY = 0;
 		PanOffsetX = int(float(PanOffsetX)*ZoomPercent/zoomOrig);
 		PanOffsetY = int(float(PanOffsetY)*ZoomPercent/zoomOrig);
 	}
@@ -1598,8 +1630,8 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
-	if ((ypos <= double(TopUIHeight)) && !FullscreenMode)
-		return;
+	//	if ((ypos <= double(TopUIHeight)) && !FullscreenMode)
+	//		return;
 
 	bool down = press ? true : false;
 	switch (mouseButton)
@@ -1607,10 +1639,14 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 		// Left mouse button.
 		case 0:
 		{
-			if (down)
+			LMBDown = down;
+			if (LMBDown)
 			{
-				CursorX = int(xpos);
-				CursorY = int(ypos);
+				if (!CropMode)
+				{
+					CursorX = int(xpos);
+					CursorY = int(ypos);
+				}
 			}
 			break;
 		}
@@ -1623,10 +1659,10 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 			{
 				DragAnchorX = int(xpos);
 				DragAnchorY = int(ypos);
-				PanOffsetX += DragDownOffsetX;
-				PanOffsetY += DragDownOffsetY;
-				DragDownOffsetX = 0;
-				DragDownOffsetY = 0;
+				PanOffsetX += PanDragDownOffsetX;
+				PanOffsetY += PanDragDownOffsetY;
+				PanDragDownOffsetX = 0;
+				PanDragDownOffsetY = 0;
 			}
 			break;
 		}
