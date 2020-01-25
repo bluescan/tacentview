@@ -66,6 +66,9 @@
     <ClInclude Include="Src\Dialogs.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Crop.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\TacitTexView.cpp">
@@ -108,6 +111,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Dialogs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Crop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

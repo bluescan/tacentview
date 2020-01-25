@@ -41,10 +41,11 @@ namespace TexView
 	extern const tMath::tVector4 ColourDisabledTint;
 	extern const tMath::tVector4 ColourBG;
 	extern const tMath::tVector4 ColourPressedBG;
+	extern const tMath::tVector4 ColourClear;
 
 	const int TopUIHeight			= 26;
 	const float DialogOrigin		= 32.0f;
-	const float DialogDelta		= 19.0f;
+	const float DialogDelta			= 19.0f;
 	const double DisappearDuration	= 4.0;
 
 	// Helper to display a little (?) mark which shows a tooltip when hovered.

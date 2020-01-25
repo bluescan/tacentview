@@ -34,6 +34,7 @@
 #include "Dialogs.h"
 #include "ContactSheet.h"
 #include "ContentView.h"
+#include "Crop.h"
 #include "SaveDialogs.h"
 #include "Settings.h"
 using namespace tStd;
@@ -92,8 +93,9 @@ namespace TexView
 	bool Request_DeleteFileModal				= false;
 	bool Request_DeleteFileNoRecycleModal		= false;
 	bool PrefsDialog							= false;
+	CropWidget CropGizmo;
 	bool CropMode								= false;
-	tVector4 CropLines							= tVector4::zero;
+	//tVector4 CropLines							= tVector4::zero;
 	bool LMBDown								= false;
 	bool RMBDown								= false;
 	int DragAnchorX								= 0;
@@ -824,57 +826,9 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		if (CropMode)
 		{
-			glColor4f(ColourClear.x, ColourClear.y, ColourClear.z, 0.75f);
-			float cropLineL = l; //+ 100;
-			float cropLineR = r; //- 100;
-			float cropLineT = t; //- 50;
-			float cropLineB = b; //+ 50;
-			glBegin(GL_QUAD_STRIP);
-			glVertex2f(l, b);
-			glVertex2f(cropLineL, cropLineB);
-			glVertex2f(r, b);
-			glVertex2f(cropLineR, cropLineB);
-			glVertex2f(r, t);
-			glVertex2f(cropLineR, cropLineT);
-			glVertex2f(l, t);
-			glVertex2f(cropLineL, cropLineT);
-			glVertex2f(l, b);
-			glVertex2f(cropLineL, cropLineB);
-			glEnd();
+			CropGizmo.SetLines(tVector4(l+50,r-50,t-50,b+50));
+			CropGizmo.UpdateDraw( tVector4(l,r,t,b), tVector2::zero);
 
-			glColor4f(tColourf::white.R, tColourf::white.G, tColourf::white.B, 1.00f);
-			glBegin(GL_LINE_LOOP);
-			glVertex2f(cropLineL, cropLineB-1);
-			glVertex2f(cropLineR+1, cropLineB-1);
-			glVertex2f(cropLineR+1, cropLineT);
-			glVertex2f(cropLineL, cropLineT);
-			glVertex2f(cropLineL, cropLineB-1);
-			glEnd();
-
-			glBegin(GL_QUADS);
-
-			// Each of the 4 crop lines need to be a seperate class.
-			glVertex2f(cropLineL-7, cropLineB-7);
-			glVertex2f(cropLineL+0, cropLineB-7);
-			glVertex2f(cropLineL+0, cropLineB+0);
-			glVertex2f(cropLineL-7, cropLineB+0);
-
-			// glColor4f(tColourf::blue.R, tColourf::blue.G, tColourf::blue.B, 1.00f);
-			glVertex2f(cropLineR-0, cropLineB-7);
-			glVertex2f(cropLineR+7, cropLineB-7);
-			glVertex2f(cropLineR+7, cropLineB+0);
-			glVertex2f(cropLineR-0, cropLineB+0);
-
-			glVertex2f(cropLineR-0, cropLineT-0);
-			glVertex2f(cropLineR+7, cropLineT-0);
-			glVertex2f(cropLineR+7, cropLineT+7);
-			glVertex2f(cropLineR-0, cropLineT+7);
-
-			glVertex2f(cropLineL-7, cropLineT+7);
-			glVertex2f(cropLineL+0, cropLineT+7);
-			glVertex2f(cropLineL+0, cropLineT+0);
-			glVertex2f(cropLineL-7, cropLineT+0);
-			glEnd();
 		}
 	}
 
