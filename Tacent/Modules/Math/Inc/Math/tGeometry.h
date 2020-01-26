@@ -151,6 +151,8 @@ struct tARect2
 	tARect2(const tVector2& min, const tVector2& max)																	: Min(min), Max(max) { }
 	tARect2(float minx, float miny, float maxx, float maxy)																: Min(minx, miny), Max(maxx, maxy) { }
 
+	void Set(const tVector2& min, const tVector2& max)																	{ Min = min; Max = max; }
+
 	void AddPoint(const tVector2&);
 	void Expand(float e)																								{ Min.x -= e; Min.y -= e; Max.x += e; Max.y += e; }
 	void Empty()																										{ Min = tVector2(PosInfinity, PosInfinity); Max = tVector2(NegInfinity, NegInfinity); }

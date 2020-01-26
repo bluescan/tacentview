@@ -22,10 +22,13 @@ namespace TexView
 class CropLine
 {
 public:
-	CropLine()										{ }
+	CropLine()																											{ }
 
-	float V = -1.0f;
-	bool Pressed = false;
+	float V					= -1.0f;
+	bool Hovered			= false;
+	bool Pressed			= false;
+	float PressedAnchor		= 0.0f;
+	float PressedDelta		= 0.0f;
 };
 
 
@@ -34,9 +37,8 @@ class CropWidget
 public:
 	CropWidget() { }
 
-	// Don't call this every frame. Only once for each image.
-	void SetLines(const tMath::tVector4& linesLRTB);
-	void MouseButton(bool down);
+	void SetLines(const tMath::tVector4& linesLRTB);								// Don't call this every frame. Only once for each image.
+	void MouseButton(bool down, const tMath::tVector2& mouse);
 	void UpdateDraw(const tMath::tVector4& imgext, const tMath::tVector2& mouse);
 
 	CropLine LineL;
@@ -48,6 +50,9 @@ private:
 	void DrawMatt(const tMath::tVector4& imgext);
 	void DrawLines();
 	void DrawHandles();
+
+	void MouseHovered(CropLine& line, const tMath::tVector2& mouse, const tMath::tVector2& ends, bool horizontal);
+	void MouseButton(CropLine&, bool down, float mouse);
 
 	void ConstrainCropLines(const tMath::tVector4& imgext);
 };

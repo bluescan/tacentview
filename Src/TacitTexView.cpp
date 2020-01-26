@@ -118,8 +118,8 @@ namespace TexView
 	int PanOffsetY								= 0;
 	int PanDragDownOffsetX						= 0;
 	int PanDragDownOffsetY						= 0;
-	int CursorX									= -1;
-	int CursorY									= -1;
+	float CursorX								= -1.0f;
+	float CursorY								= -1.0f;
 	tColouri PixelColour						= tColouri::black;
 
 	const tVector4 ColourEnabledTint			= tVector4(1.00f, 1.00f, 1.00f, 1.00f);
@@ -591,10 +591,8 @@ tVector2 TexView::ConvertScreenPosToImagePos
 	const tVector2& uvMarg, const tVector2& uvOff
 )
 {
-	float workH = float(Disph - GetNavBarHeight());
-
 	float picX = scrPos.x - lrtb.L;
-	float picY = (workH - scrPos.y - 1) - lrtb.B;
+	float picY = (scrPos.y - 1) - lrtb.B;
 	float normX = picX / (lrtb.R-lrtb.L);
 	float normY = picY / (lrtb.T-lrtb.B);
 	if (Config.Tile)
@@ -721,14 +719,22 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			uvVMarg = (1.0f - proph)/2.0f;
 		}
 
-		double xpos, ypos;
-		glfwGetCursorPos(window, &xpos, &ypos);
+		double mouseXd, mouseYd;
+		glfwGetCursorPos(window, &mouseXd, &mouseYd);
+
+		// Make origin lower-left.
+		float workH = float(Disph - GetNavBarHeight());
+		float mouseX = float(mouseXd);
+		float mouseY = workH - float(mouseYd);
+
+		int mouseXi = int(mouseX);
+		int mouseYi = int(mouseY);
 
 		// Modify the UVs here to magnify.
 		if ((draww < w) || Config.Tile)
 		{
 			if (RMBDown)
-				PanDragDownOffsetX = int(xpos) - DragAnchorX;
+				PanDragDownOffsetX = mouseXi - DragAnchorX;
 
 			if (!Config.Tile)
 				tMath::tiClamp(PanDragDownOffsetX, int(-(w-draww)/2.0f) - PanOffsetX, int((w-draww)/2.0f) - PanOffsetX);
@@ -737,7 +743,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		if ((drawh < h) || Config.Tile)
 		{
 			if (RMBDown)
-				PanDragDownOffsetY = int(ypos) - DragAnchorY;
+				PanDragDownOffsetY = mouseYi - DragAnchorY;
 
 			if (!Config.Tile)
 				tMath::tiClamp(PanDragDownOffsetY, int(-(h-drawh)/2.0f) - PanOffsetY, int((h-drawh)/2.0f) - PanOffsetY);
@@ -750,7 +756,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			ResetPan(false, true);
 
 		float uvUOff = -float(PanOffsetX+PanDragDownOffsetX)/w;
-		float uvVOff =  float(PanOffsetY+PanDragDownOffsetY)/h;
+		float uvVOff = -float(PanOffsetY+PanDragDownOffsetY)/h;
 
 		// Draw background.
 		if ((Config.BackgroundExtend || Config.Tile) && !CropMode)
@@ -782,7 +788,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		glEnd();
 
 		// Show cursor colour inspector crosshairs.
-		tVector2 scrCursorPos((float)CursorX, (float)CursorY);
+		tVector2 scrCursorPos(CursorX, CursorY);
 		tVector2 imagePos = ConvertScreenPosToImagePos
 		(
 			scrCursorPos, tVector4(l, r, t, b),
@@ -809,27 +815,28 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			float cw = float((CursorImage.GetWidth() - 1) >> 1);
 			float ch = float((CursorImage.GetHeight() - 1) >> 1);
-			float cx = float(CursorX);
-			float cy = float(CursorY);
+			float cx = CursorX;
+			float cy = CursorY;
 
-			float workH = float(Disph - GetNavBarHeight());
 			CursorImage.Bind();
 			glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 0.0f); glVertex2f(cx-cw, workH-(cy+ch));
-			glTexCoord2f(0.0f, 1.0f); glVertex2f(cx-cw, workH-(cy-ch));
-			glTexCoord2f(1.0f, 1.0f); glVertex2f(cx+cw, workH-(cy-ch));
-			glTexCoord2f(1.0f, 0.0f); glVertex2f(cx+cw, workH-(cy+ch));
+			glTexCoord2f(0.0f, 0.0f); glVertex2f(cx-cw, cy+ch);
+			glTexCoord2f(0.0f, 1.0f); glVertex2f(cx-cw, cy-ch);
+			glTexCoord2f(1.0f, 1.0f); glVertex2f(cx+cw, cy-ch);
+			glTexCoord2f(1.0f, 0.0f); glVertex2f(cx+cw, cy+ch);
 			glEnd();
 		}
 
 		glDisable(GL_TEXTURE_2D);
 
+		static bool lastCropMode = false;
 		if (CropMode)
 		{
-			CropGizmo.SetLines(tVector4(l+50,r-50,t-50,b+50));
-			CropGizmo.UpdateDraw( tVector4(l,r,t,b), tVector2::zero);
-
+			if (!lastCropMode)
+				CropGizmo.SetLines(tVector4(l,r,t,b));
+			CropGizmo.UpdateDraw( tVector4(l,r,t,b), tVector2(mouseX, mouseY) );
 		}
+		lastCropMode = CropMode;
 	}
 
 
@@ -1582,10 +1589,13 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 
 	DisappearCountdown = DisappearDuration;
 
-	double xpos, ypos;
-	glfwGetCursorPos(window, &xpos, &ypos);
-	//	if ((ypos <= double(TopUIHeight)) && !FullscreenMode)
-	//		return;
+	double xposd, yposd;
+	glfwGetCursorPos(window, &xposd, &yposd);
+	float workH = float(Disph - GetNavBarHeight());
+
+	// Make origin lower-left.
+	float mouseX = float(xposd);
+	float mouseY = workH - float(yposd);
 
 	bool down = press ? true : false;
 	switch (mouseButton)
@@ -1594,13 +1604,14 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 		case 0:
 		{
 			LMBDown = down;
-			if (LMBDown)
+			if (CropMode)
 			{
-				if (!CropMode)
-				{
-					CursorX = int(xpos);
-					CursorY = int(ypos);
-				}
+				CropGizmo.MouseButton(LMBDown, tVector2(mouseX, mouseY));
+			}
+			else if (LMBDown)
+			{
+				CursorX = mouseX;
+				CursorY = mouseY;
 			}
 			break;
 		}
@@ -1611,8 +1622,8 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 			RMBDown = down;
 			if (RMBDown)
 			{
-				DragAnchorX = int(xpos);
-				DragAnchorY = int(ypos);
+				DragAnchorX = int(mouseX);
+				DragAnchorY = int(mouseY);
 				PanOffsetX += PanDragDownOffsetX;
 				PanOffsetY += PanDragDownOffsetY;
 				PanDragDownOffsetX = 0;
