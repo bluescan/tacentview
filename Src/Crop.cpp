@@ -22,6 +22,13 @@
 using namespace tMath;
 
 
+namespace TexView
+{
+	tColour CropHovCol		(0.25f, 0.55f, 1.00f, 1.00f);
+	tColour CropCol			(1.00f, 1.00f, 1.00f, 1.00f);
+}
+
+
 void TexView::CropWidget::MouseButton
 (
 	CropLine& line, bool down, float mouse
@@ -47,10 +54,7 @@ void TexView::CropWidget::MouseButton
 }
 
 
-void TexView::CropWidget::MouseHovered
-(
-	CropLine& line, const tMath::tVector2& mouse, const tVector2& ends, bool horizontal
-)
+void TexView::CropWidget::MouseHovered(CropLine& line, const tVector2& mouse, const tVector2& ends, bool horizontal)
 {
 	tARect2 hitBox;
 	if (horizontal)
@@ -73,10 +77,10 @@ void TexView::CropWidget::MouseButton(bool down, const tVector2& mouse)
 
 void TexView::CropWidget::SetLines(const tVector4& lines)
 {
-	LineL.V = lines.L;
-	LineR.V = lines.R;
-	LineT.V = lines.T;
-	LineB.V = lines.B;
+	LineL.V = lines.L;	LineL.PressedDelta = 0.0f;
+	LineR.V = lines.R;	LineR.PressedDelta = 0.0f;
+	LineT.V = lines.T;	LineT.PressedDelta = 0.0f;
+	LineB.V = lines.B;	LineB.PressedDelta = 0.0f;
 }
 
 
@@ -96,9 +100,7 @@ void TexView::CropWidget::UpdateDraw(const tVector4& imgext, const tVector2& mou
 	float b = LineB.V + LineB.PressedDelta;
 	float t = LineT.V + LineT.PressedDelta;
 
-	//tPrintf("L V %f  LD %f\n", LineL.V, LineL.PressedDelta);
 	MouseHovered(LineB, mouse, tVector2(l, r), true);
-
 	MouseHovered(LineT, mouse, tVector2(l, r), true);
 	MouseHovered(LineL, mouse, tVector2(b, t), false);
 	MouseHovered(LineR, mouse, tVector2(b, t), false);
@@ -112,13 +114,25 @@ void TexView::CropWidget::UpdateDraw(const tVector4& imgext, const tVector2& mou
 
 void TexView::CropWidget::ConstrainCropLines(const tVector4& imgext)
 {
-	tiClamp(LineL.V, imgext.L, imgext.R);
-	tiClamp(LineR.V, imgext.L, imgext.R);
-	tiClamp(LineT.V, imgext.B, imgext.T);
-	tiClamp(LineB.V, imgext.B, imgext.T);
-	
-	tiClampMax(LineL.V, LineR.V);
-	tiClampMax(LineB.V, LineT.V);
+	if (LineL.V + LineL.PressedDelta + 8 > LineR.V + LineR.PressedDelta)
+		LineL.PressedDelta = LineR.V + LineR.PressedDelta - LineL.V - 8;
+	if (LineL.V + LineL.PressedDelta < imgext.L)
+		LineL.PressedDelta = imgext.L - LineL.V;
+
+	if (LineR.V + LineR.PressedDelta - 8 < LineL.V + LineL.PressedDelta)
+		LineR.PressedDelta = LineL.V + LineL.PressedDelta - LineR.V + 8;
+	if (LineR.V + LineR.PressedDelta > imgext.R)
+		LineR.PressedDelta = imgext.R - LineR.V;
+
+	if (LineB.V + LineB.PressedDelta + 8 > LineT.V + LineT.PressedDelta)
+		LineB.PressedDelta = LineT.V + LineT.PressedDelta - LineB.V - 8;
+	if (LineB.V + LineB.PressedDelta < imgext.B)
+		LineB.PressedDelta = imgext.B - LineB.V;
+
+	if (LineT.V + LineT.PressedDelta - 8 < LineB.V + LineB.PressedDelta)
+		LineT.PressedDelta = LineB.V + LineB.PressedDelta - LineT.V + 8;
+	if (LineT.V + LineT.PressedDelta > imgext.T)
+		LineT.PressedDelta = imgext.T - LineT.V;
 }
 
 
@@ -152,22 +166,22 @@ void TexView::CropWidget::DrawLines()
 	float r = LineR.V + LineR.PressedDelta;
 	float b = LineB.V + LineB.PressedDelta;
 	float t = LineT.V + LineT.PressedDelta;
-
+	bool anyPressed = LineL.Pressed || LineR.Pressed || LineB.Pressed || LineT.Pressed;
 	glBegin(GL_LINES);
 
-	glColor4fv(LineB.Hovered ? tColourf::blue.E : tColourf::white.E);
+	glColor4fv((!anyPressed && LineB.Hovered) || LineB.Pressed ? CropHovCol.E : CropCol.E);
 	glVertex2f(l,	b-1);
 	glVertex2f(r+1,	b-1);
 
-	glColor4fv(LineR.Hovered ? tColourf::blue.E : tColourf::white.E);
+	glColor4fv((!anyPressed && LineR.Hovered) || LineR.Pressed ? CropHovCol.E : CropCol.E);
 	glVertex2f(r+1,	b-1);
 	glVertex2f(r+1,	t);
 
-	glColor4fv(LineT.Hovered ? tColourf::blue.E : tColourf::white.E);
+	glColor4fv((!anyPressed && LineT.Hovered) || LineT.Pressed ? CropHovCol.E : CropCol.E);
 	glVertex2f(r+1,	t);
 	glVertex2f(l,	t);
 
-	glColor4fv(LineL.Hovered ? tColourf::blue.E : tColourf::white.E);
+	glColor4fv((!anyPressed && LineL.Hovered) || LineL.Pressed ? CropHovCol.E : CropCol.E);
 	glVertex2f(l,	t);
 	glVertex2f(l,	b-1);
 
@@ -182,28 +196,41 @@ void TexView::CropWidget::DrawHandles()
 	float r = LineR.V + LineR.PressedDelta;
 	float b = LineB.V + LineB.PressedDelta;
 	float t = LineT.V + LineT.PressedDelta;
+	bool anyPressed = LineL.Pressed || LineR.Pressed || LineB.Pressed || LineT.Pressed;
 
 	glBegin(GL_QUADS);
 
-	glColor4fv((LineL.Hovered && LineB.Hovered) ? tColourf::blue.E : tColourf::white.E);
+	glColor4fv
+	(
+		(!anyPressed && LineL.Hovered && LineB.Hovered) || (LineL.Pressed && LineB.Pressed) ? CropHovCol.E : CropCol.E
+	);
 	glVertex2f(l-4,		b-4);
 	glVertex2f(l+3,		b-4);
 	glVertex2f(l+3,		b+3);
 	glVertex2f(l-4,		b+3);
 
-	glColor4fv((LineR.Hovered && LineB.Hovered) ? tColourf::blue.E : tColourf::white.E);
+	glColor4fv
+	(
+		(!anyPressed && LineR.Hovered && LineB.Hovered) || (LineR.Pressed && LineB.Pressed) ? CropHovCol.E : CropCol.E
+	);
 	glVertex2f(r-3,		b-4);
 	glVertex2f(r+4,		b-4);
 	glVertex2f(r+4,		b+3);
 	glVertex2f(r-3,		b+3);
 
-	glColor4fv((LineR.Hovered && LineT.Hovered) ? tColourf::blue.E : tColourf::white.E);
+	glColor4fv
+	(
+		(!anyPressed && LineR.Hovered && LineT.Hovered) || (LineR.Pressed && LineT.Pressed) ? CropHovCol.E : CropCol.E
+	);
 	glVertex2f(r-3,		t-3);
 	glVertex2f(r+4,		t-3);
 	glVertex2f(r+4,		t+4);
 	glVertex2f(r-3,		t+4);
 
-	glColor4fv((LineL.Hovered && LineT.Hovered) ? tColourf::blue.E : tColourf::white.E);
+	glColor4fv
+	(
+		(!anyPressed && LineL.Hovered && LineT.Hovered) || (LineL.Pressed && LineT.Pressed) ? CropHovCol.E : CropCol.E
+	);
 	glVertex2f(l-4,		t-3);
 	glVertex2f(l+3,		t-3);
 	glVertex2f(l+3,		t+4);

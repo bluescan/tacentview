@@ -40,7 +40,6 @@
 using namespace tStd;
 using namespace tSystem;
 using namespace tMath;
-//#define FEATURE_CROP
 
 
 namespace TexView
@@ -1017,12 +1016,10 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 					CurrImage->Bind();
 				}
 
-#ifdef FEATURE_CROP
 				if (ImGui::MenuItem("Crop", "/", false, CurrImage))
 				{
 					CropMode = !CropMode;
 				}
-#endif
 
 				ImGui::Separator();
 
@@ -1173,7 +1170,6 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			ShowToolTip("Rotate 90 Clockwise");
 
-#ifdef FEATURE_CROP
 			bool cropAvail = transAvail && !Config.Tile;
 			if
 			(
@@ -1186,10 +1182,18 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			ShowToolTip("Crop");
 
-			if (CropMode && cropAvail && ImGui::Button("Apply Crop", tVector2(80, 20)))
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
+			if (CropMode && cropAvail && ImGui::BeginMenu("Apply Crop"))
 			{
+				// WIP.
+				//tVector2 ConvertScreenPosToImagePos
+				//(
+				//	const tVector2& scrPos, const tVector4& lrtb,
+				//	const tVector2& uvMarg, const tVector2& uvOff
+				//);
+				ImGui::EndMenu();
 			}
-#endif
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
 
 			bool altMipmapsPicAvail = CurrImage ? CurrImage->IsAltMipmapsPictureAvail() && !CropMode : false;
 			bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
@@ -1514,11 +1518,9 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 			}
 			break;
 
-#ifdef FEATURE_CROP
 		case GLFW_KEY_SLASH:
 			CropMode = !CropMode;
 			break;
-#endif
 
 		case GLFW_KEY_T:
 			Config.Tile = !Config.Tile;
