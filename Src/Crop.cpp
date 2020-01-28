@@ -29,10 +29,7 @@ namespace TexView
 }
 
 
-void TexView::CropWidget::MouseButton
-(
-	CropLine& line, bool down, float mouse
-)
+void TexView::CropWidget::MouseButton(CropLine& line, bool down, float mouse)
 {
 	if (down)
 	{
@@ -44,12 +41,9 @@ void TexView::CropWidget::MouseButton
 	}
 	else
 	{
-		if (line.Pressed)
-		{
-			line.V += line.PressedDelta;
-			line.PressedDelta = 0.0f;
-			line.Pressed = false;
-		}
+		line.V += line.PressedDelta;
+		line.PressedDelta = 0.0f;
+		line.Pressed = false;
 	}
 }
 
@@ -72,6 +66,8 @@ void TexView::CropWidget::MouseButton(bool down, const tVector2& mouse)
 	MouseButton(LineT, down, mouse.y);
 	MouseButton(LineL, down, mouse.x);
 	MouseButton(LineR, down, mouse.x);
+
+
 }
 
 
@@ -114,25 +110,37 @@ void TexView::CropWidget::UpdateDraw(const tVector4& imgext, const tVector2& mou
 
 void TexView::CropWidget::ConstrainCropLines(const tVector4& imgext)
 {
-	if (LineL.V + LineL.PressedDelta + 8 > LineR.V + LineR.PressedDelta)
-		LineL.PressedDelta = LineR.V + LineR.PressedDelta - LineL.V - 8;
-	if (LineL.V + LineL.PressedDelta < imgext.L)
-		LineL.PressedDelta = imgext.L - LineL.V;
+	if (LineL.Pressed)
+	{
+		if (LineL.V + LineL.PressedDelta + 8 > LineR.V + LineR.PressedDelta)
+			LineL.PressedDelta = LineR.V + LineR.PressedDelta - LineL.V - 8;
+		if (LineL.V + LineL.PressedDelta < imgext.L)
+			LineL.PressedDelta = imgext.L - LineL.V;
+	}
 
-	if (LineR.V + LineR.PressedDelta - 8 < LineL.V + LineL.PressedDelta)
-		LineR.PressedDelta = LineL.V + LineL.PressedDelta - LineR.V + 8;
-	if (LineR.V + LineR.PressedDelta > imgext.R)
-		LineR.PressedDelta = imgext.R - LineR.V;
+	if (LineR.Pressed)
+	{
+		if (LineR.V + LineR.PressedDelta - 8 < LineL.V + LineL.PressedDelta)
+			LineR.PressedDelta = LineL.V + LineL.PressedDelta - LineR.V + 8;
+		if (LineR.V + LineR.PressedDelta > imgext.R)
+			LineR.PressedDelta = imgext.R - LineR.V;
+	}
 
-	if (LineB.V + LineB.PressedDelta + 8 > LineT.V + LineT.PressedDelta)
-		LineB.PressedDelta = LineT.V + LineT.PressedDelta - LineB.V - 8;
-	if (LineB.V + LineB.PressedDelta < imgext.B)
-		LineB.PressedDelta = imgext.B - LineB.V;
+	if (LineB.Pressed)
+	{
+		if (LineB.V + LineB.PressedDelta + 8 > LineT.V + LineT.PressedDelta)
+			LineB.PressedDelta = LineT.V + LineT.PressedDelta - LineB.V - 8;
+		if (LineB.V + LineB.PressedDelta < imgext.B)
+			LineB.PressedDelta = imgext.B - LineB.V;
+	}
 
-	if (LineT.V + LineT.PressedDelta - 8 < LineB.V + LineB.PressedDelta)
-		LineT.PressedDelta = LineB.V + LineB.PressedDelta - LineT.V + 8;
-	if (LineT.V + LineT.PressedDelta > imgext.T)
-		LineT.PressedDelta = imgext.T - LineT.V;
+	if (LineT.Pressed)
+	{
+		if (LineT.V + LineT.PressedDelta - 8 < LineB.V + LineB.PressedDelta)
+			LineT.PressedDelta = LineB.V + LineB.PressedDelta - LineT.V + 8;
+		if (LineT.V + LineT.PressedDelta > imgext.T)
+			LineT.PressedDelta = imgext.T - LineT.V;
+	}
 }
 
 
