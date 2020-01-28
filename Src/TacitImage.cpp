@@ -360,6 +360,13 @@ void TacitImage::Flip(bool horizontal)
 }
 
 
+void TacitImage::Crop(int newWidth, int newHeight, int originX, int originY)
+{
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->Crop(newWidth, newHeight, originX, originY);
+}
+
+
 void TacitImage::PrintInfo()
 {
 	tPixelFormat format = tPixelFormat::Invalid;

@@ -51,6 +51,7 @@ public:
 
 	void Rotate90(bool antiClockWise);
 	void Flip(bool horizontal);
+	void Crop(int newWidth, int newHeight, int originX, int originY);
 
 	struct ImgInfo
 	{

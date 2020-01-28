@@ -656,6 +656,15 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	float hmargin = 0.0f;	float vmargin = 0.0f;
 	static int imgx = 0;	static int imgy = 0;
 
+	float uvUOff = 0.0f;
+	float uvVOff = 0.0f;
+	float l = 0.0f;
+	float r = 0.0f;
+	float b = 0.0f;
+	float t = 0.0f;
+	float uvUMarg = 0.0f;
+	float uvVMarg = 0.0f;
+
 	if (CurrImage)
 	{
 		iw = float(CurrImage->GetWidth());
@@ -678,13 +687,10 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 
 		// w and h are the image width and height. draww and drawh are the drawable area width and height.
-		float l = tMath::tRound(hmargin);
-		float r = tMath::tRound(hmargin+draww);
-		float b = tMath::tRound(vmargin);
-		float t = tMath::tRound(vmargin+drawh);
-
-		float uvUMarg = 0.0f;
-		float uvVMarg = 0.0f;
+		l = tMath::tRound(hmargin);
+		r = tMath::tRound(hmargin+draww);
+		b = tMath::tRound(vmargin);
+		t = tMath::tRound(vmargin+drawh);
 
 		if (CurrZoomMode == ZoomMode::Downscale)
 		{
@@ -754,8 +760,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		if ((drawh > h) && !Config.Tile)
 			ResetPan(false, true);
 
-		float uvUOff = -float(PanOffsetX+PanDragDownOffsetX)/w;
-		float uvVOff = -float(PanOffsetY+PanDragDownOffsetY)/h;
+		uvUOff = -float(PanOffsetX+PanDragDownOffsetX)/w;
+		uvVOff = -float(PanOffsetY+PanDragDownOffsetY)/h;
 
 		// Draw background.
 		if ((Config.BackgroundExtend || Config.Tile) && !CropMode)
@@ -837,7 +843,6 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 		lastCropMode = CropMode;
 	}
-
 
 	ImGui::NewFrame();
 	
@@ -925,361 +930,374 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,6));
 		ImGui::BeginMainMenuBar();
+
+		//
+		// File Menu.
+		//
+		bool saveAsPressed = Request_SaveAsModal;
+		bool saveAllPressed = Request_SaveAllModal;
+		bool saveContactSheetPressed = Request_ContactSheetModal;
+		Request_SaveAsModal = false;
+		Request_SaveAllModal = false;
+		Request_ContactSheetModal = false;
+		if (ImGui::BeginMenu("File"))
 		{
-			//
-			// File Menu.
-			//
-			bool saveAsPressed = Request_SaveAsModal;
-			bool saveAllPressed = Request_SaveAllModal;
-			bool saveContactSheetPressed = Request_ContactSheetModal;
-			Request_SaveAsModal = false;
-			Request_SaveAllModal = false;
-			Request_ContactSheetModal = false;
-			if (ImGui::BeginMenu("File"))
-			{
-				// Show file menu items...
-				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
-
-				if (ImGui::MenuItem("Save As...", "Ctrl-S") && CurrImage)
-					saveAsPressed = true;
-
-				if (ImGui::MenuItem("Save All...", "Alt-S") && CurrImage)
-					saveAllPressed = true;
-
-				if (ImGui::MenuItem("Save Contact Sheet...", "C") && (Images.GetNumItems() > 1))
-					saveContactSheetPressed = true;
-
-				ImGui::Separator();
-				if (ImGui::MenuItem("Quit", "Alt-F4"))
-					glfwSetWindowShouldClose(Window, 1);
-
-				ImGui::PopStyleVar();
-				ImGui::EndMenu();
-			}
+			// Show file menu items...
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 
-			if (saveAsPressed)
-				ImGui::OpenPopup("Save As");
-			// The unused isOpenSaveAs bool is just so we get a close button in ImGui. 
-			bool isOpenSaveAs = true;
-			if (ImGui::BeginPopupModal("Save As", &isOpenSaveAs, ImGuiWindowFlags_AlwaysAutoResize))
-				DoSaveAsModalDialog(saveAsPressed);
+			if (ImGui::MenuItem("Save As...", "Ctrl-S") && CurrImage)
+				saveAsPressed = true;
 
-			if (saveAllPressed)
-				ImGui::OpenPopup("Save All");
-			// The unused isOpenSaveAll bool is just so we get a close button in ImGui. 
-			bool isOpenSaveAll = true;
-			if (ImGui::BeginPopupModal("Save All", &isOpenSaveAll, ImGuiWindowFlags_AlwaysAutoResize))
-				DoSaveAllModalDialog(saveAllPressed);
+			if (ImGui::MenuItem("Save All...", "Alt-S") && CurrImage)
+				saveAllPressed = true;
 
-			if (saveContactSheetPressed)
-				ImGui::OpenPopup("Contact Sheet");
-			// The unused isOpenContactSheet bool is just so we get a close button in ImGui. 
-			bool isOpenContactSheet = true;
-			if (ImGui::BeginPopupModal("Contact Sheet", &isOpenContactSheet, ImGuiWindowFlags_AlwaysAutoResize))
-				DoContactSheetModalDialog(saveContactSheetPressed);
+			if (ImGui::MenuItem("Save Contact Sheet...", "C") && (Images.GetNumItems() > 1))
+				saveContactSheetPressed = true;
+
+			ImGui::Separator();
+			if (ImGui::MenuItem("Quit", "Alt-F4"))
+				glfwSetWindowShouldClose(Window, 1);
 
 			ImGui::PopStyleVar();
+			ImGui::EndMenu();
+		}
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 
-			//
-			// Edit Menu.
-			//
-			if (ImGui::BeginMenu("Edit"))
-			{
-				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
+		if (saveAsPressed)
+			ImGui::OpenPopup("Save As");
+		// The unused isOpenSaveAs bool is just so we get a close button in ImGui. 
+		bool isOpenSaveAs = true;
+		if (ImGui::BeginPopupModal("Save As", &isOpenSaveAs, ImGuiWindowFlags_AlwaysAutoResize))
+			DoSaveAsModalDialog(saveAsPressed);
 
-				if (ImGui::MenuItem("Flip Vertically", "Ctrl <", false, CurrImage && !CurrImage->IsAltPictureEnabled()))
-				{
-					CurrImage->Unbind();
-					CurrImage->Flip(false);
-					CurrImage->Bind();
-				}
+		if (saveAllPressed)
+			ImGui::OpenPopup("Save All");
+		// The unused isOpenSaveAll bool is just so we get a close button in ImGui. 
+		bool isOpenSaveAll = true;
+		if (ImGui::BeginPopupModal("Save All", &isOpenSaveAll, ImGuiWindowFlags_AlwaysAutoResize))
+			DoSaveAllModalDialog(saveAllPressed);
 
-				if (ImGui::MenuItem("Flip Horizontally", "Ctrl >", false, CurrImage && !CurrImage->IsAltPictureEnabled()))
-				{
-					CurrImage->Unbind();
-					CurrImage->Flip(true);
-					CurrImage->Bind();
-				}
+		if (saveContactSheetPressed)
+			ImGui::OpenPopup("Contact Sheet");
+		// The unused isOpenContactSheet bool is just so we get a close button in ImGui. 
+		bool isOpenContactSheet = true;
+		if (ImGui::BeginPopupModal("Contact Sheet", &isOpenContactSheet, ImGuiWindowFlags_AlwaysAutoResize))
+			DoContactSheetModalDialog(saveContactSheetPressed);
 
-				if (ImGui::MenuItem("Rotate Anti-Clockwise", "<", false, CurrImage && !CurrImage->IsAltPictureEnabled()))
-				{
-					CurrImage->Unbind();
-					CurrImage->Rotate90(true);
-					CurrImage->Bind();
-				}
+		ImGui::PopStyleVar();
 
-				if (ImGui::MenuItem("Rotate Clockwise", ">", false, CurrImage && !CurrImage->IsAltPictureEnabled()))
-				{
-					CurrImage->Unbind();
-					CurrImage->Rotate90(false);
-					CurrImage->Bind();
-				}
-
-				if (ImGui::MenuItem("Crop", "/", false, CurrImage))
-				{
-					CropMode = !CropMode;
-				}
-
-				ImGui::Separator();
-
-				if (ImGui::MenuItem("Preferences...", "P"))
-					PrefsDialog = !PrefsDialog;
-
-				ImGui::PopStyleVar();
-				ImGui::EndMenu();
-			}
+		//
+		// Edit Menu.
+		//
+		if (ImGui::BeginMenu("Edit"))
+		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 
-			if (PrefsDialog)
-				ShowPreferencesDialog(&PrefsDialog);
-
-			ImGui::PopStyleVar();
-
-			//
-			// View Menu.
-			//
-			if (ImGui::BeginMenu("View"))
-			{
-				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
-				ImGui::MenuItem("Nav Bar", "N", &Config.ShowNavBar, true);
-				ImGui::MenuItem("Image Details", "I", &Config.ShowImageDetails, true);
-				ImGui::MenuItem("Content View", "V", &Config.ContentViewShow, true);
-
-				ImGui::Separator();
-
-				bool userMode = CurrZoomMode == ZoomMode::User;
-				if (ImGui::MenuItem("Zoom User", "", &userMode, true))
-				{
-					ResetPan();
-					CurrZoomMode = ZoomMode::User;
-				}
-
-				bool fitMode = CurrZoomMode == ZoomMode::Fit;
-				if (ImGui::MenuItem("Zoom Fit", "F", &fitMode, true))
-				{
-					ResetPan();
-					CurrZoomMode = ZoomMode::Fit;
-				}
-
-				bool downscale = CurrZoomMode == ZoomMode::Downscale;
-				if (ImGui::MenuItem("Zoom Downscale", "D", &downscale, true))
-				{
-					ResetPan();
-					CurrZoomMode = ZoomMode::Downscale;
-				}
-
-				bool oneToOne = CurrZoomMode == ZoomMode::OneToOne;
-				if (ImGui::MenuItem("Zoom 1:1", "Z", &oneToOne, true))
-				{
-					ZoomPercent = 100.0f;
-					ResetPan();
-					CurrZoomMode = ZoomMode::OneToOne;
-				}
-
-				ImGui::PushItemWidth(60);
-				const char* zoomItems[] = { "Zoom", "20%", "50%", "100%", "150%", "200%", "400%", "800%", "1200%", "1800%", "2500%"};
-				float zoomVals[] = { -1.0f, 20.0f, 50.0f, 100.0f, 150.0f, 200.0f, 400.0f, 800.0f, 1200.0f, 1800.0f, 2500.0f };
-				tString currZoomStr;
-				tsPrintf(currZoomStr, "%0.0f%%", ZoomPercent);
-				int zoomIdx = 0;
-				if (ImGui::Combo(currZoomStr.Chars(), &zoomIdx, zoomItems, tNumElements(zoomItems)) && (zoomIdx > 0))
-					ApplyZoomDelta( zoomVals[zoomIdx]-ZoomPercent, 1.0f, true);
-				ImGui::PopItemWidth();
-
-				ImGui::Separator();
-				if (ImGui::Button("Reset Pan"))
-					ResetPan();
-
-				ImGui::PopStyleVar();
-				ImGui::EndMenu();
-			}
-
-			//
-			// Help Menu.
-			//
-			if (ImGui::BeginMenu("Help"))
-			{
-				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
-				ImGui::MenuItem("Cheat Sheet", "F1", &ShowCheatSheet, true);
-				ImGui::MenuItem("About", "", &ShowAbout, true);
-				ImGui::PopStyleVar();
-				ImGui::EndMenu();
-			}
-
-			//
-			// Toolbar.
-			//
-			tColourf floatCol(PixelColour);
-			tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 40.0f);			
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
-			if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, tVector2(20,20)))
-				ImGui::OpenPopup("CopyColourAs");
-
-			if (ImGui::BeginPopup("CopyColourAs"))
-				ColourCopyAs();
-
-			bool transAvail = CurrImage ? !CurrImage->IsAltPictureEnabled() : false;
-
-			if
-			(
-				ImGui::ImageButton(ImTextureID(FlipVImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
-				transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
-			)
+			if (ImGui::MenuItem("Flip Vertically", "Ctrl <", false, CurrImage && !CurrImage->IsAltPictureEnabled()))
 			{
 				CurrImage->Unbind();
 				CurrImage->Flip(false);
 				CurrImage->Bind();
 			}
-			ShowToolTip("Flip Vertically");
 
-			if
-			(
-				ImGui::ImageButton(ImTextureID(FlipHImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
-				transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
-			)
+			if (ImGui::MenuItem("Flip Horizontally", "Ctrl >", false, CurrImage && !CurrImage->IsAltPictureEnabled()))
 			{
 				CurrImage->Unbind();
 				CurrImage->Flip(true);
 				CurrImage->Bind();
 			}
-			ShowToolTip("Flip Horizontally");
 
-			if
-			(
-				ImGui::ImageButton(ImTextureID(RotateACWImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
-				transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
-			)
+			if (ImGui::MenuItem("Rotate Anti-Clockwise", "<", false, CurrImage && !CurrImage->IsAltPictureEnabled()))
 			{
 				CurrImage->Unbind();
 				CurrImage->Rotate90(true);
 				CurrImage->Bind();
 			}
-			ShowToolTip("Rotate 90 Anticlockwise");
 
-			if
-			(
-				ImGui::ImageButton(ImTextureID(RotateCWImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
-				transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
-			)
+			if (ImGui::MenuItem("Rotate Clockwise", ">", false, CurrImage && !CurrImage->IsAltPictureEnabled()))
 			{
 				CurrImage->Unbind();
 				CurrImage->Rotate90(false);
 				CurrImage->Bind();
 			}
-			ShowToolTip("Rotate 90 Clockwise");
 
-			bool cropAvail = transAvail && !Config.Tile;
-			if
-			(
-				ImGui::ImageButton(ImTextureID(CropImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
-				CropMode ? ColourPressedBG : ColourBG,
-				cropAvail ? ColourEnabledTint : ColourDisabledTint) && cropAvail
-			)
+			if (ImGui::MenuItem("Crop", "/", false, CurrImage))
 			{
 				CropMode = !CropMode;
 			}
-			ShowToolTip("Crop");
 
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
-			if (CropMode && cropAvail && ImGui::BeginMenu("Apply Crop"))
-			{
-				// WIP.
-				//tVector2 ConvertScreenPosToImagePos
-				//(
-				//	const tVector2& scrPos, const tVector4& lrtb,
-				//	const tVector2& uvMarg, const tVector2& uvOff
-				//);
-				ImGui::EndMenu();
-			}
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
+			ImGui::Separator();
 
-			bool altMipmapsPicAvail = CurrImage ? CurrImage->IsAltMipmapsPictureAvail() && !CropMode : false;
-			bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
-			if
-			(
-				ImGui::ImageButton
-				(
-					ImTextureID(MipmapsImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
-					altMipmapsPicEnabl ? ColourPressedBG : ColourBG,
-					altMipmapsPicAvail ? ColourEnabledTint : ColourDisabledTint
-				) && altMipmapsPicAvail
-			)
-			{
-				CurrImage->EnableAltPicture(!altMipmapsPicEnabl);
-				CurrImage->Bind();
-			}
-			ShowToolTip("Display Mipmaps\nDDS files may include mipmaps.");
+			if (ImGui::MenuItem("Preferences...", "P"))
+				PrefsDialog = !PrefsDialog;
 
-			bool altCubemapPicAvail = CurrImage ? CurrImage->IsAltCubemapPictureAvail() && !CropMode : false;
-			bool altCubemapPicEnabl = altCubemapPicAvail && CurrImage->IsAltPictureEnabled();
-			if
-			(
-				ImGui::ImageButton
-				(
-					ImTextureID(CubemapImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
-					altCubemapPicEnabl ? ColourPressedBG : ColourBG,
-					altCubemapPicAvail ? ColourEnabledTint : ColourDisabledTint
-				) && altCubemapPicAvail
-			)
-			{
-				CurrImage->EnableAltPicture(!altCubemapPicEnabl);
-				CurrImage->Bind();
-			}
-			ShowToolTip("Display Cubemap\nDDS files may be cubemaps.");
-
-			bool tileAvail = CurrImage ? (!CurrImage->IsAltPictureEnabled() && !CropMode) : false;
-			if
-			(
-				ImGui::ImageButton
-				(
-					ImTextureID(TileImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
-					Config.Tile ? ColourPressedBG : ColourBG,
-					tileAvail ? ColourEnabledTint : ColourDisabledTint
-				) && tileAvail
-			)
-			{
-				Config.Tile = !Config.Tile;
-				if (!Config.Tile)
-					ResetPan();
-			}
-			ShowToolTip("Show Images Tiled");
-
-			bool recycleAvail = CurrImage ? true : false;
-			if
-			(
-				ImGui::ImageButton
-				(
-					ImTextureID(RecycleImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, tVector4(0.00f, 0.00f, 0.00f, 0.00f),
-					recycleAvail ? ColourEnabledTint : ColourDisabledTint
-				) && recycleAvail
-			)
-			{
-				Request_DeleteFileModal = true;
-			}
-			ShowToolTip("Delete Current File");
-
-			if
-			(
-				ImGui::ImageButton(ImTextureID(ContentViewImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
-				Config.ContentViewShow ? ColourPressedBG : ColourBG, tVector4(1.00f, 1.00f, 1.00f, 1.00f))
-			)
-			{
-				Config.ContentViewShow = !Config.ContentViewShow;
-			}
-			ShowToolTip("Content Thumbnail View");
-
-			if
-			(
-				ImGui::ImageButton(ImTextureID(InfoOverlayImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
-				Config.ShowImageDetails ? ColourPressedBG : ColourBG, tVector4(1.00f, 1.00f, 1.00f, 1.00f))
-			)
-			{
-				Config.ShowImageDetails = !Config.ShowImageDetails;
-			}
-			ShowToolTip("Information Overlay");
+			ImGui::PopStyleVar();
+			ImGui::EndMenu();
 		}
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
+
+		if (PrefsDialog)
+			ShowPreferencesDialog(&PrefsDialog);
+
+		ImGui::PopStyleVar();
+
+		//
+		// View Menu.
+		//
+		if (ImGui::BeginMenu("View"))
+		{
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
+			ImGui::MenuItem("Nav Bar", "N", &Config.ShowNavBar, true);
+			ImGui::MenuItem("Image Details", "I", &Config.ShowImageDetails, true);
+			ImGui::MenuItem("Content View", "V", &Config.ContentViewShow, true);
+
+			ImGui::Separator();
+
+			bool userMode = CurrZoomMode == ZoomMode::User;
+			if (ImGui::MenuItem("Zoom User", "", &userMode, true))
+			{
+				ResetPan();
+				CurrZoomMode = ZoomMode::User;
+			}
+
+			bool fitMode = CurrZoomMode == ZoomMode::Fit;
+			if (ImGui::MenuItem("Zoom Fit", "F", &fitMode, true))
+			{
+				ResetPan();
+				CurrZoomMode = ZoomMode::Fit;
+			}
+
+			bool downscale = CurrZoomMode == ZoomMode::Downscale;
+			if (ImGui::MenuItem("Zoom Downscale", "D", &downscale, true))
+			{
+				ResetPan();
+				CurrZoomMode = ZoomMode::Downscale;
+			}
+
+			bool oneToOne = CurrZoomMode == ZoomMode::OneToOne;
+			if (ImGui::MenuItem("Zoom 1:1", "Z", &oneToOne, true))
+			{
+				ZoomPercent = 100.0f;
+				ResetPan();
+				CurrZoomMode = ZoomMode::OneToOne;
+			}
+
+			ImGui::PushItemWidth(60);
+			const char* zoomItems[] = { "Zoom", "20%", "50%", "100%", "150%", "200%", "400%", "800%", "1200%", "1800%", "2500%"};
+			float zoomVals[] = { -1.0f, 20.0f, 50.0f, 100.0f, 150.0f, 200.0f, 400.0f, 800.0f, 1200.0f, 1800.0f, 2500.0f };
+			tString currZoomStr;
+			tsPrintf(currZoomStr, "%0.0f%%", ZoomPercent);
+			int zoomIdx = 0;
+			if (ImGui::Combo(currZoomStr.Chars(), &zoomIdx, zoomItems, tNumElements(zoomItems)) && (zoomIdx > 0))
+				ApplyZoomDelta( zoomVals[zoomIdx]-ZoomPercent, 1.0f, true);
+			ImGui::PopItemWidth();
+
+			ImGui::Separator();
+			if (ImGui::Button("Reset Pan"))
+				ResetPan();
+
+			ImGui::PopStyleVar();
+			ImGui::EndMenu();
+		}
+
+		//
+		// Help Menu.
+		//
+		if (ImGui::BeginMenu("Help"))
+		{
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
+			ImGui::MenuItem("Cheat Sheet", "F1", &ShowCheatSheet, true);
+			ImGui::MenuItem("About", "", &ShowAbout, true);
+			ImGui::PopStyleVar();
+			ImGui::EndMenu();
+		}
+
+		//
+		// Toolbar.
+		//
+		tColourf floatCol(PixelColour);
+		tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 40.0f);			
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
+		if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, tVector2(20,20)))
+			ImGui::OpenPopup("CopyColourAs");
+
+		if (ImGui::BeginPopup("CopyColourAs"))
+			ColourCopyAs();
+
+		bool transAvail = CurrImage ? !CurrImage->IsAltPictureEnabled() : false;
+
+		if
+		(
+			ImGui::ImageButton(ImTextureID(FlipVImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
+			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
+		)
+		{
+			CurrImage->Unbind();
+			CurrImage->Flip(false);
+			CurrImage->Bind();
+		}
+		ShowToolTip("Flip Vertically");
+
+		if
+		(
+			ImGui::ImageButton(ImTextureID(FlipHImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
+			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
+		)
+		{
+			CurrImage->Unbind();
+			CurrImage->Flip(true);
+			CurrImage->Bind();
+		}
+		ShowToolTip("Flip Horizontally");
+
+		if
+		(
+			ImGui::ImageButton(ImTextureID(RotateACWImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
+			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
+		)
+		{
+			CurrImage->Unbind();
+			CurrImage->Rotate90(true);
+			CurrImage->Bind();
+		}
+		ShowToolTip("Rotate 90 Anticlockwise");
+
+		if
+		(
+			ImGui::ImageButton(ImTextureID(RotateCWImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
+			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
+		)
+		{
+			CurrImage->Unbind();
+			CurrImage->Rotate90(false);
+			CurrImage->Bind();
+		}
+		ShowToolTip("Rotate 90 Clockwise");
+
+		bool cropAvail = CurrImage && transAvail && !Config.Tile;
+		if
+		(
+			ImGui::ImageButton(ImTextureID(CropImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
+			CropMode ? ColourPressedBG : ColourBG,
+			cropAvail ? ColourEnabledTint : ColourDisabledTint) && cropAvail
+		)
+		{
+			CropMode = !CropMode;
+		}
+		ShowToolTip("Crop");
+
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
+		if (CropMode && cropAvail && ImGui::BeginMenu("Apply Crop"))
+		{
+			tVector2 scrCropMin(CropGizmo.LineL.V, CropGizmo.LineB.V);
+			tVector2 scrCropMax(CropGizmo.LineR.V, CropGizmo.LineT.V);
+			tVector2 cropMin = ConvertScreenPosToImagePos
+			(
+				scrCropMin, tVector4(l, r, t, b),
+				tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
+			);
+			tVector2 cropMax = ConvertScreenPosToImagePos
+			(
+				scrCropMax, tVector4(l, r, t, b),
+				tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
+			);
+
+			int newW = tClampMin(int(cropMax.x - cropMin.x), 4);
+			int newH = tClampMin(int(cropMax.y - cropMin.y), 4);
+
+			CurrImage->Unbind();
+			CurrImage->Crop(newW, newH, int(cropMin.x), int(cropMin.y)+1);
+			CurrImage->Bind();
+			CropMode = false;
+			ImGui::EndMenu();
+		}
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
+
+		bool altMipmapsPicAvail = CurrImage ? CurrImage->IsAltMipmapsPictureAvail() && !CropMode : false;
+		bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
+		if
+		(
+			ImGui::ImageButton
+			(
+				ImTextureID(MipmapsImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
+				altMipmapsPicEnabl ? ColourPressedBG : ColourBG,
+				altMipmapsPicAvail ? ColourEnabledTint : ColourDisabledTint
+			) && altMipmapsPicAvail
+		)
+		{
+			CurrImage->EnableAltPicture(!altMipmapsPicEnabl);
+			CurrImage->Bind();
+		}
+		ShowToolTip("Display Mipmaps\nDDS files may include mipmaps.");
+
+		bool altCubemapPicAvail = CurrImage ? CurrImage->IsAltCubemapPictureAvail() && !CropMode : false;
+		bool altCubemapPicEnabl = altCubemapPicAvail && CurrImage->IsAltPictureEnabled();
+		if
+		(
+			ImGui::ImageButton
+			(
+				ImTextureID(CubemapImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
+				altCubemapPicEnabl ? ColourPressedBG : ColourBG,
+				altCubemapPicAvail ? ColourEnabledTint : ColourDisabledTint
+			) && altCubemapPicAvail
+		)
+		{
+			CurrImage->EnableAltPicture(!altCubemapPicEnabl);
+			CurrImage->Bind();
+		}
+		ShowToolTip("Display Cubemap\nDDS files may be cubemaps.");
+
+		bool tileAvail = CurrImage ? (!CurrImage->IsAltPictureEnabled() && !CropMode) : false;
+		if
+		(
+			ImGui::ImageButton
+			(
+				ImTextureID(TileImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
+				Config.Tile ? ColourPressedBG : ColourBG,
+				tileAvail ? ColourEnabledTint : ColourDisabledTint
+			) && tileAvail
+		)
+		{
+			Config.Tile = !Config.Tile;
+			if (!Config.Tile)
+				ResetPan();
+		}
+		ShowToolTip("Show Images Tiled");
+
+		bool recycleAvail = CurrImage ? true : false;
+		if
+		(
+			ImGui::ImageButton
+			(
+				ImTextureID(RecycleImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, tVector4(0.00f, 0.00f, 0.00f, 0.00f),
+				recycleAvail ? ColourEnabledTint : ColourDisabledTint
+			) && recycleAvail
+		)
+		{
+			Request_DeleteFileModal = true;
+		}
+		ShowToolTip("Delete Current File");
+
+		if
+		(
+			ImGui::ImageButton(ImTextureID(ContentViewImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
+			Config.ContentViewShow ? ColourPressedBG : ColourBG, tVector4(1.00f, 1.00f, 1.00f, 1.00f))
+		)
+		{
+			Config.ContentViewShow = !Config.ContentViewShow;
+		}
+		ShowToolTip("Content Thumbnail View");
+
+		if
+		(
+			ImGui::ImageButton(ImTextureID(InfoOverlayImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
+			Config.ShowImageDetails ? ColourPressedBG : ColourBG, tVector4(1.00f, 1.00f, 1.00f, 1.00f))
+		)
+		{
+			Config.ShowImageDetails = !Config.ShowImageDetails;
+		}
+		ShowToolTip("Information Overlay");
 
 		ImGui::EndMainMenuBar();
 		ImGui::PopStyleVar();
