@@ -68,6 +68,7 @@ namespace TexView
 	TacitImage SkipEndImage;
 	TacitImage MipmapsImage;
 	TacitImage CubemapImage;
+	TacitImage RefreshImage;
 	TacitImage RecycleImage;
 	TacitImage InfoOverlayImage;
 	TacitImage TileImage;
@@ -1265,6 +1266,23 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 		ShowToolTip("Show Images Tiled");
 
+		bool refreshAvail = CurrImage ? true : false;
+		if
+		(
+			ImGui::ImageButton
+			(
+				ImTextureID(RefreshImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, tVector4(0.00f, 0.00f, 0.00f, 0.00f),
+				refreshAvail ? ColourEnabledTint : ColourDisabledTint
+			) && refreshAvail
+		)
+		{
+			CurrImage->Unbind();
+			CurrImage->Unload();
+			CurrImage->Load();
+			CurrImage->Bind();
+		}
+		ShowToolTip("Refresh/Reload Current File");
+
 		bool recycleAvail = CurrImage ? true : false;
 		if
 		(
@@ -1538,6 +1556,16 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 
 		case GLFW_KEY_SLASH:
 			CropMode = !CropMode;
+			break;
+
+		case GLFW_KEY_R:
+			if (CurrImage)
+			{
+				CurrImage->Unbind();
+				CurrImage->Unload();
+				CurrImage->Load();
+				CurrImage->Bind();
+			}
 			break;
 
 		case GLFW_KEY_T:
@@ -1867,6 +1895,7 @@ int main(int argc, char** argv)
 	TexView::SkipEndImage.Load(dataDir + "SkipEnd.png");
 	TexView::MipmapsImage.Load(dataDir + "Mipmaps.png");
 	TexView::CubemapImage.Load(dataDir + "Cubemap.png");
+	TexView::RefreshImage.Load(dataDir + "Refresh.png");
 	TexView::RecycleImage.Load(dataDir + "Recycle.png");
 	TexView::InfoOverlayImage.Load(dataDir + "InfoOverlay.png");
 	TexView::TileImage.Load(dataDir + "Tile.png");
