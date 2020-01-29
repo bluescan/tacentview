@@ -95,7 +95,6 @@ namespace TexView
 	bool PrefsDialog							= false;
 	CropWidget CropGizmo;
 	bool CropMode								= false;
-	//tVector4 CropLines							= tVector4::zero;
 	bool LMBDown								= false;
 	bool RMBDown								= false;
 	int DragAnchorX								= 0;
@@ -215,7 +214,6 @@ void TexView::DrawNavBar(float x, float y, float w, float h)
 	ImGui::End();
 
 	ImGui::PopStyleVar(3);
-
 }
 
 
@@ -672,19 +670,20 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		ih = float(CurrImage->GetHeight());
 		float picAspect = iw/ih;
 
+		float cropExtraMargin = CropMode ? 5.0f : 0.0f;
 		if (workAreaAspect > picAspect)
 		{
-			drawh = float(workAreaH);
+			drawh = float(workAreaH) - cropExtraMargin*2.0f;
 			draww = picAspect * drawh;
 			hmargin = (workAreaW - draww) * 0.5f;
-			vmargin = 0.0f;;
+			vmargin = cropExtraMargin;
 		}
 		else
 		{
-			draww = float(workAreaW);
+			draww = float(workAreaW) - cropExtraMargin*2.0f;
 			drawh = draww / picAspect;
 			vmargin = (workAreaH - drawh) * 0.5f;
-			hmargin = 0.0f;
+			hmargin = cropExtraMargin;
 		}
 
 		// w and h are the image width and height. draww and drawh are the drawable area width and height.
@@ -1189,7 +1188,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		ShowToolTip("Crop");
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
-		if (CropMode && cropAvail && ImGui::BeginMenu("Apply Crop"))
+		if (CropMode && cropAvail && ImGui::BeginMenu("Apply"))
 		{
 			tVector2 scrCropMin(CropGizmo.LineL.V, CropGizmo.LineB.V);
 			tVector2 scrCropMax(CropGizmo.LineR.V, CropGizmo.LineT.V);

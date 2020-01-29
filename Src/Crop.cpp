@@ -31,6 +31,10 @@ namespace TexView
 
 void TexView::CropWidget::MouseButton(CropLine& line, bool down, float mouse)
 {
+	// Up or down.
+	line.V += line.PressedDelta;
+	line.PressedDelta = 0.0f;
+
 	if (down)
 	{
 		if (line.Hovered && !line.Pressed)
@@ -41,8 +45,6 @@ void TexView::CropWidget::MouseButton(CropLine& line, bool down, float mouse)
 	}
 	else
 	{
-		line.V += line.PressedDelta;
-		line.PressedDelta = 0.0f;
 		line.Pressed = false;
 	}
 }
@@ -66,8 +68,6 @@ void TexView::CropWidget::MouseButton(bool down, const tVector2& mouse)
 	MouseButton(LineT, down, mouse.y);
 	MouseButton(LineL, down, mouse.x);
 	MouseButton(LineR, down, mouse.x);
-
-
 }
 
 
@@ -108,9 +108,9 @@ void TexView::CropWidget::UpdateDraw(const tVector4& imgext, const tVector2& mou
 }
 
 
-void TexView::CropWidget::ConstrainCropLines(const tVector4& imgext)
+void TexView::CropWidget::ConstrainCropLines(const tVector4& imgext, bool forceAll)
 {
-	if (LineL.Pressed)
+	if (LineL.Pressed || forceAll)
 	{
 		if (LineL.V + LineL.PressedDelta + 8 > LineR.V + LineR.PressedDelta)
 			LineL.PressedDelta = LineR.V + LineR.PressedDelta - LineL.V - 8;
@@ -118,7 +118,7 @@ void TexView::CropWidget::ConstrainCropLines(const tVector4& imgext)
 			LineL.PressedDelta = imgext.L - LineL.V;
 	}
 
-	if (LineR.Pressed)
+	if (LineR.Pressed || forceAll)
 	{
 		if (LineR.V + LineR.PressedDelta - 8 < LineL.V + LineL.PressedDelta)
 			LineR.PressedDelta = LineL.V + LineL.PressedDelta - LineR.V + 8;
@@ -126,7 +126,7 @@ void TexView::CropWidget::ConstrainCropLines(const tVector4& imgext)
 			LineR.PressedDelta = imgext.R - LineR.V;
 	}
 
-	if (LineB.Pressed)
+	if (LineB.Pressed || forceAll)
 	{
 		if (LineB.V + LineB.PressedDelta + 8 > LineT.V + LineT.PressedDelta)
 			LineB.PressedDelta = LineT.V + LineT.PressedDelta - LineB.V - 8;
@@ -134,7 +134,7 @@ void TexView::CropWidget::ConstrainCropLines(const tVector4& imgext)
 			LineB.PressedDelta = imgext.B - LineB.V;
 	}
 
-	if (LineT.Pressed)
+	if (LineT.Pressed || forceAll)
 	{
 		if (LineT.V + LineT.PressedDelta - 8 < LineB.V + LineB.PressedDelta)
 			LineT.PressedDelta = LineB.V + LineB.PressedDelta - LineT.V + 8;

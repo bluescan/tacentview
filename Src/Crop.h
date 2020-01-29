@@ -54,7 +54,7 @@ private:
 	void MouseHovered(CropLine& line, const tMath::tVector2& mouse, const tMath::tVector2& ends, bool horizontal);
 	void MouseButton(CropLine&, bool down, float mouse);
 
-	void ConstrainCropLines(const tMath::tVector4& imgext);
+	void ConstrainCropLines(const tMath::tVector4& imgext, bool forceAll = true);
 };
 
 
