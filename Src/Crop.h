@@ -22,8 +22,8 @@ namespace TexView
 class CropLine
 {
 public:
-	CropLine()																											{ }
-
+	CropLine()				{ }
+	float Get() const		{ return V + PressedDelta; }
 	float V					= -1.0f;
 	bool Hovered			= false;
 	bool Pressed			= false;

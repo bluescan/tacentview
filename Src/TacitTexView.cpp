@@ -922,6 +922,44 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				OnSkipEnd();
 			ImGui::End();
 		}
+
+		// Crop button.
+		if (CropMode)
+		{
+			tVector2 scrCropMin(CropGizmo.LineL.Get(), CropGizmo.LineB.Get());
+			tVector2 scrCropMax(CropGizmo.LineR.Get(), CropGizmo.LineT.Get());
+			tVector2 cropMin = ConvertScreenPosToImagePos
+			(
+				scrCropMin, tVector4(l, r, t, b),
+				tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
+			);
+			tVector2 cropMax = ConvertScreenPosToImagePos
+			(
+				scrCropMax, tVector4(l, r, t, b),
+				tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
+			);
+
+			int newW = tClampMin(int(cropMax.x - cropMin.x), 4);
+			int newH = tClampMin(int(cropMax.y - cropMin.y), 4);
+			int originX = int(cropMin.x);
+			int originY = int(cropMin.y)+1;
+
+			tString cropMsg;
+			tsPrintf(cropMsg, "Apply Crop\nX: %d\nY: %d\nW: %d\nH: %d", originX, originY, newW, newH);
+			//ImGui::SetNextWindowPos(tVector2(float(workAreaW>>1)-50, -50+float(topUIHeight) + float(workAreaH>>1)), 0, tVector2(0.0f, 0.0f));
+			ImGui::SetNextWindowPos(tVector2(float(workAreaW>>1)-50, float(topUIHeight)), 0, tVector2(0.0f, 0.0f));
+
+			ImGui::SetNextWindowSize(tVector2(100, 100), ImGuiCond_Always);
+			ImGui::Begin("ApplyCrop", nullptr, flagsImgButton);
+			if (ImGui::Button(cropMsg.Text(), tVector2(85, 85) ))
+			{
+				CurrImage->Unbind();
+				CurrImage->Crop(newW, newH, originX, originY);
+				CurrImage->Bind();
+				CropMode = false;
+			}
+			ImGui::End();
+		}
 	}
 
 	ImGui::SetNextWindowPos(tVector2(0, 0));
@@ -1186,33 +1224,6 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			CropMode = !CropMode;
 		}
 		ShowToolTip("Crop");
-
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
-		if (CropMode && cropAvail && ImGui::BeginMenu("Apply"))
-		{
-			tVector2 scrCropMin(CropGizmo.LineL.V, CropGizmo.LineB.V);
-			tVector2 scrCropMax(CropGizmo.LineR.V, CropGizmo.LineT.V);
-			tVector2 cropMin = ConvertScreenPosToImagePos
-			(
-				scrCropMin, tVector4(l, r, t, b),
-				tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
-			);
-			tVector2 cropMax = ConvertScreenPosToImagePos
-			(
-				scrCropMax, tVector4(l, r, t, b),
-				tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
-			);
-
-			int newW = tClampMin(int(cropMax.x - cropMin.x), 4);
-			int newH = tClampMin(int(cropMax.y - cropMin.y), 4);
-
-			CurrImage->Unbind();
-			CurrImage->Crop(newW, newH, int(cropMin.x), int(cropMin.y)+1);
-			CurrImage->Bind();
-			CropMode = false;
-			ImGui::EndMenu();
-		}
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
 
 		bool altMipmapsPicAvail = CurrImage ? CurrImage->IsAltMipmapsPictureAvail() && !CropMode : false;
 		bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
