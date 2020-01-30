@@ -167,8 +167,9 @@ namespace TexView
 	tuint256 ComputeImagesHash(const tList<tStringItem>& files);
 	int RemoveOldCacheFiles(const tString& cacheDir);						// Returns num removed.
 
-	tVector2 ConvertScreenPosToImagePos
+	void ConvertScreenPosToImagePos
 	(
+		int& imgX, int& imgY,
 		const tVector2& scrPos, const tVector4& lrtb,
 		const tVector2& uvMarg, const tVector2& uvOff
 	);
@@ -583,8 +584,9 @@ void TexView::DrawBackground(float bgX, float bgY, float bgW, float bgH)
 }
 
 
-tVector2 TexView::ConvertScreenPosToImagePos
+void TexView::ConvertScreenPosToImagePos
 (
+	int& imgX, int& imgY,
 	const tVector2& scrPos, const tVector4& lrtb,
 	const tVector2& uvMarg, const tVector2& uvOff
 )
@@ -607,7 +609,21 @@ tVector2 TexView::ConvertScreenPosToImagePos
 
 	float imposX = imagew * tMath::tLisc(normX, 0.0f + uvMarg.u + uvOff.u, 1.0f - uvMarg.u + uvOff.u);
 	float imposY = imageh * tMath::tLisc(normY, 0.0f + uvMarg.v + uvOff.v, 1.0f - uvMarg.v + uvOff.v);
-	return tVector2(imposX, imposY);
+
+	imgX = int(imposX);
+	imgY = int(imposY);
+	if (!Config.Tile)
+	{
+		tMath::tiClamp(imgX, 0, CurrImage->GetWidth() - 1);
+		tMath::tiClamp(imgY, 0, CurrImage->GetHeight() - 1);
+	}
+	else
+	{
+		imgX %= CurrImage->GetWidth();
+		if (imgX < 0) imgX += CurrImage->GetWidth();
+		imgY %= CurrImage->GetHeight();
+		if (imgY < 0) imgY += CurrImage->GetHeight();
+	}
 }
 
 
@@ -794,26 +810,12 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		// Show cursor colour inspector crosshairs.
 		tVector2 scrCursorPos(CursorX, CursorY);
-		tVector2 imagePos = ConvertScreenPosToImagePos
+		ConvertScreenPosToImagePos
 		(
-			scrCursorPos, tVector4(l, r, t, b),
+			imgx, imgy, scrCursorPos, tVector4(l, r, t, b),
 			tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
 		);
 
-		imgx = int( imagePos.x );
-		imgy = int( imagePos.y );
-		if (!Config.Tile)
-		{
-			tMath::tiClamp(imgx, 0, CurrImage->GetWidth() - 1);
-			tMath::tiClamp(imgy, 0, CurrImage->GetHeight() - 1);
-		}
-		else
-		{
-			imgx %= CurrImage->GetWidth();
-			if (imgx < 0) imgx += CurrImage->GetWidth();
-			imgy %= CurrImage->GetHeight();
-			if (imgy < 0) imgy += CurrImage->GetHeight();
-		}
 		PixelColour = CurrImage->GetPixel(imgx, imgy);
 
 		if ((DisappearCountdown > 0.0) || Config.ShowImageDetails)
@@ -928,25 +930,24 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			tVector2 scrCropMin(CropGizmo.LineL.Get(), CropGizmo.LineB.Get());
 			tVector2 scrCropMax(CropGizmo.LineR.Get(), CropGizmo.LineT.Get());
-			tVector2 cropMin = ConvertScreenPosToImagePos
+			int minX, minY;
+			ConvertScreenPosToImagePos
 			(
-				scrCropMin, tVector4(l, r, t, b),
+				minX, minY, scrCropMin, tVector4(l, r, t, b),
 				tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
 			);
-			tVector2 cropMax = ConvertScreenPosToImagePos
+			int maxX, maxY;
+			ConvertScreenPosToImagePos
 			(
-				scrCropMax, tVector4(l, r, t, b),
+				maxX, maxY, scrCropMax, tVector4(l, r, t, b),
 				tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
 			);
 
-			int newW = tClampMin(int(cropMax.x - cropMin.x), 4);
-			int newH = tClampMin(int(cropMax.y - cropMin.y), 4);
-			int originX = int(cropMin.x);
-			int originY = int(cropMin.y)+1;
+			int newW = tClampMin(maxX - minX + 1, 4);
+			int newH = tClampMin(maxY - minY + 1, 4);
 
 			tString cropMsg;
-			tsPrintf(cropMsg, "Apply Crop\nX: %d\nY: %d\nW: %d\nH: %d", originX, originY, newW, newH);
-			//ImGui::SetNextWindowPos(tVector2(float(workAreaW>>1)-50, -50+float(topUIHeight) + float(workAreaH>>1)), 0, tVector2(0.0f, 0.0f));
+			tsPrintf(cropMsg, "Apply Crop\nX: %d\nY: %d\nW: %d\nH: %d", minX, minY, newW, newH);
 			ImGui::SetNextWindowPos(tVector2(float(workAreaW>>1)-50, float(topUIHeight)), 0, tVector2(0.0f, 0.0f));
 
 			ImGui::SetNextWindowSize(tVector2(100, 100), ImGuiCond_Always);
@@ -954,7 +955,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::Button(cropMsg.Text(), tVector2(85, 85) ))
 			{
 				CurrImage->Unbind();
-				CurrImage->Crop(newW, newH, originX, originY);
+				CurrImage->Crop(newW, newH, minX, minY);
 				CurrImage->Bind();
 				CropMode = false;
 			}
@@ -1513,14 +1514,6 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 				ChangeScreenMode(!FullscreenMode);
 			break;
 
-		case GLFW_KEY_F1:
-			ShowCheatSheet = !ShowCheatSheet;
-			break;
-
-		case GLFW_KEY_F11:
-			ChangeScreenMode(!FullscreenMode);
-			break;
-
 		case GLFW_KEY_ESCAPE:
 			ChangeScreenMode(false);
 			break;
@@ -1568,6 +1561,15 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 			CropMode = !CropMode;
 			break;
 
+		case GLFW_KEY_F1:
+			ShowCheatSheet = !ShowCheatSheet;
+			break;
+
+		case GLFW_KEY_F11:
+			ChangeScreenMode(!FullscreenMode);
+			break;
+
+		case GLFW_KEY_F5:
 		case GLFW_KEY_R:
 			if (CurrImage)
 			{
@@ -1722,8 +1724,6 @@ void TexView::FileDropCallback(GLFWwindow* window, int count, const char** files
 		return;
 
 	tString file = tString(files[0]);
-	//tString path = tSystem::tGetDir(file);
-
 	ImageFileParam.Param = file;
 	PopulateImages();
 	SetCurrentImage(file);
