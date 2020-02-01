@@ -879,28 +879,38 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			else
 				glColor4ubv(tColouri::white.E);
 
-			glBegin(GL_LINE_STRIP);
-			glVertex2f(scrPosBL.x, scrPosBL.y);
-			glVertex2f(scrPosTR.x, scrPosBL.y);
-			glVertex2f(scrPosTR.x, scrPosTR.y);
-			glVertex2f(scrPosBL.x, scrPosTR.y);
-			glVertex2f(scrPosBL.x, scrPosBL.y);
-			glEnd();
-
-			// Draw cursor reticle.
-			float cw = float((CursorImage.GetWidth() - 1) >> 1) +0.5f;
-			float ch = float((CursorImage.GetHeight() - 1) >> 1)  +0.5f;
-			float cx = CursorX;
-			float cy = CursorY;
-			glColor4ubv(tColouri::white.E);
-			glEnable(GL_TEXTURE_2D);
-			CursorImage.Bind();
-			glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 0.0f); glVertex2f(cx-cw, cy+ch);
-			glTexCoord2f(0.0f, 1.0f); glVertex2f(cx-cw, cy-ch);
-			glTexCoord2f(1.0f, 1.0f); glVertex2f(cx+cw, cy-ch);
-			glTexCoord2f(1.0f, 0.0f); glVertex2f(cx+cw, cy+ch);
-			glEnd();
+			if (scrPosTR.x-scrPosBL.x > 4.0f)
+			{
+				glBegin(GL_LINE_STRIP);
+				glVertex2f(scrPosBL.x, scrPosBL.y);
+				glVertex2f(scrPosTR.x, scrPosBL.y);
+				glVertex2f(scrPosTR.x, scrPosTR.y);
+				glVertex2f(scrPosBL.x, scrPosTR.y);
+				glVertex2f(scrPosBL.x, scrPosBL.y);
+				glEnd();
+			}
+			else
+			{
+				// Draw cursor reticle.
+				//float cw = float((CursorImage.GetWidth() - 1) >> 1) +0.5f;
+				//float ch = float((CursorImage.GetHeight() - 1) >> 1)  +0.5f;
+				float cw = float((CursorImage.GetWidth()) >> 1);
+				float ch = float((CursorImage.GetHeight()) >> 1);
+				float cx = CursorX;
+				float cy = CursorY;
+	//			if (hsv.V > 128)
+	//				glColor4ubv(tColouri::black.E);
+	//			else
+	//				glColor4ubv(tColouri::white.E);
+				glEnable(GL_TEXTURE_2D);
+				CursorImage.Bind();
+				glBegin(GL_QUADS);
+				glTexCoord2f(0.0f, 0.0f); glVertex2f(cx-cw, cy+ch);
+				glTexCoord2f(0.0f, 1.0f); glVertex2f(cx-cw, cy-ch);
+				glTexCoord2f(1.0f, 1.0f); glVertex2f(cx+cw, cy-ch);
+				glTexCoord2f(1.0f, 0.0f); glVertex2f(cx+cw, cy+ch);
+				glEnd();
+			}
 
 			glDisable(GL_TEXTURE_2D);
 		}
