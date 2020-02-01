@@ -173,6 +173,12 @@ namespace TexView
 		const tVector2& scrPos, const tVector4& lrtb,
 		const tVector2& uvMarg, const tVector2& uvOff
 	);
+	void ConvertImagePosToScreenPos
+	(
+		tVector2& scrPos,
+		int imgX, int imgY, const tVector4& lrtb,
+		const tVector2& uvMarg, const tVector2& uvOff
+	);
 	void Update(GLFWwindow* window, double dt, bool dopoll = true);
 	void WindowRefreshFun(GLFWwindow* window)																			{ Update(window, 0.0, false); }
 	void KeyCallback(GLFWwindow*, int key, int scancode, int action, int modifiers);
@@ -627,6 +633,37 @@ void TexView::ConvertScreenPosToImagePos
 }
 
 
+void TexView::ConvertImagePosToScreenPos
+(
+	tVector2& scrPos,
+	int imposX, int imposY, const tVector4& lrtb,
+	const tVector2& uvMarg, const tVector2& uvOff
+)
+{
+	tMath::tiClamp(imposX, 0, CurrImage->GetWidth() - 1);
+	tMath::tiClamp(imposY, 0, CurrImage->GetHeight() - 1);
+	float imgX = float(imposX);
+	float imgY = float(imposY);
+
+	float imagew = float(CurrImage->GetWidth());
+	float imageh = float(CurrImage->GetHeight());
+
+	float umin = 0.0f + uvMarg.u + uvOff.u;
+	float umax = 1.0f - uvMarg.u + uvOff.u;
+	float u = (imgX/imagew - umin) / (umax-umin);
+
+	float vmin = 0.0f + uvMarg.v + uvOff.v;
+	float vmax = 1.0f - uvMarg.v + uvOff.v;
+	float v = (imgY/imageh - vmin) / (vmax-vmin);
+
+	float picX = u * (lrtb.R-lrtb.L);
+	float picY = v * (lrtb.T-lrtb.B);
+
+	scrPos.x = picX + lrtb.L;
+	scrPos.y = picY + 1.0f + lrtb.B;
+}
+
+
 void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 {
 	// Poll and handle events like inputs, window resize, etc. You can read the io.WantCaptureMouse,
@@ -820,11 +857,43 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		if ((DisappearCountdown > 0.0) || Config.ShowImageDetails)
 		{
-			float cw = float((CursorImage.GetWidth() - 1) >> 1);
-			float ch = float((CursorImage.GetHeight() - 1) >> 1);
+			glDisable(GL_TEXTURE_2D);
+			tVector2 scrPosBL;
+			ConvertImagePosToScreenPos
+			(
+				scrPosBL,
+				imgx, imgy, tVector4(l, r, t, b),
+				tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
+			);
+			tVector2 scrPosTR;
+			ConvertImagePosToScreenPos
+			(
+				scrPosTR,
+				imgx+1, imgy+1, tVector4(l, r, t, b),
+				tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
+			);
+			tColouri hsv = PixelColour;
+			hsv.RGBToHSV();
+			if (hsv.V > 128)
+				glColor4ubv(tColouri::black.E);
+			else
+				glColor4ubv(tColouri::white.E);
+
+			glBegin(GL_LINE_STRIP);
+			glVertex2f(scrPosBL.x, scrPosBL.y);
+			glVertex2f(scrPosTR.x, scrPosBL.y);
+			glVertex2f(scrPosTR.x, scrPosTR.y);
+			glVertex2f(scrPosBL.x, scrPosTR.y);
+			glVertex2f(scrPosBL.x, scrPosBL.y);
+			glEnd();
+
+			// Draw cursor reticle.
+			float cw = float((CursorImage.GetWidth() - 1) >> 1) +0.5f;
+			float ch = float((CursorImage.GetHeight() - 1) >> 1)  +0.5f;
 			float cx = CursorX;
 			float cy = CursorY;
-
+			glColor4ubv(tColouri::white.E);
+			glEnable(GL_TEXTURE_2D);
 			CursorImage.Bind();
 			glBegin(GL_QUADS);
 			glTexCoord2f(0.0f, 0.0f); glVertex2f(cx-cw, cy+ch);
@@ -832,9 +901,9 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			glTexCoord2f(1.0f, 1.0f); glVertex2f(cx+cw, cy-ch);
 			glTexCoord2f(1.0f, 0.0f); glVertex2f(cx+cw, cy+ch);
 			glEnd();
-		}
 
-		glDisable(GL_TEXTURE_2D);
+			glDisable(GL_TEXTURE_2D);
+		}
 
 		static bool lastCropMode = false;
 		if (CropMode)
