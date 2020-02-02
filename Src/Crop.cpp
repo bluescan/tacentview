@@ -80,7 +80,11 @@ void TexView::CropWidget::SetLines(const tVector4& lines)
 }
 
 
-void TexView::CropWidget::UpdateDraw(const tVector4& imgext, const tVector2& mouse)
+void TexView::CropWidget::UpdateDraw
+(
+	const tVector4& imgext, const tVector2& mouse,
+	const tVector2& uvmarg, const tVector2& uvoffset
+)
 {
 	if (LineB.Pressed)
 		LineB.PressedDelta = mouse.y - LineB.PressedAnchor;
@@ -102,7 +106,7 @@ void TexView::CropWidget::UpdateDraw(const tVector4& imgext, const tVector2& mou
 	MouseHovered(LineR, mouse, tVector2(b, t), false);
 
 	ConstrainCropLines(imgext);
-	DrawMatt(imgext);
+	DrawMatt(imgext, uvmarg, uvoffset);
 	DrawLines();
 	DrawHandles();
 }
@@ -144,25 +148,39 @@ void TexView::CropWidget::ConstrainCropLines(const tVector4& imgext, bool forceA
 }
 
 
-void TexView::CropWidget::DrawMatt(const tVector4& imext)
+void TexView::CropWidget::DrawMatt(const tVector4& imext, const tVector2& uvmarg, const tVector2& uvoffset)
 {
 	float l = LineL.V + LineL.PressedDelta;
 	float r = LineR.V + LineR.PressedDelta;
 	float b = LineB.V + LineB.PressedDelta;
 	float t = LineT.V + LineT.PressedDelta;
 
+	tVector2 scrCropMin(LineL.Get(), LineB.Get());
+	tVector2 scrCropMax(LineR.Get(), LineT.Get());
+	int minX, minY;
+	ConvertScreenPosToImagePos(minX, minY, scrCropMin, imext, uvmarg, uvoffset);
+	int maxX, maxY;
+	ConvertScreenPosToImagePos(maxX, maxY, scrCropMax, imext, uvmarg, uvoffset);
+
+	maxX += 1; maxY += 1;
+	tVector2 bl;
+	ConvertImagePosToScreenPos(bl, minX, minY, imext, uvmarg, uvoffset);
+
+	tVector2 tr;
+	ConvertImagePosToScreenPos(tr, maxX, maxY, imext, uvmarg, uvoffset);
+
 	glColor4f(ColourClear.x, ColourClear.y, ColourClear.z, 0.75f);
 	glBegin(GL_QUAD_STRIP);
 	glVertex2f(imext.L, imext.B);
-	glVertex2f(l, b);
+	glVertex2f(bl.x, bl.y);
 	glVertex2f(imext.R, imext.B);
-	glVertex2f(r, b);
+	glVertex2f(tr.x, bl.y);
 	glVertex2f(imext.R, imext.T);
-	glVertex2f(r, t);
+	glVertex2f(tr.x, tr.y);
 	glVertex2f(imext.L, imext.T);
-	glVertex2f(l, t);
+	glVertex2f(bl.x, tr.y);
 	glVertex2f(imext.L, imext.B);
-	glVertex2f(l, b);
+	glVertex2f(bl.x, bl.y);
 	glEnd();
 }
 
@@ -178,20 +196,20 @@ void TexView::CropWidget::DrawLines()
 	glBegin(GL_LINES);
 
 	glColor4fv((!anyPressed && LineB.Hovered) || LineB.Pressed ? CropHovCol.E : CropCol.E);
-	glVertex2f(l,	b-1);
-	glVertex2f(r+1,	b-1);
+	glVertex2f(l,	b);
+	glVertex2f(r+1,	b);
 
 	glColor4fv((!anyPressed && LineR.Hovered) || LineR.Pressed ? CropHovCol.E : CropCol.E);
-	glVertex2f(r+1,	b-1);
-	glVertex2f(r+1,	t);
+	glVertex2f(r+1,	b);
+	glVertex2f(r+1,	t+1);
 
 	glColor4fv((!anyPressed && LineT.Hovered) || LineT.Pressed ? CropHovCol.E : CropCol.E);
-	glVertex2f(r+1,	t);
-	glVertex2f(l,	t);
+	glVertex2f(r+1,	t+1);
+	glVertex2f(l,	t+1);
 
 	glColor4fv((!anyPressed && LineL.Hovered) || LineL.Pressed ? CropHovCol.E : CropCol.E);
-	glVertex2f(l,	t);
-	glVertex2f(l,	b-1);
+	glVertex2f(l,	t+1);
+	glVertex2f(l,	b);
 
 	glColor4fv(tColourf::white.E);
 	glEnd();

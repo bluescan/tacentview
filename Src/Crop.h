@@ -39,7 +39,11 @@ public:
 
 	void SetLines(const tMath::tVector4& linesLRTB);								// Don't call this every frame. Only once for each image.
 	void MouseButton(bool down, const tMath::tVector2& mouse);
-	void UpdateDraw(const tMath::tVector4& imgext, const tMath::tVector2& mouse);
+	void UpdateDraw
+	(
+		const tMath::tVector4& imgext, const tMath::tVector2& mouse,
+		const tMath::tVector2& uvmarg, const tMath::tVector2& uvoffset
+	);
 
 	CropLine LineL;
 	CropLine LineR;
@@ -47,7 +51,12 @@ public:
 	CropLine LineB;
 
 private:
-	void DrawMatt(const tMath::tVector4& imgext);
+	void DrawMatt
+	(
+		const tMath::tVector4& imgext,
+		const tMath::tVector2& uvmarg,
+		const tMath::tVector2& uvoffset
+	);
 	void DrawLines();
 	void DrawHandles();
 

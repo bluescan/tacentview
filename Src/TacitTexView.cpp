@@ -167,18 +167,6 @@ namespace TexView
 	tuint256 ComputeImagesHash(const tList<tStringItem>& files);
 	int RemoveOldCacheFiles(const tString& cacheDir);						// Returns num removed.
 
-	void ConvertScreenPosToImagePos
-	(
-		int& imgX, int& imgY,
-		const tVector2& scrPos, const tVector4& lrtb,
-		const tVector2& uvMarg, const tVector2& uvOff
-	);
-	void ConvertImagePosToScreenPos
-	(
-		tVector2& scrPos,
-		int imgX, int imgY, const tVector4& lrtb,
-		const tVector2& uvMarg, const tVector2& uvOff
-	);
 	void Update(GLFWwindow* window, double dt, bool dopoll = true);
 	void WindowRefreshFun(GLFWwindow* window)																			{ Update(window, 0.0, false); }
 	void KeyCallback(GLFWwindow*, int key, int scancode, int action, int modifiers);
@@ -598,7 +586,8 @@ void TexView::ConvertScreenPosToImagePos
 )
 {
 	float picX = scrPos.x - lrtb.L;
-	float picY = (scrPos.y - 1) - lrtb.B;
+	//float picY = (scrPos.y - 1) - lrtb.B;
+	float picY = (scrPos.y) - lrtb.B;
 	float normX = picX / (lrtb.R-lrtb.L);
 	float normY = picY / (lrtb.T-lrtb.B);
 	if (Config.Tile)
@@ -640,8 +629,8 @@ void TexView::ConvertImagePosToScreenPos
 	const tVector2& uvMarg, const tVector2& uvOff
 )
 {
-	tMath::tiClamp(imposX, 0, CurrImage->GetWidth() - 1);
-	tMath::tiClamp(imposY, 0, CurrImage->GetHeight() - 1);
+	tMath::tiClamp(imposX, 0, CurrImage->GetWidth());
+	tMath::tiClamp(imposY, 0, CurrImage->GetHeight());
 	float imgX = float(imposX);
 	float imgY = float(imposY);
 
@@ -659,8 +648,9 @@ void TexView::ConvertImagePosToScreenPos
 	float picX = u * (lrtb.R-lrtb.L);
 	float picY = v * (lrtb.T-lrtb.B);
 
-	scrPos.x = picX + lrtb.L;
-	scrPos.y = picY + 1.0f + lrtb.B;
+	scrPos.x = tCeiling(picX + lrtb.L);
+	//scrPos.y = picY + 1.0f + lrtb.B;
+	scrPos.y = tCeiling(picY + lrtb.B);
 }
 
 
@@ -817,6 +807,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		uvVOff = -float(PanOffsetY+PanDragDownOffsetY)/h;
 
 		// Draw background.
+		glDisable(GL_TEXTURE_2D);
 		if ((Config.BackgroundExtend || Config.Tile) && !CropMode)
 			DrawBackground(hmargin, vmargin, draww, drawh);
 		else
@@ -855,9 +846,10 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		PixelColour = CurrImage->GetPixel(imgx, imgy);
 
+		glDisable(GL_TEXTURE_2D);
+		glColor4fv(tColour::white.E);
 		if ((DisappearCountdown > 0.0) || Config.ShowImageDetails)
 		{
-			glDisable(GL_TEXTURE_2D);
 			tVector2 scrPosBL;
 			ConvertImagePosToScreenPos
 			(
@@ -879,29 +871,29 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			else
 				glColor4ubv(tColouri::white.E);
 
-			if (scrPosTR.x-scrPosBL.x > 4.0f)
+			if (ZoomPercent >= 500.0f)
 			{
-				glBegin(GL_LINE_STRIP);
-				glVertex2f(scrPosBL.x, scrPosBL.y);
-				glVertex2f(scrPosTR.x, scrPosBL.y);
-				glVertex2f(scrPosTR.x, scrPosTR.y);
-				glVertex2f(scrPosBL.x, scrPosTR.y);
-				glVertex2f(scrPosBL.x, scrPosBL.y);
+				glBegin(GL_LINES);
+				glVertex2f(scrPosBL.x-1,	scrPosBL.y-1);
+				glVertex2f(scrPosTR.x,		scrPosBL.y);
+
+				glVertex2f(scrPosTR.x,		scrPosBL.y);
+				glVertex2f(scrPosTR.x,		scrPosTR.y);
+
+				glVertex2f(scrPosTR.x,		scrPosTR.y);
+				glVertex2f(scrPosBL.x,		scrPosTR.y);
+
+				glVertex2f(scrPosBL.x,		scrPosTR.y);
+				glVertex2f(scrPosBL.x-1,	scrPosBL.y-1);
 				glEnd();
 			}
 			else
 			{
 				// Draw cursor reticle.
-				//float cw = float((CursorImage.GetWidth() - 1) >> 1) +0.5f;
-				//float ch = float((CursorImage.GetHeight() - 1) >> 1)  +0.5f;
 				float cw = float((CursorImage.GetWidth()) >> 1);
 				float ch = float((CursorImage.GetHeight()) >> 1);
 				float cx = CursorX;
 				float cy = CursorY;
-	//			if (hsv.V > 128)
-	//				glColor4ubv(tColouri::black.E);
-	//			else
-	//				glColor4ubv(tColouri::white.E);
 				glEnable(GL_TEXTURE_2D);
 				CursorImage.Bind();
 				glBegin(GL_QUADS);
@@ -910,17 +902,23 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				glTexCoord2f(1.0f, 1.0f); glVertex2f(cx+cw, cy-ch);
 				glTexCoord2f(1.0f, 0.0f); glVertex2f(cx+cw, cy+ch);
 				glEnd();
+				glDisable(GL_TEXTURE_2D);
 			}
-
-			glDisable(GL_TEXTURE_2D);
 		}
 
+		glDisable(GL_TEXTURE_2D);
+		glColor4fv(tColour::white.E);
 		static bool lastCropMode = false;
 		if (CropMode)
 		{
 			if (!lastCropMode)
 				CropGizmo.SetLines(tVector4(l,r,t,b));
-			CropGizmo.UpdateDraw( tVector4(l,r,t,b), tVector2(mouseX, mouseY) );
+
+			CropGizmo.UpdateDraw
+			(
+				tVector4(l,r,t,b), tVector2(mouseX, mouseY),
+				tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
+			);
 		}
 		lastCropMode = CropMode;
 	}
@@ -1022,8 +1020,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
 			);
 
-			int newW = tClampMin(maxX - minX + 1, 4);
-			int newH = tClampMin(maxY - minY + 1, 4);
+			int newW = tClampMin(maxX - minX + 1, 1);
+			int newH = tClampMin(maxY - minY + 1, 1);
 
 			tString cropMsg;
 			tsPrintf(cropMsg, "Apply Crop\nX: %d\nY: %d\nW: %d\nH: %d", minX, minY, newW, newH);
@@ -1033,6 +1031,10 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::Begin("ApplyCrop", nullptr, flagsImgButton);
 			if (ImGui::Button(cropMsg.Text(), tVector2(85, 85) ))
 			{
+				// @todo print warning if cropping less than 4x4.
+				newW = tClampMin(newW, 4);
+				newH = tClampMin(newH, 4);
+
 				CurrImage->Unbind();
 				CurrImage->Crop(newW, newH, minX, minY);
 				CurrImage->Bind();
