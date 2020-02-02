@@ -55,7 +55,7 @@ namespace TexView
 	tItList<TacitImage> ImagesLoadTimeSorted	(false);
 	tuint256 ImagesHash							= 0;
 	TacitImage* CurrImage						= nullptr;
-	TacitImage CursorImage;
+	TacitImage ReticleImage;
 	TacitImage PrevImage;
 	TacitImage NextImage;
 	TacitImage FlipHImage;
@@ -93,7 +93,6 @@ namespace TexView
 	bool Request_DeleteFileModal				= false;
 	bool Request_DeleteFileNoRecycleModal		= false;
 	bool PrefsDialog							= false;
-	CropWidget CropGizmo;
 	bool CropMode								= false;
 	bool LMBDown								= false;
 	bool RMBDown								= false;
@@ -117,8 +116,8 @@ namespace TexView
 	int PanOffsetY								= 0;
 	int PanDragDownOffsetX						= 0;
 	int PanDragDownOffsetY						= 0;
-	float CursorX								= -1.0f;
-	float CursorY								= -1.0f;
+	float ReticleX								= -1.0f;
+	float ReticleY								= -1.0f;
 	tColouri PixelColour						= tColouri::black;
 
 	const tVector4 ColourEnabledTint			= tVector4(1.00f, 1.00f, 1.00f, 1.00f);
@@ -836,8 +835,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 		glEnd();
 
-		// Show cursor colour inspector crosshairs.
-		tVector2 scrCursorPos(CursorX, CursorY);
+		// Get the colour under the reticle.
+		tVector2 scrCursorPos(ReticleX, ReticleY);
 		ConvertScreenPosToImagePos
 		(
 			imgx, imgy, scrCursorPos, tVector4(l, r, t, b),
@@ -846,22 +845,21 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		PixelColour = CurrImage->GetPixel(imgx, imgy);
 
+		// Show the reticle.
 		glDisable(GL_TEXTURE_2D);
 		glColor4fv(tColour::white.E);
-		if ((DisappearCountdown > 0.0) || Config.ShowImageDetails)
+		if (!CropMode && (Config.ShowImageDetails || (DisappearCountdown > 0.0)))
 		{
 			tVector2 scrPosBL;
 			ConvertImagePosToScreenPos
 			(
-				scrPosBL,
-				imgx, imgy, tVector4(l, r, t, b),
+				scrPosBL, imgx, imgy, tVector4(l, r, t, b),
 				tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
 			);
 			tVector2 scrPosTR;
 			ConvertImagePosToScreenPos
 			(
-				scrPosTR,
-				imgx+1, imgy+1, tVector4(l, r, t, b),
+				scrPosTR, imgx+1, imgy+1, tVector4(l, r, t, b),
 				tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
 			);
 			tColouri hsv = PixelColour;
@@ -889,13 +887,13 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			else
 			{
-				// Draw cursor reticle.
-				float cw = float((CursorImage.GetWidth()) >> 1);
-				float ch = float((CursorImage.GetHeight()) >> 1);
-				float cx = CursorX;
-				float cy = CursorY;
+				// Draw the reticle.
+				float cw = float((ReticleImage.GetWidth()) >> 1);
+				float ch = float((ReticleImage.GetHeight()) >> 1);
+				float cx = ReticleX;
+				float cy = ReticleY;
 				glEnable(GL_TEXTURE_2D);
-				CursorImage.Bind();
+				ReticleImage.Bind();
 				glBegin(GL_QUADS);
 				glTexCoord2f(0.0f, 0.0f); glVertex2f(cx-cw, cy+ch);
 				glTexCoord2f(0.0f, 1.0f); glVertex2f(cx-cw, cy-ch);
@@ -938,7 +936,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (!ImGui::GetIO().WantCaptureMouse)
 		DisappearCountdown -= dt;
 
-	if (DisappearCountdown > 0.0)
+	if ((DisappearCountdown > 0.0) && !CropMode)
 	{
 		if ((CurrImage != Images.First()) || SlideshowPlaying)
 		{
@@ -999,47 +997,6 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::Begin("SkipEnd", nullptr, flagsImgButton);
 			if (ImGui::ImageButton(ImTextureID(SkipEndImage.Bind()), tVector2(24,24), tVector2(0,0), tVector2(1,1), 2, tVector4(0,0,0,0), tVector4(1,1,1,1)))
 				OnSkipEnd();
-			ImGui::End();
-		}
-
-		// Crop button.
-		if (CropMode)
-		{
-			tVector2 scrCropMin(CropGizmo.LineL.Get(), CropGizmo.LineB.Get());
-			tVector2 scrCropMax(CropGizmo.LineR.Get(), CropGizmo.LineT.Get());
-			int minX, minY;
-			ConvertScreenPosToImagePos
-			(
-				minX, minY, scrCropMin, tVector4(l, r, t, b),
-				tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
-			);
-			int maxX, maxY;
-			ConvertScreenPosToImagePos
-			(
-				maxX, maxY, scrCropMax, tVector4(l, r, t, b),
-				tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
-			);
-
-			int newW = tClampMin(maxX - minX + 1, 1);
-			int newH = tClampMin(maxY - minY + 1, 1);
-
-			tString cropMsg;
-			tsPrintf(cropMsg, "Apply Crop\nX: %d\nY: %d\nW: %d\nH: %d", minX, minY, newW, newH);
-			ImGui::SetNextWindowPos(tVector2(float(workAreaW>>1)-50, float(topUIHeight)), 0, tVector2(0.0f, 0.0f));
-
-			ImGui::SetNextWindowSize(tVector2(100, 100), ImGuiCond_Always);
-			ImGui::Begin("ApplyCrop", nullptr, flagsImgButton);
-			if (ImGui::Button(cropMsg.Text(), tVector2(85, 85) ))
-			{
-				// @todo print warning if cropping less than 4x4.
-				newW = tClampMin(newW, 4);
-				newH = tClampMin(newH, 4);
-
-				CurrImage->Unbind();
-				CurrImage->Crop(newW, newH, minX, minY);
-				CurrImage->Bind();
-				CropMode = false;
-			}
 			ImGui::End();
 		}
 	}
@@ -1429,6 +1386,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (ShowAbout)
 		ShowAboutPopup(&ShowAbout);
 
+	ShowCropPopup(tVector4(l, r, t, b), tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff));
+
 	if (Request_DeleteFileModal)
 	{
 		Request_DeleteFileModal = false;
@@ -1751,8 +1710,8 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 			}
 			else if (LMBDown)
 			{
-				CursorX = mouseX;
-				CursorY = mouseY;
+				ReticleX = mouseX;
+				ReticleY = mouseY;
 			}
 			break;
 		}
@@ -1973,7 +1932,7 @@ int main(int argc, char** argv)
 	tString fontFile = dataDir + "Roboto-Medium.ttf";
 	io.Fonts->AddFontFromFileTTF(fontFile.Chars(), 14.0f);
 
-	TexView::CursorImage.Load(dataDir + "PixelCursor.png");
+	TexView::ReticleImage.Load(dataDir + "Reticle.png");
 	TexView::PrevImage.Load(dataDir + "PrevArrow.png");
 	TexView::NextImage.Load(dataDir + "NextArrow.png");
 	TexView::FlipHImage.Load(dataDir + "FlipH.png");

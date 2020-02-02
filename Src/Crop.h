@@ -19,52 +19,58 @@ namespace TexView
 {
 
 
-class CropLine
-{
-public:
-	CropLine()				{ }
-	float Get() const		{ return V + PressedDelta; }
-	float V					= -1.0f;
-	bool Hovered			= false;
-	bool Pressed			= false;
-	float PressedAnchor		= 0.0f;
-	float PressedDelta		= 0.0f;
-};
+	void ShowCropPopup(const tMath::tVector4& lrtb, const tMath::tVector2& uvmarg, const tMath::tVector2& uvoffset);
 
 
-class CropWidget
-{
-public:
-	CropWidget() { }
+	class CropLine
+	{
+	public:
+		CropLine()				{ }
+		float Get() const		{ return V + PressedDelta; }
+		float V					= -1.0f;
+		bool Hovered			= false;
+		bool Pressed			= false;
+		float PressedAnchor		= 0.0f;
+		float PressedDelta		= 0.0f;
+	};
 
-	void SetLines(const tMath::tVector4& linesLRTB);								// Don't call this every frame. Only once for each image.
-	void MouseButton(bool down, const tMath::tVector2& mouse);
-	void UpdateDraw
-	(
-		const tMath::tVector4& imgext, const tMath::tVector2& mouse,
-		const tMath::tVector2& uvmarg, const tMath::tVector2& uvoffset
-	);
 
-	CropLine LineL;
-	CropLine LineR;
-	CropLine LineT;
-	CropLine LineB;
+	class CropWidget
+	{
+	public:
+		CropWidget() { }
 
-private:
-	void DrawMatt
-	(
-		const tMath::tVector4& imgext,
-		const tMath::tVector2& uvmarg,
-		const tMath::tVector2& uvoffset
-	);
-	void DrawLines();
-	void DrawHandles();
+		void SetLines(const tMath::tVector4& linesLRTB);								// Don't call this every frame. Only once for each image.
+		void MouseButton(bool down, const tMath::tVector2& mouse);
+		void UpdateDraw
+		(
+			const tMath::tVector4& imgext, const tMath::tVector2& mouse,
+			const tMath::tVector2& uvmarg, const tMath::tVector2& uvoffset
+		);
 
-	void MouseHovered(CropLine& line, const tMath::tVector2& mouse, const tMath::tVector2& ends, bool horizontal);
-	void MouseButton(CropLine&, bool down, float mouse);
+		CropLine LineL;
+		CropLine LineR;
+		CropLine LineT;
+		CropLine LineB;
 
-	void ConstrainCropLines(const tMath::tVector4& imgext, bool forceAll = true);
-};
+	private:
+		void DrawMatt
+		(
+			const tMath::tVector4& imgext,
+			const tMath::tVector2& uvmarg,
+			const tMath::tVector2& uvoffset
+		);
+		void DrawLines();
+		void DrawHandles();
+
+		void MouseHovered(CropLine& line, const tMath::tVector2& mouse, const tMath::tVector2& ends, bool horizontal);
+		void MouseButton(CropLine&, bool down, float mouse);
+
+		void ConstrainCropLines(const tMath::tVector4& imgext, bool forceAll = true);
+	};
+
+
+	extern CropWidget CropGizmo;
 
 
 }

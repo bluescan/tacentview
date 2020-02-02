@@ -14,16 +14,20 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include "imgui.h"
 #include <Math/tColour.h>
 #include <Math/tGeometry.h>
 #include <System/tPrint.h>
 #include "Crop.h"
 #include "TacitTexView.h"
+#include "TacitImage.h"
 using namespace tMath;
 
 
 namespace TexView
 {
+	CropWidget CropGizmo;
+
 	tColour CropHovCol		(0.25f, 0.55f, 1.00f, 1.00f);
 	tColour CropCol			(1.00f, 1.00f, 1.00f, 1.00f);
 }
@@ -105,7 +109,7 @@ void TexView::CropWidget::UpdateDraw
 	MouseHovered(LineL, mouse, tVector2(b, t), false);
 	MouseHovered(LineR, mouse, tVector2(b, t), false);
 
-	ConstrainCropLines(imgext);
+	ConstrainCropLines(imgext, false);
 	DrawMatt(imgext, uvmarg, uvoffset);
 	DrawLines();
 	DrawHandles();
@@ -264,4 +268,90 @@ void TexView::CropWidget::DrawHandles()
 
 	glColor4fv(tColourf::white.E);
 	glEnd();
+}
+
+
+void TexView::ShowCropPopup(const tVector4& lrtb, const tVector2& uvmarg, const tVector2& uvoffset)
+{
+	if (!CurrImage)
+	{
+		CropMode = false;
+		return;
+	}
+
+	static bool cropMode = false;
+	bool justOpened = false;
+	if (CropMode && !cropMode)
+		justOpened = true;
+	cropMode = CropMode;
+
+	if (!CropMode)
+		return;
+
+	if (justOpened)
+	{
+		tVector2 windowPos = tVector2((lrtb.R+lrtb.L)/2.0f - 90.0f, 48.0f);
+		ImGui::SetNextWindowPos(windowPos);
+	}
+	ImGui::SetNextWindowSize(tVector2(174, 158), ImGuiCond_Always);
+	ImGui::SetNextWindowBgAlpha(0.70f);
+	ImGuiWindowFlags flags =
+		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
+		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoFocusOnAppearing	|
+		ImGuiWindowFlags_NoNav;
+
+	if (ImGui::Begin("Crop", &CropMode, flags))
+	{
+		tVector2 scrCropMin(CropGizmo.LineL.Get(), CropGizmo.LineB.Get());
+		tVector2 scrCropMax(CropGizmo.LineR.Get(), CropGizmo.LineT.Get());
+		int minX, minY;
+		ConvertScreenPosToImagePos(minX, minY, scrCropMin, lrtb, uvmarg, uvoffset);
+		int maxX, maxY;
+		ConvertScreenPosToImagePos(maxX, maxY, scrCropMax, lrtb, uvmarg, uvoffset);
+
+		int origW = CurrImage->GetWidth();
+		int origH = CurrImage->GetHeight();
+		int newW = tClampMin(maxX - minX + 1, 1);
+		int newH = tClampMin(maxY - minY + 1, 1);
+
+		int margL = minX;
+		int margR = origW - maxX - 1;
+		int margB = minY;
+		int margT = origH - maxY - 1;
+
+		float col = ImGui::GetCursorPosX() + 74.0f;
+		ImGui::Text("Lower Left");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("X:%d Y:%d", minX, minY);
+		ImGui::Text("Upper Right");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("X:%d Y:%d", maxX, maxY);
+
+		if ((maxX - minX + 1 < 4) || (maxY - minY + 1 < 4))
+		{
+			ImGui::SameLine();
+			ImGui::Text("Min 4x4");
+		}
+
+		ImGui::Text("H Margins");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("L:%d R:%d", margL, margR);
+		ImGui::Text("V Margins");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("B:%d T:%d", margB, margT);
+		ImGui::Text("Orig Size");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("W:%d H:%d", origW, origH);
+		ImGui::Text("New Size");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("W:%d H:%d", newW, newH);
+
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 7.0f);
+
+		if (ImGui::Button("Cancel", tVector2(64, 0)))
+			CropMode = false;
+
+		ImGui::SameLine();	
+		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 64.0f);
+
+		if (ImGui::Button("Apply", tVector2(64, 0)))
+		{
+			newW = tClampMin(newW, 4);
+			newH = tClampMin(newH, 4);
+
+			CurrImage->Unbind();
+			CurrImage->Crop(newW, newH, minX, minY);
+			CurrImage->Bind();
+			CropMode = false;
+		}
+	}
+	ImGui::End();
 }
