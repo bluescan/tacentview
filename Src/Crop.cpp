@@ -288,17 +288,19 @@ void TexView::ShowCropPopup(const tVector4& lrtb, const tVector2& uvmarg, const 
 	if (!CropMode)
 		return;
 
+	tVector2 windowPos = tVector2((lrtb.R+lrtb.L)/2.0f - 90.0f, 48.0f);
 	if (justOpened)
-	{
-		tVector2 windowPos = tVector2((lrtb.R+lrtb.L)/2.0f - 90.0f, 48.0f);
 		ImGui::SetNextWindowPos(windowPos);
-	}
-	ImGui::SetNextWindowSize(tVector2(174, 158), ImGuiCond_Always);
+	else
+		ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+
+	ImGui::SetNextWindowSize(tVector2(180, 160), ImGuiCond_Always);
 	ImGui::SetNextWindowBgAlpha(0.70f);
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
 		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoFocusOnAppearing	|
 		ImGuiWindowFlags_NoNav;
+
 
 	if (ImGui::Begin("Crop", &CropMode, flags))
 	{
@@ -319,20 +321,18 @@ void TexView::ShowCropPopup(const tVector4& lrtb, const tVector2& uvmarg, const 
 		int margB = minY;
 		int margT = origH - maxY - 1;
 
-		float col = ImGui::GetCursorPosX() + 74.0f;
-		ImGui::Text("Lower Left");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("X:%d Y:%d", minX, minY);
-		ImGui::Text("Upper Right");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("X:%d Y:%d", maxX, maxY);
-
+		float col = ImGui::GetCursorPosX() + 70.0f;
+		ImGui::Text("Bot Left");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("X:%d Y:%d", minX, minY);
+		ImGui::Text("Top Right");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("X:%d Y:%d", maxX, maxY);
+		ImGui::Text("H Margins");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("L:%d R:%d", margL, margR);
+		ImGui::Text("V Margins");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("B:%d T:%d", margB, margT);
+		ImGui::Text("Orig Size");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("W:%d H:%d", origW, origH);
+		ImGui::Text("New Size");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("W:%d H:%d", newW, newH);
 		if ((maxX - minX + 1 < 4) || (maxY - minY + 1 < 4))
 		{
 			ImGui::SameLine();
 			ImGui::Text("Min 4x4");
 		}
-
-		ImGui::Text("H Margins");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("L:%d R:%d", margL, margR);
-		ImGui::Text("V Margins");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("B:%d T:%d", margB, margT);
-		ImGui::Text("Orig Size");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("W:%d H:%d", origW, origH);
-		ImGui::Text("New Size");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("W:%d H:%d", newW, newH);
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 7.0f);
 
