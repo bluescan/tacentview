@@ -144,18 +144,23 @@ struct tARect2
 		Side_Top																										= 0x00000008
 	};
 
-	tARect2()																											: Min(PosInfinity, PosInfinity), Max(NegInfinity, NegInfinity) { }
-	tARect2(const tARect2& src)																							: Min(src.Min), Max(src.Max) { }
-	tARect2(const tVector2& origin, float sideLength)																	: Min(origin.x - sideLength/2.0f, origin.y - sideLength/2.0f), Max(origin.x + sideLength/2.0f, origin.y + sideLength/2.0f) { }
-	tARect2(const tVector2& min, float width, float height)																: Min(min), Max(min.x + width, min.y + height) { }
-	tARect2(const tVector2& min, const tVector2& max)																	: Min(min), Max(max) { }
-	tARect2(float minx, float miny, float maxx, float maxy)																: Min(minx, miny), Max(maxx, maxy) { }
+	tARect2()																											{ Clear(); }
+	tARect2(const tARect2& src)																							{ Set(src); }
+	tARect2(const tVector2& origin, float sideLength)																	{ Set(origin, sideLength); }
+	tARect2(const tVector2& min, float width, float height)																{ Set(min, width, height); }
+	tARect2(const tVector2& min, const tVector2& max)																	{ Set(min, max); }
+	tARect2(float minx, float miny, float maxx, float maxy)																{ Set(minx, miny, maxx, maxy); }
 
-	void Set(const tVector2& min, const tVector2& max)																	{ Min = min; Max = max; }
+	void Set(const tARect2& src)																						{ Min.Set(src.Min); Max.Set(src.Max); }
+	void Set(const tVector2& origin, float sideLength)																	{ Min.Set(origin.x - sideLength/2.0f, origin.y - sideLength/2.0f); Max.Set(origin.x + sideLength/2.0f, origin.y + sideLength/2.0f); }
+	void Set(const tVector2& min, float width, float height)															{ Min.Set(min); Max.Set(min.x + width, min.y + height); }
+	void Set(const tVector2& min, const tVector2& max)																	{ Min.Set(min); Max.Set(max); }
+	void Set(float minx, float miny, float maxx, float maxy)															{ Min.Set(minx, miny); Max.Set(maxx, maxy); }
 
 	void AddPoint(const tVector2&);
 	void Expand(float e)																								{ Min.x -= e; Min.y -= e; Max.x += e; Max.y += e; }
-	void Empty()																										{ Min = tVector2(PosInfinity, PosInfinity); Max = tVector2(NegInfinity, NegInfinity); }
+	void Clear()																										{ Min = tVector2(PosInfinity, PosInfinity); Max = tVector2(NegInfinity, NegInfinity); }
+	void Empty()																										{ Clear(); }
 
 	// Boundary included.
 	bool IsPointInside(const tVector2& point) const																		{ return ((point.x >= Min.x) && (point.x <= Max.x) && (point.y >= Min.y) && (point.y <= Max.y)); }

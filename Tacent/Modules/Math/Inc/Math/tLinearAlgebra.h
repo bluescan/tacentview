@@ -75,8 +75,8 @@ struct tVec2
 	union
 	{
 		struct { float x, y; };
-		struct { float a, b; };
 		struct { float u, v; };
+		struct { float a, b; };
 		float E[2];											// E for elements.
 		uint64 B;											// B for bits.
 	};
@@ -89,6 +89,7 @@ struct tVec3
 	union
 	{
 		struct { float x, y, z; };
+		struct { float t, u, v; };
 		struct { float a, b, c; };
 		float E[3];
 		struct { uint64 B0; uint32 B1; };
@@ -102,6 +103,7 @@ struct tVec4
 	union
 	{
 		struct { float x, y, z, w; };
+		struct { float s, t, u, v; };
 		struct { float a, b, c, d; };
 		struct { float L, R, T, B; };
 		float E[4];
