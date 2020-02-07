@@ -168,6 +168,9 @@ tSystem::tFileType tSystem::tGetFileTypeFromExtension(const tString& e)
 		{ "jpeg",		tFileType::JPG				},
 		{ "tif",		tFileType::TIFF				},
 		{ "tiff",		tFileType::TIFF				},
+		{ "dds",		tFileType::DDS				},
+		{ "hdr",		tFileType::HDR				},
+		{ "rgbe",		tFileType::HDR				},
 		{ "pcx",		tFileType::PCX				},
 		{ "wbmp",		tFileType::WBMP				},
 		{ "wmf",		tFileType::WMF				},
@@ -179,7 +182,6 @@ tSystem::tFileType tSystem::tGetFileTypeFromExtension(const tString& e)
 		{ "ae2",		tFileType::TacentImage		},
 		{ "aec",		tFileType::TacentImageCube	},
 		{ "ae3",		tFileType::TacentImageVol	},
-		{ "dds",		tFileType::DDS				},
 		{ "cfg",		tFileType::TacentConfig		},
 	};
 	int numExtensions = sizeof(extToType)/sizeof(*extToType);

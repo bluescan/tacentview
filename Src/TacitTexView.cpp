@@ -226,6 +226,8 @@ tString TexView::FindImageFiles(tList<tStringItem>& foundFiles)
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.tiff");
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.bmp");
 	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.dds");
+	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.hdr");
+	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.rgbe");
 
 	return imagesDir;
 }

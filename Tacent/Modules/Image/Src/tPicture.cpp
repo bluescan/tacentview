@@ -6,7 +6,7 @@
 // functionality is restricted to saving tga files only (targa files are not lossless when RLE compressed). Image
 // manipulation (excluding compression) happens in a tPicture, so there are crop, scale, etc functions in this class.
 //
-// Copyright (c) 2006, 2016, 2017, 2019 Tristan Grimmer.
+// Copyright (c) 2006, 2016, 2017, 2019, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -20,6 +20,7 @@
 #include "Image/tPicture.h"
 #include "Image/tFileTGA.h"
 #include <CxImage/ximage.h>
+#include "../../../Contrib/HDRLoader/hdrloader.h"
 using namespace tImage;
 using namespace tSystem;
 
@@ -88,6 +89,10 @@ bool tPicture::CanLoad(tFileType fileType)
 {
 	// Targas are handled natively.
 	if (fileType == tFileType::TGA)
+		return true;
+
+	// HDR (RGBE) are handled natively.
+	if (fileType == tFileType::HDR)
 		return true;
 
 	// The rest are handled by CxImage.
@@ -179,6 +184,29 @@ bool tPicture::Load(const tString& imageFile)
 		Height = targa.GetHeight();
 		Pixels = targa.StealPixels();
 		SrcFileBitDepth = targa.SrcFileBitDepth;
+		return true;
+	}
+
+	if (fileType == tFileType::HDR)
+	{
+		HDRLoaderResult res;
+		HDRLoader::load(imageFile.ConstText(), res);
+
+		Width = res.width;
+		Height = res.height;
+		Pixels = new tPixel[Width*Height];
+		SrcFileBitDepth = 24;
+		int p = 0;
+		for (int y = Height-1; y >= 0; y--)
+		{
+			for (int x = 0; x < Width; x++)
+			{
+				tPixel pixelCol(res.cols[p+0], res.cols[p+1], res.cols[p+2]);
+				Pixels[y*Width + x] = pixelCol;
+				p += 3;
+			}
+		}
+		delete[] res.cols;
 		return true;
 	}
 

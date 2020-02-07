@@ -16,6 +16,9 @@
     <Filter Include="Source Files\imgui">
       <UniqueIdentifier>{206a7b1f-a168-4e6a-bf30-c64d584fcc19}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\HDRLoader">
+      <UniqueIdentifier>{9c724599-d802-48e5-8eee-7c2fc3e90d8d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Tacent\Contrib\imgui\imconfig.h">
@@ -69,6 +72,9 @@
     <ClInclude Include="Src\Crop.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Tacent\Contrib\HDRLoader\hdrloader.h">
+      <Filter>Source Files\HDRLoader</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\TacitTexView.cpp">
@@ -115,6 +121,9 @@
     </ClCompile>
     <ClCompile Include="Src\Crop.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Tacent\Contrib\HDRLoader\hdrloader.cpp">
+      <Filter>Source Files\HDRLoader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
