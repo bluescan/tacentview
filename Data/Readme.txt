@@ -1,3 +1,5 @@
+Tacit-TexView (this tool) and Tacent are licenced by me (Tristan Grimmer) under the ISC licence. This licence is similar to MIT but without the verbiage.
+
 The icons are from https://ionicons.com/ and are MIT licensed. See Licence_IonIcons_MIT.txt
 Thank you.
 
@@ -7,4 +9,5 @@ Thank you.
 The various SDKs contain their own licence files in Tacent/Contrib/SDKName
 Thank you.
 
-Tacit-TexView (this tool) and Tacent are licenced by me (Tristan Grimmer) under the ISC licence. This licence is similar to MIT but without the verbiage.
+This product includes Radiance software (http://radsite.lbl.gov/) developed by the Lawrence Berkeley National Laboratory (http://www.lbl.gov/).
+Thank you.

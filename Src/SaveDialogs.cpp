@@ -429,7 +429,7 @@ void TexView::SaveAllImages(const tString& destDir, const tString& extension, fl
 		bool success = false;
 		tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
 		if (Config.SaveFileType == 0)
-			success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
+			success = outPic.SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
 		else
 			success = outPic.Save(outFile, colourFmt, Config.SaveFileJpgQuality);
 
@@ -463,7 +463,7 @@ void TexView::SaveImageTo(tPicture* picture, const tString& outFile, int width, 
 	bool success = false;
 	tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
 	if (Config.SaveFileType == 0)
-		success = outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
+		success = outPic.SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
 	else
 		success = outPic.Save(outFile, colourFmt, Config.SaveFileJpgQuality);
 	if (success)

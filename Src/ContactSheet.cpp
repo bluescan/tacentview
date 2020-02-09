@@ -262,7 +262,7 @@ void TexView::SaveContactSheetTo
 	if ((finalWidth == contactWidth) && (finalHeight == contactHeight))
 	{
 		if (Config.SaveFileType == 0)
-			outPic.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
+			outPic.SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
 		else
 			outPic.Save(outFile, colourFmt, Config.SaveFileJpgQuality);
 	}
@@ -272,7 +272,7 @@ void TexView::SaveContactSheetTo
 		finalResampled.Resample(finalWidth, finalHeight, tImage::tPicture::tFilter(Config.ResampleFilter));
 
 		if (Config.SaveFileType == 0)
-			finalResampled.SaveTGA(outFile, tImage::tFileTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tFileTGA::tCompression::RLE : tImage::tFileTGA::tCompression::None);
+			finalResampled.SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
 		else
 			finalResampled.Save(outFile, colourFmt, Config.SaveFileJpgQuality);
 	}

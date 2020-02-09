@@ -21,7 +21,7 @@
 #include <Math/tColour.h>
 #include <System/tFile.h>
 #include <System/tChunk.h>
-#include "Image/tFileTGA.h"
+#include "Image/tImageTGA.h"
 namespace tImage
 {
 
@@ -94,8 +94,8 @@ public:
 
 	bool SaveTGA
 	(
-		const tString& tgaFile, tFileTGA::tFormat = tFileTGA::tFormat::Auto,
-		tFileTGA::tCompression = tFileTGA::tCompression::RLE
+		const tString& tgaFile, tImageTGA::tFormat = tImageTGA::tFormat::Auto,
+		tImageTGA::tCompression = tImageTGA::tCompression::RLE
 	) const;
 
 	// Always clears the current image before loading. If false returned, you will have an invalid tPicture.

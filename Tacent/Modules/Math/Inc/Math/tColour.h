@@ -1,9 +1,11 @@
 // tColour.h
 //
-// Colour and pixel classes. Both a 32 bit integral representation as well as a 4 component floating point one can be
-// found in this file.
+// Colour and pixel classes. There are classes for:
+// * A 32 bit colour. 4 unsigned 8-bit integer components (rgb + alpha).
+// * A 96 bit colour. 3 32-bit float components.
+// * A 128 bit colour. 4 32-bit float components (rgb + alpha).
 //
-// Copyright (c) 2006, 2011, 2017 Tristan Grimmer.
+// Copyright (c) 2006, 2011, 2017, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -18,6 +20,7 @@
 #include "Math/tVector3.h"
 #include "Math/tVector4.h"
 class tColourf;
+class tColour3f;
 
 
 // Colour space conversions. The integer versions accept angle modes of Degrees and Norm256 only. The angle mode
@@ -143,7 +146,7 @@ public:
 typedef tColouri tPixel;
 
 
-// The tColourf class represents a colour in 4 floats and is made of 4 unsigned bytes in the order RGBA.
+// The tColourf class represents a colour in 4 floats and is made of 4 floats in the order RGBA.
 // The values of each float component are E [0.0, 1.0].
 class tColourf
 {
@@ -205,13 +208,13 @@ public:
 	bool IsGreen() const																								{ return ((R == 0.0f) && (G == 1.0f) && (B == 0.0f)) ? true : false; }
 	bool IsBlue() const																									{ return ((R == 0.0f) && (G == 0.0f) && (B == 1.0f)) ? true : false; }
 
-	// Colours in textures in files are usually in Gamma space and ought to be converted to linear space before
+	// Colours in textures in files may be in Gamma space and ought to be converted to linear space before
 	// lighting calculations are made. They should then be converted back to Gamma space before being displayed.
 	// Gamma-space here should really be sRGB but we're just using an approximation by squaring (gamma=2) when the
 	// average sRGB gamma should be 2.2. To do the conversion properly, the gamma varies with intensity from 1 to 2.4,
 	// but, again, we're only approximating here.
-	void ToLinearSpace()																								{ R *= R; G *= G; B *= B; }
-	void ToGammaSpace()																									{ R = tMath::tSqrt(R); G = tMath::tSqrt(G); B = tMath::tSqrt(B); }
+	void ToLinearSpaceApprox()																							{ R *= R; G *= G; B *= B; }
+	void ToGammaSpaceApprox()																							{ R = tMath::tSqrt(R); G = tMath::tSqrt(G); B = tMath::tSqrt(B); }
 
 	// When using the HSV representation of a tColourf, the hue is in NormOne angle mode. See the tRGBToHSV and
 	// tHSVToRGB functions if you wish to use different angle units. All the components (h, s, v, r, g, b, a) are in
@@ -223,8 +226,7 @@ public:
 	bool operator!=(const tColourf& c) const 																			{ return ((BP0 != c.BP0) || (BP1 != c.BP1)); }
 	tColourf& operator=(const tColourf& c)																				{ BP0 = c.BP0; BP1 = c.BP1; return *this; }
 
-	// Predefined colours. Initialized using the C++11 aggregate initializer syntax. These may be used before main()
-	// in normally (non-aggregate syntax) constructed objects.
+	// Predefined colours.
 	const static tColourf invalid;
 	const static tColourf black;
 	const static tColourf white;
@@ -253,6 +255,112 @@ public:
 	};
 };
 typedef tColourf tColour;
+
+
+// The tColour3f class represents a colour in 3 floats and is made of 3 floats in the order RGB.
+// The values of each float component are E [0.0, 1.0].
+class tColour3f
+{
+public:
+	tColour3f()																											{ }
+	tColour3f(const tColour3f& src)																						{ Set(src); }
+	tColour3f(float r, float g, float b)																				{ Set(r, g, b); }
+	tColour3f(const tMath::tVector3& c)																					{ Set(c); }
+	tColour3f(const tMath::tVector4& c)																					{ Set(c); }
+	tColour3f(const tColouri& src)																						{ Set(src); }
+	tColour3f(uint8 r, uint8 g, uint8 b)																				{ Set(r, g, b); }
+	tColour3f(int r, int g, int b)																						{ Set(r, g, b); }
+
+	void Unset()																										{ R = -1.0f; G = -1.0f; B = -1.0f; }						// An unset colour has value (-1.0f, -1.0f, -1.0f).
+	bool IsSet() const																									{ return ((R != -1.0f) || (G != -1.0f) || (B != -1.0f)); }	// Any set component means the whole colour is considered set.
+	void Set(const tColour3f& c)																						{ R = c.R; G = c.G; B = c.B; }
+	void Set(float r, float g, float b)																					{ R = r; G = g; B = b; }
+	void Set(const float* src)																							{ R = src[0]; G = src[1]; B = src[2]; }
+	void Set(const tMath::tVector3& c)																					{ R = c.x; G = c.y; B = c.z; }
+	void Set(const tMath::tVector4& c)																					{ R = c.x; G = c.y; B = c.z; }
+	void Set(const tColouri& c)																							{ Set(float(c.R)/255.0f, float(c.G)/255.0f, float(c.B)/255.0f); }
+	void Set(int r, int g, int b)																						{ Set(float(r)/255.0f, float(g)/255.0f, float(b)/255.0f); }
+	void SetR(int r)																									{ R = float(r)/255.0f; }
+	void SetG(int g)																									{ G = float(g)/255.0f; }
+	void SetB(int b)																									{ B = float(b)/255.0f; }
+
+	// The integer get and set methods use a range of [0, 255] for each component.
+	int GetR() const																									{ return tMath::tFloatToInt(R * 255.0f); }
+	int GetG() const																									{ return tMath::tFloatToInt(G * 255.0f); }
+	int GetB() const																									{ return tMath::tFloatToInt(B * 255.0f); }
+	void Get(int* dest) const																							{ dest[0] = GetR(); dest[1] = GetG(); dest[2] = GetB(); }
+	void Get(tMath::tVector3& dest) const																				{ dest.x = R; dest.y = G; dest.z = B; }
+	void Get(tMath::tVector4& dest) const																				{ dest.x = R; dest.y = G; dest.z = B; dest.w = 1.0f; }
+	void Get(float& r, float&g, float& b) const																			{ r = R; g = G; b = B; }
+	void Get(tColour3f& c) const																						{ c.R = R; c.G = G; c.B = B; }
+
+	void MakeBlack()																									{ R = 0.0f; G = 0.0f; B = 0.0f; }
+	void MakeWhite()																									{ R = 1.0f; G = 1.0f; B = 1.0f; }
+	void MakePink()																										{ R = 1.0f; G = 0.5f; B = 0.5f; }
+
+	void MakeRed()																										{ R = 1.0f; G = 0.0f; B = 0.0f; }
+	void MakeGreen()																									{ R = 0.0f; G = 1.0f; B = 0.0f; }
+	void MakeBlue()																										{ R = 0.0f; G = 0.0f; B = 1.0f; }
+
+	void MakeGrey()																										{ R = 0.5f; G = 0.5f; B = 0.5f; }
+	void MakeLightGrey()																								{ R = 0.75f; G = 0.75f; B = 0.75f; }
+	void MakeDarkGrey()																									{ R = 0.25f; G = 0.25f; B = 0.25f; }
+
+	void MakeCyan()																										{ R = 0.0f; G = 1.0f; B = 1.0f; }
+	void MakeMagenta()																									{ R = 1.0f; G = 0.0f; B = 1.0f; }
+	void MakeYellow()																									{ R = 1.0f; G = 1.0f; B = 0.0f; }
+
+	// These querying calls ignore alpha.
+	bool IsBlack() const																								{ return ((R == 0.0f) && (G == 0.0f) && (B == 0.0f)); }
+	bool IsWhite() const																								{ return ((R == 1.0f) && (G == 1.0f) && (B == 1.0f)); }
+	bool IsRed() const																									{ return ((R == 1.0f) && (G == 0.0f) && (B == 0.0f)); }
+	bool IsGreen() const																								{ return ((R == 0.0f) && (G == 1.0f) && (B == 0.0f)); }
+	bool IsBlue() const																									{ return ((R == 0.0f) && (G == 0.0f) && (B == 1.0f)); }
+
+	// Colours in textures in files may be in Gamma space and ought to be converted to linear space before
+	// lighting calculations are made. They should then be converted back to Gamma space before being displayed.
+	// Gamma-space here should really be sRGB but we're just using an approximation by squaring (gamma=2) when the
+	// average sRGB gamma should be 2.2. To do the conversion properly, the gamma varies with intensity from 1 to 2.4,
+	// but, again, we're only approximating here.
+	void ToLinearSpaceApprox()																							{ R *= R; G *= G; B *= B; }
+	void ToGammaSpaceApprox()																							{ R = tMath::tSqrt(R); G = tMath::tSqrt(G); B = tMath::tSqrt(B); }
+
+	// When using the HSV representation of a tColourf, the hue is in NormOne angle mode. See the tRGBToHSV and
+	// tHSVToRGB functions if you wish to use different angle units. All the components (h, s, v, r, g, b, a) are in
+	// [0.0, 1.0]. Both of the functions below leave the alpha unchanged.
+	void RGBToHSV();										// Assumes current values are RGB.
+	void HSVToRGB();										// Assumes current values are HSV.
+
+	bool operator==(const tColourf& c) const																			{ return ((R == c.R) && (G == c.G) && (B == c.B)); }
+	bool operator!=(const tColourf& c) const 																			{ return ((R != c.R) || (G != c.G) || (B != c.B)); }
+	tColour3f& operator=(const tColour3f& c)																			{ R = c.R; G = c.G; B = c.B; return *this; }
+
+	// Predefined colours.
+	const static tColour3f invalid;
+	const static tColour3f black;
+	const static tColour3f white;
+	const static tColour3f hotpink;
+
+	const static tColour3f red;
+	const static tColour3f green;
+	const static tColour3f blue;
+
+	const static tColour3f grey;
+	const static tColour3f lightgrey;
+	const static tColour3f darkgrey;
+
+	const static tColour3f cyan;
+	const static tColour3f magenta;
+	const static tColour3f yellow;
+
+	union
+	{
+		struct { float R, G, B; };
+		struct { float H, S, V; };
+		float E[3];
+	};
+};
+typedef tColour3f tColour3;
 
 
 // Implementation below this line.

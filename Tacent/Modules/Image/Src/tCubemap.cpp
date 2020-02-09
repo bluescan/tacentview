@@ -70,7 +70,7 @@ bool tCubemap::Load(const tString& ddsFile, bool reverseRowOrder)
 	if ((tSystem::tGetFileType(ddsFile) != tSystem::tFileType::DDS) || !tSystem::tFileExists(ddsFile))
 		return false;
 
-	tFileDDS dds(ddsFile, reverseRowOrder);
+	tImageDDS dds(ddsFile, reverseRowOrder);
 	if (!dds.IsValid() || !dds.IsCubemap())
 		return false;
 
@@ -78,14 +78,14 @@ bool tCubemap::Load(const tString& ddsFile, bool reverseRowOrder)
 }
 
 
-bool tCubemap::Set(tFileDDS& dds)
+bool tCubemap::Set(tImageDDS& dds)
 {
 	Clear();
 	if (!dds.IsValid() || !dds.IsCubemap())
 		return false;
 
-	tList<tLayer> layerSet[tFileDDS::tSurfIndex_NumSurfaces];
-	tStaticAssert(int(tSide::NumSides) == tFileDDS::tSurfIndex_NumSurfaces);
+	tList<tLayer> layerSet[tImageDDS::tSurfIndex_NumSurfaces];
+	tStaticAssert(int(tSide::NumSides) == tImageDDS::tSurfIndex_NumSurfaces);
 	dds.StealCubemapLayers(layerSet);
 
 	for (int side = 0; side < int(tSide::NumSides); side++)

@@ -18,9 +18,9 @@
 
 #include "Foundation/tStandard.h"
 #include "Image/tPicture.h"
-#include "Image/tFileTGA.h"
+#include "Image/tImageTGA.h"
+#include "Image/tImageHDR.h"
 #include <CxImage/ximage.h>
-#include "../../../Contrib/HDRLoader/hdrloader.h"
 using namespace tImage;
 using namespace tSystem;
 
@@ -113,7 +113,7 @@ bool tPicture::Save(const tString& imageFile, tPicture::tColourFormat colourFmt,
 		return false;
 
 	if (fileType == tFileType::TGA)
-		return SaveTGA(imageFile, tImage::tFileTGA::tFormat(colourFmt), tImage::tFileTGA::tCompression::None);
+		return SaveTGA(imageFile, tImage::tImageTGA::tFormat(colourFmt), tImage::tImageTGA::tCompression::None);
 
 	tPixel* reorderedPixelArray = new tPixel[Width*Height];
 	for (int p = 0; p < Width*Height; p++)
@@ -148,15 +148,15 @@ bool tPicture::Save(const tString& imageFile, tPicture::tColourFormat colourFmt,
 }
 
 
-bool tPicture::SaveTGA(const tString& tgaFile, tFileTGA::tFormat format, tFileTGA::tCompression compression) const
+bool tPicture::SaveTGA(const tString& tgaFile, tImageTGA::tFormat format, tImageTGA::tCompression compression) const
 {
 	tFileType fileType = tGetFileType(tgaFile);
 	if (!IsValid() || (fileType != tFileType::TGA))
 		return false;
 
-	tFileTGA targa(Pixels, Width, Height);
-	tFileTGA::tFormat savedFormat = targa.Save(tgaFile, format, compression);
-	if (savedFormat == tFileTGA::tFormat::Invalid)
+	tImageTGA targa(Pixels, Width, Height);
+	tImageTGA::tFormat savedFormat = targa.Save(tgaFile, format, compression);
+	if (savedFormat == tImageTGA::tFormat::Invalid)
 		return false;
 
 	return true;
@@ -176,7 +176,7 @@ bool tPicture::Load(const tString& imageFile)
 	// We handle tga files natively.
 	if (fileType == tFileType::TGA)
 	{
-		tFileTGA targa(imageFile);
+		tImageTGA targa(imageFile);
 		if (!targa.IsValid())
 			return false;
 
@@ -189,24 +189,12 @@ bool tPicture::Load(const tString& imageFile)
 
 	if (fileType == tFileType::HDR)
 	{
-		HDRLoaderResult res;
-		HDRLoader::load(imageFile.ConstText(), res);
-
-		Width = res.width;
-		Height = res.height;
-		Pixels = new tPixel[Width*Height];
+		tImageHDR hdr;
+		hdr.Load(imageFile);
+		Width = hdr.GetWidth();
+		Height = hdr.GetHeight();
+		Pixels = hdr.StealPixels();
 		SrcFileBitDepth = 24;
-		int p = 0;
-		for (int y = Height-1; y >= 0; y--)
-		{
-			for (int x = 0; x < Width; x++)
-			{
-				tPixel pixelCol(res.cols[p+0], res.cols[p+1], res.cols[p+2]);
-				Pixels[y*Width + x] = pixelCol;
-				p += 3;
-			}
-		}
-		delete[] res.cols;
 		return true;
 	}
 

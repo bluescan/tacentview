@@ -29,10 +29,13 @@
     <ClInclude Include="..\Inc\Image\tTexture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Inc\Image\tFileDDS.h">
+    <ClInclude Include="..\Inc\Image\tImageDDS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Inc\Image\tFileTGA.h">
+    <ClInclude Include="..\Inc\Image\tImageHDR.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Inc\Image\tImageTGA.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -52,10 +55,13 @@
     <ClCompile Include="..\Src\tPixelFormat.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Src\tFileDDS.cpp">
+    <ClCompile Include="..\Src\tImageDDS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Src\tFileTGA.cpp">
+    <ClCompile Include="..\Src\tImageHDR.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\tImageTGA.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

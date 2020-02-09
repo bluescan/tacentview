@@ -48,9 +48,8 @@ inline int tStrlen(const char* s)																						{ tAssert(s); return int(
 inline constexpr int tStrlenCT(const char* s)																			{ return *s ? 1 + tStrlenCT(s + 1) : 0; }
 inline char* tStrcpy(char* dst, const char* src)																		{ tAssert(dst && src); return strcpy(dst, src); }
 inline char* tStrncpy(char* dst, const char* src, int n)																{ tAssert(dst && src && n >= 0); return strncpy(dst, src, n); }
-inline const char* tStrchr(const char* s, int c)																		{ tAssert(s && c >= 0 && c < 0x100); return strchr(s, c); }
-inline const char* tStrstr(const char* s, const char* r)																{ tAssert(s && r); return strstr(s, r); }
-inline char* tStrstr(char* s, const char* r)																			{ tAssert(s && r); return strstr(s, r); }
+inline char* tStrchr(const char* s, int c)																				{ tAssert(s && c >= 0 && c < 0x100); return (char*)strchr(s, c); }
+inline char* tStrstr(const char* s, const char* r)																		{ tAssert(s && r); return (char*)strstr(s, r); }
 inline char* tStrupr(char* s)																							{ tAssert(s); return _strupr(s); }
 inline char* tStrlwr(char* s)																							{ tAssert(s); return _strlwr(s); }
 

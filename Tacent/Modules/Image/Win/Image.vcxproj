@@ -23,8 +23,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Inc\Image\tCubemap.h" />
-    <ClInclude Include="..\Inc\Image\tFileDDS.h" />
-    <ClInclude Include="..\Inc\Image\tFileTGA.h" />
+    <ClInclude Include="..\Inc\Image\tImageDDS.h" />
+    <ClInclude Include="..\Inc\Image\tImageHDR.h" />
+    <ClInclude Include="..\Inc\Image\tImageTGA.h" />
     <ClInclude Include="..\Inc\Image\tLayer.h" />
     <ClInclude Include="..\Inc\Image\tPicture.h" />
     <ClInclude Include="..\Inc\Image\tPixelFormat.h" />
@@ -32,8 +33,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Src\tCubemap.cpp" />
-    <ClCompile Include="..\Src\tFileDDS.cpp" />
-    <ClCompile Include="..\Src\tFileTGA.cpp" />
+    <ClCompile Include="..\Src\tImageDDS.cpp" />
+    <ClCompile Include="..\Src\tImageHDR.cpp" />
+    <ClCompile Include="..\Src\tImageTGA.cpp" />
     <ClCompile Include="..\Src\tLayer.cpp" />
     <ClCompile Include="..\Src\tPicture.cpp" />
     <ClCompile Include="..\Src\tPixelFormat.cpp" />

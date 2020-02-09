@@ -42,13 +42,13 @@ bool tTexture::Set(tList<tLayer>& layers)
 }
 
 
-bool tTexture::Load(const tString& ddsFile, tFileDDS::tSurfIndex surface, bool correctRowOrder)
+bool tTexture::Load(const tString& ddsFile, tImageDDS::tSurfIndex surface, bool correctRowOrder)
 {
 	Clear();
 	if ((tSystem::tGetFileType(ddsFile) != tSystem::tFileType::DDS) || !tSystem::tFileExists(ddsFile))
 		return false;
 
-	tFileDDS dds(ddsFile, correctRowOrder);
+	tImageDDS dds(ddsFile, correctRowOrder);
 	if (!dds.IsValid())
 		return false;
 
@@ -56,7 +56,7 @@ bool tTexture::Load(const tString& ddsFile, tFileDDS::tSurfIndex surface, bool c
 }
 
 
-bool tTexture::Set(tFileDDS& dds, tFileDDS::tSurfIndex surface)
+bool tTexture::Set(tImageDDS& dds, tImageDDS::tSurfIndex surface)
 {
 	Clear();
 	if (!dds.IsValid())
@@ -68,7 +68,7 @@ bool tTexture::Set(tFileDDS& dds, tFileDDS::tSurfIndex surface)
 	}
 	else
 	{
-		tList<tLayer> layerSets[tFileDDS::tSurfIndex_NumSurfaces];
+		tList<tLayer> layerSets[tImageDDS::tSurfIndex_NumSurfaces];
 		dds.StealCubemapLayers(layerSets);
 		while (!layerSets[surface].IsEmpty())
 			Layers.Append(layerSets[surface].Remove());

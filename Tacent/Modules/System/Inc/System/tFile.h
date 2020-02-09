@@ -8,7 +8,7 @@
 // use backslashes, but consistency in using forward slashes is advised. Directory path specifications always end with
 // a trailing slash. Without the trailing separator the path will be interpreted as a file.
 //
-// Copyright (c) 2004-2006, 2017 Tristan Grimmer.
+// Copyright (c) 2004-2006, 2017, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -349,11 +349,11 @@ bool tDeleteFile(const tString& filename, bool deleteReadOnly = true, bool tryUs
 bool tFilesIdentical(const tString& fileA, const tString& fileB);
 
 // Loads entire file into memory. If buffer is nullptr you must free the memory returned at some point by using
-// delete[]. If buffer is non-nullptr it must be at least GetFileSize big. Any problems (file not exist or is
-// unreadable etc) and nullptr is returned. Fills in the file size pointer if you supply one. It is perfectly valid to
+// delete[]. If buffer is non-nullptr it must be at least GetFileSize big (+1 if appending EOF). Any problems (file not exist or is
+// unreadable etc) and nullptr is returned. Fills in the file size pointer if you supply one (not including optional appened EOF). It is perfectly valid to
 // load a file with no data (0 bytes big). In this case LoadFile always returns nullptr even if a non-zero buffer was
 // passed in and the fileSize member will be set to 0 (if supplied).
-uint8* tLoadFile(const tString& filename, uint8* buffer = nullptr, int* fileSize = 0);
+uint8* tLoadFile(const tString& filename, uint8* buffer = nullptr, int* fileSize = nullptr, bool appendEOF = false);
 
 // Similar to above, but is best used with a text file. If a binary file is supplied and convertZeroesTo is left at
 // default, any null characters '\0' are turned into separators (31). This ensures that the string length will be

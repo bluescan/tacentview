@@ -26,7 +26,7 @@
 #include <Foundation/tList.h>
 #include <Foundation/tString.h>
 #include <System/tChunk.h>
-#include "Image/tFileDDS.h"
+#include "Image/tImageDDS.h"
 #include "Image/tPicture.h"
 namespace tImage
 {
@@ -50,14 +50,14 @@ public:
 	// only the cubemap loader know about it (and they use left handed side ordering).
 	tTexture
 	(
-		const tString& ddsFile, tFileDDS::tSurfIndex surface = tFileDDS::tSurfIndex_Default,
+		const tString& ddsFile, tImageDDS::tSurfIndex surface = tImageDDS::tSurfIndex_Default,
 		bool correctRowOrder = true
 	)																													{ Load(ddsFile, surface, correctRowOrder); }
 
 	// Similar to above but accepts an in-memory object. The ddsObject will be invalid after as the layers are stolen
 	// from it. If necessary, a constructor can easily be added that does a copy and keeps it valid, but it will be
 	// less efficient.
-	tTexture(tFileDDS& ddsObject, tFileDDS::tSurfIndex surface = tFileDDS::tSurfIndex_Default)							{ Set(ddsObject, surface); }
+	tTexture(tImageDDS& ddsObject, tImageDDS::tSurfIndex surface = tImageDDS::tSurfIndex_Default)							{ Set(ddsObject, surface); }
 
 	// The other constructors require you to know a quality setting for resampling (mipmap generation) and compression.
 	// For simplicity there is only Fast and Production quality settings, and it affects resampling _and_ compression.
@@ -98,10 +98,10 @@ public:
 	bool Set(tList<tLayer>&);
 	bool Load
 	(
-		const tString& ddsFile, tFileDDS::tSurfIndex surface = tFileDDS::tSurfIndex_Default,
+		const tString& ddsFile, tImageDDS::tSurfIndex surface = tImageDDS::tSurfIndex_Default,
 		bool correctRowOrder = true
 	);
-	bool Set(tFileDDS& ddsObject, tFileDDS::tSurfIndex = tFileDDS::tSurfIndex_Default);
+	bool Set(tImageDDS& ddsObject, tImageDDS::tSurfIndex = tImageDDS::tSurfIndex_Default);
 	bool Load
 	(
 		const tString& imageFile, bool generateMipMaps, tPixelFormat = tPixelFormat::Auto,

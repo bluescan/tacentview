@@ -171,6 +171,7 @@ void TexView::ShowAboutPopup(bool* popen)
 		ImGui::Text("nVidia Texture Tools");
 		ImGui::Text("Ionicons");
 		ImGui::Text("Roboto Google Font");
+		ImGui::Text("Radiance Software");
 	}
 	ImGui::End();
 }

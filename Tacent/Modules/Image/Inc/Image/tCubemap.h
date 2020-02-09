@@ -58,8 +58,8 @@ public:
 		int forceWidth = 0, int forceHeight = 0
 	)																													{ Load(imageFilePosX, imageFileNegX, imageFilePosY, imageFileNegY, imageFilePosZ, imageFileNegZ, generateMipMaps, pixelFormat, quality, forceWidth,forceHeight); }
 
-	// Constructs from an in-memory tFileDDS object. The passed in object will be invalid afterwards.
-	tCubemap(tFileDDS& ddsObj)																							{ Set(ddsObj); }
+	// Constructs from an in-memory tImageDDS object. The passed in object will be invalid afterwards.
+	tCubemap(tImageDDS& ddsObj)																							{ Set(ddsObj); }
 
 	// Constructs from 6 in-memory tPicture objects. The passed in objects will be invalid afterwards. You do not need
 	// them all to be valid. tCubemap supports having one to six sides. Use LH coord system. See tTexture for the last
@@ -91,7 +91,7 @@ public:
 		tTexture::tQuality = tTexture::tQuality::Production,
 		int forceWidth = 0, int forceHeight = 0
 	);
-	bool Set(tFileDDS&);
+	bool Set(tImageDDS&);
 	bool Set
 	(
 		tPicture& imagePosX, tPicture& imageNegX,

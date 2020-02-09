@@ -17,7 +17,7 @@
 using namespace tMath;
 
 
-// Uses C++11 aggregate initialization syntax so construction happens earlier.
+// Uses C++11 aggregate initialization syntax.
 const tColouri tColouri::black			= { 0x00, 0x00, 0x00 };
 const tColouri tColouri::white			= { 0xFF, 0xFF, 0xFF };
 const tColouri tColouri::pink			= { 0xFF, 0x80, 0x80 };
@@ -47,6 +47,21 @@ const tColourf tColourf::cyan			= { 0.0f, 1.0f, 1.0f };
 const tColourf tColourf::magenta		= { 1.0f, 0.0f, 1.0f };
 const tColourf tColourf::yellow			= { 1.0f, 1.0f, 0.0f };
 const tColourf tColourf::transparent	= { 0.0f, 0.0f, 0.0f, 0.0f };
+
+
+const tColour3f tColour3f::invalid		= { -1.0f, -1.0f, -1.0f };
+const tColour3f tColour3f::black		= { 0.0f, 0.0f, 0.0f };
+const tColour3f tColour3f::white		= { 1.0f, 1.0f, 1.0f };
+const tColour3f tColour3f::hotpink		= { 1.0f, 0.5f, 0.5f };
+const tColour3f tColour3f::red			= { 1.0f, 0.0f, 0.0f };
+const tColour3f tColour3f::green		= { 0.0f, 1.0f, 0.0f };
+const tColour3f tColour3f::blue			= { 0.0f, 0.0f, 1.0f };
+const tColour3f tColour3f::grey			= { 0.5f, 0.5f, 0.5f };
+const tColour3f tColour3f::lightgrey	= { 0.75f, 0.75f, 0.75f };
+const tColour3f tColour3f::darkgrey		= { 0.25f, 0.25f, 0.25f };
+const tColour3f tColour3f::cyan			= { 0.0f, 1.0f, 1.0f };
+const tColour3f tColour3f::magenta		= { 1.0f, 0.0f, 1.0f };
+const tColour3f tColour3f::yellow		= { 1.0f, 1.0f, 0.0f };
 
 
 void tRGBToHSV(int& h, int& s, int& v, int r, int g, int b, tAngleMode angleMode)
