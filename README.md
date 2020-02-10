@@ -1,5 +1,5 @@
 # tacit-texview
-A texture viewer for tga, jpg, png, tif, dds, gif, and bmp files. Uses Dear ImGui, OpenGL, CxImage, and the Tacent library. This viewer is targeted to game devs. It displays useful details like the presence of an alpha channel and can query individual pixels for their colour.
+A texture viewer for tga, jpg, png, tif, dds, gif, bmp, and hdr files. Uses Dear ImGui, OpenGL, CxImage, and the Tacent library. This viewer is targeted to game devs. It displays useful details like the presence of an alpha channel and can query individual pixels for their colour.
 
 ![Tacent Texture Viewer](https://raw.githubusercontent.com/bluescan/tacit-texview/master/Screenshots/Screenshot_CopyColourAs.png)
 
