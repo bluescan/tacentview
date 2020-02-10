@@ -1,7 +1,7 @@
-The files in this folder _except for nancy_church_3.hdr are all under the ISC licence
+The files in this folder _except_ for mpi_atrium_3.hdr are all under the ISC licence
 like the rest of this project.
 
-nancy_church_3.hdr is taken from the HDR Image gallery:
+mpi_atrium_3.hdr is from the HDR Image gallery:
 
 =====================================================================
 pfstools - HDR Image gallery
