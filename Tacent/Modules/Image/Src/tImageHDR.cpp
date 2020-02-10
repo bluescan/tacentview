@@ -21,18 +21,21 @@
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 // 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+// 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
 // 3. The end-user documentation included with the redistribution, if any, must include the following acknowledgment:
 //    "This product includes Radiance software (http://radsite.lbl.gov/) developed by the Lawrence Berkeley National Laboratory (http://www.lbl.gov/)."
 //    Alternately, this acknowledgment may appear in the software itself, if and wherever such third-party acknowledgments normally appear.
-// 4. The names "Radiance," "Lawrence Berkeley National Laboratory" and "The Regents of the University of California" must not be used to endorse or promote products derived from this software without prior written permission. For written permission, please contact radiance@radsite.lbl.gov.
-// 5. Products derived from this software may not be called "Radiance", nor may "Radiance" appear in their name, without prior written permission of Lawrence Berkeley National Laboratory.
+// 4. The names "Radiance," "Lawrence Berkeley National Laboratory" and "The Regents of the University of California" must not be used to endorse
+//    or promote products derived from this software without prior written permission. For written permission, please contact radiance@radsite.lbl.gov.
+// 5. Products derived from this software may not be called "Radiance", nor may "Radiance" appear in their name, without prior written permission of
+//    Lawrence Berkeley National Laboratory.
 //
-// THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-// DISCLAIMED. IN NO EVENT SHALL Lawrence Berkeley National Laboratory OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
-// USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
-// OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+// AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL Lawrence Berkeley National Laboratory OR ITS CONTRIBUTORS BE LIABLE FOR ANY
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <Foundation/tStandard.h>
 #include <Foundation/tString.h>
@@ -42,44 +45,58 @@ using namespace tSystem;
 namespace tImage
 {
 
-#define MAXGSHIFT	31		// maximum shift for gamma 
-double GammaCorrection = 2.2;
-int ExposureAdjustment = 0;
-uint8* g_mant = NULL;
-uint8* g_nexp = NULL;
-uint8 (*g_bval)[256] = NULL;
+
+#define tputc(v) *writeP++ = uint8(v)
+#define tgetc() (*readP++);
+#define tungetc(v) *(--readP) = v;
 
 
-void SetupGammaTables(double gamma)
+namespace Rad
 {
-	if (g_bval)
+	uint8* MantissaTable		= nullptr;
+	uint8* ExponentTable		= nullptr;
+	uint8 (*GammaTable)[256]	= nullptr;
+	const int MaxGammaShift		= 31;
+	const int MinScanLen		= 8;			// Minimum scanline length for encoding.
+	const int MaxScanLen		= 0x7FFF;		// Maximum scanline length for encoding.
+	const int MinRunLen			= 4;
+	const int ExpXS				= 128;			// Excess used for exponent.
+
+	void SetupGammaTables(double gamma);
+	bool ConvertRadianceToGammaCorrected(tPixel* scan, int len);
+}
+
+
+void Rad::SetupGammaTables(double gamma)
+{
+	if (GammaTable)
 		return;
 
 	double invGamma = 1.0 / gamma;
 
-	// one direction.
-	g_bval = (uint8(*)[256])malloc((MAXGSHIFT+1)*256);
+	// This table is used to convert from Radiance format to 24-bit.
+	GammaTable = (uint8(*)[256])malloc((MaxGammaShift+1)*256);
 	double mult = 1.0/256.0;
-	for (int i = 0; i <= MAXGSHIFT; i++)
+	for (int i = 0; i <= MaxGammaShift; i++)
 	{
 		for (int j = 0; j < 256; j++)
-			g_bval[i][j] = uint8(uint32( 256.0 * pow((j+.5)*mult, invGamma) ));
+			GammaTable[i][j] = uint8(uint32( 256.0 * pow( (j+0.5)*mult, invGamma ) ));
 		mult *= 0.5;
 	}
 
-	// backwards.
-	g_mant = (uint8*)malloc(256);
-	g_nexp = (uint8*)malloc(256);
+	// These tables are used to go from 24-bit to a Radiance-encoded value.
+	MantissaTable = (uint8*)malloc(256);
+	ExponentTable = (uint8*)malloc(256);
 	int i = 0;
 	mult = 256.0;
 	for (int j = 256; j--; )
 	{
-		while ((g_mant[j] = uint8(uint32(mult * pow((j+.5)/256.0, gamma)))) < 128)
+		while ((MantissaTable[j] = uint8(uint32(mult * pow((j+0.5)/256.0, gamma)))) < 128)
 		{
 			i++;
 			mult *= 2.0;
 		}
-		g_nexp[j] = i;
+		ExponentTable[j] = i;
 	}
 }
 
@@ -102,39 +119,28 @@ bool tImageHDR::Load(const tString& hdrFile)
 	return success;
 }
 
+//#define RED 0
+//#define GRN 1
+//#define BLU 2
+//#define ALP 3
+//#define EXP 3
 
-/////////////
-
-#define RED 0
-#define GRN 1
-#define BLU 2
-#define ALP 3
-#define EXP 3
-#define tputc(v) *writeP++ = uint8(v)
-#define tgetc() (*readP++);
-#define tungetc(v) *(--readP) = v;
-#define  MINELEN	8	/* minimum scanline length for encoding */
-#define  MAXELEN	0x7fff	/* maximum scanline length for encoding */
-#define  MINRUN		4	/* minimum run length */
-#define  COLXS		128	/* excess used for exponent */
-
-// read in an old-style colr scanline
-bool tImageHDR::oldreadcolrs(tPixel  *scanline, int  len)
+bool tImageHDR::LegacyReadRadianceColours(tPixel* scanline, int len)
 {
 	int  rshift = 0;
 	int  i;
 	
 	while (len > 0)
 	{
-		scanline[0].E[RED] = tgetc();
-		scanline[0].E[GRN] = tgetc();
-		scanline[0].E[BLU] = tgetc();
-		scanline[0].E[EXP] = i = tgetc();
+		scanline[0].R = tgetc();
+		scanline[0].G = tgetc();
+		scanline[0].B = tgetc();
+		scanline[0].A = i = tgetc();
 		if (i == EOF)
 			return false;
-		if (scanline[0].E[RED] == 1 && scanline[0].E[GRN] == 1 && scanline[0].E[BLU] == 1)
+		if (scanline[0].R == 1 && scanline[0].G == 1 && scanline[0].B == 1)
 		{
-			for (i = scanline[0].E[EXP] << rshift; i > 0; i--)
+			for (i = scanline[0].A << rshift; i > 0; i--)
 			{
 				scanline[0] = scanline[-1];
 				scanline++;
@@ -153,15 +159,14 @@ bool tImageHDR::oldreadcolrs(tPixel  *scanline, int  len)
 }
 
 
-// read in an encoded colr scanline 
-bool tImageHDR::freadcolrs(tPixel* scanline, int len)
+bool tImageHDR::ReadRadianceColours(tPixel* scanline, int len)
 {
 	int  i, j;
 	int  code, val;
 	
-	// determine scanline type
-	if ((len < MINELEN) | (len > MAXELEN))
-		return oldreadcolrs(scanline, len);
+	// Determine if scanline is legacy and needs to be processed the old way.
+	if ((len < Rad::MinScanLen) | (len > Rad::MaxScanLen))
+		return LegacyReadRadianceColours(scanline, len);
 
 	i = tgetc();
 	if (i == EOF)
@@ -169,23 +174,24 @@ bool tImageHDR::freadcolrs(tPixel* scanline, int len)
 	if (i != 2)
 	{
 		tungetc(i);
-		return oldreadcolrs(scanline, len);
+		return LegacyReadRadianceColours(scanline, len);
 	}
-	scanline[0].E[GRN] = tgetc();
-	scanline[0].E[BLU] = tgetc();
+	scanline[0].G = tgetc();
+	scanline[0].B = tgetc();
 	i = tgetc();
 	if (i == EOF)
 		return false;
-	if (scanline[0].E[GRN] != 2 || scanline[0].E[BLU] & 128)
+
+	if (scanline[0].G != 2 || scanline[0].B & 128)
 	{
-		scanline[0].E[RED] = 2;
-		scanline[0].E[EXP] = i;
-		return oldreadcolrs(scanline+1, len-1);
+		scanline[0].R = 2;
+		scanline[0].A = i;
+		return LegacyReadRadianceColours(scanline+1, len-1);
 	}
-	if ((scanline[0].E[BLU]<<8 | i) != len)
-		return false;		// length mismatch!
+	if ((scanline[0].B << 8 | i) != len)
+		return false;
 	
-	// read each component
+	// Read each component.
 	for (i = 0; i < 4; i++)
 	{
 	    for (j = 0; j < len; )
@@ -193,21 +199,24 @@ bool tImageHDR::freadcolrs(tPixel* scanline, int len)
 			code = tgetc();
 			if (code == EOF)
 				return false;
+
 			if (code > 128)
-			{	// run
+			{
+				// RLE run.
 				code &= 127;
 				val = tgetc();
 				if (val == EOF)
 					return false;
 				if (j + code > len)
-		    		return false;	// overrun 
+		    		return false;	// Overrun.
 				while (code--)
 					scanline[j++].E[i] = val;
 			}
 			else
-			{		// non-run
+			{
+				// New non-RLE colour.
 				if (j + code > len)
-		    		return false;	// overrun
+		    		return false;	// Overrun.
 				while (code--)
 				{
 					val = tgetc();
@@ -222,65 +231,72 @@ bool tImageHDR::freadcolrs(tPixel* scanline, int len)
 }
 
 
-int colrs_gambs(tPixel* scan, int len)		/* convert scanline of colrs to gamma bytes */
+bool Rad::ConvertRadianceToGammaCorrected(tPixel* scan, int len)
 {
-	int	i, expo;
+	if (!GammaTable)
+		return false;
 
-	if (g_bval == NULL)
-		return(-1);
 	while (len-- > 0)
 	{
-		expo = scan[0].E[EXP] - COLXS;
-		if (expo < -MAXGSHIFT)
+		int expo = scan[0].A - ExpXS;
+		if (expo < -MaxGammaShift)
 		{
-			if (expo < -MAXGSHIFT-8)
+			if (expo < -MaxGammaShift-8)
 			{
-				scan[0].E[RED] =
-				scan[0].E[GRN] =
-				scan[0].E[BLU] = 0;
+				scan[0].MakeBlack();
 			}
 			else
 			{
-				i = (-MAXGSHIFT-1) - expo;
-				scan[0].E[RED] = 
-				g_bval[MAXGSHIFT][((scan[0].E[RED]>>i)+1)>>1];
-				scan[0].E[GRN] =
-				g_bval[MAXGSHIFT][((scan[0].E[GRN]>>i)+1)>>1];
-				scan[0].E[BLU] =
-				g_bval[MAXGSHIFT][((scan[0].E[BLU]>>i)+1)>>1];
+				int i = (-MaxGammaShift-1) - expo;
+				scan[0].R = GammaTable[MaxGammaShift][ ((scan[0].R >> i) + 1) >> 1 ];
+				scan[0].G = GammaTable[MaxGammaShift][ ((scan[0].G >> i) + 1) >> 1 ];
+				scan[0].B = GammaTable[MaxGammaShift][ ((scan[0].B >> i) + 1) >> 1 ];
 			}
 		}
 		else if (expo > 0)
 		{
 			if (expo > 8)
 			{
-				scan[0].E[RED] =
-				scan[0].E[GRN] =
-				scan[0].E[BLU] = 255;
-			} else
+				scan[0].MakeWhite();
+			}
+			else
 			{
-				i = (scan[0].E[RED]<<1 | 1) << (expo-1);
-				scan[0].E[RED] = i > 255 ? 255 : g_bval[0][i];
-				i = (scan[0].E[GRN]<<1 | 1) << (expo-1);
-				scan[0].E[GRN] = i > 255 ? 255 : g_bval[0][i];
-				i = (scan[0].E[BLU]<<1 | 1) << (expo-1);
-				scan[0].E[BLU] = i > 255 ? 255 : g_bval[0][i];
+				int i;
+				i = (scan[0].R<<1 | 1) << (expo-1);		scan[0].R = i > 255 ? 255 : GammaTable[0][i];
+				i = (scan[0].G<<1 | 1) << (expo-1);		scan[0].G = i > 255 ? 255 : GammaTable[0][i];
+				i = (scan[0].B<<1 | 1) << (expo-1);		scan[0].B = i > 255 ? 255 : GammaTable[0][i];
 			}
 		}
 		else
 		{
-			scan[0].E[RED] = g_bval[-expo][scan[0].E[RED]];
-			scan[0].E[GRN] = g_bval[-expo][scan[0].E[GRN]];
-			scan[0].E[BLU] = g_bval[-expo][scan[0].E[BLU]];
+			scan[0].R = GammaTable[-expo][scan[0].R];
+			scan[0].G = GammaTable[-expo][scan[0].G];
+			scan[0].B = GammaTable[-expo][scan[0].B];
 		}
-		scan[0].E[EXP] = COLXS;
+		scan[0].A = ExpXS;
 		scan++;
 	}
-	return(0);
+	return true;
 }
 
 
-/////////////
+void AdjustExposure(tPixel* scan, int len, int adjust)
+{
+	// Shift a scanline of colors by 2^adjust.
+	if (adjust == 0)
+		return;
+
+	int minexp = adjust < 0 ? -adjust : 0;
+	while (len-- > 0)
+	{
+		if (scan[0].A <= minexp)
+			scan[0].MakeZero();
+		else
+			scan[0].A += adjust;
+		scan++;
+	}
+}
+
 
 bool tImageHDR::Set(uint8* hdrFileInMemory, int numBytes)
 {
@@ -288,8 +304,7 @@ bool tImageHDR::Set(uint8* hdrFileInMemory, int numBytes)
 	if ((numBytes <= 0) || !hdrFileInMemory)
 		return false;
 
-	// Do the work. Set Width, Height, and Colours.
-	SetupGammaTables(2.2);
+	Rad::SetupGammaTables(GammaCorrection);
 
 	// Search for the first double 0x0A (linefeed).
 	// Note that hdrFileInMemory has an extra EOF at the end. The (numBytes+1)th character.
@@ -340,52 +355,65 @@ bool tImageHDR::Set(uint8* hdrFileInMemory, int numBytes)
 	Pixels = new tPixel[Width*Height];
 	tPixel* scanin = new tPixel[Width];
 
+	bool ok = true;
 	for (int y = Height-1; y >= 0; y--)
 	{
-		bool ok = freadcolrs(scanin, Width);
+		ok = ReadRadianceColours(scanin, Width);
 		if (!ok)
-		{
-			delete[] scanin;
-			delete[] Pixels;
-			Pixels = nullptr;
-			return false;
-		}
-///		if (bradj)			/* adjust exposure */
-///			shiftcolrs(scanin, xmax, bradj);
-		colrs_gambs(scanin, Width);	/* gamma correction */
+			break;
+
+		AdjustExposure(scanin, Width, ExposureAdjustment);
+
+		ok = Rad::ConvertRadianceToGammaCorrected(scanin, Width);
+		if (!ok)
+			break;
 
 		writeP = (uint8*)&Pixels[y * Width];
 		for (int x = 0; x < Width; x++)
 		{
-			tputc(scanin[x].E[RED]);
-			tputc(scanin[x].E[GRN]);
-			tputc(scanin[x].E[BLU]);
+			tputc(scanin[x].R);
+			tputc(scanin[x].G);
+			tputc(scanin[x].B);
 			tputc(255);
 		}
 	}
+
 	delete[] scanin;
+	if (!ok)
+	{
+		delete[] Pixels;
+		Pixels = nullptr;
+		return false;
+	}
 
 	return true;
 }
 
 
-bool tImageHDR::Set(tPixel* pixels, int width, int height)
+bool tImageHDR::Set(tPixel* pixels, int width, int height, bool steal)
 {
 	Clear();
 	if (!pixels || (width <= 0) || (height <= 0))
 		return false;
 
-	// Do the work. Set Width, Height, and Colours.
-	Width = 0;
-	Height = 0;
-	Pixels = nullptr;
-
+	Width = width;
+	Height = height;
+	if (steal)
+	{
+		Pixels = pixels;
+	}
+	else
+	{
+		Pixels = new tPixel[Width*Height];
+		tStd::tMemcpy(Pixels, pixels, Width*Height*sizeof(tPixel));
+	}
 	return true;
 }
 
 
 bool tImageHDR::Save(const tString& hdrFile) const
 {
+	tAssertMsg(false, "HDR Save not implemented.");
 	if (!IsValid())
 		return false;
 
