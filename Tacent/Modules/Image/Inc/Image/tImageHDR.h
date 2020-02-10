@@ -81,19 +81,40 @@ public:
 	tPixel* StealPixels();
 	tPixel* GetPixels() const																							{ return Pixels; }
 
+	static double GammaCorrection;
+	static int ExposureAdjustment;
+
 private:
-	bool LegacyReadRadianceColours(tPixel* scanline, int length);		// Older hdr files use this scanline format.
-	bool ReadRadianceColours(tPixel* scanline, int length);				// Most hdr files use the new scanline format. This will call the old as necessary.
+	bool LegacyReadRadianceColours(tPixel* scanline, int length);	// Older hdr files use this scanline format.
+	bool ReadRadianceColours(tPixel* scanline, int length);			// Most hdr files use the new scanline format. This will call the old as necessary.
+	bool ConvertRadianceToGammaCorrected(tPixel* scan, int len);
+
+	void PutB(int v)												{ *WriteP++ = uint8(v); }
+	uint8 GetB()													{ return *ReadP++; }
+	void UngetB(int v)												{ *(--ReadP) = v; }
 
 	int Width				= 0;
 	int Height				= 0;
 	tPixel* Pixels			= nullptr;
 
-	double GammaCorrection	= 2.2;
-	int ExposureAdjustment	= 0;
+	// Read and write pointers used during processing.
+	uint8* ReadP			= nullptr;
+	uint8* WriteP			= nullptr;
 
-	uint8* readP			= nullptr;
-	uint8* writeP			= nullptr;
+	// While it would be more efficient to share these tables between instances, we need thread safety.
+	void SetupGammaTables(double gamma);
+	void CleanupGammaTables();
+
+	uint8* MantissaTable		= nullptr;
+	uint8* ExponentTable		= nullptr;
+	uint8 (*GammaTable)[256]	= nullptr;
+
+	// Constants.
+	const static int MaxGammaShift		= 31;
+	const static int MinScanLen			= 8;			// Minimum scanline length for encoding.
+	const static int MaxScanLen			= 0x7FFF;		// Maximum scanline length for encoding.
+	const static int MinRunLen			= 4;
+	const static int ExpXS				= 128;			// Excess used for exponent.
 };
 
 

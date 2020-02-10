@@ -15,6 +15,7 @@
 #include <Foundation/tVersion.h>
 #include <Math/tVector2.h>
 #include <Math/tColour.h>
+#include <Image/tImageHDR.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "imgui.h"
@@ -224,8 +225,37 @@ void TexView::ShowPreferencesDialog(bool* popen)
 	ImGui::InputInt("Max Cache Files", &Config.MaxCacheFiles); ImGui::SameLine();
 	ShowHelpMark("Maximum number of cache files that may be created. Minimum 200.");
 	tMath::tiClampMin(Config.MaxCacheFiles, 200);
-
 	ImGui::PopItemWidth();
+	ImGui::Unindent();
+
+	ImGui::Separator();
+	ImGui::Text("Radiance HDR");
+	ImGui::Indent();
+	ImGui::PushItemWidth(110);
+
+	ImGui::InputDouble("Gamma Correction", &Config.RadianceGammaCorrection, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
+	ShowHelpMark("Gamma to use [1.6, 2.6] when loading Radiance hdr files.");
+	tMath::tiClamp(Config.RadianceGammaCorrection, 1.6, 2.6);
+	ImGui::InputInt("Exposure Adj", &Config.RadianceExposureAdjustment); ImGui::SameLine();
+	ShowHelpMark("Exposure adjustent [-10, 10] when loading Radiance hdr files.");
+	tMath::tiClamp(Config.RadianceExposureAdjustment, -10, 10);
+	ImGui::PopItemWidth();
+	if (ImGui::Button("Reset Radiance"))
+	{
+		Config.RadianceGammaCorrection = 2.2;
+		Config.RadianceExposureAdjustment = 0;
+	}
+	ImGui::SameLine();
+	tImage::tImageHDR::GammaCorrection = Config.RadianceGammaCorrection;
+	tImage::tImageHDR::ExposureAdjustment = Config.RadianceExposureAdjustment;
+
+	if (ImGui::Button("Reload"))
+	{
+		for (TacitImage* img = Images.First(); img; img = img->Next())
+			img->Unload();
+		CurrImage->Load();
+	}
+
 	ImGui::Unindent();
 
 	ImGui::Separator();

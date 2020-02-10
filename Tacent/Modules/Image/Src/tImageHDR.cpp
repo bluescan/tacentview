@@ -46,28 +46,11 @@ namespace tImage
 {
 
 
-#define tputc(v) *writeP++ = uint8(v)
-#define tgetc() (*readP++);
-#define tungetc(v) *(--readP) = v;
+double tImageHDR::GammaCorrection	= 2.2;
+int tImageHDR::ExposureAdjustment	= 0;
 
 
-namespace Rad
-{
-	uint8* MantissaTable		= nullptr;
-	uint8* ExponentTable		= nullptr;
-	uint8 (*GammaTable)[256]	= nullptr;
-	const int MaxGammaShift		= 31;
-	const int MinScanLen		= 8;			// Minimum scanline length for encoding.
-	const int MaxScanLen		= 0x7FFF;		// Maximum scanline length for encoding.
-	const int MinRunLen			= 4;
-	const int ExpXS				= 128;			// Excess used for exponent.
-
-	void SetupGammaTables(double gamma);
-	bool ConvertRadianceToGammaCorrected(tPixel* scan, int len);
-}
-
-
-void Rad::SetupGammaTables(double gamma)
+void tImageHDR::SetupGammaTables(double gamma)
 {
 	if (GammaTable)
 		return;
@@ -101,6 +84,17 @@ void Rad::SetupGammaTables(double gamma)
 }
 
 
+void tImageHDR::CleanupGammaTables()
+{
+	if (MantissaTable) free(MantissaTable);
+	MantissaTable = nullptr;
+	if (ExponentTable) free(ExponentTable);
+	ExponentTable = nullptr;
+	if (GammaTable) free(GammaTable);
+	GammaTable = nullptr;
+}
+
+
 bool tImageHDR::Load(const tString& hdrFile)
 {
 	Clear();
@@ -119,11 +113,6 @@ bool tImageHDR::Load(const tString& hdrFile)
 	return success;
 }
 
-//#define RED 0
-//#define GRN 1
-//#define BLU 2
-//#define ALP 3
-//#define EXP 3
 
 bool tImageHDR::LegacyReadRadianceColours(tPixel* scanline, int len)
 {
@@ -132,10 +121,10 @@ bool tImageHDR::LegacyReadRadianceColours(tPixel* scanline, int len)
 	
 	while (len > 0)
 	{
-		scanline[0].R = tgetc();
-		scanline[0].G = tgetc();
-		scanline[0].B = tgetc();
-		scanline[0].A = i = tgetc();
+		scanline[0].R = GetB();
+		scanline[0].G = GetB();
+		scanline[0].B = GetB();
+		scanline[0].A = i = GetB();
 		if (i == EOF)
 			return false;
 		if (scanline[0].R == 1 && scanline[0].G == 1 && scanline[0].B == 1)
@@ -165,20 +154,20 @@ bool tImageHDR::ReadRadianceColours(tPixel* scanline, int len)
 	int  code, val;
 	
 	// Determine if scanline is legacy and needs to be processed the old way.
-	if ((len < Rad::MinScanLen) | (len > Rad::MaxScanLen))
+	if ((len < MinScanLen) | (len > MaxScanLen))
 		return LegacyReadRadianceColours(scanline, len);
 
-	i = tgetc();
+	i = GetB();
 	if (i == EOF)
 		return false;
 	if (i != 2)
 	{
-		tungetc(i);
+		UngetB(i);
 		return LegacyReadRadianceColours(scanline, len);
 	}
-	scanline[0].G = tgetc();
-	scanline[0].B = tgetc();
-	i = tgetc();
+	scanline[0].G = GetB();
+	scanline[0].B = GetB();
+	i = GetB();
 	if (i == EOF)
 		return false;
 
@@ -196,7 +185,7 @@ bool tImageHDR::ReadRadianceColours(tPixel* scanline, int len)
 	{
 	    for (j = 0; j < len; )
 		{
-			code = tgetc();
+			code = GetB();
 			if (code == EOF)
 				return false;
 
@@ -204,7 +193,7 @@ bool tImageHDR::ReadRadianceColours(tPixel* scanline, int len)
 			{
 				// RLE run.
 				code &= 127;
-				val = tgetc();
+				val = GetB();
 				if (val == EOF)
 					return false;
 				if (j + code > len)
@@ -219,7 +208,7 @@ bool tImageHDR::ReadRadianceColours(tPixel* scanline, int len)
 		    		return false;	// Overrun.
 				while (code--)
 				{
-					val = tgetc();
+					val = GetB();
 					if (val == EOF)
 						return false;
 					scanline[j++].E[i] = val;
@@ -231,7 +220,7 @@ bool tImageHDR::ReadRadianceColours(tPixel* scanline, int len)
 }
 
 
-bool Rad::ConvertRadianceToGammaCorrected(tPixel* scan, int len)
+bool tImageHDR::ConvertRadianceToGammaCorrected(tPixel* scan, int len)
 {
 	if (!GammaTable)
 		return false;
@@ -304,7 +293,7 @@ bool tImageHDR::Set(uint8* hdrFileInMemory, int numBytes)
 	if ((numBytes <= 0) || !hdrFileInMemory)
 		return false;
 
-	Rad::SetupGammaTables(GammaCorrection);
+	SetupGammaTables(GammaCorrection);
 
 	// Search for the first double 0x0A (linefeed).
 	// Note that hdrFileInMemory has an extra EOF at the end. The (numBytes+1)th character.
@@ -318,7 +307,10 @@ bool tImageHDR::Set(uint8* hdrFileInMemory, int numBytes)
 		}
 	}
 	if (doubleLFIndex == -1)
+	{
+		CleanupGammaTables();
 		return false;
+	}
 
 	// We are not allowed any '\0' characters in the header. Some Mac-generated images have one!
 	for (int c = 0; c < doubleLFIndex; c++)
@@ -332,11 +324,14 @@ bool tImageHDR::Set(uint8* hdrFileInMemory, int numBytes)
 	char* eolY = tStd::tStrchr(foundY, '\n');
 	char* eolX = tStd::tStrchr(foundX, '\n');
 	if (!eolX || (eolX != eolY))
+	{
+		CleanupGammaTables();
 		return false;
+	}
 	*eolX = '\0';
 	tString header((char*)hdrFileInMemory);
 	*eolX = '\n';
-	readP = (uint8*)(eolX+1);
+	ReadP = (uint8*)(eolX+1);
 
 	tList<tStringItem> lines;
 	tStd::tExplode(lines, header, '\n');
@@ -364,20 +359,21 @@ bool tImageHDR::Set(uint8* hdrFileInMemory, int numBytes)
 
 		AdjustExposure(scanin, Width, ExposureAdjustment);
 
-		ok = Rad::ConvertRadianceToGammaCorrected(scanin, Width);
+		ok = ConvertRadianceToGammaCorrected(scanin, Width);
 		if (!ok)
 			break;
 
-		writeP = (uint8*)&Pixels[y * Width];
+		WriteP = (uint8*)&Pixels[y * Width];
 		for (int x = 0; x < Width; x++)
 		{
-			tputc(scanin[x].R);
-			tputc(scanin[x].G);
-			tputc(scanin[x].B);
-			tputc(255);
+			PutB(scanin[x].R);
+			PutB(scanin[x].G);
+			PutB(scanin[x].B);
+			PutB(255);
 		}
 	}
 
+	CleanupGammaTables();
 	delete[] scanin;
 	if (!ok)
 	{

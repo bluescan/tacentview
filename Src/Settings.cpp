@@ -37,19 +37,21 @@ void TexView::Settings::Reset(int screenW, int screenH)
 
 void TexView::Settings::ResetBehaviourSettings()
 {
-	SortKey					= 0;
-	SortAscending			= true;
-	ResampleFilter			= 2;
-	ConfirmDeletes			= true;
-	ConfirmFileOverwrites	= true;
-	SlidehowFrameDuration	= 1.0/30.0;
-	SaveSubFolder			.Set("Saved");
-	SaveFileType			= 0;
-	SaveFileTargaRLE		= false;
-	SaveFileJpgQuality		= 90.0f;
-	SaveAllSizeMode			= 0;
-	MaxImageMemMB			= 1024;
-	MaxCacheFiles			= 7000;
+	SortKey						= 0;
+	SortAscending				= true;
+	ResampleFilter				= 2;
+	ConfirmDeletes				= true;
+	ConfirmFileOverwrites		= true;
+	SlidehowFrameDuration		= 1.0/30.0;
+	SaveSubFolder				.Set("Saved");
+	SaveFileType				= 0;
+	SaveFileTargaRLE			= false;
+	SaveFileJpgQuality			= 90.0f;
+	SaveAllSizeMode				= 0;
+	MaxImageMemMB				= 1024;
+	MaxCacheFiles				= 7000;
+	RadianceGammaCorrection		= 2.2;
+	RadianceExposureAdjustment	= 0;
 }
 
 
@@ -68,18 +70,8 @@ void TexView::Settings::ResetUISettings(int screenW, int screenH)
 	Tile					= false;
 	BackgroundStyle			= 1;
 	BackgroundExtend		= false;
-
 }
 
-
-/*
-void TexView::Settings::Reset(int screenW, int screenH)
-{
-	Reset();
-	WindowX					= (screenW - WindowW) >> 1;
-	WindowY					= (screenH - WindowH) >> 1;
-}
-*/
 
 void TexView::Settings::Load(const tString& filename, int screenW, int screenH)
 {
@@ -119,6 +111,8 @@ void TexView::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(SaveAllSizeMode);
 				ReadItem(MaxImageMemMB);
 				ReadItem(MaxCacheFiles);
+				ReadItem(RadianceGammaCorrection);
+				ReadItem(RadianceExposureAdjustment);
 			}
 		}
 	}
@@ -171,6 +165,8 @@ bool TexView::Settings::Save(const tString& filename)
 	WriteItem(SaveAllSizeMode);
 	WriteItem(MaxImageMemMB);
 	WriteItem(MaxCacheFiles);
+	WriteItem(RadianceGammaCorrection);
+	WriteItem(RadianceExposureAdjustment);
 	
 	return true;
 }

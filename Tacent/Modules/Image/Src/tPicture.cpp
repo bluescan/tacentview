@@ -179,7 +179,6 @@ bool tPicture::Load(const tString& imageFile)
 		tImageTGA targa(imageFile);
 		if (!targa.IsValid())
 			return false;
-
 		Width = targa.GetWidth();
 		Height = targa.GetHeight();
 		Pixels = targa.StealPixels();
@@ -191,6 +190,8 @@ bool tPicture::Load(const tString& imageFile)
 	{
 		tImageHDR hdr;
 		hdr.Load(imageFile);
+		if (!hdr.IsValid())
+			return false;
 		Width = hdr.GetWidth();
 		Height = hdr.GetHeight();
 		Pixels = hdr.StealPixels();

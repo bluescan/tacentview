@@ -20,6 +20,7 @@
 #include <Foundation/tVersion.h>
 #include <System/tCommand.h>
 #include <Image/tPicture.h>
+#include <Image/tImageHDR.h>
 #include <System/tFile.h>
 #include <System/tTime.h>
 #include <System/tScript.h>
@@ -1864,6 +1865,9 @@ int main(int argc, char** argv)
 
 	tString cfgFile = dataDir + "Settings.cfg";
 	TexView::Config.Load(cfgFile, mode->width, mode->height);
+
+	tImage::tImageHDR::GammaCorrection = TexView::Config.RadianceGammaCorrection;
+	tImage::tImageHDR::ExposureAdjustment = TexView::Config.RadianceExposureAdjustment;
 
 	// We start with window invisible as DwmSetWindowAttribute won't redraw properly otherwise.
 	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
