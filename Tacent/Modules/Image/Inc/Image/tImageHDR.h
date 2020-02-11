@@ -47,12 +47,15 @@ namespace tImage
 class tImageHDR
 {
 public:
+	inline const static double DefaultGammaCorr		= 2.2;
+	inline const static int DefaultExposureAdj		= 0;
+
 	// Creates an invalid tImageHDR. You must call Load manually.
 	tImageHDR()																											{ }
-	tImageHDR(const tString& hdrFile)																					{ Load(hdrFile); }
+	tImageHDR(const tString& hdrFile, double gamma = DefaultGammaCorr, int exp = DefaultExposureAdj)					{ Load(hdrFile, gamma, exp); }
 
 	// hdrFileInMemory can be deleted after this runs.
-	tImageHDR(uint8* hdrFileInMemory, int numBytes)																		{ Set(hdrFileInMemory, numBytes); }
+	tImageHDR(uint8* hdrFileInMemory, int numBytes, double gamma = DefaultGammaCorr, int exp = DefaultExposureAdj)		{ Set(hdrFileInMemory, numBytes, gamma, exp); }
 
 	// This one sets from a supplied pixel array. It just reads the data (or steals the array if steal set).
 	tImageHDR(tPixel* pixels, int width, int height, bool steal = false)												{ Set(pixels, width, height, steal); }
@@ -60,8 +63,8 @@ public:
 	virtual ~tImageHDR()																								{ Clear(); }
 
 	// Clears the current tImageHDR before loading. If false returned object is invalid.
-	bool Load(const tString& hdrFile);
-	bool Set(uint8* hdrFileInMemory, int numBytes);
+	bool Load(const tString& hdrFile, double = DefaultGammaCorr, int = DefaultExposureAdj);
+	bool Set(uint8* hdrFileInMemory, int numBytes, double gamma = DefaultGammaCorr, int exp = DefaultExposureAdj);
 
 	// This one sets from a supplied pixel array.
 	bool Set(tPixel* pixels, int width, int height, bool steal = false);
@@ -81,13 +84,11 @@ public:
 	tPixel* StealPixels();
 	tPixel* GetPixels() const																							{ return Pixels; }
 
-	static double GammaCorrection;
-	static int ExposureAdjustment;
-
 private:
 	bool LegacyReadRadianceColours(tPixel* scanline, int length);	// Older hdr files use this scanline format.
 	bool ReadRadianceColours(tPixel* scanline, int length);			// Most hdr files use the new scanline format. This will call the old as necessary.
 	bool ConvertRadianceToGammaCorrected(tPixel* scan, int len);
+	static void AdjustExposure(tPixel* scan, int len, int adjust);
 
 	void PutB(int v)												{ *WriteP++ = uint8(v); }
 	uint8 GetB()													{ return *ReadP++; }

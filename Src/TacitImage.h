@@ -22,17 +22,29 @@
 #include <Image/tPicture.h>
 #include <Image/tTexture.h>
 #include <Image/tCubemap.h>
+#include <Image/tImageHDR.h>
 
 
 class TacitImage : public tLink<TacitImage>
 {
 public:
+
 	TacitImage();
+
+	// This constructor does not actually load the image, but Load() may be called at any point afterwards.
 	TacitImage(const tString& filename);
 	virtual ~TacitImage();
 
+	// These params are in principle different to the ones in tPicture since a TacitImage does not necessarily
+	// only use tPicture to do the loading. For example, we might include dds load params here.
+	struct LoadParams
+	{
+		double HDR_GammaCorrection = tImage::tImageHDR::DefaultGammaCorr;
+		int HDR_ExposureAdj = tImage::tImageHDR::DefaultExposureAdj;
+	};
+
+	bool Load(const tString& filename, LoadParams = LoadParams());
 	bool Load();						// Load into main memory.
-	bool Load(const tString& filename);
 	bool IsLoaded() const																								{ return (Pictures.Count() > 0); }
 
 	bool IsOpaque() const;
@@ -95,9 +107,8 @@ public:
 	const static int ThumbMinDispWidth	= 64;
 	static tString ThumbCacheDir;
 
-	// Radiance HDR image properties.
-	double	ImageProp_HDR_RadianceGammaCorrection = 2.2;
-	int		ImageProp_HDR_RadianceExposureAdjustment = 0;
+	bool TypeSupportsProperties() const																					{ return (Filetype == tSystem::tFileType::HDR); }
+	LoadParams Params;
 
 private:
 	// Dds files are special and already in HW ready format. The tTexture can store dds files, while tPicture stores

@@ -46,10 +46,6 @@ namespace tImage
 {
 
 
-double tImageHDR::GammaCorrection	= 2.2;
-int tImageHDR::ExposureAdjustment	= 0;
-
-
 void tImageHDR::SetupGammaTables(double gamma)
 {
 	if (GammaTable)
@@ -95,7 +91,7 @@ void tImageHDR::CleanupGammaTables()
 }
 
 
-bool tImageHDR::Load(const tString& hdrFile)
+bool tImageHDR::Load(const tString& hdrFile, double gamma, int exposure)
 {
 	Clear();
 
@@ -107,7 +103,7 @@ bool tImageHDR::Load(const tString& hdrFile)
 
 	int numBytes = 0;
 	uint8* hdrFileInMemory = tLoadFile(hdrFile, nullptr, &numBytes, true);
-	bool success = Set(hdrFileInMemory, numBytes);
+	bool success = Set(hdrFileInMemory, numBytes, gamma, exposure);
 	delete[] hdrFileInMemory;
 
 	return success;
@@ -269,7 +265,7 @@ bool tImageHDR::ConvertRadianceToGammaCorrected(tPixel* scan, int len)
 }
 
 
-void AdjustExposure(tPixel* scan, int len, int adjust)
+void tImageHDR::AdjustExposure(tPixel* scan, int len, int adjust)
 {
 	// Shift a scanline of colors by 2^adjust.
 	if (adjust == 0)
@@ -287,13 +283,13 @@ void AdjustExposure(tPixel* scan, int len, int adjust)
 }
 
 
-bool tImageHDR::Set(uint8* hdrFileInMemory, int numBytes)
+bool tImageHDR::Set(uint8* hdrFileInMemory, int numBytes, double gammaCorr, int exposureAdj)
 {
 	Clear();
 	if ((numBytes <= 0) || !hdrFileInMemory)
 		return false;
 
-	SetupGammaTables(GammaCorrection);
+	SetupGammaTables(gammaCorr);
 
 	// Search for the first double 0x0A (linefeed).
 	// Note that hdrFileInMemory has an extra EOF at the end. The (numBytes+1)th character.
@@ -357,7 +353,7 @@ bool tImageHDR::Set(uint8* hdrFileInMemory, int numBytes)
 		if (!ok)
 			break;
 
-		AdjustExposure(scanin, Width, ExposureAdjustment);
+		AdjustExposure(scanin, Width, exposureAdj);
 
 		ok = ConvertRadianceToGammaCorrected(scanin, Width);
 		if (!ok)

@@ -60,6 +60,7 @@
       <AdditionalIncludeDirectories>Tacent\Modules\Foundation\Inc;Tacent\Modules\Math\Inc;Tacent\Modules\System\Inc;Tacent\Modules\Image\Inc;Tacent\Modules\Build\Inc;Tacent\Modules\Scene\Inc;Tacent\Contrib\imgui;Tacent\Contrib\imgui\examples;Tacent\Contrib\glfw\include;Tacent\Contrib\GLEW\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -93,6 +94,7 @@
       <PreprocessorDefinitions>GLEW_STATIC;GLEW_MX;CONFIG_RELEASE;PLATFORM_WIN;ARCHITECTURE_X86;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>Tacent\Modules\Foundation\Inc;Tacent\Modules\Math\Inc;Tacent\Modules\System\Inc;Tacent\Modules\Image\Inc;Tacent\Modules\Build\Inc;Tacent\Modules\Scene\Inc;Tacent\Contrib\imgui;Tacent\Contrib\imgui\examples;Tacent\Contrib\glfw\include;Tacent\Contrib\GLEW\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

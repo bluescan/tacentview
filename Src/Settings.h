@@ -71,6 +71,7 @@ namespace TexView
 		int SaveAllSizeMode;
 		int MaxImageMemMB;					// Max image mem before unloading images.
 		int MaxCacheFiles;					// Max number of cache files before removing oldest.
+		bool AutoPropertyWindow;			// Auto display property editor window for supported file types.
 
 		void Load(const tString& filename, int screenWidth, int screenHeight);
 		bool Save(const tString& filename);

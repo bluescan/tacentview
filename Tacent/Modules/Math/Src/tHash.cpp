@@ -54,7 +54,7 @@ namespace tHash
 
 uint32 tMath::tHashData32(const uint8* data, int length, uint32 iv)
 {
-	register uint32 a,b,c;									// The internal state.
+	uint32 a,b,c;											// The internal state.
 	int len;												// How many key bytes still need mixing.
 
 	len = length;
@@ -120,7 +120,7 @@ uint64 tMath::tHashData64(const uint8* data, int length, uint64 iv)
 	#ifndef PLATFORM_WIN
 		tAssert(!"HashData64 has only been tested in windows.");
 	#endif
-	register uint64 a,b,c;									// The internal state.
+	uint64 a,b,c;											// The internal state.
 	int len;												// How many key bytes still need mixing.
 
 	len = length;
@@ -459,7 +459,7 @@ tuint256 tMath::tHashData256(const uint8* data, int len, tuint256 iv)
 	tAssert(!"HashData256 has only been tested in windows.");
 	#endif
 
-	register uint32 a, b, c, d, e, f, g, h, length;
+	uint32 a, b, c, d, e, f, g, h, length;
 
 	// Use the length and level. Add in the golden ratio. Remember, 'a' is most significant.
 	length = len;

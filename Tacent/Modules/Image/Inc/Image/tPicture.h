@@ -22,6 +22,7 @@
 #include <System/tFile.h>
 #include <System/tChunk.h>
 #include "Image/tImageTGA.h"
+#include "Image/tImageHDR.h"
 namespace tImage
 {
 
@@ -44,11 +45,16 @@ public:
 	// tPicture. In this case the tPicture will delete[] the buffer for you when appropriate.
 	tPicture(int width, int height, tPixel* pixelBuffer, bool copyPixels = true)										{ Set(width, height, pixelBuffer, copyPixels); }
 
+	struct LoadParams
+	{
+		double HDR_GammaCorr		= tImageHDR::DefaultGammaCorr;
+		int HDR_ExposureAdj			= tImageHDR::DefaultExposureAdj;
+	};
 	// Loads the supplied image file. If the image couldn't be loaded, IsValid will return false afterwards. Uses the
 	// filename extension to determine what file type it is loading. dds files may _not_ be loaded into a tPicture.
-	// Use a tTexture if you want to load a dds. Loading a tga file is handled by native code. Other formats like jpg
-	// and png are handled by CxImage.
-	tPicture(const tString& imageFile)																					{ Load(imageFile); }
+	// Use a tTexture if you want to load a dds. Loading tga and hdr files is handled by native code. Other formats like
+	// jpg and png are handled by CxImage.
+	tPicture(const tString& imageFile, LoadParams params = LoadParams())												{ Load(imageFile, params); }
 
 	// Copy constructor.
 	tPicture(const tPicture& src)																						: tPicture() { Set(src); }
@@ -99,7 +105,7 @@ public:
 	) const;
 
 	// Always clears the current image before loading. If false returned, you will have an invalid tPicture.
-	bool Load(const tString& imageFile);
+	bool Load(const tString& imageFile, LoadParams params = LoadParams());
 
 	// Save and Load to tChunk format.
 	void Save(tChunkWriter&) const;

@@ -73,7 +73,8 @@ void TexView::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, fl
 				ImGui::Text("Bit Depth: %d", info.SrcFileBitDepth);
 				ImGui::Text("Opaque: %s", info.Opaque ? "true" : "false");
 				ImGui::Text("Mipmaps: %d", info.Mipmaps);
-				ImGui::Text("File Size (B): %d", info.FileSizeBytes);
+				tString sizeStr; tsPrintf(sizeStr, "File Size: %~d", info.FileSizeBytes);
+				ImGui::Text(sizeStr.Chars());
 				ImGui::Text("Cursor: (%d, %d)", cursorX, cursorY);
 				ImGui::Text("Zoom: %.0f%%", zoom);
 			}
@@ -207,30 +208,22 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 			ImGui::Text("Radiance HDR");
 			ImGui::Indent();
 			ImGui::PushItemWidth(110);
-			ImGui::InputDouble("Gamma Correction", &CurrImage->ImageProp_HDR_RadianceGammaCorrection, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
+			ImGui::InputDouble("Gamma Correction", &CurrImage->Params.HDR_GammaCorrection, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
 			ShowHelpMark("Gamma to use [1.6, 2.6] if you reload this Radiance hdr file.");
-			tMath::tiClamp(CurrImage->ImageProp_HDR_RadianceGammaCorrection, 1.6, 2.6);
-			ImGui::InputInt("Exposure Adj", &CurrImage->ImageProp_HDR_RadianceExposureAdjustment); ImGui::SameLine();
+			tMath::tiClamp(CurrImage->Params.HDR_GammaCorrection, 1.6, 2.6);
+			ImGui::InputInt("Exposure Adj", &CurrImage->Params.HDR_ExposureAdj); ImGui::SameLine();
 			ShowHelpMark("Exposure adjustent [-10, 10] if you reload this Radiance hdr file.");
-			tMath::tiClamp(CurrImage->ImageProp_HDR_RadianceExposureAdjustment, -10, 10);
+			tMath::tiClamp(CurrImage->Params.HDR_ExposureAdj, -10, 10);
 			ImGui::PopItemWidth();
-			if (ImGui::Button("Reset Radiance"))
-			{
-				CurrImage->ImageProp_HDR_RadianceGammaCorrection = 2.2;
-				CurrImage->ImageProp_HDR_RadianceExposureAdjustment = 0;
-			}
+			if (ImGui::Button("Reset Values"))
+				CurrImage->Params = TacitImage::LoadParams();
 			ImGui::SameLine();
 
-			// @todo Don't use statics here.
-			tImage::tImageHDR::GammaCorrection = CurrImage->ImageProp_HDR_RadianceGammaCorrection;
-			tImage::tImageHDR::ExposureAdjustment = CurrImage->ImageProp_HDR_RadianceExposureAdjustment;
-			if (ImGui::Button("Reload"))
+			if (ImGui::Button("Reload Image"))
 			{
 				CurrImage->Unload();
 				CurrImage->Load();
 			}
-			tImage::tImageHDR::GammaCorrection = 2.2;
-			tImage::tImageHDR::ExposureAdjustment = 0;
 
 			ImGui::Unindent();
 			break;
@@ -300,6 +293,7 @@ void TexView::ShowPreferencesWindow(bool* popen)
 	ImGui::Indent();
 	ImGui::Checkbox("Confirm Deletes", &Config.ConfirmDeletes);
 	ImGui::Checkbox("Confirm File Overwrites", &Config.ConfirmFileOverwrites);
+	ImGui::Checkbox("Auto Propery Window", &Config.AutoPropertyWindow);
 	ImGui::Unindent();
 	ImGui::Separator();
 	if (ImGui::Button("Reset UI Settings"))

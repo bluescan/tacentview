@@ -756,8 +756,8 @@ void CxImageGIF::Putword(int32_t w, CxFile *fp )
 ////////////////////////////////////////////////////////////////////////////////
 void CxImageGIF::compressNONE( int32_t init_bits, CxFile* outfile)
 {
-	register int32_t c;
-	register int32_t ent;
+	int32_t c;
+	int32_t ent;
 
 	// g_init_bits - initial number of bits
 	// g_outfile   - pointer to output file
@@ -804,12 +804,12 @@ void CxImageGIF::compressNONE( int32_t init_bits, CxFile* outfile)
 
 void CxImageGIF::compressLZW( int32_t init_bits, CxFile* outfile)
 {
-	register int32_t fcode;
-	register int32_t c;
-	register int32_t ent;
-	register int32_t hshift;
-	register int32_t disp;
-	register int32_t i;
+	int32_t fcode;
+	int32_t c;
+	int32_t ent;
+	int32_t hshift;
+	int32_t disp;
+	int32_t i;
 
 	// g_init_bits - initial number of bits
 	// g_outfile   - pointer to output file
@@ -929,10 +929,10 @@ void CxImageGIF::output( code_int  code)
 void CxImageGIF::cl_hash(int32_t hsize)
 
 {
-	register int32_t *htab_p = htab+hsize;
+	int32_t *htab_p = htab+hsize;
 
-	register int32_t i;
-	register int32_t m1 = -1L;
+	int32_t i;
+	int32_t m1 = -1L;
 
 	i = hsize - 16;
 
@@ -1100,9 +1100,9 @@ int16_t CxImageGIF::get_next_code(CxFile* file)
  */
 int16_t CxImageGIF::decoder(CxFile* file, CImageIterator* iter, int16_t linewidth, int32_t &bad_code_count)
 {
-	register uint8_t *sp, *bufptr;
+	uint8_t *sp, *bufptr;
 	uint8_t *buf;
-	register int16_t code, fc, oc, bufcnt;
+	int16_t code, fc, oc, bufcnt;
 	int16_t c, size, ret;
 
 	if (linewidth<=0)

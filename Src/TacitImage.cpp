@@ -35,7 +35,8 @@ TacitImage::TacitImage() :
 	Filename(),
 	Filetype(tFileType::Unknown),
 	FileModTime(0),
-	FileSizeB(0)
+	FileSizeB(0),
+	Params()
 {
 }
 
@@ -44,7 +45,8 @@ TacitImage::TacitImage(const tString& filename) :
 	Filename(filename),
 	Filetype(tGetFileType(filename)),
 	FileModTime(0),
-	FileSizeB(0)
+	FileSizeB(0),
+	Params()
 {
 	tSystem::tFileInfo info;
 	if (tSystem::tGetFileInfo(info, filename))
@@ -55,8 +57,9 @@ TacitImage::TacitImage(const tString& filename) :
 }
 
 
-bool TacitImage::Load(const tString& filename)
+bool TacitImage::Load(const tString& filename, LoadParams params)
 {
+	Params = params;
 	if (filename.IsEmpty())
 		return false;
 
@@ -109,7 +112,12 @@ bool TacitImage::Load()
 		{
 			tPicture* picture = new tPicture();
 			Pictures.Append(picture);
-			success = picture->Load(Filename);
+			
+			tPicture::LoadParams params;
+			params.HDR_GammaCorr = Params.HDR_GammaCorrection;
+			params.HDR_ExposureAdj = Params.HDR_ExposureAdj;
+
+			success = picture->Load(Filename, params);
 			srcFileBitdepth = picture->SrcFileBitDepth;
 		}
 	}

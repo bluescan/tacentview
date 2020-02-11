@@ -278,6 +278,7 @@ void TexView::PopulateImages()
 
 	for (tStringItem* filename = foundFiles.First(); filename; filename = filename->Next())
 	{
+		// It is important we don't call Load after newing. We save memory by not having all images loaded.
 		TacitImage* newImg = new TacitImage(*filename);
 		Images.Append(newImg);
 		ImagesLoadTimeSorted.Append(newImg);
@@ -351,6 +352,9 @@ void TexView::LoadCurrImage()
 	bool imgJustLoaded = false;
 	if (!CurrImage->IsLoaded())
 		imgJustLoaded = CurrImage->Load();
+
+	if (Config.AutoPropertyWindow)
+		PropEditorWindow = CurrImage->TypeSupportsProperties();
 
 	#ifdef CONFIG_DEBUG
 	if (!SlideshowPlaying)

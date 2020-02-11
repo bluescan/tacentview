@@ -126,7 +126,7 @@ int tBitArray::GetClearedBit(int index) const
 
 	// Now get the log in base 2 of freeBit. See "http://graphics.stanford.edu/~seander/bithacks.html#IntegerLog".
 	const uint32 b[] = { 0xAAAAAAAA, 0xCCCCCCCC, 0xF0F0F0F0, 0xFF00FF00, 0xFFFF0000 };
-	register uint32 c = (freeBit & b[0]) != 0;
+	uint32 c = (freeBit & b[0]) != 0;
 
 	c |= ((freeBit & b[4]) != 0) << 4;
 	c |= ((freeBit & b[3]) != 0) << 3;

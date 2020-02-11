@@ -91,7 +91,8 @@ namespace tSystem
 		Flag_LeadingZeros						= 1 << 2,
 		Flag_LeftJustify						= 1 << 3,
 		Flag_DecorativeFormatting				= 1 << 4,
-		Flag_BasePrefix							= 1 << 5
+		Flag_DecorativeFormattingAlt			= 1 << 5,
+		Flag_BasePrefix							= 1 << 6
 	};
 
 	struct FormatSpec
@@ -657,7 +658,7 @@ tSystem::HandlerInfo* tSystem::FindHandler(char type)
 bool tSystem::IsValidFormatSpecifierCharacter(char c)
 {
 	// Tests for valid character after a %. First we check optional flag characters.
-	if ((c == '-') || (c == '+') || (c == ' ') || (c == '0') || (c == '#') || (c == '_') || (c == '#'))
+	if ((c == '-') || (c == '+') || (c == ' ') || (c == '0') || (c == '#') || (c == '_') || (c == '~') || (c == '#'))
 		return true;
 
 	// Next test for width and precision.
@@ -700,7 +701,7 @@ void tSystem::Process(Receiver& receiver, const char* format, va_list argList)
 			format++;
 			FormatSpec spec;
 
-			while ((format[0] == '-') || (format[0] == '+') || (format[0] == ' ') || (format[0] == '0') || (format[0] == '_') || (format[0] == '#'))
+			while ((format[0] == '-') || (format[0] == '+') || (format[0] == ' ') || (format[0] == '0') || (format[0] == '_') || (format[0] == '~') || (format[0] == '#'))
 			{
 				switch (format[0])
 				{
@@ -709,6 +710,7 @@ void tSystem::Process(Receiver& receiver, const char* format, va_list argList)
 					case ' ':	spec.Flags |= Flag_SpaceForPosSign;			break;
 					case '0':	spec.Flags |= Flag_LeadingZeros;			break;
 					case '_':	spec.Flags |= Flag_DecorativeFormatting;	break;
+					case '~':	spec.Flags |= Flag_DecorativeFormattingAlt;	break;
 					case '#':	spec.Flags |= Flag_BasePrefix;				break;
 				}
 				format++;
@@ -965,6 +967,17 @@ void tSystem::HandlerHelper_IntegerNative
 				convBuf.Append('_');
 		}
 	}
+	else if (flags & Flag_DecorativeFormattingAlt)
+	{
+		int len = tStd::tStrlen(curr);
+		int mod = 3 - (len % 3);
+		for (int i = 0; i < len; i++)
+		{
+			convBuf.Append(curr[i]);
+			if (!(++mod % 3) && (i != (len-1)))
+				convBuf.Append(',');
+		}
+	}
 	else
 	{
 		convBuf.Append(curr, tStd::tStrlen(curr));
@@ -1082,6 +1095,17 @@ void tSystem::HandlerHelper_IntegerTacent
 			convBuf.Append(curr[i]);
 			if ((!(++mod % 8)) && (i != (len-1)))
 				convBuf.Append('_');
+		}
+	}
+	else if (flags & Flag_DecorativeFormattingAlt)
+	{
+		int len = tStd::tStrlen(curr);
+		int mod = 3 - (len % 3);
+		for (int i = 0; i < len; i++)
+		{
+			convBuf.Append(curr[i]);
+			if ((!(++mod % 3)) && (i != (len-1)))
+				convBuf.Append(',');
 		}
 	}
 	else

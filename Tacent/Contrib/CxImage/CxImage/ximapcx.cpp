@@ -353,7 +353,7 @@ bool CxImagePCX::PCX_PlanesToPixels(uint8_t * pixels, uint8_t * bitplanes, int16
 // bytesperline bytes
 bool CxImagePCX::PCX_UnpackPixels(uint8_t * pixels, uint8_t * bitplanes, int16_t bytesperline, int16_t planes, int16_t bitsperpixel)
 {
-	register int32_t bits;
+	int32_t bits;
 	if (planes != 1) return false;
 	
 	if (bitsperpixel == 8){  // 8 bits/pixels, no unpacking needed

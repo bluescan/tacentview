@@ -163,7 +163,7 @@ bool tPicture::SaveTGA(const tString& tgaFile, tImageTGA::tFormat format, tImage
 }
 
 
-bool tPicture::Load(const tString& imageFile)
+bool tPicture::Load(const tString& imageFile, LoadParams params)
 {
 	Clear();
 	if (!tFileExists(imageFile))
@@ -186,10 +186,11 @@ bool tPicture::Load(const tString& imageFile)
 		return true;
 	}
 
+	// We handle hdr files natively.
 	if (fileType == tFileType::HDR)
 	{
 		tImageHDR hdr;
-		hdr.Load(imageFile);
+		hdr.Load(imageFile, params.HDR_GammaCorr, params.HDR_ExposureAdj);
 		if (!hdr.IsValid())
 			return false;
 		Width = hdr.GetWidth();
