@@ -73,7 +73,7 @@ void TexView::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, fl
 				ImGui::Text("Bit Depth: %d", info.SrcFileBitDepth);
 				ImGui::Text("Opaque: %s", info.Opaque ? "true" : "false");
 				ImGui::Text("Mipmaps: %d", info.Mipmaps);
-				tString sizeStr; tsPrintf(sizeStr, "File Size: %~d", info.FileSizeBytes);
+				tString sizeStr; tsPrintf(sizeStr, "File Size: %'d", info.FileSizeBytes);
 				ImGui::Text(sizeStr.Chars());
 				ImGui::Text("Cursor: (%d, %d)", cursorX, cursorY);
 				ImGui::Text("Zoom: %.0f%%", zoom);

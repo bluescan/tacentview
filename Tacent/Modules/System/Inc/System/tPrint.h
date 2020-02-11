@@ -114,17 +114,17 @@ namespace tSystem
 // http://www.cplusplus.com/reference/cstdio/printf/ for the standard types supported.
 //
 // [flags]
-// Must be one or more of: - + ' ' 0 # _ ~ (where ' ' is a space character)
+// Must be one or more of: - + SPACE 0 # _ '
 //
 //		Standard:	hyphen (-) means left justify. Plus (+) means show sign for numeric types. # means force decimal
 //					point for e, E, f, g, and G. It also means prefix with 0, 0x, or 0X for o, x, and X.
-//		Enhanced:	Underscore (_) or tilde (~) chooses a more readable decorative or alternative printing method.
+//		Enhanced:	Underscore (_) or single-quote (') chooses a more readable decorative or alternative printing method.
 //					Integral Types:
 //						For built-in integral types, an _ inserts an underscore every 4 characters starting from the
 //						right. Handy for making binary values readable. For Tacent integer types like tint128 and
 //						tuint256, the spacing is every 8 characters.
-//						For any integral type, a ~ will place a comma every 3 digits starting from thr right. Makes
-//						big integers readable. eg. 23,456,789
+//						For any integral type, a ' will place a comma every 3 digits starting from thr right. Makes
+//						big integers readable. eg. 23,456,789. This is not really an enhancement as of POSIX 2008.
 //					Matrix Types:
 //						A _ will print the 4x4 (or 2x2) matrix in 4 (or 2) separate rows surrounded by square []
 //						brackets. Uses a default width of 9 and precision of 4, resulting in 1234.5678 for each

@@ -658,7 +658,7 @@ tSystem::HandlerInfo* tSystem::FindHandler(char type)
 bool tSystem::IsValidFormatSpecifierCharacter(char c)
 {
 	// Tests for valid character after a %. First we check optional flag characters.
-	if ((c == '-') || (c == '+') || (c == ' ') || (c == '0') || (c == '#') || (c == '_') || (c == '~') || (c == '#'))
+	if ((c == '-') || (c == '+') || (c == ' ') || (c == '0') || (c == '#') || (c == '_') || (c == '\'') || (c == '#'))
 		return true;
 
 	// Next test for width and precision.
@@ -701,7 +701,7 @@ void tSystem::Process(Receiver& receiver, const char* format, va_list argList)
 			format++;
 			FormatSpec spec;
 
-			while ((format[0] == '-') || (format[0] == '+') || (format[0] == ' ') || (format[0] == '0') || (format[0] == '_') || (format[0] == '~') || (format[0] == '#'))
+			while ((format[0] == '-') || (format[0] == '+') || (format[0] == ' ') || (format[0] == '0') || (format[0] == '_') || (format[0] == '\'') || (format[0] == '#'))
 			{
 				switch (format[0])
 				{
@@ -710,7 +710,7 @@ void tSystem::Process(Receiver& receiver, const char* format, va_list argList)
 					case ' ':	spec.Flags |= Flag_SpaceForPosSign;			break;
 					case '0':	spec.Flags |= Flag_LeadingZeros;			break;
 					case '_':	spec.Flags |= Flag_DecorativeFormatting;	break;
-					case '~':	spec.Flags |= Flag_DecorativeFormattingAlt;	break;
+					case '\'':	spec.Flags |= Flag_DecorativeFormattingAlt;	break;
 					case '#':	spec.Flags |= Flag_BasePrefix;				break;
 				}
 				format++;
