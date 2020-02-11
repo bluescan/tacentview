@@ -95,6 +95,10 @@ public:
 	const static int ThumbMinDispWidth	= 64;
 	static tString ThumbCacheDir;
 
+	// Radiance HDR image properties.
+	double	ImageProp_HDR_RadianceGammaCorrection = 2.2;
+	int		ImageProp_HDR_RadianceExposureAdjustment = 0;
+
 private:
 	// Dds files are special and already in HW ready format. The tTexture can store dds files, while tPicture stores
 	// other types (tga, gif, jpg, bmp, tif, png, etc). If the image is a dds file, the tTexture is valid and in order

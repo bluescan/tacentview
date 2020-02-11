@@ -93,7 +93,8 @@ namespace TexView
 	bool Request_ContactSheetModal				= false;
 	bool Request_DeleteFileModal				= false;
 	bool Request_DeleteFileNoRecycleModal		= false;
-	bool PrefsDialog							= false;
+	bool PrefsWindow							= false;
+	bool PropEditorWindow						= false;
 	bool CropMode								= false;
 	bool LMBDown								= false;
 	bool RMBDown								= false;
@@ -1109,15 +1110,21 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::Separator();
 
 			if (ImGui::MenuItem("Preferences...", "P"))
-				PrefsDialog = !PrefsDialog;
+				PrefsWindow = !PrefsWindow;
+
+			if (ImGui::MenuItem("Property Editor...", "E"))
+				PropEditorWindow = !PropEditorWindow;
 
 			ImGui::PopStyleVar();
 			ImGui::EndMenu();
 		}
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 
-		if (PrefsDialog)
-			ShowPreferencesDialog(&PrefsDialog);
+		if (PrefsWindow)
+			ShowPreferencesWindow(&PrefsWindow);
+
+		if (PropEditorWindow)
+			ShowPropertyEditorWindow(&PropEditorWindow);
 
 		ImGui::PopStyleVar();
 
@@ -1679,7 +1686,11 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 			break;
 
 		case GLFW_KEY_P:
-			PrefsDialog = !PrefsDialog;
+			PrefsWindow = !PrefsWindow;
+			break;
+
+		case GLFW_KEY_E:
+			PropEditorWindow = !PropEditorWindow;
 			break;
 	}
 }
@@ -1865,9 +1876,6 @@ int main(int argc, char** argv)
 
 	tString cfgFile = dataDir + "Settings.cfg";
 	TexView::Config.Load(cfgFile, mode->width, mode->height);
-
-	tImage::tImageHDR::GammaCorrection = TexView::Config.RadianceGammaCorrection;
-	tImage::tImageHDR::ExposureAdjustment = TexView::Config.RadianceExposureAdjustment;
 
 	// We start with window invisible as DwmSetWindowAttribute won't redraw properly otherwise.
 	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);

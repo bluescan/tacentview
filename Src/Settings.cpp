@@ -50,8 +50,6 @@ void TexView::Settings::ResetBehaviourSettings()
 	SaveAllSizeMode				= 0;
 	MaxImageMemMB				= 1024;
 	MaxCacheFiles				= 7000;
-	RadianceGammaCorrection		= 2.2;
-	RadianceExposureAdjustment	= 0;
 }
 
 
@@ -111,8 +109,6 @@ void TexView::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(SaveAllSizeMode);
 				ReadItem(MaxImageMemMB);
 				ReadItem(MaxCacheFiles);
-				ReadItem(RadianceGammaCorrection);
-				ReadItem(RadianceExposureAdjustment);
 			}
 		}
 	}
@@ -165,8 +161,6 @@ bool TexView::Settings::Save(const tString& filename)
 	WriteItem(SaveAllSizeMode);
 	WriteItem(MaxImageMemMB);
 	WriteItem(MaxCacheFiles);
-	WriteItem(RadianceGammaCorrection);
-	WriteItem(RadianceExposureAdjustment);
 	
 	return true;
 }

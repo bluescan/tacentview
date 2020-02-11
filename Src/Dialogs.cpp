@@ -178,7 +178,74 @@ void TexView::ShowAboutPopup(bool* popen)
 }
 
 
-void TexView::ShowPreferencesDialog(bool* popen)
+void TexView::ShowPropertyEditorWindow(bool* popen)
+{
+	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
+
+	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
+	// do it to make the Demo applications a little more welcoming.
+	tVector2 windowPos = GetDialogOrigin(4);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+
+	if (!ImGui::Begin("Image Property Editor", popen, windowFlags))
+	{
+		ImGui::End();
+		return;
+	}
+
+	if (!CurrImage)
+	{
+		ImGui::Text("No current image.");
+		ImGui::End();
+		return;
+	}
+
+	switch (CurrImage->Filetype)
+	{
+		case tSystem::tFileType::HDR:
+		{
+			ImGui::Text("Radiance HDR");
+			ImGui::Indent();
+			ImGui::PushItemWidth(110);
+			ImGui::InputDouble("Gamma Correction", &CurrImage->ImageProp_HDR_RadianceGammaCorrection, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
+			ShowHelpMark("Gamma to use [1.6, 2.6] if you reload this Radiance hdr file.");
+			tMath::tiClamp(CurrImage->ImageProp_HDR_RadianceGammaCorrection, 1.6, 2.6);
+			ImGui::InputInt("Exposure Adj", &CurrImage->ImageProp_HDR_RadianceExposureAdjustment); ImGui::SameLine();
+			ShowHelpMark("Exposure adjustent [-10, 10] if you reload this Radiance hdr file.");
+			tMath::tiClamp(CurrImage->ImageProp_HDR_RadianceExposureAdjustment, -10, 10);
+			ImGui::PopItemWidth();
+			if (ImGui::Button("Reset Radiance"))
+			{
+				CurrImage->ImageProp_HDR_RadianceGammaCorrection = 2.2;
+				CurrImage->ImageProp_HDR_RadianceExposureAdjustment = 0;
+			}
+			ImGui::SameLine();
+
+			// @todo Don't use statics here.
+			tImage::tImageHDR::GammaCorrection = CurrImage->ImageProp_HDR_RadianceGammaCorrection;
+			tImage::tImageHDR::ExposureAdjustment = CurrImage->ImageProp_HDR_RadianceExposureAdjustment;
+			if (ImGui::Button("Reload"))
+			{
+				CurrImage->Unload();
+				CurrImage->Load();
+			}
+			tImage::tImageHDR::GammaCorrection = 2.2;
+			tImage::tImageHDR::ExposureAdjustment = 0;
+
+			ImGui::Unindent();
+			break;
+		}
+
+		default:
+			ImGui::Text("No supported properties for this filetype.");
+			break;
+	}
+
+	ImGui::End();
+}
+
+
+void TexView::ShowPreferencesWindow(bool* popen)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
 
@@ -226,36 +293,6 @@ void TexView::ShowPreferencesDialog(bool* popen)
 	ShowHelpMark("Maximum number of cache files that may be created. Minimum 200.");
 	tMath::tiClampMin(Config.MaxCacheFiles, 200);
 	ImGui::PopItemWidth();
-	ImGui::Unindent();
-
-	ImGui::Separator();
-	ImGui::Text("Radiance HDR");
-	ImGui::Indent();
-	ImGui::PushItemWidth(110);
-
-	ImGui::InputDouble("Gamma Correction", &Config.RadianceGammaCorrection, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
-	ShowHelpMark("Gamma to use [1.6, 2.6] when loading Radiance hdr files.");
-	tMath::tiClamp(Config.RadianceGammaCorrection, 1.6, 2.6);
-	ImGui::InputInt("Exposure Adj", &Config.RadianceExposureAdjustment); ImGui::SameLine();
-	ShowHelpMark("Exposure adjustent [-10, 10] when loading Radiance hdr files.");
-	tMath::tiClamp(Config.RadianceExposureAdjustment, -10, 10);
-	ImGui::PopItemWidth();
-	if (ImGui::Button("Reset Radiance"))
-	{
-		Config.RadianceGammaCorrection = 2.2;
-		Config.RadianceExposureAdjustment = 0;
-	}
-	ImGui::SameLine();
-	tImage::tImageHDR::GammaCorrection = Config.RadianceGammaCorrection;
-	tImage::tImageHDR::ExposureAdjustment = Config.RadianceExposureAdjustment;
-
-	if (ImGui::Button("Reload"))
-	{
-		for (TacitImage* img = Images.First(); img; img = img->Next())
-			img->Unload();
-		CurrImage->Load();
-	}
-
 	ImGui::Unindent();
 
 	ImGui::Separator();
