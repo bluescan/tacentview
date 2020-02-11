@@ -63,3 +63,5 @@ tacit-texview\.zip
 *.vcxproj.FileListAbsolute.txt
 
 TestImages/HdrGallery/
+Data/*.cfg
+Data/Cache/

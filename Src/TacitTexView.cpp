@@ -98,6 +98,8 @@ namespace TexView
 	bool CropMode								= false;
 	bool LMBDown								= false;
 	bool RMBDown								= false;
+	bool DeleteAllCacheFilesOnExit				= false;
+
 	int DragAnchorX								= 0;
 	int DragAnchorY								= 0;
 
@@ -2020,6 +2022,9 @@ int main(int argc, char** argv)
 	glfwTerminate();
 
 	// Before we go, lets clear out any old cache files.
-	TexView::RemoveOldCacheFiles(TacitImage::ThumbCacheDir);
+	if (TexView::DeleteAllCacheFilesOnExit)
+		tSystem::tDeleteDir(TacitImage::ThumbCacheDir);
+	else
+		TexView::RemoveOldCacheFiles(TacitImage::ThumbCacheDir);
 	return 0;
 }

@@ -275,16 +275,24 @@ void TexView::ShowPreferencesWindow(bool* popen)
 	ImGui::Separator();
 	ImGui::Text("System");
 	ImGui::Indent();
-
 	ImGui::PushItemWidth(110);
-
 	ImGui::InputInt("Max Mem (MB)", &Config.MaxImageMemMB); ImGui::SameLine();
 	ShowHelpMark("Approx memory use limit of this app. Minimum 256 MB.");
 	tMath::tiClampMin(Config.MaxImageMemMB, 256);
-
 	ImGui::InputInt("Max Cache Files", &Config.MaxCacheFiles); ImGui::SameLine();
 	ShowHelpMark("Maximum number of cache files that may be created. Minimum 200.");
 	tMath::tiClampMin(Config.MaxCacheFiles, 200);
+	if (!DeleteAllCacheFilesOnExit)
+	{
+		if (ImGui::Button("Clear Cache"))
+			DeleteAllCacheFilesOnExit = true;
+	}
+	else
+	{
+		if (ImGui::Button("Cancel"))
+			DeleteAllCacheFilesOnExit = false;
+		ImGui::SameLine(); ImGui::Text("Cache will be cleared on exit.");
+	}
 	ImGui::PopItemWidth();
 	ImGui::Unindent();
 

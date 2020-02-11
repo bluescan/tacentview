@@ -37,6 +37,7 @@ namespace TexView
 	extern TacitImage DefaultThumbnailImage;
 	extern TacitImage UpFolderImage;
 	extern bool CropMode;
+	extern bool DeleteAllCacheFilesOnExit;
 
 	extern const tMath::tVector4 ColourEnabledTint;
 	extern const tMath::tVector4 ColourDisabledTint;
