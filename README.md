@@ -43,7 +43,7 @@ Zooming (Ctrl+ and Ctrl-) as well as panning using the right mouse button is sup
 ![Tacit Texture Viewer](https://raw.githubusercontent.com/bluescan/tacit-texview/master/Screenshots/Screenshot_Zoom.png)
 
 
-High Definition Image loading is supported for hdr files. The loading code is based on, and is functionally equivalent to, the reference code from the Radiance imaging toolset (Texview includes [Radiance software](http://radsite.lbl.gov/) developed by the [Lawrence Berkeley National Laboratory](http://www.lbl.gov/). Adjustments to gamma correction and exposure are supported during loading. The images below (Copyright Rafal Mantiuk under Creative Commons 3.0) show an hdr image that by default loads over-exposed and is subsequentially adjusted to yield a more balanced result. Support for hdr is currently available only by compiling the latest code.
+High Definition Image loading is supported for hdr files. The loading code is based on, and is functionally equivalent to, the reference code from the Radiance imaging toolset (texview includes [Radiance software](http://radsite.lbl.gov/) developed by the [Lawrence Berkeley National Laboratory](http://www.lbl.gov/).) Adjustments to gamma correction and exposure are supported during loading. The images below (Copyright Rafal Mantiuk under Creative Commons 3.0) show an hdr image that by default loads over-exposed and is subsequentially adjusted to yield a more balanced result. Support for hdr is currently available only by compiling the latest code.
 
 ![HDR Loading](https://raw.githubusercontent.com/bluescan/tacit-texview/master/Screenshots/Screenshot_HDR.png)
 
