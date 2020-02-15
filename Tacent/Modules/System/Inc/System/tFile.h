@@ -76,6 +76,7 @@ enum class tFileType
 	PNG								= Ping,
 	DDS,							// TextureMap/CubeMap.
 	HDR,							// Radiance High Dynamic Range image.
+	EXR,							// OpenEXR High Dynamic Range image.
 	JPG,							// Image.
 	GIF,							// Image.
 	TIFF,							// Image.

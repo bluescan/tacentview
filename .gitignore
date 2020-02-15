@@ -62,6 +62,6 @@ Tacent/Modules/WoboqTacent\.cfg
 tacit-texview\.zip
 *.vcxproj.FileListAbsolute.txt
 
-TestImages/HdrGallery/
+TestImages/FlipbookEXR/
 Data/*.cfg
 Data/Cache/

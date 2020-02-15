@@ -417,7 +417,6 @@ bool tImageHDR::Save(const tString& hdrFile) const
 		return false;
 
 	// Write the data....
-	tPutc(0, file);
 
 	tCloseFile(file);
 	return true;

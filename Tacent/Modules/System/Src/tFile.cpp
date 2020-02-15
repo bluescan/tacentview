@@ -8,7 +8,7 @@
 // use backslashes, but consistency in using forward slashes is advised. Directory path specifications always end with
 // a trailing slash. Without the trailing separator the path will be interpreted as a file.
 //
-// Copyright (c) 2004-2006, 2017, 2019 Tristan Grimmer.
+// Copyright (c) 2004-2006, 2017, 2019, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -171,6 +171,7 @@ tSystem::tFileType tSystem::tGetFileTypeFromExtension(const tString& e)
 		{ "dds",		tFileType::DDS				},
 		{ "hdr",		tFileType::HDR				},
 		{ "rgbe",		tFileType::HDR				},
+		{ "exr",		tFileType::EXR				},
 		{ "pcx",		tFileType::PCX				},
 		{ "wbmp",		tFileType::WBMP				},
 		{ "wmf",		tFileType::WMF				},
@@ -607,7 +608,6 @@ void tSystem::tSetFileOpenAssoc(const tString& program, const tString& extension
 			options = tString(" ") + options + " ";
 		tString valString = tString("\"") + tSystem::tGetSimplifiedPath(program) + "\"" + options + "\"%1\"";
 		valString.Replace('/', '\\');
-		//valString = "tempProg";
 		RegSetValueEx(key, "", 0, REG_SZ, (uint8*)valString.ConstText(), valString.Length()+1);
 		RegCloseKey(key);
 	}

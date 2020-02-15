@@ -20,6 +20,7 @@
 #include "Image/tPicture.h"
 #include "Image/tImageTGA.h"
 #include "Image/tImageHDR.h"
+#include "Image/tImageEXR.h"
 #include <CxImage/ximage.h>
 using namespace tImage;
 using namespace tSystem;
@@ -87,13 +88,13 @@ bool tPicture::CanSave(tFileType fileType)
 
 bool tPicture::CanLoad(tFileType fileType)
 {
-	// Targas are handled natively.
-	if (fileType == tFileType::TGA)
-		return true;
-
-	// HDR (RGBE) are handled natively.
-	if (fileType == tFileType::HDR)
-		return true;
+	switch (fileType)
+	{
+		case tFileType::TGA:		// Targas are handled natively.
+		case tFileType::HDR:		// HDR and RGBE are handled natively.
+		case tFileType::EXR:		// EXR are handled natively.
+			return true;
+	}
 
 	// The rest are handled by CxImage.
 	if (GetCxFormat(fileType) != CXIMAGE_FORMAT_UNKNOWN)
@@ -134,6 +135,7 @@ bool tPicture::Save(const tString& imageFile, tPicture::tColourFormat colourFmt,
 		case tFileType::GIF: cxImgFormat = CXIMAGE_FORMAT_GIF; break;
 		case tFileType::JPG: cxImgFormat = CXIMAGE_FORMAT_JPG; break;
 		case tFileType::PNG: cxImgFormat = CXIMAGE_FORMAT_PNG; break;
+		// @todo We can probably handle a few more types here.
 	}
 
 	if (colourFmt == tPicture::tColourFormat::Colour)
@@ -197,6 +199,22 @@ bool tPicture::Load(const tString& imageFile, LoadParams params)
 		Height = hdr.GetHeight();
 		Pixels = hdr.StealPixels();
 		SrcFileBitDepth = 24;
+		return true;
+	}
+
+	// We handle exr files natively.
+	// @todo It's looking like we should make an abstract tImageBase class at this point
+	// to get rid of all this duplication.
+	if (fileType == tFileType::EXR)
+	{
+		tImageEXR exr;
+		exr.Load(imageFile);
+		if (!exr.IsValid())
+			return false;
+		Width = exr.GetWidth();
+		Height = exr.GetHeight();
+		Pixels = exr.StealPixels();
+		SrcFileBitDepth = 32;
 		return true;
 	}
 

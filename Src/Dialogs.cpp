@@ -18,6 +18,8 @@
 #include <Image/tImageHDR.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <../../Contrib/OpenEXR/config/OpenEXRConfig.h>
+#include <../../Contrib/OpenEXR/ZLib/ZLib.h>
 #include "imgui.h"
 #include "Dialogs.h"
 #include "Settings.h"
@@ -174,6 +176,8 @@ void TexView::ShowAboutPopup(bool* popen)
 		ImGui::Text("Ionicons");
 		ImGui::Text("Roboto Google Font");
 		ImGui::Text("Radiance Software");
+		ImGui::Text("OpenEXR V %s", OPENEXR_VERSION_STRING);
+		ImGui::Text("ZLib V %s", ZLIB_VERSION);
 	}
 	ImGui::End();
 }
