@@ -67,15 +67,15 @@ public:
 
 	struct ImgInfo
 	{
-		bool IsValid() const	{ return (Width > 0) && (Height > 0); }
-		int Width				= 0;
-		int Height				= 0;
-		tString PixelFormat;
-		int SrcFileBitDepth		= -1;
-		bool Opaque				= false;
-		int FileSizeBytes		= 0;
-		int MemSizeBytes		= 0;
-		int Mipmaps				= 0;
+		bool IsValid() const				{ return (Width > 0) && (Height > 0); }
+		int Width							= 0;
+		int Height							= 0;
+		tImage::tPixelFormat PixelFormat	= tImage::tPixelFormat::Invalid;
+		int SrcFileBitDepth					= -1;
+		bool Opaque							= false;
+		int FileSizeBytes					= 0;
+		int MemSizeBytes					= 0;
+		int Mipmaps							= 0;
 	};
 	void PrintInfo();
 	tImage::tPicture* GetPrimaryPicture()																				{ return Pictures.First(); }

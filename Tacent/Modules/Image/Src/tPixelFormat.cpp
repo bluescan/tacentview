@@ -63,6 +63,15 @@ bool tIsBlockFormat(tPixelFormat format)
 }
 
 
+bool tIsHDRFormat(tPixelFormat format)
+{
+	if ((format >= tPixelFormat::FirstHDR) && (format <= tPixelFormat::LastHDR))
+		return true;
+
+	return false;
+}
+
+
 int tGetBytesPerPixel(tPixelFormat format)
 {
 	if (format == tPixelFormat::Invalid)
@@ -108,7 +117,9 @@ const char* tGetPixelFormatName(tPixelFormat pixelFormat)
 		"BC4_ATI1",
 		"BC5_ATI2",
 		"BC6H",
-		"BC7"
+		"BC7",
+		"RADIANCE",
+		"EXR"
 	};
 
 	tAssert(int(tPixelFormat::NumPixelFormats)+1 == sizeof(names)/sizeof(*names));

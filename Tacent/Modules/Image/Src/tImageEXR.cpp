@@ -169,10 +169,8 @@ bool tImage::tImageEXR::Load(const tString& exrFile/*, double gamma, int exposur
 
 	try
 	{
-		//MultiPartInputFile* mpfile = new MultiPartInputFile(exrFile.Chars());
 		MultiPartInputFile mpfile(exrFile.Chars());
 		numParts = mpfile.parts();
-		//delete mpfile;
 
 		//const char* channels = "AZRGB";
 		//const char* layers = "0";

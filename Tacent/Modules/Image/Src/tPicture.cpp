@@ -198,7 +198,7 @@ bool tPicture::Load(const tString& imageFile, LoadParams params)
 		Width = hdr.GetWidth();
 		Height = hdr.GetHeight();
 		Pixels = hdr.StealPixels();
-		SrcFileBitDepth = 24;
+		SrcFileBitDepth = -1;
 		return true;
 	}
 
@@ -214,7 +214,7 @@ bool tPicture::Load(const tString& imageFile, LoadParams params)
 		Width = exr.GetWidth();
 		Height = exr.GetHeight();
 		Pixels = exr.StealPixels();
-		SrcFileBitDepth = 32;
+		SrcFileBitDepth = -1;
 		return true;
 	}
 

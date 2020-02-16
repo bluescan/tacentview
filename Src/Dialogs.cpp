@@ -52,7 +52,9 @@ void TexView::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, fl
 
 	if (ImGui::Begin("ImageDetails", popen, flags))
 	{
-		ImGui::Text("Image Details");
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX()+30);
+		ImGui::Text("Image   Details         ");
+
 		ShowToolTip("Right-Click to Change Anchor");
 		ImGui::Separator();
 
@@ -60,18 +62,19 @@ void TexView::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, fl
 		{
 			tColourf floatCol(PixelColour);
 			tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
-			ImGui::Text("Colour"); ImGui::SameLine();
 			if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, tVector2(15,15)))
 				ImGui::OpenPopup("CopyColourOverlayAs");
 
 			if (ImGui::BeginPopup("CopyColourOverlayAs"))
 				ColourCopyAs();
 
+			ImGui::SameLine(); ImGui::Text("(%d, %d, %d, %d)", PixelColour.R, PixelColour.G, PixelColour.B, PixelColour.A);
+
 			TacitImage::ImgInfo& info = CurrImage->Info;
 			if (info.IsValid())
 			{
 				ImGui::Text("Size: %dx%d", info.Width, info.Height);
-				ImGui::Text("Pixel Format: %s", info.PixelFormat.Chars());
+				ImGui::Text("Format: %s", tImage::tGetPixelFormatName(info.PixelFormat));
 				ImGui::Text("Bit Depth: %d", info.SrcFileBitDepth);
 				ImGui::Text("Opaque: %s", info.Opaque ? "true" : "false");
 				ImGui::Text("Mipmaps: %d", info.Mipmaps);
@@ -335,6 +338,19 @@ void TexView::ColourCopyAs()
 	int ri = PixelColour.R; int gi = PixelColour.G; int bi = PixelColour.B; int ai = PixelColour.A;
 	float rf = floatCol.R; float gf = floatCol.G; float bf = floatCol.B; float af = floatCol.A;
 	tString cpyTxt;
+
+	tsPrintf(cpyTxt, "%d %d %d %d", ri, gi, bi, ai);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "%d %d %d", ri, gi, bi);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "(%d, %d, %d, %d)", ri, gi, bi, ai);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "(%d, %d, %d)", ri, gi, bi);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
 	tsPrintf(cpyTxt, "%02X%02X%02X%02X", ri, gi, bi, ai);
 	if (ImGui::Selectable(cpyTxt.Chars()))
 		ImGui::SetClipboardText(cpyTxt.Chars());

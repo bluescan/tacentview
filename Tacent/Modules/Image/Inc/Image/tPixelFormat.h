@@ -51,15 +51,21 @@ enum class tPixelFormat
 	BC7,								// BC 7. Full colour. Variable alpha 0 to 8 bits.
 	LastBlock			= BC7,
 
+	FirstHDR,
+	HDR_RAD				= FirstHDR,		// Radiance hdr.
+	HDR_EXR,							// OpenEXR.
+	LastHDR				= HDR_EXR,
+
 	NumPixelFormats,
 	NumNormalFormats	= LastNormal - FirstNormal + 1,
 	NumBlockFormats		= LastBlock - FirstBlock + 1,
-
+	NumHDRFormats		= LastHDR - FirstHDR + 1
 };
 
 
-bool tIsBlockFormat(tPixelFormat);
 bool tIsNormalFormat(tPixelFormat);
+bool tIsBlockFormat(tPixelFormat);
+bool tIsHDRFormat(tPixelFormat);
 int tGetBytesPerPixel(tPixelFormat);			// This function must be given a non-BC pixel format.
 int tGetBytesPer4x4PixelBlock(tPixelFormat);	// This function must be given a BC pixel format.
 const char* tGetPixelFormatName(tPixelFormat);

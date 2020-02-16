@@ -141,23 +141,29 @@ bool TacitImage::Load()
 		// Fill in info struct.
 		Info.Width			= GetWidth();
 		Info.Height			= GetHeight();
-
-		tPixelFormat format = tPixelFormat::Invalid;
+		Info.PixelFormat	= tPixelFormat::Invalid;
 		if (Filetype == tSystem::tFileType::DDS)
 		{
 			if (DDSCubemap.IsValid())
-				format = DDSCubemap.GetSide(tCubemap::tSide::PosX)->GetPixelFormat();
+				Info.PixelFormat = DDSCubemap.GetSide(tCubemap::tSide::PosX)->GetPixelFormat();
 			else
-				format = DDSTexture2D.GetPixelFormat();
+				Info.PixelFormat = DDSTexture2D.GetPixelFormat();
+		}
+		else if (Filetype == tSystem::tFileType::HDR)
+		{
+			Info.PixelFormat = tImage::tPixelFormat::HDR_RAD;
+		}
+		else if (Filetype == tSystem::tFileType::EXR)
+		{
+			Info.PixelFormat = tImage::tPixelFormat::HDR_EXR;
 		}
 		else
 		{
 			tPicture* picture = Pictures.First();
 			if (picture)
-				format = (srcFileBitdepth == 24) ? tPixelFormat::R8G8B8 : tPixelFormat::R8G8B8A8;
+				Info.PixelFormat = (srcFileBitdepth == 24) ? tPixelFormat::R8G8B8 : tPixelFormat::R8G8B8A8;
 		}
 
-		Info.PixelFormat		= tImage::tGetPixelFormatName(format);
 		Info.SrcFileBitDepth	= srcFileBitdepth;
 		Info.Opaque				= IsOpaque();
 		Info.FileSizeBytes		= tSystem::tGetFileSize(Filename);
