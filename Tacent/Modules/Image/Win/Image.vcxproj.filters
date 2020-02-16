@@ -11,6 +11,7 @@
     </Filter>
     <Filter Include="OpenEXR">
       <UniqueIdentifier>{9854c3bc-a886-4688-91c2-12fba504d233}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;h;hpp;hxx;inl</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
