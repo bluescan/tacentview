@@ -908,7 +908,7 @@ loadDeepTileImage (MultiPartInputFile &inmaster,
 
 
 void
-loadImage (const char fileName[],
+EXR::loadImage (const char fileName[],
            const char channel[],
            const char layer[],
            bool preview,
@@ -990,7 +990,7 @@ loadImage (const char fileName[],
         }
         else
         {
-            loadImage (fileName,
+            ::loadImage (fileName,
                        layer,
                        partnum,
                        header,

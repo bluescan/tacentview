@@ -51,49 +51,53 @@
 #include <ImfHeader.h>
 
 
-//
-// Load an OpenEXR image file:
-//
-//	fileName	The name of the file to be loaded.
-//
-//	channel		If channel is 0, load the R, G and B channels,
-//			otherwise channel must point to the name of the
-//			image channel to be loaded; the channel is copied
-//			into the R, G and B components of the frame buffer.
-//
-//	layer		Used only if channel is 0: if layer is 0, load
-//			the R, G and B channels, otherwise load layer.R,
-//			layer.G and layer.B.
-//
-//	preview		If preview is true load the file's preview image,
-//			otherwise load the main image.
-//
-//	lx, ly		If lx != 0 or ly != 0 then assume that the input
-//			file is tiled and load level (0, 0).
-//
-//	header		Output -- the header of the input file, but with
-//			the dataWindow, displayWindow and pixelAspectRatio
-//			attributes adjusted to match what parts of the file
-//			were actually loaded.
-//
-//	pixels		Output -- the pixels loaded from the file.
-//			loadImage() resizes the pixels array to fit
-//			the dataWindow attribute of the header.
-//
+namespace EXR
+{
+	//
+	// Load an OpenEXR image file:
+	//
+	//	fileName	The name of the file to be loaded.
+	//
+	//	channel		If channel is 0, load the R, G and B channels,
+	//			otherwise channel must point to the name of the
+	//			image channel to be loaded; the channel is copied
+	//			into the R, G and B components of the frame buffer.
+	//
+	//	layer		Used only if channel is 0: if layer is 0, load
+	//			the R, G and B channels, otherwise load layer.R,
+	//			layer.G and layer.B.
+	//
+	//	preview		If preview is true load the file's preview image,
+	//			otherwise load the main image.
+	//
+	//	lx, ly		If lx != 0 or ly != 0 then assume that the input
+	//			file is tiled and load level (0, 0).
+	//
+	//	header		Output -- the header of the input file, but with
+	//			the dataWindow, displayWindow and pixelAspectRatio
+	//			attributes adjusted to match what parts of the file
+	//			were actually loaded.
+	//
+	//	pixels		Output -- the pixels loaded from the file.
+	//			loadImage() resizes the pixels array to fit
+	//			the dataWindow attribute of the header.
+	//
 
 
-void loadImage (const char fileName[],
-                const char channel[],
-                const char layer[],
-                bool preview,
-                int lx,
-                int ly,
-                int partnum,
-                int &zsize,
-                IMF::Header &header,
-                IMF::Array<IMF::Rgba> &pixels,
-                IMF::Array<float*> &zbuffer,
-                IMF::Array<unsigned int> &sampleCount,
-                bool deepComp);
+	void loadImage (const char fileName[],
+					const char channel[],
+					const char layer[],
+					bool preview,
+					int lx,
+					int ly,
+					int partnum,
+					int &zsize,
+					IMF::Header &header,
+					IMF::Array<IMF::Rgba> &pixels,
+					IMF::Array<float*> &zbuffer,
+					IMF::Array<unsigned int> &sampleCount,
+					bool deepComp);
+}
+
 
 #endif

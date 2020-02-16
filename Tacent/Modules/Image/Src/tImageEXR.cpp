@@ -13,28 +13,137 @@
 // INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
+//
+// The EXR namespace and functions are a modification of ImageView.cpp from OpenEXR under the following licence:
+//
+// Copyright (c) 2012, Industrial Light & Magic, a division of Lucas Digital Ltd. LLC. All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+// * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+// * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+// * Neither the name of Industrial Light & Magic nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission. 
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <algorithm>
 #include <Foundation/tStandard.h>
 #include <Foundation/tString.h>
-
-#pragma warning( push )
-#pragma warning(disable:4541)
+#include <System/tMachine.h>
+#include <System/tFile.h>
 #include <OpenEXR/loadImage.h>
 #include <OpenEXR/IlmImf/ImfMultiPartInputFile.h>
-#pragma warning( pop )
-
-#include <System/tFile.h>
+#include <halfFunction.h>
 #include "Image/tImageEXR.h"
 using namespace tSystem;
 using namespace IMF;
 using namespace IMATH;
-using namespace std;
+using std::min;
+using std::max;
 
-namespace tImage
+
+namespace EXR
 {
+	inline float KneeFun(double x, double f);
+	float FindKneeFun(float x, float y);
+	uint8 Dither(float v, int x, int y);
+
+	// This fog colour is used when de-fogging.
+	void ComputeFogColor(float& fogR, float& fogG, float& fogB, const IMF::Array<IMF::Rgba>& pixels);
+
+	struct Gamma
+	{
+		Gamma(float gamma, float exposure, float defog, float kneeLow, float kneeHigh);
+		float operator()(half h);
+		float invg, m, d, kl, f, s;
+	};
+}
 
 
-bool tImageEXR::Load(const tString& exrFile/*, double gamma, int exposure*/)
+float EXR::KneeFun(double x, double f)
+{
+	return float (IMATH::Math<double>::log(x * f + 1.0) / f);
+}
+
+	
+float EXR::FindKneeFun(float x, float y)
+{
+	float f0 = 0; float f1 = 1;
+	while (KneeFun(x, f1) > y)
+	{
+		f0 = f1;
+		f1 = f1 * 2;
+	}
+
+	for (int i = 0; i < 30; ++i)
+	{
+		float f2 = (f0 + f1) / 2.0f;
+		float y2 = KneeFun(x, f2);
+		if (y2 < y)
+			f1 = f2;
+		else
+			f0 = f2;
+	}
+
+	return (f0 + f1) / 2.0f;
+}
+
+
+void EXR::ComputeFogColor(float& fogR, float& fogG, float& fogB, const IMF::Array<IMF::Rgba>& pixels)
+{
+	fogR = 0; fogG = 0; fogB = 0;
+	int numPixels = pixels.size();
+	for (int j = 0; j < numPixels; ++j)
+	{
+		const IMF::Rgba& rp = pixels[j];
+		fogR += rp.r.isFinite() ? rp.r : 0.0f;
+		fogG += rp.g.isFinite() ? rp.g : 0.0f;
+		fogB += rp.b.isFinite() ? rp.b : 0.0f;
+	}
+
+	fogR /= float(numPixels);
+	fogG /= float(numPixels);
+	fogB /= float(numPixels);
+}
+
+
+uint8 EXR::Dither(float v, int x, int y)
+{
+	static const float d[4][4] =
+	{
+		{	00.0f/16.0f,	08.0f/16.0f,	02.0f/16.0f,	10.0f/16.0f		},
+		{	12.0f/16.0f,	04.0f/16.0f,	14.0f/16.0f,	06.0f/16.0f		},
+		{	03.0f/16.0f,	11.0f/16.0f,	01.0f/16.0f,	09.0f/16.0f		},
+		{	15.0f/16.0f,	07.0f/16.0f,	13.0f/16.0f,	05.0f/16.0f		}
+	};
+
+	return uint8(v + d[y&3][x&3]);
+}
+
+
+EXR::Gamma::Gamma(float gamma, float exposure, float defog, float kneeLow, float kneeHigh) :
+	invg(1.0f/gamma),
+	m(tMath::tPow(2.0f, exposure + 2.47393f)),
+	d(defog),
+	kl(tMath::tPow(2.0f, kneeLow)),
+	f(FindKneeFun(tMath::tPow(2.0f, kneeHigh) - kl, tMath::tPow(2.0f, 3.5f) - kl)),
+	s(255.0f * tMath::tPow(2.0f, -3.5f * invg))
+{
+}
+
+
+float EXR::Gamma::operator()(half h)
+{
+	float x = max(0.f, (h - d));				// Defog
+	x *= m;										// Exposure
+	if (x > kl) x = kl + KneeFun(x - kl, f);	// Knee
+	x = tMath::tPow(x, invg);					// Gamma
+	return tMath::tClamp(x*s, 0.0f, 255.0f);	// Clamp
+}
+
+
+bool tImage::tImageEXR::Load(const tString& exrFile/*, double gamma, int exposure*/)
 {
 	Clear();
 
@@ -44,45 +153,50 @@ bool tImageEXR::Load(const tString& exrFile/*, double gamma, int exposure*/)
 	if (!tFileExists(exrFile))
 		return false;
 
+	// Leave two cores free unless we are on a three core or lower machine, in which case we always use a min of 2 threads.
+	int numThreads = tMath::tClampMin((tSystem::tGetNumCores()) - 2, 2);
+	setGlobalThreadCount(numThreads);
+
 	int numParts = 0;
-	try
-	{
-    	MultiPartInputFile* mpfile = new MultiPartInputFile(exrFile.Chars());
-        numParts = mpfile->parts();
-        delete mpfile;
-	}
-    catch (IEX_NAMESPACE::BaseExc &e)
-    {
-        tPrintf("Error: Can't read exr file code: %d\n", e.what());
-        return false;
-    }
-
-	//const char* channels = "AZRGB";
-	//const char* layers = "0";
-	bool preview = false;
-	int lx = -1; int ly = -1;		// For tiled image shows level (lx,ly)
-	bool compositeDeep = true;
-
 	int outZsize = 0;
 	Header outHeader;
-    IMF::Array<IMF::Rgba> pixels;
-    IMF::Array<float*> zbuffer;
-    IMF::Array<unsigned int> sampleCount;
+	IMF::Array<IMF::Rgba> pixels;
+	IMF::Array<float*> zbuffer;
+	IMF::Array<uint> sampleCount;
 
-	loadImage
-	(
-		exrFile.Chars(),
-		nullptr,			// Channels. Null means all.
-		nullptr,			// Channels. O means first one.
-		preview, lx, ly,
-		0,					// PartNum.
-		outZsize, outHeader,
-		pixels, zbuffer, sampleCount,
-		compositeDeep
-	);
+	try
+	{
+		//MultiPartInputFile* mpfile = new MultiPartInputFile(exrFile.Chars());
+		MultiPartInputFile mpfile(exrFile.Chars());
+		numParts = mpfile.parts();
+		//delete mpfile;
 
-	const Box2i &displayWindow = outHeader.displayWindow();
-	const Box2i &dataWindow = outHeader.dataWindow();
+		//const char* channels = "AZRGB";
+		//const char* layers = "0";
+		bool preview = false;
+		int lx = -1; int ly = -1;		// For tiled image shows level (lx,ly)
+		bool compositeDeep = true;
+
+		EXR::loadImage
+		(
+			exrFile.Chars(),
+			nullptr,			// Channels. Null means all.
+			nullptr,			// Layers. O means first one.
+			preview, lx, ly,
+			0,					// PartNum.
+			outZsize, outHeader,
+			pixels, zbuffer, sampleCount,
+			compositeDeep
+		);
+	}
+	catch (IEX_NAMESPACE::BaseExc &e)
+	{
+		tPrintf("Error: Can't read exr file. %s\n", e.what());
+		return false;
+	}
+
+	const Box2i& displayWindow = outHeader.displayWindow();
+	const Box2i& dataWindow = outHeader.dataWindow();
 	float pixelAspectRatio = outHeader.pixelAspectRatio();
 	int w  = displayWindow.max.x - displayWindow.min.x + 1;
 	int h  = displayWindow.max.y - displayWindow.min.y + 1;
@@ -96,6 +210,45 @@ bool tImageEXR::Load(const tString& exrFile/*, double gamma, int exposure*/)
 	Height = dh;
 	Pixels = new tPixel[Width*Height];
 
+	float gamma		= 2.2f;		// [0.6, 3.0]
+	float exposure	= 1.0f;		// [-10.0, 10.0]
+	float defog		= 0.0f;		// [0.0, 0.01]
+	float kneeLow	= 0.0f;		// [-3.0, 3.0]
+	float kneeHigh	= 3.5f;		// [3.5, 7.5]
+
+	// Map floating-point pixel values 0.0 and 1.0 to the display's white and black respectively.
+	// if bool zerooneexposure true.
+	//_exposure = 1.02607f;
+	//_kneeHigh = 3.5f;
+	
+	float fogR = 0.0f;
+	float fogG = 0.0f;
+	float fogB = 0.0f;
+
+	// Save some time if we can.
+	if (defog > 0.0f)
+		EXR::ComputeFogColor(fogR, fogG, fogB, pixels);
+
+	halfFunction<float> redGamma(EXR::Gamma(gamma, exposure, defog * fogR, kneeLow, kneeHigh), -HALF_MAX, HALF_MAX, 0.0f, 255.0f, 0.0f, 0.0f);
+	halfFunction<float> grnGamma(EXR::Gamma(gamma, exposure, defog * fogG, kneeLow, kneeHigh), -HALF_MAX, HALF_MAX, 0.0f, 255.0f, 0.0f, 0.0f);
+	halfFunction<float> bluGamma(EXR::Gamma(gamma, exposure, defog * fogB, kneeLow, kneeHigh), -HALF_MAX, HALF_MAX, 0.0f, 255.0f, 0.0f, 0.0f);
+
+	// Conversion from raw pixel data to data for the OpenGL frame buffer:
+	// 1) Compensate for fogging by subtracting defog from the raw pixel values.
+	// 2) Multiply the defogged pixel values by 2^(exposure + 2.47393).
+	// 3) Values that are now 1.0 are called "middle gray". If defog and exposure are both set to 0.0, then middle gray
+	//    corresponds to a raw pixel value of 0.18. In step 6, middle gray values will be mapped to an intensity 3.5
+	//    f-stops below the display's maximum intensity.
+	// 4) Apply a knee function. The knee function has two parameters, kneeLow and kneeHigh. Pixel values below
+	//    2^kneeLow are not changed by the knee function. Pixel values above kneeLow are lowered according to a
+	//    logarithmic curve, such that the value 2^kneeHigh is mapped to 2^3.5. (In step 6 this value will be mapped to
+	//    the the display's maximum intensity.)
+	// 5) Gamma-correct the pixel values, according to the screen's gamma. (We assume that the gamma curve is a simple
+	//    power function.)
+	// 6) Scale the values such that middle gray pixels are mapped to a frame buffer value that is 3.5 f-stops below the
+	//    display's maximum intensity. (84.65 if the screen's gamma is 2.2)
+	// 7) Clamp the values to [0, 255].
+	//
 	// Texview has 0,0 at bottom-left. Rows start from bottom.
 	int p = 0;
 	for (int yi = Height-1; yi >= 0; yi--)
@@ -103,12 +256,13 @@ bool tImageEXR::Load(const tString& exrFile/*, double gamma, int exposure*/)
 		for (int xi = 0; xi < Width; xi++)
 		{
 			int idx = yi*Width + xi;
+			const IMF::Rgba& rawPixel = pixels[idx];
 			Pixels[p++] = tPixel
 			(
-				float(pixels[idx].r),
-				float(pixels[idx].g),
-				float(pixels[idx].b),
-				float(pixels[idx].a)
+				EXR::Dither( redGamma(rawPixel.r), xi, yi ),
+				EXR::Dither( grnGamma(rawPixel.g), xi, yi ),
+				EXR::Dither( bluGamma(rawPixel.b), xi, yi ),
+				uint8( tMath::tClamp( tMath::tFloatToInt(float(rawPixel.a)*255.0f), 0, 0xFF ) )
 			);
 		}
 	}
@@ -117,7 +271,7 @@ bool tImageEXR::Load(const tString& exrFile/*, double gamma, int exposure*/)
 }
 
 
-bool tImageEXR::Set(tPixel* pixels, int width, int height, bool steal)
+bool tImage::tImageEXR::Set(tPixel* pixels, int width, int height, bool steal)
 {
 	Clear();
 	if (!pixels || (width <= 0) || (height <= 0))
@@ -138,7 +292,7 @@ bool tImageEXR::Set(tPixel* pixels, int width, int height, bool steal)
 }
 
 
-bool tImageEXR::Save(const tString& exrFile) const
+bool tImage::tImageEXR::Save(const tString& exrFile) const
 {
 	tAssertMsg(false, "EXR Save not implemented.");
 	if (!IsValid())
@@ -158,14 +312,11 @@ bool tImageEXR::Save(const tString& exrFile) const
 }
 
 
-tPixel* tImageEXR::StealPixels()
+tPixel* tImage::tImageEXR::StealPixels()
 {
 	tPixel* pixels = Pixels;
 	Pixels = nullptr;
 	Width = 0;
 	Height = 0;
 	return pixels;
-}
-
-
 }
