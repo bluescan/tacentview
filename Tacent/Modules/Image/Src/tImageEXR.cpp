@@ -27,7 +27,6 @@
 // OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <algorithm>
 #include <Foundation/tStandard.h>
 #include <Foundation/tString.h>
 #include <System/tMachine.h>
@@ -39,8 +38,6 @@
 using namespace tSystem;
 using namespace IMF;
 using namespace IMATH;
-using std::min;
-using std::max;
 
 
 namespace EXR
@@ -50,7 +47,7 @@ namespace EXR
 	uint8 Dither(float v, int x, int y);
 
 	// This fog colour is used when de-fogging.
-	void ComputeFogColor(float& fogR, float& fogG, float& fogB, const IMF::Array<IMF::Rgba>& pixels);
+	void ComputeFogColour(float& fogR, float& fogG, float& fogB, const IMF::Array<IMF::Rgba>& pixels);
 
 	struct Gamma
 	{
@@ -90,21 +87,27 @@ float EXR::FindKneeFun(float x, float y)
 }
 
 
-void EXR::ComputeFogColor(float& fogR, float& fogG, float& fogB, const IMF::Array<IMF::Rgba>& pixels)
+void EXR::ComputeFogColour(float& fogR, float& fogG, float& fogB, const IMF::Array<IMF::Rgba>& pixels)
 {
-	fogR = 0; fogG = 0; fogB = 0;
+	double fogRd = 0.0;
+	double fogGd = 0.0;
+	double fogBd = 0.0;
+	double WeightSum = 0.0;
 	int numPixels = pixels.size();
+
 	for (int j = 0; j < numPixels; ++j)
 	{
-		const IMF::Rgba& rp = pixels[j];
-		fogR += rp.r.isFinite() ? rp.r : 0.0f;
-		fogG += rp.g.isFinite() ? rp.g : 0.0f;
-		fogB += rp.b.isFinite() ? rp.b : 0.0f;
+		const IMF::Rgba& rawPixel = pixels[j];
+		float weight = tMath::tSaturate(float(rawPixel.a));		// Makes sure transparent pixels don't contribute to the colour.
+
+		fogRd += rawPixel.r.isFinite() ? rawPixel.r : 0.0f;
+		fogGd += rawPixel.g.isFinite() ? rawPixel.g : 0.0f;
+		fogBd += rawPixel.b.isFinite() ? rawPixel.b : 0.0f;
+		WeightSum += weight;
 	}
 
-	fogR /= float(numPixels);
-	fogG /= float(numPixels);
-	fogB /= float(numPixels);
+	fogRd /= WeightSum;		fogGd /= WeightSum;		fogBd /= WeightSum;
+	fogR = float(fogRd);	fogG = float(fogGd);	fogB = float(fogBd);
 }
 
 
@@ -135,7 +138,7 @@ EXR::Gamma::Gamma(float gamma, float exposure, float defog, float kneeLow, float
 
 float EXR::Gamma::operator()(half h)
 {
-	float x = max(0.f, (h - d));				// Defog
+	float x = tMath::tMax(0.0f, (h - d));		// Defog
 	x *= m;										// Exposure
 	if (x > kl) x = kl + KneeFun(x - kl, f);	// Knee
 	x = tMath::tPow(x, invg);					// Gamma
@@ -227,7 +230,7 @@ bool tImage::tImageEXR::Load(const tString& exrFile/*, double gamma, int exposur
 
 	// Save some time if we can.
 	if (defog > 0.0f)
-		EXR::ComputeFogColor(fogR, fogG, fogB, pixels);
+		EXR::ComputeFogColour(fogR, fogG, fogB, pixels);
 
 	halfFunction<float> redGamma(EXR::Gamma(gamma, exposure, defog * fogR, kneeLow, kneeHigh), -HALF_MAX, HALF_MAX, 0.0f, 255.0f, 0.0f, 0.0f);
 	halfFunction<float> grnGamma(EXR::Gamma(gamma, exposure, defog * fogG, kneeLow, kneeHigh), -HALF_MAX, HALF_MAX, 0.0f, 255.0f, 0.0f, 0.0f);
