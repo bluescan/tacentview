@@ -64,7 +64,7 @@ const tColour3f tColour3f::magenta		= { 1.0f, 0.0f, 1.0f };
 const tColour3f tColour3f::yellow		= { 1.0f, 1.0f, 0.0f };
 
 
-void tRGBToHSV(int& h, int& s, int& v, int r, int g, int b, tAngleMode angleMode)
+void tMath::tRGBToHSV(int& h, int& s, int& v, int r, int g, int b, tAngleMode angleMode)
 {
 	double min = double( tMin(r, g, b) );
 	double max = double( tMax(r, g, b) );
@@ -104,7 +104,7 @@ void tRGBToHSV(int& h, int& s, int& v, int r, int g, int b, tAngleMode angleMode
 }
 
 
-void tHSVToRGB(int& r, int& g, int& b, int h, int s, int v, tAngleMode angleMode)
+void tMath::tHSVToRGB(int& r, int& g, int& b, int h, int s, int v, tAngleMode angleMode)
 {
 	tAssert((angleMode == tAngleMode::Degrees) || (angleMode == tAngleMode::Norm256));
 	int fullCircle = 360;
@@ -189,7 +189,7 @@ void tHSVToRGB(int& r, int& g, int& b, int h, int s, int v, tAngleMode angleMode
 }
 
 
-void tRGBToHSV(float& h, float& s, float& v, float r, float g, float b, tAngleMode angleMode)
+void tMath::tRGBToHSV(float& h, float& s, float& v, float r, float g, float b, tAngleMode angleMode)
 {
 	float min = tMin(r, g, b);
 	float max = tMax(r, g, b);
@@ -242,7 +242,7 @@ void tRGBToHSV(float& h, float& s, float& v, float r, float g, float b, tAngleMo
 }
 
 
-void tHSVToRGB(float& r, float& g, float& b, float h, float s, float v, tAngleMode angleMode)
+void tMath::tHSVToRGB(float& r, float& g, float& b, float h, float s, float v, tAngleMode angleMode)
 {
 	// If sat is zero we always ignore the hue. That is, we're a shade of grey on the vertical line.
 	if (s <= 0.0f)

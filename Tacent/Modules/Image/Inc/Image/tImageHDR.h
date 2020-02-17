@@ -47,15 +47,14 @@ namespace tImage
 class tImageHDR
 {
 public:
-	inline const static double DefaultGammaCorr		= 2.2;
-	inline const static int DefaultExposureAdj		= 0;
+	inline const static int DefaultExposure				= 0;
 
 	// Creates an invalid tImageHDR. You must call Load manually.
 	tImageHDR()																											{ }
-	tImageHDR(const tString& hdrFile, double gamma = DefaultGammaCorr, int exp = DefaultExposureAdj)					{ Load(hdrFile, gamma, exp); }
+	tImageHDR(const tString& hdrFile, float gamma = tMath::DefaultGamma, int exp = DefaultExposure)						{ Load(hdrFile, gamma, exp); }
 
 	// hdrFileInMemory can be deleted after this runs.
-	tImageHDR(uint8* hdrFileInMemory, int numBytes, double gamma = DefaultGammaCorr, int exp = DefaultExposureAdj)		{ Set(hdrFileInMemory, numBytes, gamma, exp); }
+	tImageHDR(uint8* hdrFileInMemory, int numBytes, float gamma = tMath::DefaultGamma, int exp = DefaultExposure)		{ Set(hdrFileInMemory, numBytes, gamma, exp); }
 
 	// This one sets from a supplied pixel array. It just reads the data (or steals the array if steal set).
 	tImageHDR(tPixel* pixels, int width, int height, bool steal = false)												{ Set(pixels, width, height, steal); }
@@ -63,8 +62,8 @@ public:
 	virtual ~tImageHDR()																								{ Clear(); }
 
 	// Clears the current tImageHDR before loading. If false returned object is invalid.
-	bool Load(const tString& hdrFile, double = DefaultGammaCorr, int = DefaultExposureAdj);
-	bool Set(uint8* hdrFileInMemory, int numBytes, double gamma = DefaultGammaCorr, int exp = DefaultExposureAdj);
+	bool Load(const tString& hdrFile, float = tMath::DefaultGamma, int = DefaultExposure);
+	bool Set(uint8* hdrFileInMemory, int numBytes, float = tMath::DefaultGamma, int = DefaultExposure);
 
 	// This one sets from a supplied pixel array.
 	bool Set(tPixel* pixels, int width, int height, bool steal = false);
@@ -103,7 +102,7 @@ private:
 	uint8* WriteP			= nullptr;
 
 	// While it would be more efficient to share these tables between instances, we need thread safety.
-	void SetupGammaTables(double gamma);
+	void SetupGammaTables(float gamma);
 	void CleanupGammaTables();
 
 	uint8* MantissaTable		= nullptr;
@@ -132,6 +131,3 @@ inline void tImageHDR::Clear()
 
 
 }
-
-
-

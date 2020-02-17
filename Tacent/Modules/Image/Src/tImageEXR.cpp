@@ -146,10 +146,13 @@ float EXR::Gamma::operator()(half h)
 }
 
 
-bool tImage::tImageEXR::Load(const tString& exrFile/*, double gamma, int exposure*/)
+bool tImage::tImageEXR::Load
+(
+	const tString& exrFile, float gamma, float exposure,
+	float defog, float kneeLow, float kneeHigh
+)
 {
 	Clear();
-
 	if (tSystem::tGetFileType(exrFile) != tSystem::tFileType::EXR)
 		return false;
 
@@ -211,16 +214,10 @@ bool tImage::tImageEXR::Load(const tString& exrFile/*, double gamma, int exposur
 	Height = dh;
 	Pixels = new tPixel[Width*Height];
 
-	float gamma		= 2.2f;		// [0.6, 3.0]
-	float exposure	= 1.0f;		// [-10.0, 10.0]
-	float defog		= 0.0f;		// [0.0, 0.01]
-	float kneeLow	= 0.0f;		// [-3.0, 3.0]
-	float kneeHigh	= 3.5f;		// [3.5, 7.5]
-
 	// Map floating-point pixel values 0.0 and 1.0 to the display's white and black respectively.
 	// if bool zerooneexposure true.
-	//_exposure = 1.02607f;
-	//_kneeHigh = 3.5f;
+	// exposure = 1.02607f;
+	// kneeHigh = 3.5f;
 	
 	float fogR = 0.0f;
 	float fogG = 0.0f;

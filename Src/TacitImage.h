@@ -37,13 +37,10 @@ public:
 
 	// These params are in principle different to the ones in tPicture since a TacitImage does not necessarily
 	// only use tPicture to do the loading. For example, we might include dds load params here.
-	struct LoadParams
-	{
-		double HDR_GammaCorrection = tImage::tImageHDR::DefaultGammaCorr;
-		int HDR_ExposureAdj = tImage::tImageHDR::DefaultExposureAdj;
-	};
+	void ResetLoadParams();
+	tImage::tPicture::LoadParams LoadParams;
 
-	bool Load(const tString& filename, LoadParams = LoadParams());
+	bool Load(const tString& filename);
 	bool Load();						// Load into main memory.
 	bool IsLoaded() const																								{ return (Pictures.Count() > 0); }
 
@@ -107,8 +104,7 @@ public:
 	const static int ThumbMinDispWidth	= 64;
 	static tString ThumbCacheDir;
 
-	bool TypeSupportsProperties() const																					{ return (Filetype == tSystem::tFileType::HDR); }
-	LoadParams Params;
+	bool TypeSupportsProperties() const;
 
 private:
 	// Dds files are special and already in HW ready format. The tTexture can store dds files, while tPicture stores
@@ -153,3 +149,16 @@ private:
 
 	float LoadedTime = -1.0f;
 };
+
+
+// Implementation only below.
+
+
+inline bool TacitImage::TypeSupportsProperties() const
+{
+	return
+	(
+		(Filetype == tSystem::tFileType::HDR) ||
+		(Filetype == tSystem::tFileType::EXR)
+	);
+}

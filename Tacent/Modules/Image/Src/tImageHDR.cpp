@@ -46,8 +46,9 @@ namespace tImage
 {
 
 
-void tImageHDR::SetupGammaTables(double gamma)
+void tImageHDR::SetupGammaTables(float gammaCorr)
 {
+	double gamma = double(gammaCorr);
 	if (GammaTable)
 		return;
 
@@ -91,7 +92,7 @@ void tImageHDR::CleanupGammaTables()
 }
 
 
-bool tImageHDR::Load(const tString& hdrFile, double gamma, int exposure)
+bool tImageHDR::Load(const tString& hdrFile, float gamma, int exposure)
 {
 	Clear();
 
@@ -283,7 +284,7 @@ void tImageHDR::AdjustExposure(tPixel* scan, int len, int adjust)
 }
 
 
-bool tImageHDR::Set(uint8* hdrFileInMemory, int numBytes, double gammaCorr, int exposureAdj)
+bool tImageHDR::Set(uint8* hdrFileInMemory, int numBytes, float gammaCorr, int exposureAdj)
 {
 	Clear();
 	if ((numBytes <= 0) || !hdrFileInMemory)

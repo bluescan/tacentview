@@ -1,4 +1,4 @@
-// TacitImage.h
+// TacitImage.cpp
 //
 // An image class that can load a file from disk into main memory and to VRAM.
 //
@@ -23,12 +23,14 @@
 #include <System/tMachine.h>
 #include <System/tChunk.h>
 #include "TacitImage.h"
+#include "Settings.h"
 using namespace tStd;
 using namespace tSystem;
 using namespace tImage;
 using namespace tMath;
 int TacitImage::ThumbnailNumThreadsRunning = 0;
 tString TacitImage::ThumbCacheDir;
+namespace TexView { extern Settings Config; }
 
 
 TacitImage::TacitImage() :
@@ -36,8 +38,9 @@ TacitImage::TacitImage() :
 	Filetype(tFileType::Unknown),
 	FileModTime(0),
 	FileSizeB(0),
-	Params()
+	LoadParams()
 {
+	ResetLoadParams();
 }
 
 
@@ -46,8 +49,9 @@ TacitImage::TacitImage(const tString& filename) :
 	Filetype(tGetFileType(filename)),
 	FileModTime(0),
 	FileSizeB(0),
-	Params()
+	LoadParams()
 {
+	ResetLoadParams();
 	tSystem::tFileInfo info;
 	if (tSystem::tGetFileInfo(info, filename))
 	{
@@ -57,9 +61,15 @@ TacitImage::TacitImage(const tString& filename) :
 }
 
 
-bool TacitImage::Load(const tString& filename, LoadParams params)
+void TacitImage::ResetLoadParams()
 {
-	Params = params;
+	LoadParams = tImage::tPicture::LoadParams();
+	LoadParams.Gamma = TexView::Config.MonitorGamma;
+}
+
+
+bool TacitImage::Load(const tString& filename)
+{
 	if (filename.IsEmpty())
 		return false;
 
@@ -112,12 +122,7 @@ bool TacitImage::Load()
 		{
 			tPicture* picture = new tPicture();
 			Pictures.Append(picture);
-			
-			tPicture::LoadParams params;
-			params.HDR_GammaCorr = Params.HDR_GammaCorrection;
-			params.HDR_ExposureAdj = Params.HDR_ExposureAdj;
-
-			success = picture->Load(Filename, params);
+			success = picture->Load(Filename, LoadParams);
 			srcFileBitdepth = picture->SrcFileBitDepth;
 		}
 	}
@@ -125,6 +130,9 @@ bool TacitImage::Load()
 	{
 		success = false;
 	}
+
+	if (!success)
+		return false;
 
 	if (Filetype == tSystem::tFileType::DDS)
 	{
@@ -134,48 +142,45 @@ bool TacitImage::Load()
 			ConvertTexture2DToPicture();
 	}
 
-	if (success)
+	LoadedTime = tSystem::tGetTime();
+
+	// Fill in info struct.
+	Info.Width			= GetWidth();
+	Info.Height			= GetHeight();
+	Info.PixelFormat	= tPixelFormat::Invalid;
+	if (Filetype == tSystem::tFileType::DDS)
 	{
-		LoadedTime = tSystem::tGetTime();
-
-		// Fill in info struct.
-		Info.Width			= GetWidth();
-		Info.Height			= GetHeight();
-		Info.PixelFormat	= tPixelFormat::Invalid;
-		if (Filetype == tSystem::tFileType::DDS)
-		{
-			if (DDSCubemap.IsValid())
-				Info.PixelFormat = DDSCubemap.GetSide(tCubemap::tSide::PosX)->GetPixelFormat();
-			else
-				Info.PixelFormat = DDSTexture2D.GetPixelFormat();
-		}
-		else if (Filetype == tSystem::tFileType::HDR)
-		{
-			Info.PixelFormat = tImage::tPixelFormat::HDR_RAD;
-		}
-		else if (Filetype == tSystem::tFileType::EXR)
-		{
-			Info.PixelFormat = tImage::tPixelFormat::HDR_EXR;
-		}
-		else
-		{
-			tPicture* picture = Pictures.First();
-			if (picture)
-				Info.PixelFormat = (srcFileBitdepth == 24) ? tPixelFormat::R8G8B8 : tPixelFormat::R8G8B8A8;
-		}
-
-		Info.SrcFileBitDepth	= srcFileBitdepth;
-		Info.Opaque				= IsOpaque();
-		Info.FileSizeBytes		= tSystem::tGetFileSize(Filename);
-		Info.MemSizeBytes		= GetMemSizeBytes();
-		Info.Mipmaps			= Pictures.GetNumItems();
-
-		// Create alt image if possible.
 		if (DDSCubemap.IsValid())
-			CreateAltPictureDDSCubemap();
-		else if (DDSTexture2D.IsValid() && (Info.Mipmaps > 1))
-			CreateAltPictureDDS2DMipmaps();
+			Info.PixelFormat = DDSCubemap.GetSide(tCubemap::tSide::PosX)->GetPixelFormat();
+		else
+			Info.PixelFormat = DDSTexture2D.GetPixelFormat();
 	}
+	else if (Filetype == tSystem::tFileType::HDR)
+	{
+		Info.PixelFormat = tImage::tPixelFormat::HDR_RAD;
+	}
+	else if (Filetype == tSystem::tFileType::EXR)
+	{
+		Info.PixelFormat = tImage::tPixelFormat::HDR_EXR;
+	}
+	else
+	{
+		tPicture* picture = Pictures.First();
+		if (picture)
+			Info.PixelFormat = (srcFileBitdepth == 24) ? tPixelFormat::R8G8B8 : tPixelFormat::R8G8B8A8;
+	}
+
+	Info.SrcFileBitDepth	= srcFileBitdepth;
+	Info.Opaque				= IsOpaque();
+	Info.FileSizeBytes		= tSystem::tGetFileSize(Filename);
+	Info.MemSizeBytes		= GetMemSizeBytes();
+	Info.Mipmaps			= Pictures.GetNumItems();
+
+	// Create alt image if possible.
+	if (DDSCubemap.IsValid())
+		CreateAltPictureDDSCubemap();
+	else if (DDSTexture2D.IsValid() && (Info.Mipmaps > 1))
+		CreateAltPictureDDS2DMipmaps();
 
 	return success;
 }

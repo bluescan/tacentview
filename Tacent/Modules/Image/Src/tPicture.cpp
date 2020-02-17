@@ -192,7 +192,12 @@ bool tPicture::Load(const tString& imageFile, LoadParams params)
 	if (fileType == tFileType::HDR)
 	{
 		tImageHDR hdr;
-		hdr.Load(imageFile, params.HDR_GammaCorr, params.HDR_ExposureAdj);
+		hdr.Load
+		(
+			imageFile,
+			params.Gamma,
+			params.HDR_Exposure
+		);
 		if (!hdr.IsValid())
 			return false;
 		Width = hdr.GetWidth();
@@ -208,7 +213,15 @@ bool tPicture::Load(const tString& imageFile, LoadParams params)
 	if (fileType == tFileType::EXR)
 	{
 		tImageEXR exr;
-		exr.Load(imageFile);
+		exr.Load
+		(
+			imageFile,
+			params.Gamma,
+			params.EXR_Exposure,
+			params.EXR_Defog,
+			params.EXR_KneeLow,
+			params.EXR_KneeHigh
+		);
 		if (!exr.IsValid())
 			return false;
 		Width = exr.GetWidth();

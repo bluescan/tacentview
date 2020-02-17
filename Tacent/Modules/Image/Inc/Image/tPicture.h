@@ -6,7 +6,7 @@
 // functionality is restricted to saving tga files only (targa files are not lossless when RLE compressed). Image
 // manipulation (excluding compression) happens in a tPicture, so there are crop, scale, etc functions in this class.
 //
-// Copyright (c) 2006, 2016, 2017 Tristan Grimmer.
+// Copyright (c) 2006, 2016, 2017, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -23,6 +23,7 @@
 #include <System/tChunk.h>
 #include "Image/tImageTGA.h"
 #include "Image/tImageHDR.h"
+#include "Image/tImageEXR.h"
 namespace tImage
 {
 
@@ -47,9 +48,14 @@ public:
 
 	struct LoadParams
 	{
-		double HDR_GammaCorr		= tImageHDR::DefaultGammaCorr;
-		int HDR_ExposureAdj			= tImageHDR::DefaultExposureAdj;
+		float	Gamma					= tMath::DefaultGamma;
+		int		HDR_Exposure			= tImageHDR::DefaultExposure;
+		float	EXR_Exposure			= tImageEXR::DefaultExposure;
+		float	EXR_Defog				= tImageEXR::DefaultDefog;
+		float	EXR_KneeLow				= tImageEXR::DefaultKneeLow;
+		float	EXR_KneeHigh			= tImageEXR::DefaultKneeHigh;
 	};
+
 	// Loads the supplied image file. If the image couldn't be loaded, IsValid will return false afterwards. Uses the
 	// filename extension to determine what file type it is loading. dds files may _not_ be loaded into a tPicture.
 	// Use a tTexture if you want to load a dds. Loading tga and hdr files is handled by native code. Other formats like

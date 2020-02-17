@@ -23,18 +23,20 @@ class tColourf;
 class tColour3f;
 
 
-// Colour space conversions. The integer versions accept angle modes of Degrees and Norm256 only. The angle mode
-// determines the range of the hue. Degrees means angles are in [0, 360). Norm256 means angles are in [0, 256).
-// Saturation and value are both in [0, 256) for the integer conversion functions.
-void tRGBToHSV(int& h, int& s, int& v, int r, int g, int b, tMath::tAngleMode = tMath::tAngleMode::Degrees);
-void tHSVToRGB(int& r, int& g, int& b, int h, int s, int v, tMath::tAngleMode = tMath::tAngleMode::Degrees);
+namespace tMath
+{
+	// Colour space conversions. The integer versions accept angle modes of Degrees and Norm256 only. The angle mode
+	// determines the range of the hue. Degrees means angles are in [0, 360). Norm256 means angles are in [0, 256).
+	// Saturation and value are both in [0, 256) for the integer conversion functions.
+	void tRGBToHSV(int& h, int& s, int& v, int r, int g, int b, tAngleMode = tMath::tAngleMode::Degrees);
+	void tHSVToRGB(int& r, int& g, int& b, int h, int s, int v, tMath::tAngleMode = tMath::tAngleMode::Degrees);
 
-
-// The floating point colour space conversion functions accept any angle mode. Radians mean angles are in [0.0, 2Pi).
-// Degrees means angles are in [0.0, 360.0). Norm256 means angles are in [0.0, 256.0). NormOne means angles are
-// in [0.0, 1.0].
-void tRGBToHSV(float& h, float& s, float& v, float r, float g, float b, tMath::tAngleMode = tMath::tAngleMode::Radians);
-void tHSVToRGB(float& r, float& g, float& b, float h, float s, float v, tMath::tAngleMode = tMath::tAngleMode::Radians);
+	// The floating point colour space conversion functions accept any angle mode. Radians mean angles are in [0.0, 2Pi).
+	// Degrees means angles are in [0.0, 360.0). Norm256 means angles are in [0.0, 256.0). NormOne means angles are
+	// in [0.0, 1.0].
+	void tRGBToHSV(float& h, float& s, float& v, float r, float g, float b, tMath::tAngleMode = tMath::tAngleMode::Radians);
+	void tHSVToRGB(float& r, float& g, float& b, float h, float s, float v, tMath::tAngleMode = tMath::tAngleMode::Radians);
+}
 
 
 // The tColouri class represents a colour in 32 bits and is made of 4 unsigned byte-size integers in the order RGBA.

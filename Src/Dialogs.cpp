@@ -215,21 +215,93 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 			ImGui::Text("Radiance HDR");
 			ImGui::Indent();
 			ImGui::PushItemWidth(110);
-			ImGui::InputDouble("Gamma Correction", &CurrImage->Params.HDR_GammaCorrection, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
-			ShowHelpMark("Gamma to use [1.6, 2.6] if you reload this Radiance hdr file.");
-			tMath::tiClamp(CurrImage->Params.HDR_GammaCorrection, 1.6, 2.6);
-			ImGui::InputInt("Exposure Adj", &CurrImage->Params.HDR_ExposureAdj); ImGui::SameLine();
-			ShowHelpMark("Exposure adjustent [-10, 10] if you reload this Radiance hdr file.");
-			tMath::tiClamp(CurrImage->Params.HDR_ExposureAdj, -10, 10);
+
+			ImGui::InputFloat("Gamma Correction", &CurrImage->LoadParams.Gamma, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
+			ShowHelpMark("Gamma to use [0.6, 3.0] if you reload this Radiance hdr file. Open preferences to edit default gamma value.");
+			tMath::tiClamp(CurrImage->LoadParams.Gamma, 0.6f, 3.0f);
+
+			ImGui::InputInt("Exposure Adj", &CurrImage->LoadParams.HDR_Exposure); ImGui::SameLine();
+			ShowHelpMark("Exposure adjustment [-10, 10] if you reload this Radiance hdr file.");
+			tMath::tiClamp(CurrImage->LoadParams.HDR_Exposure, -10, 10);
+
 			ImGui::PopItemWidth();
-			if (ImGui::Button("Reset Values"))
-				CurrImage->Params = TacitImage::LoadParams();
+			if (ImGui::Button("Reset"))
+				CurrImage->ResetLoadParams();
 			ImGui::SameLine();
 
-			if (ImGui::Button("Reload Image"))
+			if (ImGui::Button("Reload"))
 			{
 				CurrImage->Unload();
 				CurrImage->Load();
+			}
+			ImGui::SameLine();
+
+			if (ImGui::Button("Reload All"))
+			{
+				tImage::tPicture::LoadParams params = CurrImage->LoadParams;
+				for (TacitImage* img = Images.First(); img; img = img->Next())
+				{
+					if (img->Filetype != tSystem::tFileType::HDR)
+						continue;
+					img->Unload();
+					img->LoadParams = params;
+					img->Load();
+				}
+			}
+
+			ImGui::Unindent();
+			break;
+		}
+
+		case tSystem::tFileType::EXR:
+		{
+			ImGui::Text("Open EXR");
+			ImGui::Indent();
+			ImGui::PushItemWidth(110);
+
+			ImGui::InputFloat("Gamma", &CurrImage->LoadParams.Gamma, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
+			ShowHelpMark("Gamma to use [0.6, 3.0] if you reload this exr file. Open preferences to edit default gamma value.");
+			tMath::tiClamp(CurrImage->LoadParams.Gamma, 0.6f, 3.0f);
+
+			ImGui::InputFloat("Exposure", &CurrImage->LoadParams.EXR_Exposure, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
+			ShowHelpMark("Exposure adjustment [-10.0, 10.0] if you reload this exr file.");
+			tMath::tiClamp(CurrImage->LoadParams.EXR_Exposure, -10.0f, 10.0f);
+
+			ImGui::InputFloat("Defog", &CurrImage->LoadParams.EXR_Defog, 0.001f, 0.01f, "%.3f"); ImGui::SameLine();
+			ShowHelpMark("Remove fog strength [0.0, 0.1] if you reload this exr file. Try to keep under 0.01");
+			tMath::tiClamp(CurrImage->LoadParams.EXR_Defog, 0.0f, 0.1f);
+
+			ImGui::InputFloat("Knee Low", &CurrImage->LoadParams.EXR_KneeLow, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
+			ShowHelpMark("Lower bound knee taper [-3.0, 3.0] if you reload this exr file.");
+			tMath::tiClamp(CurrImage->LoadParams.EXR_KneeLow, -3.0f, 3.0f);
+
+			ImGui::InputFloat("Knee High", &CurrImage->LoadParams.EXR_KneeHigh, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
+			ShowHelpMark("Upper bound knee taper [3.5, 7.5] if you reload this exr file.");
+			tMath::tiClamp(CurrImage->LoadParams.EXR_KneeHigh, 3.5f, 7.5f);
+
+			ImGui::PopItemWidth();
+			if (ImGui::Button("Reset"))
+				CurrImage->ResetLoadParams();
+			ImGui::SameLine();
+
+			if (ImGui::Button("Reload"))
+			{
+				CurrImage->Unload();
+				CurrImage->Load();
+			}
+			ImGui::SameLine();
+
+			if (ImGui::Button("Reload All"))
+			{
+				tImage::tPicture::LoadParams params = CurrImage->LoadParams;
+				for (TacitImage* img = Images.First(); img; img = img->Next())
+				{
+					if (img->Filetype != tSystem::tFileType::EXR)
+						continue;
+					img->Unload();
+					img->LoadParams = params;
+					img->Load();
+				}
 			}
 
 			ImGui::Unindent();
@@ -277,6 +349,16 @@ void TexView::ShowPreferencesWindow(bool* popen)
 	ImGui::PopItemWidth();
 	if (ImGui::Button("Reset Duration"))
 		Config.SlidehowFrameDuration = 1.0/30.0;
+	ImGui::Unindent();
+
+	ImGui::Separator();
+	ImGui::Text("Gamma");
+	ImGui::Indent();
+	ImGui::PushItemWidth(110);
+	ImGui::InputFloat("Monitor Gamma", &Config.MonitorGamma, 0.01f, 0.1f, "%.3f");
+	ImGui::PopItemWidth();
+	if (ImGui::Button("Reset Gamma"))
+		Config.MonitorGamma = tMath::DefaultGamma;
 	ImGui::Unindent();
 
 	ImGui::Separator();
