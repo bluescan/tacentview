@@ -60,7 +60,7 @@ public:
 	// filename extension to determine what file type it is loading. dds files may _not_ be loaded into a tPicture.
 	// Use a tTexture if you want to load a dds. Loading tga and hdr files is handled by native code. Other formats like
 	// jpg and png are handled by CxImage.
-	tPicture(const tString& imageFile, LoadParams params = LoadParams())												{ Load(imageFile, params); }
+	tPicture(const tString& imageFile, int partNum = 0, LoadParams params = LoadParams())								{ Load(imageFile, partNum, params); }
 
 	// Copy constructor.
 	tPicture(const tPicture& src)																						: tPicture() { Set(src); }
@@ -111,7 +111,7 @@ public:
 	) const;
 
 	// Always clears the current image before loading. If false returned, you will have an invalid tPicture.
-	bool Load(const tString& imageFile, LoadParams params = LoadParams());
+	bool Load(const tString& imageFile, int partNum, LoadParams params = LoadParams());
 
 	// Save and Load to tChunk format.
 	void Save(tChunkWriter&) const;
@@ -182,6 +182,7 @@ public:
 
 	tString Filename;
 	int SrcFileBitDepth = 32;
+	uint TextureID = 0;
 
 private:
 	static int GetCxFormat(tSystem::tFileType);

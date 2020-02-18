@@ -357,7 +357,7 @@ void TexView::LoadCurrImage()
 		imgJustLoaded = CurrImage->Load();
 
 	if (Config.AutoPropertyWindow)
-		PropEditorWindow = CurrImage->TypeSupportsProperties();
+		PropEditorWindow = (CurrImage->TypeSupportsProperties() || (CurrImage->GetNumParts() > 1));
 
 	#ifdef CONFIG_DEBUG
 	if (!SlideshowPlaying)

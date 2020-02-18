@@ -148,7 +148,7 @@ float EXR::Gamma::operator()(half h)
 
 bool tImage::tImageEXR::Load
 (
-	const tString& exrFile, float gamma, float exposure,
+	const tString& exrFile, int partNum, float gamma, float exposure,
 	float defog, float kneeLow, float kneeHigh
 )
 {
@@ -174,9 +174,11 @@ bool tImage::tImageEXR::Load
 	{
 		MultiPartInputFile mpfile(exrFile.Chars());
 		numParts = mpfile.parts();
+		if ((numParts <= 0) || (partNum >= numParts))
+			return false;
 
-		//const char* channels = "AZRGB";
-		//const char* layers = "0";
+		// const char* channels = "AZRGB";
+		// const char* layers = "0";
 		bool preview = false;
 		int lx = -1; int ly = -1;		// For tiled image shows level (lx,ly)
 		bool compositeDeep = true;
@@ -187,15 +189,15 @@ bool tImage::tImageEXR::Load
 			nullptr,			// Channels. Null means all.
 			nullptr,			// Layers. O means first one.
 			preview, lx, ly,
-			0,					// PartNum.
+			partNum,
 			outZsize, outHeader,
 			pixels, zbuffer, sampleCount,
 			compositeDeep
 		);
 	}
-	catch (IEX_NAMESPACE::BaseExc &e)
+	catch (IEX_NAMESPACE::BaseExc& err)
 	{
-		tPrintf("Error: Can't read exr file. %s\n", e.what());
+		tPrintf("Error: Can't read exr file. %s\n", err.what());
 		return false;
 	}
 

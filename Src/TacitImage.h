@@ -28,7 +28,6 @@
 class TacitImage : public tLink<TacitImage>
 {
 public:
-
 	TacitImage();
 
 	// This constructor does not actually load the image, but Load() may be called at any point afterwards.
@@ -39,10 +38,12 @@ public:
 	// only use tPicture to do the loading. For example, we might include dds load params here.
 	void ResetLoadParams();
 	tImage::tPicture::LoadParams LoadParams;
+	int PartNum = 0;
 
 	bool Load(const tString& filename);
 	bool Load();						// Load into main memory.
 	bool IsLoaded() const																								{ return (Pictures.Count() > 0); }
+	int GetNumParts() const																								{ return Pictures.Count(); }
 
 	bool IsOpaque() const;
 	bool Unload();
@@ -64,18 +65,29 @@ public:
 
 	struct ImgInfo
 	{
-		bool IsValid() const				{ return (Width > 0) && (Height > 0); }
-		int Width							= 0;
-		int Height							= 0;
+		//bool IsValid() const				{ return (Width > 0) && (Height > 0); }
+		bool IsValid() const				{ return (PixelFormat != tImage::tPixelFormat::Invalid); }
+		//int Width							= 0;
+		//int Height							= 0;
 		tImage::tPixelFormat PixelFormat	= tImage::tPixelFormat::Invalid;
 		int SrcFileBitDepth					= -1;
 		bool Opaque							= false;
 		int FileSizeBytes					= 0;
 		int MemSizeBytes					= 0;
-		int Mipmaps							= 0;
+		//int NumParts						= 0;
 	};
 	void PrintInfo();
-	tImage::tPicture* GetPrimaryPicture()																				{ return Pictures.First(); }
+
+	// Some images can store multiple complete images inside a single file (multiple parts).
+	// The primary one is the first one.
+	tImage::tPicture* GetPrimaryPic() const																				{ return Pictures.First(); }
+	tImage::tPicture* GetCurrentPic() const
+	{
+		tImage::tPicture* pic = Pictures.First();
+		for (int i = 0; i < PartNum; i++)
+			pic = pic ? pic->Next() : nullptr;
+		return pic;
+	}
 
 	bool IsAltMipmapsPictureAvail() const																				{ return DDSTexture2D.IsValid() && AltPicture.IsValid(); }
 	bool IsAltCubemapPictureAvail() const																				{ return DDSCubemap.IsValid() && AltPicture.IsValid(); }
@@ -134,9 +146,12 @@ private:
 	void GenerateThumbnail();
 
 	// Zero is invalid and means texture has never been bound and loaded into VRAM.
-	uint TexIDPrimary	= 0;
-	uint TexIDAlt		= 0;
-	uint TexIDThumbnail	= 0;
+	//uint TexIDCurrent		= 0;
+	//int TexIDCurrentPartNum = 0;
+	//bool PictureListBound = false;
+
+	uint TexIDAlt			= 0;
+	uint TexIDThumbnail		= 0;
 
 	// Returns the approx main mem size of this image. Considers the Pictures list and the AltPicture.
 	int GetMemSizeBytes() const;
@@ -144,8 +159,8 @@ private:
 	bool ConvertCubemapToPicture();
 	void GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFormat, bool& compressed, tImage::tPixelFormat);
 	void BindLayers(const tList<tImage::tLayer>&, uint texID);
-	void CreateAltPictureDDS2DMipmaps();
-	void CreateAltPictureDDSCubemap();
+	void CreateAltPictureFromDDS_2DMipmaps();
+	void CreateAltPictureFromDDS_Cubemap();
 
 	float LoadedTime = -1.0f;
 };

@@ -120,10 +120,22 @@ bool TacitImage::Load()
 		}
 		else
 		{
-			tPicture* picture = new tPicture();
-			Pictures.Append(picture);
-			success = picture->Load(Filename, LoadParams);
-			srcFileBitdepth = picture->SrcFileBitDepth;
+			// Some image files (like animated gifs, tiff files, and exr files) may store multiple
+			// images in one file. These are called 'parts'.
+			int partNum = 0;
+			bool ok = false;
+			do
+			{
+				tPicture* picture = new tPicture();
+				ok = picture->Load(Filename, partNum, LoadParams);
+				if (ok)
+				{
+					success = true;
+					Pictures.Append(picture);
+					srcFileBitdepth = picture->SrcFileBitDepth;
+					partNum++;
+				}
+			} while (ok);
 		}
 	}
 	catch (tError error)
@@ -145,8 +157,8 @@ bool TacitImage::Load()
 	LoadedTime = tSystem::tGetTime();
 
 	// Fill in info struct.
-	Info.Width			= GetWidth();
-	Info.Height			= GetHeight();
+	//Info.Width			= GetWidth();
+	//Info.Height			= GetHeight();
 	Info.PixelFormat	= tPixelFormat::Invalid;
 	if (Filetype == tSystem::tFileType::DDS)
 	{
@@ -174,13 +186,14 @@ bool TacitImage::Load()
 	Info.Opaque				= IsOpaque();
 	Info.FileSizeBytes		= tSystem::tGetFileSize(Filename);
 	Info.MemSizeBytes		= GetMemSizeBytes();
-	Info.Mipmaps			= Pictures.GetNumItems();
+	//Info.Mipmaps			= Pictures.GetNumItems();
 
 	// Create alt image if possible.
 	if (DDSCubemap.IsValid())
-		CreateAltPictureDDSCubemap();
-	else if (DDSTexture2D.IsValid() && (Info.Mipmaps > 1))
-		CreateAltPictureDDS2DMipmaps();
+		CreateAltPictureFromDDS_Cubemap();
+
+	else if (DDSTexture2D.IsValid() && (DDSTexture2D.GetNumMipmaps() > 1))
+		CreateAltPictureFromDDS_2DMipmaps();
 
 	return success;
 }
@@ -197,7 +210,7 @@ int TacitImage::GetMemSizeBytes() const
 }
 
 
-void TacitImage::CreateAltPictureDDS2DMipmaps()
+void TacitImage::CreateAltPictureFromDDS_2DMipmaps()
 {
 	int width = 0;
 	for (tPicture* layer = Pictures.First(); layer; layer = layer->Next())
@@ -222,7 +235,7 @@ void TacitImage::CreateAltPictureDDS2DMipmaps()
 }
 
 
-void TacitImage::CreateAltPictureDDSCubemap()
+void TacitImage::CreateAltPictureFromDDS_Cubemap()
 {
 	int width = Pictures.First()->GetWidth();
 	int height = Pictures.First()->GetHeight();
@@ -294,10 +307,13 @@ bool TacitImage::Unload()
 
 void TacitImage::Unbind()
 {
-	if (TexIDPrimary != 0)
+	for (tPicture* pic = Pictures.First(); pic; pic = pic->Next())
 	{
-		glDeleteTextures(1, &TexIDPrimary);
-		TexIDPrimary = 0;
+		if (pic->TextureID != 0)
+		{
+			glDeleteTextures(1, &pic->TextureID);
+			pic->TextureID = 0;
+		}
 	}
 
 	if (TexIDAlt != 0)
@@ -329,7 +345,7 @@ int TacitImage::GetWidth() const
 	if (AltPicture.IsValid() && AltPictureEnabled)
 		return AltPicture.GetWidth();
 
-	tPicture* picture = Pictures.First();
+	tPicture* picture = GetCurrentPic();
 	if (picture && picture->IsValid())
 		return picture->GetWidth();
 
@@ -342,7 +358,7 @@ int TacitImage::GetHeight() const
 	if (AltPicture.IsValid() && AltPictureEnabled)
 		return AltPicture.GetHeight();
 
-	tPicture* picture = Pictures.First();
+	tPicture* picture = GetCurrentPic();
 	if (picture && picture->IsValid())
 		return picture->GetHeight();
 
@@ -355,7 +371,7 @@ tColouri TacitImage::GetPixel(int x, int y) const
 	if (AltPicture.IsValid() && AltPictureEnabled)
 		return AltPicture.GetPixel(x, y);
 
-	tPicture* picture = Pictures.First();
+	tPicture* picture = GetCurrentPic();
 	if (picture && picture->IsValid())
 		return picture->GetPixel(x, y);
 
@@ -402,13 +418,6 @@ void TacitImage::PrintInfo()
 		if (picture)
 			format = picture->IsOpaque() ? tPixelFormat::R8G8B8 : tPixelFormat::R8G8B8A8;
 	}
-
-	tPrintf
-	(
-		"Image: %s Width: %d Height: %d PixelFormat: %s\n",
-		tSystem::tGetFileName(Filename).Chars(),
-		Info.Width, Info.Height, tImage::tGetPixelFormatName(format)
-	);
 }
 
 
@@ -440,54 +449,62 @@ uint64 TacitImage::Bind()
 		return TexIDAlt;
 	}
 
-	if (TexIDPrimary != 0)
+	if (GetCurrentPic()->TextureID != 0)
 	{
-		glBindTexture(GL_TEXTURE_2D, TexIDPrimary);
-		return TexIDPrimary;
+		glBindTexture(GL_TEXTURE_2D, GetCurrentPic()->TextureID);
+		return GetCurrentPic()->TextureID;
 	}
 
 	if (!IsLoaded())
 		return 0;
 
-	glGenTextures(1, &TexIDPrimary);
-	if (TexIDPrimary == 0)
-		return 0;
+	for (tPicture* pic = Pictures.First(); pic; pic = pic->Next())
+		glGenTextures(1, &pic->TextureID);
 
-	// We try to bind the native tTexture first if possible.
+	// WIP IS THIS RIGHT
+	/*
 	if (AltPictureEnabled)
 	{
+		// We assume a currnet tPicture partnum of 0 for dds files.
+//		bool didBind = false;
 		if (DDSCubemap.IsValid())
 		{
 			const tList<tLayer>& layers = DDSCubemap.GetSide(tCubemap::tSide::PosZ)->GetLayers();
-			BindLayers(layers, TexIDPrimary);
-			return TexIDPrimary;
+			BindLayers(layers, GetPrimaryPic()->TextureID);
+//			didBind = true;
+			return GetPrimaryPic()->TextureID;
 		}
 		else if (DDSTexture2D.IsValid())
 		{
 			const tList<tLayer>& layers = DDSTexture2D.GetLayers();
-			BindLayers(layers, TexIDPrimary);
-			return TexIDPrimary;
+			BindLayers(layers, GetPrimaryPic()->TextureID);
+//			didBind = true;
+			return GetPrimaryPic()->TextureID;
+		}
+//		if (didBind)
+//			return GetCurrentPic()->TextureID
+
+	}
+	*/
+
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+	{
+		if (picture && picture->IsValid())
+		{
+			tList<tLayer> layers;
+			layers.Append
+			(
+				new tLayer
+				(
+					tPixelFormat::R8G8B8A8, picture->GetWidth(), picture->GetHeight(),
+					(uint8*)picture->GetPixelPointer()
+				)
+			);
+
+			BindLayers(layers, picture->TextureID);
 		}
 	}
-
-	tPicture* picture = Pictures.First();
-	if (picture && picture->IsValid())
-	{
-		tList<tLayer> layers;
-		layers.Append
-		(
-			new tLayer
-			(
-				tPixelFormat::R8G8B8A8, picture->GetWidth(), picture->GetHeight(),
-				(uint8*)picture->GetPixelPointer()
-			)
-		);
-
-		BindLayers(layers, TexIDPrimary);
-		return TexIDPrimary;
-	}
-
-	return 0;
+	return GetCurrentPic()->TextureID;
 }
 
 
@@ -795,8 +812,8 @@ void TacitImage::GenerateThumbnail()
 		glfwDestroyWindow(offscreenContext);
 	}
 
-
-	tPicture* srcPic = thumbLoader.GetPrimaryPicture();
+	// Thumbnails are generated from the primary (first) picture in the picture list.
+	tPicture* srcPic = thumbLoader.GetPrimaryPic();
 	tAssert(srcPic);
 
 	// We make the thumbnail keep its aspect ratio.

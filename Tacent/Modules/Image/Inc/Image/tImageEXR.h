@@ -32,15 +32,18 @@ public:
 
 	// Creates an invalid tImageEXR. You must call Load manually.
 	tImageEXR()																											{ }
+
+	// If something went wrong (like partNum not existing) image will be invalid.
 	tImageEXR
 	(
 		const tString& exrFile,
+		int partNum				= 0,
 		float gamma				= tMath::DefaultGamma,
 		float exposure			= DefaultExposure,
 		float defog				= DefaultDefog,
 		float kneeLow			= DefaultKneeLow,
 		float kneeHigh			= DefaultKneeHigh
-	)																													{ Load(exrFile, gamma, exposure, defog, kneeLow, kneeHigh); }
+	)																													{ Load(exrFile, partNum, gamma, exposure, defog, kneeLow, kneeHigh); }
 
 	// This one sets from a supplied pixel array. It just reads the data (or steals the array if steal set).
 	tImageEXR(tPixel* pixels, int width, int height, bool steal = false)												{ Set(pixels, width, height, steal); }
@@ -51,6 +54,7 @@ public:
 	bool Load
 	(
 		const tString& exrFile,
+		int partNum				= 0,					// Part num to load. 0-based. Returns false if didn't exist.
 		float gamma				= tMath::DefaultGamma,
 		float exposure			= DefaultExposure,
 		float defog				= DefaultDefog,

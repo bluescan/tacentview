@@ -83,7 +83,7 @@ tString TexView::DoSaveFiletype()
 void TexView::DoSaveAsModalDialog(bool justOpened)
 {
 	tAssert(CurrImage);
-	tPicture* picture = CurrImage->GetPrimaryPicture();
+	tPicture* picture = CurrImage->GetCurrentPic();
 	tAssert(picture);
 
 	static int dstW = 512;
@@ -388,7 +388,7 @@ void TexView::SaveAllImages(const tString& destDir, const tString& extension, fl
 		if (!imageLoaded)
 			image->Load();
 		tImage::tPicture outPic;
-		outPic.Set(*image->GetPrimaryPicture());
+		outPic.Set(*image->GetCurrentPic());
 		if (!imageLoaded)
 			image->Unload();
 

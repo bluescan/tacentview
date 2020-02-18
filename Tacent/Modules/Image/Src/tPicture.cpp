@@ -165,7 +165,7 @@ bool tPicture::SaveTGA(const tString& tgaFile, tImageTGA::tFormat format, tImage
 }
 
 
-bool tPicture::Load(const tString& imageFile, LoadParams params)
+bool tPicture::Load(const tString& imageFile, int partNum, LoadParams params)
 {
 	Clear();
 	if (!tFileExists(imageFile))
@@ -178,6 +178,8 @@ bool tPicture::Load(const tString& imageFile, LoadParams params)
 	// We handle tga files natively.
 	if (fileType == tFileType::TGA)
 	{
+		if (partNum != 0)
+			return false;
 		tImageTGA targa(imageFile);
 		if (!targa.IsValid())
 			return false;
@@ -191,6 +193,8 @@ bool tPicture::Load(const tString& imageFile, LoadParams params)
 	// We handle hdr files natively.
 	if (fileType == tFileType::HDR)
 	{
+		if (partNum != 0)
+			return false;
 		tImageHDR hdr;
 		hdr.Load
 		(
@@ -213,16 +217,17 @@ bool tPicture::Load(const tString& imageFile, LoadParams params)
 	if (fileType == tFileType::EXR)
 	{
 		tImageEXR exr;
-		exr.Load
+		bool ok = exr.Load
 		(
 			imageFile,
+			partNum,
 			params.Gamma,
 			params.EXR_Exposure,
 			params.EXR_Defog,
 			params.EXR_KneeLow,
 			params.EXR_KneeHigh
 		);
-		if (!exr.IsValid())
+		if (!ok || !exr.IsValid())
 			return false;
 		Width = exr.GetWidth();
 		Height = exr.GetHeight();
@@ -232,12 +237,21 @@ bool tPicture::Load(const tString& imageFile, LoadParams params)
 	}
 
 	// For everything else we use the CxImage library for loading.
+	// @todo Support partNum for animated gifs with multiple parts/frames.
+//	if (partNum != 0)
+//		return false;
+
 	ENUM_CXIMAGE_FORMATS cxFormat = ENUM_CXIMAGE_FORMATS(GetCxFormat(fileType));
 	if (cxFormat == CXIMAGE_FORMAT_UNKNOWN)
 		return false;
 
 	CxImage image;
 	image.Load(imageFile.ConstText(), cxFormat);
+
+
+/////WIP	image.GetNumFrames
+
+		////////
 	int width = image.GetWidth();
 	int height = image.GetHeight();
 	if (!image.IsValid() || (width <= 0) || (height <= 0))

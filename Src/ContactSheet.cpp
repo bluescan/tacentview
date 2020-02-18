@@ -45,7 +45,7 @@ void TexView::DoContactSheetModalDialog(bool justOpened)
 	static int finalWidth = 2048;
 	static int finalHeight = 2048;
 	tAssert(CurrImage);
-	tPicture* picture = CurrImage->GetPrimaryPicture();
+	tPicture* picture = CurrImage->GetCurrentPic();
 	tAssert(picture);
 	int picW = picture->GetWidth();
 	int picH = picture->GetHeight();
@@ -227,7 +227,7 @@ void TexView::SaveContactSheetTo
 
 		tPrintf("Processing frame %d : %s at (%d, %d).\n", frame, currImg->Filename.Chars(), ix, iy);
 		frame++;
-		tImage::tPicture* currPic = currImg->GetPrimaryPicture();
+		tImage::tPicture* currPic = currImg->GetCurrentPic();
 
 		tImage::tPicture resampled;
 		if ((currImg->GetWidth() != frameWidth) || (currImg->GetHeight() != frameHeight))

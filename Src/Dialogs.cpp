@@ -73,11 +73,11 @@ void TexView::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, fl
 			TacitImage::ImgInfo& info = CurrImage->Info;
 			if (info.IsValid())
 			{
-				ImGui::Text("Size: %dx%d", info.Width, info.Height);
+				ImGui::Text("Size: %dx%d", CurrImage->GetWidth(), CurrImage->GetHeight());
 				ImGui::Text("Format: %s", tImage::tGetPixelFormatName(info.PixelFormat));
 				ImGui::Text("Bit Depth: %d", info.SrcFileBitDepth);
 				ImGui::Text("Opaque: %s", info.Opaque ? "true" : "false");
-				ImGui::Text("Mipmaps: %d", info.Mipmaps);
+				ImGui::Text("Parts: %d", CurrImage->GetNumParts());
 				tString sizeStr; tsPrintf(sizeStr, "File Size: %'d", info.FileSizeBytes);
 				ImGui::Text(sizeStr.Chars());
 				ImGui::Text("Cursor: (%d, %d)", cursorX, cursorY);
@@ -208,6 +208,7 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 		return;
 	}
 
+	bool fileTypeSectionDisplayed = false;
 	switch (CurrImage->Filetype)
 	{
 		case tSystem::tFileType::HDR:
@@ -250,11 +251,13 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 			}
 
 			ImGui::Unindent();
+			fileTypeSectionDisplayed = true;
 			break;
 		}
 
 		case tSystem::tFileType::EXR:
 		{
+			ImGui::Separator();
 			ImGui::Text("Open EXR");
 			ImGui::Indent();
 			ImGui::PushItemWidth(110);
@@ -305,12 +308,29 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 			}
 
 			ImGui::Unindent();
+			fileTypeSectionDisplayed = true;
 			break;
 		}
+	}
 
-		default:
-			ImGui::Text("No supported properties for this filetype.");
-			break;
+	if (CurrImage->GetNumParts() > 1)
+	{
+		if (fileTypeSectionDisplayed)
+			ImGui::Separator();
+
+		ImGui::Text("%d-Part Image", CurrImage->GetNumParts());
+		ImGui::Indent();
+		ImGui::PushItemWidth(110);
+
+		if (ImGui::InputInt("Part", &CurrImage->PartNum))
+		{
+			tMath::tiClamp(CurrImage->PartNum, 0, CurrImage->GetNumParts()-1);
+			CurrImage->Unbind();
+			CurrImage->Bind();
+		}
+		ImGui::SameLine(); ShowHelpMark("Which image in a multipart file to display.");
+		ImGui::PopItemWidth();
+		ImGui::Unindent();
 	}
 
 	ImGui::End();
