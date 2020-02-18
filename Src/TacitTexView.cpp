@@ -875,7 +875,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			);
 			tColouri hsv = PixelColour;
 			hsv.RGBToHSV();
-			if (hsv.V > 128)
+			if (hsv.V > 150)
 				glColor4ubv(tColouri::black.E);
 			else
 				glColor4ubv(tColouri::white.E);

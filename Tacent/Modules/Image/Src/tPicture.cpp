@@ -238,23 +238,33 @@ bool tPicture::Load(const tString& imageFile, int partNum, LoadParams params)
 
 	// For everything else we use the CxImage library for loading.
 	// @todo Support partNum for animated gifs with multiple parts/frames.
-//	if (partNum != 0)
-//		return false;
 
 	ENUM_CXIMAGE_FORMATS cxFormat = ENUM_CXIMAGE_FORMATS(GetCxFormat(fileType));
 	if (cxFormat == CXIMAGE_FORMAT_UNKNOWN)
 		return false;
 
 	CxImage image;
-	image.Load(imageFile.ConstText(), cxFormat);
 
+	if (fileType == tFileType::GIF)
+		image.SetRetreiveAllFrames(true);
+	else if (partNum != 0)
+		return false;
 
-/////WIP	image.GetNumFrames
+	bool cxok = image.Load(imageFile.ConstText(), cxFormat);
+	if (!cxok)
+		return false;
 
-		////////
-	int width = image.GetWidth();
-	int height = image.GetHeight();
-	if (!image.IsValid() || (width <= 0) || (height <= 0))
+	int numCxFrames = (fileType == tFileType::GIF) ? image.GetNumFrames() : 1;
+	if ((numCxFrames < 1) || (partNum >= numCxFrames))
+		return false;
+
+	CxImage* pimg = (fileType == tFileType::GIF) ? image.GetFrame(partNum) : &image;
+	if (!pimg)
+		return false;
+
+	int width = pimg->GetWidth();
+	int height = pimg->GetHeight();
+	if (!pimg->IsValid() || (width <= 0) || (height <= 0))
 		return false;
 
 	Width = width;
@@ -272,7 +282,7 @@ bool tPicture::Load(const tString& imageFile, int partNum, LoadParams params)
 	{
 		for (int x = 0; x < width; x++)
 		{
-			RGBQUAD rgba = image.GetPixelColor(x, y);
+			RGBQUAD rgba = pimg->GetPixelColor(x, y);
 			tColouri colour;
 			colour.R = rgba.rgbRed;
 			colour.G = rgba.rgbGreen;
