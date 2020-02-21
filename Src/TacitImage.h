@@ -65,16 +65,12 @@ public:
 
 	struct ImgInfo
 	{
-		//bool IsValid() const				{ return (Width > 0) && (Height > 0); }
 		bool IsValid() const				{ return (PixelFormat != tImage::tPixelFormat::Invalid); }
-		//int Width							= 0;
-		//int Height							= 0;
 		tImage::tPixelFormat PixelFormat	= tImage::tPixelFormat::Invalid;
 		int SrcFileBitDepth					= -1;
 		bool Opaque							= false;
 		int FileSizeBytes					= 0;
 		int MemSizeBytes					= 0;
-		//int NumParts						= 0;
 	};
 	void PrintInfo();
 

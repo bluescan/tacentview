@@ -56,17 +56,23 @@ enum class tPixelFormat
 	HDR_EXR,							// OpenEXR.
 	LastHDR				= HDR_EXR,
 
+	FirstPAL,
+	PAL_8BIT			= FirstPAL,		// 8bit indexes to a Palette. ex. gif files.
+	LastPAL				= PAL_8BIT,
+
 	NumPixelFormats,
 	NumNormalFormats	= LastNormal - FirstNormal + 1,
 	NumBlockFormats		= LastBlock - FirstBlock + 1,
-	NumHDRFormats		= LastHDR - FirstHDR + 1
+	NumHDRFormats		= LastHDR - FirstHDR + 1,
+	NumPALFormats		= LastPAL - FirstPAL + 1
 };
 
 
 bool tIsNormalFormat(tPixelFormat);
 bool tIsBlockFormat(tPixelFormat);
 bool tIsHDRFormat(tPixelFormat);
-int tGetBytesPerPixel(tPixelFormat);			// This function must be given a non-BC pixel format.
+bool tIsPaletteFormat(tPixelFormat);
+int tGetBytesPerPixel(tPixelFormat);			// This function must be given a non-BC pixel format (normal or palette-based).
 int tGetBytesPer4x4PixelBlock(tPixelFormat);	// This function must be given a BC pixel format.
 const char* tGetPixelFormatName(tPixelFormat);
 

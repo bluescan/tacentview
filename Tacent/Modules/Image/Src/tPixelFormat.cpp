@@ -72,12 +72,24 @@ bool tIsHDRFormat(tPixelFormat format)
 }
 
 
+bool tIsPaletteFormat(tPixelFormat format)
+{
+	if ((format >= tPixelFormat::FirstPAL) && (format <= tPixelFormat::LastPAL))
+		return true;
+
+	return false;
+}
+
+
 int tGetBytesPerPixel(tPixelFormat format)
 {
 	if (format == tPixelFormat::Invalid)
 		return -1;
 
-	tAssert(tIsNormalFormat(format));
+	tAssert(tIsNormalFormat(format) || tIsPaletteFormat(format));
+	if (format == tPixelFormat::PAL_8BIT)
+		return 1;
+
 	int index = int(format) - int(tPixelFormat::FirstNormal);
 	return NormalFormat_BytesPerPixel[index];
 }
@@ -119,7 +131,8 @@ const char* tGetPixelFormatName(tPixelFormat pixelFormat)
 		"BC6H",
 		"BC7",
 		"RADIANCE",
-		"EXR"
+		"EXR",
+		"PAL8BIT"
 	};
 
 	tAssert(int(tPixelFormat::NumPixelFormats)+1 == sizeof(names)/sizeof(*names));

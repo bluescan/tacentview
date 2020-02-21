@@ -18,6 +18,7 @@
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL definitions.
 #include <Math/tHash.h>
 #include <Image/tTexture.h>
+#include <Image/tImageGIF.h>
 #include <System/tFile.h>
 #include <System/tTime.h>
 #include <System/tMachine.h>
@@ -118,6 +119,25 @@ bool TacitImage::Load()
 					srcFileBitdepth = tGetBytesPerPixel(pfmt) * 8;
 			}
 		}
+		else if (Filetype == tSystem::tFileType::GIF)
+		{
+			tImageGIF gif;
+			bool ok = gif.Load(Filename.Chars());
+			if (!ok)
+				return false;
+
+			int numFrames = gif.GetNumFrames();
+			for (int f = 0; f < numFrames; f++)
+			{
+				tImageGIF::Frame* frame = gif.StealFrame(0);
+				tPicture* picture = new tPicture();
+				picture->Set(gif.GetWidth(), gif.GetHeight(), frame->Pixels, false);
+				delete frame;
+				srcFileBitdepth = -1;
+				Pictures.Append(picture);
+			}
+			success = true;
+		}
 		else
 		{
 			// Some image files (like animated gifs, tiff files, and exr files) may store multiple
@@ -157,36 +177,39 @@ bool TacitImage::Load()
 	LoadedTime = tSystem::tGetTime();
 
 	// Fill in info struct.
-	//Info.Width			= GetWidth();
-	//Info.Height			= GetHeight();
 	Info.PixelFormat	= tPixelFormat::Invalid;
-	if (Filetype == tSystem::tFileType::DDS)
+	switch (Filetype)
 	{
-		if (DDSCubemap.IsValid())
-			Info.PixelFormat = DDSCubemap.GetSide(tCubemap::tSide::PosX)->GetPixelFormat();
-		else
-			Info.PixelFormat = DDSTexture2D.GetPixelFormat();
-	}
-	else if (Filetype == tSystem::tFileType::HDR)
-	{
-		Info.PixelFormat = tImage::tPixelFormat::HDR_RAD;
-	}
-	else if (Filetype == tSystem::tFileType::EXR)
-	{
-		Info.PixelFormat = tImage::tPixelFormat::HDR_EXR;
-	}
-	else
-	{
-		tPicture* picture = Pictures.First();
-		if (picture)
-			Info.PixelFormat = (srcFileBitdepth == 24) ? tPixelFormat::R8G8B8 : tPixelFormat::R8G8B8A8;
+		case tSystem::tFileType::DDS:
+			if (DDSCubemap.IsValid())
+				Info.PixelFormat = DDSCubemap.GetSide(tCubemap::tSide::PosX)->GetPixelFormat();
+			else
+				Info.PixelFormat = DDSTexture2D.GetPixelFormat();
+			break;
+
+		case tSystem::tFileType::HDR:
+			Info.PixelFormat = tImage::tPixelFormat::HDR_RAD;
+			break;
+
+		case tSystem::tFileType::EXR:
+			Info.PixelFormat = tImage::tPixelFormat::HDR_EXR;
+			break;
+
+		case tSystem::tFileType::GIF:
+			Info.PixelFormat = tImage::tPixelFormat::PAL_8BIT;
+			break;
+
+		default:
+			tPicture* picture = Pictures.First();
+			if (picture)
+				Info.PixelFormat = (srcFileBitdepth == 24) ? tPixelFormat::R8G8B8 : tPixelFormat::R8G8B8A8;
+			break;
 	}
 
 	Info.SrcFileBitDepth	= srcFileBitdepth;
 	Info.Opaque				= IsOpaque();
 	Info.FileSizeBytes		= tSystem::tGetFileSize(Filename);
 	Info.MemSizeBytes		= GetMemSizeBytes();
-	//Info.Mipmaps			= Pictures.GetNumItems();
 
 	// Create alt image if possible.
 	if (DDSCubemap.IsValid())
@@ -460,32 +483,6 @@ uint64 TacitImage::Bind()
 
 	for (tPicture* pic = Pictures.First(); pic; pic = pic->Next())
 		glGenTextures(1, &pic->TextureID);
-
-	// WIP IS THIS RIGHT
-	/*
-	if (AltPictureEnabled)
-	{
-		// We assume a currnet tPicture partnum of 0 for dds files.
-//		bool didBind = false;
-		if (DDSCubemap.IsValid())
-		{
-			const tList<tLayer>& layers = DDSCubemap.GetSide(tCubemap::tSide::PosZ)->GetLayers();
-			BindLayers(layers, GetPrimaryPic()->TextureID);
-//			didBind = true;
-			return GetPrimaryPic()->TextureID;
-		}
-		else if (DDSTexture2D.IsValid())
-		{
-			const tList<tLayer>& layers = DDSTexture2D.GetLayers();
-			BindLayers(layers, GetPrimaryPic()->TextureID);
-//			didBind = true;
-			return GetPrimaryPic()->TextureID;
-		}
-//		if (didBind)
-//			return GetCurrentPic()->TextureID
-
-	}
-	*/
 
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 	{

@@ -22,6 +22,7 @@
     <Text Include="..\Readme.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\Contrib\gif_load\gif_load.h" />
     <ClInclude Include="..\..\..\Contrib\OpenEXR\IlmBase\Half\half.h" />
     <ClInclude Include="..\..\..\Contrib\OpenEXR\IlmBase\Half\halfExport.h" />
     <ClInclude Include="..\..\..\Contrib\OpenEXR\IlmBase\Half\halfFunction.h" />
@@ -189,6 +190,7 @@
     <ClInclude Include="..\Inc\Image\tCubemap.h" />
     <ClInclude Include="..\Inc\Image\tImageDDS.h" />
     <ClInclude Include="..\Inc\Image\tImageEXR.h" />
+    <ClInclude Include="..\Inc\Image\tImageGIF.h" />
     <ClInclude Include="..\Inc\Image\tImageHDR.h" />
     <ClInclude Include="..\Inc\Image\tImageTGA.h" />
     <ClInclude Include="..\Inc\Image\tLayer.h" />
@@ -315,6 +317,7 @@
     <ClCompile Include="..\Src\tCubemap.cpp" />
     <ClCompile Include="..\Src\tImageDDS.cpp" />
     <ClCompile Include="..\Src\tImageEXR.cpp" />
+    <ClCompile Include="..\Src\tImageGIF.cpp" />
     <ClCompile Include="..\Src\tImageHDR.cpp" />
     <ClCompile Include="..\Src\tImageTGA.cpp" />
     <ClCompile Include="..\Src\tLayer.cpp" />

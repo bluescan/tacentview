@@ -181,6 +181,7 @@ void TexView::ShowAboutPopup(bool* popen)
 		ImGui::Text("Radiance Software");
 		ImGui::Text("OpenEXR V %s", OPENEXR_VERSION_STRING);
 		ImGui::Text("ZLib V %s", ZLIB_VERSION);
+		ImGui::Text("Gif Load");
 	}
 	ImGui::End();
 }
@@ -325,7 +326,6 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 		if (ImGui::InputInt("Part", &CurrImage->PartNum))
 		{
 			tMath::tiClamp(CurrImage->PartNum, 0, CurrImage->GetNumParts()-1);
-			CurrImage->Unbind();
 			CurrImage->Bind();
 		}
 		ImGui::SameLine(); ShowHelpMark("Which image in a multipart file to display.");
