@@ -17,6 +17,7 @@
 #pragma once
 #include <Foundation/tString.h>
 #include <Math/tColour.h>
+#include <Image/tPixelFormat.h>
 namespace tImage
 {
 
@@ -79,6 +80,7 @@ public:
 	// invalid afterwards.
 	tPixel* StealPixels();
 	tPixel* GetPixels() const																							{ return Pixels; }
+	tPixelFormat SrcPixelFormat = tPixelFormat::Invalid;
 
 private:
 	int Width				= 0;
@@ -96,10 +98,8 @@ inline void tImageEXR::Clear()
 	Height = 0;
 	delete[] Pixels;
 	Pixels = nullptr;
+	SrcPixelFormat = tPixelFormat::Invalid;
 }
 
 
 }
-
-
-

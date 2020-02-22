@@ -40,6 +40,7 @@
 #pragma once
 #include <Foundation/tString.h>
 #include <Math/tColour.h>
+#include <Image/tPixelFormat.h>
 namespace tImage
 {
 
@@ -82,6 +83,7 @@ public:
 	// invalid afterwards.
 	tPixel* StealPixels();
 	tPixel* GetPixels() const																							{ return Pixels; }
+	tPixelFormat SrcPixelFormat = tPixelFormat::Invalid;
 
 private:
 	bool LegacyReadRadianceColours(tPixel* scanline, int length);	// Older hdr files use this scanline format.
@@ -127,6 +129,7 @@ inline void tImageHDR::Clear()
 	Height = 0;
 	delete[] Pixels;
 	Pixels = nullptr;
+	SrcPixelFormat = tPixelFormat::Invalid;
 }
 
 

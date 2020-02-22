@@ -98,8 +98,8 @@ bool TacitImage::Load()
 	if (Filetype == tFileType::Unknown)
 		return false;
 
+	Info.SrcPixelFormat = tPixelFormat::Invalid;
 	bool success = false;
-	int srcFileBitdepth = -1;
 	try
 	{
 		if (Filetype == tSystem::tFileType::DDS)
@@ -107,16 +107,12 @@ bool TacitImage::Load()
 			success = DDSCubemap.Load(Filename);
 			if (success)
 			{
-				tImage::tPixelFormat pfmt = DDSCubemap.GetSide(tImage::tCubemap::tSide::PosX)->GetPixelFormat();
-				if (tIsNormalFormat(pfmt))
-					srcFileBitdepth = tGetBytesPerPixel(pfmt) * 8;
+				Info.SrcPixelFormat = DDSCubemap.GetSide(tImage::tCubemap::tSide::PosX)->GetPixelFormat();
 			}
 			else
 			{
 				success = DDSTexture2D.Load(Filename);
-				tImage::tPixelFormat pfmt = DDSTexture2D.GetPixelFormat();
-				if (tIsNormalFormat(pfmt))
-					srcFileBitdepth = tGetBytesPerPixel(pfmt) * 8;
+				Info.SrcPixelFormat = DDSTexture2D.GetPixelFormat();
 			}
 		}
 		else if (Filetype == tSystem::tFileType::GIF)
@@ -133,15 +129,14 @@ bool TacitImage::Load()
 				tPicture* picture = new tPicture();
 				picture->Set(gif.GetWidth(), gif.GetHeight(), frame->Pixels, false);
 				delete frame;
-				srcFileBitdepth = -1;
 				Pictures.Append(picture);
 			}
+			Info.SrcPixelFormat = gif.SrcPixelFormat;
 			success = true;
 		}
 		else
 		{
-			// Some image files (like animated gifs, tiff files, and exr files) may store multiple
-			// images in one file. These are called 'parts'.
+			// Some image files (like tiff and exr files) may store multiple images in one file. These are called 'parts'.
 			int partNum = 0;
 			bool ok = false;
 			do
@@ -150,12 +145,16 @@ bool TacitImage::Load()
 				ok = picture->Load(Filename, partNum, LoadParams);
 				if (ok)
 				{
-					success = true;
 					Pictures.Append(picture);
-					srcFileBitdepth = picture->SrcFileBitDepth;
 					partNum++;
 				}
 			} while (ok);
+
+			if (Pictures.NumItems() > 0)
+			{
+				success = true;
+				Info.SrcPixelFormat = Pictures.First()->SrcPixelFormat;
+			}
 		}
 	}
 	catch (tError error)
@@ -176,37 +175,7 @@ bool TacitImage::Load()
 
 	LoadedTime = tSystem::tGetTime();
 
-	// Fill in info struct.
-	Info.PixelFormat	= tPixelFormat::Invalid;
-	switch (Filetype)
-	{
-		case tSystem::tFileType::DDS:
-			if (DDSCubemap.IsValid())
-				Info.PixelFormat = DDSCubemap.GetSide(tCubemap::tSide::PosX)->GetPixelFormat();
-			else
-				Info.PixelFormat = DDSTexture2D.GetPixelFormat();
-			break;
-
-		case tSystem::tFileType::HDR:
-			Info.PixelFormat = tImage::tPixelFormat::HDR_RAD;
-			break;
-
-		case tSystem::tFileType::EXR:
-			Info.PixelFormat = tImage::tPixelFormat::HDR_EXR;
-			break;
-
-		case tSystem::tFileType::GIF:
-			Info.PixelFormat = tImage::tPixelFormat::PAL_8BIT;
-			break;
-
-		default:
-			tPicture* picture = Pictures.First();
-			if (picture)
-				Info.PixelFormat = (srcFileBitdepth == 24) ? tPixelFormat::R8G8B8 : tPixelFormat::R8G8B8A8;
-			break;
-	}
-
-	Info.SrcFileBitDepth	= srcFileBitdepth;
+	// Fill in rest of info struct.
 	Info.Opaque				= IsOpaque();
 	Info.FileSizeBytes		= tSystem::tGetFileSize(Filename);
 	Info.MemSizeBytes		= GetMemSizeBytes();

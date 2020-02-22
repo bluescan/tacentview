@@ -379,6 +379,7 @@ bool tImageHDR::Set(uint8* hdrFileInMemory, int numBytes, float gammaCorr, int e
 		return false;
 	}
 
+	SrcPixelFormat = tPixelFormat::HDR_RAD;
 	return true;
 }
 
@@ -400,6 +401,8 @@ bool tImageHDR::Set(tPixel* pixels, int width, int height, bool steal)
 		Pixels = new tPixel[Width*Height];
 		tStd::tMemcpy(Pixels, pixels, Width*Height*sizeof(tPixel));
 	}
+
+	SrcPixelFormat = tPixelFormat::R8G8B8A8;
 	return true;
 }
 

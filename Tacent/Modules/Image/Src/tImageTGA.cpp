@@ -87,7 +87,11 @@ bool tImageTGA::Set(const uint8* tgaFileInMemory, int numBytes)
 		Clear();
 		return false;
 	}
-	SrcFileBitDepth = bitDepth;
+	SrcPixelFormat = tPixelFormat::R8G8B8A8;
+	if (bitDepth == 16)
+		SrcPixelFormat = tPixelFormat::G3B5A1R5G2;
+	else if (bitDepth == 24)
+		SrcPixelFormat = tPixelFormat::R8G8B8;
 	uint8* srcData = (uint8*)(header + 1);
 
 	// These usually are zero. In most cases the pixel data will follow directly after the header. iColourMapType is a
@@ -206,6 +210,8 @@ bool tImageTGA::Set(tPixel* pixels, int width, int height, bool steal)
 		Pixels = new tPixel[Width*Height];
 		tStd::tMemcpy(Pixels, pixels, Width*Height*sizeof(tPixel));
 	}
+
+	SrcPixelFormat = tPixelFormat::R8G8B8A8;
 	return true;
 }
 

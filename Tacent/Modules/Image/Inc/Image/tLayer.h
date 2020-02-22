@@ -143,7 +143,7 @@ inline int tLayer::GetDataSize() const
 	}
 	else
 	{
-		numBytes = Width * Height * tGetBytesPerPixel(PixelFormat);
+		numBytes = Width * Height * (tGetBitsPerPixel(PixelFormat) >> 3);
 	}
 
 	return numBytes;

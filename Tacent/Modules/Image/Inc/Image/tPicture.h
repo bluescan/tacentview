@@ -24,6 +24,7 @@
 #include "Image/tImageTGA.h"
 #include "Image/tImageHDR.h"
 #include "Image/tImageEXR.h"
+#include "Image/tPixelFormat.h"
 namespace tImage
 {
 
@@ -81,7 +82,7 @@ public:
 	// tPicture. In this case the tPicture will delete[] the buffer for you when appropriate. In all cases, existing
 	// pixel data is lost.
 	void Set(int width, int height, tPixel* pixelBuffer, bool copyPixels = true);
-	void Set(const tPicture& src)																						{ if (src.Pixels) { Set(src.Width, src.Height, src.Pixels); Filename = src.Filename; } }
+	void Set(const tPicture& src);
 
 	// Can this class save the the filetype supplied?
 	static bool CanSave(const tString& imageFile);
@@ -181,7 +182,7 @@ public:
 	bool operator!=(const tPicture&) const;
 
 	tString Filename;
-	int SrcFileBitDepth = 32;
+	tPixelFormat SrcPixelFormat = tPixelFormat::Invalid;
 	uint TextureID = 0;
 
 private:
@@ -205,6 +206,7 @@ inline void tPicture::Clear()
 	Pixels = nullptr;
 	Width = 0;
 	Height = 0;
+	SrcPixelFormat = tPixelFormat::Invalid;
 }
 
 
@@ -240,6 +242,18 @@ inline void tPicture::SetAll(const tColouri& clearColour)
 	int numPixels = Width*Height;
 	for (int p = 0; p < numPixels; p++)
 		Pixels[p] = clearColour;
+}
+
+
+inline void tPicture::Set(const tPicture& src)
+{
+	Clear();
+	if (src.Pixels)
+	{
+		Set(src.Width, src.Height, src.Pixels);
+		Filename = src.Filename;
+	}
+	SrcPixelFormat = src.SrcPixelFormat;
 }
 
 

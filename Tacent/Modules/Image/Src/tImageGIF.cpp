@@ -117,7 +117,10 @@ bool tImageGIF::Load(const tString& gifFile)
 	int numBytes = 0;
 	uint8* gifFileInMemory = tLoadFile(gifFile, nullptr, &numBytes);
 
-	// This call allocated memory scratchpad memory for FrmPict and FrmPrev.
+	// This call allocated scratchpad memory pointed to by FrmPict and FrmPrev.
+	// They are set to null just in case GIF_Load fails to allocate.
+	FrmPict = nullptr;
+	FrmPrev = nullptr;
 	int result = GIF_Load(gifFileInMemory, numBytes, FrameCallbackBridge, nullptr, (void*)this, 0);
 	delete[] FrmPict;
 	delete[] FrmPrev;
@@ -125,6 +128,7 @@ bool tImageGIF::Load(const tString& gifFile)
 	if (result <= 0)
 		return false;
 
+	SrcPixelFormat = tPixelFormat::PAL_8BIT;
 	return true;
 }
 

@@ -267,6 +267,7 @@ bool tImage::tImageEXR::Load
 		}
 	}
 
+	SrcPixelFormat = tPixelFormat::HDR_EXR;
 	return true;
 }
 
@@ -288,6 +289,8 @@ bool tImage::tImageEXR::Set(tPixel* pixels, int width, int height, bool steal)
 		Pixels = new tPixel[Width*Height];
 		tStd::tMemcpy(Pixels, pixels, Width*Height*sizeof(tPixel));
 	}
+
+	SrcPixelFormat = tPixelFormat::R8G8B8A8;
 	return true;
 }
 

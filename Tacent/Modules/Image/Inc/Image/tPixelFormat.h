@@ -72,7 +72,7 @@ bool tIsNormalFormat(tPixelFormat);
 bool tIsBlockFormat(tPixelFormat);
 bool tIsHDRFormat(tPixelFormat);
 bool tIsPaletteFormat(tPixelFormat);
-int tGetBytesPerPixel(tPixelFormat);			// This function must be given a non-BC pixel format (normal or palette-based).
+int tGetBitsPerPixel(tPixelFormat);				// Some formats (dxt1) are only half a byte per pixel, so we report bits.
 int tGetBytesPer4x4PixelBlock(tPixelFormat);	// This function must be given a BC pixel format.
 const char* tGetPixelFormatName(tPixelFormat);
 

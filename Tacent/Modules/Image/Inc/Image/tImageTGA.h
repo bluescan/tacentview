@@ -18,6 +18,7 @@
 #pragma once
 #include <Foundation/tString.h>
 #include <Math/tColour.h>
+#include <Image/tPixelFormat.h>
 namespace tImage
 {
 
@@ -80,7 +81,7 @@ public:
 	// invalid afterwards.
 	tPixel* StealPixels();
 	tPixel* GetPixels() const																							{ return Pixels; }
-	int SrcFileBitDepth = 32;
+	tPixelFormat SrcPixelFormat = tPixelFormat::Invalid;
 
 private:
 	bool SaveUncompressed(const tString& tgaFile, tFormat) const;
@@ -103,6 +104,7 @@ inline void tImageTGA::Clear()
 	Height = 0;
 	delete[] Pixels;
 	Pixels = nullptr;
+	SrcPixelFormat = tPixelFormat::Invalid;
 }
 
 

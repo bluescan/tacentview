@@ -16,6 +16,7 @@
 #pragma once
 #include <Foundation/tString.h>
 #include <Math/tColour.h>
+#include <Image/tPixelFormat.h>
 #include "../../../Contrib/gif_load/gif_load.h"
 namespace tImage
 {
@@ -51,6 +52,7 @@ public:
 	// longer be a valid frame of the tImageGIF, but the remaining ones will still be valid.
 	Frame* StealFrame(int frameNum);
 	Frame* GetFrame(int frameNum);
+	tPixelFormat SrcPixelFormat = tPixelFormat::Invalid;
 
 private:
 	static void FrameCallbackBridge(void* imgGifRaw, struct GIF_WHDR*);
@@ -99,6 +101,7 @@ inline void tImageGIF::Clear()
 		delete[] frame->Pixels;
 		delete frame;
 	}
+	SrcPixelFormat = tPixelFormat::Invalid;
 }
 
 

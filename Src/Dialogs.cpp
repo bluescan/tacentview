@@ -71,11 +71,15 @@ void TexView::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, fl
 			ImGui::SameLine(); ImGui::Text("(%d, %d, %d, %d)", PixelColour.R, PixelColour.G, PixelColour.B, PixelColour.A);
 
 			TacitImage::ImgInfo& info = CurrImage->Info;
+			int bpp = tImage::tGetBitsPerPixel(info.SrcPixelFormat);
 			if (info.IsValid())
 			{
 				ImGui::Text("Size: %dx%d", CurrImage->GetWidth(), CurrImage->GetHeight());
-				ImGui::Text("Format: %s", tImage::tGetPixelFormatName(info.PixelFormat));
-				ImGui::Text("Bit Depth: %d", info.SrcFileBitDepth);
+				ImGui::Text("Format: %s", tImage::tGetPixelFormatName(info.SrcPixelFormat));
+				if (bpp > 0)
+					ImGui::Text("Bits Per Pixel: %d", bpp);
+				else
+					ImGui::Text("Bits Per Pixel: --");
 				ImGui::Text("Opaque: %s", info.Opaque ? "true" : "false");
 				ImGui::Text("Parts: %d", CurrImage->GetNumParts());
 				tString sizeStr; tsPrintf(sizeStr, "File Size: %'d", info.FileSizeBytes);

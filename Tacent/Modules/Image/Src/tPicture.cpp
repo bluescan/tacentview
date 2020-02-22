@@ -40,6 +40,8 @@ void tPicture::Set(int width, int height, const tPixel& colour)
 	Height = height;
 	for (int pixel = 0; pixel < (Width*Height); pixel++)
 		Pixels[pixel] = colour;
+
+	SrcPixelFormat = tPixelFormat::R8G8B8A8;
 }
 
 
@@ -67,6 +69,8 @@ void tPicture::Set(int width, int height, tPixel* pixelBuffer, bool copyPixels)
 
 	if (copyPixels)
 		tStd::tMemcpy(Pixels, pixelBuffer, Width*Height*sizeof(tPixel));
+
+	SrcPixelFormat = tPixelFormat::R8G8B8A8;
 }
 
 
@@ -186,7 +190,7 @@ bool tPicture::Load(const tString& imageFile, int partNum, LoadParams params)
 		Width = targa.GetWidth();
 		Height = targa.GetHeight();
 		Pixels = targa.StealPixels();
-		SrcFileBitDepth = targa.SrcFileBitDepth;
+		SrcPixelFormat = targa.SrcPixelFormat;
 		return true;
 	}
 
@@ -207,7 +211,7 @@ bool tPicture::Load(const tString& imageFile, int partNum, LoadParams params)
 		Width = hdr.GetWidth();
 		Height = hdr.GetHeight();
 		Pixels = hdr.StealPixels();
-		SrcFileBitDepth = -1;
+		SrcPixelFormat = hdr.SrcPixelFormat;
 		return true;
 	}
 
@@ -232,39 +236,29 @@ bool tPicture::Load(const tString& imageFile, int partNum, LoadParams params)
 		Width = exr.GetWidth();
 		Height = exr.GetHeight();
 		Pixels = exr.StealPixels();
-		SrcFileBitDepth = -1;
+		SrcPixelFormat = exr.SrcPixelFormat;
 		return true;
 	}
 
 	// For everything else we use the CxImage library for loading.
-	// @todo Support partNum for animated gifs with multiple parts/frames.
-
 	ENUM_CXIMAGE_FORMATS cxFormat = ENUM_CXIMAGE_FORMATS(GetCxFormat(fileType));
 	if (cxFormat == CXIMAGE_FORMAT_UNKNOWN)
 		return false;
 
 	CxImage image;
 
-	if (fileType == tFileType::GIF)
-		image.SetRetreiveAllFrames(true);
-	else if (partNum != 0)
+	// For gifs CxImage does not get all the colours right.
+	tAssert(fileType != tFileType::GIF)
+	if (partNum != 0)
 		return false;
 
 	bool cxok = image.Load(imageFile.ConstText(), cxFormat);
 	if (!cxok)
 		return false;
 
-	int numCxFrames = (fileType == tFileType::GIF) ? image.GetNumFrames() : 1;
-	if ((numCxFrames < 1) || (partNum >= numCxFrames))
-		return false;
-
-	CxImage* pimg = (fileType == tFileType::GIF) ? image.GetFrame(partNum) : &image;
-	if (!pimg)
-		return false;
-
-	int width = pimg->GetWidth();
-	int height = pimg->GetHeight();
-	if (!pimg->IsValid() || (width <= 0) || (height <= 0))
+	int width = image.GetWidth();
+	int height = image.GetHeight();
+	if (!image.IsValid() || (width <= 0) || (height <= 0))
 		return false;
 
 	Width = width;
@@ -275,14 +269,14 @@ bool tPicture::Load(const tString& imageFile, int partNum, LoadParams params)
 	// for the alpha, which is incorrect as alpha is normally interpreted as opacity, not transparency. It should be
 	// returning full opacity. That's why we need imageHasValidAlphas -- so we can check if the channel exists at all.
 	bool imageHasValidAlphas = image.AlphaIsValid();
-	SrcFileBitDepth = imageHasValidAlphas ? 32 : 24;
+	SrcPixelFormat = imageHasValidAlphas ? tPixelFormat::R8G8B8A8 : tPixelFormat::R8G8B8;
 
 	int index = 0;
 	for (int y = 0; y < height; y++)
 	{
 		for (int x = 0; x < width; x++)
 		{
-			RGBQUAD rgba = pimg->GetPixelColor(x, y);
+			RGBQUAD rgba = image.GetPixelColor(x, y);
 			tColouri colour;
 			colour.R = rgba.rgbRed;
 			colour.G = rgba.rgbGreen;
@@ -348,6 +342,7 @@ void tPicture::Load(const tChunk& chunk)
 			}
 		}
 	}
+	SrcPixelFormat = tPixelFormat::R8G8B8A8;
 }
 
 

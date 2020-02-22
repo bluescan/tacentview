@@ -15,37 +15,43 @@
 
 #include <Foundation/tAssert.h>
 #include "Image/tPixelFormat.h"
+
+
 namespace tImage
 {
+	int NormalFormat_BytesPerPixel[tPixelFormat::NumNormalFormats] =
+	{
+		3,				// R8G8B8
+		4,				// R8G8B8A8
+		3,				// B8G8R8
+		4,				// B8G8R8A8
+		2,				// G3B5A1R5G2
+		2,				// G4B4A4R4
+		2,				// G3B5R5G3
+		2				// L8A8
+	};
 
-	
-int NormalFormat_BytesPerPixel[tPixelFormat::NumNormalFormats] =
-{
-	3,				// R8G8B8
-	4,				// R8G8B8A8
-	3,				// B8G8R8
-	4,				// B8G8R8A8
-	2,				// G3B5A1R5G2
-	2,				// G4B4A4R4
-	2,				// G3B5R5G3
-	2				// L8A8
-};
+	int BlockFormat_BytesPer4x4PixelBlock[tPixelFormat::NumBlockFormats] =
+	{
+		8,				// BC1_DXT1
+		8,				// BC1_DXT1BA
+		16,				// BC2_DXT3
+		16,				// BC3_DXT5
+		8,				// BC4_ATI1
+		16,				// BC5_ATI2
+		16,				// BC6H
+		16,				// BC7
+	};
+
+	int HDRFormat_BytesPerPixel[tPixelFormat::NumHDRFormats] =
+	{
+		4,				// RAD. 3 bytes for each RGB. 1 byte shared exponent.
+		0				// EXR. @todo There are multiple exr pixel formats. We don't yet determine which one.
+	};
+}
 
 
-int BlockFormat_BytesPer4x4PixelBlock[tPixelFormat::NumBlockFormats] =
-{
-	8,				// BC1_DXT1
-	8,				// BC1_DXT1BA
-	16,				// BC2_DXT3
-	16,				// BC3_DXT5
-	8,				// BC4_ATI1
-	16,				// BC5_ATI2
-	16,				// BC6H
-	16,				// BC7
-};
-
-
-bool tIsNormalFormat(tPixelFormat format)
+bool tImage::tIsNormalFormat(tPixelFormat format)
 {
 	if ((format >= tPixelFormat::FirstNormal) && (format <= tPixelFormat::LastNormal))
 		return true;
@@ -54,7 +60,7 @@ bool tIsNormalFormat(tPixelFormat format)
 }
 
 
-bool tIsBlockFormat(tPixelFormat format)
+bool tImage::tIsBlockFormat(tPixelFormat format)
 {
 	if ((format >= tPixelFormat::FirstBlock) && (format <= tPixelFormat::LastBlock))
 		return true;
@@ -63,7 +69,7 @@ bool tIsBlockFormat(tPixelFormat format)
 }
 
 
-bool tIsHDRFormat(tPixelFormat format)
+bool tImage::tIsHDRFormat(tPixelFormat format)
 {
 	if ((format >= tPixelFormat::FirstHDR) && (format <= tPixelFormat::LastHDR))
 		return true;
@@ -72,7 +78,7 @@ bool tIsHDRFormat(tPixelFormat format)
 }
 
 
-bool tIsPaletteFormat(tPixelFormat format)
+bool tImage::tIsPaletteFormat(tPixelFormat format)
 {
 	if ((format >= tPixelFormat::FirstPAL) && (format <= tPixelFormat::LastPAL))
 		return true;
@@ -81,21 +87,25 @@ bool tIsPaletteFormat(tPixelFormat format)
 }
 
 
-int tGetBytesPerPixel(tPixelFormat format)
+int tImage::tGetBitsPerPixel(tPixelFormat format)
 {
-	if (format == tPixelFormat::Invalid)
-		return -1;
+	if (tIsNormalFormat(format))
+		return 8*NormalFormat_BytesPerPixel[int(format) - int(tPixelFormat::FirstNormal)];
 
-	tAssert(tIsNormalFormat(format) || tIsPaletteFormat(format));
-	if (format == tPixelFormat::PAL_8BIT)
-		return 1;
+	if (tIsBlockFormat(format))
+		return (8*tGetBytesPer4x4PixelBlock(format)) >> 4;
 
-	int index = int(format) - int(tPixelFormat::FirstNormal);
-	return NormalFormat_BytesPerPixel[index];
+	if (tIsHDRFormat(format))
+		return 8*HDRFormat_BytesPerPixel[int(format) - int(tPixelFormat::FirstHDR)];
+
+	if (tIsPaletteFormat(format))
+		return 8;
+
+	return -1;
 }
 
 
-int tGetBytesPer4x4PixelBlock(tPixelFormat format)
+int tImage::tGetBytesPer4x4PixelBlock(tPixelFormat format)
 {
 	if (format == tPixelFormat::Invalid)
 		return -1;
@@ -106,7 +116,7 @@ int tGetBytesPer4x4PixelBlock(tPixelFormat format)
 }
 
 
-const char* tGetPixelFormatName(tPixelFormat pixelFormat)
+const char* tImage::tGetPixelFormatName(tPixelFormat pixelFormat)
 {
 	const char* names[] =
 	{
@@ -138,7 +148,4 @@ const char* tGetPixelFormatName(tPixelFormat pixelFormat)
 	tAssert(int(tPixelFormat::NumPixelFormats)+1 == sizeof(names)/sizeof(*names));
 	int index = int(pixelFormat) + 1;
 	return names[index];
-}
-
-
 }
