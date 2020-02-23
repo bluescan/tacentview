@@ -52,6 +52,7 @@ void TexView::Settings::ResetBehaviourSettings()
 	MaxImageMemMB				= 1024;
 	MaxCacheFiles				= 7000;
 	AutoPropertyWindow			= true;
+	AutoPlayAnimatedGIFs		= true;
 	MonitorGamma				= tMath::DefaultGamma;
 }
 
@@ -114,6 +115,7 @@ void TexView::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(MaxImageMemMB);
 				ReadItem(MaxCacheFiles);
 				ReadItem(AutoPropertyWindow);
+				ReadItem(AutoPlayAnimatedGIFs);
 				ReadItem(MonitorGamma);
 			}
 		}
@@ -169,6 +171,7 @@ bool TexView::Settings::Save(const tString& filename)
 	WriteItem(MaxImageMemMB);
 	WriteItem(MaxCacheFiles);
 	WriteItem(AutoPropertyWindow);
+	WriteItem(AutoPlayAnimatedGIFs);
 	WriteItem(MonitorGamma);
 
 	return true;

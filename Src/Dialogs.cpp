@@ -381,7 +381,7 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 		)
 		{
 			CurrImage->PartPlayRev = true;
-			CurrImage->PartPlaying = !CurrImage->PartPlaying;
+			if (CurrImage->PartPlaying) CurrImage->Stop(); else CurrImage->Play();
 		}
 		ImGui::SameLine();
 
@@ -394,7 +394,7 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 		)
 		{
 			CurrImage->PartPlayRev = false;
-			CurrImage->PartPlaying = !CurrImage->PartPlaying;
+			if (CurrImage->PartPlaying) CurrImage->Stop(); else CurrImage->Play();
 		}
 		ImGui::SameLine();
 
@@ -492,6 +492,8 @@ void TexView::ShowPreferencesWindow(bool* popen)
 	ImGui::Checkbox("Confirm Deletes", &Config.ConfirmDeletes);
 	ImGui::Checkbox("Confirm File Overwrites", &Config.ConfirmFileOverwrites);
 	ImGui::Checkbox("Auto Propery Window", &Config.AutoPropertyWindow);
+	ImGui::Checkbox("Auto Play GIFs", &Config.AutoPlayAnimatedGIFs);
+	
 	ImGui::Unindent();
 	ImGui::Separator();
 	if (ImGui::Button("Reset UI Settings"))

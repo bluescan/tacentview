@@ -368,6 +368,13 @@ void TexView::LoadCurrImage()
 	if (Config.AutoPropertyWindow)
 		PropEditorWindow = (CurrImage->TypeSupportsProperties() || (CurrImage->GetNumParts() > 1));
 
+	if (Config.AutoPlayAnimatedGIFs && (CurrImage->Filetype == tFileType::GIF) && (CurrImage->GetNumParts() > 1))
+	{
+		CurrImage->PartPlayLooping = true;
+		CurrImage->PartPlayRev = false;
+		CurrImage->Play();
+	}
+
 	SetWindowTitle();
 	ResetPan();
 
