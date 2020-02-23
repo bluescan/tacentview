@@ -169,6 +169,8 @@ namespace TexView
 	void PopulateImagesSubDirs();
 	bool OnPrevious(bool circ = false);
 	bool OnNext(bool circ = false);
+	void OnPreviousPart();
+	void OnNextPart();
 	bool OnSkipBegin();
 	bool OnSkipEnd();
 	void ResetPan(bool resetX = true, bool resetY = true);
@@ -423,6 +425,24 @@ bool TexView::OnNext(bool circ)
 	CurrImage = circ ? Images.NextCirc(CurrImage) : CurrImage->Next();
 	LoadCurrImage();
 	return true;
+}
+
+
+void TexView::OnPreviousPart()
+{
+	if (!CurrImage || (CurrImage->GetNumParts() <= 1))
+		return;
+
+	CurrImage->PartNum = tClampMin(CurrImage->PartNum-1, 0);
+}
+
+
+void TexView::OnNextPart()
+{
+	if (!CurrImage || (CurrImage->GetNumParts() <= 1))
+		return;
+
+	CurrImage->PartNum = tClampMax(CurrImage->PartNum+1, CurrImage->GetNumParts()-1);
 }
 
 
@@ -1550,6 +1570,8 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 		case GLFW_KEY_LEFT:
 			if (modifiers == GLFW_MOD_CONTROL)
 				OnSkipBegin();
+			else if (modifiers == GLFW_MOD_ALT)
+				OnPreviousPart();
 			else
 				OnPrevious();
 			break;
@@ -1557,6 +1579,8 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 		case GLFW_KEY_RIGHT:
 			if (modifiers == GLFW_MOD_CONTROL)
 				OnSkipEnd();
+			else if (modifiers == GLFW_MOD_ALT)
+				OnNextPart();
 			else
 				OnNext();
 			break;

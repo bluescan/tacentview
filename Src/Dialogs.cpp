@@ -119,6 +119,8 @@ void TexView::ShowCheatSheetPopup(bool* popen)
 		ImGui::Text("Right Arrow");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Next Image");
 		ImGui::Text("Ctrl-Left");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Skip to First Image");
 		ImGui::Text("Ctrl-Right");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Skip to Last Image");
+		ImGui::Text("Alt-Left");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Previous Image Frame");
+		ImGui::Text("Alt-Right");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Next Image Frame");
 		ImGui::Text("Space");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Next Image");
 		ImGui::Text("Ctrl +");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom In");
 		ImGui::Text("Ctrl -");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom Out");
@@ -335,9 +337,18 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 			tMath::tiClamp(CurrImage->PartNum, 0, CurrImage->GetNumParts()-1);
 		}
 		ImGui::SameLine(); ShowHelpMark("Which image in a multipart file to display.");
+
+		ImGui::Checkbox("Override Frame Duration", &CurrImage->PartDurationOverrideEnabled);
+		if (CurrImage->PartDurationOverrideEnabled)
+		{
+			ImGui::InputFloat("Frame Duration", &CurrImage->PartDurationOverride, 0.01f, 0.1f, "%.3f");
+			tMath::tiClamp(CurrImage->PartDurationOverride, 0.0f, 60.0f);
+		}
+
 		ImGui::PopItemWidth();
 		ImGui::Unindent();
 
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 		ImGui::Separator();
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 
@@ -346,12 +357,19 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 			CurrImage->PartPlayLooping = !CurrImage->PartPlayLooping;
 		ImGui::SameLine();
 
-		if (ImGui::ImageButton(ImTextureID(SkipBeginImage.Bind()), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2, ColourBG, ColourEnabledTint))
-			CurrImage->PartNum = 0;
+		bool prevEnabled = !CurrImage->PartPlaying && (CurrImage->PartNum > 0);
+		if (ImGui::ImageButton
+		(
+			ImTextureID(SkipBeginImage.Bind()), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2,
+			ColourBG, prevEnabled ? ColourEnabledTint : ColourDisabledTint) && prevEnabled
+		)	CurrImage->PartNum = 0;
 		ImGui::SameLine();
 
-		if (ImGui::ImageButton(ImTextureID(PrevImage.Bind()), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2, ColourBG, ColourEnabledTint))
-			CurrImage->PartNum = tClampMin(CurrImage->PartNum-1, 0);
+		if (ImGui::ImageButton
+		(
+			ImTextureID(PrevImage.Bind()), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2,
+			ColourBG, prevEnabled ? ColourEnabledTint : ColourDisabledTint) && prevEnabled
+		)	CurrImage->PartNum = tClampMin(CurrImage->PartNum-1, 0);
 		ImGui::SameLine();
 
 		bool playRevEnabled = !(CurrImage->PartPlaying && !CurrImage->PartPlayRev);
@@ -380,12 +398,19 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 		}
 		ImGui::SameLine();
 
-		if (ImGui::ImageButton(ImTextureID(NextImage.Bind()), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2, ColourBG, ColourEnabledTint))
-			CurrImage->PartNum = tClampMax(CurrImage->PartNum+1, numParts-1);
+		bool nextEnabled = !CurrImage->PartPlaying && (CurrImage->PartNum < (numParts-1));
+		if (ImGui::ImageButton
+		(
+			ImTextureID(NextImage.Bind()), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2,
+			ColourBG, nextEnabled ? ColourEnabledTint : ColourDisabledTint) && nextEnabled
+		)	CurrImage->PartNum = tClampMax(CurrImage->PartNum+1, numParts-1);
 		ImGui::SameLine();
 
-		if (ImGui::ImageButton(ImTextureID(SkipEndImage.Bind()), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2, ColourBG, ColourEnabledTint))
-			CurrImage->PartNum = numParts-1;
+		if (ImGui::ImageButton
+		(
+			ImTextureID(SkipEndImage.Bind()), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2,
+			ColourBG, nextEnabled ? ColourEnabledTint : ColourDisabledTint) && nextEnabled
+		)	CurrImage->PartNum = numParts-1;
 		ImGui::SameLine();
 	}
 
