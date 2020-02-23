@@ -106,7 +106,7 @@ void TexView::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, fl
 
 void TexView::ShowCheatSheetPopup(bool* popen)
 {
-	tVector2 windowPos = GetDialogOrigin(0);
+	tVector2 windowPos = GetDialogOrigin(4);
 	ImGui::SetNextWindowBgAlpha(0.80f);
 	ImGui::SetNextWindowSize(tVector2(300.0f, 400.0f));
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
@@ -199,7 +199,7 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 
 	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
 	// do it to make the Demo applications a little more welcoming.
-	tVector2 windowPos = GetDialogOrigin(4);
+	tVector2 windowPos = GetDialogOrigin(0);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	if (!ImGui::Begin("Image Property Editor", popen, windowFlags))
@@ -210,7 +210,7 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 
 	if (!CurrImage)
 	{
-		ImGui::Text("No current image.");
+		ImGui::Text("No Images in Folder");
 		ImGui::End();
 		return;
 	}
@@ -321,6 +321,9 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 	}
 
 	int numParts = CurrImage->GetNumParts();
+	if ((numParts <= 1) && !fileTypeSectionDisplayed)
+		ImGui::Text("No Editable Image Properties Available");
+
 	if (numParts > 1)
 	{
 		if (fileTypeSectionDisplayed)
@@ -341,8 +344,13 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 		ImGui::Checkbox("Override Frame Duration", &CurrImage->PartDurationOverrideEnabled);
 		if (CurrImage->PartDurationOverrideEnabled)
 		{
-			ImGui::InputFloat("Frame Duration", &CurrImage->PartDurationOverride, 0.01f, 0.1f, "%.3f");
+			ImGui::InputFloat("Frame Duration", &CurrImage->PartDurationOverride, 0.01f, 0.1f, "%.4f");
 			tMath::tiClamp(CurrImage->PartDurationOverride, 0.0f, 60.0f);
+
+			if (ImGui::Button("1.0s")) CurrImage->PartDurationOverride = 1.0f; ImGui::SameLine();
+			if (ImGui::Button("0.5s")) CurrImage->PartDurationOverride = 0.5f; ImGui::SameLine();
+			if (ImGui::Button("30fps")) CurrImage->PartDurationOverride = 1.0f/30.0f; ImGui::SameLine();
+			if (ImGui::Button("60fps")) CurrImage->PartDurationOverride = 1.0f/60.0f;
 		}
 
 		ImGui::PopItemWidth();

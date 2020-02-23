@@ -48,7 +48,7 @@ namespace TexView
 	tCommand::tParam ImageFileParam(1, "ImageFile", "File to open.");
 	int MajorVersion							= 1;
 	int MinorVersion							= 0;
-	int Revision								= 6;
+	int Revision								= 7;
 	NavLogBar NavBar;
 	tString ImagesDir;
 	tList<tStringItem> ImagesSubDirs;
