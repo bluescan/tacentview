@@ -42,6 +42,7 @@ void TexView::Settings::ResetBehaviourSettings()
 	ResampleFilter				= 2;
 	ConfirmDeletes				= true;
 	ConfirmFileOverwrites		= true;
+	SlideshowLooping			= false;
 	SlidehowFrameDuration		= 1.0/30.0;
 	SaveSubFolder				.Set("Saved");
 	SaveFileType				= 0;
@@ -103,6 +104,7 @@ void TexView::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(ResampleFilter);
 				ReadItem(ConfirmDeletes);
 				ReadItem(ConfirmFileOverwrites);
+				ReadItem(SlideshowLooping);
 				ReadItem(SlidehowFrameDuration);
 				ReadItem(SaveSubFolder);
 				ReadItem(SaveFileType);
@@ -157,6 +159,7 @@ bool TexView::Settings::Save(const tString& filename)
 	WriteItem(ResampleFilter);
 	WriteItem(ConfirmDeletes);
 	WriteItem(ConfirmFileOverwrites);
+	WriteItem(SlideshowLooping);
 	WriteItem(SlidehowFrameDuration);
 	WriteItem(SaveSubFolder);
 	WriteItem(SaveFileType);

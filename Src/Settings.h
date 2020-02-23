@@ -55,6 +55,7 @@ namespace TexView
 		int ResampleFilter;					// Matches tImage::tPicture::tFilter.
 		bool ConfirmDeletes;
 		bool ConfirmFileOverwrites;
+		bool SlideshowLooping;
 		double SlidehowFrameDuration;
 
 		tString SaveSubFolder;

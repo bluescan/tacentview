@@ -59,6 +59,8 @@ namespace TexView
 	TacitImage ReticleImage;
 	TacitImage PrevImage;
 	TacitImage NextImage;
+	TacitImage PrevArrowImage;
+	TacitImage NextArrowImage;
 	TacitImage FlipHImage;
 	TacitImage FlipVImage;
 	TacitImage RotateACWImage;
@@ -75,6 +77,8 @@ namespace TexView
 	TacitImage TileImage;
 	TacitImage StopImage;
 	TacitImage PlayImage;
+	TacitImage PlayLoopImage;
+	TacitImage PlayOnceImage;
 	TacitImage ContentViewImage;
 	TacitImage UpFolderImage;
 	TacitImage CropImage;
@@ -125,9 +129,9 @@ namespace TexView
 	tColouri PixelColour						= tColouri::black;
 
 	const tVector4 ColourEnabledTint			= tVector4(1.00f, 1.00f, 1.00f, 1.00f);
-	const tVector4 ColourDisabledTint			= tVector4(0.46f, 0.46f, 0.58f, 1.00f);
+	const tVector4 ColourDisabledTint			= tVector4(0.36f, 0.36f, 0.48f, 1.00f);
 	const tVector4 ColourBG						= tVector4(0.00f, 0.00f, 0.00f, 0.00f);
-	const tVector4 ColourPressedBG				= tVector4(0.45f, 0.45f, 0.60f, 1.00f);
+	const tVector4 ColourPressedBG				= tVector4(0.26f, 0.59f, 0.98f, 1.00f);
 	const tVector4 ColourClear					= tVector4(0.10f, 0.10f, 0.12f, 1.00f);
 
 	const float ZoomMin							= 20.0f;
@@ -358,11 +362,6 @@ void TexView::LoadCurrImage()
 
 	if (Config.AutoPropertyWindow)
 		PropEditorWindow = (CurrImage->TypeSupportsProperties() || (CurrImage->GetNumParts() > 1));
-
-	#ifdef CONFIG_DEBUG
-	if (!SlideshowPlaying)
-		CurrImage->PrintInfo();
-	#endif
 
 	SetWindowTitle();
 	ResetPan();
@@ -949,41 +948,64 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	if ((DisappearCountdown > 0.0) && !CropMode)
 	{
+		// Previous arrow.
 		if ((CurrImage != Images.First()) || SlideshowPlaying)
 		{
 			ImGui::SetNextWindowPos(tVector2(0.0f, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
 			ImGui::SetNextWindowSize(tVector2(16, 70), ImGuiCond_Always);
-			ImGui::Begin("Prev", nullptr, flagsImgButton);
+			ImGui::Begin("PrevArrow", nullptr, flagsImgButton);
 			ImGui::SetCursorPos(tVector2(6, 2));
-			if (ImGui::ImageButton(ImTextureID(PrevImage.Bind()), tVector2(15,56), tVector2(0,0), tVector2(1,1), 3, tVector4(0,0,0,0), tVector4(1,1,1,1)))
+			if (ImGui::ImageButton(ImTextureID(PrevArrowImage.Bind()), tVector2(15,56), tVector2(0,0), tVector2(1,1), 3, tVector4(0,0,0,0), tVector4(1,1,1,1)))
 				OnPrevious();
 			ImGui::End();
 		}
 
+		// Next arrow.
 		if ((CurrImage != Images.Last()) || SlideshowPlaying)
 		{
 			ImGui::SetNextWindowPos(tVector2(workAreaW - 33.0f, float(topUIHeight) + float(workAreaH) * 0.5f - 33.0f));
 			ImGui::SetNextWindowSize(tVector2(16, 70), ImGuiCond_Always);
-			ImGui::Begin("Next", nullptr, flagsImgButton);
+			ImGui::Begin("NextArrow", nullptr, flagsImgButton);
 			ImGui::SetCursorPos(tVector2(6, 2));
-			if (ImGui::ImageButton(ImTextureID(NextImage.Bind()), tVector2(15,56), tVector2(0,0), tVector2(1,1), 3, tVector4(0,0,0,0), tVector4(1,1,1,1)))
+			if (ImGui::ImageButton(ImTextureID(NextArrowImage.Bind()), tVector2(15,56), tVector2(0,0), tVector2(1,1), 3, tVector4(0,0,0,0), tVector4(1,1,1,1)))
 				OnNext();
 			ImGui::End();
 		}
 
+		// Looping button.
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-120.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
+		ImGui::Begin("Repeat", nullptr, flagsImgButton);
+		uint64 playModeImageID = Config.SlideshowLooping ? PlayOnceImage.Bind() : PlayLoopImage.Bind();
+		if (ImGui::ImageButton(ImTextureID(playModeImageID), tVector2(24,24), tVector2(0,0), tVector2(1,1), 2, tVector4(0,0,0,0), tVector4(1,1,1,1)))
+			Config.SlideshowLooping = !Config.SlideshowLooping;
+		ImGui::End();
+
 		// Skip to beginning button.
-		if ((CurrImage != Images.First()) || SlideshowPlaying)
-		{
-			ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-60.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
-			ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
-			ImGui::Begin("SkipBegin", nullptr, flagsImgButton);
-			if (ImGui::ImageButton(ImTextureID(SkipBeginImage.Bind()), tVector2(24,24), tVector2(0,0), tVector2(1,1), 2, tVector4(0,0,0,0), tVector4(1,1,1,1)))
-				OnSkipBegin();
-			ImGui::End();
-		}
+		bool prevAvail = (CurrImage != Images.First()) || SlideshowPlaying;
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-80.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
+		ImGui::Begin("SkipBegin", nullptr, flagsImgButton);
+		if (ImGui::ImageButton
+		(
+			ImTextureID(SkipBeginImage.Bind()), tVector2(24,24), tVector2(0,0), tVector2(1,1), 2,
+			ColourBG, prevAvail ? ColourEnabledTint : ColourDisabledTint) && prevAvail
+		)	OnSkipBegin();
+		ImGui::End();
+
+		// Prev button.
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-40.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
+		ImGui::Begin("Prev", nullptr, flagsImgButton);
+		if (ImGui::ImageButton
+		(
+			ImTextureID(PrevImage.Bind()), tVector2(24,24), tVector2(0,0), tVector2(1,1), 2,
+			ColourBG, prevAvail ? ColourEnabledTint : ColourDisabledTint) && prevAvail
+		)	OnPrevious();
+		ImGui::End();
 
 		// Slideshow/Stop button.
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-20.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+0.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
 		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
 		ImGui::Begin("Slideshow", nullptr, flagsImgButton);
 		uint64 psImageID = SlideshowPlaying ? StopImage.Bind() : PlayImage.Bind();
@@ -991,25 +1013,37 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			SlideshowPlaying = !SlideshowPlaying;
 		ImGui::End();
 
+		// Next button.
+		bool nextAvail = (CurrImage != Images.Last()) || SlideshowPlaying;
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+40.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
+		ImGui::Begin("Next", nullptr, flagsImgButton);
+		if (ImGui::ImageButton
+		(
+			ImTextureID(NextImage.Bind()), tVector2(24,24), tVector2(0,0), tVector2(1,1), 2,
+			ColourBG, nextAvail ? ColourEnabledTint : ColourDisabledTint) && nextAvail
+		)	OnNext();
+		ImGui::End();
+
+		// Skip to end button.
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+80.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
+		ImGui::Begin("SkipEnd", nullptr, flagsImgButton);
+		if (ImGui::ImageButton
+		(
+			ImTextureID(SkipEndImage.Bind()), tVector2(24,24), tVector2(0,0), tVector2(1,1), 2,
+			ColourBG, nextAvail ? ColourEnabledTint : ColourDisabledTint) && nextAvail
+		)	OnSkipEnd();
+		ImGui::End();
+
 		// Fullscreen / Windowed button.
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+20.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+120.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
 		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
 		ImGui::Begin("Fullscreen", nullptr, flagsImgButton);
 		uint64 fsImageID = FullscreenMode ? WindowedImage.Bind() : FullscreenImage.Bind();
 		if (ImGui::ImageButton(ImTextureID(fsImageID), tVector2(24,24), tVector2(0,0), tVector2(1,1), 2, tVector4(0,0,0,0), tVector4(1,1,1,1)))
 			ChangeScreenMode(!FullscreenMode);
 		ImGui::End();
-
-		// Skip to end button.
-		if ((CurrImage != Images.Last()) || SlideshowPlaying)
-		{
-			ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+60.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
-			ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
-			ImGui::Begin("SkipEnd", nullptr, flagsImgButton);
-			if (ImGui::ImageButton(ImTextureID(SkipEndImage.Bind()), tVector2(24,24), tVector2(0,0), tVector2(1,1), 2, tVector4(0,0,0,0), tVector4(1,1,1,1)))
-				OnSkipEnd();
-			ImGui::End();
-		}
 	}
 
 	ImGui::SetNextWindowPos(tVector2(0, 0));
@@ -1315,7 +1349,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 		ShowToolTip("Display Cubemap\nDDS files may be cubemaps.");
 
-		bool tileAvail = CurrImage ? (!CurrImage->IsAltPictureEnabled() && !CropMode) : false;
+		bool tileAvail = CurrImage ? !CropMode : false;
 		if
 		(
 			ImGui::ImageButton
@@ -1444,8 +1478,11 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		SlideshowCountdown -= dt;
 		if ((SlideshowCountdown <= 0.0f))
 		{
-			OnNext(true);
-			SlideshowCountdown = Config.SlidehowFrameDuration;
+			bool ok = OnNext(Config.SlideshowLooping);
+			if (!ok)
+				SlideshowPlaying = false;
+			else
+				SlideshowCountdown = Config.SlidehowFrameDuration;
 		}
 	}
 }
@@ -1953,29 +1990,33 @@ int main(int argc, char** argv)
 	tString fontFile = dataDir + "Roboto-Medium.ttf";
 	io.Fonts->AddFontFromFileTTF(fontFile.Chars(), 14.0f);
 
-	TexView::ReticleImage.Load(dataDir + "Reticle.png");
-	TexView::PrevImage.Load(dataDir + "PrevArrow.png");
-	TexView::NextImage.Load(dataDir + "NextArrow.png");
-	TexView::FlipHImage.Load(dataDir + "FlipH.png");
-	TexView::FlipVImage.Load(dataDir + "FlipV.png");
-	TexView::RotateACWImage.Load(dataDir + "RotACW.png");
-	TexView::RotateCWImage.Load(dataDir + "RotCW.png");
-	TexView::FullscreenImage.Load(dataDir + "Fullscreen.png");
-	TexView::WindowedImage.Load(dataDir + "Windowed.png");
-	TexView::SkipBeginImage.Load(dataDir + "SkipBegin.png");
-	TexView::SkipEndImage.Load(dataDir + "SkipEnd.png");
-	TexView::MipmapsImage.Load(dataDir + "Mipmaps.png");
-	TexView::CubemapImage.Load(dataDir + "Cubemap.png");
-	TexView::RefreshImage.Load(dataDir + "Refresh.png");
-	TexView::RecycleImage.Load(dataDir + "Recycle.png");
-	TexView::InfoOverlayImage.Load(dataDir + "InfoOverlay.png");
-	TexView::TileImage.Load(dataDir + "Tile.png");
-	TexView::StopImage.Load(dataDir + "Stop.png");
-	TexView::PlayImage.Load(dataDir + "Play.png");
-	TexView::ContentViewImage.Load(dataDir + "ContentView.png");
-	TexView::UpFolderImage.Load(dataDir + "UpFolder.png");
-	TexView::CropImage.Load(dataDir + "Crop.png");
-	TexView::DefaultThumbnailImage.Load(dataDir + "DefaultThumbnail.png");
+	TexView::ReticleImage			.Load(dataDir + "Reticle.png");
+	TexView::PrevImage				.Load(dataDir + "Prev.png");
+	TexView::NextImage				.Load(dataDir + "Next.png");
+	TexView::PrevArrowImage			.Load(dataDir + "PrevArrow.png");
+	TexView::NextArrowImage			.Load(dataDir + "NextArrow.png");
+	TexView::FlipHImage				.Load(dataDir + "FlipH.png");
+	TexView::FlipVImage				.Load(dataDir + "FlipV.png");
+	TexView::RotateACWImage			.Load(dataDir + "RotACW.png");
+	TexView::RotateCWImage			.Load(dataDir + "RotCW.png");
+	TexView::FullscreenImage		.Load(dataDir + "Fullscreen.png");
+	TexView::WindowedImage			.Load(dataDir + "Windowed.png");
+	TexView::SkipBeginImage			.Load(dataDir + "SkipBegin.png");
+	TexView::SkipEndImage			.Load(dataDir + "SkipEnd.png");
+	TexView::MipmapsImage			.Load(dataDir + "Mipmaps.png");
+	TexView::CubemapImage			.Load(dataDir + "Cubemap.png");
+	TexView::RefreshImage			.Load(dataDir + "Refresh.png");
+	TexView::RecycleImage			.Load(dataDir + "Recycle.png");
+	TexView::InfoOverlayImage		.Load(dataDir + "InfoOverlay.png");
+	TexView::TileImage				.Load(dataDir + "Tile.png");
+	TexView::StopImage				.Load(dataDir + "Stop.png");
+	TexView::PlayImage				.Load(dataDir + "Play.png");
+	TexView::PlayLoopImage			.Load(dataDir + "PlayLoop.png");
+	TexView::PlayOnceImage			.Load(dataDir + "PlayOnce.png");
+	TexView::ContentViewImage		.Load(dataDir + "ContentView.png");
+	TexView::UpFolderImage			.Load(dataDir + "UpFolder.png");
+	TexView::CropImage				.Load(dataDir + "Crop.png");
+	TexView::DefaultThumbnailImage	.Load(dataDir + "DefaultThumbnail.png");
 
 	TexView::PopulateImages();
 	if (TexView::ImageFileParam.IsPresent())
