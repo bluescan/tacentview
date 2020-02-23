@@ -77,7 +77,9 @@ namespace TexView
 	TacitImage InfoOverlayImage;
 	TacitImage TileImage;
 	TacitImage StopImage;
+	TacitImage StopRevImage;
 	TacitImage PlayImage;
+	TacitImage PlayRevImage;
 	TacitImage PlayLoopImage;
 	TacitImage PlayOnceImage;
 	TacitImage ContentViewImage;
@@ -719,6 +721,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	if (CurrImage)
 	{
+		CurrImage->UpdatePlaying(float(dt));
+
 		iw = float(CurrImage->GetWidth());
 		ih = float(CurrImage->GetHeight());
 		float picAspect = iw/ih;
@@ -1981,7 +1985,9 @@ int main(int argc, char** argv)
 	TexView::InfoOverlayImage		.Load(dataDir + "InfoOverlay.png");
 	TexView::TileImage				.Load(dataDir + "Tile.png");
 	TexView::StopImage				.Load(dataDir + "Stop.png");
+	TexView::StopRevImage			.Load(dataDir + "Stop.png");
 	TexView::PlayImage				.Load(dataDir + "Play.png");
+	TexView::PlayRevImage			.Load(dataDir + "PlayRev.png");
 	TexView::PlayLoopImage			.Load(dataDir + "PlayLoop.png");
 	TexView::PlayOnceImage			.Load(dataDir + "PlayOnce.png");
 	TexView::ContentViewImage		.Load(dataDir + "ContentView.png");

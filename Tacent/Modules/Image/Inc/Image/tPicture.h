@@ -184,6 +184,7 @@ public:
 	tString Filename;
 	tPixelFormat SrcPixelFormat = tPixelFormat::Invalid;
 	uint TextureID = 0;
+	float Duration = 1.0f/30.0f;
 
 private:
 	static int GetCxFormat(tSystem::tFileType);

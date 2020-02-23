@@ -38,6 +38,16 @@ public:
 	// only use tPicture to do the loading. For example, we might include dds load params here.
 	void ResetLoadParams();
 	tImage::tPicture::LoadParams LoadParams;
+
+	void Play();
+	void Stop();
+	void UpdatePlaying(float dt);
+	bool PartDurationOverrideEnabled = false;
+	float PartDurationOverride = 1.0f/30.0f;
+	float PartCurrCountdown = 0.0f;
+	bool PartPlaying = false;
+	bool PartPlayRev = false;
+	bool PartPlayLooping = true;
 	int PartNum = 0;
 
 	bool Load(const tString& filename);
@@ -76,13 +86,7 @@ public:
 	// Some images can store multiple complete images inside a single file (multiple parts).
 	// The primary one is the first one.
 	tImage::tPicture* GetPrimaryPic() const																				{ return Pictures.First(); }
-	tImage::tPicture* GetCurrentPic() const
-	{
-		tImage::tPicture* pic = Pictures.First();
-		for (int i = 0; i < PartNum; i++)
-			pic = pic ? pic->Next() : nullptr;
-		return pic;
-	}
+	tImage::tPicture* GetCurrentPic() const																				{ tImage::tPicture* pic = Pictures.First(); for (int i = 0; i < PartNum; i++) pic = pic ? pic->Next() : nullptr; return pic; }
 
 	bool IsAltMipmapsPictureAvail() const																				{ return DDSTexture2D.IsValid() && AltPicture.IsValid(); }
 	bool IsAltCubemapPictureAvail() const																				{ return DDSCubemap.IsValid() && AltPicture.IsValid(); }

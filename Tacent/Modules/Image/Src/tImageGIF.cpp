@@ -65,6 +65,7 @@ void tImageGIF::FrameCallback(struct GIF_WHDR* whdr)
 	tImageGIF::Frame* frame = new tImageGIF::Frame();
 	Frames.Append(frame);
 	frame->Pixels = new tPixel[numPixels];
+	frame->Duration = float(whdr->time) / 100.0f;
 
 	// We store rows starting from the bottom (lower left is 0,0).
 	for (int row = Height-1; row >= 0; row--)

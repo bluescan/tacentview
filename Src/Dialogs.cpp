@@ -318,7 +318,8 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 		}
 	}
 
-	if (CurrImage->GetNumParts() > 1)
+	int numParts = CurrImage->GetNumParts();
+	if (numParts > 1)
 	{
 		if (fileTypeSectionDisplayed)
 			ImGui::Separator();
@@ -327,14 +328,65 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 		ImGui::Indent();
 		ImGui::PushItemWidth(110);
 
-		if (ImGui::InputInt("Part", &CurrImage->PartNum))
+		int oneBasedPartNum = CurrImage->PartNum + 1;
+		if (ImGui::InputInt("Part", &oneBasedPartNum))
 		{
+			CurrImage->PartNum = oneBasedPartNum - 1;
 			tMath::tiClamp(CurrImage->PartNum, 0, CurrImage->GetNumParts()-1);
-			CurrImage->Bind();
 		}
 		ImGui::SameLine(); ShowHelpMark("Which image in a multipart file to display.");
 		ImGui::PopItemWidth();
 		ImGui::Unindent();
+
+		ImGui::Separator();
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+
+		uint64 loopImageID = CurrImage->PartPlayLooping ? PlayOnceImage.Bind() : PlayLoopImage.Bind();
+		if (ImGui::ImageButton(ImTextureID(loopImageID), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2, ColourBG, ColourEnabledTint))
+			CurrImage->PartPlayLooping = !CurrImage->PartPlayLooping;
+		ImGui::SameLine();
+
+		if (ImGui::ImageButton(ImTextureID(SkipBeginImage.Bind()), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2, ColourBG, ColourEnabledTint))
+			CurrImage->PartNum = 0;
+		ImGui::SameLine();
+
+		if (ImGui::ImageButton(ImTextureID(PrevImage.Bind()), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2, ColourBG, ColourEnabledTint))
+			CurrImage->PartNum = tClampMin(CurrImage->PartNum-1, 0);
+		ImGui::SameLine();
+
+		bool playRevEnabled = !(CurrImage->PartPlaying && !CurrImage->PartPlayRev);
+		uint64 playRevImageID = !CurrImage->PartPlaying ? PlayRevImage.Bind() : StopRevImage.Bind();
+		if (ImGui::ImageButton
+		(
+			ImTextureID(playRevImageID), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2,
+			ColourBG, playRevEnabled ? ColourEnabledTint : ColourDisabledTint) && playRevEnabled
+		)
+		{
+			CurrImage->PartPlayRev = true;
+			CurrImage->PartPlaying = !CurrImage->PartPlaying;
+		}
+		ImGui::SameLine();
+
+		bool playFwdEnabled = !(CurrImage->PartPlaying && CurrImage->PartPlayRev);
+		uint64 playImageID = !CurrImage->PartPlaying ? PlayImage.Bind() : StopImage.Bind();
+		if (ImGui::ImageButton
+		(
+			ImTextureID(playImageID), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2,
+			ColourBG, playFwdEnabled ? ColourEnabledTint : ColourDisabledTint) && playFwdEnabled
+		)
+		{
+			CurrImage->PartPlayRev = false;
+			CurrImage->PartPlaying = !CurrImage->PartPlaying;
+		}
+		ImGui::SameLine();
+
+		if (ImGui::ImageButton(ImTextureID(NextImage.Bind()), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2, ColourBG, ColourEnabledTint))
+			CurrImage->PartNum = tClampMax(CurrImage->PartNum+1, numParts-1);
+		ImGui::SameLine();
+
+		if (ImGui::ImageButton(ImTextureID(SkipEndImage.Bind()), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2, ColourBG, ColourEnabledTint))
+			CurrImage->PartNum = numParts-1;
+		ImGui::SameLine();
 	}
 
 	ImGui::End();

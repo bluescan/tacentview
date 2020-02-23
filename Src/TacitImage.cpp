@@ -62,6 +62,18 @@ TacitImage::TacitImage(const tString& filename) :
 }
 
 
+TacitImage::~TacitImage()
+{
+	// If we're being destroyed before the thumbnail thread is done, we have to wait because that thread
+	// accesses the thumbnail picture of this object... so 'this' must be valid.
+	if (ThumbnailThread.joinable())
+		ThumbnailThread.join();
+
+	// Free GPU image mem and texture IDs.
+	Unload();
+}
+
+
 void TacitImage::ResetLoadParams()
 {
 	LoadParams = tImage::tPicture::LoadParams();
@@ -128,6 +140,7 @@ bool TacitImage::Load()
 				tImageGIF::Frame* frame = gif.StealFrame(0);
 				tPicture* picture = new tPicture();
 				picture->Set(gif.GetWidth(), gif.GetHeight(), frame->Pixels, false);
+				picture->Duration = frame->Duration;
 				delete frame;
 				Pictures.Append(picture);
 			}
@@ -847,13 +860,62 @@ void TacitImage::UnrequestThumbnail()
 }
 
 
-TacitImage::~TacitImage()
+void TacitImage::Play()
 {
-	// If we're being destroyed before the thumbnail thread is done, we have to wait because that thread
-	// accesses the thumbnail picture of this object... so 'this' must be valid.
-	if (ThumbnailThread.joinable())
-		ThumbnailThread.join();
+	PartCurrCountdown = PartDurationOverrideEnabled ? PartDurationOverride : GetCurrentPic()->Duration;
+	PartPlaying = true;
+}
 
-	// Free GPU image mem and texture IDs.
-	Unload();
+
+void TacitImage::Stop()
+{
+	PartPlaying = false;
+}
+
+
+void TacitImage::UpdatePlaying(float dt)
+{
+	if (!PartPlaying)
+		return;
+
+	int numParts = GetNumParts();
+	if (numParts <= 1)
+		return;
+
+	PartCurrCountdown -= dt;
+	if (PartCurrCountdown <= 0.0f)
+	{
+		if (!PartPlayRev)
+		{
+			PartNum++;
+			if (PartNum >= numParts)
+			{
+				if (PartPlayLooping)
+					PartNum = 0;
+				else
+				{
+					PartNum = numParts-1;
+					PartPlaying = false;
+				}
+			}
+		}
+		else
+		{
+			PartNum--;
+			if (PartNum <= 0)
+			{
+				if (PartPlayLooping)
+					PartNum = numParts-1;
+				else
+				{
+					PartNum = 0;
+					PartPlaying = false;
+				}
+			}
+		}
+		if (PartDurationOverrideEnabled)
+			PartCurrCountdown = PartDurationOverride;
+		else
+			PartCurrCountdown = GetCurrentPic()->Duration;
+	}
 }

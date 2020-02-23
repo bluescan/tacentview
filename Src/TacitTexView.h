@@ -36,6 +36,16 @@ namespace TexView
 	extern tColouri PixelColour;
 	extern TacitImage DefaultThumbnailImage;
 	extern TacitImage UpFolderImage;
+	extern TacitImage PlayImage;
+	extern TacitImage PlayRevImage;
+	extern TacitImage StopImage;
+	extern TacitImage StopRevImage;
+	extern TacitImage PlayLoopImage;
+	extern TacitImage PlayOnceImage;
+	extern TacitImage PrevImage;
+	extern TacitImage NextImage;
+	extern TacitImage SkipBeginImage;
+	extern TacitImage SkipEndImage;
 	extern bool CropMode;
 	extern bool DeleteAllCacheFilesOnExit;
 
