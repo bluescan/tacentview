@@ -73,6 +73,7 @@ namespace TexView
 	TacitImage CubemapImage;
 	TacitImage RefreshImage;
 	TacitImage RecycleImage;
+	TacitImage PropEditImage;
 	TacitImage InfoOverlayImage;
 	TacitImage TileImage;
 	TacitImage StopImage;
@@ -1143,18 +1144,12 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				CurrImage->Bind();
 			}
 
-			if (ImGui::MenuItem("Crop", "/", false, CurrImage))
-			{
-				CropMode = !CropMode;
-			}
+			ImGui::MenuItem("Crop...", "/", &CropMode);
 
 			ImGui::Separator();
 
-			if (ImGui::MenuItem("Preferences...", "P"))
-				PrefsWindow = !PrefsWindow;
-
-			if (ImGui::MenuItem("Property Editor...", "E"))
-				PropEditorWindow = !PropEditorWindow;
+			ImGui::MenuItem("Property Editor...", "E", &PropEditorWindow);
+			ImGui::MenuItem("Preferences...", "P", &PrefsWindow);
 
 			ImGui::PopStyleVar();
 			ImGui::EndMenu();
@@ -1175,35 +1170,35 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::BeginMenu("View"))
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
-			ImGui::MenuItem("Nav Bar", "N", &Config.ShowNavBar, true);
-			ImGui::MenuItem("Image Details", "I", &Config.ShowImageDetails, true);
-			ImGui::MenuItem("Content View", "V", &Config.ContentViewShow, true);
+			ImGui::MenuItem("Nav Bar", "N", &Config.ShowNavBar);
+			ImGui::MenuItem("Image Details", "I", &Config.ShowImageDetails);
+			ImGui::MenuItem("Content View", "V", &Config.ContentViewShow);
 
 			ImGui::Separator();
 
 			bool userMode = CurrZoomMode == ZoomMode::User;
-			if (ImGui::MenuItem("Zoom User", "", &userMode, true))
+			if (ImGui::MenuItem("Zoom User", "", &userMode))
 			{
 				ResetPan();
 				CurrZoomMode = ZoomMode::User;
 			}
 
 			bool fitMode = CurrZoomMode == ZoomMode::Fit;
-			if (ImGui::MenuItem("Zoom Fit", "F", &fitMode, true))
+			if (ImGui::MenuItem("Zoom Fit", "F", &fitMode))
 			{
 				ResetPan();
 				CurrZoomMode = ZoomMode::Fit;
 			}
 
 			bool downscale = CurrZoomMode == ZoomMode::Downscale;
-			if (ImGui::MenuItem("Zoom Downscale", "D", &downscale, true))
+			if (ImGui::MenuItem("Zoom Downscale", "D", &downscale))
 			{
 				ResetPan();
 				CurrZoomMode = ZoomMode::Downscale;
 			}
 
 			bool oneToOne = CurrZoomMode == ZoomMode::OneToOne;
-			if (ImGui::MenuItem("Zoom 1:1", "Z", &oneToOne, true))
+			if (ImGui::MenuItem("Zoom 1:1", "Z", &oneToOne))
 			{
 				ZoomPercent = 100.0f;
 				ResetPan();
@@ -1234,8 +1229,8 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::BeginMenu("Help"))
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
-			ImGui::MenuItem("Cheat Sheet", "F1", &ShowCheatSheet, true);
-			ImGui::MenuItem("About", "", &ShowAbout, true);
+			ImGui::MenuItem("Cheat Sheet", "F1", &ShowCheatSheet);
+			ImGui::MenuItem("About", "", &ShowAbout);
 			ImGui::PopStyleVar();
 			ImGui::EndMenu();
 		}
@@ -1254,10 +1249,9 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			ColourCopyAs();
 
 		bool transAvail = CurrImage ? !CurrImage->IsAltPictureEnabled() : false;
-
-		if
+		if (ImGui::ImageButton
 		(
-			ImGui::ImageButton(ImTextureID(FlipVImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
+			ImTextureID(FlipVImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2, ColourBG,
 			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 		)
 		{
@@ -1267,9 +1261,9 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 		ShowToolTip("Flip Vertically");
 
-		if
+		if (ImGui::ImageButton
 		(
-			ImGui::ImageButton(ImTextureID(FlipHImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
+			ImTextureID(FlipHImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2, ColourBG,
 			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 		)
 		{
@@ -1279,9 +1273,9 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 		ShowToolTip("Flip Horizontally");
 
-		if
+		if (ImGui::ImageButton
 		(
-			ImGui::ImageButton(ImTextureID(RotateACWImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
+			ImTextureID(RotateACWImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2, ColourBG,
 			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 		)
 		{
@@ -1291,9 +1285,9 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 		ShowToolTip("Rotate 90 Anticlockwise");
 
-		if
+		if (ImGui::ImageButton
 		(
-			ImGui::ImageButton(ImTextureID(RotateCWImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, ColourBG,
+			ImTextureID(RotateCWImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2, ColourBG,
 			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 		)
 		{
@@ -1304,27 +1298,19 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		ShowToolTip("Rotate 90 Clockwise");
 
 		bool cropAvail = CurrImage && transAvail && !Config.Tile;
-		if
+		if (ImGui::ImageButton
 		(
-			ImGui::ImageButton(ImTextureID(CropImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
-			CropMode ? ColourPressedBG : ColourBG,
-			cropAvail ? ColourEnabledTint : ColourDisabledTint) && cropAvail
-		)
-		{
-			CropMode = !CropMode;
-		}
+			ImTextureID(CropImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
+			CropMode ? ColourPressedBG : ColourBG, cropAvail ? ColourEnabledTint : ColourDisabledTint) && cropAvail
+		)	CropMode = !CropMode;
 		ShowToolTip("Crop");
 
 		bool altMipmapsPicAvail = CurrImage ? CurrImage->IsAltMipmapsPictureAvail() && !CropMode : false;
 		bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
-		if
+		if (ImGui::ImageButton
 		(
-			ImGui::ImageButton
-			(
-				ImTextureID(MipmapsImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
-				altMipmapsPicEnabl ? ColourPressedBG : ColourBG,
-				altMipmapsPicAvail ? ColourEnabledTint : ColourDisabledTint
-			) && altMipmapsPicAvail
+			ImTextureID(MipmapsImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
+			altMipmapsPicEnabl ? ColourPressedBG : ColourBG, altMipmapsPicAvail ? ColourEnabledTint : ColourDisabledTint) && altMipmapsPicAvail
 		)
 		{
 			CurrImage->EnableAltPicture(!altMipmapsPicEnabl);
@@ -1334,14 +1320,10 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		bool altCubemapPicAvail = CurrImage ? CurrImage->IsAltCubemapPictureAvail() && !CropMode : false;
 		bool altCubemapPicEnabl = altCubemapPicAvail && CurrImage->IsAltPictureEnabled();
-		if
+		if (ImGui::ImageButton
 		(
-			ImGui::ImageButton
-			(
-				ImTextureID(CubemapImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
-				altCubemapPicEnabl ? ColourPressedBG : ColourBG,
-				altCubemapPicAvail ? ColourEnabledTint : ColourDisabledTint
-			) && altCubemapPicAvail
+			ImTextureID(CubemapImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
+			altCubemapPicEnabl ? ColourPressedBG : ColourBG, altCubemapPicAvail ? ColourEnabledTint : ColourDisabledTint) && altCubemapPicAvail
 		)
 		{
 			CurrImage->EnableAltPicture(!altCubemapPicEnabl);
@@ -1350,14 +1332,10 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		ShowToolTip("Display Cubemap\nDDS files may be cubemaps.");
 
 		bool tileAvail = CurrImage ? !CropMode : false;
-		if
+		if (ImGui::ImageButton
 		(
-			ImGui::ImageButton
-			(
-				ImTextureID(TileImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
-				Config.Tile ? ColourPressedBG : ColourBG,
-				tileAvail ? ColourEnabledTint : ColourDisabledTint
-			) && tileAvail
+			ImTextureID(TileImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
+			Config.Tile ? ColourPressedBG : ColourBG, tileAvail ? ColourEnabledTint : ColourDisabledTint) && tileAvail
 		)
 		{
 			Config.Tile = !Config.Tile;
@@ -1367,13 +1345,10 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		ShowToolTip("Show Images Tiled");
 
 		bool refreshAvail = CurrImage ? true : false;
-		if
+		if (ImGui::ImageButton
 		(
-			ImGui::ImageButton
-			(
-				ImTextureID(RefreshImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, tVector4(0.00f, 0.00f, 0.00f, 0.00f),
-				refreshAvail ? ColourEnabledTint : ColourDisabledTint
-			) && refreshAvail
+			ImTextureID(RefreshImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
+			ColourBG, refreshAvail ? ColourEnabledTint : ColourDisabledTint) && refreshAvail
 		)
 		{
 			CurrImage->Unbind();
@@ -1384,37 +1359,32 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		ShowToolTip("Refresh/Reload Current File");
 
 		bool recycleAvail = CurrImage ? true : false;
-		if
+		if (ImGui::ImageButton
 		(
-			ImGui::ImageButton
-			(
-				ImTextureID(RecycleImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2, tVector4(0.00f, 0.00f, 0.00f, 0.00f),
-				recycleAvail ? ColourEnabledTint : ColourDisabledTint
-			) && recycleAvail
-		)
-		{
-			Request_DeleteFileModal = true;
-		}
+			ImTextureID(RecycleImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
+			ColourBG, recycleAvail ? ColourEnabledTint : ColourDisabledTint) && recycleAvail
+		)	Request_DeleteFileModal = true;
 		ShowToolTip("Delete Current File");
 
-		if
+		if (ImGui::ImageButton
 		(
-			ImGui::ImageButton(ImTextureID(ContentViewImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
-			Config.ContentViewShow ? ColourPressedBG : ColourBG, tVector4(1.00f, 1.00f, 1.00f, 1.00f))
-		)
-		{
-			Config.ContentViewShow = !Config.ContentViewShow;
-		}
+			ImTextureID(ContentViewImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
+			Config.ContentViewShow ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	Config.ContentViewShow = !Config.ContentViewShow;
 		ShowToolTip("Content Thumbnail View");
 
-		if
+		if (ImGui::ImageButton
 		(
-			ImGui::ImageButton(ImTextureID(InfoOverlayImage.Bind()), tVector2(16,16), tVector2(0,1), tVector2(1,0), 2,
-			Config.ShowImageDetails ? ColourPressedBG : ColourBG, tVector4(1.00f, 1.00f, 1.00f, 1.00f))
-		)
-		{
-			Config.ShowImageDetails = !Config.ShowImageDetails;
-		}
+			ImTextureID(PropEditImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
+			PropEditorWindow ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	PropEditorWindow = !PropEditorWindow;
+		ShowToolTip("Image Property Editor");
+
+		if (ImGui::ImageButton
+		(
+			ImTextureID(InfoOverlayImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
+			Config.ShowImageDetails ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	Config.ShowImageDetails = !Config.ShowImageDetails;
 		ShowToolTip("Information Overlay");
 
 		ImGui::EndMainMenuBar();
@@ -2007,6 +1977,7 @@ int main(int argc, char** argv)
 	TexView::CubemapImage			.Load(dataDir + "Cubemap.png");
 	TexView::RefreshImage			.Load(dataDir + "Refresh.png");
 	TexView::RecycleImage			.Load(dataDir + "Recycle.png");
+	TexView::PropEditImage			.Load(dataDir + "PropEdit.png");
 	TexView::InfoOverlayImage		.Load(dataDir + "InfoOverlay.png");
 	TexView::TileImage				.Load(dataDir + "Tile.png");
 	TexView::StopImage				.Load(dataDir + "Stop.png");
