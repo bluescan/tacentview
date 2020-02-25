@@ -69,6 +69,14 @@ TacitImage::~TacitImage()
 	if (ThumbnailThread.joinable())
 		ThumbnailThread.join();
 
+	// It is important that the thread count decrements if necessary since TacitImages can be deleted
+	// when changing folders. The threads need to be available to do more work in a new folder.
+	if (ThumbnailRequested && ThumbnailThreadRunning)
+	{
+		ThumbnailNumThreadsRunning--;
+		tiClampMin(ThumbnailNumThreadsRunning, 0);
+	}
+
 	// Free GPU image mem and texture IDs.
 	Unload();
 }
