@@ -1271,7 +1271,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		//
 		tColourf floatCol(PixelColour);
 		tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 40.0f);			
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6.0f);			
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
 		if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, tVector2(20,20)))
 			ImGui::OpenPopup("CopyColourAs");
