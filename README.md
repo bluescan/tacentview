@@ -48,12 +48,12 @@ High Definition Image loading is supported for exr and hdr files. For hdr files 
 ![HDR Loading](https://raw.githubusercontent.com/bluescan/tacit-texview/master/Screenshots/Screenshot_HDR.png)
 
 
-EXR support also uses reference code from OpenEXR and should be able to load most exr files, including multi-part files. There is more control for exr parameters including the ability to de-fog. The screenshot below (courtesy OpenEXR and under their licence) shows similar successive exposure adjustments.
+EXR support also uses reference code from OpenEXR and should be able to load most exr files, including multi-part files. There is more control for exr parameters including the ability to de-fog. The screenshot below ('desk' image courtesy OpenEXR and under their licence) shows similar successive exposure adjustments.
 
 ![EXR Loading](https://raw.githubusercontent.com/bluescan/tacit-texview/master/Screenshots/Screenshot_EXR.png)
 
 
-Some formats store multiple images inside a single file. A dds for example may be a cubemap with 6 sides or a BC compressed image with mipmaps. The property-editor window allows you to display which image/part you see. The screenshot below shows the options and play controls for a multi-part animated gif (CC0 courtesy [Jason Hise](https://blog.wikimedia.org/2016/09/22/math-gifs/).
+Some formats store multiple images inside a single file. A dds for example may be a cubemap with 6 sides or a BC compressed image with mipmaps. The property-editor window allows you to display which image/part you see. The hypercube below (courtesy [Jason Hise](https://blog.wikimedia.org/2016/09/22/math-gifs/) under CC0) shows the options and play controls for a multi-part animated gif.
 
 ![AnimGif](https://raw.githubusercontent.com/bluescan/tacit-texview/master/Screenshots/Screenshot_Anim.png)
 
