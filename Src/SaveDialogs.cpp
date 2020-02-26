@@ -96,24 +96,36 @@ void TexView::DoSaveAsModalDialog(bool justOpened)
 		dstW = picture->GetWidth();
 		dstH = picture->GetHeight();
 	}
-	ImGui::InputInt("Width", &dstW); ImGui::SameLine();
-	ShowHelpMark("Final output width in pixels.\nIf dimensions match current no scaling.");
 
-	ImGui::InputInt("Final Height", &dstH); ImGui::SameLine();
-	ShowHelpMark("Final output height in pixels.\nIf dimensions match current no scaling.");
+	float aspect = float(srcW) / float(srcH);
+	static bool lockAspect = true;
 
-	if (ImGui::Button("Prev Pow2"))
+	ImGui::PushItemWidth(100);
+	if (ImGui::InputInt("Width", &dstW) && lockAspect)
+		dstH = int( float(dstW) / aspect );
+	ImGui::PopItemWidth();
+	ImGui::SameLine(); if (ImGui::Button("Pow2 W-"))
+		{ dstW = tMath::tNextLowerPower2(srcW); if (lockAspect) dstH = int( float(dstW) / aspect ); }
+	ImGui::SameLine(); if (ImGui::Button("Pow2 W+"))
+		{ dstW = tMath::tNextHigherPower2(srcW); if (lockAspect) dstH = int( float(dstW) / aspect ); }
+	ImGui::SameLine(); ShowHelpMark("Final output width in pixels.\nIf dimensions match current no scaling.");
+
+	if (ImGui::Checkbox("Lock Aspect", &lockAspect) && lockAspect)
 	{
-		dstW = tMath::tNextLowerPower2(srcW);
-		dstH = tMath::tNextLowerPower2(srcH);
+		dstW = srcW;
+		dstH = srcH;
 	}
-	ImGui::SameLine();
-	if (ImGui::Button("Next Pow2"))
-	{
-		dstW = tMath::tNextHigherPower2(srcW);
-		dstH = tMath::tNextHigherPower2(srcH);
-	}
-	ImGui::SameLine();
+
+	ImGui::PushItemWidth(100);
+	if (ImGui::InputInt("Height", &dstH) && lockAspect)
+		dstW = int( float(dstH) * aspect );
+	ImGui::PopItemWidth();
+	ImGui::SameLine(); if (ImGui::Button("Pow2 H-"))
+		{ dstH = tMath::tNextLowerPower2(srcH); if (lockAspect) dstW = int( float(dstH) * aspect ); }
+	ImGui::SameLine(); if (ImGui::Button("Pow2 H+"))
+		{ dstH = tMath::tNextHigherPower2(srcH); if (lockAspect) dstW = int( float(dstH) * aspect ); }
+	ImGui::SameLine(); ShowHelpMark("Final output height in pixels.\nIf dimensions match current no scaling.");
+
 	if (ImGui::Button("Reset"))
 	{
 		dstW = srcW;
