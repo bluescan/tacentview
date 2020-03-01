@@ -17,6 +17,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL definitions.
 #include <Math/tHash.h>
+#include <Math/tFundamentals.h>
 #include <Image/tTexture.h>
 #include <Image/tImageGIF.h>
 #include <System/tFile.h>
@@ -29,6 +30,7 @@ using namespace tStd;
 using namespace tSystem;
 using namespace tImage;
 using namespace tMath;
+using namespace TexView;
 int TacitImage::ThumbnailNumThreadsRunning = 0;
 tString TacitImage::ThumbCacheDir;
 namespace TexView { extern Settings Config; }
@@ -78,7 +80,7 @@ TacitImage::~TacitImage()
 	}
 
 	// Free GPU image mem and texture IDs.
-	Unload();
+	Unload(true);
 }
 
 
@@ -109,7 +111,7 @@ bool TacitImage::Load(const tString& filename)
 
 bool TacitImage::Load()
 {
-	if (IsLoaded())
+	if (IsLoaded() && !Dirty)
 	{
 		LoadedTime = tSystem::tGetTime();
 		return true;
@@ -208,7 +210,8 @@ bool TacitImage::Load()
 	else if (DDSTexture2D.IsValid() && (DDSTexture2D.GetNumMipmaps() > 1))
 		CreateAltPictureFromDDS_2DMipmaps();
 
-	return success;
+	ClearDirty();
+	return true;
 }
 
 
@@ -300,10 +303,14 @@ void TacitImage::CreateAltPictureFromDDS_Cubemap()
 }
 
 
-bool TacitImage::Unload()
+bool TacitImage::Unload(bool force)
 {
 	if (!IsLoaded())
 		return true;
+
+	// Not allowed to unload if dirty (modified).
+	if (Dirty && !force)
+		return false;
 
 	Unbind();
 	DDSTexture2D.Clear();
@@ -398,6 +405,8 @@ void TacitImage::Rotate90(bool antiClockWise)
 {
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->Rotate90(antiClockWise);
+
+	Dirty = true;
 }
 
 
@@ -405,6 +414,8 @@ void TacitImage::Flip(bool horizontal)
 {
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->Flip(horizontal);
+
+	Dirty = true;
 }
 
 
@@ -412,6 +423,8 @@ void TacitImage::Crop(int newWidth, int newHeight, int originX, int originY)
 {
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->Crop(newWidth, newHeight, originX, originY);
+
+	Dirty = true;
 }
 
 
@@ -714,6 +727,19 @@ uint64 TacitImage::BindThumbnail()
 
 	// We only ever access ThumbnailPicture once the worker thread is completed,
 	// If the worker thread failed, ThumbnailPicture will be invalid and we return 0.
+	if (ThumbnailInvalidateRequested)
+	{
+		ThumbnailRequested = false;
+		ThumbnailInvalidateRequested = false;
+		ThumbnailPicture.Clear();
+		if (TexIDThumbnail != 0)
+		{
+			glDeleteTextures(1, &TexIDThumbnail);
+			TexIDThumbnail = 0;
+		}
+		return 0;
+	}
+
 	if (ThumbnailPicture.IsValid())
 	{
 		if (TexIDThumbnail != 0)
@@ -865,6 +891,15 @@ void TacitImage::UnrequestThumbnail()
 {
 	if (ThumbnailRequested && !ThumbnailThreadRunning && !ThumbnailPicture.IsValid())
 		ThumbnailRequested = false;
+}
+
+
+void TacitImage::RequestInvalidateThumbnail()
+{
+	if (!ThumbnailRequested)
+		return;
+
+	ThumbnailInvalidateRequested = true;
 }
 
 

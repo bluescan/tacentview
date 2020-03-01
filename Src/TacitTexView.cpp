@@ -137,7 +137,7 @@ namespace TexView
 	const tVector4 ColourPressedBG				= tVector4(0.26f, 0.59f, 0.98f, 1.00f);
 	const tVector4 ColourClear					= tVector4(0.10f, 0.10f, 0.12f, 1.00f);
 
-	const float ZoomMin							= 20.0f;
+	const float ZoomMin							= 10.0f;
 	const float ZoomMax							= 2500.0f;
 	uint64 FrameNumber							= 0;
 
@@ -175,7 +175,7 @@ namespace TexView
 	bool OnSkipEnd();
 	void ResetPan(bool resetX = true, bool resetY = true);
 	void ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan);
-	tString FindImageFiles(tList<tStringItem>& foundFiles);					// Returns the image folder.
+	tString FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles);					// Returns the image folder.
 	tuint256 ComputeImagesHash(const tList<tStringItem>& files);
 	int RemoveOldCacheFiles(const tString& cacheDir);						// Returns num removed.
 
@@ -224,7 +224,7 @@ void TexView::DrawNavBar(float x, float y, float w, float h)
 }
 
 
-tString TexView::FindImageFiles(tList<tStringItem>& foundFiles)
+tString TexView::FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles)
 {
 	tString imagesDir = tSystem::tGetCurrentDir();
 	if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
@@ -281,7 +281,7 @@ void TexView::PopulateImages()
 	ImagesLoadTimeSorted.Clear();
 
 	tList<tStringItem> foundFiles;
-	ImagesDir = FindImageFiles(foundFiles);
+	ImagesDir = FindImageFilesInCurrentFolder(foundFiles);
 	PopulateImagesSubDirs();
 
 	// We sort here so ComputeImagesHash always returns consistent values.
@@ -324,6 +324,22 @@ void TexView::SortImages(Settings::SortKeyEnum key, bool ascending)
 	}
 
 	Images.Sort(sortFn);
+}
+
+
+TacitImage* TexView::FindImage(const tString& filename)
+{
+	TacitImage* tacitImage = nullptr;
+	for (TacitImage* si = Images.First(); si; si = si->Next())
+	{
+		if (si->Filename.IsEqualCI(filename))
+		{
+			tacitImage = si;
+			break;
+		}
+	}
+
+	return tacitImage;
 }
 
 
@@ -511,7 +527,11 @@ void TexView::SetWindowTitle()
 
 	tString title = "Tacit Viewer";
 	if (CurrImage && !CurrImage->Filename.IsEmpty())
+	{
 		title = title + " - " + tGetFileName(CurrImage->Filename);
+		if (CurrImage->IsDirty())
+			title += "*";
+	}
 
 	glfwSetWindowTitle(Window, title.Chars());
 }
@@ -1152,6 +1172,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				CurrImage->Unbind();
 				CurrImage->Flip(false);
 				CurrImage->Bind();
+				SetWindowTitle();
 			}
 
 			if (ImGui::MenuItem("Flip Horizontally", "Ctrl >", false, CurrImage && !CurrImage->IsAltPictureEnabled()))
@@ -1159,6 +1180,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				CurrImage->Unbind();
 				CurrImage->Flip(true);
 				CurrImage->Bind();
+				SetWindowTitle();
 			}
 
 			if (ImGui::MenuItem("Rotate Anti-Clockwise", "<", false, CurrImage && !CurrImage->IsAltPictureEnabled()))
@@ -1166,6 +1188,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				CurrImage->Unbind();
 				CurrImage->Rotate90(true);
 				CurrImage->Bind();
+				SetWindowTitle();
 			}
 
 			if (ImGui::MenuItem("Rotate Clockwise", ">", false, CurrImage && !CurrImage->IsAltPictureEnabled()))
@@ -1173,6 +1196,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 				CurrImage->Unbind();
 				CurrImage->Rotate90(false);
 				CurrImage->Bind();
+				SetWindowTitle();
 			}
 
 			ImGui::MenuItem("Crop...", "/", &CropMode);
@@ -1289,6 +1313,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			CurrImage->Unbind();
 			CurrImage->Flip(false);
 			CurrImage->Bind();
+			SetWindowTitle();
 		}
 		ShowToolTip("Flip Vertically");
 
@@ -1301,6 +1326,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			CurrImage->Unbind();
 			CurrImage->Flip(true);
 			CurrImage->Bind();
+			SetWindowTitle();
 		}
 		ShowToolTip("Flip Horizontally");
 
@@ -1313,6 +1339,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			CurrImage->Unbind();
 			CurrImage->Rotate90(true);
 			CurrImage->Bind();
+			SetWindowTitle();
 		}
 		ShowToolTip("Rotate 90 Anticlockwise");
 
@@ -1325,6 +1352,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 			CurrImage->Unbind();
 			CurrImage->Rotate90(false);
 			CurrImage->Bind();
+			SetWindowTitle();
 		}
 		ShowToolTip("Rotate 90 Clockwise");
 
@@ -1383,9 +1411,10 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 		)
 		{
 			CurrImage->Unbind();
-			CurrImage->Unload();
+			CurrImage->Unload(true);
 			CurrImage->Load();
 			CurrImage->Bind();
+			SetWindowTitle();
 		}
 		ShowToolTip("Refresh/Reload Current File");
 
@@ -1641,6 +1670,7 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 				else
 					CurrImage->Rotate90(true);
 				CurrImage->Bind();
+				SetWindowTitle();
 			}
 			break;
 
@@ -1653,6 +1683,7 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 				else
 					CurrImage->Rotate90(false);
 				CurrImage->Bind();
+				SetWindowTitle();
 			}
 			break;
 
@@ -1673,9 +1704,10 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 			if (CurrImage)
 			{
 				CurrImage->Unbind();
-				CurrImage->Unload();
+				CurrImage->Unload(true);
 				CurrImage->Load();
 				CurrImage->Bind();
+				SetWindowTitle();
 			}
 			break;
 
@@ -1840,7 +1872,7 @@ void TexView::FocusCallback(GLFWwindow* window, int gotFocus)
 
 	// If we got focus, rescan the current folder to see if the hash is different.
 	tList<tStringItem> files;
-	ImagesDir = FindImageFiles(files);
+	ImagesDir = FindImageFilesInCurrentFolder(files);
 	PopulateImagesSubDirs();
 
 	// We sort here so ComputeImagesHash always returns consistent values.

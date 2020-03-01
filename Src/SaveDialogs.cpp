@@ -24,9 +24,12 @@ using namespace tImage;
 
 namespace TexView
 {
-	void SaveImageTo(tPicture* picture, const tString& outFile, int finalWidth, int finalHeight);
 	void SaveAllImages(const tString& destDir, const tString& extension, float percent, int width, int height);
 	void GetFilesNeedingOverwrite(const tString& destDir, tListZ<tStringItem>& overwriteFiles, const tString& extension);
+	void AddSavedImageIfNecessary(const tString& savedFile);
+
+	// This function saves the picture to the filename specified.
+	bool SaveImageAs(TacitImage&, const tString& outFile, int width, int height, float scale = 1.0f, Settings::SizeMode = Settings::SizeMode::SetWidthAndHeight);
 }
 
 
@@ -35,7 +38,7 @@ tString TexView::DoSubFolder()
 	// Output sub-folder
 	char subFolder[256]; tMemset(subFolder, 0, 256);
 	tStrncpy(subFolder, Config.SaveSubFolder.Chars(), 255);
-	ImGui::InputText("Folder", subFolder, 256);
+	ImGui::InputText("SubFolder", subFolder, 256);
 	Config.SaveSubFolder.Set(subFolder);
 	tString destDir = ImagesDir;
 	if (!Config.SaveSubFolder.IsEmpty())
@@ -47,7 +50,7 @@ tString TexView::DoSubFolder()
 	if (ImGui::Button("Default"))
 		Config.SaveSubFolder.Set("Saved");
 	ImGui::SameLine();
-	if (ImGui::Button("This"))
+	if (ImGui::Button("Here"))
 		Config.SaveSubFolder.Clear();
 
 	return destDir;
@@ -77,6 +80,76 @@ tString TexView::DoSaveFiletype()
 		ImGui::SliderFloat("Quality", &Config.SaveFileJpgQuality, 0.0f, 100.0f, "%.1f");
 
 	return extension;
+}
+
+
+bool TexView::SaveImageAs(TacitImage& img, const tString& outFile, int width, int height, float scale, Settings::SizeMode sizeMode)
+{
+	// We make sure to maintain the loaded/unloaded state. This function may be called many times in succession
+	// so we don't want them all in memory at once by indiscriminantly loading them all.
+	bool imageLoaded = img.IsLoaded();
+	if (!imageLoaded)
+		img.Load();
+
+	tPicture* currPic = img.GetCurrentPic();
+	if (!currPic)
+		return false;
+
+	// Make a temp copy we can safely resize.
+	tImage::tPicture outPic;
+	outPic.Set(*currPic);
+
+	// Restore loadedness.
+	if (!imageLoaded)
+		img.Unload();
+
+	int outW = outPic.GetWidth();
+	int outH = outPic.GetHeight();
+	float aspect = float(outW) / float(outH);
+
+	switch (sizeMode)
+	{
+		case Settings::SizeMode::Percent:
+			if (tMath::tApproxEqual(scale, 1.0f, 0.01f))
+				break;
+			outW = int( tRound(float(outW)*scale) );
+			outH = int( tRound(float(outH)*scale) );
+			break;
+
+		case Settings::SizeMode::SetWidthAndHeight:
+			outW = width;
+			outH = height;
+			break;
+
+		case Settings::SizeMode::SetWidthRetainAspect:
+			outW = width;
+			outH = int( tRound(float(width) / aspect) );
+			break;
+
+		case Settings::SizeMode::SetHeightRetainAspect:
+			outH = height;
+			outW = int( tRound(float(height) * aspect) );
+			break;
+	};
+	tMath::tiClampMin(outW, 4);
+	tMath::tiClampMin(outH, 4);
+
+	if ((outPic.GetWidth() != outW) || (outPic.GetHeight() != outH))
+		outPic.Resample(outW, outH, tImage::tPicture::tFilter(Config.ResampleFilter));
+
+	bool success = false;
+	tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
+	if (Config.SaveFileType == 0)
+		success = outPic.SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
+	else
+		success = outPic.Save(outFile, colourFmt, Config.SaveFileJpgQuality);
+
+	if (success)
+		tPrintf("Saved image as %s\n", outFile.Chars());
+	else
+		tPrintf("Failed to save image %s\n", outFile.Chars());
+
+	return success;
 }
 
 
@@ -179,7 +252,24 @@ void TexView::DoSaveAsModalDialog(bool justOpened)
 			}
 			else
 			{
-				SaveImageTo(picture, outFile, dstW, dstH);
+				bool ok = SaveImageAs(*CurrImage, outFile, dstW, dstH);
+				if (ok)
+				{
+					// This gets a bit tricky. Image A may be saved as the same name as image B also in the list. We need to search for it.
+					// If it's not found, we need to add it to the list iff it was saved to the current folder.
+					TacitImage* foundImage = FindImage(outFile);
+					if (foundImage)
+					{
+						foundImage->Unload(true);
+						foundImage->ClearDirty();
+						foundImage->RequestInvalidateThumbnail();
+					}
+					else
+						AddSavedImageIfNecessary(outFile);
+
+					SortImages(Settings::SortKeyEnum(Config.SortKey), Config.SortAscending);
+					SetCurrentImage(outFile);
+				}
 				closeThisModal = true;
 			}
 		}
@@ -192,7 +282,24 @@ void TexView::DoSaveAsModalDialog(bool justOpened)
 		bool pressedOK = false, pressedCancel = false;
 		DoOverwriteFileModal(outFile, pressedOK, pressedCancel);
 		if (pressedOK)
- 			SaveImageTo(picture, outFile, dstW, dstH);
+		{
+			bool ok = SaveImageAs(*CurrImage, outFile, dstW, dstH);
+			if (ok)
+			{
+				TacitImage* foundImage = FindImage(outFile);
+				if (foundImage)
+				{
+					foundImage->Unload(true);
+					foundImage->ClearDirty();
+					foundImage->RequestInvalidateThumbnail();
+				}
+				else
+					AddSavedImageIfNecessary(outFile);
+
+				SortImages(Settings::SortKeyEnum(Config.SortKey), Config.SortAscending);
+				SetCurrentImage(outFile);
+			}
+		}
 		if (pressedOK || pressedCancel)
 			closeThisModal = true;
 	}
@@ -388,108 +495,45 @@ void TexView::SaveAllImages(const tString& destDir, const tString& extension, fl
 	float scale = percent/100.0f;
 	tString currFile = CurrImage ? CurrImage->Filename : tString();
 
+	bool anySaved = false;
 	for (TacitImage* image = Images.First(); image; image = image->Next())
 	{
 		tString baseName = tSystem::tGetFileBaseName(image->Filename);
 		tString outFile = destDir + tString(baseName) + extension;
 
-		// We make sure to maintain the loaded/unloaded state of all images. This function
-		// can process many files, so we don't want them all in memory at once by indiscriminantly
-		// loading them all.
-		bool imageLoaded = image->IsLoaded();
-		if (!imageLoaded)
-			image->Load();
-		tImage::tPicture outPic;
-		outPic.Set(*image->GetCurrentPic());
-		if (!imageLoaded)
-			image->Unload();
-
-		int outW = outPic.GetWidth();
-		int outH = outPic.GetHeight();
-		float aspect = float(outW) / float(outH);
-
-		switch (Settings::SizeMode(Config.SaveAllSizeMode))
+		bool ok = SaveImageAs(*image, outFile, width, height, scale, Settings::SizeMode(Config.SaveAllSizeMode));
+		if (ok)
 		{
-			case Settings::SizeMode::Percent:
-				if (tMath::tApproxEqual(scale, 1.0f, 0.01f))
-					break;
-				outW = int( tRound(float(outW)*scale) );
-				outH = int( tRound(float(outH)*scale) );
-				break;
-
-			case Settings::SizeMode::SetWidthAndHeight:
-				outW = width;
-				outH = height;
-				break;
-
-			case Settings::SizeMode::SetWidthRetainAspect:
-				outW = width;
-				outH = int( tRound(float(width) / aspect) );
-				break;
-
-			case Settings::SizeMode::SetHeightRetainAspect:
-				outH = height;
-				outW = int( tRound(float(height) * aspect) );
-				break;
-		};
-		tMath::tiClampMin(outW, 4);
-		tMath::tiClampMin(outH, 4);
-
-		if ((outPic.GetWidth() != outW) || (outPic.GetHeight() != outH))
-			outPic.Resample(outW, outH, tImage::tPicture::tFilter(Config.ResampleFilter));
-
-		bool success = false;
-		tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-		if (Config.SaveFileType == 0)
-			success = outPic.SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
-		else
-			success = outPic.Save(outFile, colourFmt, Config.SaveFileJpgQuality);
-
-		if (success)
-			tPrintf("Saved image as %s\n", outFile.Chars());
-		else
-			tPrintf("Failed to save image %s\n", outFile.Chars());
+			TacitImage* foundImage = FindImage(outFile);
+			if (foundImage)
+			{
+				foundImage->Unload(true);
+				foundImage->ClearDirty();
+				foundImage->RequestInvalidateThumbnail();
+			}
+			else
+				AddSavedImageIfNecessary(outFile);
+			anySaved = true;
+		}
 	}
 
-	// If we saved to the same dir we are currently viewing we need to
-	// reload and set the current image again.
-	if (ImagesDir.IsEqualCI(destDir))
+	// If we saved to the same dir we are currently viewing we need to reload and set the current image again.
+	if (anySaved)
 	{
-		Images.Clear();
-		PopulateImages();
+		SortImages(Settings::SortKeyEnum(Config.SortKey), Config.SortAscending);
 		SetCurrentImage(currFile);
 	}
 }
 
 
-void TexView::SaveImageTo(tPicture* picture, const tString& outFile, int width, int height)
+void TexView::AddSavedImageIfNecessary(const tString& savedFile)
 {
-	tAssert(picture);
-
-	// We need to make a copy in case we need to resample.
-	tImage::tPicture outPic( *picture );
-
-	if ((outPic.GetWidth() != width) || (outPic.GetHeight() != height))
-		outPic.Resample(width, height, tImage::tPicture::tFilter(Config.ResampleFilter));
-
-	bool success = false;
-	tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-	if (Config.SaveFileType == 0)
-		success = outPic.SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
-	else
-		success = outPic.Save(outFile, colourFmt, Config.SaveFileJpgQuality);
-	if (success)
-		tPrintf("Saved image as : %s\n", outFile.Chars());
-	else
-		tPrintf("Failed to save image %s\n", outFile.Chars());
-
-	// If we saved to the same dir we are currently viewing, reload
-	// and set the current image to the generated one.
-	if (ImagesDir.IsEqualCI( tGetDir(outFile) ))
+	if (ImagesDir.IsEqualCI(tGetDir(savedFile)))
 	{
-		Images.Clear();
-		PopulateImages();
-		SetCurrentImage(outFile);
+		// Add to list. It's still unloaded.
+		TacitImage* newImg = new TacitImage(savedFile);
+		Images.Append(newImg);
+		ImagesLoadTimeSorted.Append(newImg);
 	}
 }
 

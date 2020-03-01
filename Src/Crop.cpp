@@ -301,7 +301,6 @@ void TexView::ShowCropPopup(const tVector4& lrtb, const tVector2& uvmarg, const 
 		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoFocusOnAppearing	|
 		ImGuiWindowFlags_NoNav;
 
-
 	if (ImGui::Begin("Crop", &CropMode, flags))
 	{
 		tVector2 scrCropMin(CropGizmo.LineL.Get(), CropGizmo.LineB.Get());
@@ -350,6 +349,7 @@ void TexView::ShowCropPopup(const tVector4& lrtb, const tVector2& uvmarg, const 
 			CurrImage->Unbind();
 			CurrImage->Crop(newW, newH, minX, minY);
 			CurrImage->Bind();
+			TexView::SetWindowTitle();
 			CropMode = false;
 		}
 	}

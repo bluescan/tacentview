@@ -23,6 +23,7 @@
 #include <Image/tTexture.h>
 #include <Image/tCubemap.h>
 #include <Image/tImageHDR.h>
+#include "Settings.h"
 
 
 class TacitImage : public tLink<TacitImage>
@@ -56,7 +57,7 @@ public:
 	int GetNumParts() const																								{ return Pictures.Count(); }
 
 	bool IsOpaque() const;
-	bool Unload();
+	bool Unload(bool force = false);
 	float GetLoadedTime() const																							{ return LoadedTime; }
 
 	// Bind to a texture ID and load into VRAM. If already in VRAM, it makes the texture current. Since some ImGui
@@ -69,9 +70,19 @@ public:
 	int GetHeight() const;
 	tColouri GetPixel(int x, int y) const;
 
+	// Some images can store multiple complete images inside a single file (multiple parts).
+	// The primary one is the first one.
+	tImage::tPicture* GetPrimaryPic() const																				{ return Pictures.First(); }
+	tImage::tPicture* GetCurrentPic() const																				{ tImage::tPicture* pic = Pictures.First(); for (int i = 0; i < PartNum; i++) pic = pic ? pic->Next() : nullptr; return pic; }
+
+	// Functions that edit and cause dirty flag to be set.
 	void Rotate90(bool antiClockWise);
 	void Flip(bool horizontal);
 	void Crop(int newWidth, int newHeight, int originX, int originY);
+
+	// Since from outside this class you can save to any filename, we need the ability to clear the dirty flag.
+	void ClearDirty()																									{ Dirty = false; }
+	bool IsDirty() const																								{ return Dirty; }
 
 	struct ImgInfo
 	{
@@ -83,11 +94,6 @@ public:
 	};
 	void PrintInfo();
 
-	// Some images can store multiple complete images inside a single file (multiple parts).
-	// The primary one is the first one.
-	tImage::tPicture* GetPrimaryPic() const																				{ return Pictures.First(); }
-	tImage::tPicture* GetCurrentPic() const																				{ tImage::tPicture* pic = Pictures.First(); for (int i = 0; i < PartNum; i++) pic = pic ? pic->Next() : nullptr; return pic; }
-
 	bool IsAltMipmapsPictureAvail() const																				{ return DDSTexture2D.IsValid() && AltPicture.IsValid(); }
 	bool IsAltCubemapPictureAvail() const																				{ return DDSCubemap.IsValid() && AltPicture.IsValid(); }
 	void EnableAltPicture(bool enabled)																					{ AltPictureEnabled = enabled; }
@@ -98,6 +104,10 @@ public:
 	// working. BindThumbnail will at some point return a non-zero texture ID, but not necessarily right away. Just keep
 	// calling it. Unloaded images remain unloaded after thumbnail generation.
 	void RequestThumbnail();
+
+	// Call this if you need to invaidate the thumbnail. For example, if the file was saved/edited this should be called
+	// to force regeneration.
+	void RequestInvalidateThumbnail();
 
 	// You are allowed to unrequest. It will succeed if a worker was never assigned.
 	void UnrequestThumbnail();
@@ -134,6 +144,7 @@ private:
 	tImage::tPicture AltPicture;
 
 	bool ThumbnailRequested = false;			// True if ever requested.
+	bool ThumbnailInvalidateRequested = false;
 	bool ThumbnailThreadRunning = false;		// Only true while worker thread going.
 	static int ThumbnailNumThreadsRunning;		// How many worker threads active.
 	std::thread ThumbnailThread;
@@ -145,10 +156,6 @@ private:
 	void GenerateThumbnail();
 
 	// Zero is invalid and means texture has never been bound and loaded into VRAM.
-	//uint TexIDCurrent		= 0;
-	//int TexIDCurrentPartNum = 0;
-	//bool PictureListBound = false;
-
 	uint TexIDAlt			= 0;
 	uint TexIDThumbnail		= 0;
 
@@ -162,6 +169,7 @@ private:
 	void CreateAltPictureFromDDS_Cubemap();
 
 	float LoadedTime = -1.0f;
+	bool Dirty = false;
 };
 
 

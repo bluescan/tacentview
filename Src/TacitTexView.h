@@ -32,6 +32,7 @@ namespace TexView
 	extern tString ImagesDir;
 	extern tList<tStringItem> ImagesSubDirs;
 	extern tList<TacitImage> Images;
+	extern tItList<TacitImage> ImagesLoadTimeSorted;
 	extern tCommand::tParam ImageFileParam;
 	extern tColouri PixelColour;
 	extern TacitImage DefaultThumbnailImage;
@@ -64,6 +65,7 @@ namespace TexView
 	void ShowHelpMark(const char* desc);
 	void ShowToolTip(const char* desc);
 	void PopulateImages();
+	TacitImage* FindImage(const tString& filename);
 	void SetCurrentImage(const tString& currFilename = tString());
 	void LoadCurrImage();
 	bool ChangeScreenMode(bool fullscreeen, bool force = false);
