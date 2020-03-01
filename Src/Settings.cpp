@@ -44,7 +44,7 @@ void TexView::Settings::ResetBehaviourSettings()
 	ConfirmFileOverwrites		= true;
 	SlideshowLooping			= false;
 	SlidehowFrameDuration		= 1.0/30.0;
-	SaveSubFolder				.Set("Saved");
+	SaveSubFolder				.Clear();
 	SaveFileType				= 0;
 	SaveFileTargaRLE			= false;
 	SaveFileJpgQuality			= 90.0f;
