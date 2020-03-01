@@ -112,7 +112,9 @@ bool tSystem::tOpenSystemFileExplorer(const tString& dir, const tString& file)
 
 	if (tSystem::tFileExists(fullName))
 	{
-		tString options = "/n,\"" + dir + "\",/select,\"" + file +"\"";
+		fullName.Replace('/', '\\');
+		tString options;
+		tsPrintf(options, "/select,\"%s\"", fullName.Chars());
 		ShellExecute(hWnd, "open", "explorer", options.ConstText(), 0, SW_SHOWNORMAL);
 	}
 	else
