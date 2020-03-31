@@ -23,7 +23,9 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #include <Image/tTexture.h>
+#ifdef PLATFORM_WINDOWS
 #include <nvtt/nvtt.h>
+#endif
 namespace tImage
 {
 
@@ -152,7 +154,7 @@ bool tTexture::Set(tPicture& image, bool generateMipmaps, tPixelFormat pixelForm
 	int newHeight = forceHeight ? forceHeight : tMath::tClosestPower2(origHeight);
 	tMath::tiClamp(newHeight, tLayer::MinLayerDimension, tLayer::MaxLayerDimension);
 
-	if ((origWidth != newWidth) || (origHeight != origHeight))
+	if ((origWidth != newWidth) || (origHeight != newHeight))
 	{
 		// Might want to let user know that we're resampling here. This resize happens when the artist didn't submit
 		// proper power-of-2-sized images or if dimensions were forced.
@@ -307,6 +309,7 @@ void tTexture::ProcessImageTo_G3B5R5G3(tPicture& image, bool generateMipmaps, tQ
 }
 
 
+#ifdef PLATFORM_WINDOWS
 struct tOutputHandler : public nvtt::OutputHandler
 {
 	tOutputHandler()																					{ }
@@ -341,10 +344,14 @@ struct tErrorHandler : public nvtt::ErrorHandler
 		tPrintf("Error: '%s'\n", nvtt::errorString(e));
 	}
 };
+#endif
 
 
 void tTexture::ProcessImageTo_BCTC(tPicture& image, tPixelFormat pixelFormat, bool generateMipmaps, tQuality quality)
 {
+	#ifdef PLATFORM_LINUX
+	throw tError("BCTC texture compression not implemented for Linux.");
+	#else
 	int width = image.GetWidth();
 	int height = image.GetHeight();
 	tPicture::tFilter filter = DetermineFilter(quality);
@@ -440,6 +447,7 @@ void tTexture::ProcessImageTo_BCTC(tPicture& image, tPixelFormat pixelFormat, bo
 			image.Resize(newWidth, newHeight, filter);
 		}
 	}
+	#endif
 }
 
 
@@ -451,6 +459,9 @@ void tTexture::ProcessImageTo_BCTC(tPicture& image, tPixelFormat pixelFormat, bo
 
 void tTexture::ProcessImageTo_BCTC_Squish(tPicture& image, tPixelFormat pixelFormat, bool generateMipmaps, tQuality quality)
 {
+	#ifdef PLATFORM_LINUX
+	throw tError("BCTC texture compression not implemented for Linux.");
+	#else
 	int width = image.GetWidth();
 	int height = image.GetHeight();
 	tPicture::tFilter filter = DetermineFilter(quality);
@@ -537,6 +548,7 @@ void tTexture::ProcessImageTo_BCTC_Squish(tPicture& image, tPixelFormat pixelFor
 			image.Resize(newWidth, newHeight, filter);
 		}
 	}
+	#endif
 }
 #endif // TEXTURE_USE_SQUISH_LIB
 

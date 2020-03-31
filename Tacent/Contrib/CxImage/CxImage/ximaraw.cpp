@@ -200,7 +200,7 @@ bool CxImageRAW::Decode(CxFile *hFile)
 
 		uint32_t size = dcr.width * (dcr.colors*dcr.opt.output_bps/8);
 		RGBtoBGR(ppm,size);
-		memcpy(GetBits(dcr.height - 1 - row), ppm, min(size,GetEffWidth()));
+		memcpy(GetBits(dcr.height - 1 - row), ppm, cxmin(size,GetEffWidth()));
 	}
 	free (ppm);
 

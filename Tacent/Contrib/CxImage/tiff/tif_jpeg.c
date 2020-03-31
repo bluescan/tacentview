@@ -84,8 +84,13 @@ int TIFFFillTile(TIFF*, ttile_t);
 # define HAVE_BOOLEAN            /* prevent jmorecfg.h from redefining it */
 #endif
 
+#ifdef PLATFORM_LINUX // @tacent
+#include "../jpeg/jpeglib.h"
+#include "../jpeg/jerror.h"
+#else
 #include "..\jpeg\jpeglib.h"
 #include "..\jpeg\jerror.h"
+#endif
 
 /*
  * We are using width_in_blocks which is supposed to be private to

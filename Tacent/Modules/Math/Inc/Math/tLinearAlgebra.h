@@ -68,6 +68,9 @@ enum tComponent
 typedef uint32 tComponents;
 
 
+#pragma pack(push, 4)
+
+
 // Note that points are not implemented separately since in linear algebra "A vector is a point is a vector". At the
 // very least they have the same behaviour, even if they are conceptually different. All vectors are column vectors.
 struct tVec2
@@ -78,23 +81,19 @@ struct tVec2
 		struct { float u, v; };
 		struct { float a, b; };
 		float E[2];											// E for elements.
-		uint64 B;											// B for bits.
 	};
 };
 
 
 struct tVec3
 {
-#pragma pack(push, 4)
 	union
 	{
 		struct { float x, y, z; };
 		struct { float t, u, v; };
 		struct { float a, b, c; };
 		float E[3];
-		struct { uint64 B0; uint32 B1; };
 	};
-#pragma pack(pop)
 };
 
 
@@ -107,7 +106,6 @@ struct tVec4
 		struct { float a, b, c, d; };
 		struct { float L, R, T, B; };
 		float E[4];
-		struct { uint64 B0, B1; };
 	};
 };
 
@@ -119,7 +117,6 @@ struct tQuat
 		struct { float x, y, z, w; };						// W comes last unlike white-papers on quaternions.
 		struct { tVec3 v; float r; };
 		float E[4];
-		struct { uint64 B0, B1; };
 	};
 };
 
@@ -136,7 +133,6 @@ struct tMat2
 		struct { tVec2 C1, C2; };							// C for column.
 		float A[2][2];										// A for array.
 		float E[4];
-		struct { uint64 B0, B1; };
 	};
 };
 
@@ -166,39 +162,41 @@ struct tMat4
 		tVec4 C[4];
 		float A[4][4];
 		float E[16];
-		struct { uint64 B0, B1, B2, B3, B4, B5, B6, B7; };
 	};
 };
 
 
+#pragma pack(pop)
+
+
 // For the functions below we generally use d for destination and s for source. When a non-const v, m, or q is used, the
 // parameter is both input and output. s should be different to d for overloads that use them.
-inline void tSet(tVec2& d, const tVec2& s)																				{ d.B = s.B; }
+inline void tSet(tVec2& d, const tVec2& s)																				{ d.x = s.x; d.y = s.y; }
 inline void tSet(tVec2& d, const tVec3& s)																				{ d.x = s.x; d.y = s.y; }
 inline void tSet(tVec2& d, const tVec4& s)																				{ d.x = s.x; d.y = s.y; }
 inline void tSet(tVec2& d, float xy)																					{ d.x = xy; d.y = xy; }
 inline void tSet(tVec2& d, float x, float y)																			{ d.x = x; d.y = y; }
 inline void tSet(tVec2& d, const float* a)																				{ d.x = a[0]; d.y = a[1]; }
 inline void tSet(tVec3& d, const tVec2& s, float z = 0.0f)																{ d.x = s.x; d.y = s.y; d.z = z; }
-inline void tSet(tVec3& d, const tVec3& s)																				{ d.B0 = s.B0; d.B1 = s.B1; }
+inline void tSet(tVec3& d, const tVec3& s)																				{ d.x = s.x; d.y = s.y; d.z = s.z; }
 inline void tSet(tVec3& d, const tVec4& s)																				{ d.x = s.x; d.y = s.y; d.z = s.z; }
 inline void tSet(tVec3& d, float xyz)																					{ d.x = xyz; d.y = xyz; d.z = xyz; }
 inline void tSet(tVec3& d, float x, float y, float z)																	{ d.x = x; d.y = y; d.z = z; }
 inline void tSet(tVec3& d, const float* a)																				{ d.x = a[0]; d.y = a[1]; d.z = a[2]; }
-inline void tSet(tVec4& d, const tVec2& s, float z = 0.0f, float w = 0.0f)												{ d.B0 = s.B; d.z = z; d.w = w; }
-inline void tSet(tVec4& d, const tVec3& s, float w = 0.0f)																{ d.B0 = s.B0; d.z = s.z; d.w = w; }
-inline void tSet(tVec4& d, const tVec4& s)																				{ d.B0 = s.B0; d.B1 = s.B1; }
+inline void tSet(tVec4& d, const tVec2& s, float z = 0.0f, float w = 0.0f)												{ d.x = s.x; d.y = s.y; d.z = z; d.w = w; }
+inline void tSet(tVec4& d, const tVec3& s, float w = 0.0f)																{ d.x = s.x; d.y = s.y; d.z = s.z; d.w = w; }
+inline void tSet(tVec4& d, const tVec4& s)																				{ d.x = s.x; d.y = s.y; d.z = s.z; d.w = s.w; }
 inline void tSet(tVec4& d, float xyzw)																					{ d.x = xyzw; d.y = xyzw; d.z = xyzw; d.w = xyzw; }
 inline void tSet(tVec4& d, float x, float y, float z, float w)															{ d.x = x; d.y = y; d.z = z; d.w = w; }
 inline void tSet(tVec4& d, const float* a)																				{ d.x = a[0]; d.y = a[1]; d.z = a[2]; d.w = a[3]; }
-inline void tSet(tQuat& d, const tQuat& s)																				{ d.B0 = s.B0; d.B1 = s.B1; }
+inline void tSet(tQuat& d, const tQuat& s)																				{ d.v = s.v; d.r = s.r; }
 inline void tSet(tQuat& d, float x, float y, float z, float w)															{ d.x = x; d.y = y; d.z = z; d.w = w; }
 inline void tSet(tQuat& d, const float* a)																				{ d.x = a[0]; d.y = a[1]; d.z = a[2]; d.w = a[3]; }
        void tSet(tQuat& d, const tMat4&);							// Creates a unit quaternion from a rotation matrix.
 inline void tSet(tQuat& d, float r, const tVec3& v)			/* Not axis-angle. */										{ d.v = v; d.r = r; }
        void tSet(tQuat& d, const tVec3& axis, float angle);	// Assumes axis is normalized.
 inline void tSet(tQuat& d, const tVec3& v)																				{ d.v = v; d.r = 0.0f; }
-inline void tSet(tMat2& d, const tMat2& s)																				{ d.B0 = s.B0; d.B1 = s.B1; }
+inline void tSet(tMat2& d, const tMat2& s)																				{ d.C1 = s.C1; d.C2 = s.C2; }
 inline void tSet(tMat2& d, const tVec2& c1, const tVec2& c2)															{ d.C1 = c1; d.C2 = c2; }
 inline void tSet(tMat2& d, float a11, float a21, float a12, float a22)													{ d.a11 = a11; d.a21 = a21; d.a12 = a12; d.a22 = a22; }
 inline void tSet(tMat2& d, const float* a)																				{ d.a11 = a[0]; d.a21 = a[1]; d.a12 = a[2]; d.a22 = a[3]; }
@@ -238,30 +236,30 @@ inline void tGet
 );
 inline void tGet(float* a, const tMat4& m)																				{ for (int e = 0; e < 16; e++) a[e] = m.E[e]; }
 
-inline void tZero(tVec2& d)																								{ d.B = 0; }
+inline void tZero(tVec2& d)																								{ d.x = 0.0f; d.y = 0.0f; }
 inline void tZero(tVec2& d, tComponents c)																				{ if (c & tComponent_X) d.x = 0.0f; if (c & tComponent_Y) d.y = 0.0f; }
-inline void tZero(tVec3& d)																								{ d.B0 = 0; d.B1 = 0; }
+inline void tZero(tVec3& d)																								{ d.x = 0.0f; d.y = 0.0f; d.z = 0.0f; }
 inline void tZero(tVec3& d, tComponents c)																				{ if (c & tComponent_X) d.x = 0.0f; if (c & tComponent_Y) d.y = 0.0f; if (c & tComponent_Z) d.z = 0.0f; }
-inline void tZero(tVec4& d)																								{ d.B0 = 0; d.B1 = 0; }
+inline void tZero(tVec4& d)																								{ d.x = 0.0f; d.y = 0.0f; d.z = 0.0f; d.w = 0.0f; }
 inline void tZero(tVec4& d, tComponents c)																				{ if (c & tComponent_X) d.x = 0.0f; if (c & tComponent_Y) d.y = 0.0f; if (c & tComponent_Z) d.z = 0.0f; if (c & tComponent_W) d.w = 0.0f; }
-inline void tZero(tQuat& d)																								{ d.B0 = 0; d.B1 = 0; }
+inline void tZero(tQuat& d)																								{ d.x = 0.0f; d.y = 0.0f; d.z = 0.0f; d.w = 0.0f; }
 inline void tZero(tQuat& d, tComponents c)																				{ if (c & tComponent_X) d.x = 0.0f; if (c & tComponent_Y) d.y = 0.0f; if (c & tComponent_Z) d.z = 0.0f; if (c & tComponent_W) d.w = 0.0f; }
-inline void tZero(tMat2& d)																								{ d.B0 = 0; d.B1 = 0; }
+inline void tZero(tMat2& d)																								{ tZero(d.C1); tZero(d.C2); }
 inline void tZero(tMat2& d, tComponents c)																				{ if (c & tComponent_A11) d.a11 = 0.0f; if (c & tComponent_A21) d.a21 = 0.0f; if (c & tComponent_A12) d.a12 = 0.0f; if (c & tComponent_A22) d.a22 = 0.0f; }
 inline void tZero(tMat4& d)																								{ for (int e = 0; e < 16; e++) d.E[e] = 0.0f; }
 inline void tZero(tMat4& d, tComponents c);
 
-inline bool tIsZero(const tVec2& v)																						{ return v.B == 0; }
+inline bool tIsZero(const tVec2& v)																						{ return (v.x == 0.0f) && (v.y == 0.0f); }
 inline bool tIsZero(const tVec2& v, tComponents c)																		{ return (!(c & tComponent_X) || (v.x == 0.0f)) && (!(c & tComponent_Y) || (v.y == 0.0f)); }
-inline bool tIsZero(const tVec3& v)																						{ return (v.B0 == 0) && (v.B1 == 0); }
+inline bool tIsZero(const tVec3& v)																						{ return (v.x == 0.0f) && (v.y == 0.0f) && (v.z == 0.0f); }
 inline bool tIsZero(const tVec3& v, tComponents c)																		{ return (!(c & tComponent_X) || (v.x == 0.0f)) && (!(c & tComponent_Y) || (v.y == 0.0f)) && (!(c & tComponent_Z) || (v.z == 0.0f)); }
-inline bool tIsZero(const tVec4& v)																						{ return (v.B0 == 0) && (v.B1 == 0); }
+inline bool tIsZero(const tVec4& v)																						{ return (v.x == 0.0f) && (v.y == 0.0f) && (v.z == 0.0f) && (v.w == 0.0f); }
 inline bool tIsZero(const tVec4& v, tComponents c)																		{ return (!(c & tComponent_X) || (v.x == 0.0f)) && (!(c & tComponent_Y) || (v.y == 0.0f)) && (!(c & tComponent_Z) || (v.z == 0.0f)) && (!(c & tComponent_W) || (v.w == 0.0f)); }
-inline bool tIsZero(const tQuat& q)																						{ return (q.B0 == 0) && (q.B1 == 0); }
+inline bool tIsZero(const tQuat& q)																						{ return (q.x == 0.0f) && (q.y == 0.0f) && (q.z == 0.0f) && (q.w == 0.0f); }
 inline bool tIsZero(const tQuat& q, tComponents c)																		{ return (!(c & tComponent_X) || (q.x == 0.0f)) && (!(c & tComponent_Y) || (q.y == 0.0f)) && (!(c & tComponent_Z) || (q.z == 0.0f)) && (!(c & tComponent_W) || (q.w == 0.0f)); }
-inline bool tIsZero(const tMat2& m)																						{ return (m.B0 == 0) && (m.B1 == 0); }
+inline bool tIsZero(const tMat2& m)																						{ return tIsZero(m.C1) && tIsZero(m.C2); }
 inline bool tIsZero(const tMat2& m, tComponents c)																		{ return (!(c & tComponent_A11) || (m.a11 == 0.0f)) && (!(c & tComponent_A21) || (m.a21 == 0.0f)) && (!(c & tComponent_A12) || (m.a12 == 0.0f)) && (!(c & tComponent_A22) || (m.a22 == 0.0f)); }
-inline bool tIsZero(const tMat4& m)																						{ return (m.B0 == 0) && (m.B1 == 0) && (m.B2 == 0) && (m.B3 == 0) && (m.B4 == 0) && (m.B5 == 0) && (m.B6 == 0) && (m.B7 == 0); }
+inline bool tIsZero(const tMat4& m)																						{ return tIsZero(m.C1) && tIsZero(m.C2) && tIsZero(m.C3) && tIsZero(m.C4); }
 inline bool tIsZero(const tMat4& m, tComponents c);
 
 // Test for equality within epsilon. Each basis component is tested independently. A relative error metric would behave
@@ -279,30 +277,30 @@ inline bool tApproxEqual(const tMat2& a, const tMat2& b, tComponents c, float e 
 inline bool tApproxEqual(const tMat4& a, const tMat4& b, float e = Epsilon)												{ return tApproxEqual(a.C1, b.C1, e) && tApproxEqual(a.C2, b.C2, e) && tApproxEqual(a.C3, b.C3, e) && tApproxEqual(a.C4, b.C4, e); }
 inline bool tApproxEqual(const tMat4& a, const tMat4& b, tComponents c, float e = Epsilon);
 
-inline bool tEqual(const tVec2& a, const tVec2& b)																		{ return a.B == b.B; }
+inline bool tEqual(const tVec2& a, const tVec2& b)																		{ return (a.x == b.x) && (a.y == b.y); }
 inline bool tEqual(const tVec2& a, const tVec2& b, tComponents c)														{ return (!(c & tComponent_X) || (a.x == b.x)) && (!(c & tComponent_Y) || (a.y == b.y)); }
-inline bool tEqual(const tVec3& a, const tVec3& b)																		{ return (a.B0 == b.B0) && (a.B1 == b.B1); }
+inline bool tEqual(const tVec3& a, const tVec3& b)																		{ return (a.x == b.x) && (a.y == b.y) && (a.z == b.z); }
 inline bool tEqual(const tVec3& a, const tVec3& b, tComponents c)														{ return (!(c & tComponent_X) || (a.x == b.x)) && (!(c & tComponent_Y) || (a.y == b.y)) && (!(c & tComponent_Z) || (a.z == b.z)); }
-inline bool tEqual(const tVec4& a, const tVec4& b)																		{ return (a.B0 == b.B0) && (a.B1 == b.B1); }
+inline bool tEqual(const tVec4& a, const tVec4& b)																		{ return (a.x == b.x) && (a.y == b.y) && (a.z == b.z) && (a.w == b.w); }
 inline bool tEqual(const tVec4& a, const tVec4& b, tComponents c)														{ return (!(c & tComponent_X) || (a.x == b.x)) && (!(c & tComponent_Y) || (a.y == b.y)) && (!(c & tComponent_Z) || (a.z == b.z)) && (!(c & tComponent_W) || (a.w == b.w)); }
-inline bool tEqual(const tQuat& a, const tQuat& b)																		{ return (a.B0 == b.B0) && (a.B1 == b.B1); }
+inline bool tEqual(const tQuat& a, const tQuat& b)																		{ return (a.x == b.x) && (a.y == b.y) && (a.z == b.z) && (a.w == b.w); }
 inline bool tEqual(const tQuat& a, const tQuat& b, tComponents c)														{ return (!(c & tComponent_X) || (a.x == b.x)) && (!(c & tComponent_Y) || (a.y == b.y)) && (!(c & tComponent_Z) || (a.z == b.z)) && (!(c & tComponent_W) || (a.w == b.w)); }
-inline bool tEqual(const tMat2& a, const tMat2& b)																		{ return (a.B0 == b.B0) && (a.B1 == b.B1); }
+inline bool tEqual(const tMat2& a, const tMat2& b)																		{ return tEqual(a.C1, b.C1) && tEqual(a.C2, b.C2); }
 inline bool tEqual(const tMat2& a, const tMat2& b, tComponents c)														{ return (!(c & tComponent_A11) || (a.a11 == b.a11)) && (!(c & tComponent_A21) || (a.a21 == b.a21)) && (!(c & tComponent_A12) || (a.a12 == b.a12)) && (!(c & tComponent_A22) || (a.a22 == b.a22)); }
-inline bool tEqual(const tMat4& a, const tMat4& b)																		{ return (a.B0 == b.B0) && (a.B1 == b.B1) && (a.B2 == b.B2) && (a.B3 == b.B3) && (a.B4 == b.B4) && (a.B5 == b.B5) && (a.B6 == b.B6) && (a.B7 == b.B7); }
+inline bool tEqual(const tMat4& a, const tMat4& b)																		{ return tEqual(a.C1, b.C1) && tEqual(a.C2, b.C2) && tEqual(a.C3, b.C3) && tEqual(a.C4, b.C4); }
 inline bool tEqual(const tMat4& a, const tMat4& b, tComponents c);
 
-inline bool tNotEqual(const tVec2& a, const tVec2& b)																	{ return a.B != b.B; }
+inline bool tNotEqual(const tVec2& a, const tVec2& b)																	{ return (a.x != b.x) || (a.y != b.y); }
 inline bool tNotEqual(const tVec2& a, const tVec2& b, tComponents c)													{ return ((c & tComponent_X) && (a.x != b.x)) || ((c & tComponent_Y) && (a.y != b.y)); }
-inline bool tNotEqual(const tVec3& a, const tVec3& b)																	{ return (a.B0 != b.B0) || (a.B1 != b.B1); }
+inline bool tNotEqual(const tVec3& a, const tVec3& b)																	{ return (a.x != b.x) || (a.y != b.y) || (a.z != b.z); }
 inline bool tNotEqual(const tVec3& a, const tVec3& b, tComponents c)													{ return ((c & tComponent_X) && (a.x != b.x)) || ((c & tComponent_Y) && (a.y != b.y)) || ((c & tComponent_Z) && (a.z != b.z)); }
-inline bool tNotEqual(const tVec4& a, const tVec4& b)																	{ return (a.B0 != b.B0) || (a.B1 != b.B1); }
+inline bool tNotEqual(const tVec4& a, const tVec4& b)																	{ return (a.x != b.x) || (a.y != b.y) || (a.z != b.z) || (a.w != b.w); }
 inline bool tNotEqual(const tVec4& a, const tVec4& b, tComponents c)													{ return ((c & tComponent_X) && (a.x != b.x)) || ((c & tComponent_Y) && (a.y != b.y)) || ((c & tComponent_Z) && (a.z != b.z)) || ((c & tComponent_W) && (a.w != b.w)); }
-inline bool tNotEqual(const tQuat& a, const tQuat& b)																	{ return (a.B0 != b.B0) || (a.B1 != b.B1); }
+inline bool tNotEqual(const tQuat& a, const tQuat& b)																	{ return (a.x != b.x) || (a.y != b.y) || (a.z != b.z) || (a.w != b.w); }
 inline bool tNotEqual(const tQuat& a, const tQuat& b, tComponents c)													{ return ((c & tComponent_X) && (a.x != b.x)) || ((c & tComponent_Y) && (a.y != b.y)) || ((c & tComponent_Z) && (a.z != b.z)) || ((c & tComponent_W) && (a.w != b.w)); }
-inline bool tNotEqual(const tMat2& a, const tMat2& b)																	{ return (a.B0 != b.B0) || (a.B1 != b.B1); }
+inline bool tNotEqual(const tMat2& a, const tMat2& b)																	{ return tNotEqual(a.C1, b.C1) || tNotEqual(a.C2, b.C2); }
 inline bool tNotEqual(const tMat2& a, const tMat2& b, tComponents c)													{ return ((c & tComponent_A11) && (a.a11 != b.a11)) || ((c & tComponent_A21) && (a.a21 != b.a21)) || ((c & tComponent_A12) && (a.a12 != b.a12)) || ((c & tComponent_A22) && (a.a22 != b.a22)); }
-inline bool tNotEqual(const tMat4& a, const tMat4& b)																	{ return (a.B0 != b.B0) || (a.B1 != b.B1) || (a.B2 != b.B2) || (a.B3 != b.B3) || (a.B4 != b.B4) || (a.B5 != b.B5) || (a.B6 != b.B6) || (a.B7 != b.B7); }
+inline bool tNotEqual(const tMat4& a, const tMat4& b)																	{ return tNotEqual(a.C1, b.C1) || tNotEqual(a.C2, b.C2) || tNotEqual(a.C3, b.C3) || tNotEqual(a.C4, b.C4); }
 inline bool tNotEqual(const tMat4& a, const tMat4& b, tComponents c);
 
 inline float tLengthSq(const tVec2& v)																					{ return v.x*v.x + v.y*v.y; }
@@ -782,6 +780,30 @@ inline void tMath::tGet
 }
 
 
+inline void tMath::tZero(tMat4& d, tComponents c)
+{
+	if (c & tComponent_A11) d.a11 = 0.0f;
+	if (c & tComponent_A21) d.a21 = 0.0f;
+	if (c & tComponent_A31) d.a31 = 0.0f;
+	if (c & tComponent_A41) d.a41 = 0.0f;
+
+	if (c & tComponent_A12) d.a12 = 0.0f;
+	if (c & tComponent_A22) d.a22 = 0.0f;
+	if (c & tComponent_A32) d.a32 = 0.0f;
+	if (c & tComponent_A42) d.a42 = 0.0f;
+
+	if (c & tComponent_A13) d.a13 = 0.0f;
+	if (c & tComponent_A23) d.a23 = 0.0f;
+	if (c & tComponent_A33) d.a33 = 0.0f;
+	if (c & tComponent_A43) d.a43 = 0.0f;
+
+	if (c & tComponent_A14) d.a14 = 0.0f;
+	if (c & tComponent_A24) d.a24 = 0.0f;
+	if (c & tComponent_A34) d.a34 = 0.0f;
+	if (c & tComponent_A44) d.a44 = 0.0f;
+}
+
+
 inline bool tMath::tIsZero(const tMat4& m, tComponents c)
 {
 	return
@@ -861,10 +883,10 @@ inline bool tMath::tEqual(const tMat4& a, const tMat4& b, tComponents c)
 		(!(c & tComponent_A33) || (a.a33 == b.a33)) &&
 		(!(c & tComponent_A43) || (a.a43 == b.a43)) &&
 
-		(!(c & tComponent_A11) || (a.a14 == b.a14)) &&
-		(!(c & tComponent_A21) || (a.a24 == b.a24)) &&
-		(!(c & tComponent_A31) || (a.a34 == b.a34)) &&
-		(!(c & tComponent_A41) || (a.a44 == b.a44));
+		(!(c & tComponent_A14) || (a.a14 == b.a14)) &&
+		(!(c & tComponent_A24) || (a.a24 == b.a24)) &&
+		(!(c & tComponent_A34) || (a.a34 == b.a34)) &&
+		(!(c & tComponent_A44) || (a.a44 == b.a44));
 }
 
 
@@ -1017,7 +1039,7 @@ inline void tMath::tMulByTranspose(tMat4& d, const tVec4& a, const tVec4& b)
 
 inline void tMath::tTranspose(tMat4& m)
 {
-	#if defined(PLATFORM_WIN)
+	#if defined(PLATFORM_WINDOWS)
 	__m128* a = (__m128*)m.E;
 	if (tIsAligned16(a))
 	{
@@ -1049,6 +1071,7 @@ inline bool tMath::tInvert(tMat2& d, const tMat2& s)
 	d.a22 = s.a11;
 
 	tDiv(d, det);
+	return true;
 }
 
 

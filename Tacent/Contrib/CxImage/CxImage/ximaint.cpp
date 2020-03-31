@@ -26,8 +26,8 @@ void CxImage::OverflowCoordinates(int32_t &x, int32_t &y, OverflowMethod const o
   switch (ofMethod) {
     case OM_REPEAT:
       //clip coordinates
-      x=max(x,0); x=min(x, head.biWidth-1);
-      y=max(y,0); y=min(y, head.biHeight-1);
+      x=cxmax(x,0); x=cxmin(x, head.biWidth-1);
+      y=cxmax(y,0); y=cxmin(y, head.biHeight-1);
       break;
     case OM_WRAP:
       //wrap coordinates
@@ -59,8 +59,8 @@ void CxImage::OverflowCoordinates(float &x, float &y, OverflowMethod const ofMet
   switch (ofMethod) {
     case OM_REPEAT:
       //clip coordinates
-      x=max(x,0); x=min(x, head.biWidth-1);
-      y=max(y,0); y=min(y, head.biHeight-1);
+      x=cxmax(x,0); x=cxmin(x, head.biWidth-1);
+      y=cxmax(y,0); y=cxmin(y, head.biHeight-1);
       break;
     case OM_WRAP:
       //wrap coordinates

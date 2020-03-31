@@ -224,9 +224,9 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 			ImGui::Indent();
 			ImGui::PushItemWidth(110);
 
-			ImGui::InputFloat("Gamma Correction", &CurrImage->LoadParams.Gamma, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
+			ImGui::InputFloat("Gamma Correction", &CurrImage->LoadParams.GammaValue, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
 			ShowHelpMark("Gamma to use [0.6, 3.0] if you reload this Radiance hdr file. Open preferences to edit default gamma value.");
-			tMath::tiClamp(CurrImage->LoadParams.Gamma, 0.6f, 3.0f);
+			tMath::tiClamp(CurrImage->LoadParams.GammaValue, 0.6f, 3.0f);
 
 			ImGui::InputInt("Exposure Adj", &CurrImage->LoadParams.HDR_Exposure); ImGui::SameLine();
 			ShowHelpMark("Exposure adjustment [-10, 10] if you reload this Radiance hdr file.");
@@ -269,9 +269,9 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 			ImGui::Indent();
 			ImGui::PushItemWidth(110);
 
-			ImGui::InputFloat("Gamma", &CurrImage->LoadParams.Gamma, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
+			ImGui::InputFloat("Gamma", &CurrImage->LoadParams.GammaValue, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
 			ShowHelpMark("Gamma to use [0.6, 3.0] if you reload this exr file. Open preferences to edit default gamma value.");
-			tMath::tiClamp(CurrImage->LoadParams.Gamma, 0.6f, 3.0f);
+			tMath::tiClamp(CurrImage->LoadParams.GammaValue, 0.6f, 3.0f);
 
 			ImGui::InputFloat("Exposure", &CurrImage->LoadParams.EXR_Exposure, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
 			ShowHelpMark("Exposure adjustment [-10.0, 10.0] if you reload this exr file.");

@@ -39,10 +39,10 @@ namespace TexView { extern Settings Config; }
 TacitImage::TacitImage() :
 	Filename(),
 	Filetype(tFileType::Unknown),
-	FileModTime(0),
 	FileSizeB(0),
 	LoadParams()
 {
+	tMemset(&FileModTime, 0, sizeof(FileModTime));
 	ResetLoadParams();
 }
 
@@ -50,10 +50,10 @@ TacitImage::TacitImage() :
 TacitImage::TacitImage(const tString& filename) :
 	Filename(filename),
 	Filetype(tGetFileType(filename)),
-	FileModTime(0),
 	FileSizeB(0),
 	LoadParams()
 {
+	tMemset(&FileModTime, 0, sizeof(FileModTime));
 	ResetLoadParams();
 	tSystem::tFileInfo info;
 	if (tSystem::tGetFileInfo(info, filename))
@@ -87,7 +87,7 @@ TacitImage::~TacitImage()
 void TacitImage::ResetLoadParams()
 {
 	LoadParams = tImage::tPicture::LoadParams();
-	LoadParams.Gamma = TexView::Config.MonitorGamma;
+	LoadParams.GammaValue = TexView::Config.MonitorGamma;
 }
 
 

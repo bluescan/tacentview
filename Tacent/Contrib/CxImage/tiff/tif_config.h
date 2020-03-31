@@ -18,7 +18,9 @@
 #define HAVE_SYS_TYPES_H 1
 
 /* Define to 1 if you have the <io.h> header file. */
+#ifndef PLATFORM_LINUX		// @tacent
 #define HAVE_IO_H 1
+#endif
 
 /* Define to 1 if you have the <search.h> header file. */
 #define HAVE_SEARCH_H 1
@@ -30,7 +32,11 @@
 #define SIZEOF_INT 4
 
 /* The size of a `long', as computed by sizeof. */
+#ifdef PLATFORM_LINUX		// @tacent
+#define SIZEOF_LONG 8
+#else
 #define SIZEOF_LONG 4
+#endif
 
 /* Signed 64-bit type */
 #define TIFF_INT64_T signed __int64
@@ -53,7 +59,9 @@
 # endif
 #endif
 
+#ifdef PLATFORM_WINDOWS	// @tacent
 #define lfind _lfind
+#endif
 /*
  * Local Variables:
  * mode: c

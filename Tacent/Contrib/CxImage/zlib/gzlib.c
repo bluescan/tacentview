@@ -5,6 +5,12 @@
 
 #include "gzguts.h"
 
+// @tacent
+#ifdef PLATFORM_LINUX
+#include <sys/types.h>
+#include <unistd.h>
+#endif
+
 #if defined(_LARGEFILE64_SOURCE) && _LFS64_LARGEFILE-0
 #  define LSEEK lseek64
 #else
@@ -180,7 +186,8 @@ local gzFile gz_open(path, fd, mode)
         state->mode = GZ_WRITE;         /* simplify later checks */
 
     /* save the current position for rewinding (only if reading) */
-    if (state->mode == GZ_READ) {
+    if (state->mode == GZ_READ)
+	{
         state->start = LSEEK(state->fd, 0, SEEK_CUR);
         if (state->start == -1) state->start = 0;
     }

@@ -14,7 +14,7 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #include <stdlib.h>
-#ifdef PLATFORM_WIN
+#ifdef PLATFORM_WINDOWS
 #include <Windows.h>
 #endif
 #include "Foundation/tStandard.h"

@@ -12,6 +12,10 @@
  * is shoved onto the user.
  */
 
+#ifdef PLATFORM_LINUX	// @tacent
+#include <unistd.h>
+#endif
+
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"

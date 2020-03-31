@@ -231,17 +231,17 @@ tString TexView::FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles)
 		imagesDir = tSystem::tGetDir(ImageFileParam.Get());
 
 	tPrintf("Looking for image files in %s\n", imagesDir.Chars());
-	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.jpg");
-	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.gif");
-	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.tga");
-	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.png");
-	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.tif");
-	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.tiff");
-	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.bmp");
-	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.dds");
-	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.hdr");
-	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.rgbe");
-	tSystem::tFindFilesInDir(foundFiles, imagesDir, "*.exr");
+	tSystem::tFindFiles(foundFiles, imagesDir, "jpg");
+	tSystem::tFindFiles(foundFiles, imagesDir, "gif");
+	tSystem::tFindFiles(foundFiles, imagesDir, "tga");
+	tSystem::tFindFiles(foundFiles, imagesDir, "png");
+	tSystem::tFindFiles(foundFiles, imagesDir, "tif");
+	tSystem::tFindFiles(foundFiles, imagesDir, "tiff");
+	tSystem::tFindFiles(foundFiles, imagesDir, "bmp");
+	tSystem::tFindFiles(foundFiles, imagesDir, "dds");
+	tSystem::tFindFiles(foundFiles, imagesDir, "hdr");
+	tSystem::tFindFiles(foundFiles, imagesDir, "rgbe");
+	tSystem::tFindFiles(foundFiles, imagesDir, "exr");
 
 	return imagesDir;
 }
@@ -1904,7 +1904,7 @@ void TexView::IconifyCallback(GLFWwindow* window, int iconified)
 int TexView::RemoveOldCacheFiles(const tString& cacheDir)
 {
 	tList<tStringItem> cacheFiles;
-	tSystem::tFindFilesInDir(cacheFiles, cacheDir, "*.bin");
+	tSystem::tFindFiles(cacheFiles, cacheDir, "bin");
 	int numFiles = cacheFiles.NumItems();
 	if (numFiles <= Config.MaxCacheFiles)
 		return 0;

@@ -389,8 +389,8 @@ RGBQUAD CxImage::RGBtoHSL(RGBQUAD lRGBColor)
 	G = lRGBColor.rgbGreen;
 	B = lRGBColor.rgbBlue;
 
-	cMax = max( max(R,G), B);	/* calculate lightness */
-	cMin = min( min(R,G), B);
+	cMax = cxmax( cxmax(R,G), B);	/* calculate lightness */
+	cMin = cxmin( cxmin(R,G), B);
 	L = (uint8_t)((((cMax+cMin)*HSLMAX)+RGBMAX)/(2*RGBMAX));
 
 	if (cMax==cMin){			/* r=g=b --> achromatic case */
@@ -489,9 +489,9 @@ RGBQUAD CxImage::YUVtoRGB(RGBQUAD lYUVColor)
 	G = (int32_t)( Y - 0.344f * U - 0.714f * V);
 	B = (int32_t)( Y + 1.770f * U);
 
-	R= min(255,max(0,R));
-	G= min(255,max(0,G));
-	B= min(255,max(0,B));
+	R= cxmin(255,cxmax(0,R));
+	G= cxmin(255,cxmax(0,G));
+	B= cxmin(255,cxmax(0,B));
 	RGBQUAD rgb={(uint8_t)B,(uint8_t)G,(uint8_t)R,0};
 	return rgb;
 }
@@ -510,9 +510,9 @@ RGBQUAD CxImage::RGBtoYUV(RGBQUAD lRGBColor)
 	U = (int32_t)((B-Y) * 0.565f + 128);
 	V = (int32_t)((R-Y) * 0.713f + 128);
 
-	Y= min(255,max(0,Y));
-	U= min(255,max(0,U));
-	V= min(255,max(0,V));
+	Y= cxmin(255,cxmax(0,Y));
+	U= cxmin(255,cxmax(0,U));
+	V= cxmin(255,cxmax(0,V));
 	RGBQUAD yuv={(uint8_t)V,(uint8_t)U,(uint8_t)Y,0};
 	return yuv;
 }
@@ -528,9 +528,9 @@ RGBQUAD CxImage::YIQtoRGB(RGBQUAD lYIQColor)
 	G = (int32_t)( Y - 0.273f * I - 0.647f * Q);
 	B = (int32_t)( Y - 1.104f * I + 1.701f * Q);
 
-	R= min(255,max(0,R));
-	G= min(255,max(0,G));
-	B= min(255,max(0,B));
+	R= cxmin(255,cxmax(0,R));
+	G= cxmin(255,cxmax(0,G));
+	B= cxmin(255,cxmax(0,B));
 	RGBQUAD rgb={(uint8_t)B,(uint8_t)G,(uint8_t)R,0};
 	return rgb;
 }
@@ -546,9 +546,9 @@ RGBQUAD CxImage::RGBtoYIQ(RGBQUAD lRGBColor)
 	I = (int32_t)( 0.5960f * R - 0.2742f * G - 0.3219f * B + 128);
 	Q = (int32_t)( 0.2109f * R - 0.5229f * G + 0.3120f * B + 128);
 
-	Y= min(255,max(0,Y));
-	I= min(255,max(0,I));
-	Q= min(255,max(0,Q));
+	Y= cxmin(255,cxmax(0,Y));
+	I= cxmin(255,cxmax(0,I));
+	Q= cxmin(255,cxmax(0,Q));
 	RGBQUAD yiq={(uint8_t)Q,(uint8_t)I,(uint8_t)Y,0};
 	return yiq;
 }
@@ -565,9 +565,9 @@ RGBQUAD CxImage::XYZtoRGB(RGBQUAD lXYZColor)
 	G = (int32_t)( -0.969256f * X + 1.875992f * Y + 0.041556f * Z * k);
 	B = (int32_t)(  0.055648f * X - 0.204043f * Y + 1.057311f * Z * k);
 
-	R= min(255,max(0,R));
-	G= min(255,max(0,G));
-	B= min(255,max(0,B));
+	R= cxmin(255,cxmax(0,R));
+	G= cxmin(255,cxmax(0,G));
+	B= cxmin(255,cxmax(0,B));
 	RGBQUAD rgb={(uint8_t)B,(uint8_t)G,(uint8_t)R,0};
 	return rgb;
 }
@@ -705,7 +705,7 @@ bool CxImage::Light(int32_t brightness, int32_t contrast)
 
 	uint8_t cTable[256]; //<nipper>
 	for (int32_t i=0;i<256;i++)	{
-		cTable[i] = (uint8_t)max(0,min(255,(int32_t)((i-128)*c + brightness + 0.5f)));
+		cTable[i] = (uint8_t)cxmax(0,cxmin(255,(int32_t)((i-128)*c + brightness + 0.5f)));
 	}
 
 	return Lut(cTable);
@@ -828,11 +828,11 @@ bool CxImage::Filter(int32_t* kernel, int32_t Ksize, int32_t Kfactor, int32_t Ko
 						}
 					}
 					if (Kfactor==0 || ksumcur==0){
-						cPtr2[iY1] = (uint8_t)min(255, max(0,(int32_t)(b + Koffset)));
+						cPtr2[iY1] = (uint8_t)cxmin(255, cxmax(0,(int32_t)(b + Koffset)));
 					} else if (ksumtot == ksumcur) {
-						cPtr2[iY1] = (uint8_t)min(255, max(0,(int32_t)(b/Kfactor + Koffset)));
+						cPtr2[iY1] = (uint8_t)cxmin(255, cxmax(0,(int32_t)(b/Kfactor + Koffset)));
 					} else {
-						cPtr2[iY1] = (uint8_t)min(255, max(0,(int32_t)((b*ksumtot)/(ksumcur*Kfactor) + Koffset)));
+						cPtr2[iY1] = (uint8_t)cxmin(255, cxmax(0,(int32_t)((b*ksumtot)/(ksumcur*Kfactor) + Koffset)));
 					}
 				}
 			}
@@ -861,17 +861,17 @@ bool CxImage::Filter(int32_t* kernel, int32_t Ksize, int32_t Kfactor, int32_t Ko
 						}
 					}
 					if (Kfactor==0 || ksumcur==0){
-						c.rgbRed   = (uint8_t)min(255, max(0,(int32_t)(r + Koffset)));
-						c.rgbGreen = (uint8_t)min(255, max(0,(int32_t)(g + Koffset)));
-						c.rgbBlue  = (uint8_t)min(255, max(0,(int32_t)(b + Koffset)));
+						c.rgbRed   = (uint8_t)cxmin(255, cxmax(0,(int32_t)(r + Koffset)));
+						c.rgbGreen = (uint8_t)cxmin(255, cxmax(0,(int32_t)(g + Koffset)));
+						c.rgbBlue  = (uint8_t)cxmin(255, cxmax(0,(int32_t)(b + Koffset)));
 					} else if (ksumtot == ksumcur) {
-						c.rgbRed   = (uint8_t)min(255, max(0,(int32_t)(r/Kfactor + Koffset)));
-						c.rgbGreen = (uint8_t)min(255, max(0,(int32_t)(g/Kfactor + Koffset)));
-						c.rgbBlue  = (uint8_t)min(255, max(0,(int32_t)(b/Kfactor + Koffset)));
+						c.rgbRed   = (uint8_t)cxmin(255, cxmax(0,(int32_t)(r/Kfactor + Koffset)));
+						c.rgbGreen = (uint8_t)cxmin(255, cxmax(0,(int32_t)(g/Kfactor + Koffset)));
+						c.rgbBlue  = (uint8_t)cxmin(255, cxmax(0,(int32_t)(b/Kfactor + Koffset)));
 					} else {
-						c.rgbRed   = (uint8_t)min(255, max(0,(int32_t)((r*ksumtot)/(ksumcur*Kfactor) + Koffset)));
-						c.rgbGreen = (uint8_t)min(255, max(0,(int32_t)((g*ksumtot)/(ksumcur*Kfactor) + Koffset)));
-						c.rgbBlue  = (uint8_t)min(255, max(0,(int32_t)((b*ksumtot)/(ksumcur*Kfactor) + Koffset)));
+						c.rgbRed   = (uint8_t)cxmin(255, cxmax(0,(int32_t)((r*ksumtot)/(ksumcur*Kfactor) + Koffset)));
+						c.rgbGreen = (uint8_t)cxmin(255, cxmax(0,(int32_t)((g*ksumtot)/(ksumcur*Kfactor) + Koffset)));
+						c.rgbBlue  = (uint8_t)cxmin(255, cxmax(0,(int32_t)((b*ksumtot)/(ksumcur*Kfactor) + Koffset)));
 					}
 					tmp.BlindSetPixelColor(x,y,c);
 				}
@@ -1074,8 +1074,8 @@ bool CxImage::Edge(int32_t Ksize)
  */
 void CxImage::Mix(CxImage & imgsrc2, ImageOpType op, int32_t lXOffset, int32_t lYOffset, bool bMixAlpha)
 {
-    int32_t lWide = min(GetWidth(),imgsrc2.GetWidth()-lXOffset);
-    int32_t lHeight = min(GetHeight(),imgsrc2.GetHeight()-lYOffset);
+    int32_t lWide = cxmin(GetWidth(),imgsrc2.GetWidth()-lXOffset);
+    int32_t lHeight = cxmin(GetHeight(),imgsrc2.GetHeight()-lYOffset);
 
 	bool bEditAlpha = false;
 
@@ -1111,16 +1111,16 @@ void CxImage::Mix(CxImage & imgsrc2, ImageOpType op, int32_t lXOffset, int32_t l
 						if (bEditAlpha) rgbDest.rgbReserved = (uint8_t)((rgb1.rgbReserved+rgb2.rgbReserved)/2);
 					break;
 					case OpAdd:
-						rgbDest.rgbBlue = (uint8_t)max(0,min(255,rgb1.rgbBlue+rgb2.rgbBlue));
-						rgbDest.rgbGreen = (uint8_t)max(0,min(255,rgb1.rgbGreen+rgb2.rgbGreen));
-						rgbDest.rgbRed = (uint8_t)max(0,min(255,rgb1.rgbRed+rgb2.rgbRed));
-						if (bEditAlpha) rgbDest.rgbReserved = (uint8_t)max(0,min(255,rgb1.rgbReserved+rgb2.rgbReserved));
+						rgbDest.rgbBlue = (uint8_t)cxmax(0,cxmin(255,rgb1.rgbBlue+rgb2.rgbBlue));
+						rgbDest.rgbGreen = (uint8_t)cxmax(0,cxmin(255,rgb1.rgbGreen+rgb2.rgbGreen));
+						rgbDest.rgbRed = (uint8_t)cxmax(0,cxmin(255,rgb1.rgbRed+rgb2.rgbRed));
+						if (bEditAlpha) rgbDest.rgbReserved = (uint8_t)cxmax(0,cxmin(255,rgb1.rgbReserved+rgb2.rgbReserved));
 					break;
 					case OpSub:
-						rgbDest.rgbBlue = (uint8_t)max(0,min(255,rgb1.rgbBlue-rgb2.rgbBlue));
-						rgbDest.rgbGreen = (uint8_t)max(0,min(255,rgb1.rgbGreen-rgb2.rgbGreen));
-						rgbDest.rgbRed = (uint8_t)max(0,min(255,rgb1.rgbRed-rgb2.rgbRed));
-						if (bEditAlpha) rgbDest.rgbReserved = (uint8_t)max(0,min(255,rgb1.rgbReserved-rgb2.rgbReserved));
+						rgbDest.rgbBlue = (uint8_t)cxmax(0,cxmin(255,rgb1.rgbBlue-rgb2.rgbBlue));
+						rgbDest.rgbGreen = (uint8_t)cxmax(0,cxmin(255,rgb1.rgbGreen-rgb2.rgbGreen));
+						rgbDest.rgbRed = (uint8_t)cxmax(0,cxmin(255,rgb1.rgbRed-rgb2.rgbRed));
+						if (bEditAlpha) rgbDest.rgbReserved = (uint8_t)cxmax(0,cxmin(255,rgb1.rgbReserved-rgb2.rgbReserved));
 					break;
 					case OpAnd:
 						rgbDest.rgbBlue = (uint8_t)(rgb1.rgbBlue&rgb2.rgbBlue);
@@ -1203,11 +1203,11 @@ void CxImage::Mix(CxImage & imgsrc2, ImageOpType op, int32_t lXOffset, int32_t l
 							double dSmallAmt = dSmall*((double)rgb2.rgbBlue);
 
 							if( lAverage < lThresh+1){
-								rgbDest.rgbBlue = (uint8_t)max(0,min(255,(int32_t)(dLarge*((double)rgb1.rgbBlue) +
+								rgbDest.rgbBlue = (uint8_t)cxmax(0,cxmin(255,(int32_t)(dLarge*((double)rgb1.rgbBlue) +
 												dSmallAmt)));
-								rgbDest.rgbGreen = (uint8_t)max(0,min(255,(int32_t)(dLarge*((double)rgb1.rgbGreen) +
+								rgbDest.rgbGreen = (uint8_t)cxmax(0,cxmin(255,(int32_t)(dLarge*((double)rgb1.rgbGreen) +
 												dSmallAmt)));
-								rgbDest.rgbRed = (uint8_t)max(0,min(255,(int32_t)(dLarge*((double)rgb1.rgbRed) +
+								rgbDest.rgbRed = (uint8_t)cxmax(0,cxmin(255,(int32_t)(dLarge*((double)rgb1.rgbRed) +
 												dSmallAmt)));
 							}
 							else
@@ -1304,9 +1304,9 @@ bool CxImage::ShiftRGB(int32_t r, int32_t g, int32_t b)
 #endif //CXIMAGE_SUPPORT_SELECTION
 				{
 					color = BlindGetPixelColor(x,y);
-					color.rgbRed = (uint8_t)max(0,min(255,(int32_t)(color.rgbRed + r)));
-					color.rgbGreen = (uint8_t)max(0,min(255,(int32_t)(color.rgbGreen + g)));
-					color.rgbBlue = (uint8_t)max(0,min(255,(int32_t)(color.rgbBlue + b)));
+					color.rgbRed = (uint8_t)cxmax(0,cxmin(255,(int32_t)(color.rgbRed + r)));
+					color.rgbGreen = (uint8_t)cxmax(0,cxmin(255,(int32_t)(color.rgbGreen + g)));
+					color.rgbBlue = (uint8_t)cxmax(0,cxmin(255,(int32_t)(color.rgbBlue + b)));
 					BlindSetPixelColor(x,y,color);
 				}
 			}
@@ -1314,9 +1314,9 @@ bool CxImage::ShiftRGB(int32_t r, int32_t g, int32_t b)
 	} else {
 		for(uint32_t j=0; j<head.biClrUsed; j++){
 			color = GetPaletteColor((uint8_t)j);
-			color.rgbRed = (uint8_t)max(0,min(255,(int32_t)(color.rgbRed + r)));
-			color.rgbGreen = (uint8_t)max(0,min(255,(int32_t)(color.rgbGreen + g)));
-			color.rgbBlue = (uint8_t)max(0,min(255,(int32_t)(color.rgbBlue + b)));
+			color.rgbRed = (uint8_t)cxmax(0,cxmin(255,(int32_t)(color.rgbRed + r)));
+			color.rgbGreen = (uint8_t)cxmax(0,cxmin(255,(int32_t)(color.rgbGreen + g)));
+			color.rgbBlue = (uint8_t)cxmax(0,cxmin(255,(int32_t)(color.rgbBlue + b)));
 			SetPaletteColor((uint8_t)j,color);
 		}
 	}
@@ -1340,7 +1340,7 @@ bool CxImage::Gamma(float gamma)
 
 	uint8_t cTable[256]; //<nipper>
 	for (int32_t i=0;i<256;i++)	{
-		cTable[i] = (uint8_t)max(0,min(255,(int32_t)( pow((double)i, dinvgamma) / dMax)));
+		cTable[i] = (uint8_t)cxmax(0,cxmin(255,(int32_t)( pow((double)i, dinvgamma) / dMax)));
 	}
 
 	return Lut(cTable);
@@ -1367,21 +1367,21 @@ bool CxImage::GammaRGB(float gammaR, float gammaG, float gammaB)
 	dMax = pow(255.0, dinvgamma) / 255.0;
 	uint8_t cTableR[256];
 	for (i=0;i<256;i++)	{
-		cTableR[i] = (uint8_t)max(0,min(255,(int32_t)( pow((double)i, dinvgamma) / dMax)));
+		cTableR[i] = (uint8_t)cxmax(0,cxmin(255,(int32_t)( pow((double)i, dinvgamma) / dMax)));
 	}
 
 	dinvgamma = 1/gammaG;
 	dMax = pow(255.0, dinvgamma) / 255.0;
 	uint8_t cTableG[256];
 	for (i=0;i<256;i++)	{
-		cTableG[i] = (uint8_t)max(0,min(255,(int32_t)( pow((double)i, dinvgamma) / dMax)));
+		cTableG[i] = (uint8_t)cxmax(0,cxmin(255,(int32_t)( pow((double)i, dinvgamma) / dMax)));
 	}
 
 	dinvgamma = 1/gammaB;
 	dMax = pow(255.0, dinvgamma) / 255.0;
 	uint8_t cTableB[256];
 	for (i=0;i<256;i++)	{
-		cTableB[i] = (uint8_t)max(0,min(255,(int32_t)( pow((double)i, dinvgamma) / dMax)));
+		cTableB[i] = (uint8_t)cxmax(0,cxmin(255,(int32_t)( pow((double)i, dinvgamma) / dMax)));
 	}
 
 	return Lut(cTableR, cTableG, cTableB);
@@ -1471,11 +1471,11 @@ bool CxImage::Noise(int32_t level)
 			{
 				color = BlindGetPixelColor(x,y);
 				n=(int32_t)((rand()/(float)RAND_MAX - 0.5)*level);
-				color.rgbRed = (uint8_t)max(0,min(255,(int32_t)(color.rgbRed + n)));
+				color.rgbRed = (uint8_t)cxmax(0,cxmin(255,(int32_t)(color.rgbRed + n)));
 				n=(int32_t)((rand()/(float)RAND_MAX - 0.5)*level);
-				color.rgbGreen = (uint8_t)max(0,min(255,(int32_t)(color.rgbGreen + n)));
+				color.rgbGreen = (uint8_t)cxmax(0,cxmin(255,(int32_t)(color.rgbGreen + n)));
 				n=(int32_t)((rand()/(float)RAND_MAX - 0.5)*level);
-				color.rgbBlue = (uint8_t)max(0,min(255,(int32_t)(color.rgbBlue + n)));
+				color.rgbBlue = (uint8_t)cxmax(0,cxmin(255,(int32_t)(color.rgbBlue + n)));
 				BlindSetPixelColor(x,y,color);
 			}
 		}
@@ -1590,8 +1590,8 @@ bool CxImage::FFT2(CxImage* srcReal, CxImage* srcImag, CxImage* dstReal, CxImage
 
 	//DFT buffers
 	double *real2,*imag2;
-	real2 = (double*)malloc(max(w,h) * sizeof(double));
-	imag2 = (double*)malloc(max(w,h) * sizeof(double));
+	real2 = (double*)malloc(cxmax(w,h) * sizeof(double));
+	imag2 = (double*)malloc(cxmax(w,h) * sizeof(double));
 
 	/* Transform the rows */
 	real = (double *)malloc(w * sizeof(double));
@@ -1646,7 +1646,7 @@ bool CxImage::FFT2(CxImage* srcReal, CxImage* srcImag, CxImage* dstReal, CxImage
 
 	/* converting from double to byte, there is a HUGE loss in the dynamics
 	  "nn" tries to keep an acceptable SNR, but 8bit=48dB: don't ask more */
-	double nn=pow((double)2,(double)log((double)max(w,h))/(double)log((double)2)-4);
+	double nn=pow((double)2,(double)log((double)cxmax(w,h))/(double)log((double)2)-4);
 	//reversed gain for reversed transform
 	if (direction==-1) nn=1/nn;
 	//bMagnitude : just to see it on the screen
@@ -1655,15 +1655,15 @@ bool CxImage::FFT2(CxImage* srcReal, CxImage* srcImag, CxImage* dstReal, CxImage
 	for (j=0;j<h;j++) {
 		for (k=0;k<w;k++) {
 			if (bMagnitude){
-				tmpReal->SetPixelIndex(k,j,(uint8_t)max(0,min(255,(nn*(3+log(_cabs(grid[k][j])))))));
+				tmpReal->SetPixelIndex(k,j,(uint8_t)cxmax(0,cxmin(255,(nn*(3+log(_cabs(grid[k][j])))))));
 				if (grid[k][j].x==0){
-					tmpImag->SetPixelIndex(k,j,(uint8_t)max(0,min(255,(128+(atan(grid[k][j].y/0.0000000001)*nn)))));
+					tmpImag->SetPixelIndex(k,j,(uint8_t)cxmax(0,cxmin(255,(128+(atan(grid[k][j].y/0.0000000001)*nn)))));
 				} else {
-					tmpImag->SetPixelIndex(k,j,(uint8_t)max(0,min(255,(128+(atan(grid[k][j].y/grid[k][j].x)*nn)))));
+					tmpImag->SetPixelIndex(k,j,(uint8_t)cxmax(0,cxmin(255,(128+(atan(grid[k][j].y/grid[k][j].x)*nn)))));
 				}
 			} else {
-				tmpReal->SetPixelIndex(k,j,(uint8_t)max(0,min(255,(128 + grid[k][j].x*nn))));
-				tmpImag->SetPixelIndex(k,j,(uint8_t)max(0,min(255,(128 + grid[k][j].y*nn))));
+				tmpReal->SetPixelIndex(k,j,(uint8_t)cxmax(0,cxmin(255,(128 + grid[k][j].x*nn))));
+				tmpImag->SetPixelIndex(k,j,(uint8_t)cxmax(0,cxmin(255,(128 + grid[k][j].y*nn))));
 			}
 		}
 	}
@@ -1950,7 +1950,7 @@ bool CxImage::RepairChannel(CxImage *ch, float radius)
 
 			correction = ((1.0+iy*iy)*ixx - ix*iy*ixy + (1.0+ix*ix)*iyy)/(1.0+ix*ix+iy*iy);
 
-			tmp.BlindSetPixelIndex(x,y,(uint8_t)min(255,max(0,(xy0 + radius * correction + 0.5))));
+			tmp.BlindSetPixelIndex(x,y,(uint8_t)cxmin(255,cxmax(0,(xy0 + radius * correction + 0.5))));
 		}
 	}
 
@@ -1971,7 +1971,7 @@ bool CxImage::RepairChannel(CxImage *ch, float radius)
 
 			correction = ((1.0+iy*iy)*ixx - ix*iy*ixy + (1.0+ix*ix)*iyy)/(1.0+ix*ix+iy*iy);
 
-			tmp.BlindSetPixelIndex(x,y,(uint8_t)min(255,max(0,(xy0 + radius * correction + 0.5))));
+			tmp.BlindSetPixelIndex(x,y,(uint8_t)cxmin(255,cxmax(0,(xy0 + radius * correction + 0.5))));
 		}
 	}
 	for (x=0;x<=w;x+=w){
@@ -1991,7 +1991,7 @@ bool CxImage::RepairChannel(CxImage *ch, float radius)
 
 			correction = ((1.0+iy*iy)*ixx - ix*iy*ixy + (1.0+ix*ix)*iyy)/(1.0+ix*ix+iy*iy);
 
-			tmp.BlindSetPixelIndex(x,y,(uint8_t)min(255,max(0,(xy0 + radius * correction + 0.5))));
+			tmp.BlindSetPixelIndex(x,y,(uint8_t)cxmin(255,cxmax(0,(xy0 + radius * correction + 0.5))));
 		}
 	}
 
@@ -2639,8 +2639,8 @@ bool CxImage::SelectiveBlur(float radius, uint8_t threshold, CxImage* iDst)
 	}
 
 	//build the difference mask
-	uint8_t thresh_dw = (uint8_t)max( 0 ,(int32_t)(128 - threshold));
-	uint8_t thresh_up = (uint8_t)min(255,(int32_t)(128 + threshold));
+	uint8_t thresh_dw = (uint8_t)cxmax( 0 ,(int32_t)(128 - threshold));
+	uint8_t thresh_up = (uint8_t)cxmin(255,(int32_t)(128 + threshold));
 	int32_t kernel[]={-100,-100,-100,-100,801,-100,-100,-100,-100};
 	if (!Tmp.Filter(kernel,3,800,128)){
 		strcpy(info.szLastError,Tmp.GetLastError());
@@ -2772,7 +2772,7 @@ bool CxImage::UnsharpMask(float radius /*= 5.0*/, float amount /*= 0.5*/, int32_
 					if (abs(diff) < threshold){
 						dest_row[z] = cur_row[z];
 					} else {
-						dest_row[z] = (uint8_t)min(255, max(0,(int32_t)(cur_row[z] + amount * diff)));
+						dest_row[z] = (uint8_t)cxmin(255, cxmax(0,(int32_t)(cur_row[z] + amount * diff)));
 					}
 				}
 			}
@@ -2807,11 +2807,16 @@ bool CxImage::Lut(uint8_t* pLut)
 		if (pSelection){
 			xmin = info.rSelectionBox.left; xmax = info.rSelectionBox.right;
 			ymin = info.rSelectionBox.bottom; ymax = info.rSelectionBox.top;
-		} else {
+		}
+		else
+		{
 			// faster loop for full image
 			uint8_t *iSrc=info.pImage;
-			for(uint32_t i=0; i < head.biSizeImage ; i++){
-				*iSrc++ = pLut[*iSrc];
+			for(uint32_t i=0; i < head.biSizeImage ; i++)
+			{
+				// @tacent
+				//*iSrc++ = pLut[*iSrc];
+				*iSrc = pLut[*iSrc]; iSrc++;
 			}
 			return true;
 		}
@@ -2968,7 +2973,7 @@ bool CxImage::RedEyeRemove(float strength)
 				float a = 1.0f-5.0f*((float)((x-0.5f*(xmax+xmin))*(x-0.5f*(xmax+xmin))+(y-0.5f*(ymax+ymin))*(y-0.5f*(ymax+ymin))))/((float)((xmax-xmin)*(ymax-ymin)));
 				if (a<0) a=0;
 				color = BlindGetPixelColor(x,y);
-				color.rgbRed = (uint8_t)(a*min(color.rgbGreen,color.rgbBlue)+(1.0f-a)*color.rgbRed);
+				color.rgbRed = (uint8_t)(a*cxmin(color.rgbGreen,color.rgbBlue)+(1.0f-a)*color.rgbRed);
 				BlindSetPixelColor(x,y,color);
 			}
 		}
@@ -3006,7 +3011,7 @@ bool CxImage::Saturate(const int32_t saturation, const int32_t colorspace)
 	case 1:
 		{
 			for (int32_t i=0;i<256;i++)	{
-				cTable[i] = (uint8_t)max(0,min(255,(int32_t)(i + saturation)));
+				cTable[i] = (uint8_t)cxmax(0,cxmin(255,(int32_t)(i + saturation)));
 			}
 			for(int32_t y=ymin; y<ymax; y++){
 				info.nProgress = (int32_t)(100*(y-ymin)/(ymax-ymin));
@@ -3028,7 +3033,7 @@ bool CxImage::Saturate(const int32_t saturation, const int32_t colorspace)
 	case 2:
 		{
 			for (int32_t i=0;i<256;i++)	{
-				cTable[i] = (uint8_t)max(0,min(255,(int32_t)((i-128)*(100 + saturation)/100.0f + 128.5f)));
+				cTable[i] = (uint8_t)cxmax(0,cxmin(255,(int32_t)((i-128)*(100 + saturation)/100.0f + 128.5f)));
 			}
 			for(int32_t y=ymin; y<ymax; y++){
 				info.nProgress = (int32_t)(100*(y-ymin)/(ymax-ymin));
@@ -3258,10 +3263,10 @@ int32_t  CxImage::OptimalThreshold(int32_t method, RECT * pBox, CxImage* pContra
 
 	int32_t xmin,xmax,ymin,ymax;
 	if (pBox){
-		xmin = max(pBox->left,0);
-		xmax = min(pBox->right,head.biWidth);
-		ymin = max(pBox->bottom,0);
-		ymax = min(pBox->top,head.biHeight);
+		xmin = cxmax(pBox->left,0);
+		xmax = cxmin(pBox->right,head.biWidth);
+		ymin = cxmax(pBox->bottom,0);
+		ymax = cxmin(pBox->top,head.biHeight);
 	} else {
 		xmin = ymin = 0;
 		xmax = head.biWidth; ymax=head.biHeight;
@@ -3303,7 +3308,7 @@ int32_t  CxImage::OptimalThreshold(int32_t method, RECT * pBox, CxImage* pContra
 	}
 
 	//compute total moments 0th,1st,2nd order
-	int32_t i,k;
+	int32_t i;
 	double w_tot = 0;
 	double m_tot = 0;
 	double q_tot = 0;
@@ -3350,21 +3355,29 @@ int32_t  CxImage::OptimalThreshold(int32_t method, RECT * pBox, CxImage* pContra
 
 		//max entropy
 		L = 0;
+		int32_t k;
 		for (k=gray_min;k<=i;k++) if (p[k] > 0)	L -= p[k]*log(p[k]/w1)/w1;
+		
+		// @tacent
+		#ifdef PLATFORM_LINUX
+		for (;k<=gray_max;k++) if (p[k] > 0)	L -= p[k]*log(p[k]/w2)/w2;
+		#else
 		for (k;k<=gray_max;k++) if (p[k] > 0)	L -= p[k]*log(p[k]/w2)/w2;
+		#endif
 		if (L3max < L || th3<0){
 			L3max = L;
 			th3 = i;
 		}
 
 		//potential difference (based on Electrostatic Binarization method by J. Acharya & G. Sreechakra)
-		// L=-fabs(vdiff/vsum); è molto selettivo, sembra che L=-fabs(vdiff) o L=-(vsum)
+		// L=-fabs(vdiff/vsum); Ã¨ molto selettivo, sembra che L=-fabs(vdiff) o L=-(vsum)
 		// abbiano lo stesso valore di soglia... il che semplificherebbe molto la routine
 		double vdiff = 0;
 		for (k=gray_min;k<=i;k++)
 			vdiff += p[k]*(i-k)*(i-k);
 		double vsum = vdiff;
-		for (k;k<=gray_max;k++){
+		// @tacent k; to just ;
+		for (;k<=gray_max;k++){
 			double dv = p[k]*(k-i)*(k-i);
 			vdiff -= dv;
 			vsum += dv;
@@ -3479,7 +3492,7 @@ bool CxImage::AdaptiveThreshold(int32_t method, int32_t nBoxSize, CxImage* pCont
 			r.top = r.bottom + nBoxSize;
 			int32_t threshold = OptimalThreshold(method, &r, pContrastMask);
 			if (threshold <0) return false;
-			mask.SetPixelIndex(x,y,(uint8_t)max(0,min(255,nBias+((1.0f-fGlobalLocalBalance)*threshold + fGlobalLocalBalance*globalthreshold))));
+			mask.SetPixelIndex(x,y,(uint8_t)cxmax(0,cxmin(255,nBias+((1.0f-fGlobalLocalBalance)*threshold + fGlobalLocalBalance*globalthreshold))));
 		}
 	}
 

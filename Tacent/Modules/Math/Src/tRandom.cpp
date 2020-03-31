@@ -71,7 +71,7 @@ uint32 tRandom::tGeneratorMersenneTwister::GetBits() const
 	if (StateIndex >= Dimensions)
 	{
 		uint32 lowerBits = (1LU << LeftShift) - 1;
-		uint32 upperBits = -1L << LeftShift;
+		uint32 upperBits = 0xFFFFFFFF << LeftShift;
 
 		const uint32 toggle[2] = { 0, Toggle };
 		for (int i = 0; i < Dimensions-PartialDims; i++)

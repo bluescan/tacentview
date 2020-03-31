@@ -54,7 +54,7 @@ void tChunkWriter::Open(const tString& fileName, tEndianness dstEndianness)
 {
 	tAssert(!WriteBuffer);
 
-	#ifdef PLATFORM_WIN
+	#ifdef PLATFORM_WINDOWS
 	if (ChunkFile)
 		throw tChunkError("File already opened.");
 	#else
@@ -68,7 +68,7 @@ void tChunkWriter::Open(const tString& fileName, tEndianness dstEndianness)
 
 	ChunkFile = tOpenFile(fileName, "wb");
 
-	#ifdef PLATFORM_WIN
+	#ifdef PLATFORM_WINDOWS
 	if (!ChunkFile)
 		throw tChunkError("Cannot open file [%s].", fileName.Pod());
 	#else
@@ -81,7 +81,7 @@ bool tChunkWriter::OpenSafe(const tString& fileName, tEndianness dstEndianness)
 {
 	tAssert(!WriteBuffer);
 
-	#ifdef PLATFORM_WIN
+	#ifdef PLATFORM_WINDOWS
 	if (ChunkFile)
 		return false;
 	#else
@@ -95,7 +95,7 @@ bool tChunkWriter::OpenSafe(const tString& fileName, tEndianness dstEndianness)
 
 	ChunkFile = tOpenFile(fileName, "wb");
 
-	#ifdef PLATFORM_WIN
+	#ifdef PLATFORM_WINDOWS
 	if (!ChunkFile)
 		return false;
 	#else
@@ -116,7 +116,7 @@ void tChunkWriter::Close()
 		ChunkFile = 0;
 	}
 
-	#ifndef PLATFORM_WIN
+	#ifndef PLATFORM_WINDOWS
 	tAssert(!ChunkInfos.Head());
 	#endif
 
@@ -126,7 +126,7 @@ void tChunkWriter::Close()
 		while (ChunkInfo* chunkInfo = ChunkInfos.Remove())
 			delete chunkInfo;
 
-		#ifdef PLATFORM_WIN
+		#ifdef PLATFORM_WINDOWS
 		throw tChunkError("Some chunks not ended.");
 		#endif
 	}
@@ -139,7 +139,7 @@ void tChunkWriter::BeginChunk(uint32 id, int alignment)
 	if (id & 0x80000000)
 		alignment = 4;
 
-	#ifdef PLATFORM_WIN
+	#ifdef PLATFORM_WINDOWS
 	if (!IsContainer)
 		throw tChunkError("You can only begin a chunk from a container.");
 
@@ -229,7 +229,7 @@ void tChunkWriter::EndChunk()
 {
 	ChunkInfo* topChunk = ChunkInfos.Remove();
 
-	#ifdef PLATFORM_WIN
+	#ifdef PLATFORM_WINDOWS
 	if (!ChunkFile && !WriteBuffer)
 		throw tChunkError("No chunk file opened and no chunk buffer on memory.");
 
@@ -286,7 +286,7 @@ void tChunkWriter::EndChunk()
 
 int tChunkWriter::Write(const void* data, int sizeInBytes)
 {
-	#ifdef PLATFORM_WIN
+	#ifdef PLATFORM_WINDOWS
 	if (!ChunkFile && !WriteBuffer)
 		throw tChunkError("No chunk file opened and no chunk buffer on memory.");
 
@@ -302,7 +302,7 @@ int tChunkWriter::Write(const void* data, int sizeInBytes)
 	{
 		numWritten = tWriteFile(ChunkFile, data, sizeInBytes);
 
-		#ifdef PLATFORM_WIN
+		#ifdef PLATFORM_WINDOWS
 		if (numWritten != sizeInBytes)
 		{
 			tCloseFile(ChunkFile);
@@ -784,7 +784,7 @@ void tChunkReader::Load(const tString& filename, uint8* buffer)
 	}
 
 	// Casting to uint32 is safe even for 64 bit pointers because maxAlign is much smaller than 2^32.
-	tAssert((uint32(ReadBuffer) % maxAlign) == 0);
+	tAssert((uint32(uint64(ReadBuffer)) % maxAlign) == 0);
 	int numRead = tReadFile(fh, ReadBuffer, ReadBufferSize);
 	tAssert(numRead == ReadBufferSize);
 	tCloseFile(fh);
@@ -796,7 +796,7 @@ void tChunkReader::Load(uint8* buffer, int bufferSizeBytes)
 	UnLoad();
 	const int maxAlign = 1 << (int(tChunkWriter::Alignment::Largest) + 2);
 
-	tAssert((uint32(buffer) % maxAlign) == 0);
+	tAssert((uint32(uint64(buffer)) % maxAlign) == 0);
 	IsBufferOwned = false;
 	ReadBufferSize = bufferSizeBytes;
 	ReadBuffer = buffer;
@@ -819,7 +819,7 @@ bool tChunkReader::LoadSafe(const tString& filename)
 	ReadBuffer = (uint8*)tMem::tMalloc(ReadBufferSize, maxAlign);
 	IsBufferOwned = true;
 
-	tAssert((uint32(ReadBuffer) % maxAlign) == 0);
+	tAssert((uint32(uint64(ReadBuffer)) % maxAlign) == 0);
 	int numRead = tReadFile(fh, ReadBuffer, ReadBufferSize);
 	tCloseFile(fh);
 	if (numRead != ReadBufferSize)

@@ -1276,9 +1276,9 @@ png_read_destroy(png_structp png_ptr, png_infop info_ptr,
 #ifdef PNG_USER_MEM_SUPPORTED
    free_fn = png_ptr->free_fn;
 #endif
-
+   /* @tacent Added the (void*) so it wouldn't crash on VS2019. Should not be necessary but is. I think MS messed up here. */
    png_memset((void*)png_ptr, 0, png_sizeof(png_struct));
-
+ 
    png_ptr->error_fn = error_fn;
    png_ptr->warning_fn = warning_fn;
    png_ptr->error_ptr = error_ptr;

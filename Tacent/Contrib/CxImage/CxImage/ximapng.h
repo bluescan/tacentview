@@ -22,16 +22,18 @@
 #if CXIMAGE_SUPPORT_PNG
 
 extern "C" {
+// @tacent Added comments.
 #ifdef _LINUX
  #undef _DLL
- #include <png.h>
- #include <pngstruct.h>
- #include <pnginfo.h>
-#else
+ #endif
+// #include <png.h>
+// #include <pngstruct.h>
+// #include <pnginfo.h>
+//#else
  #include "../png/png.h"
  #include "../png/pngstruct.h"
  #include "../png/pnginfo.h"
-#endif
+//#endif
 }
 
 class CxImagePNG: public CxImage

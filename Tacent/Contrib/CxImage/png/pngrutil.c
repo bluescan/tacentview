@@ -1247,9 +1247,10 @@ png_handle_iCCP(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
       {
          char umsg[80];
 
+		// @tacent. Added the (unsigned int) casts.
          png_snprintf2(umsg, 80,
              "Ignoring iCCP chunk with declared size = %u "
-              "and actual length = %u", profile_size, profile_length);
+              "and actual length = %u", (unsigned int)profile_size, (unsigned int)profile_length);
          png_warning(png_ptr, umsg);
       }
 #else

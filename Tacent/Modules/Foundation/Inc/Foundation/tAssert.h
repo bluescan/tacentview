@@ -20,14 +20,19 @@
 // compiled out only in profile and ship configurations.
 void tAssertPrintBreak(const char* expr, const char* fileName, int lineNum, const char* message);
 #if defined(CONFIG_PROFILE) || defined(CONFIG_SHIP)
-#define tAssert(expr) ((void)(expr));
-#define tAssertMsg(expr, msg) ((void)(expr));
+	#define tAssert(expr) ((void)(expr));
+	#define tAssertMsg(expr, msg) ((void)(expr));
 #else
-#define tAssert(expr) if (!(expr)) tAssertPrintBreak(#expr, __FILE__, __LINE__, nullptr);
-#define tAssertMsg(expr, msg) if (!(expr)) tAssertPrintBreak(#expr, __FILE__, __LINE__, msg);
+	#define tAssert(expr) if (!(expr)) tAssertPrintBreak(#expr, __FILE__, __LINE__, nullptr);
+	#define tAssertMsg(expr, msg) if (!(expr)) tAssertPrintBreak(#expr, __FILE__, __LINE__, msg);
 #endif
+
 #define tStaticAssert(expr) static_assert(expr, #expr)
-#define tStaticAssertMsg(expr, msg) static_assert(expr, #expr##" \""##msg##"\"")
+#if defined(PLATFORM_WINDOWS)
+	#define tStaticAssertMsg(expr, msg) static_assert(expr, #expr##" \""##msg##"\"")
+#else
+	#define tStaticAssertMsg(expr, msg) static_assert(expr, #expr " \"" msg "\"")
+#endif
 
 
 void tAbort();
@@ -39,14 +44,17 @@ void tAbort();
 // In your source code enter a line like one of the following two:
 // Todo(Do not forget to fix this)
 // Note("Here's a note")
-#if defined(PLATFORM_WIN)
+#if defined(PLATFORM_WINDOWS)
 #define tMsgHelper2(x) #x
 #define tMsgHelper1(x) tMsgHelper2(x)
-#define tMsgTodo __FILE__ "("tMsgHelper1(__LINE__)") : ToDo: "
+#define tMsgToDo __FILE__ "("tMsgHelper1(__LINE__)") : ToDo: "
 #define tMsgNote __FILE__ "("tMsgHelper1(__LINE__)") : Note: "
-#define Todo(x) __pragma(message(tMsgTodo #x))
-#define Note(x) __pragma(message(tMsgNote #x))
+#define tToDo(x) __pragma(message(tMsgToDo #x))
+#define tNote(x) __pragma(message(tMsgNote #x))
+#elif defined(PLATFORM_LINUX)
+#define tToDo(x) _Pragma("message(\"tToDo\")")
+#define tNote(x) _Pragma("message(\"tNote\")")
 #else
-#define Todo(x) _Pragma(#x)
-#define Note(x) _Pragma(#x)
+#define tToDo(x) _Pragma(#x)
+#define tNote(x) _Pragma(#x)
 #endif

@@ -1472,7 +1472,13 @@ z_streamp strm;
 {
     struct inflate_state FAR *state;
 
+	// @tacent
+	#ifdef PLATFORM_LINUX
+    if (strm == Z_NULL || strm->state == Z_NULL) return -1UL << 16;
+	#else
     if (strm == Z_NULL || strm->state == Z_NULL) return -1L << 16;
+	#endif
+	
     state = (struct inflate_state FAR *)strm->state;
     return ((long)(state->back) << 16) +
         (state->mode == COPY ? state->length :

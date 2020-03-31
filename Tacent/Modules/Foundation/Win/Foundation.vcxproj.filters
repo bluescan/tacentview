@@ -20,9 +20,6 @@
     <ClCompile Include="..\Src\tBitArray.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Src\tSync.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\Src\tPlatform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -74,9 +71,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Inc\Foundation\tVersion.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Inc\Foundation\tSync.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Inc\Foundation\tPlatform.h">

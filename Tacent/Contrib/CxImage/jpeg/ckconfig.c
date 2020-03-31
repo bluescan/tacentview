@@ -272,7 +272,11 @@ int is_shifting_signed (arg)
   }
   /* see if unsigned-shift hack will fix it. */
   /* we can't just test exact value since it depends on width of long... */
+  #ifdef PLATFORM_LINUX		// @tacent
+  res |= (~0UL) << (32-4);
+  #else
   res |= (~0L) << (32-4);
+  #endif
   if (res == -0x7F7E80CL) {	/* expected result now? */
     return 0;			/* right shift is unsigned */
   }

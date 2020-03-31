@@ -15,9 +15,10 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #pragma once
+#include <thread>
+#include <mutex>
 #include "Foundation/tAssert.h"
 #include "Foundation/tList.h"
-#include "Foundation/tSync.h"
 #include "Foundation/tMemory.h"
 namespace tMem
 {
@@ -125,7 +126,7 @@ private:
 	int SlotsPerExpansionBlock;
 
 	bool ThreadSafe;
-	tMutex Mutex;											// Only used if ThreadSafe is true.
+	std::mutex PoolMutex;					// Only used if ThreadSafe is true.
 };
 
 
@@ -147,16 +148,22 @@ inline void* tMem::tFastPool::Malloc(int numBytes)
 		return nullptr;
 
 	if (ThreadSafe)
-		Mutex.Lock();
+		PoolMutex.lock();
 
 	// If the slot pointer is nullptr we need to grow the pool by adding another block. This will automatically set
 	// FreeSlot to non-zero.
 	if (!FreeSlot)
 	{
 		if (SlotsPerExpansionBlock > 0)
+		{
 			GrowPool();
+		}
 		else
+		{
+			if (ThreadSafe)
+				PoolMutex.unlock();
 			return nullptr;
+		}
 	}
 
 	// Free pointer to next free pointer.
@@ -171,7 +178,7 @@ inline void* tMem::tFastPool::Malloc(int numBytes)
 	NumAllocations++;
 
 	if (ThreadSafe)
-		Mutex.Unlock();
+		PoolMutex.unlock();
 
 	return freeSlot;
 }
@@ -187,14 +194,12 @@ inline void tMem::tFastPool::Free(void* slot)
 	tAssert(slot);
 
 	if (ThreadSafe)
-		Mutex.Lock();
+		PoolMutex.lock();
 
 	*((uint8**)slot) = FreeSlot;
 	FreeSlot = (uint8*)slot;
 
 	NumAllocations--;
-	if (ThreadSafe)
-		Mutex.Lock();
 
 	// If Constructed is false and NumAllocations is 0 we free the pool memory.
 	if (!Constructed && (NumAllocations == 0))
@@ -204,8 +209,8 @@ inline void tMem::tFastPool::Free(void* slot)
 			block->Shutdown();
 			tFree(block);
 		}
-
-		if (ThreadSafe)
-			Mutex.Unlock();
 	}
+
+	if (ThreadSafe)
+		PoolMutex.unlock();
 }

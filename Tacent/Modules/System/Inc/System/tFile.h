@@ -19,6 +19,7 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #pragma once
+#include <ctime>
 #include <Math/tHash.h>
 #include "System/tThrow.h"
 #include "System/tPrint.h"
@@ -58,11 +59,13 @@ bool tFileExists(const tString& fileName);
 // Check if a directory or logical drive exists. Valid directory names include "E:/", "C:/Program Files/" etc. Drives
 // without media in them are considered non-existent. For example, if "E:/" refers to a CD ROM drive without media in
 // it, you'll get a false because you can't actually enter that directory. If the drive doesn't exist on the system at
-// all you'll get a false as well. If you want to check if a drive letter exists, use tDriveExists.
+// all you'll get a false as well. If you want to check if a drive letter exists on windows, use tDriveExists.
 bool tDirExists(const tString& dirName);
 
+#if defined(PLATFORM_WINDOWS)
 // Drive letter can be of form "C" or "C:" or "C:/" or with lower case for this function.
 bool tDriveExists(const tString& driveName);
+#endif
 
 // File types are based on file extensions only.
 enum class tFileType
@@ -117,12 +120,8 @@ tString tGetFileName(const tString& filename);
 // c:/Stuff/Mess.max to Mess
 tString tGetFileBaseName(const tString& filename);
 
-
-#ifdef PLATFORM_WIN
 bool tIsFileNewer(const tString& fileA, const tString& fileB);
 
-// The file's last modification time and other time values are reported in 100ns intervals since Midnight Jan 1, 1601
-// (local time). No Y2K or Y3K etc problems.
 struct tFileInfo
 {
 	tFileInfo();
@@ -130,12 +129,11 @@ struct tFileInfo
 
 	tString FileName;
 	uint64 FileSize;
-	uint64 CreationTime;
-	uint64 ModificationTime;
-	uint64 AccessTime;
+	std::time_t CreationTime;
+	std::time_t ModificationTime;
+	std::time_t AccessTime;
 	bool ReadOnly;
 	bool Hidden;
-	bool System;
 	bool Directory;
 };
 
@@ -145,8 +143,9 @@ bool tGetFileInfo(tFileInfo&, const tString& fileName);
 
 // Use this if you already have a FindData structure filled out. It simply parses the info out of it and into a
 // FileInfo struct.
-void tParseFileInfo(tFileInfo&, void* Win32FindData);
+//void tParseFileInfo(tFileInfo&, void* Win32FindData);
 
+#ifdef PLATFORM_WINDOWS
 struct tFileDetails
 {
 	tFileDetails()																										: DetailTitles(), Details() { }
@@ -172,8 +171,7 @@ void tSetFileOpenAssoc(const tString& program, const tList<tStringItem>& extensi
 
 // Gets the program and options associated with a particular extension.
 tString tGetFileOpenAssoc(const tString& extension);
-#endif // PLATFORM_WIN
-
+#endif
 
 // Returns a path or fully qualified filename that is as simple as possible. Mainly this involves removing (and
 // resolving) any "." or ".." strings. For example, if the input is:
@@ -214,6 +212,7 @@ tString tGetDir(const tString& path);
 // eg. "c:/HighDir/MedDir/LowDir/" will return "" if levels = 4.
 tString tGetUpDir(const tString& path, int levels = 1);
 
+#if defined(PLATFORM_WINDOWS)
 // Gets a list of the drive letters available on a system. The strings returned are in the form "C:". For more
 // information on a particular drive, use the DriveInfo functions below. You must empty the strings on the list as you
 // now own that memory, the list destructor won't do it for you.
@@ -253,16 +252,20 @@ bool tGetDriveInfo(tDriveInfo&, const tString& drive, bool getDisplayName = fals
 // some cases the name cannot be set. Read-only volumes or strange volume names will cause this function to return
 // false (failure).
 bool tSetVolumeName(const tString& drive, const tString& newVolumeName);
+#endif
+
 
 // The following paragraph of attribute setting and getting functions work equally well on both files and directories.
 // The "Set" calls return true on success. The "Is" calls return true if the attribute is set, and false if it isn't or
 // an error occurred (like the object didn't exist).
-bool tIsReadOnly(const tString& fileName);
-bool tSetReadOnly(const tString& fileName, bool readOnly = true);
-bool tIsHidden(const tString& fileName);
+bool tIsReadOnly(const tString& fileName);							// For Lixux returns true is user w flag not set and r flag is set.
+bool tSetReadOnly(const tString& fileName, bool readOnly = true);	// For Linux, sets the user w flag as appropriate and the r flag to true.
+bool tIsHidden(const tString& fileName);							// For Linux, checks if first character of filename is a dot (and not ".."). For Windows it checks the fileattribute as well as the first character.
+#if defined(PLATFORM_WINDOWS)
 bool tSetHidden(const tString& fileName, bool hidden = true);
 bool tIsSystem(const tString& fileName);
 bool tSetSystem(const tString& fileName, bool system = true);
+#endif
 
 tString tGetWindowsDir();
 tString tGetSystemDir();
@@ -280,63 +283,29 @@ tString tGetCurrentDir();
 // the c drive as will "C:" by itself. SetCurrentDir(".."); will move the current dir up a directory.
 bool tSetCurrentDir(const tString& dir);
 
-// Overwrites dest if it exists. I would have like to have called this CopyFile but Windows globally #defines the name!
-// Returns true if success. Will return false and not copy if overWriteReadOnly is false and the file already exists
-// and is read-only.
-bool tCopyFile(const tString& dest, const tString& src, bool overWriteReadOnly = true);
+// Overwrites dest if it exists. Returns true if success. Will return false and not copy if overWriteReadOnly is false
+// and the file already exists and is read-only.
+bool tCopyFile(const tString& destFile, const tString& srcFile, bool overWriteReadOnly = true);
 
 // Renames the file or directory specified by oldName to the newName. This function can only be used for renaming, not
 // moving. Returns true on success. The dir variable should contain the path to where the file or dir you want to
 // rename is located.
 bool tRenameFile(const tString& dir, const tString& oldName, const tString& newName);
 
-// fileMask may contain stuff like 'c:/Scenes/Art*.max'. The foundfiles list is always appended to. You must clear it
-// first if that's what you intend. If no second argument, the contents of the current directory are returned. The
-// filenames in foundFiles are absolute. Use GetFileName if you only care about the filename. If you're looking for
-// files without extensions, you are still required to have ".*" at the end of the filemask. Relic from dos days.
-// FileMask is case-insensitive.
-void tFindFiles
-(
-	tList<tStringItem>& foundFiles,
-	const tString& fileMask = "*.*", bool includeHidden = true
-);
+// The foundfiles list is always appended to. You must clear it first if that's what you intend. If empty second
+// argument, the contents of the current directory are returned. Extension can be something like "txt" (no dot).
+void tFindFiles(tList<tStringItem>& foundFiles, const tString& dir, const tString& ext = tString(), bool includeHidden = true);
 
-// fileMask may contain stuff like '*.mb'. The foundfiles list is always appended to. You must clear it first if that's
-// what you intend. If the path argument is the empty string the contents of the current directory are returned. The
-// filenames in foundFiles are absolute. Use GetFileName if you only care about the filename. If you're looking for
-// files without extensions, you are still required to have ".*" at the end of the filemask. Relic from dos days.
-// FileMask is case-insensitive.
-void tFindFilesInDir
-(
-	tList<tStringItem>& foundFiles, const tString& path,
-	const tString& fileMask = "*.*", bool includeHidden = true
-);
+// foundFiles is appened to. Clear first if desired. Extension can be something like "txt" (no dot).
+void tFindFilesRecursive(tList<tStringItem>& foundFiles, const tString& dir, const tString& ext = tString(), bool includeHidden = true);
+void tFindDirsRecursive(tList<tStringItem>& foundDirs, const tString& dir, bool includeHidden = true);
 
-// Again, fileMask may contain *'s. Path should not include the filename. The filenames in foundFiles are absolute. Use
-// GetFileName if you only care about the filename. If you're looking for files without extensions, you are still
-// required to have ".*" at the end of the filemask. Relic from dos days. fileMask is case-insensitive.
-void tFindFilesRecursive
-(
-	tList<tStringItem>& foundFiles, const tString& path,
-	const tString& fileMask = "*.*", bool includeHidden = true
-);
-void tFindDirsRecursive
-(
-	tList<tStringItem>& foundDirs, const tString& path,
-	const tString& fileMask = "*.*", bool includeHidden = true
-);
-
-// dirMask may contain stuff like "c:/Temp/Dir*". All returned path names have a terminating slash.
-// dirMask is case-insensitive.
-void tFindDirs
-(
-	tList<tStringItem>& foundDirs, const tString& dirMask = "*.*", bool includeHidden = true
-);
+// If the dirPath to search is empty, the current dir is used.
+void tFindDirs(tList<tStringItem>& foundDirs, const tString& dirPath = tString(), bool includeHidden = false);
 
 // A relentless delete. Doesn't care about read-only unless deleteReadOnly is false. This call does a recursive delete.
-// If a file has an open handle, however, this fn will fail. You still need to catch any errors. If the directory
-// didn't exist before the call then this function silently returns. Returns true if dir existed and was deleted.
-bool tDeleteDir(const tString& directory, bool deleteReadOnly = true, bool throwErrorsOnFail = true);
+// If a file has an open handle, however, this fn will fail. If the directory didn't exist before the call then this function silently returns. Returns true if dir existed and was deleted.
+bool tDeleteDir(const tString& directory, bool deleteReadOnly = true);
 
 // Creates a directory. It can also handle creating all the directories in a path. Calling with a string like
 // "C:/DirA/DirB/" will ensure that DirA and DirB exist. Returns true if successful.
@@ -405,16 +374,15 @@ inline bool tSystem::tPutc(char ch, tFileHandle file)
 }
 
 
-#ifdef PLATFORM_WIN
 inline tSystem::tFileInfo::tFileInfo() :
 	FileName(),
 	FileSize(0),
 	CreationTime(0),
 	ModificationTime(0),
-	AccessTime(0),
+	//AccessTime(0),
 	ReadOnly(false),
 	Hidden(false),
-	System(false),
+	//System(false),
 	Directory(false)
 {
 }
@@ -426,13 +394,12 @@ inline void tSystem::tFileInfo::Clear()
 	FileSize = 0;
 	CreationTime = 0;
 	ModificationTime = 0;
-	AccessTime = 0;
+//	AccessTime = 0;
 	ReadOnly = false;
 	Hidden = false;
-	System = false;
+//	System = false;
 	Directory = false;
 }
-#endif
 
 
 inline bool tSystem::tIsRelativePath(const tString& path)
@@ -441,6 +408,7 @@ inline bool tSystem::tIsRelativePath(const tString& path)
 }
 
 
+#if defined(PLATFORM_WINDOWS)
 inline tSystem::tDriveInfo::tDriveInfo() :
 	Letter(),
 	DisplayName(),
@@ -459,6 +427,7 @@ inline void tSystem::tDriveInfo::Clear()
 	SerialNumber = 0;
 	DriveType = tDriveType::Unknown;
 }
+#endif
 
 
 inline tuint128 tSystem::tHashFile128(const tString& filename, tuint128 iv)

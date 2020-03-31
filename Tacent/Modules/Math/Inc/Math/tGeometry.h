@@ -447,7 +447,7 @@ public:
 	union
 	{
 		struct { tPlane Right, Left, Top, Bottom, Near, Far; };
-		tPlane Planes[Plane::NumPlanes];
+		tPlane Planes[int(Plane::NumPlanes)];
 	};
 };
 

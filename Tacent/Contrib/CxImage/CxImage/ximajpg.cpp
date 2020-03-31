@@ -9,11 +9,12 @@
 
 #if CXIMAGE_SUPPORT_JPG
 
-#ifdef _LINUX
- #include <jmorecfg.h>
-#else
+// @tacent
+//#ifdef _LINUX
+// #include <jmorecfg.h>
+//#else
  #include "../jpeg/jmorecfg.h"
-#endif
+//#endif
 
 #include "ximaiter.h"
 

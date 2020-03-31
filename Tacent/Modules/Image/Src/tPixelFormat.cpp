@@ -19,7 +19,7 @@
 
 namespace tImage
 {
-	int NormalFormat_BytesPerPixel[tPixelFormat::NumNormalFormats] =
+	int NormalFormat_BytesPerPixel[int(tPixelFormat::NumNormalFormats)] =
 	{
 		3,				// R8G8B8
 		4,				// R8G8B8A8
@@ -31,7 +31,7 @@ namespace tImage
 		2				// L8A8
 	};
 
-	int BlockFormat_BytesPer4x4PixelBlock[tPixelFormat::NumBlockFormats] =
+	int BlockFormat_BytesPer4x4PixelBlock[int(tPixelFormat::NumBlockFormats)] =
 	{
 		8,				// BC1_DXT1
 		8,				// BC1_DXT1BA
@@ -43,7 +43,7 @@ namespace tImage
 		16,				// BC7
 	};
 
-	int HDRFormat_BytesPerPixel[tPixelFormat::NumHDRFormats] =
+	int HDRFormat_BytesPerPixel[int(tPixelFormat::NumHDRFormats)] =
 	{
 		4,				// RAD. 3 bytes for each RGB. 1 byte shared exponent.
 		0				// EXR. @todo There are multiple exr pixel formats. We don't yet determine which one.

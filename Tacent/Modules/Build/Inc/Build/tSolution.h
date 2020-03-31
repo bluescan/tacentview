@@ -15,7 +15,7 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #pragma once
-#ifndef PLATFORM_WIN
+#ifndef PLATFORM_WINDOWS
 #error tSolution only supported on Windows.
 #endif
 #include <Foundation/tString.h>

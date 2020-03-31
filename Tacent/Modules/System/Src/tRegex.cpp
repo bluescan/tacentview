@@ -703,7 +703,7 @@ const char* tRegex::MatchNode(const tRegex::Node* node, const char* str, const t
 		case tOperator_WB:
 			if
 			(
-				str == BOL && !tIsspace(*str) || (str == EOL && !tIsspace(*(str-1))) ||
+				(str == BOL && !tIsspace(*str)) || (str == EOL && !tIsspace(*(str-1))) ||
 				(!tIsspace(*str) && tIsspace(*(str+1))) || (tIsspace(*str) && !tIsspace(*(str+1)))
 			)
 			{
@@ -722,7 +722,7 @@ const char* tRegex::MatchNode(const tRegex::Node* node, const char* str, const t
 			return nullptr;
 
 		case tOperator_Dot:
-			*str++;
+			str++;
 			return str;
 
 		case tOperator_NClass:
@@ -734,7 +734,7 @@ const char* tRegex::MatchNode(const tRegex::Node* node, const char* str, const t
 				(type == tOperator_NClass ? true : false)
 			)
 			{
-				*str++;
+				str++;
 				return str;
 			}
 			return nullptr;
@@ -742,7 +742,7 @@ const char* tRegex::MatchNode(const tRegex::Node* node, const char* str, const t
 		case tOperator_CClass:
 			if (MatchCClass(node->Left, *str))
 			{
-				*str++;
+				str++;
 				return str;
 			}
 			return nullptr;
@@ -750,7 +750,7 @@ const char* tRegex::MatchNode(const tRegex::Node* node, const char* str, const t
 		default:
 			if (*str != node->Type)
 				return nullptr;
-			*str++;
+			str++;
 			return str;
 	}
 
@@ -882,9 +882,7 @@ void tRegex::Search(const char* textBegin, const char* textEnd, tList<Match>& ma
 			node = Nodes[node].Next;
 		}
 
-		// Was *textBegin++; but I think the deref is a waste. textBegin++; would probably work
-		// but is untested so I've left it alone.
-		*textBegin++;
+		textBegin++;
 	}
 	while (cur == 0 && textBegin != textEnd);
 

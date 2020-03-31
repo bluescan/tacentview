@@ -8,7 +8,7 @@
 // some commonly used sizes. Specifically it allows one to use the types tint128, tint256, tint512, tuint128, tuint256,
 // and tuint512 simply by including this header.
 //
-// Copyright (c) 2004-2006, 2015, 2017 Tristan Grimmer.
+// Copyright (c) 2004-2006, 2015, 2017, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -32,8 +32,6 @@
 
 #pragma once
 #include "Foundation/tString.h"
-
-
 template<int> class tFixInt;
 
 
@@ -44,8 +42,10 @@ template<int NumBits> class tFixIntU
 {
 public:
 	tFixIntU()																											{ tStaticAssertMsg(NumBits % 32 == 0, "tFixIntU must be a multiple of 32 bits in size."); }
-	tFixIntU(const tFixIntU& src)																						{ Set(src); }
-	tFixIntU(const tFixInt<NumBits>& src)																				{ Set(src); }
+
+	// Disabled CopyCons so class remains a POD-type. Allows it to be passed to tPrintf for non MSVC compilers.
+	// tFixIntU(const tFixIntU& src)																					{ Set(src); }
+	// tFixIntU(const tFixInt<NumBits>& src)																			{ Set(src); }
 
 	// A base argument of < 2 means determine the base from a prefix supplied inside the string itself, like "0x".
 	// See tStd::tStrtoi for a full description of the behaviour.
@@ -86,7 +86,7 @@ public:
 	operator float() const;
 	operator double() const;
 
-	static inline void Swap(tFixIntU& a, tFixIntU& b)																	{ for (int i = 0; i < NumBaseInts; i++) tStd::Swap(a.IntData[i], b.IntData[i]); }
+	static inline void Swap(tFixIntU& a, tFixIntU& b)																	{ for (int i = 0; i < NumBaseInts; i++) tStd::tSwap(a.IntData[i], b.IntData[i]); }
 	tFixIntU& operator=(const tFixInt<NumBits>& v)																		{ return *this = v.AsUnsigned(); }
 	template<int N, bool LhsGreater> struct AssignHelper																{ template <typename T> void operator()(tFixIntU& lhs, const T& rhs) const; };
 	template<int N> struct AssignHelper<N, false>																		{ template <typename T> void operator()(tFixIntU& lhs, const T& rhs) const; };
@@ -185,7 +185,7 @@ public:
 	// Returns how many uint32s are used to store the integer.
 	int GetRawCount() const																								{ return NumBaseInts; }
 	void GetRawData(uint32* dest) const						/* Least significant at the beginning. */					{ tAssert(dest); tMemcpy(dest, IntData, NumBaseInts*4); }
-	void SetRawData(const uint32* src)																					{ tAssert(src); tMemcpy(IntData, src, NumBaseInts*4); int r = B%32; uint32& e = IntData[NumBaseInts-1]; e &= r ? ~((0xFFFFFFFF >> r) << r) : 0xFFFFFFFF; }	// Least significant at the beginning. Clears any unused bits for you.
+	void SetRawData(const uint32* src)																					{ tAssert(src); tMemcpy(IntData, src, NumBaseInts*4); int r = NumBits%32; uint32& e = IntData[NumBaseInts-1]; e &= r ? ~((0xFFFFFFFF >> r) << r) : 0xFFFFFFFF; }	// Least significant at the beginning. Clears any unused bits for you.
 	uint32& RawElement(int i)																							{ return IntData[i]; }
 	uint32 GetRawElement(int i) const																					{ return IntData[i]; }
 
@@ -203,7 +203,7 @@ public:
 	static int BaseIndex(int x)																							{ return x; }
 	#endif
 
-	uint32 IntData[NumBaseInts];							// IntData[0] is the LEAST significant uint32.
+	uint32 IntData[NumBaseInts];																						// IntData[0] is the LEAST significant uint32.
 
 protected:
 	template<typename T> void Init(T, uint8 fill = 0);
@@ -232,10 +232,12 @@ template<int N> tFixIntU<N> tDivide(tFixIntU<N> a, int b, int* remainder = nullp
 // Now we overload the unsigned functions to provide the necessary differences for signed numbers.
 template<int NumBits> class tFixInt : public tFixIntU<NumBits>
 {
+public:
 	using tFixIntU<NumBits>::Init;
 	using tFixIntU<NumBits>::Extract;
+	using tFixIntU<NumBits>::IntData;
+	using tFixIntU<NumBits>::MSIndex;
 
-public:
 	tFixInt()																											{ tStaticAssertMsg(NumBits % 32 == 0, "tFixInt must be a multiple of 32 bits in size."); }
 	tFixInt(const char* s, int base = -1)																				{ Set(s, base); }
 	tFixInt(int8 v)																										{ Set(v); }
@@ -277,8 +279,8 @@ public:
 	template<int N> tFixInt& operator=(const tFixIntU<N>& v)															{ return *this = v.AsSigned(); }
 	template<int N, bool LhsGreater> struct AssignHelper																{ template <typename T2> void operator()(tFixInt& lhs, const T2& rhs) const; };
 	template<int N> struct AssignHelper<N, false>																		{ template <typename T2> void operator()(tFixInt& lhs, const T2& rhs) const; };
-	template<int N> tFixInt& operator=(const tFixInt<N>& rhs)															{ AssignHelper<N, (B>N)>()(*this, rhs); return *this; }
-	void MakeMin()																										{ *this = tFixIntU<NumBits>(1) << (B-1); }
+	template<int N> tFixInt& operator=(const tFixInt<N>& rhs)															{ AssignHelper< N, (NumBits>N) >()(*this, rhs); return *this; }
+	void MakeMin()																										{ *this = tFixIntU<NumBits>(1) << (NumBits-1); }
 	void MakeMax()																										{ MakeMin(*this); --(*this); }
 
 	const tFixIntU<NumBits>& AsUnsigned() const																			{ return reinterpret_cast< const tFixIntU<NumBits>& >(*this); }
@@ -393,19 +395,19 @@ template<int N> inline void tFixIntU<N>::Set(float v)
 		neg = true;
 	}
 
-	if (f < 1.0f)
+	if (v < 1.0f)
 		return;
 
 	int e;
-	float mant = tStd::tFrexp(f, &e);
+	float mant = tStd::tFrexp(v, &e);
 	while (mant > 0.0f && e-- > 0)
 	{
 		mant *= 2.0f;
 		if (mant >= 1.0f)
 		{
 			mant -= 1.0f;
-			if (e < B)
-				BitSet(e);
+			if (e < N)
+				SetBit(e);
 		}
 	}
 	if (neg)
@@ -437,8 +439,8 @@ template<int N> inline void tFixIntU<N>::Set(double v)
 		if (mant >= 1.0)
 		{
 			mant -= 1.0;
-			if (e < B)
-				BitSet(e);
+			if (e < N)
+				SetBit(e);
 		}
 	}
 
@@ -699,8 +701,9 @@ template<int N> inline tFixIntU<N>& tFixIntU<N>::operator*=(const tFixIntU& m)
 }
 
 
-template<int N> inline tFixIntU<N>& tFixIntU<N>::operator*=(uint32 v)
+template<int N> inline tFixIntU<N>& tFixIntU<N>::operator*=(const uint32 m)
 {
+	uint32 v = m;
 	tFixIntU t;
 	t = *this;
 	*this = (tFixIntU)0u;
@@ -1021,7 +1024,7 @@ template<int N> inline int tFixIntU<N>::FindLowestBitSet() const
 	{
 		if (IntData[i] != 0)
 		{
-			uint32 temp = x.IntData[i];
+			uint32 temp = IntData[i];
 			uint32 tempMax = 0xFFFFFFFF;
 			int shift = 16;
 			do
@@ -1062,14 +1065,14 @@ template<int N> inline bool tIsPow2(const tFixIntU<N>& v)
 
 template<int N> inline tFixIntU<N> tNextPow2(const tFixIntU<N>& v)
 {
-	tFixIntU result;
-	result = v - (tFixIntU)1U;
+	tFixIntU<N> result;
+	result = v - (tFixIntU<N>)1U;
 	int shift = 1;
 	do
 	{
 		result |= result >> shift;
 		shift <<= 1;
-	} while (shift < B);
+	} while (shift < N);
 	++result;
 	return result;
 }
@@ -1077,9 +1080,9 @@ template<int N> inline tFixIntU<N> tNextPow2(const tFixIntU<N>& v)
 
 template<int N> inline uint32 tCeilLog2(const tFixIntU<N>& v)
 {
-	tFixIntU temp, temp2;
+	tFixIntU<N> temp, temp2;
 	uint32 result = 0u;
-	int shift = B>>1;
+	int shift = N >> 1;
 
 	temp = v;
 	do
@@ -1090,18 +1093,18 @@ template<int N> inline uint32 tCeilLog2(const tFixIntU<N>& v)
 			temp = temp2;
 			result |= shift;
 		}
-	} while ((shift>>=1) > 0);
+	} while ((shift >>= 1) > 0);
 	return result;
 }
 
 
 template<int N> inline tFixIntU<N> tPow(tFixIntU<N> a, int b)
 {
-	tFixIntU result;
+	tFixIntU<N> result;
 	if (b < 0)
-		return (tFixIntU)0;
+		return (tFixIntU<N>)0;
 
-	result = (tFixIntU)1U;
+	result = (tFixIntU<N>)1U;
 
 	if (a == result)
 		return result;
@@ -1118,7 +1121,7 @@ template<int N> inline tFixIntU<N> tPow(tFixIntU<N> a, int b)
 
 template<int N> inline tFixIntU<N> tModPow(tFixIntU<N> base, tFixIntU<N> exp, const tFixIntU<N>& mod)
 {
-	tFixIntU result;
+	tFixIntU<N> result;
 	result = 1;
 	while (exp > 0)
 	{
@@ -1136,15 +1139,17 @@ template<int N> inline void tFixInt<N>::Set(float f)
 	*this = 0;
 	if (f != f || (f == f && f-f != 0.f))		// NAN or +/-inf.
 	{
-		BitSet(B-1);
+		tFixIntU<N>::SetBit(N-1);
 		return;
 	}
+
 	bool neg = false;
 	if (f < 0.f)
 	{
 		f = -f;
 		neg = true;
 	}
+
 	if (f < 1.0f)
 		return;
 
@@ -1156,10 +1161,11 @@ template<int N> inline void tFixInt<N>::Set(float f)
 		if (mant >= 1.0f)
 		{
 			mant -= 1.0f;
-			if (e < B)
-				BitSet(e);
+			if (e < N)
+				tFixIntU<N>::SetBit(e);
 		}
 	}
+
 	if (neg)
 		*this = -*this;
 }
@@ -1170,17 +1176,20 @@ template<int N> inline void tFixInt<N>::Set(double d)
 	*this = 0;
 	if (d != d || (d == d && d-d != 0.0))		// nan or +/-inf
 	{
-		BitSet(B-1);
+		tFixIntU<N>::SetBit(N-1);
 		return;
 	}
+
 	bool neg = false;
 	if (d < 0.0)
 	{
 		d = -d;
 		neg = true;
 	}
+
 	if (d < 1.0)
 		return;
+
 	int e;
 	double mant = tStd::tFrexp(d, &e);
 	while (mant > 0.0 && e-- > 0)
@@ -1189,8 +1198,8 @@ template<int N> inline void tFixInt<N>::Set(double d)
 		if (mant >= 1.0)
 		{
 			mant -= 1.0;
-			if (e < B)
-				BitSet(e);
+			if (e < N)
+				tFixIntU<N>::SetBit(e);
 		}
 	}
 
@@ -1203,31 +1212,36 @@ template<int B> template<int N, bool LhsGreater> template<typename T2> inline vo
 {
 	const uint32* const accessorHack = (uint32*)&rhs;
 	int i = 0;
+	
 	#ifdef ENDIAN_BIG
 	if (rhs < tFixInt<N>(0u))		// Sign extend.
 	{
-		for (; i < NumBaseInts - N / 32; i++)
-			lhs.IntData[BaseIndex(i)] = 0xFFFFFFFF;
+		for (; i < tFixIntU<B>::NumBaseInts - N / 32; i++)
+			lhs.IntData[tFixIntU<B>::BaseIndex(i)] = 0xFFFFFFFF;
 	}
 	else
 	{
-		for (; i < NumBaseInts - N / 32; i++)
-			lhs.IntData[BaseIndex(i)] = 0u;
+		for (; i < tFixIntU<B>::NumBaseInts - N / 32; i++)
+			lhs.IntData[tFixIntU<B>::BaseIndex(i)] = 0u;
 	}
-	for (; i < NumBaseInts; i++)
-		lhs.IntData[BaseIndex(i)] = accessorHack[BaseIndex(i)];
+
+	for (; i < tFixIntU<B>::NumBaseInts; i++)
+		lhs.IntData[tFixIntU<B>::BaseIndex(i)] = accessorHack[tFixIntU<B>::BaseIndex(i)];
+
 	#else
+
 	for (; i < N / 32; i++)
-		lhs.IntData[BaseIndex(i)] = accessorHack[BaseIndex(i)];
+		lhs.IntData[tFixInt<B>::BaseIndex(i)] = accessorHack[tFixInt<B>::BaseIndex(i)];
+
 	if (rhs < tFixInt<N>(0u))		// Sign extend.
 	{
-		for (; i < NumBaseInts; i++)
-			lhs.IntData[BaseIndex(i)] = 0xFFFFFFFF;
+		for (; i < tFixIntU<B>::NumBaseInts; i++)
+			lhs.IntData[tFixIntU<B>::BaseIndex(i)] = 0xFFFFFFFF;
 	}
 	else
 	{
-		for (; i < NumBaseInts; i++)
-			lhs.IntData[BaseIndex(i)] = 0u;
+		for (; i < tFixIntU<B>::NumBaseInts; i++)
+			lhs.IntData[tFixIntU<B>::BaseIndex(i)] = 0u;
 	}
 	#endif
 }
@@ -1239,8 +1253,8 @@ template<int B> template<int N> template<typename T2> inline void tFixInt<B>::As
 	#ifdef ENDIAN_BIG
 	accessorHack += (N-B) / 32;
 	#endif
-	for (int i = 0; i < NumBaseInts; i++)
-		lhs.IntData[BaseIndex(i)] = accessorHack[BaseIndex(i)];
+	for (int i = 0; i < tFixIntU<B>::NumBaseInts; i++)
+		lhs.IntData[tFixIntU<B>::BaseIndex(i)] = accessorHack[tFixIntU<B>::BaseIndex(i)];
 }
 
 
@@ -1253,16 +1267,16 @@ template<int N> inline tFixInt<N>& tFixInt<N>::operator>>=(int shift)
 		int othershift = 32 - remaindershift;
 
 		#ifdef ENDIAN_BIG
-		for (int i = NumBaseInts-1; i >= 0; i--)
+		for (int i = tFixIntU<N>::NumBaseInts-1; i >= 0; i--)
 		#else
-		for (int i = 0; i < NumBaseInts; i++)
+		for (int i = 0; i < tFixIntU<N>::NumBaseInts; i++)
 		#endif
 		{
-			if (source < NumBaseInts)
+			if (source < tFixIntU<N>::NumBaseInts)
 			{
-				IntData[i] = this->IntData[BaseIndex(source++)] >> remaindershift;
+				IntData[i] = this->IntData[tFixIntU<N>::BaseIndex(source++)] >> remaindershift;
 				if (othershift < 32)
-					IntData[i] |= ((source < NumBaseInts) ? IntData[BaseIndex(source)] : 0xFFFFFFFF) << othershift;
+					IntData[i] |= ((source < tFixIntU<N>::NumBaseInts) ? IntData[tFixIntU<N>::BaseIndex(source)] : 0xFFFFFFFF) << othershift;
 			}
 			else
 			{
@@ -1336,7 +1350,7 @@ template<int N> inline bool operator<(const tFixInt<N>& a, const tFixInt<N>& b)
 template<int N> inline tFixInt<N> tSqrt(const tFixInt<N>& v)
 {
 	if (v.IntData[tFixIntU<N>::MSIndex] >> (32-1) != 0u)
-		return tFixInt(0u);							// If negative just return zero.
+		return tFixInt<N>(0u);							// If negative just return zero.
 
 	return tSqrt(v.AsUnsigned()).AsSigned();
 }
@@ -1344,7 +1358,7 @@ template<int N> inline tFixInt<N> tSqrt(const tFixInt<N>& v)
 
 template<int N> inline tFixInt<N> tCurt(const tFixInt<N>& v)
 {
-	tFixInt x, dx;
+	tFixInt<N> x, dx;
 
 	if (!v)
 	{
@@ -1384,7 +1398,7 @@ template<int N> inline tFixInt<N> tAbs(const tFixInt<N>& v)
 template<int N> inline tFixInt<N> tFactorial(const tFixInt<N>& v)
 {
 	if (v.IntData[tFixIntU<N>::MSIndex] >> (32-1) != 0u)
-		return tFixInt(0u);
+		return tFixInt<N>(0u);
 
 	return tFactorial(v.AsUnsigned()).AsSigned();
 }
@@ -1392,7 +1406,7 @@ template<int N> inline tFixInt<N> tFactorial(const tFixInt<N>& v)
 
 template<int N> inline tFixInt<N> tPow(const tFixInt<N>& a, int b)
 {
-	tFixInt temp;
+	tFixInt<N> temp;
 	temp = tPow(tAbs(a).AsUnsigned(), b).AsSigned();
 	return ((a.IntData[tFixIntU<N>::MSIndex] >> (32-1) != 0u) && ((b & 1) != 0)) ? -temp : temp;
 }

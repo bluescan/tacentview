@@ -19,11 +19,12 @@
 
 #if CXIMAGE_SUPPORT_JASPER
 
-#ifdef _LINUX
- #include <jasper/jasper.h>
-#else
+// @tacent comments added
+//#ifdef _LINUX
+// #include <jasper/jasper.h>
+//#else
  #include "../jasper/include/jasper/jasper.h"
-#endif
+//#endif
 
 class CxImageJAS: public CxImage
 {

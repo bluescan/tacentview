@@ -93,7 +93,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>../Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_WIN;ARCHITECTURE_X64;WIN32;NDEBUG;_LIB;CONFIG_RELEASE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_WINDOWS;ARCHITECTURE_X64;WIN32;NDEBUG;_LIB;CONFIG_RELEASE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -130,7 +130,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>../Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_WIN;ARCHITECTURE_X64;WIN32;NDEBUG;_LIB;CONFIG_RELEASE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_WINDOWS;ARCHITECTURE_X64;WIN32;NDEBUG;_LIB;CONFIG_RELEASE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -165,7 +165,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>../Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_WIN;ARCHITECTURE_X64;WIN32;_DEBUG;_LIB;CONFIG_DEBUG;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_WINDOWS;ARCHITECTURE_X64;WIN32;_DEBUG;_LIB;CONFIG_DEBUG;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
@@ -200,7 +200,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>../Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_WIN;ARCHITECTURE_X64;WIN32;_DEBUG;_LIB;CONFIG_DEBUG;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_WINDOWS;ARCHITECTURE_X64;WIN32;_DEBUG;_LIB;CONFIG_DEBUG;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
@@ -238,7 +238,6 @@
     <ClCompile Include="..\Src\tPool.cpp" />
     <ClCompile Include="..\Src\tStandard.cpp" />
     <ClCompile Include="..\Src\tString.cpp" />
-    <ClCompile Include="..\Src\tSync.cpp" />
     <ClCompile Include="..\Src\tUnits.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -256,7 +255,6 @@
     <ClInclude Include="..\Inc\Foundation\tSort.h" />
     <ClInclude Include="..\Inc\Foundation\tStandard.h" />
     <ClInclude Include="..\Inc\Foundation\tString.h" />
-    <ClInclude Include="..\Inc\Foundation\tSync.h" />
     <ClInclude Include="..\Inc\Foundation\tUnits.h" />
     <ClInclude Include="..\Inc\Foundation\tVersion.h" />
   </ItemGroup>

@@ -2873,9 +2873,11 @@ PickContigCase(TIFFRGBAImage* img)
 {
 	img->get = TIFFIsTiled(img->tif) ? gtTileContig : gtStripContig;
 	img->put.contig = NULL;
-	switch (img->photometric) {
+	switch (img->photometric)
+	{
 		case PHOTOMETRIC_RGB:
-			switch (img->bitspersample) {
+			switch (img->bitspersample)
+			{
 				case 2: // + VK +
 					if (!img->Map) 
 						img->put.contig = putRGBcontig2bittile; 
@@ -2921,18 +2923,22 @@ PickContigCase(TIFFRGBAImage* img)
 			}
 			break;
 		case PHOTOMETRIC_SEPARATED:
-			if (buildMap(img)) {
-				if (img->bitspersample == 8) {
+			if (buildMap(img))
+			{
+				if (img->bitspersample == 8)
+				{
 					if (!img->Map)
 						img->put.contig = putRGBcontig8bitCMYKtile;
 					else
 						img->put.contig = putRGBcontig8bitCMYKMaptile;
-				} else if( img->bitspersample == 16) { // + VK +
+				} else if( img->bitspersample == 16)
+				{ // + VK +
 					if (!img->Map)
 						img->put.contig = put_CMYK_contig16bittile;
 					else
 						img->put.contig = put_CMYKmap_contig16bittile;
 				}
+			}		// @tacent added bracket
 			break;
 		case PHOTOMETRIC_PALETTE:
 			if (buildMap(img)) {

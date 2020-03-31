@@ -97,7 +97,11 @@ _TIFFFdOpen(void* fd, const char* name, const char* mode)
 	    _tiffSizeProcEx, _tiffMapProcEx, _tiffUnmapProcEx);
 	if (tif)
 	{
+#ifdef PLATFORM_LINUX	// @tacent
+		tif->tif_fd = (long int)fd;
+#else
 		tif->tif_fd = (int)fd;
+#endif
 	}
 	return (tif);
 }

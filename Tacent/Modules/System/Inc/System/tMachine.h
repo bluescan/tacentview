@@ -20,23 +20,25 @@
 namespace tSystem
 {
 
+	
+#ifdef PLATFORM_WINDOWS
 // Returns true if the processor and the OS support Streaming SIMD Extensions.
 bool tSupportsSSE();
 bool tSupportsSSE2();
+#endif
 
 // Returns the computer's name.
 tString tGetCompName();
 
-// Returns the ip address of the machine if it is set. String will look like: "xxx.xxx.xxx.xxx". Returns an empty
-// string if it is not set.
-tString tGetIPAddress();
-
 // Returns the number of cores (processors) the current machine has.
 int tGetNumCores();
 
+#ifdef PLATFORM_WINDOWS
 // Opens the Os's file explorer for the folder and file specified. If file doesn't exist, no file will be selected.
 // If dir doesn't exist, an explorer window is opened at a location decided by the system.
 bool tOpenSystemFileExplorer(const tString& dir, const tString& file);
 bool tOpenSystemFileExplorer(const tString& fullFilename);
+#endif
+
 
 }

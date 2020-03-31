@@ -61,8 +61,14 @@ extern void *lfind(const void *, const void *, size_t *, size_t,
   Libtiff itself does not require a 64-bit type, but bundled TIFF
   utilities may use it.
 */
+// @tacent
+#ifdef PLATFORM_LINUX
+typedef __int64_t int64;
+typedef __uint64_t uint64;
+#else
 typedef TIFF_INT64_T  int64;
 typedef TIFF_UINT64_T uint64;
+#endif
 
 #include "tiffio.h"
 #include "tif_dir.h"
@@ -101,7 +107,11 @@ typedef	void (*TIFFTileMethod)(TIFF*, uint32*, uint32*);
 
 struct tiff {
 	char*		tif_name;	/* name of open file */
+#ifdef PLATFORM_LINUX	// @tacent
+	long int	tif_fd;		/* open file descriptor */
+#else
 	int		tif_fd;		/* open file descriptor */
+#endif
 	int		tif_mode;	/* open mode (O_*) */
 	uint32		tif_flags;
 #define	TIFF_FILLORDER		0x00003	/* natural bit fill order for machine */

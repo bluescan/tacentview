@@ -20,7 +20,11 @@
 #define SIZEOF_INT 4
 
 /* The size of a `long', as computed by sizeof. */
+#ifdef PLATFORM_LINUX // @tacent
+#define SIZEOF_LONG 8
+#else
 #define SIZEOF_LONG 4
+#endif
 
 /* Signed 64-bit type formatter */
 #define TIFF_INT64_FORMAT "%I64d"

@@ -54,7 +54,7 @@ tMem::tFastPool::tFastPool(int maxItemSizeInBytes, int initialSlotsInBlock, int 
 	SlotsInitialBlock(initialSlotsInBlock),
 	SlotsPerExpansionBlock(slotsPerExpansionBlock),
 	ThreadSafe(threadSafe),
-	Mutex()
+	PoolMutex()
 {
 	// OK, the slot size must be big enough to hold a pointer. We currently support up to 8 byte pointers. Also, the slot
 	// size must be a multiple of 4 for alignment purposes.

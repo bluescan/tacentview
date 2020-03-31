@@ -81,7 +81,9 @@ void TexView::ShowContentViewDialog(bool* popen)
 			ImGui::Text(filename.Chars());
 
 			tString ttStr;
-			tsPrintf(ttStr, "%s\n%s\n%'d Bytes", filename.Chars(), tSystem::tConvertTimeToString(i->FileModTime).Chars(), i->FileSizeB);
+			tsPrintf(ttStr, "%s\n%s\n%'d Bytes", 
+				filename.Chars(),
+				tSystem::tConvertTimeToString(tSystem::tConvertTimeToLocal(i->FileModTime)).Chars(), i->FileSizeB);
 			ShowToolTip(ttStr.Chars());
 
 			// We use a separator to indicate the current item.

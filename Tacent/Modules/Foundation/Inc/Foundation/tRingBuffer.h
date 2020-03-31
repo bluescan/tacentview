@@ -178,7 +178,7 @@ template<typename T> inline int tRingBuffer<T>::Append(const T* items, int numIt
 
 	// Copy loop 1.
 	if (useMemCpy)
-		tMemcpy(Tail, items, itemCount*sizeof(T));
+		tStd::tMemcpy(Tail, items, itemCount*sizeof(T));
 	else
 		for (int i = 0; i < itemCount; i++)
 			*(Tail+i) = *(items+i);
@@ -209,7 +209,7 @@ template<typename T> inline int tRingBuffer<T>::Append(const T* items, int numIt
 
 	// Copy loop 2.
 	if (useMemCpy)
-		tMemcpy(Buffer, items, itemCount*sizeof(T));
+		tStd::tMemcpy(Buffer, items, itemCount*sizeof(T));
 	else
 		for (int i = 0; i < itemCount; i++)
 			*(Buffer+i) = *(items+i);
@@ -268,7 +268,7 @@ template<typename T> inline int tRingBuffer<T>::Remove(T* items, int numItems, b
 
 	// Copy loop 1.
 	if (useMemCpy)
-		tMemcpy(items, Head, itemCount*sizeof(T));
+		tStd::tMemcpy(items, Head, itemCount*sizeof(T));
 	else
 		for (int i = 0; i < itemCount; i++)
 			*(items+i) = *(Head+i);
@@ -299,7 +299,7 @@ template<typename T> inline int tRingBuffer<T>::Remove(T* items, int numItems, b
 
 	// Copy loop 2.
 	if (useMemCpy)
-		tMemcpy(items, Buffer, itemCount*sizeof(T));
+		tStd::tMemcpy(items, Buffer, itemCount*sizeof(T));
 	else
 		for (int i = 0; i < itemCount; i++)
 			*(items+i) = *(Buffer+i);

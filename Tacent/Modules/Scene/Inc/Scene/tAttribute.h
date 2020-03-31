@@ -57,7 +57,7 @@ public:
 	operator float() const																								{ return GetAsFloat(); }
 	bool operator==(const tAttribute& a) const																			{ if (Name != a.Name) return false; if (Type != a.Type) return false; if (Value != a.Value) return false; return true; }
 	bool operator!=(const tAttribute& a) const																			{ return !(*this == a); }
-	tAttribute& operator=(const tAttribute& a)																			{ Name = a.Name; Type = a.Type; Value = a.Value; }
+	tAttribute& operator=(const tAttribute& a)																			{ Name = a.Name; Type = a.Type; Value = a.Value; return *this; }
 
 	tString Name;
 	tType Type;							// The type determines how to interpret Value.

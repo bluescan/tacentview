@@ -42,8 +42,8 @@ public:
 	T* Prev() const																										{ return (T*)PrevItem; }
 
 private:
-	template<typename T> friend class tList;
-	template<typename T> friend class tListZ;
+	template<typename U> friend class tList;
+	template<typename U> friend class tListZ;
 	mutable const T* NextItem;
 	mutable const T* PrevItem;
 };
@@ -282,7 +282,7 @@ public:
 	// That is, GetNumItems() - 1. Returns number of swaps performed.
 	//
 	// Note that any iterators that you are maintaining should remain valid.
-	template<typename CompareFunc> int Bubble(CompareFunc, bool backwards = false, int maxCompares = -1)				{ return Nodes.Bubble(compare, backwards, maxCompares); }
+	template<typename CompareFunc> int Bubble(CompareFunc compare, bool backwards = false, int maxCompares = -1)		{ return Nodes.Bubble(compare, backwards, maxCompares); }
 
 private:
 	// tItList is implemented using a tList of Nodes that point to the objects.

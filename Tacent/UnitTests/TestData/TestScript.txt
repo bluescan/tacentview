@@ -1,0 +1,22 @@
+; This is a test script to verify tScript parsing.
+<
+	This is a
+	multiline comment.
+>
+[A [6.8 42 True]]
+
+K
+
+[d	e[ f g]]	; A comment with chars that should be ignored ===>  [
+[[H I] "This is a bigger atom" ]
+
+[VarNumArg 1 2 3 4 5 [6 7]]
+
+["quoted" notquoted]
+
+; Vectors.
+[(1.0,2.0) (3, 4) (1,2,3) (4 , 5, 6) (1,2,3,4) (5, 6, 7.42 ,8)]
+
+; Matrices.
+[(1.0,2.0,3,4)]
+; A final comment.

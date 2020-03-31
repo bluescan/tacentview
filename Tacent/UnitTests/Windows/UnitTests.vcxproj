@@ -1,0 +1,188 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{2FF3CA7A-2E66-42BD-BF34-CBF61CD8748F}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>UnitTests</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>PLATFORM_WINDOWS;CONFIG_DEBUG;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\Modules\Foundation\Inc;..\..\Modules\Math\Inc;..\..\Modules\System\Inc;..\..\Modules\Image\Inc;..\..\Modules\Build\Inc;..\..\Modules\Scene\Inc</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>PLATFORM_WINDOWS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\Modules\Foundation\Inc;..\..\Modules\Math\Inc;..\..\Modules\System\Inc;..\..\Modules\Image\Inc;..\..\Modules\Build\Inc;..\..\Modules\Scene\Inc</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Contrib\CxImage\CxImage\cximage.vcxproj">
+      <Project>{c739151f-5384-41df-a1a6-f089e2c1ad56}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Contrib\CxImage\dcr\libdcr.vcxproj">
+      <Project>{df861d33-9bc1-418c-82b1-581f590fe169}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Contrib\CxImage\jasper\jasper.vcxproj">
+      <Project>{ffda5da1-bb65-4695-b678-be59b4a1355d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Contrib\CxImage\jpeg\Jpeg.vcxproj">
+      <Project>{818753f2-dbb9-4d3b-898a-a604309be470}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Contrib\CxImage\mng\mng.vcxproj">
+      <Project>{40a69f40-063e-43fd-8543-455495d8733e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Contrib\CxImage\png\png.vcxproj">
+      <Project>{43a0e60e-5c4a-4c09-a29b-7683f503bbd7}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Contrib\CxImage\psd\libpsd.vcxproj">
+      <Project>{0debb3cc-712b-4ac1-84df-e2d9d7d5f859}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Contrib\CxImage\tiff\Tiff.vcxproj">
+      <Project>{0588563c-f05c-428c-b21a-dd74756628b3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Contrib\CxImage\zlib\zlib.vcxproj">
+      <Project>{7b53d2c7-1b4a-4a53-a7d3-e25b92470b81}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Contrib\NvidiaTextureTools\project\vs\bc6h\bc6h.vcxproj">
+      <Project>{c33787e3-5564-4834-9fe3-a9020455a669}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Contrib\NvidiaTextureTools\project\vs\bc7\bc7.vcxproj">
+      <Project>{f974f34b-af02-4c88-8e1e-85475094ea78}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Contrib\NvidiaTextureTools\project\vs\nvcore\nvcore.vcxproj">
+      <Project>{f143d180-d4c4-4037-b3de-be89a21c8d1d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Contrib\NvidiaTextureTools\project\vs\nvimage\nvimage.vcxproj">
+      <Project>{4046f392-a18b-4c66-9639-3eabfff5d531}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Contrib\NvidiaTextureTools\project\vs\nvmath\nvmath.vcxproj">
+      <Project>{50c465fe-b308-42bc-894d-89484482af06}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Contrib\NvidiaTextureTools\project\vs\nvthread\nvthread.vcxproj">
+      <Project>{4cfd4876-a026-46c2-afcf-fb11346e815d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Contrib\NvidiaTextureTools\project\vs\nvtt\nvtt.vcxproj">
+      <Project>{1aeb7681-57d8-48ee-813d-5c41cc38b647}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Contrib\NvidiaTextureTools\project\vs\squish\squish.vcxproj">
+      <Project>{ce017322-01fc-4851-9c8b-64e9a8e26c38}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Modules\Build\Windows\Build.vcxproj">
+      <Project>{68ab18da-4df8-41c1-8c0c-1f753eea0d20}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Modules\Foundation\Windows\Foundation.vcxproj">
+      <Project>{1fd75ea6-1530-481f-9232-3ef3010c9729}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Modules\Image\Windows\Image.vcxproj">
+      <Project>{50cdb9d0-9406-45cc-a226-1645f18635f5}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Modules\Math\Windows\Math.vcxproj">
+      <Project>{4a67d21f-1b1f-42b6-b530-a4d690b21db4}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Modules\Scene\Windows\Scene.vcxproj">
+      <Project>{12f863c2-ea13-4538-9097-804195858d16}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Modules\System\Windows\System.vcxproj">
+      <Project>{e3bad3ce-e59d-4c1f-9759-7d585c145884}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Src\TestBuild.h" />
+    <ClInclude Include="..\Src\TestFoundation.h" />
+    <ClInclude Include="..\Src\TestImage.h" />
+    <ClInclude Include="..\Src\TestMath.h" />
+    <ClInclude Include="..\Src\TestScene.h" />
+    <ClInclude Include="..\Src\TestSystem.h" />
+    <ClInclude Include="..\Src\UnitTests.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Src\TestBuild.cpp" />
+    <ClCompile Include="..\Src\TestFoundation.cpp" />
+    <ClCompile Include="..\Src\TestImage.cpp" />
+    <ClCompile Include="..\Src\TestMath.cpp" />
+    <ClCompile Include="..\Src\TestScene.cpp" />
+    <ClCompile Include="..\Src\TestSystem.cpp" />
+    <ClCompile Include="..\Src\UnitTests.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

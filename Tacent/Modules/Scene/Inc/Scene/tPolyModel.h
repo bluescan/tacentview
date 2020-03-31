@@ -55,6 +55,7 @@ inline tPolyModel& tPolyModel::operator=(const tPolyModel& src)
 	tObject::operator=(src);
 	IsLodGroupMember = src.IsLodGroupMember;
 	Mesh = src.Mesh;
+	return *this;
 }
 
 

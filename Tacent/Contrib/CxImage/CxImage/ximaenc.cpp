@@ -1124,7 +1124,13 @@ bool CxImage::CheckFormat(CxFile * hFile, uint32_t imagetype)
 ////////////////////////////////////////////////////////////////////////////////
 bool CxImage::CheckFormat(uint8_t * buffer, uint32_t size, uint32_t imagetype)
 {
-	if (buffer==NULL || size==NULL){
+	// @tacent
+	#ifdef PLATFORM_LINUX
+	if (buffer==0 || size==0)
+	#else
+	if (buffer==NULL || size==NULL)
+	#endif
+	{
 		strcpy(info.szLastError,"invalid or empty buffer");
 		return false;
 	}

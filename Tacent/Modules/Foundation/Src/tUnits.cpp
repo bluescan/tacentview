@@ -2,7 +2,7 @@
 //
 // Definitions of various units for length, time, and mass along with the SI multiplier prefixes.
 //
-// Copyright (c) 2017 Tristan Grimmer.
+// Copyright (c) 2017, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -14,58 +14,59 @@
 
 #include "Foundation/tStandard.h"
 #include "Foundation/tUnits.h"
+
+
 namespace tUnit
 {
+	const char* TimeUnitNames[int(tTime::NumTimeUnits)] =
+	{
+		"PlankTime",
+		"Chronon",
+		"Attosecond",
+		"Femtosecond",
+		"Picosecond",
+		"Nanosecond",
+		"Microsecond",
+		"Millisecond",
+		"Tick",
+		"Second",
+		"She",
+		"Helek",
+		"Minute",
+		"Hour",
+		"Day",
+		"Week",
+		"Fortnight",
+		"Year",
+		"Annum",
+		"Century",
+		"Millennium",
+		"GalacticYear"
+	};
 
 
-const char* TimeUnitNames[int(tTime::NumTimeUnits)] =
-{
-	"PlankTime",
-	"Chronon",
-	"Attosecond",
-	"Femtosecond",
-	"Picosecond",
-	"Nanosecond",
-	"Microsecond",
-	"Millisecond",
-	"Tick",
-	"Second",
-	"She",
-	"Helek",
-	"Minute",
-	"Hour",
-	"Day",
-	"Week",
-	"Fortnight",
-	"Year",
-	"Annum",
-	"Century",
-	"Millennium",
-	"GalacticYear"
-};
+	const char* LengthUnitNames[int(tLength::NumLengthUnits)] =
+	{
+		"Angstrom",
+		"Meter",
+		"Kilometer",
+		"Inch",
+		"Foot",
+		"Yard",
+		"Fathom",
+		"Mile",
+		"NauticalMile",
+		"AstronomicalUnit"
+	};
 
 
-const char* LengthUnitNames[int(tLength::NumLengthUnits)] =
-{
-	"Angstrom",
-	"Meter",
-	"Kilometer",
-	"Inch",
-	"Foot",
-	"Yard",
-	"Fathom",
-	"Mile",
-	"NauticalMile",
-	"AstronomicalUnit"
-};
-
-
-const char* MassUnitNames[int(tMass::NumMassUnits)] =
-{
-	"Gram",
-	"Kilogram",
-	"Slug"
-};
+	const char* MassUnitNames[int(tMass::NumMassUnits)] =
+	{
+		"Gram",
+		"Kilogram",
+		"Slug"
+	};
+}
 
 
 const char* tUnit::GetUnitName(tTime timeUnit)
@@ -95,7 +96,7 @@ const char* tUnit::GetUnitName(tMass massUnit)
 }
 
 
-tTime tUnit::GetTimeUnit(const char* unitName)
+tUnit::tTime tUnit::GetTimeUnit(const char* unitName)
 {
 	for (int u = 0; u < int(tTime::NumTimeUnits); u++)
 	{
@@ -107,7 +108,7 @@ tTime tUnit::GetTimeUnit(const char* unitName)
 }
 
 
-tLength tUnit::GetLengthUnit(const char* unitName)
+tUnit::tLength tUnit::GetLengthUnit(const char* unitName)
 {
 	for (int u = 0; u < int(tLength::NumLengthUnits); u++)
 	{
@@ -119,7 +120,7 @@ tLength tUnit::GetLengthUnit(const char* unitName)
 }
 
 
-tMass tUnit::GetMassUnit(const char* unitName)
+tUnit::tMass tUnit::GetMassUnit(const char* unitName)
 {
 	for (int u = 0; u < int(tMass::NumMassUnits); u++)
 	{
@@ -128,7 +129,4 @@ tMass tUnit::GetMassUnit(const char* unitName)
 	}
 
 	return tMass::Unspecified;
-}
-
-
 }

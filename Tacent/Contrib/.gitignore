@@ -1,0 +1,13 @@
+!/glfw/Windows/Debug
+!/glfw/Windows/Release
+
+!/glfw/Windows/Debug/*.lib
+!/glfw/Windows/Release/*.lib
+!/glfw/Windows/Debug/*.pdb
+!/glfw/Windows/Release/*.pdb
+
+!/glfw/Linux/Debug
+!/glfw/Linux/Release
+!/glfw/Linux/Debug/*.a
+!/glfw/Linux/Release/*.a
+

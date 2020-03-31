@@ -132,7 +132,7 @@ program under the GPL.
 /* or without the GNU configure machinery. */
 
 #if HAVE_CONFIG_H
-# include <config.h>
+# include <config.h> 
 #endif
 
 #include <stdio.h>
@@ -267,7 +267,9 @@ main(argc, argv)
 	  }
 	  fprintf(stderr, "%s: Unrecognized switch: %s\n", program_name,
 		  argv[1]);
-	  fprintf(stderr, usage);
+		
+		// @tacent Added the "%s"
+	  fprintf(stderr, "%s", usage);
 	  exit(1);
 	}
 	switch ( argc )

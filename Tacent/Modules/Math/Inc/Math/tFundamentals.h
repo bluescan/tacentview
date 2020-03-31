@@ -55,6 +55,10 @@ enum class tIntervalBias
 std::function<bool(float,float)> tBiasLess(tIntervalBias);
 std::function<bool(float,float)> tBiasGreater(tIntervalBias);
 
+inline int tAbs(int val)																								{ return (val < 0) ? -val : val; }
+inline float tAbs(float val)																							{ return (val < 0.0f) ? -val : val; }
+inline double tAbs(double val)																							{ return (val < 0.0) ? -val : val; }
+
 template<typename T> inline T tMin(const T& a, const T& b)																{ return a < b ? a : b; }
 template<typename T> inline T tMax(const T& a, const T& b)																{ return a > b ? a : b; }
 template<typename T> inline T tMin(const T& a, const T& b, const T& c)													{ T ab = a < b ? a : b; return ab < c ? ab : c; }
@@ -65,12 +69,12 @@ template<typename T> inline T tClamp(T val, T min, T max)																{ retur
 template<typename T> inline T tClampMin(T val, T min)																	{ return (val < min) ? min : val; }
 template<typename T> inline T tClampMax(T val, T max)																	{ return (val > max) ? max : val; }
 template<typename T> inline T tSaturate(T val)																			{ return (val < T(0)) ? T(0) : ((val > T(1)) ? T(1) : val); }
-template<typename T> inline bool tInRange(const T val, const T min, const T max)		/* Returns val E [min, max]	*/	{ return tInIntervalII(val, min, max); }
-template<typename T> inline bool tInInterval(const T val, const T min, const T max)		/* Returns val E [min, max]	*/	{ return tInIntervalII(val, min, max); }
 template<typename T> inline bool tInIntervalII(const T val, const T min, const T max)									{ if ((val >= min) && (val <= max)) return true; return false; }	// Implements val E [min, max]
 template<typename T> inline bool tInIntervalIE(const T val, const T min, const T max)									{ if ((val >= min) && (val < max)) return true; return false; }		// Implements val E [min, max)
 template<typename T> inline bool tInIntervalEI(const T val, const T min, const T max)									{ if ((val > min) && (val <= max)) return true; return false; }		// Implements val E (min, max]
 template<typename T> inline bool tInIntervalEE(const T val, const T min, const T max)									{ if ((val > min) && (val < max)) return true; return false; }		// Implements val E (min, max)
+template<typename T> inline bool tInInterval(const T val, const T min, const T max)		/* Returns val E [min, max]	*/	{ return tInIntervalII(val, min, max); }
+template<typename T> inline bool tInRange(const T val, const T min, const T max)		/* Returns val E [min, max]	*/	{ return tInIntervalII(val, min, max); }
 template<typename T> inline T tSign(T val)																				{ return val < T(0) ? T(-1) : val > T(0) ? T(1) : T(0); }
 template<typename T> inline T tBinarySign(T val)																		{ return val < T(0) ? T(-1) : T(1); }	// Same as Sign but does not return 0 ever.  Two return values only.
 template<typename T> inline bool tIsZero(T a)																			{ return (a == 0); }
@@ -93,9 +97,6 @@ inline float tCeiling(float v)																							{ return ceilf(v); }
 inline float tFloor(float v)																							{ return floorf(v); }
 inline float tRound(float v)																							{ return floorf(v + 0.5f); }
 inline float tMod(float n, float d)																						{ return fmodf(n,d); }
-inline int tAbs(int val)																								{ return (val < 0) ? -val : val; }
-inline float tAbs(float val)																							{ return (val < 0.0f) ? -val : val; }
-inline double tAbs(double val)																							{ return (val < 0.0) ? -val : val; }
 
 // For the 'ti' versions of the below functions, the 'i' means 'in-place' (ref var) rather than returning the value.
 inline void tiCeiling(float& v)																							{ v = ceilf(v); }
@@ -227,7 +228,7 @@ inline std::function<bool(float,float)> tMath::tBiasGreater(tIntervalBias bias)
 
 inline float tMath::tSqrtFast(float x)
 {
-	#ifdef PLATFORM_WIN
+	#ifdef PLATFORM_WINDOWS
 	__m128 in = _mm_set_ss(x);
 	__m128 out = _mm_sqrt_ss(in);
 	return *(float*)(&out);
@@ -239,7 +240,7 @@ inline float tMath::tSqrtFast(float x)
 
 inline float tMath::tRecipSqrtFast(float x)
 {
-	#ifdef PLATFORM_WIN
+	#ifdef PLATFORM_WINDOWS
 	__m128 in = _mm_set_ss(x);
 	__m128 out = _mm_rsqrt_ss(in);
 	return *(float*)(&out);

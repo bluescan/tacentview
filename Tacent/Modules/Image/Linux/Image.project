@@ -1,0 +1,718 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeLite_Project Name="Image" Version="11000" InternalType="Library">
+  <Plugins>
+    <Plugin Name="qmake">
+      <![CDATA[00020001N0005Debug0000000000000001N0007Release000000000000]]>
+    </Plugin>
+  </Plugins>
+  <VirtualDirectory Name="Contrib">
+    <VirtualDirectory Name="OpenEXR">
+      <File Name="../../../Contrib/OpenEXR/namespaceAlias.h"/>
+      <File Name="../../../Contrib/OpenEXR/loadImage.h"/>
+      <File Name="../../../Contrib/OpenEXR/loadImage.cpp"/>
+      <VirtualDirectory Name="zlib">
+        <File Name="../../../Contrib/OpenEXR/zlib/zutil.h"/>
+        <File Name="../../../Contrib/OpenEXR/zlib/zlib.h"/>
+        <File Name="../../../Contrib/OpenEXR/zlib/zconf.h"/>
+        <File Name="../../../Contrib/OpenEXR/zlib/trees.h"/>
+        <File Name="../../../Contrib/OpenEXR/zlib/inftrees.h"/>
+        <File Name="../../../Contrib/OpenEXR/zlib/inflate.h"/>
+        <File Name="../../../Contrib/OpenEXR/zlib/inffixed.h"/>
+        <File Name="../../../Contrib/OpenEXR/zlib/inffast.h"/>
+        <File Name="../../../Contrib/OpenEXR/zlib/gzguts.h"/>
+        <File Name="../../../Contrib/OpenEXR/zlib/deflate.h"/>
+        <File Name="../../../Contrib/OpenEXR/zlib/crc32.h"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="IlmImf">
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfZipCompressor.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfZipCompressor.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfZip.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfZip.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfXdr.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfWav.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfWav.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfVersion.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfVersion.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfVecAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfVecAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTimeCodeAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTimeCodeAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTimeCode.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTimeCode.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTileOffsets.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTileOffsets.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTiledRgbaFile.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTiledRgbaFile.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTiledOutputPart.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTiledOutputPart.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTiledOutputFile.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTiledOutputFile.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTiledMisc.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTiledMisc.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTiledInputPart.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTiledInputPart.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTiledInputFile.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTiledInputFile.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTileDescriptionAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTileDescriptionAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTileDescription.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfThreading.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfThreading.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTestFile.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfTestFile.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfSystemSpecific.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfSystemSpecific.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfStringVectorAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfStringVectorAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfStringAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfStringAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfStdIO.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfStdIO.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfStandardAttributes.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfStandardAttributes.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfSimd.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfScanLineInputFile.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfScanLineInputFile.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfRleCompressor.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfRleCompressor.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfRle.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfRle.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfRgbaYca.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfRgbaYca.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfRgbaFile.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfRgbaFile.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfRgba.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfRationalAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfRationalAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfRational.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfRational.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfPxr24Compressor.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfPxr24Compressor.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfPreviewImageAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfPreviewImageAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfPreviewImage.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfPreviewImage.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfPizCompressor.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfPizCompressor.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfPixelType.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfPartType.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfPartType.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfPartHelper.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfOutputStreamMutex.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfOutputPartData.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfOutputPartData.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfOutputPart.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfOutputPart.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfOutputFile.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfOutputFile.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfOptimizedPixelReading.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfOpaqueAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfOpaqueAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfNamespace.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfName.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfMultiView.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfMultiView.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfMultiPartOutputFile.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfMultiPartOutputFile.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfMultiPartInputFile.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfMultiPartInputFile.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfMisc.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfMisc.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfMatrixAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfMatrixAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfLut.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfLut.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfLineOrderAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfLineOrderAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfLineOrder.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfKeyCodeAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfKeyCodeAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfKeyCode.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfKeyCode.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfIO.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfIO.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfIntAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfIntAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfInt64.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfInputStreamMutex.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfInputPartData.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfInputPartData.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfInputPart.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfInputPart.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfInputFile.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfInputFile.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfHuf.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfHuf.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfHeader.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfHeader.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfGenericOutputFile.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfGenericOutputFile.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfGenericInputFile.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfGenericInputFile.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfFramesPerSecond.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfFramesPerSecond.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfFrameBuffer.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfFrameBuffer.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfForward.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfFloatVectorAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfFloatVectorAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfFloatAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfFloatAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfFastHuf.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfFastHuf.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfExport.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfEnvmapAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfEnvmapAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfEnvmap.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfEnvmap.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDwaCompressorSimd.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDwaCompressor.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDwaCompressor.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDoubleAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDoubleAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepTiledOutputPart.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepTiledOutputPart.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepTiledOutputFile.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepTiledOutputFile.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepTiledInputPart.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepTiledInputPart.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepTiledInputFile.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepTiledInputFile.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepScanLineOutputPart.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepScanLineOutputPart.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepScanLineOutputFile.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepScanLineOutputFile.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepScanLineInputPart.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepScanLineInputPart.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepScanLineInputFile.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepScanLineInputFile.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepImageStateAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepImageStateAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepImageState.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepFrameBuffer.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepFrameBuffer.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepCompositing.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfDeepCompositing.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfCRgbaFile.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfCRgbaFile.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfConvert.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfConvert.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfCompressor.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfCompressor.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfCompressionAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfCompressionAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfCompression.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfCompositeDeepScanLine.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfCompositeDeepScanLine.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfChromaticitiesAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfChromaticitiesAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfChromaticities.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfChromaticities.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfCheckedArithmetic.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfChannelListAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfChannelListAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfChannelList.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfChannelList.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfBoxAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfBoxAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfB44Compressor.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfB44Compressor.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfAutoArray.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfAttribute.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfAttribute.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfArray.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfAcesFile.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/ImfAcesFile.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/dwaLookups.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/dwaLookups.cpp"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/b44ExpLogTable.h"/>
+        <File Name="../../../Contrib/OpenEXR/IlmImf/b44ExpLogTable.cpp"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="IlmBase">
+        <VirtualDirectory Name="Imath">
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathVecAlgo.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathVec.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathVec.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathSphere.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathShear.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathRoots.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathRandom.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathRandom.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathQuat.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathPlatform.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathPlane.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathNamespace.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathMatrixAlgo.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathMatrixAlgo.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathMatrix.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathMath.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathLineAlgo.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathLine.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathLimits.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathInterval.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathInt64.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathHalfLimits.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathGLU.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathGL.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathFun.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathFun.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathFrustumTest.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathFrustum.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathFrame.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathForward.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathExport.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathExc.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathExc.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathEuler.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathColorAlgo.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathColorAlgo.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathColor.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathBoxAlgo.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Imath/ImathBox.h"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="IlmThread">
+          <File Name="../../../Contrib/OpenEXR/IlmBase/IlmThread/IlmThreadWin32.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/IlmThread/IlmThreadSemaphoreWin32.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/IlmThread/IlmThreadSemaphorePosixCompat.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/IlmThread/IlmThreadSemaphorePosix.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/IlmThread/IlmThreadSemaphoreOSX.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/IlmThread/IlmThreadSemaphore.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/IlmThread/IlmThreadSemaphore.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/IlmThread/IlmThreadPosix.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/IlmThread/IlmThreadPool.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/IlmThread/IlmThreadPool.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/IlmThread/IlmThreadNamespace.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/IlmThread/IlmThreadMutexWin32.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/IlmThread/IlmThreadMutexPosix.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/IlmThread/IlmThreadMutex.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/IlmThread/IlmThreadMutex.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/IlmThread/IlmThreadForward.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/IlmThread/IlmThreadExport.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/IlmThread/IlmThread.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/IlmThread/IlmThread.cpp"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="Iex">
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Iex/IexThrowErrnoExc.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Iex/IexThrowErrnoExc.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Iex/IexNamespace.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Iex/IexMathExc.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Iex/IexMacros.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Iex/IexForward.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Iex/IexExport.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Iex/IexErrnoExc.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Iex/IexBaseExc.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Iex/IexBaseExc.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Iex/Iex.h"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="Half">
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Half/toFloat.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Half/toFloat.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Half/halfLimits.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Half/halfFunction.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Half/halfExport.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Half/half.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Half/half.cpp"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Half/eLut.h"/>
+          <File Name="../../../Contrib/OpenEXR/IlmBase/Half/eLut.cpp"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="config">
+          <File Name="../../../Contrib/OpenEXR/IlmBase/config/IlmBaseConfig.h"/>
+        </VirtualDirectory>
+      </VirtualDirectory>
+      <VirtualDirectory Name="config">
+        <File Name="../../../Contrib/OpenEXR/config/OpenEXRConfigInternal.h"/>
+        <File Name="../../../Contrib/OpenEXR/config/OpenEXRConfig.h"/>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="CxImage">
+      <VirtualDirectory Name="jpeg">
+        <File Name="../../../Contrib/CxImage/jpeg/transupp.h"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jversion.h"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jpeglib.h"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jpegint.h"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jmorecfg.h"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jmemsys.h"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jinclude.h"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jerror.h"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jdct.h"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jconfig.h"/>
+        <File Name="../../../Contrib/CxImage/jpeg/cdjpeg.h"/>
+        <File Name="../../../Contrib/CxImage/jpeg/cderror.h"/>
+        <File Name="../../../Contrib/CxImage/jpeg/wrtarga.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/wrrle.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/wrppm.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/wrjpgcom.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/wrgif.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/wrbmp.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/transupp.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/rdtarga.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/rdswitch.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/rdrle.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/rdppm.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/rdjpgcom.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/rdgif.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/rdcolmap.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/rdbmp.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jutils.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jquant2.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jquant1.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jpegtran.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jmemnobs.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jmemname.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jmemmgr.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jmemansi.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jidctint.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jidctfst.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jidctflt.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jfdctint.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jfdctfst.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jfdctflt.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jerror.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jdtrans.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jdsample.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jdpostct.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jdmerge.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jdmaster.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jdmarker.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jdmainct.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jdinput.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jdhuff.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jddctmgr.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jdcolor.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jdcoefct.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jdatasrc.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jdatadst.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jdarith.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jdapistd.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jdapimin.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jctrans.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jcsample.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jcprepct.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jcparam.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jcomapi.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jcmaster.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jcmarker.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jcmainct.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jcinit.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jchuff.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jcdctmgr.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jccolor.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jccoefct.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jcarith.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jcapistd.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jcapimin.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/jaricom.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/djpeg.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/ckconfig.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/cjpeg.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/cdjpeg.c"/>
+        <File Name="../../../Contrib/CxImage/jpeg/ansi2knr.c" ExcludeProjConfig="Debug;Release;"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="tiff">
+        <File Name="../../../Contrib/CxImage/tiff/uvcode.h"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_predict.h"/>
+        <File Name="../../../Contrib/CxImage/tiff/tiffvers.h"/>
+        <File Name="../../../Contrib/CxImage/tiff/tiffiop.h"/>
+        <File Name="../../../Contrib/CxImage/tiff/tiffio.hxx"/>
+        <File Name="../../../Contrib/CxImage/tiff/tiffio.h"/>
+        <File Name="../../../Contrib/CxImage/tiff/tiffconf.h"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_fax3.h"/>
+        <File Name="../../../Contrib/CxImage/tiff/tiff.h"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_dir.h"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_config.wince.h"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_config.h"/>
+        <File Name="../../../Contrib/CxImage/tiff/t4.h"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_zip.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_write.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_warning.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_version.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_unix.c" ExcludeProjConfig="Debug;Release;"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_tile.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_thunder.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_swab.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_strip.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_stream.cxx"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_read.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_print.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_predict.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_pixarlog.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_packbits.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_open.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_ojpeg.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_next.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_lzw.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_luv.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_jpeg.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_jbig.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_getimage_.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_getimage.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_flush.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_fax3sm.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_fax3.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_extension.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_error.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_dumpmode.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_dirwrite.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_dirread.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_dirinfo.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_dir.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_compress.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_color.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_codec.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_close.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/tif_aux.c"/>
+        <File Name="../../../Contrib/CxImage/tiff/mkg3states.c"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="png">
+        <File Name="../../../Contrib/CxImage/png/pngstruct.h"/>
+        <File Name="../../../Contrib/CxImage/png/pngpriv.h"/>
+        <File Name="../../../Contrib/CxImage/png/pnglibconf.h"/>
+        <File Name="../../../Contrib/CxImage/png/pnginfo.h"/>
+        <File Name="../../../Contrib/CxImage/png/pngdebug.h"/>
+        <File Name="../../../Contrib/CxImage/png/pngconf.h"/>
+        <File Name="../../../Contrib/CxImage/png/png.h"/>
+        <File Name="../../../Contrib/CxImage/png/pngwutil.c"/>
+        <File Name="../../../Contrib/CxImage/png/pngwtran.c"/>
+        <File Name="../../../Contrib/CxImage/png/pngwrite.c"/>
+        <File Name="../../../Contrib/CxImage/png/pngwio.c"/>
+        <File Name="../../../Contrib/CxImage/png/pngtrans.c"/>
+        <File Name="../../../Contrib/CxImage/png/pngtest.c"/>
+        <File Name="../../../Contrib/CxImage/png/pngset.c"/>
+        <File Name="../../../Contrib/CxImage/png/pngrutil.c"/>
+        <File Name="../../../Contrib/CxImage/png/pngrtran.c"/>
+        <File Name="../../../Contrib/CxImage/png/pngrio.c"/>
+        <File Name="../../../Contrib/CxImage/png/pngread.c"/>
+        <File Name="../../../Contrib/CxImage/png/pngpread.c"/>
+        <File Name="../../../Contrib/CxImage/png/pngmem.c"/>
+        <File Name="../../../Contrib/CxImage/png/pngget.c"/>
+        <File Name="../../../Contrib/CxImage/png/pngerror.c"/>
+        <File Name="../../../Contrib/CxImage/png/png.c"/>
+        <File Name="../../../Contrib/CxImage/png/example.c"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="jasper"/>
+      <VirtualDirectory Name="zlib">
+        <File Name="../../../Contrib/CxImage/zlib/zutil.h"/>
+        <File Name="../../../Contrib/CxImage/zlib/zutil.c"/>
+        <File Name="../../../Contrib/CxImage/zlib/zlib.h"/>
+        <File Name="../../../Contrib/CxImage/zlib/zconf.h"/>
+        <File Name="../../../Contrib/CxImage/zlib/uncompr.c"/>
+        <File Name="../../../Contrib/CxImage/zlib/trees.h"/>
+        <File Name="../../../Contrib/CxImage/zlib/trees.c"/>
+        <File Name="../../../Contrib/CxImage/zlib/minigzip.c"/>
+        <File Name="../../../Contrib/CxImage/zlib/inftrees.h"/>
+        <File Name="../../../Contrib/CxImage/zlib/inftrees.c"/>
+        <File Name="../../../Contrib/CxImage/zlib/inflate.h"/>
+        <File Name="../../../Contrib/CxImage/zlib/inflate.c"/>
+        <File Name="../../../Contrib/CxImage/zlib/inffixed.h"/>
+        <File Name="../../../Contrib/CxImage/zlib/inffast.h"/>
+        <File Name="../../../Contrib/CxImage/zlib/inffast.c"/>
+        <File Name="../../../Contrib/CxImage/zlib/infback.c"/>
+        <File Name="../../../Contrib/CxImage/zlib/gzwrite.c"/>
+        <File Name="../../../Contrib/CxImage/zlib/gzread.c"/>
+        <File Name="../../../Contrib/CxImage/zlib/gzlib.c"/>
+        <File Name="../../../Contrib/CxImage/zlib/gzguts.h"/>
+        <File Name="../../../Contrib/CxImage/zlib/gzclose.c"/>
+        <File Name="../../../Contrib/CxImage/zlib/example.c"/>
+        <File Name="../../../Contrib/CxImage/zlib/deflate.h"/>
+        <File Name="../../../Contrib/CxImage/zlib/deflate.c"/>
+        <File Name="../../../Contrib/CxImage/zlib/crc32.h"/>
+        <File Name="../../../Contrib/CxImage/zlib/crc32.c"/>
+        <File Name="../../../Contrib/CxImage/zlib/compress.c"/>
+        <File Name="../../../Contrib/CxImage/zlib/adler32.c"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="CxImage">
+        <File Name="../../../Contrib/CxImage/CxImage/xmemfile.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/xmemfile.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/xiofile.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximawnd.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximawmf.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximawmf.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximawbmp.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximawbmp.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximatran.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximatif.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximatif.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximath.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximath.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximatga.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximatga.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximaska.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximaska.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximasel.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximaraw.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximaraw.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximapsd.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximapsd.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximapng.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximapng.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximapcx.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximapcx.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximapal.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximamng.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximamng.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximalyr.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximalpha.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximajpg.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximajpg.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximajbg.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximajbg.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximajas.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximajas.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximaiter.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximaint.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximainfo.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximaico.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximaico.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximahist.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximagif.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximagif.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximage.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximage.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximaexif.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximaenc.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximadsp.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximadef.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximacfg.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximabmp.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/ximabmp.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/xfile.h"/>
+        <File Name="../../../Contrib/CxImage/CxImage/tif_xfile.cpp"/>
+        <File Name="../../../Contrib/CxImage/CxImage/stdint.h"/>
+      </VirtualDirectory>
+    </VirtualDirectory>
+  </VirtualDirectory>
+  <Description/>
+  <Dependencies/>
+  <VirtualDirectory Name="Src">
+    <File Name="../Src/tTexture.cpp"/>
+    <File Name="../Src/tPixelFormat.cpp"/>
+    <File Name="../Src/tPicture.cpp"/>
+    <File Name="../Src/tLayer.cpp"/>
+    <File Name="../Src/tImageTGA.cpp"/>
+    <File Name="../Src/tImageHDR.cpp"/>
+    <File Name="../Src/tImageGIF.cpp"/>
+    <File Name="../Src/tImageEXR.cpp"/>
+    <File Name="../Src/tImageDDS.cpp"/>
+    <File Name="../Src/tCubemap.cpp"/>
+  </VirtualDirectory>
+  <VirtualDirectory Name="Inc">
+    <File Name="../Inc/Image/tTexture.h"/>
+    <File Name="../Inc/Image/tPixelFormat.h"/>
+    <File Name="../Inc/Image/tPicture.h"/>
+    <File Name="../Inc/Image/tLayer.h"/>
+    <File Name="../Inc/Image/tImageTGA.h"/>
+    <File Name="../Inc/Image/tImageHDR.h"/>
+    <File Name="../Inc/Image/tImageGIF.h"/>
+    <File Name="../Inc/Image/tImageEXR.h"/>
+    <File Name="../Inc/Image/tImageDDS.h"/>
+    <File Name="../Inc/Image/tCubemap.h"/>
+  </VirtualDirectory>
+  <Settings Type="Static Library">
+    <GlobalSettings>
+      <Compiler Options="-Wno-switch;-std=c++17" C_Options="" Assembler="">
+        <IncludePath Value="."/>
+        <IncludePath Value="../Inc"/>
+        <IncludePath Value="../../Foundation/Inc"/>
+        <IncludePath Value="../../System/Inc"/>
+        <IncludePath Value="../../Math/Inc"/>
+        <IncludePath Value="../../../Contrib"/>
+        <IncludePath Value="../../../Contrib/CxImage"/>
+        <IncludePath Value="../../../Contrib/CxImage/jasper/include"/>
+        <IncludePath Value="../../../Contrib/OpenEXR/config"/>
+        <IncludePath Value="../../../Contrib/OpenEXR/IlmBase/config"/>
+        <IncludePath Value="../../../Contrib/OpenEXR/IlmBase/Half"/>
+        <IncludePath Value="../../../Contrib/OpenEXR/IlmBase/Iex"/>
+        <IncludePath Value="../../../Contrib/OpenEXR/IlmBase/IlmThread"/>
+        <IncludePath Value="../../../Contrib/OpenEXR/IlmBase/Imath"/>
+        <IncludePath Value="../../../Contrib/OpenEXR/IlmImf"/>
+        <IncludePath Value="../../../Contrib/OpenEXR/zlib"/>
+        <Preprocessor Value="PLATFORM_LINUX"/>
+        <Preprocessor Value="_LINUX"/>
+      </Compiler>
+      <Linker Options="">
+        <LibraryPath Value="."/>
+      </Linker>
+      <ResourceCompiler Options=""/>
+    </GlobalSettings>
+    <Configuration Name="Debug" CompilerType="clang( tags/RELEASE_900/final )" DebuggerType="LLDB Debugger" Type="Static Library" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+      <Compiler Options="-g" C_Options="-g" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
+        <IncludePath Value="."/>
+        <Preprocessor Value="CONFIG_DEBUG"/>
+      </Compiler>
+      <Linker Options="" Required="yes"/>
+      <ResourceCompiler Options="" Required="no"/>
+      <General OutputFile="$(IntermediateDirectory)/lib$(ProjectName).a" IntermediateDirectory="$(ConfigurationName)" Command="" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <BuildSystem Name="Default"/>
+      <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
+        <![CDATA[]]>
+      </Environment>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="" IsExtended="no">
+        <DebuggerSearchPaths/>
+        <PostConnectCommands/>
+        <StartupCommands/>
+      </Debugger>
+      <PreBuild/>
+      <PostBuild/>
+      <CustomBuild Enabled="no">
+        <RebuildCommand/>
+        <CleanCommand/>
+        <BuildCommand/>
+        <PreprocessFileCommand/>
+        <SingleFileCommand/>
+        <MakefileGenerationCommand/>
+        <ThirdPartyToolName/>
+        <WorkingDirectory/>
+      </CustomBuild>
+      <AdditionalRules>
+        <CustomPostBuild/>
+        <CustomPreBuild/>
+      </AdditionalRules>
+      <Completion EnableCpp11="no" EnableCpp14="no">
+        <ClangCmpFlagsC/>
+        <ClangCmpFlags/>
+        <ClangPP/>
+        <SearchPaths/>
+      </Completion>
+    </Configuration>
+    <Configuration Name="Release" CompilerType="clang( tags/RELEASE_900/final )" DebuggerType="LLDB Debugger" Type="Static Library" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+      <Compiler Options="-O2" C_Options="-O2" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
+        <IncludePath Value="."/>
+        <Preprocessor Value="CONFIG_RELEASE"/>
+      </Compiler>
+      <Linker Options="" Required="yes"/>
+      <ResourceCompiler Options="" Required="no"/>
+      <General OutputFile="$(IntermediateDirectory)/lib$(ProjectName).a" IntermediateDirectory="$(ConfigurationName)" Command="" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <BuildSystem Name="Default"/>
+      <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
+        <![CDATA[]]>
+      </Environment>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="" IsExtended="no">
+        <DebuggerSearchPaths/>
+        <PostConnectCommands/>
+        <StartupCommands/>
+      </Debugger>
+      <PreBuild/>
+      <PostBuild/>
+      <CustomBuild Enabled="no">
+        <RebuildCommand/>
+        <CleanCommand/>
+        <BuildCommand/>
+        <PreprocessFileCommand/>
+        <SingleFileCommand/>
+        <MakefileGenerationCommand/>
+        <ThirdPartyToolName/>
+        <WorkingDirectory/>
+      </CustomBuild>
+      <AdditionalRules>
+        <CustomPostBuild/>
+        <CustomPreBuild/>
+      </AdditionalRules>
+      <Completion EnableCpp11="no" EnableCpp14="no">
+        <ClangCmpFlagsC/>
+        <ClangCmpFlags/>
+        <ClangPP/>
+        <SearchPaths/>
+      </Completion>
+    </Configuration>
+  </Settings>
+</CodeLite_Project>

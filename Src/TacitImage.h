@@ -117,7 +117,7 @@ public:
 	ImgInfo Info;						// Info is only valid AFTER loading.
 	tString Filename;					// Valid before load.
 	tSystem::tFileType Filetype;		// Valid before load.
-	uint64 FileModTime;					// Valid before load.
+	std::time_t FileModTime;			// Valid before load.
 	uint64 FileSizeB;					// Valid before load.
 
 	const static int ThumbWidth			= 256;

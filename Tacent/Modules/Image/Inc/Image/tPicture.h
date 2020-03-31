@@ -18,6 +18,7 @@
 
 #pragma once
 #include <Foundation/tList.h>
+#include <Math/tConstants.h>
 #include <Math/tColour.h>
 #include <System/tFile.h>
 #include <System/tChunk.h>
@@ -49,7 +50,8 @@ public:
 
 	struct LoadParams
 	{
-		float	Gamma					= tMath::DefaultGamma;
+		LoadParams() { }
+		float	GammaValue				= 2.2f;//::tMath::DefaultGamma;
 		int		HDR_Exposure			= tImageHDR::DefaultExposure;
 		float	EXR_Exposure			= tImageEXR::DefaultExposure;
 		float	EXR_Defog				= tImageEXR::DefaultDefog;

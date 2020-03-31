@@ -110,7 +110,7 @@ bool CxImage::HistogramStretch(int32_t method, double threshold)
 	// calculate LUT
 	uint8_t lut[256];
 	for (x = 0; x <256; x++){
-		lut[x] = (uint8_t)max(0,min(255,(255 * (x - minc) / (maxc - minc))));
+		lut[x] = (uint8_t)cxmax(0,cxmin(255,(255 * (x - minc) / (maxc - minc))));
 	}
 
 	for (y=0; y<head.biHeight; y++)	{
@@ -152,7 +152,7 @@ bool CxImage::HistogramStretch(int32_t method, double threshold)
 		// calculate LUT
 		uint8_t lut[256];
 		for (x = 0; x <256; x++){
-			lut[x] = (uint8_t)max(0,min(255,(255 * (x - minc) / (maxc - minc))));
+			lut[x] = (uint8_t)cxmax(0,cxmin(255,(255 * (x - minc) / (maxc - minc))));
 		}
 
 		// normalize image
@@ -225,7 +225,7 @@ bool CxImage::HistogramStretch(int32_t method, double threshold)
 		uint8_t range = maxR - minR;
 		if (range != 0)	{
 			for (x = 0; x <256; x++){
-				lutR[x] = (uint8_t)max(0,min(255,(255 * (x - minR) / range)));
+				lutR[x] = (uint8_t)cxmax(0,cxmin(255,(255 * (x - minR) / range)));
 			}
 		} else lutR[minR] = minR;
 
@@ -233,7 +233,7 @@ bool CxImage::HistogramStretch(int32_t method, double threshold)
 		range = maxG - minG;
 		if (range != 0)	{
 			for (x = 0; x <256; x++){
-				lutG[x] = (uint8_t)max(0,min(255,(255 * (x - minG) / range)));
+				lutG[x] = (uint8_t)cxmax(0,cxmin(255,(255 * (x - minG) / range)));
 			}
 		} else lutG[minG] = minG;
 			
@@ -241,7 +241,7 @@ bool CxImage::HistogramStretch(int32_t method, double threshold)
 		range = maxB - minB;
 		if (range != 0)	{
 			for (x = 0; x <256; x++){
-				lutB[x] = (uint8_t)max(0,min(255,(255 * (x - minB) / range)));
+				lutB[x] = (uint8_t)cxmax(0,cxmin(255,(255 * (x - minB) / range)));
 			}
 		} else lutB[minB] = minB;
 
@@ -292,7 +292,7 @@ bool CxImage::HistogramStretch(int32_t method, double threshold)
 		// calculate LUT
 		uint8_t lut[256];
 		for (x = 0; x <256; x++){
-			lut[x] = (uint8_t)max(0,min(255,(255 * (x - minc) / (maxc - minc))));
+			lut[x] = (uint8_t)cxmax(0,cxmin(255,(255 * (x - minc) / (maxc - minc))));
 		}
 
 		for(y=0; y<head.biHeight; y++){

@@ -54,7 +54,7 @@
 #include <Math/tQuaternion.h>
 #include <Math/tColour.h>
 #include "System/tFile.h"
-#ifdef PLATFORM_WIN
+#ifdef PLATFORM_WINDOWS
 #pragma warning (disable: 4311 4369 4302)
 #endif
 
@@ -92,7 +92,7 @@ public:
 	void Open(const tString& filename, tPlatform platform)																{ Open(filename, tGetEndianness(platform)); }
 
 	// Same as above except returns false at first sign of failure.
-	bool OpenSafe(const tString& filename, tPlatform platform)															{ OpenSafe(filename, tGetEndianness(platform)); }
+	bool OpenSafe(const tString& filename, tPlatform platform)															{ return OpenSafe(filename, tGetEndianness(platform)); }
 	bool OpenSafe(const tString& filename, tEndianness = tEndianness::Little);
 
 	// In case you want to open something else. You should have finished writing all the chunks by this time. You can
@@ -703,7 +703,7 @@ inline tChunk::tChunk(uint8* chunk) :
 
 	// We are safe to use uint32 cast here even for 64 bit pointers because the alignment requirements are much
 	// smaller. That is, align is much less than 2^32.
-	int bytesAfterAlign = uint32(chunk+8) % align;
+	int bytesAfterAlign = uint32(uint64(chunk+8)) % align;
 	int pad = bytesAfterAlign ? (align - bytesAfterAlign) : 0;
 	ItemData = (chunk+8) + pad;
 }
@@ -717,7 +717,7 @@ inline tChunk::tChunk(uint8* chunk, uint8* lastChunk) :
 	int shift = ((idaa & 0x70000000) >> 28) + 2;
 	int align = 1 << shift;
 
-	int bytesAfterAlign = uint32(chunk+8) % align;
+	int bytesAfterAlign = uint32(uint64(chunk+8)) % align;
 	int pad = bytesAfterAlign ? (align - bytesAfterAlign) : 0;
 	ItemData = (chunk+8) + pad;
 }
@@ -731,7 +731,7 @@ inline tChunk::tChunk(uint8* chunk, tChunk lastChunk) :
 	int shift = ((idaa & 0x70000000) >> 28) + 2;
 	int align = 1 << shift;
 
-	int bytesAfterAlign = uint32(chunk+8) % align;
+	int bytesAfterAlign = uint32(uint64(chunk+8)) % align;
 	int pad = bytesAfterAlign ? (align - bytesAfterAlign) : 0;
 	ItemData = (chunk+8) + pad;
 }
@@ -746,7 +746,7 @@ inline uint8* tChunk::GetData() const
 	int shift = ((idaa & 0x70000000) >> 28) + 2;
 	int align = 1 << shift;
 
-	int bytesAfterAlign = uint32(Chunk+8) % align;
+	int bytesAfterAlign = uint32(uint64(Chunk+8)) % align;
 	int pad = bytesAfterAlign ? (align - bytesAfterAlign) : 0;
 	return Chunk + 8 + pad;
 }
@@ -762,11 +762,11 @@ inline int tChunk::GetDataSizeRaw() const
 	int shift = ((idaa & 0x70000000) >> 28) + 2;
 	int align = 1 << shift;
 
-	int bytesAfterAlign = uint32(data) % align;
+	int bytesAfterAlign = uint32(uint64(data)) % align;
 	int prologPad = bytesAfterAlign ? (align - bytesAfterAlign) : 0;
 	int dataSize = GetDataSize();
 	data += prologPad + dataSize;
 
-	int epilogPad = (uint32(data) % 4) ? (4 - (uint32(data) % 4)) : 0;
+	int epilogPad = (uint32(uint64(data)) % 4) ? (4 - (uint32(uint64(data)) % 4)) : 0;
 	return prologPad + dataSize + epilogPad;
 }

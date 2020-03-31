@@ -132,7 +132,7 @@ public:
 	union
 	{
 		struct { uint8 R, G, B, A; };
-		struct { uint8 H, S, V, A; };
+		struct { uint8 H, S, V, O; };		// O for opacity. Some compilers don't like a repeated A.
 
 		// Bit Pattern member.
 		// Accessing the colour as a 32 bit value using the BP member means you must take the machine's endianness into
@@ -251,7 +251,7 @@ public:
 	union
 	{
 		struct { float R, G, B, A; };
-		struct { float H, S, V, A; };
+		struct { float H, S, V, O; };
 		struct { uint64 BP0, BP1; };						// Bit Pattern.
 		float E[4];
 	};

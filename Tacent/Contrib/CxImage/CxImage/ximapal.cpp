@@ -398,8 +398,8 @@ void CxImage::RGBtoBGR(uint8_t *buffer, int32_t length)
 {
 	if (buffer && (head.biClrUsed==0)){
 		uint8_t temp;
-		length = min(length,(int32_t)info.dwEffWidth);
-		length = min(length,(int32_t)(3*head.biWidth));
+		length = cxmin(length,(int32_t)info.dwEffWidth);
+		length = cxmin(length,(int32_t)(3*head.biWidth));
 		for (int32_t i=0;i<length;i+=3){
 			temp = buffer[i]; buffer[i] = buffer[i+2]; buffer[i+2] = temp;
 		}
@@ -444,7 +444,7 @@ void CxImage::SetPalette(uint32_t n, uint8_t *r, uint8_t *g, uint8_t *b)
 	if (!g) g = r;
 	if (!b) b = g;
 	RGBQUAD* ppal=GetPalette();
-	uint32_t m=min(n,head.biClrUsed);
+	uint32_t m=cxmin(n,head.biClrUsed);
 	for (uint32_t i=0; i<m;i++){
 		ppal[i].rgbRed=r[i];
 		ppal[i].rgbGreen=g[i];
@@ -457,7 +457,7 @@ void CxImage::SetPalette(rgb_color *rgb,uint32_t nColors)
 {
 	if ((!rgb)||(pDib==NULL)||(head.biClrUsed==0)) return;
 	RGBQUAD* ppal=GetPalette();
-	uint32_t m=min(nColors,head.biClrUsed);
+	uint32_t m=cxmin(nColors,head.biClrUsed);
 	for (uint32_t i=0; i<m;i++){
 		ppal[i].rgbRed=rgb[i].r;
 		ppal[i].rgbGreen=rgb[i].g;
@@ -469,7 +469,7 @@ void CxImage::SetPalette(rgb_color *rgb,uint32_t nColors)
 void CxImage::SetPalette(RGBQUAD* pPal,uint32_t nColors)
 {
 	if ((pPal==NULL)||(pDib==NULL)||(head.biClrUsed==0)) return;
-	memcpy(GetPalette(),pPal,min(GetPaletteSize(),nColors*sizeof(RGBQUAD)));
+	memcpy(GetPalette(),pPal,cxmin(GetPaletteSize(),nColors*sizeof(RGBQUAD)));
 	info.last_c_isvalid = false;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -654,10 +654,10 @@ void CxImage::SetClrImportant(uint32_t ncolors)
 
 	switch(head.biBitCount){
 	case 1:
-		head.biClrImportant = min(ncolors,2);
+		head.biClrImportant = cxmin(ncolors,2);
 		break;
 	case 4:
-		head.biClrImportant = min(ncolors,16);
+		head.biClrImportant = cxmin(ncolors,16);
 		break;
 	case 8:
 		head.biClrImportant = ncolors;

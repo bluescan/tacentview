@@ -100,9 +100,9 @@ void EXR::ComputeFogColour(float& fogR, float& fogG, float& fogB, const IMF::Arr
 		const IMF::Rgba& rawPixel = pixels[j];
 		float weight = tMath::tSaturate(float(rawPixel.a));		// Makes sure transparent pixels don't contribute to the colour.
 
-		fogRd += rawPixel.r.isFinite() ? rawPixel.r : 0.0f;
-		fogGd += rawPixel.g.isFinite() ? rawPixel.g : 0.0f;
-		fogBd += rawPixel.b.isFinite() ? rawPixel.b : 0.0f;
+		fogRd += rawPixel.r.isFinite() ? double(rawPixel.r) : 0.0;
+		fogGd += rawPixel.g.isFinite() ? double(rawPixel.g) : 0.0;
+		fogBd += rawPixel.b.isFinite() ? double(rawPixel.b) : 0.0;
 		WeightSum += weight;
 	}
 

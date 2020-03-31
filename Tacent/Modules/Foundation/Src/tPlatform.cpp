@@ -2,10 +2,9 @@
 //
 // Tacent platform defines, architecture, and endianness detection. The Tacent library has some preprocessor define
 // requirements. One of PLATFORM_NNN, ARCHITECTURE_NNN, and CONFIG_NNN need to be defined. If you haven't bothered
-// to define these in the project file with a /D switch, they will be defined for you automatically if you are
-// building Windows x64.
+// to define these in the project file with a /D switch, an attempt is made to define them automatically for you.
 //
-// Copyright (c) 2004-2006, 2015, 2017 Tristan Grimmer.
+// Copyright (c) 2004-2006, 2015, 2017, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -21,14 +20,14 @@
 
 tPlatform tGetPlatform()
 {
-	#if defined(PLATFORM_WIN)
-	return tPlatform::Win;
-	#elif defined(PLATFORM_LIN)
-	return tPlatform::Lin;
-	#elif defined(PLATFORM_OSX)
-	return tPlatform::OSX;
-	#elif defined(PLATFORM_AND)
-	return tPlatform::And;
+	#if defined(PLATFORM_WINDOWS)
+	return tPlatform::Windows;
+	#elif defined(PLATFORM_LINUX)
+	return tPlatform::Linux;
+	#elif defined(PLATFORM_MACOS)
+	return tPlatform::MacOS;
+	#elif defined(PLATFORM_ANDROID)
+	return tPlatform::Android;
 	#elif defined(PLATFORM_IOS)
 	return tPlatform::iOS;
 	#else
@@ -51,10 +50,10 @@ const char* tGetPlatformName(tPlatform plat)
 {
 	const static char* platNames[] =
 	{
-		"Win",
-		"Lin",
-		"OSX",
-		"And",
+		"Windows",
+		"Linux",
+		"MacOS",
+		"Android",
 		"iOS",
 		"All",
 		"Invalid",
@@ -139,10 +138,10 @@ tEndianness tGetEndianness(tPlatform plat)
 {
 	switch (plat)
 	{
-		case tPlatform::Win:
-		case tPlatform::Lin:
-		case tPlatform::OSX:
-		case tPlatform::And:
+		case tPlatform::Windows:
+		case tPlatform::Linux:
+		case tPlatform::MacOS:
+		case tPlatform::Android:
 		case tPlatform::iOS:
 			return tEndianness::Little;
 	}

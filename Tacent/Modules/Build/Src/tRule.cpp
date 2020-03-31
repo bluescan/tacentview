@@ -17,7 +17,7 @@
 #include <System/tPrint.h>
 #include <System/tFile.h>
 #include "Build/tRule.h"
-#ifdef PLATFORM_WIN
+#ifdef PLATFORM_WINDOWS
 #include "Build/tSolution.h"
 #endif
 using namespace tBuild;
@@ -102,7 +102,7 @@ void tRule::AddDependencies(tList<tStringItem>& deps)
 }
 
 
-#ifdef PLATFORM_WIN
+#ifdef PLATFORM_WINDOWS
 void tRule::AddDependenciesVS(const tString& solutionOrProjectFile)
 {
 	if (tSystem::tGetFileExtension(solutionOrProjectFile) == "sln")
@@ -132,22 +132,22 @@ void tRule::AddDependenciesVCXProj(const tString& projectFile)
 #endif
 
 
-void tRule::AddDependencyDir(const tString& dir, const tString& filter)
+void tRule::AddDependencyDir(const tString& dir, const tString& ext)
 {
 	tList<tStringItem> deps;
 	bool includeHidden = false;
-	tSystem::tFindFilesInDir(deps, dir, filter, includeHidden);
+	tSystem::tFindFiles(deps, dir, ext, includeHidden);
 
 	AddDependencies(deps);
 	tAssert(deps.IsEmpty());
 }
 
 
-void tRule::AddDependencyDirRec(const tString& dir, const tString& filter)
+void tRule::AddDependencyDirRec(const tString& dir, const tString& ext)
 {
 	tList<tStringItem> deps;
 	bool includeHidden = false;
-	tSystem::tFindFilesRecursive(deps, dir, filter, includeHidden);
+	tSystem::tFindFilesRecursive(deps, dir, ext, includeHidden);
 
 	AddDependencies(deps);
 	tAssert(deps.IsEmpty());

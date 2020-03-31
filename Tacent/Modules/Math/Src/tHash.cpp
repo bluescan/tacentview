@@ -6,7 +6,7 @@
 // data sources like strings, binary data, or files, you do NOT need to consolidate all the source data into one buffer
 // first. Just set the initialization vector to the hash computed from the previous step.
 //
-// Copyright (c) 2004-2006, 2015, 2017 Tristan Grimmer.
+// Copyright (c) 2004-2006, 2015, 2017, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -117,9 +117,6 @@ namespace tHash
 
 uint64 tMath::tHashData64(const uint8* data, int length, uint64 iv)
 {
-	#ifndef PLATFORM_WIN
-		tAssert(!"HashData64 has only been tested in windows.");
-	#endif
 	uint64 a,b,c;											// The internal state.
 	int len;												// How many key bytes still need mixing.
 
@@ -214,8 +211,8 @@ namespace tHash
 
 	void MD5Update(uint32 count[2], uint32 state[4], const uint8* data, uint32 length, uint8 buffer[iMD5BlockSize]);
 
-	uint32 MD5_F(uint32 x, uint32 y, uint32 z)																			{ return x&y | ~x&z; }
-	uint32 MD5_G(uint32 x, uint32 y, uint32 z)																			{ return x&z | y&~z; }
+	uint32 MD5_F(uint32 x, uint32 y, uint32 z)																			{ return (x&y) | (~x&z); }
+	uint32 MD5_G(uint32 x, uint32 y, uint32 z)																			{ return (x&z) | (y&~z); }
 	uint32 MD5_H(uint32 x, uint32 y, uint32 z)																			{ return x^y^z; }
 	uint32 MD5_I(uint32 x, uint32 y, uint32 z)																			{ return y ^ (x | ~z); }
 	uint32 MD5_RotateLeft(uint32 x, int n)																				{ return (x << n) | (x >> (32-n)); }
@@ -454,11 +451,6 @@ namespace tHash
 
 tuint256 tMath::tHashData256(const uint8* data, int len, tuint256 iv)
 {
-	#ifndef PLATFORM_WIN
-	// @todo Are there endianness concerns?
-	tAssert(!"HashData256 has only been tested in windows.");
-	#endif
-
 	uint32 a, b, c, d, e, f, g, h, length;
 
 	// Use the length and level. Add in the golden ratio. Remember, 'a' is most significant.

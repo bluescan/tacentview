@@ -58,12 +58,14 @@
  #define CXIMAGE_SUPPORT_WINDOWS 0
 #endif
 
-#ifndef min
-#define min(a,b) (((a)<(b))?(a):(b))
+// @tacent
+#ifndef cxmin
+#define cxmin(a,b) (((a)<(b))?(a):(b))
 #endif
-#ifndef max
-#define max(a,b) (((a)>(b))?(a):(b))
+#ifndef cxmax
+#define cxmax(a,b) (((a)>(b))?(a):(b))
 #endif
+
 
 #ifndef PI
  #define PI 3.141592653589793f
@@ -106,6 +108,11 @@ typedef struct tagcomplex {
 typedef uint32_t   COLORREF;
 typedef void*      HANDLE;
 typedef void*      HRGN;
+// @tacent
+#ifdef PLATFORM_LINUX
+typedef void*		HDC;
+#define _tfopen	fopen
+#endif
 
 #ifndef BOOL
 #define	BOOL bool

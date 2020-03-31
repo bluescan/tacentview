@@ -931,7 +931,7 @@ bool tImageDDS::DoDXT1BlocksHaveBinaryAlpha(tDXT1Block* block, int numBlocks)
 }
 
 
-const char* tDDSError::CodeStrings[tCode::NumCodes] =
+const char* tDDSError::CodeStrings[int(tCode::NumCodes)] =
 {
 	"Unknown.",
 	"File doesn't exist.",

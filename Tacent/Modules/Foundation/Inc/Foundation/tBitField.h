@@ -6,7 +6,7 @@
 // If you need mathematical operators like subtraction, addition, multiplication, division etc, use the heavier
 // tFixInt instead. If you need a dynamic number of bits, use a tBitArray instead. If you don't, this will be faster.
 //
-// Copyright (c) 2004-2006, 2015, 2017 Tristan Grimmer.
+// Copyright (c) 2004-2006, 2015, 2017, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -31,7 +31,10 @@ template<int NumBits> class tBitField
 {
 public:
 	tBitField()												/* All bits cleared. */										{ Clear(); }
-	tBitField(const tBitField& src)																						{ for (int i = 0; i < NumElements; i++) Elements[i] = src.Elements[i]; }
+
+	// Disabled CopyCons so class remains a POD-type. Allows it to be passed to tPrintf for non MSVC compilers.
+	// tBitField(const tBitField& src)																					{ for (int i = 0; i < NumElements; i++) Elements[i] = src.Elements[i]; }
+
 	tBitField(const tString& str, int base = -1)																		{ Set(str); }
 	tBitField(int val)																									{ Set(val); }
 
@@ -164,7 +167,7 @@ template<int N> inline void tBitField<N>::Set(const char* str, int base)
 }
 
 
-template<int N> inline void Set(uint8 val)
+template<int N> inline void tBitField<N>::Set(uint8 val)
 {
 	Clear();
 	tAssert(NumElements >= 1);
@@ -173,7 +176,7 @@ template<int N> inline void Set(uint8 val)
 }
 
 
-template<int N> inline void Set(uint16 val)
+template<int N> inline void tBitField<N>::Set(uint16 val)
 {
 	Clear();
 	tAssert(NumElements >= 1);

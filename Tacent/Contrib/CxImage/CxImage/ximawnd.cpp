@@ -848,10 +848,10 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 	RECT clipbox,paintbox;
 	GetClipBox(hdc,&clipbox);
 
-	paintbox.top = min(clipbox.bottom,max(clipbox.top,y));
-	paintbox.left = min(clipbox.right,max(clipbox.left,x));
-	paintbox.right = max(clipbox.left,min(clipbox.right,x+cx));
-	paintbox.bottom = max(clipbox.top,min(clipbox.bottom,y+cy));
+	paintbox.top = cxmin(clipbox.bottom,cxmax(clipbox.top,y));
+	paintbox.left = cxmin(clipbox.right,cxmax(clipbox.left,x));
+	paintbox.right = cxmax(clipbox.left,cxmin(clipbox.right,x+cx));
+	paintbox.bottom = cxmax(clipbox.top,cxmin(clipbox.bottom,y+cy));
 
 	int32_t destw = paintbox.right - paintbox.left;
 	int32_t desth = paintbox.bottom - paintbox.top;
@@ -902,7 +902,7 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 
 				for(yy=0;yy<desth;yy++){
 					dy = head.biHeight-(ymax-yy-y)*fy;
-					sy = max(0L,(int32_t)floor(dy));
+					sy = cxmax(0L,(int32_t)floor(dy));
 					psrc = info.pImage+sy*info.dwEffWidth;
 					if (bFlipY){
 						pdst = pbase+(desth-1-yy)*ew;
@@ -911,7 +911,7 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 					}
 					for(xx=0;xx<destw;xx++){
 						dx = (xx+xmin-x)*fx;
-						sx = max(0L,(int32_t)floor(dx));
+						sx = cxmax(0L,(int32_t)floor(dx));
 #if CXIMAGE_SUPPORT_INTERPOLATION
 						if (bSmooth){
 							if (fx > 1 && fy > 1) { 
@@ -989,7 +989,7 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 				
 				for(yy=0;yy<desth;yy++){
 					dy = head.biHeight-(ymax-yy-y)*fy;
-					sy = max(0L,(int32_t)floor(dy));
+					sy = cxmax(0L,(int32_t)floor(dy));
 
 					alphaoffset = sy*head.biWidth;
 					if (bFlipY){
@@ -1001,7 +1001,7 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 
 					for(xx=0;xx<destw;xx++){
 						dx = (xx+xmin-x)*fx;
-						sx = max(0L,(int32_t)floor(dx));
+						sx = cxmax(0L,(int32_t)floor(dx));
 
 						if (bAlpha) a=pAlpha[alphaoffset+sx]; else a=255;
 						a =(uint8_t)((a*(1+info.nAlphaMax))>>8);
@@ -1174,10 +1174,10 @@ HBITMAP CxImage::Draw2HBITMAP(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t
 	RECT clipbox,paintbox;
 	GetClipBox(hdc,&clipbox);
 
-	paintbox.top = min(clipbox.bottom,max(clipbox.top,y));
-	paintbox.left = min(clipbox.right,max(clipbox.left,x));
-	paintbox.right = max(clipbox.left,min(clipbox.right,x+cx));
-	paintbox.bottom = max(clipbox.top,min(clipbox.bottom,y+cy));
+	paintbox.top = cxmin(clipbox.bottom,cxmax(clipbox.top,y));
+	paintbox.left = cxmin(clipbox.right,cxmax(clipbox.left,x));
+	paintbox.right = cxmax(clipbox.left,cxmin(clipbox.right,x+cx));
+	paintbox.bottom = cxmax(clipbox.top,cxmin(clipbox.bottom,y+cy));
 
 	int32_t destw = paintbox.right - paintbox.left;
 	int32_t desth = paintbox.bottom - paintbox.top;
@@ -1222,12 +1222,12 @@ HBITMAP CxImage::Draw2HBITMAP(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t
 
 				for(yy=0;yy<desth;yy++){
 					dy = head.biHeight-(ymax-yy-y)*fy;
-					sy = max(0L,(int32_t)floor(dy));
+					sy = cxmax(0L,(int32_t)floor(dy));
 					psrc = info.pImage+sy*info.dwEffWidth;
 					pdst = pbase+yy*ew;
 					for(xx=0;xx<destw;xx++){
 						dx = (xx+xmin-x)*fx;
-						sx = max(0L,(int32_t)floor(dx));
+						sx = cxmax(0L,(int32_t)floor(dx));
 #if CXIMAGE_SUPPORT_INTERPOLATION
 						if (bSmooth){
 							if (fx > 1 && fy > 1) { 
@@ -1304,7 +1304,7 @@ HBITMAP CxImage::Draw2HBITMAP(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t
 				
 				for(yy=0;yy<desth;yy++){
 					dy = head.biHeight-(ymax-yy-y)*fy;
-					sy = max(0L,(int32_t)floor(dy));
+					sy = cxmax(0L,(int32_t)floor(dy));
 
 					alphaoffset = sy*head.biWidth;
 					pdst = pbase + yy*ew;
@@ -1312,7 +1312,7 @@ HBITMAP CxImage::Draw2HBITMAP(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t
 
 					for(xx=0;xx<destw;xx++){
 						dx = (xx+xmin-x)*fx;
-						sx = max(0L,(int32_t)floor(dx));
+						sx = cxmax(0L,(int32_t)floor(dx));
 
 						if (bAlpha) a=pAlpha[alphaoffset+sx]; else a=255;
 						a =(uint8_t)((a*(1+info.nAlphaMax))>>8);

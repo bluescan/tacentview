@@ -361,7 +361,7 @@ float tMath::tDeterminant(const tMat4& m)
 
 bool tMath::tInvert(tMat4& m)
 {
-	#if defined(PLATFORM_WIN)
+	#if defined(PLATFORM_WINDOWS)
 	if (tDeterminant(m) == 0.0f)
 		return false;
 
@@ -459,7 +459,7 @@ bool tMath::tInvert(tMat4& m)
 
 bool tMath::tInvert(tMat4& d, const tMat4& s)
 {
-	#if defined(PLATFORM_WIN)
+	#if defined(PLATFORM_WINDOWS)
 	tSet(d, s);
 	return tInvert(d);
 	

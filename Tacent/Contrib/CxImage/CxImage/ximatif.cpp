@@ -407,7 +407,7 @@ bool CxImageTIF::Decode(CxFile * hFile)
 									 bits + offset, width, bitspersample, pal );
 					else if ((bitspersample == head.biBitCount) || 
 						(bitspersample == 16))	//simple 8bpp, 4bpp image or 16bpp
-						memcpy(info.pImage+info.dwEffWidth*(height-ys-nrow+y),bits+offset,min((unsigned)line, info.dwEffWidth));
+						memcpy(info.pImage+info.dwEffWidth*(height-ys-nrow+y),bits+offset,cxmin((unsigned)line, info.dwEffWidth));
 					else
 						MoveBits( info.pImage + info.dwEffWidth * (height-ys-nrow+y),
 								  bits + offset, width, bitspersample );
@@ -472,9 +472,9 @@ bool CxImageTIF::Decode(CxFile * hFile)
 						if ( cb > 0.00304 ) cb = 1.055 * pow(cb,0.41667) - 0.055;
 							else            cb = 12.92 * cb;
 
-						c.rgbRed  =(uint8_t)max(0,min(255,(int32_t)(cr*255)));
-						c.rgbGreen=(uint8_t)max(0,min(255,(int32_t)(cg*255)));
-						c.rgbBlue =(uint8_t)max(0,min(255,(int32_t)(cb*255)));
+						c.rgbRed  =(uint8_t)cxmax(0,cxmin(255,(int32_t)(cr*255)));
+						c.rgbGreen=(uint8_t)cxmax(0,cxmin(255,(int32_t)(cg*255)));
+						c.rgbBlue =(uint8_t)cxmax(0,cxmin(255,(int32_t)(cb*255)));
 
 						SetPixelColor(xi,yi,c);
 #if CXIMAGE_SUPPORT_ALPHA

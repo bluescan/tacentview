@@ -15,7 +15,7 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
-#ifdef PLATFORM_WIN
+#ifdef PLATFORM_WINDOWS
 #include <windows.h>
 #endif
 #include <Foundation/tStandard.h>
@@ -109,9 +109,22 @@ namespace tSystem
 
 	// Type handler stuff below.
 	typedef void (*HandlerFn)(Receiver& out, const FormatSpec&, void* data);
+
+	// The BaseType indicates what a passed-in type is made of in terms of built-in types. This allows
+	// us to call va_arg with precisely the right type instead of just one with the correct size. The latter
+	// works fine with MSVC but not Clang. No idea why.
+	enum class BaseType
+	{
+		None,
+		Int,
+		Flt,
+		Dbl
+	};
+
 	struct HandlerInfo
 	{
-		char Type;						// The type specifier. eg. 'f' or 'd' or 'X'.
+		char SpecChar;					// The specifier character. eg. 'f', 'd', 'X', etc.
+		BaseType TypeBase;
 		int DefaultByteSize;
 		HandlerFn Handler;
 	};
@@ -173,7 +186,6 @@ namespace tSystem
 	void Handler_m(Receiver& out, const FormatSpec&, void* data);
 	void Handler_c(Receiver& out, const FormatSpec&, void* data);
 	void Handler_s(Receiver& out, const FormatSpec&, void* data);
-	void Handler_z(Receiver& out, const FormatSpec&, void* data);
 }
 
 
@@ -230,7 +242,7 @@ int tSystem::tPrint(const char* text, tFileHandle fileHandle)
 		return numPrinted;
 
 	// Print supplimentary output unfiltered.
-	#ifdef PLATFORM_WIN
+	#ifdef PLATFORM_WINDOWS
 	if (!fileHandle && SupplimentaryDebuggerOutput && IsDebuggerPresent())
 		OutputDebugStringA(text);
 	#endif
@@ -243,7 +255,7 @@ int tSystem::tPrint(const char* text, tFileHandle fileHandle)
 		return numChars;
 	}
 
-	#ifdef PLATFORM_WIN
+	#ifdef PLATFORM_WINDOWS
 	// Skip some specific undesirable characters.
 	const char* startValid = text;
 	while (*startValid)
@@ -271,11 +283,11 @@ int tSystem::tPrint(const char* text, tFileHandle fileHandle)
 	numPrinted = int(startValid - text);
 
 	#else
-	int len = auStrlen(text);
+	int len = tStd::tStrlen(text);
 	if (fileHandle)
-		tSystem::tWriteFile(text, 1, len, fileHandle);
+		tSystem::tWriteFile(fileHandle, text, len);
 	else
-		tSystem::tWriteFile(text, 1, len, stdout);
+		tSystem::tWriteFile(stdout, text, len);
 
 	fflush(stdout);
 	numPrinted = len;
@@ -393,24 +405,23 @@ void tSystem::Receiver::Receive(const tArray<char>& buf)
 // string "%:8X", "%!32X", or "%|256d".
 tSystem::HandlerInfo tSystem::HandlerInfos[] =
 {
-	//	Type Char		Default Size (bytes)		Handler Function				Fast Jump Index
-	{ 'b',				4,							tSystem::Handler_b },			// 0
-	{ 'o',				4,							tSystem::Handler_o },			// 1
-	{ 'd',				4,							tSystem::Handler_d },			// 2
-	{ 'i',				4,							tSystem::Handler_i },			// 3
-	{ 'u',				4,							tSystem::Handler_u },			// 4
-	{ 'x',				4,							tSystem::Handler_x },			// 5
-	{ 'X',				4,							tSystem::Handler_X },			// 6
-	{ 'p',				sizeof(void*),				tSystem::Handler_p },			// 7
-	{ 'e',				8,							tSystem::Handler_e },			// 8
-	{ 'f',				8,							tSystem::Handler_f },			// 9
-	{ 'g',				8,							tSystem::Handler_g },			// 10
-	{ 'v',				sizeof(tVec3),				tSystem::Handler_v },			// 11
-	{ 'q',				sizeof(tQuat),				tSystem::Handler_q },			// 12
-	{ 'm',				sizeof(tMat4),				tSystem::Handler_m },			// 13
-	{ 'c',				4,							tSystem::Handler_c },			// 14
-	{ 's',				sizeof(char*),				tSystem::Handler_s },			// 15
-	{ '%',				0,							tSystem::Handler_z },			// 16
+	//	Type Spec	Base Type					Default Size (bytes)	Handler Function		Fast Jump Index
+	{ 'b',			tSystem::BaseType::Int,		4,						tSystem::Handler_b },	// 0
+	{ 'o',			tSystem::BaseType::Int,		4,						tSystem::Handler_o },	// 1
+	{ 'd',			tSystem::BaseType::Int,		4,						tSystem::Handler_d },	// 2
+	{ 'i',			tSystem::BaseType::Int,		4,						tSystem::Handler_i },	// 3
+	{ 'u',			tSystem::BaseType::Int,		4,						tSystem::Handler_u },	// 4
+	{ 'x',			tSystem::BaseType::Int,		4,						tSystem::Handler_x },	// 5
+	{ 'X',			tSystem::BaseType::Int,		4,						tSystem::Handler_X },	// 6
+	{ 'p',			tSystem::BaseType::Int,		sizeof(void*),			tSystem::Handler_p },	// 7
+	{ 'e',			tSystem::BaseType::Dbl,		8,						tSystem::Handler_e },	// 8
+	{ 'f',			tSystem::BaseType::Dbl,		8,						tSystem::Handler_f },	// 9
+	{ 'g',			tSystem::BaseType::Dbl,		8,						tSystem::Handler_g },	// 10
+	{ 'v',			tSystem::BaseType::Flt,		sizeof(tVec3),			tSystem::Handler_v },	// 11
+	{ 'q',			tSystem::BaseType::Flt,		sizeof(tQuat),			tSystem::Handler_q },	// 12
+	{ 'm',			tSystem::BaseType::Flt,		sizeof(tMat4),			tSystem::Handler_m },	// 13
+	{ 'c',			tSystem::BaseType::Int,		4,						tSystem::Handler_c },	// 14
+	{ 's',			tSystem::BaseType::Int,		sizeof(char*),			tSystem::Handler_s },	// 15
 };
 
 // Filling this in correctly will speed things up. However, not filling it in or filling it in incorrectly will still
@@ -497,11 +508,15 @@ int tsPrintf(char* dest, const char* format, ...)
 }
 
 
-tString& tvsPrintf(tString& dest, const char* format, va_list marker)
+tString& tvsPrintf(tString& dest, const char* format, va_list argList)
 {
-	int reqChars = tvcPrintf(format, marker);
+	va_list argList2;
+	va_copy(argList2, argList);
+	
+	int reqChars = tvcPrintf(format, argList);
 	dest.Reserve(reqChars);
-	tvsPrintf(dest.Text(), format, marker);
+	
+	tvsPrintf(dest.Text(), format, argList2);
 	return dest;
 }
 
@@ -638,7 +653,7 @@ tSystem::HandlerInfo* tSystem::FindHandler(char type)
 	{
 		HandlerInfo* h = &HandlerInfos[index];
 		tAssert(h);
-		if (h->Type == type)
+		if (h->SpecChar == type)
 			return h;
 	}
 
@@ -647,7 +662,7 @@ tSystem::HandlerInfo* tSystem::FindHandler(char type)
 	{
 		HandlerInfo* h = &HandlerInfos[i];
 		tAssert(h);
-		if (h->Type == type)
+		if (h->SpecChar == type)
 			return h;
 	}
 
@@ -658,7 +673,7 @@ tSystem::HandlerInfo* tSystem::FindHandler(char type)
 bool tSystem::IsValidFormatSpecifierCharacter(char c)
 {
 	// Tests for valid character after a %. First we check optional flag characters.
-	if ((c == '-') || (c == '+') || (c == ' ') || (c == '0') || (c == '#') || (c == '_') || (c == '\'') || (c == '#'))
+	if ((c == '-') || (c == '+') || (c == ' ') || (c == '0') || (c == '#') || (c == '_') || (c == '\''))
 		return true;
 
 	// Next test for width and precision.
@@ -671,7 +686,7 @@ bool tSystem::IsValidFormatSpecifierCharacter(char c)
 
 	// Finally check for type.
 	for (int i = 0; i < NumHandlers; i++)
-		if (c == HandlerInfos[i].Type)
+		if (c == HandlerInfos[i].SpecChar)
 			return true;
 
 	return false;
@@ -690,7 +705,7 @@ void tSystem::Process(Receiver& receiver, const char* format, va_list argList)
 		}
 		else if (!IsValidFormatSpecifierCharacter(format[1]))
 		{
-			// Invalid character after the % so receive that character. This allows stuff like %% to work.
+			// Invalid character after the % so receive that character. This allows stuff like %% (percent symbol) to work.
 			receiver.Receive(format[1]);
 			format += 2;
 		}
@@ -716,7 +731,7 @@ void tSystem::Process(Receiver& receiver, const char* format, va_list argList)
 				format++;
 			}
 
-			// From docs: If 0 and – appear, the 0 is ignored.
+			// From docs: If 0 (leading zeroes) and - (left justify) appear, leading-zeroes is ignored.
 			if ((spec.Flags & Flag_LeadingZeros) && (spec.Flags & Flag_LeftJustify))
 				spec.Flags &= ~Flag_LeadingZeros;
 
@@ -735,7 +750,7 @@ void tSystem::Process(Receiver& receiver, const char* format, va_list argList)
 				format++;
 			}
 
-			// Read optional precision specification. The '*' means get the value from tha argument list.
+			// Read optional precision specification. The '*' means get the value from the argument list.
 			if (format[0] == '.')
 			{
 				spec.Precision = 0;
@@ -756,7 +771,7 @@ void tSystem::Process(Receiver& receiver, const char* format, va_list argList)
 				}
 			}
 
-			// Read optional type size specification. Tacent-specific and way better than posix or ansi.
+			// Read optional type size specification. Tacent-specific and cleaner than posix or ansi.
 			if ((format[0] == ':') || (format[0] == '!') || (format[0] == '|'))
 			{
 				char typeUnit = format[0];
@@ -796,29 +811,66 @@ void tSystem::Process(Receiver& receiver, const char* format, va_list argList)
 			// It isn't quite as fast cuz it always creates a byte for byte copy. The variables below are holders
 			// of the va_arg retrieved data. The holders below must be POD types, specifically no constructor or
 			// destructor because on windows we want to ensure that after va_arg does it's byte-wise copy, that
-			// the copy (that was not properly constructed) is not destructed. By having knowledge of how the
-			// specific data type works, we can, and have, safely made tPrintf support types like tString directly
-			// on windows.
-			struct val4type  { uint8 buf[4]; } val4;
-			struct val8type  { uint8 buf[8]; } val8;		// 64 bit types.
-			struct val12type { uint8 buf[12]; } val12;		// 96 bit types (like tVector3).
-			struct val16type { uint8 buf[16]; } val16;		// 128 bit types (like tuint128 and tVector4).
-			struct val32type { uint8 buf[32]; } val32;		// 256 bit types (like tuint256).
-			struct val64type { uint8 buf[64]; } val64;		// 512 bit types (like tMatrix4, tuint512, and tbit512).
+			// the copy (that was not properly constructed) is not destructed.
+			struct Val4I  { uint32 a; }					val4i;		// 32 bit integers like int32.
+			struct Val4F  { float a; }					val4f;
+			struct Val8I  { uint64 a; }					val8i;		// 64 bit integers like uint64.
+			struct Val8F  { float a[2]; }				val8f;		// 64 bit. 2 floats. Like tVec2.
+			struct Val8D  { double a; }					val8d;		// 64 bit double.
+			struct Val12I { float a[3]; }				val12i;
+			struct Val12F { float a[3]; }				val12f;		// 96 bit. 3 floats. Like tVec3.
+			struct Val16I { uint32 a[4]; }				val16i;		// 128 bit integral types. Like tuint128.
+			struct Val16F { float a[4]; }				val16f;		// 128 bit float types. Like tVec4 or tMat2.
+			struct Val32I { uint32 a[8]; }				val32i;		// 256 bit types (like tuint256).
+			struct Val32F { float a[8]; }				val32f;
+			struct Val64I { uint32 a[16]; }				val64i;		// 512 bit types (like tuint512, and tbit512).
+			struct Val64F { float a[16]; }				val64f;		// 512 bit types (like tMatrix4).
 
 			void* pval = nullptr;
+			BaseType bt = handler->TypeBase;
 			switch (spec.TypeSizeBytes)
 			{
 				case 0:												pval = nullptr;		break;
-				case 4:		val4 = va_arg(argList, val4type);		pval = &val4;		break;
-				case 8:		val8 = va_arg(argList, val8type);		pval = &val8;		break;
-				case 12:	val12 = va_arg(argList, val12type);		pval = &val12;		break;
-				case 16:	val16 = va_arg(argList, val16type);		pval = &val16;		break;
-				case 32:	val32 = va_arg(argList, val32type);		pval = &val32;		break;
-				case 64:	val64 = va_arg(argList, val64type);		pval = &val64;		break;
-				default:	tAssert(!"Cannot deal with this size print vararg.");
+				case 4:
+					switch (bt)
+					{
+						case BaseType::Int:		val4i = va_arg(argList, Val4I);		pval = &val4i;		break;
+						case BaseType::Flt:		val4f = va_arg(argList, Val4F);		pval = &val4f;		break;
+					} break;
+				case 8:
+					switch (bt)
+					{
+						case BaseType::Int:		val8i = va_arg(argList, Val8I);		pval = &val8i;		break;
+						case BaseType::Flt:		val8f = va_arg(argList, Val8F);		pval = &val8f;		break;
+						case BaseType::Dbl:		val8d = va_arg(argList, Val8D);		pval = &val8d;		break;
+					} break;
+				case 12:
+					switch (bt)
+					{
+						case BaseType::Int:		val12i = va_arg(argList, Val12I);	pval = &val12i;		break;
+						case BaseType::Flt:		val12f = va_arg(argList, Val12F);	pval = &val12f;		break;
+					} break;
+				case 16:
+					switch (bt)
+					{
+						case BaseType::Int:		val16i = va_arg(argList, Val16I);	pval = &val16i;		break;
+						case BaseType::Flt:		val16f = va_arg(argList, Val16F);	pval = &val16f;		break;
+					} break;
+				case 32:
+					switch (bt)
+					{
+						case BaseType::Int:		val32i = va_arg(argList, Val32I);	pval = &val32i;		break;
+						case BaseType::Flt:		val32f = va_arg(argList, Val32F);	pval = &val32f;		break;
+					} break;
+				case 64:
+					switch (bt)
+					{
+						case BaseType::Int:		val64i = va_arg(argList, Val64I);	pval = &val64i;		break;
+						case BaseType::Flt:		val64f = va_arg(argList, Val64F);	pval = &val64f;		break;
+					} break;
 			}
-
+			tAssertMsg(pval, "Cannot deal with this size print vararg.");
+			
 			// Here's where the work is done... call the handler.
 			(handler->Handler)(receiver, spec, pval);
 
@@ -1338,11 +1390,19 @@ bool tSystem::HandlerHelper_HandleSpecialFloatTypes(tArray<char>& convBuf, doubl
 	tStd::tFloatType ft = tStd::tGetFloatType(value);
 	switch (ft)
 	{
-		case tStd::tFloatType::PSNAN:	convBuf.Append("nan(snan)", 9);		return true;
 		case tStd::tFloatType::PQNAN:	convBuf.Append("nan", 3);			return true;
-		case tStd::tFloatType::NSNAN:	convBuf.Append("-nan(snan)", 10);	return true;
 		case tStd::tFloatType::NQNAN:	convBuf.Append("-nan", 4);			return true;
+		
+		#if defined(PLATFORM_WINDOWS)
+		case tStd::tFloatType::PSNAN:	convBuf.Append("nan(snan)", 9);		return true;
+		case tStd::tFloatType::NSNAN:	convBuf.Append("-nan(snan)", 10);	return true;
 		case tStd::tFloatType::IQNAN:	convBuf.Append("-nan(ind)", 9);		return true;
+		#elif defined(PLATFORM_LINUX)
+		case tStd::tFloatType::PSNAN:	convBuf.Append("nan", 3);			return true;
+		case tStd::tFloatType::NSNAN:	convBuf.Append("-nan", 4);			return true;
+		case tStd::tFloatType::IQNAN:	convBuf.Append("-nan", 4);			return true;
+		#endif
+
 		case tStd::tFloatType::PINF:	convBuf.Append("inf", 3);			return true;
 		case tStd::tFloatType::NINF:	convBuf.Append("-inf", 4);			return true;
 		default:
@@ -1835,6 +1895,7 @@ void tSystem::Handler_v(Receiver& receiver, const FormatSpec& spec, void* data)
 {
 	int numComponents = spec.TypeSizeBytes >> 2;
 	tAssert((numComponents >= 2) && (numComponents <= 4));
+	
 	tVec4* vec = (tVec4*)data;
 	float* components = &vec->x;
 
@@ -1956,12 +2017,6 @@ void tSystem::Handler_c(Receiver& receiver, const FormatSpec& spec, void* data)
 {
 	const char chr = *((const char*)data);
 	receiver.Receive(chr);
-}
-
-
-void tSystem::Handler_z(Receiver& receiver, const FormatSpec& spec, void* data)
-{
-	receiver.Receive('%');
 }
 
 

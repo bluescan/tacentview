@@ -136,7 +136,10 @@ bool tPicture::Save(const tString& imageFile, tPicture::tColourFormat colourFmt,
 	switch (fileType)
 	{
 		case tFileType::BMP: cxImgFormat = CXIMAGE_FORMAT_BMP; break;
+		
+		#ifdef PLATFORM_WINDOWS
 		case tFileType::GIF: cxImgFormat = CXIMAGE_FORMAT_GIF; break;
+		#endif
 		case tFileType::JPG: cxImgFormat = CXIMAGE_FORMAT_JPG; break;
 		case tFileType::PNG: cxImgFormat = CXIMAGE_FORMAT_PNG; break;
 		// @todo We can probably handle a few more types here.
@@ -203,7 +206,7 @@ bool tPicture::Load(const tString& imageFile, int partNum, LoadParams params)
 		hdr.Load
 		(
 			imageFile,
-			params.Gamma,
+			params.GammaValue,
 			params.HDR_Exposure
 		);
 		if (!hdr.IsValid())
@@ -225,7 +228,7 @@ bool tPicture::Load(const tString& imageFile, int partNum, LoadParams params)
 		(
 			imageFile,
 			partNum,
-			params.Gamma,
+			params.GammaValue,
 			params.EXR_Exposure,
 			params.EXR_Defog,
 			params.EXR_KneeLow,
@@ -626,8 +629,10 @@ int tPicture::GetCxFormat(tFileType fileType)
 {
 	switch (fileType)
 	{
+		#ifdef PLATFORM_WINDOWS
 		case tFileType::TGA:
 			return CXIMAGE_FORMAT_TGA;
+		#endif
 
 		case tFileType::BMP:
 			return CXIMAGE_FORMAT_BMP;
@@ -635,8 +640,10 @@ int tPicture::GetCxFormat(tFileType fileType)
 		case tFileType::PNG:
 			return CXIMAGE_FORMAT_PNG;
 
+		#ifdef PLATFORM_WINDOWS
 		case tFileType::GIF:
 			return CXIMAGE_FORMAT_GIF;
+		#endif
 
 		case tFileType::JPG:
 			return CXIMAGE_FORMAT_JPG;
@@ -644,6 +651,7 @@ int tPicture::GetCxFormat(tFileType fileType)
 		case tFileType::TIFF:
 			return CXIMAGE_FORMAT_TIF;
 
+		#ifdef PLATFORM_WINDOWS
 		case tFileType::PCX:
 			return CXIMAGE_FORMAT_PCX;
 
@@ -658,6 +666,7 @@ int tPicture::GetCxFormat(tFileType fileType)
 
 		case tFileType::JPC:
 			return CXIMAGE_FORMAT_JPC;
+		#endif
 	}
 
 	return CXIMAGE_FORMAT_UNKNOWN;

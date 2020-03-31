@@ -400,7 +400,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>../Inc;../../Foundation/Inc;../../System/Inc;../../Math/Inc;../../../Contrib;../../../Contrib/OpenEXR/config;../../../Contrib/OpenEXR/IlmBase/IMath;../../../Contrib/OpenEXR/IlmBase/Iex;../../../Contrib/OpenEXR/IlmBase/IlmThread;../../../Contrib/OpenEXR/IlmBase/Half;../../../Contrib/OpenEXR/IlmBase/config;../../../Contrib/OpenEXR/IlmImf;../../../Contrib/OpenEXR/zlib;../../../Contrib/CxImage;../../../Contrib/NvidiaTextureTools/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_WIN;ARCHITECTURE_X64;WIN32;NDEBUG;_LIB;CONFIG_RELEASE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_WINDOWS;ARCHITECTURE_X64;WIN32;NDEBUG;_LIB;CONFIG_RELEASE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -437,7 +437,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>../Inc;../../Foundation/Inc;../../System/Inc;../../Math/Inc;../../../Contrib;../../../Contrib/OpenEXR/config;../../../Contrib/OpenEXR/IlmBase/IMath;../../../Contrib/OpenEXR/IlmBase/Iex;../../../Contrib/OpenEXR/IlmBase/IlmThread;../../../Contrib/OpenEXR/IlmBase/Half;../../../Contrib/OpenEXR/IlmBase/config;../../../Contrib/OpenEXR/IlmImf;../../../Contrib/OpenEXR/zlib;../../../Contrib/CxImage;../../../Contrib/NvidiaTextureTools/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_WIN;ARCHITECTURE_X64;WIN32;NDEBUG;_LIB;CONFIG_RELEASE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_WINDOWS;ARCHITECTURE_X64;WIN32;NDEBUG;_LIB;CONFIG_RELEASE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -472,7 +472,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>../Inc;../../Foundation/Inc;../../System/Inc;../../Math/Inc;../../../Contrib;../../../Contrib/OpenEXR/config;../../../Contrib/OpenEXR/IlmBase/IMath;../../../Contrib/OpenEXR/IlmBase/Iex;../../../Contrib/OpenEXR/IlmBase/IlmThread;../../../Contrib/OpenEXR/IlmBase/Half;../../../Contrib/OpenEXR/IlmBase/config;../../../Contrib/OpenEXR/IlmImf;../../../Contrib/OpenEXR/zlib;../../../Contrib/CxImage;../../../Contrib/NvidiaTextureTools/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_WIN;ARCHITECTURE_X64;WIN32;_DEBUG;_LIB;CONFIG_DEBUG;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_WINDOWS;ARCHITECTURE_X64;WIN32;_DEBUG;_LIB;CONFIG_DEBUG;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
@@ -507,7 +507,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>../Inc;../../Foundation/Inc;../../System/Inc;../../Math/Inc;../../../Contrib;../../../Contrib/OpenEXR/config;../../../Contrib/OpenEXR/IlmBase/IMath;../../../Contrib/OpenEXR/IlmBase/Iex;../../../Contrib/OpenEXR/IlmBase/IlmThread;../../../Contrib/OpenEXR/IlmBase/Half;../../../Contrib/OpenEXR/IlmBase/config;../../../Contrib/OpenEXR/IlmImf;../../../Contrib/OpenEXR/zlib;../../../Contrib/CxImage;../../../Contrib/NvidiaTextureTools/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_WIN;ARCHITECTURE_X64;WIN32;_DEBUG;_LIB;CONFIG_DEBUG;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_WINDOWS;ARCHITECTURE_X64;WIN32;_DEBUG;_LIB;CONFIG_DEBUG;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>

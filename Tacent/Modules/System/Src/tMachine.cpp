@@ -13,17 +13,20 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
-#ifdef PLATFORM_WIN
+#ifdef PLATFORM_WINDOWS
 #include <Windows.h>
 #include <intrin.h>
+#else
+#include <unistd.h>
+#include <limits.h>
+#include <sys/sysinfo.h>
 #endif
 #include "Foundation/tStandard.h"
 #include "System/tFile.h"
 #include "System/tMachine.h"
 
 
-// These functions are all implementable on other platforms. I've only done Windows so far.
-#ifdef PLATFORM_WIN
+#ifdef PLATFORM_WINDOWS
 bool tSystem::tSupportsSSE()
 {
 	int cpuInfo[4];
@@ -54,10 +57,12 @@ bool tSystem::tSupportsSSE2()
 	else
 		return false;
 }
+#endif
 
 
 tString tSystem::tGetCompName()
 {
+	#ifdef PLATFORM_WINDOWS
 	char name[128];
 	ulong nameSize = 128;
 
@@ -65,19 +70,20 @@ tString tSystem::tGetCompName()
 	if (success)
 		return name;
 
-	return tString();
-}
+	#else
+	char hostname[HOST_NAME_MAX];
+	int err = gethostname(hostname, HOST_NAME_MAX);
+	if (!err)
+		return hostname;
 
-
-tString tSystem::tGetIPAddress()
-{
-	// @todo Implement. Maybe use gethostname.
+	#endif
 	return tString();
 }
 
 
 int tSystem::tGetNumCores()
 {
+	#ifdef PLATFORM_WINDOWS
 	// Lets cache this value as it never changes.
 	static int numCores = 0;
 	if (numCores > 0)
@@ -94,9 +100,15 @@ int tSystem::tGetNumCores()
 		numCores = sysinfo.dwNumberOfProcessors;
 
 	return numCores;
+
+	#else	
+	return get_nprocs_conf();
+	
+	#endif
 }
 
 
+#ifdef PLATFORM_WINDOWS
 bool tSystem::tOpenSystemFileExplorer(const tString& dir, const tString& file)
 {
 	tString fullName = dir + file;
@@ -129,6 +141,4 @@ bool tSystem::tOpenSystemFileExplorer(const tString& fullFilename)
 {
 	return tOpenSystemFileExplorer(tSystem::tGetDir(fullFilename), tSystem::tGetFileName(fullFilename));
 }
-
-
 #endif

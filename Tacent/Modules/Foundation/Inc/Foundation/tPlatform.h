@@ -2,10 +2,9 @@
 //
 // Tacent platform defines, architecture, and endianness detection. The Tacent library has some preprocessor define
 // requirements. One of PLATFORM_NNN, ARCHITECTURE_NNN, and CONFIG_NNN need to be defined. If you haven't bothered
-// to define these in the project file with a /D switch, they will be defined for you automatically if you are
-// building Windows x64.
+// to define these in the project file with a /D switch, an attempt is made to define them automatically for you.
 //
-// Copyright (c) 2004-2006, 2015, 2017 Tristan Grimmer.
+// Copyright (c) 2004-2006, 2015, 2017, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -21,18 +20,22 @@
 // No Tacent headers here. tPlatform.h is where the buck stops.
 
 
-// Windows is the only autodetected platform define.
-#if (!defined(PLATFORM_WIN) && !defined(PLATFORM_LIN) && !defined(PLATFORM_AND) && !defined(PLATFORM_IOS))
-	#if defined(_M_AMD64) || defined(_M_IX86)
-		#define PLATFORM_WIN
+// Attempt to auto-detect platform.
+#if (!defined(PLATFORM_WINDOWS) && !defined(PLATFORM_LINUX) && !defined(PLATFORM_MACOS) && !defined(PLATFORM_ANDROID) && !defined(PLATFORM_IOS))
+	#if (defined(_M_AMD64) || defined(_M_IX86) || defined(_WIN32) || defined(_WIN64))
+		#define PLATFORM_WINDOWS
+	#elif defined(__linux__)
+		#define PLATFORM_LINUX
 	#endif
 #endif
 
 
-// Intel x64 on windows is the only autodetected architecture define.
-#if (!defined(ARCHITECTURE_X64) && !defined(ARCHITECTURE_ARM))
-	#if defined(_M_AMD64)
-		#define ARCHITECTURE_X64
+// Attempt to auto-detect archetecture.
+#if (!defined(ARCHITECTURE_X64) && !defined(ARCHITECTURE_X86) && !defined(ARCHITECTURE_ARM))
+	#if (defined(_M_AMD64) || defined(_WIN64) || defined(__x86_64__))
+		#define ARCHITECTURE_X64								// For x86_64
+	#elif defined(__i386)
+		#define ARCHITECTURE_X86
 	#endif
 #endif
 
@@ -49,13 +52,13 @@
 
 
 // Turn off some annoying windows warnings.
-#if (defined(PLATFORM_WIN) && !defined(_CRT_SECURE_NO_DEPRECATE))
+#if (defined(PLATFORM_WINDOWS) && !defined(_CRT_SECURE_NO_DEPRECATE))
 	#define _CRT_SECURE_NO_DEPRECATE
 #endif
 
 
 // Sanity check. Required defines must be present.
-#if (!defined(PLATFORM_WIN) && !defined(PLATFORM_LIN) && !defined(PLATFORM_AND) && !defined(PLATFORM_IOS))
+#if (!defined(PLATFORM_WINDOWS) && !defined(PLATFORM_LINUX) && !defined(PLATFORM_MACOS) && !defined(PLATFORM_ANDROID) && !defined(PLATFORM_IOS))
 	#error You must define a supported platform.
 #endif
 #if (!defined(ARCHITECTURE_X64) && !defined(ARCHITECTURE_ARM))
@@ -67,14 +70,14 @@
 
 
 // Define the endianness.
-#if (defined(PLATFORM_WIN) || defined(PLATFORM_LIN) || defined(PLATFORM_AND) || defined(PLATFORM_IOS))
+#if (defined(PLATFORM_WINDOWS) || defined(PLATFORM_LINUX) || defined(PLATFORM_MACOS) || defined(PLATFORM_ANDROID) || defined(PLATFORM_IOS))
 	#define ENDIAN_LITTLE
 #else
 	#define ENDIAN_BIG
 #endif
 
 
-#if defined(PLATFORM_WIN)
+#if defined(PLATFORM_WINDOWS)
 	#include <xmmintrin.h>
 #endif
 
@@ -113,10 +116,10 @@ enum class tPlatform
 {
 	Invalid																												= -1,
 	First,
-	Win																													= First,
-	Lin,													// Linux.
-	OSX,													// Apple OSX.
-	And,													// Google Android.
+	Windows																												= First,
+	Linux,													// Linux.
+	MacOS,													// Apple's desktop OS. It's no longer called OSX.
+	Android,												// Google Android.
 	iOS,													// Apple iOS.
 	All,													// Not counted as a separate platform.
 	NumPlatforms																										= All
@@ -126,10 +129,10 @@ enum class tPlatform
 enum tPlatformFlag
 {
 	tPlatformFlag_None,
-	tPlatformFlag_Win																									= 1 << int(tPlatform::Win),
-	tPlatformFlag_Lin																									= 1 << int(tPlatform::Lin),
-	tPlatformFlag_OSX																									= 1 << int(tPlatform::OSX),
-	tPlatformFlag_And																									= 1 << int(tPlatform::And),
+	tPlatformFlag_Windows																								= 1 << int(tPlatform::Windows),
+	tPlatformFlag_Linux																									= 1 << int(tPlatform::Linux),
+	tPlatformFlag_MacOS																									= 1 << int(tPlatform::MacOS),
+	tPlatformFlag_Android																								= 1 << int(tPlatform::Android),
 	tPlatformFlag_iOS																									= 1 << int(tPlatform::iOS),
 	tPlatformFlag_All																									= 0xFFFFFFFF
 };
@@ -239,7 +242,7 @@ inline tEndianness tGetEndianness()
 
 template<typename T> inline T tNtoH(T val)
 {
-	if (GetEndianness() == Endianness::Big)
+	if (tGetEndianness() == tEndianness::Big)
 		return val;
 
 	return tGetSwapEndian(val);
@@ -253,7 +256,7 @@ template<typename T> inline T tHtoN(T val)
 
 
 // These defines mitigate Windows all-capital naming ugliness.
-#ifdef PLATFORM_WIN
+#ifdef PLATFORM_WINDOWS
 #define ApiEntry APIENTRY
 #define WinBitmap BITMAP
 #define WinBitmapInfo BITMAPINFO

@@ -3,7 +3,7 @@
 // Simple timer class. Like a stopwatch. Supports keeping track of time in a number of different units. Accuracy is all
 // up to you - you call the update function. This code does not access low-level timer hardware.
 //
-// Copyright (c) 2005, 2017, 2019 Tristan Grimmer.
+// Copyright (c) 2005, 2017, 2019, 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -14,6 +14,7 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #pragma once
+#include <ctime>
 #include <Foundation/tPlatform.h>
 #include <Foundation/tAssert.h>
 #include <Foundation/tUnits.h>
@@ -21,33 +22,37 @@ namespace tSystem
 {
 
 
-#ifdef PLATFORM_WIN
-// Gets the current local time in 100ns intervals since Jan 1, 1601.
-uint64 tGetTimeLocal();
+// High accuracy cross platform timing functions. For windows the frequency is whatever the HW reports. For other
+// platforms it's 1/1ns = 1000000000Hz but counts increment by whatever the internal timer resulution is in ns.
+int64 tGetHardwareTimerFrequency();
+int64 tGetHardwareTimerCount();
 
-// Gets the Universal Time Coordinated, formerly known as Greenwich Mean Time.
-// Units are in 100ns intervals since Jan 1, 1601.
-uint64 tGetTimeUTC();
-uint64 tGetTimeGMT();
 
-// Gets the number of seconds since application start. Uses the high-performance counter,
-float tGetTime();
-double tGetTimeDouble();
+// Gets the number of seconds since the absolute time reference of 00:00:00 Coordinated Universal Time (UTC),
+// Thursday, 1 January 1970. The std::time_t is essentially a big integer.
+std::time_t tGetTimeUTC();
+std::time_t tGetTimeGMT();
 
-// Return the time as a string.
+
+// Gets the current local time. Takes into account your timezone, DST, etc.
+// std::tm is a field-based time format, HH, MM, SS etc.
+std::tm tGetTimeLocal();
+std::tm tConvertTimeToLocal(std::time_t);
+
+
+// Return a timepoint as a string.
 enum class tTimeFormat
 {
 	Standard,		// Eg. 2020-01-14 01:47:12
 	Extended,		// Eg. Tuesday January 14 2020 - 01:36:34
-	Short,			// Eg. Tue Jan 14 2020  1:38:58
+	Short,			// Eg. Tue Jan 14 14:38:58 2020
 };
-tString tConvertTimeToString(uint64, tTimeFormat = tTimeFormat::Standard);
-#endif // PLATFORM_WIN
+tString tConvertTimeToString(std::tm, tTimeFormat = tTimeFormat::Standard);
 
 
-// High accuracy cross platform timing functions.
-int64 tGetHardwareTimerFrequency();
-int64 tGetHardwareTimerCount();
+// Gets the number of seconds since application start. Uses the high-performance counter,
+float tGetTime();
+double tGetTimeDouble();
 void tSleep(int milliSeconds);
 
 
@@ -77,7 +82,7 @@ public:
 
 private:
 	// @todo Add getters that format the time into a number of different string formats.
-	const static double UnitConversionTable[tUnit::tTime::NumTimeUnits][tUnit::tTime::NumTimeUnits];
+	const static double UnitConversionTable[int(tUnit::tTime::NumTimeUnits)][int(tUnit::tTime::NumTimeUnits)];
 
 	tUnit::tTime UnitInternal;
 	bool Running;
