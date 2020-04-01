@@ -294,14 +294,15 @@ bool tRenameFile(const tString& dir, const tString& oldName, const tString& newN
 
 // The foundfiles list is always appended to. You must clear it first if that's what you intend. If empty second
 // argument, the contents of the current directory are returned. Extension can be something like "txt" (no dot).
-void tFindFiles(tList<tStringItem>& foundFiles, const tString& dir, const tString& ext = tString(), bool includeHidden = true);
+// Returns success.
+bool tFindFiles(tList<tStringItem>& foundFiles, const tString& dir, const tString& ext = tString(), bool includeHidden = true);
 
 // foundFiles is appened to. Clear first if desired. Extension can be something like "txt" (no dot).
-void tFindFilesRecursive(tList<tStringItem>& foundFiles, const tString& dir, const tString& ext = tString(), bool includeHidden = true);
-void tFindDirsRecursive(tList<tStringItem>& foundDirs, const tString& dir, bool includeHidden = true);
+bool tFindFilesRecursive(tList<tStringItem>& foundFiles, const tString& dir, const tString& ext = tString(), bool includeHidden = true);
+bool tFindDirsRecursive(tList<tStringItem>& foundDirs, const tString& dir, bool includeHidden = true);
 
-// If the dirPath to search is empty, the current dir is used.
-void tFindDirs(tList<tStringItem>& foundDirs, const tString& dirPath = tString(), bool includeHidden = false);
+// If the dirPath to search is empty, the current dir is used. Returns success.
+bool tFindDirs(tList<tStringItem>& foundDirs, const tString& dirPath = tString(), bool includeHidden = false);
 
 // A relentless delete. Doesn't care about read-only unless deleteReadOnly is false. This call does a recursive delete.
 // If a file has an open handle, however, this fn will fail. If the directory didn't exist before the call then this function silently returns. Returns true if dir existed and was deleted.

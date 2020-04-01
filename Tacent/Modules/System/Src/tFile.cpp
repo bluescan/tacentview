@@ -215,7 +215,7 @@ tSystem::tFileType tSystem::tGetFileTypeFromExtension(const tString& e)
 
 bool tSystem::tFileExists(const tString& filename)
 {
-#if defined(PLATFORM_WINDOWS)
+	#if defined(PLATFORM_WINDOWS)
 	tString file(filename);
 	file.Replace('/', '\\');
 
@@ -237,14 +237,14 @@ bool tSystem::tFileExists(const tString& filename)
 	
 	return true;
 
-#else
+	#else
 	tString file(filename);
 	file.Replace('\\', '/');
 
 	struct stat statbuf;
 	return stat(file.Chars(), &statbuf) == 0;
 
-#endif
+	#endif
 }
 
 
@@ -255,7 +255,7 @@ bool tSystem::tDirExists(const tString& dirname)
 		
 	tString dir = dirname;
 	
-#if defined(PLATFORM_WINDOWS)
+	#if defined(PLATFORM_WINDOWS)
 	dir.Replace('/', '\\');
 	int length = dir.Length();
 	if (dir[ length - 1 ] == '\\')
@@ -280,7 +280,8 @@ bool tSystem::tDirExists(const tString& dirname)
 		return true;
 
 	return false;
-#else
+
+	#else
 	dir.Replace('\\', '/');
 	
 	if (dir[dir.Length()-1] == '/')
@@ -289,7 +290,7 @@ bool tSystem::tDirExists(const tString& dirname)
 	std::filesystem::file_status fstat = std::filesystem::status(dir.Chars());
 	
 	return std::filesystem::is_directory(fstat);
-#endif
+	#endif
 }
 
 
@@ -438,62 +439,6 @@ bool tSystem::tGetFileInfo(tFileInfo& fileInfo, const tString& fileName)
 
 	#endif
 }
-
-
-/*
-void tSystem::tParseFileInfo(tFileInfo& fileInfo, void* findDataPointer)
-{
-	Win32FindData* findData = (Win32FindData*)findDataPointer;
-	fileInfo.Clear();
-
-	fileInfo.FileName = findData->cFileName;
-
-	FileTime localTime;
-
-	if (FileTimeToLocalFileTime(&findData->ftCreationTime, &localTime))
-	{
-		fileInfo.CreationTime = localTime.dwHighDateTime;
-		fileInfo.CreationTime <<= 32;
-		fileInfo.CreationTime |= localTime.dwLowDateTime;
-	}
-
-	if (FileTimeToLocalFileTime(&findData->ftLastWriteTime, &localTime))
-	{
-		fileInfo.ModificationTime = localTime.dwHighDateTime;
-		fileInfo.ModificationTime <<= 32;
-		fileInfo.ModificationTime |= localTime.dwLowDateTime;
-	}
-
-	if (FileTimeToLocalFileTime(&findData->ftLastAccessTime, &localTime))
-	{
-		fileInfo.AccessTime = localTime.dwHighDateTime;
-		fileInfo.AccessTime <<= 32;
-		fileInfo.AccessTime |= localTime.dwLowDateTime;
-	}
-
-	// Occasionally, a file does not have a valid modification or access time.  The fileInfo struct
-	// may, erronously, contain a modification or access time that is smaller than the creation time!
-	// This happens, for example, with some files that have been transferred from a USB camera.
-	// In this case, we simply use the creation time for the modification or access times.
-	// Actually, this happens quite a bit, sometimes even if the times are valid!
-	// On seconds thought... we're going to leave the modification date alone.  Although I don't agree
-	// with how the OS deals with this, I think the behaviour is best left untouched for mod time.
-	// Basically, a file copied from, say, a mem card will get a current creation time, but the mod date
-	// will be left at whatever the original file was.  Silly, although perhaps a little defensible.
-	// We still correct any possible problems with access date though.
-	if (fileInfo.AccessTime < fileInfo.CreationTime)
-		fileInfo.AccessTime = fileInfo.CreationTime;
-
-	fileInfo.FileSize = findData->nFileSizeHigh;
-	fileInfo.FileSize <<= 32;
-	fileInfo.FileSize |= findData->nFileSizeLow;
-
-	fileInfo.ReadOnly = (findData->dwFileAttributes & FILE_ATTRIBUTE_READONLY) ? true : false;
-	fileInfo.Hidden = (findData->dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) ? true : false;
-	fileInfo.System = (findData->dwFileAttributes & FILE_ATTRIBUTE_SYSTEM) ? true : false;
-	fileInfo.Directory = (findData->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? true : false;
-}
-*/
 
 
 #ifdef PLATFORM_WINDOWS
@@ -853,7 +798,21 @@ tString tSystem::tGetUpDir(const tString& path, int levels)
 		return tString();
 
 	tString ret(path);
+
+	bool isNetLoc = false;
 	ret.Replace('\\', '/');
+
+	#ifdef PLATFORM_WINDOWS
+	// Are we a network location starting with two slashes?
+	if ((ret.Length() >= 2) && (ret[0] == '/') && (ret[1] == '/'))
+		isNetLoc = true;
+	#endif
+
+	if (isNetLoc)
+	{
+		ret[0] = '\\';
+		ret[1] = '\\';
+	}
 
 	tString upPath = ret;
 	upPath[ upPath.Length() - 1 ] = '\0';
@@ -862,6 +821,9 @@ tString tSystem::tGetUpDir(const tString& path, int levels)
 	{
 		int lastSlash = upPath.FindChar('/', true);
 
+		if (isNetLoc && (upPath.CountChar('/') == 1))
+			lastSlash = -1;
+
 		if (lastSlash == -1)
 			return tString();
 
@@ -869,13 +831,19 @@ tString tSystem::tGetUpDir(const tString& path, int levels)
 	}
 
 	upPath += "/";
+
+	if (isNetLoc)
+	{
+		ret[0] = '/';
+		ret[1] = '/';
+	}
 	return upPath;
 }
 
 
 tString tSystem::tGetRelativePath(const tString& basePath, const tString& path)
 {
-#if defined(PLATFORM_WINDOWS)
+	#if defined(PLATFORM_WINDOWS)
 	tString relLoc(MAX_PATH);
 	tAssert(basePath[ basePath.Length() - 1 ] == '/');
 	bool isDir = (path[ path.Length() - 1 ] == '/') ? true : false;
@@ -901,7 +869,8 @@ tString tSystem::tGetRelativePath(const tString& basePath, const tString& path)
 		return relLoc.ConstText() + 1;
 	else
 		return relLoc;
-#else
+
+	#else
 	tString refPath(basePath);
 	tString absPath(path);
 	
@@ -942,7 +911,7 @@ tString tSystem::tGetRelativePath(const tString& basePath, const tString& path)
 		tStd::tStrcat(relPath, absPath.Text()+inc);
 		
 	return tString(relPath);
-#endif
+	#endif
 }
 
 
@@ -1070,8 +1039,8 @@ tuint256 tSystem::tHashFile256(const tString& filename, tuint256 iv)
 bool tSystem::tIsReadOnly(const tString& fileName)
 {
 	tString file(fileName);
-	
-#if defined(PLATFORM_WINDOWS)
+
+	#if defined(PLATFORM_WINDOWS)
 	file.Replace('/', '\\');
 	int length = file.Length();
 	if ((file[length - 1] == '/') || (file[length - 1] == '\\'))
@@ -1088,7 +1057,7 @@ bool tSystem::tIsReadOnly(const tString& fileName)
 
 	return (attribs & FILE_ATTRIBUTE_READONLY) ? true : false;
 
-#else
+	#else
 	file.Replace('\\', '/');
 
 	struct stat st;
@@ -1099,7 +1068,8 @@ bool tSystem::tIsReadOnly(const tString& fileName)
 	bool w = (st.st_mode & S_IWUSR) ? true : false;
 	bool r = (st.st_mode & S_IRUSR) ? true : false;
 	return r && !w;
-#endif
+
+	#endif
 }
 
 
@@ -1107,7 +1077,7 @@ bool tSystem::tSetReadOnly(const tString& fileName, bool readOnly)
 {
 	tString file(fileName);
 	
-#if defined(PLATFORM_WINDOWS)	
+	#if defined(PLATFORM_WINDOWS)	
 	file.Replace('/', '\\');
 	int length = file.Length();
 	if ((file[length - 1] == '/') || (file[length - 1] == '\\'))
@@ -1131,7 +1101,7 @@ bool tSystem::tSetReadOnly(const tString& fileName, bool readOnly)
 
 	return false;
 
-#else
+	#else
 	file.Replace('\\', '/');
 	
 	struct stat st;
@@ -1147,7 +1117,8 @@ bool tSystem::tSetReadOnly(const tString& fileName, bool readOnly)
 	errCode = chmod(file, permBits);
 	
 	return (errCode == 0);
-#endif
+
+	#endif
 }
 
 
@@ -1406,7 +1377,7 @@ tString tSystem::tGetSystemDir()
 
 tString tSystem::tGetProgramDir()
 {
-#if defined(PLATFORM_WINDOWS)
+	#if defined(PLATFORM_WINDOWS)
 	tString result(MAX_PATH + 1);
 	ulong l = GetModuleFileName(0, result.Text(), MAX_PATH);
 	result.Replace('\\', '/');
@@ -1417,7 +1388,7 @@ tString tSystem::tGetProgramDir()
 	result[bi + 1] = '\0';
 	return result;
 
-#elif defined(PLATFORM_LINUX)
+	#elif defined(PLATFORM_LINUX)
 	tString result(PATH_MAX+1);
 	readlink("/proc/self/exe", result.Text(), PATH_MAX);
 	
@@ -1426,36 +1397,36 @@ tString tSystem::tGetProgramDir()
 	result[bi + 1] = '\0';
 	return result;
 
-#else
+	#else
 	return tString();
 
-#endif
+	#endif
 }
 
 
 tString tSystem::tGetProgramPath()
 {
-#if defined(PLATFORM_WINDOWS)
+	#if defined(PLATFORM_WINDOWS)
 	tString result(MAX_PATH + 1);
 	ulong l = GetModuleFileName(0, result.Text(), MAX_PATH);
 	result.Replace('\\', '/');
 	return result;
 
-#elif defined(PLATFORM_LINUX)
+	#elif defined(PLATFORM_LINUX)
 	tString result(PATH_MAX+1);
 	readlink("/proc/self/exe", result.Text(), PATH_MAX);
 	return result;
-	
-#else
+
+	#else
 	return tString();
-	
-#endif
+
+	#endif
 }
 
 
 tString tSystem::tGetCurrentDir()
 {
-#ifdef PLATFORM_WINDOWS
+	#ifdef PLATFORM_WINDOWS
 	tString r(MAX_PATH + 1);
 	GetCurrentDirectory(MAX_PATH, r.Text());
 
@@ -1467,12 +1438,12 @@ tString tSystem::tGetCurrentDir()
 
 	return r;
 
-#else
+	#else
 	tString r(PATH_MAX + 1);
 	getcwd(r.Text(), PATH_MAX);
 	return r;
-	
-#endif
+
+	#endif
 }
 
 
@@ -1483,7 +1454,7 @@ bool tSystem::tSetCurrentDir(const tString& directory)
 
 	tString dir = directory;
 
-#ifdef PLATFORM_WINDOWS
+	#ifdef PLATFORM_WINDOWS
 	dir.Replace('/', '\\');
 	tString cd;
 
@@ -1509,13 +1480,13 @@ bool tSystem::tSetCurrentDir(const tString& directory)
 	SetErrorMode(prevErrorMode);
 
 	return success ? true : false;
-	
-#else
+
+	#else
 	dir.Replace('\\', '/');
 	int errCode = chdir(dir.Chars());
 	return (errCode == 0);
 
-#endif
+	#endif
 }
 
 
@@ -1609,7 +1580,7 @@ bool tSystem::tCreateDir(const tString& dir)
 {
 	tString dirPath = dir;
 	
-#if defined(PLATFORM_WINDOWS)
+	#if defined(PLATFORM_WINDOWS)
 	dirPath.Replace('/', '\\');
 
 	bool success = ::CreateDirectory(dirPath.ConstText(), 0) ? true : false;
@@ -1618,7 +1589,7 @@ bool tSystem::tCreateDir(const tString& dir)
 
 	return success;
 
-#else
+	#else
 	dirPath.Replace('\\', '/');
 	bool ok = std::filesystem::create_directory(dirPath.Chars());
 	if (!ok)
@@ -1626,7 +1597,7 @@ bool tSystem::tCreateDir(const tString& dir)
 
 	return ok;
 
-#endif
+	#endif
 }
 
 
@@ -1747,7 +1718,7 @@ uint8* tSystem::tLoadFileHead(const tString& fileName, int& bytesToRead, uint8* 
 
 bool tSystem::tCopyFile(const tString& dest, const tString& src, bool overWriteReadOnly)
 {
-#if defined(PLATFORM_WINDOWS)
+	#if defined(PLATFORM_WINDOWS)
 	int success = ::CopyFile(src, dest, 0);
 	if (!success && overWriteReadOnly)
 	{
@@ -1757,7 +1728,7 @@ bool tSystem::tCopyFile(const tString& dest, const tString& src, bool overWriteR
 
 	return success ? true : false;
 
-#else
+	#else
 	std::filesystem::path pathFrom(src.Chars());
 	std::filesystem::path pathTo(dest.Chars());
 	bool success = std::filesystem::copy_file(pathFrom, pathTo);
@@ -1768,14 +1739,14 @@ bool tSystem::tCopyFile(const tString& dest, const tString& src, bool overWriteR
 	}
 		
 	return success;
-	
-#endif
+
+	#endif
 }
 
 
 bool tSystem::tRenameFile(const tString& dir, const tString& oldName, const tString& newName)
 {
-#if defined(PLATFORM_WINDOWS)
+	#if defined(PLATFORM_WINDOWS)
 	tString fullOldName = dir + oldName;
 	fullOldName.Replace('/', '\\');
 
@@ -1784,8 +1755,8 @@ bool tSystem::tRenameFile(const tString& dir, const tString& oldName, const tStr
 
 	int success = ::MoveFile(fullOldName, fullNewName);
 	return success ? true : false;
-	
-#else
+
+	#else
 	tString fullOldName = dir + oldName;
 	fullOldName.Replace('\\', '/');
 	std::filesystem::path oldp(fullOldName.Chars());
@@ -1798,12 +1769,46 @@ bool tSystem::tRenameFile(const tString& dir, const tString& oldName, const tStr
 	std::filesystem::rename(oldp, newp, ec);
 	return !bool(ec);
 
-#endif
+	#endif
 }
 
 
-void tSystem::tFindDirs(tList<tStringItem>& foundDirs, const tString& dir, bool includeHidden)
+bool tSystem::tFindDirs(tList<tStringItem>& foundDirs, const tString& dir, bool includeHidden)
 {
+	#ifdef PLATFORM_WINDOWS
+
+	// First lets massage fileName a little.
+	tString massagedName = dir;
+	if ((massagedName[massagedName.Length() - 1] == '/') || (massagedName[massagedName.Length() - 1] == '\\'))
+		massagedName += "*.*";
+
+	Win32FindData fd;
+	WinHandle h = FindFirstFile(massagedName, &fd);
+	if (h == INVALID_HANDLE_VALUE)
+		return false;
+
+	tString path = tGetDir(massagedName);
+	do
+	{
+		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
+			if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) || includeHidden)
+			{
+				// If the directory name is not "." or ".." then it's a real directory.
+				// Note that you cannot just check for the first character not being "."  Some directories (and files)
+				// may have a name that starts with a dot, especially if they were copied from a unix machine.
+				tString fn(fd.cFileName);
+				if ((fn != ".") && (fn != ".."))
+					foundDirs.Append(new tStringItem(path + fd.cFileName + "/"));
+			}
+		}
+	} while (FindNextFile(h, &fd));
+
+	FindClose(h);
+	if (GetLastError() != ERROR_NO_MORE_FILES)
+		return false;
+
+	#else
 	tString dirPath(dir);
 	if (dirPath.IsEmpty())
 		dirPath = std::filesystem::current_path().u8string().c_str();
@@ -1816,14 +1821,67 @@ void tSystem::tFindDirs(tList<tStringItem>& foundDirs, const tString& dir, bool 
 		if (includeHidden || !tIsHidden(foundDir))
 			foundDirs.Append(new tStringItem(foundDir));
 	}
+
+	#endif
+	return true;
 }
 
 
-void tSystem::tFindFiles(tList<tStringItem>& foundFiles, const tString& dir, const tString& ext, bool includeHidden)
+bool tSystem::tFindFiles(tList<tStringItem>& foundFiles, const tString& dir, const tString& ext, bool includeHidden)
 {
+	#ifdef PLATFORM_WINDOWS
+
+	// FindFirstFile etc seem to like backslashes better.
+	tString dirStr(dir);
+	dirStr.Replace('/', '\\');
+
+	if (dirStr[dirStr.Length() - 1] != '\\')
+		dirStr += "\\";
+
+	tString path = dirStr + "*." + ext;
+
+	Win32FindData fd;
+	WinHandle h = FindFirstFile(path, &fd);
+	if (h == INVALID_HANDLE_VALUE)
+		return false;
+
+	do
+	{
+		if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+		{
+			// It's not a directory... so it's actually a real file.
+			if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) || includeHidden)
+			{
+				// Holy obscure and annoying FindFirstFile bug! FindFirstFile("*.abc", ...) will also find
+				// files like file.abcd. This isn't correct I guess we have to check the extension here.
+				// FileMask is required to specify an extension, even if it is ".*"
+				if (path[path.Length() - 1] != '*')
+				{
+					tString foundExtension = tGetFileExtension(fd.cFileName);
+					if (ext.IsEqualCI(foundExtension))
+						foundFiles.Append(new tStringItem(dirStr + fd.cFileName));
+				}
+				else
+				{
+					foundFiles.Append(new tStringItem(dirStr + fd.cFileName));
+				}
+			}
+		}
+	} while (FindNextFile(h, &fd));
+
+	FindClose(h);
+	if (GetLastError() != ERROR_NO_MORE_FILES)
+		return false;
+
+	#else
 	tString dirPath(dir);
+
+	// Use current directory if no dirPath supplied.
 	if (dirPath.IsEmpty())
 		dirPath = std::filesystem::current_path().u8string().c_str();
+
+	if ((dirPath[dirPath.Length() - 1] == '/') || (dirPath[dirPath.Length() - 1] == '\\'))
+		dirPath[dirPath.Length() - 1] = '\0';
 		
 	for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(dirPath.Text()))
 	{
@@ -1837,11 +1895,52 @@ void tSystem::tFindFiles(tList<tStringItem>& foundFiles, const tString& dir, con
 		if (includeHidden || !tIsHidden(foundFile))
 			foundFiles.Append(new tStringItem(foundFile));
 	}
+	#endif
+
+	return true;
 }
 
 
-void tSystem::tFindFilesRecursive(tList<tStringItem>& foundFiles, const tString& dir, const tString & ext, bool includeHidden)
+bool tSystem::tFindFilesRecursive(tList<tStringItem>& foundFiles, const tString& dir, const tString& ext, bool includeHidden)
 {
+	#ifdef PLATFORM_WINDOWS
+	// The windows functions seem to like backslashes better.
+	tString pathStr(dir);
+	pathStr.Replace('/', '\\');
+
+	if (pathStr[pathStr.Length() - 1] != '\\')
+		pathStr += "\\";
+
+	tFindFiles(foundFiles, dir, ext, includeHidden);
+	Win32FindData fd;
+
+	// Look for all directories.
+	WinHandle h = FindFirstFile(pathStr + "*.*", &fd);
+	if (h == INVALID_HANDLE_VALUE)
+		return false;
+
+	do
+	{
+		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
+			// Don't recurse into hidden subdirectories if includeHidden is false.
+			if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) || includeHidden)
+			{
+				// If the directory name is not "." or ".." then it's a real directory.
+				// Note that you cannot just check for the first character not being "."  Some directories (and files)
+				// may have a name that starts with a dot, especially if they were copied from a unix machine.
+				tString fn(fd.cFileName);
+				if ((fn != ".") && (fn != ".."))
+					tFindFilesRecursive(foundFiles, pathStr + fd.cFileName + "\\", ext, includeHidden);
+			}
+		}
+	} while (FindNextFile(h, &fd));
+
+	FindClose(h);
+	if (GetLastError() != ERROR_NO_MORE_FILES)
+		return false;
+
+	#else
 	for (const std::filesystem::directory_entry& entry: std::filesystem::recursive_directory_iterator(dir.Chars()))
 	{
 		if (!entry.is_regular_file())
@@ -1854,12 +1953,49 @@ void tSystem::tFindFilesRecursive(tList<tStringItem>& foundFiles, const tString&
 		if (includeHidden || !tIsHidden(foundFile))
 			foundFiles.Append(new tStringItem(foundFile));
 	}
+	#endif
+
+	return true;
 }
 
 
-void tSystem::tFindDirsRecursive(tList<tStringItem>& foundDirs, const tString& dir, bool includeHidden)
+bool tSystem::tFindDirsRecursive(tList<tStringItem>& foundDirs, const tString& dir, bool includeHidden)
 {
-	for (const std::filesystem::directory_entry& entry: std::filesystem::recursive_directory_iterator(dir.Chars()))
+	#ifdef PLATFORM_WINDOWS
+	tString pathStr(dir);
+	pathStr.Replace('/', '\\');
+	if (pathStr[pathStr.Length() - 1] != '\\')
+		pathStr += "\\";
+
+	tFindDirs(foundDirs, pathStr, includeHidden);
+	Win32FindData fd;
+	WinHandle h = FindFirstFile(pathStr + "*.*", &fd);
+	if (h == INVALID_HANDLE_VALUE)
+		return false;
+
+	do
+	{
+		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
+			// Don't recurse into hidden subdirectories if includeHidden is false.
+			if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) || includeHidden)
+			{
+				// If the directory name is not "." or ".." then it's a real directory.
+				// Note that you cannot just check for the first character not being "."  Some directories (and files)
+				// may have a name that starts with a dot, especially if they were copied from a unix machine.
+				tString fn(fd.cFileName);
+				if ((fn != ".") && (fn != ".."))
+					tFindDirsRecursive(foundDirs, pathStr + fd.cFileName + "\\", includeHidden);
+			}
+		}
+	} while (FindNextFile(h, &fd));
+
+	FindClose(h);
+	if (GetLastError() != ERROR_NO_MORE_FILES)
+		return false;
+
+	#else
+	for (const std::filesystem::directory_entry& entry : std::filesystem::recursive_directory_iterator(dir.Chars()))
 	{
 		if (!entry.is_directory())
 			continue;
@@ -1869,6 +2005,9 @@ void tSystem::tFindDirsRecursive(tList<tStringItem>& foundDirs, const tString& d
 		if (includeHidden || !tIsHidden(foundDir))
 			foundDirs.Append(new tStringItem(foundDir));
 	}
+
+	#endif
+	return true;
 }
 
 
@@ -1899,6 +2038,8 @@ bool tSystem::tDeleteFile(const tString& filename, bool deleteReadOnly, bool use
 		int errCode = SHFileOperation(&operation);
 		return errCode ? false : true;
 	}
+
+	return true;
 	
 	#else
 	if (!deleteReadOnly && tIsReadOnly(filename))
@@ -1928,6 +2069,73 @@ bool tSystem::tDeleteFile(const tString& filename, bool deleteReadOnly, bool use
 
 bool tSystem::tDeleteDir(const tString& dir, bool deleteReadOnly)
 {
+	#ifdef PLATFORM_WINDOWS
+	// Are we done before we even begin?
+	if (!tDirExists(dir))
+		return false;
+
+	tList<tStringItem> fileList;
+	tFindFiles(fileList, dir);
+	tStringItem* file = fileList.First();
+	while (file)
+	{
+		tDeleteFile(*file, deleteReadOnly);		// We don't really care whether it succeeded or not.
+		file = file->Next();
+	}
+
+	fileList.Empty();							// Clean up the file list.
+	tString directory(dir);
+	directory.Replace('/', '\\');
+
+	Win32FindData fd;
+	WinHandle h = FindFirstFile(directory + "*.*", &fd);
+	if (h == INVALID_HANDLE_VALUE)
+		return true;
+
+	do
+	{
+		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
+			// If the directory name is not "." or ".." then it's a real directory.
+			// Note that you cannot just check for the first character not being "."  Some directories (and files)
+			// may have a name that starts with a dot, especially if they were copied from a unix machine.
+			tString fn(fd.cFileName);
+			if ((fn != ".") && (fn != ".."))
+				tDeleteDir(dir + fd.cFileName + "/", deleteReadOnly);
+		}
+	} while (FindNextFile(h, &fd));
+
+	bool deleteFilesOK = (GetLastError() == ERROR_NO_MORE_FILES) ? true : false;
+	FindClose(h);
+
+	if (deleteReadOnly)
+		SetFileAttributes(directory, FILE_ATTRIBUTE_NORMAL);	// Directories can be read-only too.
+
+	bool success = false;
+	for (int delTry = 0; delTry < 32; delTry++)
+	{
+		if (RemoveDirectory(dir))
+		{
+			success = true;
+			break;
+		}
+
+		// In some cases we might need to wait just a little and try again.  This can even take up to 10 seconds or so.
+		// This seems to happen a lot when the target manager is streaming music, say, from the folder.
+		else if (GetLastError() == ERROR_DIR_NOT_EMPTY)
+		{
+			tSystem::tSleep(500);
+		}
+		else
+		{
+			tSystem::tSleep(10);
+		}
+	}
+
+	if (!success || !deleteFilesOK)
+		return false;
+
+	#else
 	// Are we done before we even begin?
 	if (!tDirExists(dir))
 		return false;
@@ -1940,6 +2148,8 @@ bool tSystem::tDeleteDir(const tString& dir, bool deleteReadOnly)
 	uintmax_t numRemoved = std::filesystem::remove_all(p, ec);
 	if (ec)
 		return false;
+
+	#endif
 
 	return true;
 }
