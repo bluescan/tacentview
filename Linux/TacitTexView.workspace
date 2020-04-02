@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeLite_Workspace Name="TacitTexView" Database="" Version="10000">
+  <Project Name="TacitTexView" Path="TacitTexView.project" Active="Yes"/>
+  <Project Name="Math" Path="../Tacent/Modules/Math/Linux/Math.project" Active="No"/>
+  <Project Name="Foundation" Path="../Tacent/Modules/Foundation/Linux/Foundation.project" Active="No"/>
+  <BuildMatrix>
+    <WorkspaceConfiguration Name="Debug" Selected="yes">
+      <Environment/>
+      <Project Name="TacitTexView" ConfigName="Debug"/>
+      <Project Name="Math" ConfigName="Debug"/>
+      <Project Name="Foundation" ConfigName="Debug"/>
+    </WorkspaceConfiguration>
+    <WorkspaceConfiguration Name="Release" Selected="yes">
+      <Environment/>
+      <Project Name="TacitTexView" ConfigName="Release"/>
+      <Project Name="Math" ConfigName="Release"/>
+      <Project Name="Foundation" ConfigName="Release"/>
+    </WorkspaceConfiguration>
+  </BuildMatrix>
+</CodeLite_Workspace>
