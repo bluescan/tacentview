@@ -168,16 +168,16 @@
     <ProjectReference Include="Tacent\Contrib\NvidiaTextureTools\project\vs\squish\squish.vcxproj">
       <Project>{ce017322-01fc-4851-9c8b-64e9a8e26c38}</Project>
     </ProjectReference>
-    <ProjectReference Include="Tacent\Modules\Foundation\Win\Foundation.vcxproj">
+    <ProjectReference Include="Tacent\Modules\Foundation\Windows\Foundation.vcxproj">
       <Project>{1fd75ea6-1530-481f-9232-3ef3010c9729}</Project>
     </ProjectReference>
-    <ProjectReference Include="Tacent\Modules\Image\Win\Image.vcxproj">
+    <ProjectReference Include="Tacent\Modules\Image\Windows\Image.vcxproj">
       <Project>{50cdb9d0-9406-45cc-a226-1645f18635f5}</Project>
     </ProjectReference>
-    <ProjectReference Include="Tacent\Modules\Math\Win\Math.vcxproj">
+    <ProjectReference Include="Tacent\Modules\Math\Windows\Math.vcxproj">
       <Project>{4a67d21f-1b1f-42b6-b530-a4d690b21db4}</Project>
     </ProjectReference>
-    <ProjectReference Include="Tacent\Modules\System\Win\System.vcxproj">
+    <ProjectReference Include="Tacent\Modules\System\Windows\System.vcxproj">
       <Project>{e3bad3ce-e59d-4c1f-9759-7d585c145884}</Project>
     </ProjectReference>
   </ItemGroup>

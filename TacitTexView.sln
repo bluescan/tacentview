@@ -10,14 +10,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TacitTexView", "TacitTexVie
 		{50CDB9D0-9406-45CC-A226-1645F18635F5} = {50CDB9D0-9406-45CC-A226-1645F18635F5}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Foundation", "Tacent\Modules\Foundation\Win\Foundation.vcxproj", "{1FD75EA6-1530-481F-9232-3EF3010C9729}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Foundation", "Tacent\Modules\Foundation\Windows\Foundation.vcxproj", "{1FD75EA6-1530-481F-9232-3EF3010C9729}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Math", "Tacent\Modules\Math\Win\Math.vcxproj", "{4A67D21F-1B1F-42B6-B530-A4D690B21DB4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Math", "Tacent\Modules\Math\Windows\Math.vcxproj", "{4A67D21F-1B1F-42B6-B530-A4D690B21DB4}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1FD75EA6-1530-481F-9232-3EF3010C9729} = {1FD75EA6-1530-481F-9232-3EF3010C9729}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "System", "Tacent\Modules\System\Win\System.vcxproj", "{E3BAD3CE-E59D-4C1F-9759-7D585C145884}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "System", "Tacent\Modules\System\Windows\System.vcxproj", "{E3BAD3CE-E59D-4C1F-9759-7D585C145884}"
 	ProjectSection(ProjectDependencies) = postProject
 		{4A67D21F-1B1F-42B6-B530-A4D690B21DB4} = {4A67D21F-1B1F-42B6-B530-A4D690B21DB4}
 		{1FD75EA6-1530-481F-9232-3EF3010C9729} = {1FD75EA6-1530-481F-9232-3EF3010C9729}
@@ -25,7 +25,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "System", "Tacent\Modules\Sy
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{37EC4727-80CB-43A8-8480-B0FAFB2AF0D8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Image", "Tacent\Modules\Image\Win\Image.vcxproj", "{50CDB9D0-9406-45CC-A226-1645F18635F5}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Image", "Tacent\Modules\Image\Windows\Image.vcxproj", "{50CDB9D0-9406-45CC-A226-1645F18635F5}"
 	ProjectSection(ProjectDependencies) = postProject
 		{4A67D21F-1B1F-42B6-B530-A4D690B21DB4} = {4A67D21F-1B1F-42B6-B530-A4D690B21DB4}
 		{1FD75EA6-1530-481F-9232-3EF3010C9729} = {1FD75EA6-1530-481F-9232-3EF3010C9729}
