@@ -1,0 +1,11 @@
+Foundation is at the bottom. Depends on plat libs.
+
+Math depends on Foundation
+
+System depends on Foundation and Math
+
+Image depends on Foundation and Math and System
+
+Build depends on Foundation and Math and System
+
+Scene depends on Foundation and Math and System
