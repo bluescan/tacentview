@@ -12,11 +12,20 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+#ifdef PLATFORM_WINDOWS
 #include <dwmapi.h>
 #include <GL/glew.h>
+#else
+#include <glad/glad.h>
+#endif
+
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL definitions.
+
+#ifdef PLATFORM_WINDOWS
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
+#endif
+
 #include <Foundation/tVersion.h>
 #include <System/tCommand.h>
 #include <Image/tPicture.h>
@@ -557,10 +566,10 @@ void TexView::DrawBackground(float bgX, float bgY, float bgW, float bgH)
 {
 	switch (Config.BackgroundStyle)
 	{
-		case Settings::BGStyle::None:
+		case int(Settings::BGStyle::None):
 			return;
 
-		case Settings::BGStyle::Checkerboard:
+		case int(Settings::BGStyle::Checkerboard):
 		{
 			// Semitransparent checkerboard background.
 			int x = 0;
@@ -609,15 +618,15 @@ void TexView::DrawBackground(float bgX, float bgY, float bgW, float bgH)
 			break;
 		}
 
-		case Settings::BGStyle::Black:
-		case Settings::BGStyle::Grey:
-		case Settings::BGStyle::White:
+		case int(Settings::BGStyle::Black):
+		case int(Settings::BGStyle::Grey):
+		case int(Settings::BGStyle::White):
 		{
 			switch (Config.BackgroundStyle)
 			{
-				case Settings::BGStyle::Black:	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);		break;
-				case Settings::BGStyle::Grey:	glColor4f(0.25f, 0.25f, 0.3f, 1.0f);	break;
-				case Settings::BGStyle::White:	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);		break;
+				case int(Settings::BGStyle::Black):	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);		break;
+				case int(Settings::BGStyle::Grey):	glColor4f(0.25f, 0.25f, 0.3f, 1.0f);	break;
+				case int(Settings::BGStyle::White):	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);		break;
 			}
 			float l = tMath::tRound(bgX);
 			float r = tMath::tRound(bgX+bgW);
@@ -1944,7 +1953,6 @@ int main(int argc, char** argv)
 	tPrintf("Tacit Viewer V %d.%d.%d\n", TexView::MajorVersion, TexView::MinorVersion, TexView::Revision);
 	tPrintf("Tacent Library V %d.%d.%d\n", tVersion::Major, tVersion::Minor, tVersion::Revision);
 	tPrintf("Dear ImGui V %s\n", IMGUI_VERSION);
-	tPrintf("GLEW V %s\n", glewGetString(GLEW_VERSION));
 	tPrintf("GLFW V %d.%d.%d\n", glfwMajor, glfwMinor, glfwRev);
 
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
@@ -1959,13 +1967,24 @@ int main(int argc, char** argv)
 	TexView::Config.Load(cfgFile, mode->width, mode->height);
 
 	// We start with window invisible as DwmSetWindowAttribute won't redraw properly otherwise.
+	#ifdef PLATFORM_WINDOWS
 	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+	#endif
+	
+	#ifdef PLATFORM_LINUX
+//	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+//	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+//	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	#endif
+	
+	//TexView::Window = glfwCreateWindow(800, 600, "Tacit Viewer", nullptr, nullptr);
 	TexView::Window = glfwCreateWindow(TexView::Config.WindowW, TexView::Config.WindowH, "Tacit Viewer", nullptr, nullptr);
 	if (!TexView::Window)
 		return 1;
 
 	glfwSetWindowPos(TexView::Window, TexView::Config.WindowX, TexView::Config.WindowY);
 
+	#ifdef PLATFORM_WINDOWS
 	// Make the window title bar show up in black.
 	HWND hwnd = glfwGetWin32Window(TexView::Window);
 	const int DWMWA_USE_IMMERSIVE_DARK_MODE = 19;
@@ -1987,8 +2006,25 @@ int main(int argc, char** argv)
 		glfwTerminate();
 		return 1;
 	}
+	#endif
 
 	glfwMakeContextCurrent(TexView::Window);
+	
+	#ifdef PLATFORM_LINUX
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	{
+		tPrintf("Failed to initialize GLAD\n");
+		return 10;
+    }
+	#endif
+	
+	#ifdef PLATFORM_WINDOWS
+	tPrintf("GLEW V %s\n", glewGetString(GLEW_VERSION));
+	#else
+	tPrintf("GLAD V %s", glGetString(GL_VERSION));
+	#endif
+	
+	
 	glfwSwapInterval(1); // Enable vsync
 	glfwSetWindowRefreshCallback(TexView::Window, TexView::WindowRefreshFun);
 	glfwSetKeyCallback(TexView::Window, TexView::KeyCallback);
@@ -1999,9 +2035,11 @@ int main(int argc, char** argv)
 	glfwSetWindowFocusCallback(TexView::Window, TexView::FocusCallback);
 	glfwSetWindowIconifyCallback(TexView::Window, TexView::IconifyCallback);
 
+	#ifdef PLATFORM_WINDOWS
 	GLenum err = glewInit();
 	if (err != GLEW_OK)
 		return err;
+	#endif
 
 	// Setup Dear ImGui context.
 	IMGUI_CHECKVERSION();
@@ -2070,7 +2108,10 @@ int main(int argc, char** argv)
 	glfwGetFramebufferSize(TexView::Window, &dispw, &disph);
 	glViewport(0, 0, dispw, disph);
 
+	#ifdef PLATFORM_WINDOWS
 	ShowWindow(hwnd, SW_SHOW);
+	#endif
+	
 	glfwMakeContextCurrent(TexView::Window);
 	glfwSwapBuffers(TexView::Window);
 

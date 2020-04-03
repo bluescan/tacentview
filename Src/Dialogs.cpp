@@ -16,10 +16,14 @@
 #include <Math/tVector2.h>
 #include <Math/tColour.h>
 #include <Image/tImageHDR.h>
+#ifdef PLATFORM_WINDOWS
 #include <GL/glew.h>
+#else
+#include <glad/glad.h>
+#endif
 #include <GLFW/glfw3.h>
 #include <../../Contrib/OpenEXR/config/OpenEXRConfig.h>
-#include <../../Contrib/OpenEXR/ZLib/ZLib.h>
+#include <../../Contrib/OpenEXR/zlib/zlib.h>
 #include "imgui.h"
 #include "Dialogs.h"
 #include "Settings.h"
@@ -177,7 +181,11 @@ void TexView::ShowAboutPopup(bool* popen)
 		ImGui::Separator();
 		ImGui::Text("The following amazing and liberally licenced frameworks are used by this tool.");
 		ImGui::Text("Dear ImGui V %s", IMGUI_VERSION);
+		#ifdef PLATFORM_WINDOWS
 		ImGui::Text("GLEW V %s", glewGetString(GLEW_VERSION));
+		#else
+		ImGui::Text("GLAD V %s", glad_glGetString(GL_VERSION));
+		#endif
 		ImGui::Text("GLFW V %d.%d.%d", glfwMajor, glfwMinor, glfwRev);
 		ImGui::Text("Tacent Library V %d.%d.%d", tVersion::Major, tVersion::Minor, tVersion::Revision);
 		ImGui::Text("CxImage");

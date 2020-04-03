@@ -14,7 +14,11 @@
 
 #include <mutex>
 #include <chrono>
+#ifdef PLATFORM_WINDOWS
 #include <GL/glew.h>
+#else
+#include <glad/glad.h>
+#endif
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL definitions.
 #include <Math/tHash.h>
 #include <Math/tFundamentals.h>
@@ -34,6 +38,11 @@ using namespace TexView;
 int TacitImage::ThumbnailNumThreadsRunning = 0;
 tString TacitImage::ThumbCacheDir;
 namespace TexView { extern Settings Config; }
+
+
+const int TacitImage::ThumbWidth		= 256;
+const int TacitImage::ThumbHeight		= 144;
+const int TacitImage::ThumbMinDispWidth	= 64;
 
 
 TacitImage::TacitImage() :
@@ -566,7 +575,11 @@ void TacitImage::GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFo
 	dstFormat = GL_RGBA8;
 	compressed = false;
 
+	#ifdef PLATFORM_WINDOWS
 	tAssert(GLEW_ARB_texture_compression);
+	#else
+	tAssert(GL_EXT_texture_compression_s3tc);
+	#endif
 	switch (pixelFormat)
 	{
 		case tPixelFormat::R8G8B8:

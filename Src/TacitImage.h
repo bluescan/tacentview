@@ -15,7 +15,11 @@
 #pragma once
 #include <thread>
 #include <atomic>
+#ifdef PLATFORM_WINDOWS
 #include <GL/glew.h>
+#else
+#include <glad/glad.h>
+#endif
 #include <Foundation/tList.h>
 #include <Foundation/tString.h>
 #include <System/tFile.h>
@@ -120,9 +124,9 @@ public:
 	std::time_t FileModTime;			// Valid before load.
 	uint64 FileSizeB;					// Valid before load.
 
-	const static int ThumbWidth			= 256;
-	const static int ThumbHeight		= 144;
-	const static int ThumbMinDispWidth	= 64;
+	const static int ThumbWidth;	//		= 256;
+	const static int ThumbHeight;	//	= 144;
+	const static int ThumbMinDispWidth;	//= 64;
 	static tString ThumbCacheDir;
 
 	bool TypeSupportsProperties() const;

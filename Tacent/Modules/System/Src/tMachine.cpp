@@ -108,9 +108,9 @@ int tSystem::tGetNumCores()
 }
 
 
-#ifdef PLATFORM_WINDOWS
 bool tSystem::tOpenSystemFileExplorer(const tString& dir, const tString& file)
 {
+	#ifdef PLATFORM_WINDOWS
 	tString fullName = dir + file;
 	HWND hWnd = ::GetActiveWindow();
 
@@ -134,6 +134,13 @@ bool tSystem::tOpenSystemFileExplorer(const tString& dir, const tString& file)
 		ShellExecute(hWnd, "open", dir.ConstText(), 0, dir.ConstText(), SW_SHOWNORMAL);
 	}
 	return true;
+	#elif defined(PLATFORM_LINUX)
+	// @todo Implament 
+	return false;
+	#else
+	// @todo Implament 
+	return false;
+	#endif
 }
 
 
@@ -141,4 +148,3 @@ bool tSystem::tOpenSystemFileExplorer(const tString& fullFilename)
 {
 	return tOpenSystemFileExplorer(tSystem::tGetDir(fullFilename), tSystem::tGetFileName(fullFilename));
 }
-#endif

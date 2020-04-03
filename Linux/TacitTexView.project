@@ -1,5 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CodeLite_Project Name="TacitTexView" Version="11000" InternalType="Console">
+  <VirtualDirectory Name="Contrib">
+    <VirtualDirectory Name="glad"/>
+    <VirtualDirectory Name="Imgui">
+      <File Name="../Tacent/Contrib/glad/src/glad.c"/>
+      <File Name="../Tacent/Contrib/imgui/examples/imgui_impl_opengl2.h"/>
+      <File Name="../Tacent/Contrib/imgui/examples/imgui_impl_opengl2.cpp"/>
+      <File Name="../Tacent/Contrib/imgui/examples/imgui_impl_glfw.h"/>
+      <File Name="../Tacent/Contrib/imgui/examples/imgui_impl_glfw.cpp"/>
+      <File Name="../Tacent/Contrib/imgui/imstb_truetype.h"/>
+      <File Name="../Tacent/Contrib/imgui/imstb_textedit.h"/>
+      <File Name="../Tacent/Contrib/imgui/imstb_rectpack.h"/>
+      <File Name="../Tacent/Contrib/imgui/imgui_widgets.cpp"/>
+      <File Name="../Tacent/Contrib/imgui/imgui_internal.h"/>
+      <File Name="../Tacent/Contrib/imgui/imgui_draw.cpp"/>
+      <File Name="../Tacent/Contrib/imgui/imgui_demo.cpp"/>
+      <File Name="../Tacent/Contrib/imgui/imgui.h"/>
+      <File Name="../Tacent/Contrib/imgui/imgui.cpp"/>
+      <File Name="../Tacent/Contrib/imgui/imconfig.h"/>
+    </VirtualDirectory>
+  </VirtualDirectory>
   <Plugins>
     <Plugin Name="qmake">
       <![CDATA[00020001N0005Debug0000000000000001N0007Release000000000000]]>
@@ -28,18 +48,33 @@
     <File Name="../Src/ContactSheet.cpp"/>
   </VirtualDirectory>
   <Dependencies Name="Debug">
+    <Project Name="System"/>
     <Project Name="Foundation"/>
     <Project Name="Math"/>
+    <Project Name="Image"/>
   </Dependencies>
   <Settings Type="Executable">
     <GlobalSettings>
-      <Compiler Options="-Wno-switch;-std=c++17" C_Options="" Assembler="">
+      <Compiler Options="-Wno-switch;-std=c++17;-Wno-format-security" C_Options="" Assembler="">
+        <IncludePath Value="."/>
+        <IncludePath Value="../Tacent/Modules/System/Inc"/>
         <IncludePath Value="../Tacent/Modules/Foundation/Inc"/>
         <IncludePath Value="../Tacent/Modules/Math/Inc"/>
+        <IncludePath Value="../Tacent/Modules/Image/Inc"/>
+        <IncludePath Value="../Tacent/Contrib/imgui"/>
+        <IncludePath Value="../Tacent/Contrib/imgui/examples"/>
+        <IncludePath Value="../Tacent/Contrib/glad/include"/>
+        <IncludePath Value="../Tacent/Contrib/glfw/Windows/include"/>
         <Preprocessor Value="PLATFORM_LINUX"/>
       </Compiler>
-      <Linker Options="">
+      <Linker Options="-pthread">
         <LibraryPath Value="."/>
+        <Library Value="Image"/>
+        <Library Value="System"/>
+        <Library Value="Math"/>
+        <Library Value="Foundation"/>
+        <Library Value="glfw3"/>
+        <Library Value="dl"/>
       </Linker>
       <ResourceCompiler Options=""/>
     </GlobalSettings>
@@ -48,9 +83,15 @@
         <IncludePath Value="."/>
         <Preprocessor Value="CONFIG_DEBUG"/>
       </Compiler>
-      <Linker Options="" Required="yes"/>
+      <Linker Options="" Required="yes">
+        <LibraryPath Value="../Tacent/Modules/Image/Linux/Debug"/>
+        <LibraryPath Value="../Tacent/Modules/System/Linux/Debug"/>
+        <LibraryPath Value="../Tacent/Modules/Math/Linux/Debug"/>
+        <LibraryPath Value="../Tacent/Modules/Foundation/Linux/Debug"/>
+        <LibraryPath Value="../Tacent/Contrib/glfw/Linux/Debug"/>
+      </Linker>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="$(ConfigurationName)" Command="$(OutputFile)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="$(ConfigurationName)" Command="$(WorkspacePath)/../TacitTexView" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="/home/tristan/github/tacit-texview/TestImages/Photos" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
@@ -61,7 +102,9 @@
         <StartupCommands/>
       </Debugger>
       <PreBuild/>
-      <PostBuild/>
+      <PostBuild>
+        <Command Enabled="yes">cp $(OutputFile) ..</Command>
+      </PostBuild>
       <CustomBuild Enabled="no">
         <RebuildCommand/>
         <CleanCommand/>
@@ -88,7 +131,12 @@
         <IncludePath Value="."/>
         <Preprocessor Value="CONFIG_RELEASE"/>
       </Compiler>
-      <Linker Options="" Required="yes"/>
+      <Linker Options="" Required="yes">
+        <LibraryPath Value="../../Modules/Image/Linux/Release"/>
+        <LibraryPath Value="../../Modules/System/Linux/Release"/>
+        <LibraryPath Value="../../Modules/Math/Linux/Release"/>
+        <LibraryPath Value="../../Modules/Foundation/Linux/Release"/>
+      </Linker>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="$(ConfigurationName)" Command="$(OutputFile)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <BuildSystem Name="Default"/>

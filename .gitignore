@@ -54,8 +54,8 @@ Makefile
 # Specific filetypes that have exceptions here or in subdirs.
 *.vcxproj.user
 *.lib
-*.pdb
 *.user
 
 !Windows/TacitTexView.vcxproj.user
 
+/TacitTexView

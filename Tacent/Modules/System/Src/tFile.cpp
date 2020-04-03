@@ -432,11 +432,25 @@ bool tSystem::tGetFileInfo(tFileInfo& fileInfo, const tString& fileName)
 	return true;
 
 	#else
+	
+	fileInfo.ReadOnly = tIsReadOnly(file);
+	fileInfo.Hidden = tIsHidden(file);
 
-	Use stat() here on linux.
-	std::filesystem::file_time_type lastWriteTime = std::filesystem::last_write_time(path, ec);
-	fileInfo.ModificationTime = tFileTimeToStdTime(lastWriteTime);
+	struct stat statBuf;
+	int errCode = stat(file.Chars(), &statBuf);
+	if (errCode)
+		return false;
+		
+	fileInfo.FileSize = statBuf.st_size;
+	fileInfo.Directory = ((statBuf.st_mode & S_IFMT) == S_IFDIR) ? true : false;
 
+	fileInfo.CreationTime = statBuf.st_ctime;		// @todo I think this is not creation time.
+	fileInfo.ModificationTime = statBuf.st_mtime;
+	fileInfo.AccessTime = statBuf.st_atime;
+	if (fileInfo.AccessTime < fileInfo.CreationTime)
+		fileInfo.AccessTime = fileInfo.CreationTime;
+
+	return true;
 	#endif
 }
 
