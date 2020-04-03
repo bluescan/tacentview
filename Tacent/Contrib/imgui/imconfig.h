@@ -55,8 +55,8 @@
 #include <Math/tVector2.h>
 #include <Math/tVector4.h>
 #define IM_VEC2_CLASS_EXTRA                                   \
-        ImVec2(const tMath::tVec2& f) { x = f.x; y = f.y; }   \
-        operator tMath::tVec2() const { /*tMath::tVec2 v = {x,y}; return v;*/ return tMath::tVec2{x,y}; }
+        ImVec2(const tMath::tVector2& f) { x = f.x; y = f.y; }   \
+        operator tMath::tVector2() const { /*tMath::tVec2 v = {x,y}; return v;*/ return tMath::tVector2{x,y}; }
 
 #define IM_VEC4_CLASS_EXTRA                                                   \
         ImVec4(const tMath::tVector4& f) { x = f.x; y = f.y; z = f.z; w = f.w; } \
