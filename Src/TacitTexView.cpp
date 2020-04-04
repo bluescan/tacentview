@@ -65,6 +65,9 @@ namespace TexView
 	tItList<TacitImage> ImagesLoadTimeSorted	(false);
 	tuint256 ImagesHash							= 0;
 	TacitImage* CurrImage						= nullptr;
+	
+	void LoadAppImages(const tString& dataDir);
+	void UnloadAppImages();
 	TacitImage ReticleImage;
 	TacitImage PrevImage;
 	TacitImage NextImage;
@@ -1937,6 +1940,76 @@ int TexView::RemoveOldCacheFiles(const tString& cacheDir)
 }
 
 
+void TexView::LoadAppImages(const tString& dataDir)
+{
+	ReticleImage			.Load(dataDir + "Reticle.png");
+	PrevImage				.Load(dataDir + "Prev.png");
+	NextImage				.Load(dataDir + "Next.png");
+	PrevArrowImage			.Load(dataDir + "PrevArrow.png");
+	NextArrowImage			.Load(dataDir + "NextArrow.png");
+	FlipHImage				.Load(dataDir + "FlipH.png");
+	FlipVImage				.Load(dataDir + "FlipV.png");
+	RotateACWImage			.Load(dataDir + "RotACW.png");
+	RotateCWImage			.Load(dataDir + "RotCW.png");
+	FullscreenImage			.Load(dataDir + "Fullscreen.png");
+	WindowedImage			.Load(dataDir + "Windowed.png");
+	SkipBeginImage			.Load(dataDir + "SkipBegin.png");
+	SkipEndImage			.Load(dataDir + "SkipEnd.png");
+	MipmapsImage			.Load(dataDir + "Mipmaps.png");
+	CubemapImage			.Load(dataDir + "Cubemap.png");
+	RefreshImage			.Load(dataDir + "Refresh.png");
+	RecycleImage			.Load(dataDir + "Recycle.png");
+	PropEditImage			.Load(dataDir + "PropEdit.png");
+	InfoOverlayImage		.Load(dataDir + "InfoOverlay.png");
+	TileImage				.Load(dataDir + "Tile.png");
+	StopImage				.Load(dataDir + "Stop.png");
+	StopRevImage			.Load(dataDir + "Stop.png");
+	PlayImage				.Load(dataDir + "Play.png");
+	PlayRevImage			.Load(dataDir + "PlayRev.png");
+	PlayLoopImage			.Load(dataDir + "PlayLoop.png");
+	PlayOnceImage			.Load(dataDir + "PlayOnce.png");
+	ContentViewImage		.Load(dataDir + "ContentView.png");
+	UpFolderImage			.Load(dataDir + "UpFolder.png");
+	CropImage				.Load(dataDir + "Crop.png");
+	DefaultThumbnailImage	.Load(dataDir + "DefaultThumbnail.png");
+}
+
+
+void TexView::UnloadAppImages()
+{
+	ReticleImage			.Unload();
+	PrevImage				.Unload();
+	NextImage				.Unload();
+	PrevArrowImage			.Unload();
+	NextArrowImage			.Unload();
+	FlipHImage				.Unload();
+	FlipVImage				.Unload();
+	RotateACWImage			.Unload();
+	RotateCWImage			.Unload();
+	FullscreenImage			.Unload();
+	WindowedImage			.Unload();
+	SkipBeginImage			.Unload();
+	SkipEndImage			.Unload();
+	MipmapsImage			.Unload();
+	CubemapImage			.Unload();
+	RefreshImage			.Unload();
+	RecycleImage			.Unload();
+	PropEditImage			.Unload();
+	InfoOverlayImage		.Unload();
+	TileImage				.Unload();
+	StopImage				.Unload();
+	StopRevImage			.Unload();
+	PlayImage				.Unload();
+	PlayRevImage			.Unload();
+	PlayLoopImage			.Unload();
+	PlayOnceImage			.Unload();
+	ContentViewImage		.Unload();
+	UpFolderImage			.Unload();
+	CropImage				.Unload();
+	DefaultThumbnailImage	.Unload();
+}
+
+
 int main(int argc, char** argv)
 {
 	tSystem::tSetStdoutRedirectCallback(TexView::PrintRedirectCallback);
@@ -2022,8 +2095,7 @@ int main(int argc, char** argv)
 	tPrintf("GLEW V %s\n", glewGetString(GLEW_VERSION));
 	#else
 	tPrintf("GLAD V %s", glGetString(GL_VERSION));
-	#endif
-	
+	#endif	
 	
 	glfwSwapInterval(1); // Enable vsync
 	glfwSetWindowRefreshCallback(TexView::Window, TexView::WindowRefreshFun);
@@ -2065,37 +2137,8 @@ int main(int argc, char** argv)
 	tString fontFile = dataDir + "Roboto-Medium.ttf";
 	io.Fonts->AddFontFromFileTTF(fontFile.Chars(), 14.0f);
 
-	TexView::ReticleImage			.Load(dataDir + "Reticle.png");
-	TexView::PrevImage				.Load(dataDir + "Prev.png");
-	TexView::NextImage				.Load(dataDir + "Next.png");
-	TexView::PrevArrowImage			.Load(dataDir + "PrevArrow.png");
-	TexView::NextArrowImage			.Load(dataDir + "NextArrow.png");
-	TexView::FlipHImage				.Load(dataDir + "FlipH.png");
-	TexView::FlipVImage				.Load(dataDir + "FlipV.png");
-	TexView::RotateACWImage			.Load(dataDir + "RotACW.png");
-	TexView::RotateCWImage			.Load(dataDir + "RotCW.png");
-	TexView::FullscreenImage		.Load(dataDir + "Fullscreen.png");
-	TexView::WindowedImage			.Load(dataDir + "Windowed.png");
-	TexView::SkipBeginImage			.Load(dataDir + "SkipBegin.png");
-	TexView::SkipEndImage			.Load(dataDir + "SkipEnd.png");
-	TexView::MipmapsImage			.Load(dataDir + "Mipmaps.png");
-	TexView::CubemapImage			.Load(dataDir + "Cubemap.png");
-	TexView::RefreshImage			.Load(dataDir + "Refresh.png");
-	TexView::RecycleImage			.Load(dataDir + "Recycle.png");
-	TexView::PropEditImage			.Load(dataDir + "PropEdit.png");
-	TexView::InfoOverlayImage		.Load(dataDir + "InfoOverlay.png");
-	TexView::TileImage				.Load(dataDir + "Tile.png");
-	TexView::StopImage				.Load(dataDir + "Stop.png");
-	TexView::StopRevImage			.Load(dataDir + "Stop.png");
-	TexView::PlayImage				.Load(dataDir + "Play.png");
-	TexView::PlayRevImage			.Load(dataDir + "PlayRev.png");
-	TexView::PlayLoopImage			.Load(dataDir + "PlayLoop.png");
-	TexView::PlayOnceImage			.Load(dataDir + "PlayOnce.png");
-	TexView::ContentViewImage		.Load(dataDir + "ContentView.png");
-	TexView::UpFolderImage			.Load(dataDir + "UpFolder.png");
-	TexView::CropImage				.Load(dataDir + "Crop.png");
-	TexView::DefaultThumbnailImage	.Load(dataDir + "DefaultThumbnail.png");
-
+	TexView::LoadAppImages(dataDir);
+	
 	TexView::PopulateImages();
 	if (TexView::ImageFileParam.IsPresent())
 		TexView::SetCurrentImage(TexView::ImageFileParam.Get());
@@ -2127,6 +2170,8 @@ int main(int argc, char** argv)
 	// This is important. We need the destructors to run BEFORE we shutdown GLFW. Deconstructing the images may block for a bit while shutting
 	// down worker threads. We could show a 'shutting down' popup here if we wanted -- if TacitImage::ThumbnailNumThreadsRunning is > 0.
 	TexView::Images.Clear();
+	
+	TexView::UnloadAppImages();
 
 	// Get current window geometry and set in config file if we're not in fullscreen mode or iconified.
 	if (!TexView::FullscreenMode && !TexView::WindowIconified)
