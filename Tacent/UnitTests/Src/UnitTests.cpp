@@ -98,7 +98,7 @@ int main(int argc, char** argv)
 	tTest(Image);
 
 	#else
-	tTest(MemoryPool);
+	tTest(File);
 
 	#endif
 

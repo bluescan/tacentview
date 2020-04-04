@@ -1852,7 +1852,11 @@ bool tSystem::tFindFiles(tList<tStringItem>& foundFiles, const tString& dir, con
 	if (dirStr[dirStr.Length() - 1] != '\\')
 		dirStr += "\\";
 
-	tString path = dirStr + "*." + ext;
+	tString path = dirStr + "*.";
+	if (ext.IsEmpty())
+		path += "*";
+	else
+		path += ext;
 
 	Win32FindData fd;
 	WinHandle h = FindFirstFile(path, &fd);
