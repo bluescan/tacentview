@@ -2043,14 +2043,7 @@ int main(int argc, char** argv)
 	#ifdef PLATFORM_WINDOWS
 	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 	#endif
-	
-	#ifdef PLATFORM_LINUX
-//	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-//	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
-//	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	#endif
-	
-	//TexView::Window = glfwCreateWindow(800, 600, "Tacit Viewer", nullptr, nullptr);
+
 	TexView::Window = glfwCreateWindow(TexView::Config.WindowW, TexView::Config.WindowH, "Tacit Viewer", nullptr, nullptr);
 	if (!TexView::Window)
 		return 1;
@@ -2078,6 +2071,20 @@ int main(int argc, char** argv)
 		glfwDestroyWindow(TexView::Window);
 		glfwTerminate();
 		return 1;
+	}
+	#else
+	if (!tSystem::tDirExists(dataDir))
+	{
+		tPrintf
+		(
+			"Tacit Texture Viewer failed to launch because it was run from a location "
+			"that did not have the Data directory in it. The executable should be in the "
+			"same place as the Data directory."
+		);
+
+		glfwDestroyWindow(TexView::Window);
+		glfwTerminate();
+		return 15;
 	}
 	#endif
 
