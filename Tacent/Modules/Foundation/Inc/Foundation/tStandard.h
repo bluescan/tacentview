@@ -61,8 +61,8 @@ inline char* tStrcat(char* s, const char* r)																			{ tAssert(s && r)
 inline char* tStrupr(char* s)																							{ tAssert(s); return _strupr(s); }
 inline char* tStrlwr(char* s)																							{ tAssert(s); return _strlwr(s); }
 #else
-inline char* tStrupr(char* s)																							{ tAssert(s); char* c = s; while (*c++) *c = toupper(*c); return s; }
-inline char* tStrlwr(char* s)																							{ tAssert(s); char* c = s; while (*c++) *c = tolower(*c); return s; }
+inline char* tStrupr(char* s)																							{ tAssert(s); char* c = s; while (*c) { *c = toupper(*c); c++; } return s; }
+inline char* tStrlwr(char* s)																							{ tAssert(s); char* c = s; while (*c) { *c = tolower(*c); c++; } return s; }
 #endif
 
 // For these conversion calls, unknown digit characters for the supplied base are ignored. If base is not E [2, 36], the
