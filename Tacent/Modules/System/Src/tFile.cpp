@@ -914,17 +914,14 @@ tString tSystem::tGetRelativePath(const tString& basePath, const tString& path)
 			break;
 	}
 
-	for (int incr = inc; incr < sizer; incr += tStd::tStrlen(pathr+incr)+1)
-	{
-		tStd::tStrcat(relPath, "../");
-		if (!tStd::tStrchr(refPath.Text()+incr, '/'))
-			break;
-	}
-
 	if (inc < sizea)
 		tStd::tStrcat(relPath, absPath.Text()+inc);
 		
-	return tString(relPath);
+	tString ret(relPath);
+	if (ret[ret.Length()-1] != '/')
+		ret += '/';
+		
+	return ret;
 	#endif
 }
 
@@ -1832,6 +1829,10 @@ bool tSystem::tFindDirs(tList<tStringItem>& foundDirs, const tString& dir, bool 
 		if (!entry.is_directory())
 			continue;
 		tString foundDir(entry.path().u8string().c_str());
+		
+		// All directories end in a slash in tacent.
+		if (foundDir[foundDir.Length()-1] != '/')
+			foundDir += "/";
 		if (includeHidden || !tIsHidden(foundDir))
 			foundDirs.Append(new tStringItem(foundDir));
 	}
