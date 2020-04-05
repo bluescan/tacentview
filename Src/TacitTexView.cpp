@@ -253,7 +253,11 @@ tString TexView::FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles)
 	tSystem::tFindFiles(foundFiles, imagesDir, "dds");
 	tSystem::tFindFiles(foundFiles, imagesDir, "hdr");
 	tSystem::tFindFiles(foundFiles, imagesDir, "rgbe");
+
+	// @todo Exr loading code currently only working on windows.
+	#ifdef PLATFORM_WINDOWS
 	tSystem::tFindFiles(foundFiles, imagesDir, "exr");
+	#endif
 
 	return imagesDir;
 }
@@ -2161,7 +2165,9 @@ int main(int argc, char** argv)
 	#ifdef PLATFORM_WINDOWS
 	ShowWindow(hwnd, SW_SHOW);
 	#endif
-	
+		
+	// I don't seem to be able to get Linux to v-sync.
+	// glfwSwapInterval(1);
 	glfwMakeContextCurrent(TexView::Window);
 	glfwSwapBuffers(TexView::Window);
 
@@ -2171,6 +2177,12 @@ int main(int argc, char** argv)
 	{
 		double currUpdateTime = glfwGetTime();
 		TexView::Update(TexView::Window, currUpdateTime - lastUpdateTime);
+		
+		// I don't seem to be able to get Linux to v-sync. This stops it using all the CPU.
+		#ifdef PLATFORM_LINUX
+		tSystem::tSleep(16);
+		#endif
+		
 		lastUpdateTime = currUpdateTime;
 	}
 

@@ -6,7 +6,7 @@
   <Project Name="System" Path="../Tacent/Modules/System/Linux/System.project" Active="No"/>
   <Project Name="Image" Path="../Tacent/Modules/Image/Linux/Image.project" Active="No"/>
   <BuildMatrix>
-    <WorkspaceConfiguration Name="Debug" Selected="yes">
+    <WorkspaceConfiguration Name="Debug" Selected="no">
       <Environment/>
       <Project Name="TacitTexView" ConfigName="Debug"/>
       <Project Name="Math" ConfigName="Debug"/>

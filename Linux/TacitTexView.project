@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CodeLite_Project Name="TacitTexView" Version="11000" InternalType="Console">
+  <Plugins>
+    <Plugin Name="qmake">
+      <![CDATA[00020001N0005Debug0000000000000001N0007Release000000000000]]>
+    </Plugin>
+  </Plugins>
   <VirtualDirectory Name="Contrib">
     <VirtualDirectory Name="glad"/>
     <VirtualDirectory Name="Imgui">
@@ -20,11 +25,6 @@
       <File Name="../Tacent/Contrib/imgui/imconfig.h"/>
     </VirtualDirectory>
   </VirtualDirectory>
-  <Plugins>
-    <Plugin Name="qmake">
-      <![CDATA[00020001N0005Debug0000000000000001N0007Release000000000000]]>
-    </Plugin>
-  </Plugins>
   <VirtualDirectory Name="Inc">
     <File Name="../Src/TacitTexView.h"/>
     <File Name="../Src/TacitImage.h"/>
@@ -48,6 +48,12 @@
     <File Name="../Src/ContactSheet.cpp"/>
   </VirtualDirectory>
   <Dependencies Name="Debug">
+    <Project Name="System"/>
+    <Project Name="Foundation"/>
+    <Project Name="Math"/>
+    <Project Name="Image"/>
+  </Dependencies>
+  <Dependencies Name="Release">
     <Project Name="System"/>
     <Project Name="Foundation"/>
     <Project Name="Math"/>
@@ -132,13 +138,14 @@
         <Preprocessor Value="CONFIG_RELEASE"/>
       </Compiler>
       <Linker Options="" Required="yes">
-        <LibraryPath Value="../../Modules/Image/Linux/Release"/>
-        <LibraryPath Value="../../Modules/System/Linux/Release"/>
-        <LibraryPath Value="../../Modules/Math/Linux/Release"/>
-        <LibraryPath Value="../../Modules/Foundation/Linux/Release"/>
+        <LibraryPath Value="../Tacent/Modules/Image/Linux/Release"/>
+        <LibraryPath Value="../Tacent/Modules/System/Linux/Release"/>
+        <LibraryPath Value="../Tacent/Modules/Math/Linux/Release"/>
+        <LibraryPath Value="../Tacent/Modules/Foundation/Linux/Release"/>
+        <LibraryPath Value="../Tacent/Contrib/glfw/Linux/Release"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="$(ConfigurationName)" Command="$(OutputFile)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="$(ConfigurationName)" Command="$(WorkspacePath)/../TacitTexView" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="/home/tristan/github/tacit-texview/TestImages/Photos" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
@@ -149,7 +156,9 @@
         <StartupCommands/>
       </Debugger>
       <PreBuild/>
-      <PostBuild/>
+      <PostBuild>
+        <Command Enabled="yes">cp $(OutputFile) ..</Command>
+      </PostBuild>
       <CustomBuild Enabled="no">
         <RebuildCommand/>
         <CleanCommand/>
