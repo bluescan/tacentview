@@ -1,3 +1,5 @@
+![Build](https://github.com/bluescan/tacit-texview/workflows/Build/badge.svg)
+
 # tacit-texview
 A texture viewer for tga, png, exr, dds, gif, hdr, jpg, tif, and bmp files. Uses Dear ImGui and the Tacent library. This viewer is targeted to game devs -- It displays alpha channels correctly and can inspect the colour of individual pixels. There is basic editing functionality and the ability to generate contact sheets for FX etc.
 
