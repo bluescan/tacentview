@@ -1,3 +1,5 @@
+![Unit Tests](https://github.com/bluescan/tacent/workflows/Unit%20Tests/badge.svg)
+
 # Tacent
 Tacent is collection of C++ source files designed to be the basis for a game engine or other interactive project. Tacent is being released under the permissive MIT-style ISC licence. Originally the code was the backbone of the Tactile 3D project. 
 
