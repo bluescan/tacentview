@@ -1441,20 +1441,17 @@ tString tSystem::tGetCurrentDir()
 	tString r(MAX_PATH + 1);
 	GetCurrentDirectory(MAX_PATH, r.Text());
 
-	r.Replace('\\', '/');
+	#else
+	tString r(PATH_MAX + 1);
+	getcwd(r.Text(), PATH_MAX);
 
+	#endif
+	r.Replace('\\', '/');
 	int l = r.Length();
 	if (r[l - 1] != '/')
 		r += "/";
 
 	return r;
-
-	#else
-	tString r(PATH_MAX + 1);
-	getcwd(r.Text(), PATH_MAX);
-	return r;
-
-	#endif
 }
 
 
