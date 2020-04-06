@@ -808,7 +808,7 @@ void TacitImage::GenerateThumbnail()
 	hash = tHashData256((uint8*)&ThumbWidth, sizeof(ThumbWidth), hash);
 	hash = tHashData256((uint8*)&ThumbHeight, sizeof(ThumbHeight), hash);
 	tString hashFile;
-	tsPrintf(hashFile, "%s%032|128X.bin", ThumbCacheDir.Chars(), hash);
+	tsPrintf(hashFile, "%s%032|256X.bin", ThumbCacheDir.Chars(), hash);
 	if (tFileExists(hashFile))
 	{
 		tChunkReader chunk(hashFile);
