@@ -3,23 +3,23 @@
 # Tacent
 Tacent is collection of C++ source files designed to be the basis for a game engine or other interactive project. Tacent is being released under the permissive MIT-style ISC licence. Originally the code was the backbone of the Tactile 3D project. 
 
-Visual Studio 2017 Community Edition is being used to compile and run unit tests. Some (selective) improvements to take advantage of C++11 features are being made.
+Visual Studio 2019 Community Edition (Windows) and Codelite/Clang (Ubuntu) is being used to compile and run unit tests. Some (selective) improvements to take advantage of C++17 features are being made.
 
 __Browse the Source__
 
-The files that are currently available can be browsed using Woboq, a Clang-based tool that marks-up C++ to web-ready HTML. This tool is being used under the ShareAlike License and the 'What is this' text has been removed. Attribution links remain in tact. Woboq is being run on Windows 10 using the new Linux Subsystem.
+The files that are currently available can be browsed using Woboq, a Clang-based tool that marks-up C++ to web-ready HTML. This tool is being used under the ShareAlike License and the 'What is this' text has been removed. Attribution links remain in tact. Woboq is being run on Windows 10 using the new Linux Subsystem. The source being browsed is out-of-date, but can bu useful for quick references / code-snips. Perhaps eventually a GitHub action can be made for it.
 
 [Browse the source here.](http://upperboundsinteractive.com/Tacent/Modules/index.html)
 
 __Download the Source__
 
-The Tacent source and solution/project files are available as a 7-zip archive. The instructions are simple: Unzip the archive somewhere, open Tools/UnitTests/UnitTests.sln, press F7 in Visual Studio to build, and press F5 to run.
+The Tacent source and solution/project files are available as a 7-zip archive. The instructions are simple: Unzip the archive somewhere, open Tools/UnitTests/UnitTests.sln, press F7 in Visual Studio to build, and press F5 to run. This code is also not as recent as the GitHub repository. Clone (preferred) or grab a release from GitHub for best results.
 
 [Download the source here.](http://upperboundsinteractive.com/Tacent.7z)
 
 ### Overview
 
-Tacent is divided into a number of separate packages called modules. Each module is a collection of related source files. The code requires a C++11 compiler. Some modules depend on others. The current set of modules is:
+Tacent is divided into a number of separate packages called modules. Each module is a collection of related source files. The code requires a C++17 compiler. Some modules depend on others. The current set of modules is:
 
 * __Foundation__
 The base set of classes, functions, and types. Includes container types (lists, arrays, priority queues, ring buffers), a fast memory pool, big integer types, bitfields, units, a string class. Depends on nothing but platform libs.
