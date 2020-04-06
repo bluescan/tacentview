@@ -83,12 +83,12 @@ tString tSystem::tGetCompName()
 
 int tSystem::tGetNumCores()
 {
-	#ifdef PLATFORM_WINDOWS
 	// Lets cache this value as it never changes.
 	static int numCores = 0;
 	if (numCores > 0)
 		return numCores;
 
+	#ifdef PLATFORM_WINDOWS
 	SYSTEM_INFO sysinfo;
 	tStd::tMemset(&sysinfo, 0, sizeof(sysinfo));
 	GetSystemInfo(&sysinfo);
@@ -99,12 +99,13 @@ int tSystem::tGetNumCores()
 	else
 		numCores = sysinfo.dwNumberOfProcessors;
 
-	return numCores;
-
-	#else	
-	return get_nprocs_conf();
+	#else
+	numCores = get_nprocs_conf();
+	if (numCores < 1)
+		numCores = 1;
 	
 	#endif
+	return numCores;
 }
 
 
@@ -134,12 +135,15 @@ bool tSystem::tOpenSystemFileExplorer(const tString& dir, const tString& file)
 		ShellExecute(hWnd, "open", dir.ConstText(), 0, dir.ConstText(), SW_SHOWNORMAL);
 	}
 	return true;
+
 	#elif defined(PLATFORM_LINUX)
 	// @todo Implament 
 	return false;
+
 	#else
 	// @todo Implament 
 	return false;
+
 	#endif
 }
 
