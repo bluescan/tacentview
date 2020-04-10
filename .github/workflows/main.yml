@@ -11,8 +11,10 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # The buildrunwindows job builds and runs unit tests on windows.
+
+  # The checkoutbuildwindows job builds tacittexview on windows.
   checkoutbuildwindows:
+
     # The type of runner that the job will run on
     runs-on: windows-latest
 
@@ -37,3 +39,15 @@ jobs:
         echo 'Building Solution'
         & 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe' $Env:GITHUB_WORKSPACE\Windows\TacitTexView.sln
         echo 'Done Building Solution'
+        
+  # The checkoutbuildubuntu job builds tacittexview on ubuntu.
+  checkoutbuildubuntu:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build Using Make
+      run: |
+        echo 'Build Using Make'
+        cd Linux
+        & make All
+        echo 'Done Build Using Make'
