@@ -29,6 +29,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <pwd.h>
 #include <fstream>
 #endif
 #include <filesystem>
@@ -1386,6 +1388,24 @@ tString tSystem::tGetSystemDir()
 #endif
 
 
+#ifdef PLATFORM_LINUX
+tString tSystem::tGetHomeDir()
+{
+	const char* homeDir = getenv("HOME");
+	if (!homeDir)
+		homeDir = getpwuid(getuid())->pw_dir;
+		
+	if (!homeDir)
+		return tString();
+		
+	tString res(homeDir);
+	if (res[res.Length()-1] != '/')
+		res += '/';
+	return res;
+}
+#endif
+
+
 tString tSystem::tGetProgramDir()
 {
 	#if defined(PLATFORM_WINDOWS)
@@ -1599,6 +1619,8 @@ bool tSystem::tCreateDir(const tString& dir)
 
 	#else
 	dirPath.Replace('\\', '/');
+	if (dirPath[dirPath.Length()-1] == '/')
+		dirPath[dirPath.Length()-1] = '\0';
 	bool ok = std::filesystem::create_directory(dirPath.Chars());
 	if (!ok)
 		return tDirExists(dirPath.Chars());

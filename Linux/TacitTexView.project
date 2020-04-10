@@ -70,7 +70,7 @@
         <IncludePath Value="../Tacent/Contrib/imgui"/>
         <IncludePath Value="../Tacent/Contrib/imgui/examples"/>
         <IncludePath Value="../Tacent/Contrib/glad/include"/>
-        <IncludePath Value="../Tacent/Contrib/glfw/Windows/include"/>
+        <IncludePath Value="../Tacent/Contrib/glfw/Linux/include"/>
         <Preprocessor Value="PLATFORM_LINUX"/>
       </Compiler>
       <Linker Options="-pthread">
@@ -110,6 +110,8 @@
       <PreBuild/>
       <PostBuild>
         <Command Enabled="yes">cp $(OutputFile) ..</Command>
+        <Command Enabled="yes"/>
+        <Command Enabled="yes"/>
       </PostBuild>
       <CustomBuild Enabled="no">
         <RebuildCommand/>

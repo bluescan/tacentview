@@ -5,12 +5,14 @@
 .codelite/
 Debug/
 Release/
+tacittexview_1.0-7/
 
 # Filetypes in directories.
 TestImages/FlipbookEXR/
 Data/*.cfg
 Data/Cache/
 Linux/TacitTexView.txt
+Linux/*.deb
 
 # Filenames.
 compile_flags.txt

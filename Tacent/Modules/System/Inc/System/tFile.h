@@ -267,8 +267,12 @@ bool tIsSystem(const tString& fileName);
 bool tSetSystem(const tString& fileName, bool system = true);
 #endif
 
+#ifdef PLATFORM_WINDOWS
 tString tGetWindowsDir();
 tString tGetSystemDir();
+#elif defined(PLATFORM_LINUX)
+tString tGetHomeDir();
+#endif
 
 // Gets the directory that the current process is being run from.
 tString tGetProgramDir();

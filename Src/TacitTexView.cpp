@@ -19,7 +19,7 @@
 #include <glad/glad.h>
 #endif
 
-#include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL definitions.
+#include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL declarations.
 
 #ifdef PLATFORM_WINDOWS
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -2035,23 +2035,47 @@ int main(int argc, char** argv)
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 	const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
+	#ifdef PLATFORM_WINDOWS
 	tString dataDir = tSystem::tGetProgramDir() + "Data/";
 	TacitImage::ThumbCacheDir = dataDir + "Cache/";
+
+	#elif defined(PLATFORM_LINUX)
+	tString progDir = tSystem::tGetProgramDir();
+	bool isDev = (progDir != "/usr/bin/") ? true : false;
+	tString dataDir = isDev ? (progDir + "Data/") : "/usr/share/tacittexview/Data/";
+	tString localAppDir = isDev ? dataDir : tSystem::tGetHomeDir() + ".tacittexview/";
+	if (!tSystem::tDirExists(localAppDir))
+		tSystem::tCreateDir(localAppDir);
+	
+	TacitImage::ThumbCacheDir = localAppDir + "Cache/";
+	#endif
+	
 	if (!tSystem::tDirExists(TacitImage::ThumbCacheDir))
 		tSystem::tCreateDir(TacitImage::ThumbCacheDir);
 
+	#ifdef PLATFORM_WINDOWS
 	tString cfgFile = dataDir + "Settings.cfg";
+	#elif defined(PLATFORM_LINUX)
+	tString cfgFile = localAppDir + "Settings.cfg";
+	#endif
+	
 	TexView::Config.Load(cfgFile, mode->width, mode->height);
 
-	// We start with window invisible as DwmSetWindowAttribute won't redraw properly otherwise.
 	#ifdef PLATFORM_WINDOWS
+	// We start with window invisible as DwmSetWindowAttribute won't redraw properly otherwise.
 	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+	#elif defined(PLATFORM_LINUX)
+	glfwWindowHintString(GLFW_X11_CLASS_NAME, "tacittexview");
 	#endif
 
-	TexView::Window = glfwCreateWindow(TexView::Config.WindowW, TexView::Config.WindowH, "Tacit Viewer", nullptr, nullptr);
+	// The title here seems to override the Linux hint above. When we create with the title string "tacittexview",
+	// glfw makes it the X11 WM_CLASS. This is needed so that the Ubuntu can map the same name in the .desktop file
+	// to find things like the correct dock icon to display. The SetWindowTitle afterwards does not mod the WM_CLASS.
+	TexView::Window = glfwCreateWindow(TexView::Config.WindowW, TexView::Config.WindowH, "tacittexview", nullptr, nullptr);
 	if (!TexView::Window)
 		return 1;
-
+		
+	TexView::SetWindowTitle();	
 	glfwSetWindowPos(TexView::Window, TexView::Config.WindowX, TexView::Config.WindowY);
 
 	#ifdef PLATFORM_WINDOWS
@@ -2079,6 +2103,15 @@ int main(int argc, char** argv)
 	#else
 	if (!tSystem::tDirExists(dataDir))
 	{
+		glfwDestroyWindow(TexView::Window);
+		glfwTerminate();
+		system
+		(
+			"zenity --ellipsize --title=\"Warning\" --warning --text=\""
+			"Tacit Texture Viewer failed to launch because it was run from a\n"
+			"location that did not have access to the Data directory.\""
+		);
+
 		tPrintf
 		(
 			"Tacit Texture Viewer failed to launch because it was run from a location "
@@ -2086,8 +2119,6 @@ int main(int argc, char** argv)
 			"same place as the Data directory."
 		);
 
-		glfwDestroyWindow(TexView::Window);
-		glfwTerminate();
 		return 15;
 	}
 	#endif
