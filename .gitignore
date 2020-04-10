@@ -18,7 +18,7 @@ Linux/*.deb
 compile_flags.txt
 compile_commands.json
 imgui\.ini
-Makefile
+#Makefile
 
 # Filetypes to ignore everywhere.
 *.log
@@ -30,7 +30,7 @@ Makefile
 *.cpp.o.d
 *.a
 *.d
-*.mk
+#*.mk
 *.idb
 *.ilk
 *.exe

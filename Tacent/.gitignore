@@ -20,7 +20,7 @@ compile_commands.json
 *.cpp.o.d
 *.a
 *.d
-*.mk
+#*.mk
 *.idb
 *.ilk
 *.exe
