@@ -49,5 +49,5 @@ jobs:
       run: |
         echo 'Build Using Make'
         cd Linux
-        & make All
+        make All
         echo 'Done Build Using Make'
