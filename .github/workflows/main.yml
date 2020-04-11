@@ -48,7 +48,7 @@ jobs:
     - name: Build Using Make
       run: |
         echo 'Build Using Make'
-        pwd
-        #cd Linux
-        #make All
+        ./Linux/fixup_makefiles_for_github_runner
+        cd Linux
+        make All
         echo 'Done Build Using Make'
