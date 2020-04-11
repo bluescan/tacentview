@@ -180,7 +180,7 @@ void TexView::ShowAboutPopup(bool* popen)
 		glfwGetVersion(&glfwMajor, &glfwMinor, &glfwRev);
 		ImGui::Text("Tacit Viewer V %d.%d.%d by Tristan Grimmer", TexView::MajorVersion, TexView::MinorVersion, TexView::Revision);
 		ImGui::Separator();
-		ImGui::Text("The following amazing and liberally licenced frameworks are used by this tool.");
+		ImGui::Text("The following amazing and liberally licensed frameworks are used by this tool.");
 		ImGui::Text("Dear ImGui V %s", IMGUI_VERSION);
 		#ifdef PLATFORM_WINDOWS
 		ImGui::Text("GLEW V %s", glewGetString(GLEW_VERSION));
