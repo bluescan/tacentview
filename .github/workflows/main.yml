@@ -43,14 +43,12 @@ jobs:
   # The checkoutbuildubuntu job builds tacittexview on ubuntu.
   checkoutbuildubuntu:
     runs-on: ubuntu-latest
-    container:
-      options: --user 1001
     steps:
     - uses: actions/checkout@v2
     - name: Build Using Make
       run: |
         echo 'Build Using Make'
-        bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+        #bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
         ./Linux/fixup_makefiles_for_github_runner
         cd Linux
         make All
