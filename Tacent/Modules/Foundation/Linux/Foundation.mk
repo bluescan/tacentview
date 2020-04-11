@@ -5,17 +5,16 @@
 ## Release
 ProjectName            :=Foundation
 ConfigurationName      :=Release
-WorkspaceConfiguration := $(ConfigurationName)
 WorkspacePath          :=/home/tristan/github/tacit-texview/Linux
 ProjectPath            :=/home/tristan/github/tacit-texview/Tacent/Modules/Foundation/Linux
-IntermediateDirectory  :=../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux
-OutDir                 :=../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux
+IntermediateDirectory  :=$(ConfigurationName)
+OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Tristan
-Date                   :=04/10/20
-CodeLitePath           :=
+Date                   :=11/04/20
+CodeLitePath           :=/home/tristan/.codelite
 LinkerName             :=/usr/bin/clang++
 SharedObjectLinkerName :=/usr/bin/clang++ -shared -fPIC
 ObjectSuffix           :=.o
@@ -28,13 +27,14 @@ OutputSwitch           :=-o
 LibraryPathSwitch      :=-L
 PreprocessorSwitch     :=-D
 SourceSwitch           :=-c 
-OutputFile             :=../../../../Linux/build-$(ConfigurationName)/lib/lib$(ProjectName).a
+OutputFile             :=$(IntermediateDirectory)/lib$(ProjectName).a
 Preprocessors          :=$(PreprocessorSwitch)PLATFORM_LINUX $(PreprocessorSwitch)CONFIG_RELEASE 
 ObjectSwitch           :=-o 
 ArchiveOutputSwitch    := 
 PreprocessOnlySwitch   :=-E
-ObjectsFileList        :=$(IntermediateDirectory)/ObjectsList.txt
+ObjectsFileList        :="Foundation.txt"
 PCHCompileFlags        :=
+MakeDirCommand         :=mkdir -p
 LinkOptions            :=  
 IncludePath            :=  $(IncludeSwitch)../Inc 
 IncludePCH             := 
@@ -59,7 +59,8 @@ AS       := /usr/bin/llvm-as
 ##
 ## User defined environment variables
 ##
-Objects0=../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tAssert.cpp$(ObjectSuffix) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tBitArray.cpp$(ObjectSuffix) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tMemory.cpp$(ObjectSuffix) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tString.cpp$(ObjectSuffix) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tPlatform.cpp$(ObjectSuffix) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tPool.cpp$(ObjectSuffix) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tUnits.cpp$(ObjectSuffix) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tStandard.cpp$(ObjectSuffix) 
+CodeLiteDir:=/usr/share/codelite
+Objects0=$(IntermediateDirectory)/up_Src_tAssert.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_tBitArray.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_tMemory.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_tString.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_tPlatform.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_tPool.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_tUnits.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_tStandard.cpp$(ObjectSuffix) 
 
 
 
@@ -69,21 +70,22 @@ Objects=$(Objects0)
 ## Main Build Targets 
 ##
 .PHONY: all clean PreBuild PrePreBuild PostBuild MakeIntermediateDirs
-all: MakeIntermediateDirs ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/$(OutputFile)
+all: $(IntermediateDirectory) $(OutputFile)
 
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/$(OutputFile): $(Objects)
-	@mkdir -p "../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux"
+$(OutputFile): $(Objects)
+	@$(MakeDirCommand) $(@D)
 	@echo "" > $(IntermediateDirectory)/.d
 	@echo $(Objects0)  > $(ObjectsFileList)
 	$(AR) $(ArchiveOutputSwitch)$(OutputFile) @$(ObjectsFileList)
-	@echo rebuilt > $(IntermediateDirectory)/Foundation.relink
+	@$(MakeDirCommand) "/home/tristan/github/tacit-texview/Linux/.build-release"
+	@echo rebuilt > "/home/tristan/github/tacit-texview/Linux/.build-release/Foundation"
 
 MakeIntermediateDirs:
-	@mkdir -p "../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux"
-	@mkdir -p ""../../../../Linux/build-$(ConfigurationName)/lib""
+	@test -d $(ConfigurationName) || $(MakeDirCommand) $(ConfigurationName)
+
 
 $(ConfigurationName):
-	@mkdir -p "../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux"
+	@test -d $(ConfigurationName) || $(MakeDirCommand) $(ConfigurationName)
 
 PreBuild:
 
@@ -91,76 +93,60 @@ PreBuild:
 ##
 ## Objects
 ##
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tAssert.cpp$(ObjectSuffix): ../Src/tAssert.cpp ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tAssert.cpp$(DependSuffix)
+$(IntermediateDirectory)/up_Src_tAssert.cpp$(ObjectSuffix): ../Src/tAssert.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_tAssert.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_tAssert.cpp$(DependSuffix) -MM ../Src/tAssert.cpp
 	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacit-texview/Tacent/Modules/Foundation/Src/tAssert.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_tAssert.cpp$(ObjectSuffix) $(IncludePath)
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tAssert.cpp$(DependSuffix): ../Src/tAssert.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tAssert.cpp$(ObjectSuffix) -MF../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tAssert.cpp$(DependSuffix) -MM ../Src/tAssert.cpp
+$(IntermediateDirectory)/up_Src_tAssert.cpp$(PreprocessSuffix): ../Src/tAssert.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_tAssert.cpp$(PreprocessSuffix) ../Src/tAssert.cpp
 
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tAssert.cpp$(PreprocessSuffix): ../Src/tAssert.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tAssert.cpp$(PreprocessSuffix) ../Src/tAssert.cpp
-
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tBitArray.cpp$(ObjectSuffix): ../Src/tBitArray.cpp ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tBitArray.cpp$(DependSuffix)
+$(IntermediateDirectory)/up_Src_tBitArray.cpp$(ObjectSuffix): ../Src/tBitArray.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_tBitArray.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_tBitArray.cpp$(DependSuffix) -MM ../Src/tBitArray.cpp
 	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacit-texview/Tacent/Modules/Foundation/Src/tBitArray.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_tBitArray.cpp$(ObjectSuffix) $(IncludePath)
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tBitArray.cpp$(DependSuffix): ../Src/tBitArray.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tBitArray.cpp$(ObjectSuffix) -MF../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tBitArray.cpp$(DependSuffix) -MM ../Src/tBitArray.cpp
+$(IntermediateDirectory)/up_Src_tBitArray.cpp$(PreprocessSuffix): ../Src/tBitArray.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_tBitArray.cpp$(PreprocessSuffix) ../Src/tBitArray.cpp
 
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tBitArray.cpp$(PreprocessSuffix): ../Src/tBitArray.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tBitArray.cpp$(PreprocessSuffix) ../Src/tBitArray.cpp
-
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tMemory.cpp$(ObjectSuffix): ../Src/tMemory.cpp ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tMemory.cpp$(DependSuffix)
+$(IntermediateDirectory)/up_Src_tMemory.cpp$(ObjectSuffix): ../Src/tMemory.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_tMemory.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_tMemory.cpp$(DependSuffix) -MM ../Src/tMemory.cpp
 	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacit-texview/Tacent/Modules/Foundation/Src/tMemory.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_tMemory.cpp$(ObjectSuffix) $(IncludePath)
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tMemory.cpp$(DependSuffix): ../Src/tMemory.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tMemory.cpp$(ObjectSuffix) -MF../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tMemory.cpp$(DependSuffix) -MM ../Src/tMemory.cpp
+$(IntermediateDirectory)/up_Src_tMemory.cpp$(PreprocessSuffix): ../Src/tMemory.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_tMemory.cpp$(PreprocessSuffix) ../Src/tMemory.cpp
 
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tMemory.cpp$(PreprocessSuffix): ../Src/tMemory.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tMemory.cpp$(PreprocessSuffix) ../Src/tMemory.cpp
-
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tString.cpp$(ObjectSuffix): ../Src/tString.cpp ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tString.cpp$(DependSuffix)
+$(IntermediateDirectory)/up_Src_tString.cpp$(ObjectSuffix): ../Src/tString.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_tString.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_tString.cpp$(DependSuffix) -MM ../Src/tString.cpp
 	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacit-texview/Tacent/Modules/Foundation/Src/tString.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_tString.cpp$(ObjectSuffix) $(IncludePath)
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tString.cpp$(DependSuffix): ../Src/tString.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tString.cpp$(ObjectSuffix) -MF../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tString.cpp$(DependSuffix) -MM ../Src/tString.cpp
+$(IntermediateDirectory)/up_Src_tString.cpp$(PreprocessSuffix): ../Src/tString.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_tString.cpp$(PreprocessSuffix) ../Src/tString.cpp
 
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tString.cpp$(PreprocessSuffix): ../Src/tString.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tString.cpp$(PreprocessSuffix) ../Src/tString.cpp
-
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tPlatform.cpp$(ObjectSuffix): ../Src/tPlatform.cpp ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tPlatform.cpp$(DependSuffix)
+$(IntermediateDirectory)/up_Src_tPlatform.cpp$(ObjectSuffix): ../Src/tPlatform.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_tPlatform.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_tPlatform.cpp$(DependSuffix) -MM ../Src/tPlatform.cpp
 	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacit-texview/Tacent/Modules/Foundation/Src/tPlatform.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_tPlatform.cpp$(ObjectSuffix) $(IncludePath)
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tPlatform.cpp$(DependSuffix): ../Src/tPlatform.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tPlatform.cpp$(ObjectSuffix) -MF../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tPlatform.cpp$(DependSuffix) -MM ../Src/tPlatform.cpp
+$(IntermediateDirectory)/up_Src_tPlatform.cpp$(PreprocessSuffix): ../Src/tPlatform.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_tPlatform.cpp$(PreprocessSuffix) ../Src/tPlatform.cpp
 
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tPlatform.cpp$(PreprocessSuffix): ../Src/tPlatform.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tPlatform.cpp$(PreprocessSuffix) ../Src/tPlatform.cpp
-
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tPool.cpp$(ObjectSuffix): ../Src/tPool.cpp ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tPool.cpp$(DependSuffix)
+$(IntermediateDirectory)/up_Src_tPool.cpp$(ObjectSuffix): ../Src/tPool.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_tPool.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_tPool.cpp$(DependSuffix) -MM ../Src/tPool.cpp
 	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacit-texview/Tacent/Modules/Foundation/Src/tPool.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_tPool.cpp$(ObjectSuffix) $(IncludePath)
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tPool.cpp$(DependSuffix): ../Src/tPool.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tPool.cpp$(ObjectSuffix) -MF../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tPool.cpp$(DependSuffix) -MM ../Src/tPool.cpp
+$(IntermediateDirectory)/up_Src_tPool.cpp$(PreprocessSuffix): ../Src/tPool.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_tPool.cpp$(PreprocessSuffix) ../Src/tPool.cpp
 
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tPool.cpp$(PreprocessSuffix): ../Src/tPool.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tPool.cpp$(PreprocessSuffix) ../Src/tPool.cpp
-
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tUnits.cpp$(ObjectSuffix): ../Src/tUnits.cpp ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tUnits.cpp$(DependSuffix)
+$(IntermediateDirectory)/up_Src_tUnits.cpp$(ObjectSuffix): ../Src/tUnits.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_tUnits.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_tUnits.cpp$(DependSuffix) -MM ../Src/tUnits.cpp
 	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacit-texview/Tacent/Modules/Foundation/Src/tUnits.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_tUnits.cpp$(ObjectSuffix) $(IncludePath)
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tUnits.cpp$(DependSuffix): ../Src/tUnits.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tUnits.cpp$(ObjectSuffix) -MF../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tUnits.cpp$(DependSuffix) -MM ../Src/tUnits.cpp
+$(IntermediateDirectory)/up_Src_tUnits.cpp$(PreprocessSuffix): ../Src/tUnits.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_tUnits.cpp$(PreprocessSuffix) ../Src/tUnits.cpp
 
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tUnits.cpp$(PreprocessSuffix): ../Src/tUnits.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tUnits.cpp$(PreprocessSuffix) ../Src/tUnits.cpp
-
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tStandard.cpp$(ObjectSuffix): ../Src/tStandard.cpp ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tStandard.cpp$(DependSuffix)
+$(IntermediateDirectory)/up_Src_tStandard.cpp$(ObjectSuffix): ../Src/tStandard.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_tStandard.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_tStandard.cpp$(DependSuffix) -MM ../Src/tStandard.cpp
 	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacit-texview/Tacent/Modules/Foundation/Src/tStandard.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_tStandard.cpp$(ObjectSuffix) $(IncludePath)
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tStandard.cpp$(DependSuffix): ../Src/tStandard.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tStandard.cpp$(ObjectSuffix) -MF../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tStandard.cpp$(DependSuffix) -MM ../Src/tStandard.cpp
-
-../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tStandard.cpp$(PreprocessSuffix): ../Src/tStandard.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux/up_Src_tStandard.cpp$(PreprocessSuffix) ../Src/tStandard.cpp
+$(IntermediateDirectory)/up_Src_tStandard.cpp$(PreprocessSuffix): ../Src/tStandard.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_tStandard.cpp$(PreprocessSuffix) ../Src/tStandard.cpp
 
 
--include ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Foundation/Linux//*$(DependSuffix)
+-include $(IntermediateDirectory)/*$(DependSuffix)
 ##
 ## Clean
 ##
 clean:
-	$(RM) -r $(IntermediateDirectory)
+	$(RM) -r $(ConfigurationName)/
 
 
