@@ -29,6 +29,7 @@
 #include "Settings.h"
 #include "TacitImage.h"
 #include "TacitTexView.h"
+#include "Version.h"
 using namespace tMath;
 
 

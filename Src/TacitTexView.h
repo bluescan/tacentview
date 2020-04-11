@@ -23,10 +23,6 @@ class tColouri;
 
 namespace TexView
 {
-	extern int MajorVersion;
-	extern int MinorVersion;
-	extern int Revision;
-
 	extern Settings Config;
 	extern TacitImage* CurrImage;
 	extern tString ImagesDir;

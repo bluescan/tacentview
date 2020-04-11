@@ -26,6 +26,7 @@
     </VirtualDirectory>
   </VirtualDirectory>
   <VirtualDirectory Name="Inc">
+    <File Name="../Src/Version.h"/>
     <File Name="../Src/TacitTexView.h"/>
     <File Name="../Src/TacitImage.h"/>
     <File Name="../Src/Settings.h"/>
