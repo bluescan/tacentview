@@ -5,16 +5,17 @@
 ## Release
 ProjectName            :=Math
 ConfigurationName      :=Release
+WorkspaceConfiguration := $(ConfigurationName)
 WorkspacePath          :=/home/tristan/github/tacit-texview/Linux
 ProjectPath            :=/home/tristan/github/tacit-texview/Tacent/Modules/Math/Linux
-IntermediateDirectory  :=$(ConfigurationName)
-OutDir                 := $(IntermediateDirectory)
+IntermediateDirectory  :=../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux
+OutDir                 :=../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux
 CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Tristan
-Date                   :=10/04/20
-CodeLitePath           :=/home/tristan/.codelite
+Date                   :=04/10/20
+CodeLitePath           :=
 LinkerName             :=/usr/bin/clang++
 SharedObjectLinkerName :=/usr/bin/clang++ -shared -fPIC
 ObjectSuffix           :=.o
@@ -27,14 +28,13 @@ OutputSwitch           :=-o
 LibraryPathSwitch      :=-L
 PreprocessorSwitch     :=-D
 SourceSwitch           :=-c 
-OutputFile             :=$(IntermediateDirectory)/lib$(ProjectName).a
+OutputFile             :=../../../../Linux/build-$(ConfigurationName)/lib/lib$(ProjectName).a
 Preprocessors          :=$(PreprocessorSwitch)PLATFORM_LINUX $(PreprocessorSwitch)CONFIG_RELEASE 
 ObjectSwitch           :=-o 
 ArchiveOutputSwitch    := 
 PreprocessOnlySwitch   :=-E
-ObjectsFileList        :="Math.txt"
+ObjectsFileList        :=$(IntermediateDirectory)/ObjectsList.txt
 PCHCompileFlags        :=
-MakeDirCommand         :=mkdir -p
 LinkOptions            :=  
 IncludePath            :=  $(IncludeSwitch)../Inc $(IncludeSwitch)../../Foundation/Inc $(IncludeSwitch). 
 IncludePCH             := 
@@ -59,8 +59,7 @@ AS       := /usr/bin/llvm-as
 ##
 ## User defined environment variables
 ##
-CodeLiteDir:=/usr/share/codelite
-Objects0=$(IntermediateDirectory)/up_Src_tLinearAlgebra.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_tSpline.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_tRandom.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_tHash.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_tColour.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_tGeometry.cpp$(ObjectSuffix) 
+Objects0=../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tLinearAlgebra.cpp$(ObjectSuffix) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tSpline.cpp$(ObjectSuffix) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tRandom.cpp$(ObjectSuffix) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tHash.cpp$(ObjectSuffix) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tColour.cpp$(ObjectSuffix) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tGeometry.cpp$(ObjectSuffix) 
 
 
 
@@ -70,22 +69,21 @@ Objects=$(Objects0)
 ## Main Build Targets 
 ##
 .PHONY: all clean PreBuild PrePreBuild PostBuild MakeIntermediateDirs
-all: $(IntermediateDirectory) $(OutputFile)
+all: MakeIntermediateDirs ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/$(OutputFile)
 
-$(OutputFile): $(Objects)
-	@$(MakeDirCommand) $(@D)
+../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/$(OutputFile): $(Objects)
+	@mkdir -p "../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux"
 	@echo "" > $(IntermediateDirectory)/.d
 	@echo $(Objects0)  > $(ObjectsFileList)
 	$(AR) $(ArchiveOutputSwitch)$(OutputFile) @$(ObjectsFileList)
-	@$(MakeDirCommand) "/home/tristan/github/tacit-texview/Linux/.build-release"
-	@echo rebuilt > "/home/tristan/github/tacit-texview/Linux/.build-release/Math"
+	@echo rebuilt > $(IntermediateDirectory)/Math.relink
 
 MakeIntermediateDirs:
-	@test -d $(ConfigurationName) || $(MakeDirCommand) $(ConfigurationName)
-
+	@mkdir -p "../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux"
+	@mkdir -p ""../../../../Linux/build-$(ConfigurationName)/lib""
 
 $(ConfigurationName):
-	@test -d $(ConfigurationName) || $(MakeDirCommand) $(ConfigurationName)
+	@mkdir -p "../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux"
 
 PreBuild:
 
@@ -93,48 +91,60 @@ PreBuild:
 ##
 ## Objects
 ##
-$(IntermediateDirectory)/up_Src_tLinearAlgebra.cpp$(ObjectSuffix): ../Src/tLinearAlgebra.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_tLinearAlgebra.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_tLinearAlgebra.cpp$(DependSuffix) -MM ../Src/tLinearAlgebra.cpp
+../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tLinearAlgebra.cpp$(ObjectSuffix): ../Src/tLinearAlgebra.cpp ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tLinearAlgebra.cpp$(DependSuffix)
 	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacit-texview/Tacent/Modules/Math/Src/tLinearAlgebra.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_tLinearAlgebra.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/up_Src_tLinearAlgebra.cpp$(PreprocessSuffix): ../Src/tLinearAlgebra.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_tLinearAlgebra.cpp$(PreprocessSuffix) ../Src/tLinearAlgebra.cpp
+../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tLinearAlgebra.cpp$(DependSuffix): ../Src/tLinearAlgebra.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tLinearAlgebra.cpp$(ObjectSuffix) -MF../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tLinearAlgebra.cpp$(DependSuffix) -MM ../Src/tLinearAlgebra.cpp
 
-$(IntermediateDirectory)/up_Src_tSpline.cpp$(ObjectSuffix): ../Src/tSpline.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_tSpline.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_tSpline.cpp$(DependSuffix) -MM ../Src/tSpline.cpp
+../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tLinearAlgebra.cpp$(PreprocessSuffix): ../Src/tLinearAlgebra.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tLinearAlgebra.cpp$(PreprocessSuffix) ../Src/tLinearAlgebra.cpp
+
+../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tSpline.cpp$(ObjectSuffix): ../Src/tSpline.cpp ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tSpline.cpp$(DependSuffix)
 	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacit-texview/Tacent/Modules/Math/Src/tSpline.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_tSpline.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/up_Src_tSpline.cpp$(PreprocessSuffix): ../Src/tSpline.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_tSpline.cpp$(PreprocessSuffix) ../Src/tSpline.cpp
+../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tSpline.cpp$(DependSuffix): ../Src/tSpline.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tSpline.cpp$(ObjectSuffix) -MF../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tSpline.cpp$(DependSuffix) -MM ../Src/tSpline.cpp
 
-$(IntermediateDirectory)/up_Src_tRandom.cpp$(ObjectSuffix): ../Src/tRandom.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_tRandom.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_tRandom.cpp$(DependSuffix) -MM ../Src/tRandom.cpp
+../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tSpline.cpp$(PreprocessSuffix): ../Src/tSpline.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tSpline.cpp$(PreprocessSuffix) ../Src/tSpline.cpp
+
+../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tRandom.cpp$(ObjectSuffix): ../Src/tRandom.cpp ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tRandom.cpp$(DependSuffix)
 	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacit-texview/Tacent/Modules/Math/Src/tRandom.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_tRandom.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/up_Src_tRandom.cpp$(PreprocessSuffix): ../Src/tRandom.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_tRandom.cpp$(PreprocessSuffix) ../Src/tRandom.cpp
+../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tRandom.cpp$(DependSuffix): ../Src/tRandom.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tRandom.cpp$(ObjectSuffix) -MF../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tRandom.cpp$(DependSuffix) -MM ../Src/tRandom.cpp
 
-$(IntermediateDirectory)/up_Src_tHash.cpp$(ObjectSuffix): ../Src/tHash.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_tHash.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_tHash.cpp$(DependSuffix) -MM ../Src/tHash.cpp
+../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tRandom.cpp$(PreprocessSuffix): ../Src/tRandom.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tRandom.cpp$(PreprocessSuffix) ../Src/tRandom.cpp
+
+../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tHash.cpp$(ObjectSuffix): ../Src/tHash.cpp ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tHash.cpp$(DependSuffix)
 	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacit-texview/Tacent/Modules/Math/Src/tHash.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_tHash.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/up_Src_tHash.cpp$(PreprocessSuffix): ../Src/tHash.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_tHash.cpp$(PreprocessSuffix) ../Src/tHash.cpp
+../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tHash.cpp$(DependSuffix): ../Src/tHash.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tHash.cpp$(ObjectSuffix) -MF../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tHash.cpp$(DependSuffix) -MM ../Src/tHash.cpp
 
-$(IntermediateDirectory)/up_Src_tColour.cpp$(ObjectSuffix): ../Src/tColour.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_tColour.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_tColour.cpp$(DependSuffix) -MM ../Src/tColour.cpp
+../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tHash.cpp$(PreprocessSuffix): ../Src/tHash.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tHash.cpp$(PreprocessSuffix) ../Src/tHash.cpp
+
+../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tColour.cpp$(ObjectSuffix): ../Src/tColour.cpp ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tColour.cpp$(DependSuffix)
 	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacit-texview/Tacent/Modules/Math/Src/tColour.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_tColour.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/up_Src_tColour.cpp$(PreprocessSuffix): ../Src/tColour.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_tColour.cpp$(PreprocessSuffix) ../Src/tColour.cpp
+../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tColour.cpp$(DependSuffix): ../Src/tColour.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tColour.cpp$(ObjectSuffix) -MF../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tColour.cpp$(DependSuffix) -MM ../Src/tColour.cpp
 
-$(IntermediateDirectory)/up_Src_tGeometry.cpp$(ObjectSuffix): ../Src/tGeometry.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_tGeometry.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_tGeometry.cpp$(DependSuffix) -MM ../Src/tGeometry.cpp
+../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tColour.cpp$(PreprocessSuffix): ../Src/tColour.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tColour.cpp$(PreprocessSuffix) ../Src/tColour.cpp
+
+../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tGeometry.cpp$(ObjectSuffix): ../Src/tGeometry.cpp ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tGeometry.cpp$(DependSuffix)
 	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacit-texview/Tacent/Modules/Math/Src/tGeometry.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_tGeometry.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/up_Src_tGeometry.cpp$(PreprocessSuffix): ../Src/tGeometry.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_tGeometry.cpp$(PreprocessSuffix) ../Src/tGeometry.cpp
+../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tGeometry.cpp$(DependSuffix): ../Src/tGeometry.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tGeometry.cpp$(ObjectSuffix) -MF../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tGeometry.cpp$(DependSuffix) -MM ../Src/tGeometry.cpp
+
+../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tGeometry.cpp$(PreprocessSuffix): ../Src/tGeometry.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux/up_Src_tGeometry.cpp$(PreprocessSuffix) ../Src/tGeometry.cpp
 
 
--include $(IntermediateDirectory)/*$(DependSuffix)
+-include ../../../../Linux/build-$(ConfigurationName)/__/Tacent/Modules/Math/Linux//*$(DependSuffix)
 ##
 ## Clean
 ##
 clean:
-	$(RM) -r $(ConfigurationName)/
+	$(RM) -r $(IntermediateDirectory)
 
 
