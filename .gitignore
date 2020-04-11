@@ -5,7 +5,7 @@
 .codelite/
 Debug/
 Release/
-tacittexview_1.0-7/
+tacittexview_*/
 
 # Filetypes in directories.
 TestImages/FlipbookEXR/

@@ -48,8 +48,7 @@ jobs:
     - name: Build Using Make
       run: |
         echo 'Build Using Make'
-        #bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
-        ./Linux/fixup_makefiles_for_github_runner
+        ./Linux/fixup_makefiles_for_github_runner.sh
         cd Linux
         make All
         echo 'Done Build Using Make'
