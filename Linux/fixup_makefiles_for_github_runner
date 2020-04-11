@@ -10,7 +10,7 @@ export -f sed_replace_home
 sed_replace_usrbin ()
 {
 	echo "Fixing makefile paths in: $1"
-	sed -i 's/\/usr\/bin\///' $1
+	sed -i 's/\/usr\/bin\/llvm-ar/ar/' $1
 }
 export -f sed_replace_usrbin
 
