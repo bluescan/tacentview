@@ -1,12 +1,22 @@
 #!/bin/bash
 
-sed_replace ()
+sed_replace_home ()
 {
 	echo "Fixing makefile paths in: $1"
 	sed -i 's/home\/tristan\/github\/tacit-texview/home\/runner\/work\/tacit-texview\/tacit-texview/' $1
 }
-export -f sed_replace
+export -f sed_replace_home
 
-find -name '*.mk' -exec /bin/bash -c 'sed_replace "$0"' {} \;
-find -name 'Makefile' -exec /bin/bash -c 'sed_replace "$0"' {} \;
+sed_replace_usrbin ()
+{
+	echo "Fixing makefile paths in: $1"
+	sed -i 's/\/usr\/bin\///' $1
+}
+export -f sed_replace_usrbin
+
+find -name '*.mk' -exec /bin/bash -c 'sed_replace_home "$0"' {} \;
+find -name 'Makefile' -exec /bin/bash -c 'sed_replace_home "$0"' {} \;
+
+find -name '*.mk' -exec /bin/bash -c 'sed_replace_usrbin "$0"' {} \;
+find -name 'Makefile' -exec /bin/bash -c 'sed_replace_usrbin "$0"' {} \;
 
