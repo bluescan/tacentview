@@ -104,6 +104,7 @@ $(OutputFile): $(IntermediateDirectory)/.d ".build-release/System" ".build-relea
 PostBuild:
 	@echo Executing Post Build commands ...
 	cp Release/TacitTexView ..
+	./create_deb.sh
 	@echo Done
 
 MakeIntermediateDirs:

@@ -162,6 +162,7 @@
       <PreBuild/>
       <PostBuild>
         <Command Enabled="yes">cp $(OutputFile) ..</Command>
+        <Command Enabled="yes">./create_deb.sh</Command>
       </PostBuild>
       <CustomBuild Enabled="no">
         <RebuildCommand/>
