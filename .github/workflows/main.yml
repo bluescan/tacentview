@@ -48,6 +48,7 @@ jobs:
     - name: Build Using Make
       run: |
         echo 'Build Using Make'
-        cd Linux
-        make All
+        pwd
+        #cd Linux
+        #make All
         echo 'Done Build Using Make'
