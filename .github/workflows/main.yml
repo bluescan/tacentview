@@ -43,6 +43,8 @@ jobs:
   # The checkoutbuildubuntu job builds tacittexview on ubuntu.
   checkoutbuildubuntu:
     runs-on: ubuntu-latest
+    container:
+      options: --user 1001
     steps:
     - uses: actions/checkout@v2
     - name: Build Using Make
