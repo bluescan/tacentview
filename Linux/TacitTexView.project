@@ -72,6 +72,7 @@
         <IncludePath Value="../Tacent/Contrib/glad/include"/>
         <IncludePath Value="../Tacent/Contrib/glfw/Linux/include"/>
         <Preprocessor Value="PLATFORM_LINUX"/>
+        <Preprocessor Value="GLFW_INCLUDE_NONE"/>
       </Compiler>
       <Linker Options="-pthread">
         <LibraryPath Value="."/>
