@@ -70,32 +70,42 @@ Alt-Enter toggles fullscreen mode. In this mode the bottom navigation bar, top m
 
 For convenience pre-built binaries are available for Windows and Ubuntu/Debian in the Releases section.
 
-# windows
+## windows
 
 Building on Windows is dependent on Visual Studio and the C++ workflow.
-
 * Install Visual Studio 2019 with the C++ workflow.
 * Open the Windows/TacitTexView.sln
-* Hit F5 to build. Debug and Release configurations are available.
+* Hit F7 to build. Debug and Release configurations are available.
 
-# ubuntu
+The Release configuration will also package a zip file with all required content.
+
+## ubuntu
 
 Building for Ubuntu essentially requires the Clang C++17 compiler and the CodeLite IDE. To get the latest CodeLite (I used 14.0.0) you need the correct repository added. The Software and Updates app allows you to manage (and disable) repositories.
-
-* https://repos.codelite.org/ubuntu3/ eoan universe # For latest codelite
+```
+https://repos.codelite.org/ubuntu3/ eoan universe     # For latest codelite
+```
 
 Repositories may be added and removed using the command line as well:
+```
 * sudo add-apt-repository ppa:example/ppa             # Adds a ppa repo.
 * sudo add-apt-repository --remove ppa:example/ppa    # Removes a ppa repo.
+```
 
-sudo apt-get update
-sudo apt-get install gdebi # Installs this gdebi thing that adds support for installing deb files.
-sudo apt-get install git
-sudo gdebi Downloads/smartgit-19_1_7.deb # Installs smartgit, my favourite git frontend at the moment.
-sudo apt-get install llvm # The compiler.
-sudo apt-get install clang # The compiler.
-sudo apt-get install lldb # The debugger.
-sudo apt-get install codelite # The IDE.
-Useful repositories. Can be installed in the Gui from the Ubuntu Software and Updates App.
+Setting up the build environemnt on Ubuntu Eoan:
+```
+sudo apt-get update                      # Update the OS
+sudo apt-get install gdebi               # Installs gdebi thing adds support for installing deb files.
+sudo apt-get install git                 # Install git or download the sorce as a zip.
+sudo gdebi Downloads/smartgit-19_1_7.deb # Installs smartgit. My git frontend of choice at the moment.
+sudo apt-get install llvm                # The compiler.
+sudo apt-get install clang               # The compiler.
+sudo apt-get install lldb                # The debugger.
+sudo apt-get install codelite            # The IDE.
+```
 
+To build:
+* Open the Linux/TacitTexView.workspace in CodeLite.
+* Build the TacitTexView project (F7).
 
+The Release configuration will also package a zip file with all required content.
