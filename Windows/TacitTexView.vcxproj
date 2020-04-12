@@ -110,7 +110,8 @@
       </Command>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>copy $(TargetDir)$(TargetFileName) $(ProjectDir)..\</Command>
+      <Command>copy $(TargetDir)$(TargetFileName) $(ProjectDir)..\ &amp;&amp; powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -file create_zip.ps1
+</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copying exe to project root directory.</Message>

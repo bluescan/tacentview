@@ -31,4 +31,9 @@ Copy-Item -Path "..\\Data\\*.png" -Destination "$($PackageName)\\Data"
 Copy-Item -Path "..\\Data\\*.txt" -Destination "$($PackageName)\\Data"
 Copy-Item -Path "..\\Data\\*.ttf" -Destination "$($PackageName)\\Data"
 
-Compress-Archive -Path $PackageName -DestinationPath "$($PackageName).zip"
+$ZipFile = "$($PackageName).zip"
+if (Test-Path $ZipFile)
+{
+	Remove-Item $ZipFile
+}
+Compress-Archive -Path $PackageName -DestinationPath $ZipFile
