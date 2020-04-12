@@ -37,7 +37,7 @@ jobs:
     - name: Build Solution
       run: |
         echo 'Building Solution'
-        & 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe' $Env:GITHUB_WORKSPACE\Windows\TacitTexView.sln
+        & 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe' $Env:GITHUB_WORKSPACE\Windows\TacitTexView.sln /p:Configuration=Release
         echo 'Done Building Solution'
         
   # The checkoutbuildubuntu job builds tacittexview on ubuntu.
