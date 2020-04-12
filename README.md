@@ -3,6 +3,8 @@
 # tacit-texview
 A texture viewer for tga, png, exr, dds, gif, hdr, jpg, tif, and bmp files. Uses Dear ImGui and the Tacent library. This viewer is targeted to game devs -- It displays alpha channels correctly and can inspect the colour of individual pixels. There is basic editing functionality and the ability to generate contact sheets for FX etc.
 
+TacitTexView runs on both Windows (64bit) and Ubuntu Linux.
+
 ![Tacit Texture Viewer](https://raw.githubusercontent.com/bluescan/tacit-texview/master/Screenshots/Screenshot_CopyColourAs.png)
 
 
@@ -63,4 +65,37 @@ Some formats store multiple images inside a single file. A dds for example may b
 Alt-Enter toggles fullscreen mode. In this mode the bottom navigation bar, top menu, property editor window, and details-overlay are invisible. If at any point you want to reset the UI or other settings like the default resample algorithm or preferred file save format, you may do so from the preferences dialog.
 
 ![Tacit Texture Viewer](https://raw.githubusercontent.com/bluescan/tacit-texview/master/Screenshots/Screenshot_Prefs.png)
+
+# building from source
+
+For convenience pre-built binaries are available for Windows and Ubuntu/Debian in the Releases section.
+
+# windows
+
+Building on Windows is dependent on Visual Studio and the C++ workflow.
+
+* Install Visual Studio 2019 with the C++ workflow.
+* Open the Windows/TacitTexView.sln
+* Hit F5 to build. Debug and Release configurations are available.
+
+# ubuntu
+
+Building for Ubuntu essentially requires the Clang C++17 compiler and the CodeLite IDE. To get the latest CodeLite (I used 14.0.0) you need the correct repository added. The Software and Updates app allows you to manage (and disable) repositories.
+
+* https://repos.codelite.org/ubuntu3/ eoan universe # For latest codelite
+
+Repositories may be added and removed using the command line as well:
+* sudo add-apt-repository ppa:example/ppa             # Adds a ppa repo.
+* sudo add-apt-repository --remove ppa:example/ppa    # Removes a ppa repo.
+
+sudo apt-get update
+sudo apt-get install gdebi # Installs this gdebi thing that adds support for installing deb files.
+sudo apt-get install git
+sudo gdebi Downloads/smartgit-19_1_7.deb # Installs smartgit, my favourite git frontend at the moment.
+sudo apt-get install llvm # The compiler.
+sudo apt-get install clang # The compiler.
+sudo apt-get install lldb # The debugger.
+sudo apt-get install codelite # The IDE.
+Useful repositories. Can be installed in the Gui from the Ubuntu Software and Updates App.
+
 
