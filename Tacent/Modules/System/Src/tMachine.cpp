@@ -137,11 +137,15 @@ bool tSystem::tOpenSystemFileExplorer(const tString& dir, const tString& file)
 	return true;
 
 	#elif defined(PLATFORM_LINUX)
-	// @todo Implament 
-	return false;
+	if (!tFileExists("/usr/bin/nautilus"))
+		return false;
+
+	tString sysStr;
+	tsPrintf(sysStr, "/usr/bin/nautilus %s%s", dir.Chars(), file.Chars());
+	system(sysStr.ConstText());
+	return true;
 
 	#else
-	// @todo Implament 
 	return false;
 
 	#endif
