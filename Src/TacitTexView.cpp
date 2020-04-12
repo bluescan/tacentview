@@ -251,11 +251,7 @@ tString TexView::FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles)
 	tSystem::tFindFiles(foundFiles, imagesDir, "dds");
 	tSystem::tFindFiles(foundFiles, imagesDir, "hdr");
 	tSystem::tFindFiles(foundFiles, imagesDir, "rgbe");
-
-	// @todo Exr loading code currently only working on windows.
-	#ifdef PLATFORM_WINDOWS
 	tSystem::tFindFiles(foundFiles, imagesDir, "exr");
-	#endif
 
 	return imagesDir;
 }

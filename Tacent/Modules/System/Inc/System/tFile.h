@@ -298,7 +298,7 @@ bool tRenameFile(const tString& dir, const tString& oldName, const tString& newN
 
 // The foundfiles list is always appended to. You must clear it first if that's what you intend. If empty second
 // argument, the contents of the current directory are returned. Extension can be something like "txt" (no dot).
-// Returns success.
+// On all platforms the extension is not case sensitive. eg. giF will match Gif. Returns success.
 bool tFindFiles(tList<tStringItem>& foundFiles, const tString& dir, const tString& ext = tString(), bool includeHidden = true);
 
 // foundFiles is appened to. Clear first if desired. Extension can be something like "txt" (no dot).
