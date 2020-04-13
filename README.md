@@ -62,17 +62,17 @@ Some formats store multiple images inside a single file. A dds for example may b
 ![AnimGif](https://raw.githubusercontent.com/bluescan/tacit-texview/master/Screenshots/Screenshot_Anim.png)
 
 
-Alt-Enter toggles fullscreen mode. In this mode the bottom navigation bar, top menu, property editor window, and details-overlay are invisible. If at any point you want to reset the UI or other settings like the default resample algorithm or preferred file save format, you may do so from the preferences dialog.
+Alt-Enter toggles fullscreen mode. In this mode the bottom navigation bar and top menu are invisible. If at any point you want to reset the UI or other settings like the default resample algorithm or preferred file save format, you may do so from the preferences dialog.
 
 ![Tacit Texture Viewer](https://raw.githubusercontent.com/bluescan/tacit-texview/master/Screenshots/Screenshot_Prefs.png)
 
 # building from source
 
-For convenience pre-built binaries are available for Windows and Ubuntu/Debian in the Releases section.
+For convenience pre-built binaries are available for Windows and Ubuntu/Debian in the Releases section. Follow the instructions below to build from source.
 
 ## windows
 
-Building on Windows is dependent on Visual Studio and the C++ workflow.
+Building on Windows requires Visual Studio with the C++ workflow.
 * Install Visual Studio 2019 with the C++ workflow.
 * Open the Windows/TacitTexView.sln
 * Hit F7 to build. Debug and Release configurations are available.
@@ -81,12 +81,12 @@ The Release configuration will also package a zip file with all required content
 
 ## ubuntu
 
-Building for Ubuntu essentially requires the Clang C++17 compiler and the CodeLite IDE. To get the latest CodeLite (I used 14.0.0) you need the correct repository added. The Software and Updates app allows you to manage (and disable) repositories.
+Building for Ubuntu requires Clang (C++17) and the CodeLite IDE. To get the latest CodeLite (14.0.0 is being used) you need to add the correct repository. The 'Software and Updates' app allows you to manage (add and remove) repositories.
 ```
 https://repos.codelite.org/ubuntu3/ eoan universe     # For latest codelite
 ```
 
-Repositories may be added and removed using the command line as well:
+The command line may also be used:
 ```
 * sudo add-apt-repository ppa:example/ppa             # Adds a ppa repo.
 * sudo add-apt-repository --remove ppa:example/ppa    # Removes a ppa repo.
@@ -95,9 +95,9 @@ Repositories may be added and removed using the command line as well:
 Setting up the build environemnt on Ubuntu Eoan:
 ```
 sudo apt-get update                      # Update the OS
-sudo apt-get install gdebi               # Installs gdebi thing adds support for installing deb files.
+sudo apt-get install gdebi               # Installs gdebi to allow command-line deb file installation.
 sudo apt-get install git                 # Install git or download the sorce as a zip.
-sudo gdebi Downloads/smartgit-19_1_7.deb # Installs smartgit. My git frontend of choice at the moment.
+sudo gdebi Downloads/smartgit-19_1_7.deb # Install smartgit or some other git frontend. Optional.
 sudo apt-get install llvm                # The compiler.
 sudo apt-get install clang               # The compiler.
 sudo apt-get install lldb                # The debugger.
@@ -106,6 +106,6 @@ sudo apt-get install codelite            # The IDE.
 
 To build:
 * Open the Linux/TacitTexView.workspace in CodeLite.
-* Build the TacitTexView project (F7).
+* Build the TacitTexView project (F7) in either Debug or Release configurations.
 
-The Release configuration will also package a zip file with all required content.
+The Release configuration will also package a deb file with all required content.
