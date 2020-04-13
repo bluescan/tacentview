@@ -1,9 +1,9 @@
 ![Build](https://github.com/bluescan/tacit-texview/workflows/Build/badge.svg)
 
 # tacit-texview
-A texture viewer for tga, png, exr, dds, gif, hdr, jpg, tif, and bmp files. Uses Dear ImGui and the Tacent library. This viewer is targeted to game devs -- It displays alpha channels correctly and can inspect the colour of individual pixels. There is basic editing functionality and the ability to generate contact sheets for FX etc.
+A texture viewer for tga, png, exr, dds, gif, hdr, jpg, tif, and bmp files. Uses Dear ImGui and the Tacent library. This viewer is targeted to game devs -- It displays alpha channels correctly and can inspect the colour of individual pixels. There is basic editing functionality, batch resizing, and the ability to generate contact sheets for FX etc.
 
-TacitTexView runs on both Windows (64bit) and Ubuntu Linux.
+TacitTexView runs on both Windows 10 and Ubuntu Linux.
 
 ![Tacit Texture Viewer](https://raw.githubusercontent.com/bluescan/tacit-texview/master/Screenshots/Screenshot_CopyColourAs.png)
 
@@ -77,7 +77,10 @@ Building on Windows requires Visual Studio with the C++ workflow.
 * Open the Windows/TacitTexView.sln
 * Hit F7 to build. Debug and Release configurations are available.
 
-The Release configuration will also package a zip file with all required content.
+The Release configuration will also package a zip file with all required content. This is done by a post-build step using a powershell script. You may need to allow ps1 scripts to be run by entering the following command from a powershell window as administrator:
+```
+Set-ExecutionPolicy Unrestricted
+```
 
 ## ubuntu
 
