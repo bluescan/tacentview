@@ -334,8 +334,8 @@ bool tImageHDR::Set(uint8* hdrFileInMemory, int numBytes, float gammaCorr, int e
 	tStd::tExplode(lines, header, '\n');
 
 	// Display the header lines.
-	for (tStringItem* headerLine = lines.First(); headerLine; headerLine = headerLine->Next())
-		tPrintf("HDR Info: %s\n", headerLine->Chars());
+	//	for (tStringItem* headerLine = lines.First(); headerLine; headerLine = headerLine->Next())
+	//		tPrintf("HDR Info: %s\n", headerLine->Chars());
 
 	tStringItem* resLine = lines.Last();
 

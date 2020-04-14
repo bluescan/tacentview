@@ -9,6 +9,7 @@ tacittexview_*/
 
 # Filetypes in directories.
 TestImages/FlipbookEXR/
+TestImages/Exrs/
 Data/*.cfg
 Data/Cache/
 Linux/TacitTexView.txt

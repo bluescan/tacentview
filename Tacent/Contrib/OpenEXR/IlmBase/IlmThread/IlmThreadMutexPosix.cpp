@@ -61,6 +61,20 @@ Mutex::Mutex ()
 Mutex::~Mutex ()
 {
     int error = ::pthread_mutex_destroy (&_mutex);
+
+	// @tacent
+	#ifdef PLATFORM_LINUX
+	int numTries = 1000;
+	while ((error == EBUSY) || !numTries--)
+	{
+		struct timespec ts;
+		ts.tv_sec = 0;
+		ts.tv_nsec = 1000;
+		nanosleep(&ts, nullptr);
+		error = ::pthread_mutex_destroy (&_mutex);
+	}
+	#endif
+	
     assert (error == 0);
 }
 

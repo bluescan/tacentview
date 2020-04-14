@@ -154,7 +154,7 @@ namespace TexView
 	void DrawBackground(float bgX, float bgY, float bgW, float bgH);
 	void DrawNavBar(float x, float y, float w, float h);
 	int GetNavBarHeight();
-	void PrintRedirectCallback(const char* text, int numChars)															{ NavBar.AddLog("%s", text); }
+	void PrintRedirectCallback(const char* text, int numChars);
 	void GlfwErrorCallback(int error, const char* description)															{ tPrintf("Glfw Error %d: %s\n", error, description); }
 
 	// When compare functions are used to sort, they result in ascending order if they return a < b.
@@ -198,6 +198,17 @@ namespace TexView
 	void FileDropCallback(GLFWwindow*, int count, const char** paths);
 	void FocusCallback(GLFWwindow*, int gotFocus);
 	void IconifyCallback(GLFWwindow*, int iconified);
+}
+
+
+void TexView::PrintRedirectCallback(const char* text, int numChars)
+{
+	NavBar.AddLog("%s", text);
+	
+	#ifdef PLATFORM_LINUX
+	// We have a terminal in Linux so use it.
+	printf("%s", text);
+	#endif
 }
 
 

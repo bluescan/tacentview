@@ -822,7 +822,7 @@ void TacitImage::GenerateThumbnail()
 	if (Filetype == tFileType::DDS)
 	{
 		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-		offscreenContext = glfwCreateWindow(32, 32, "", nullptr, nullptr);
+		offscreenContext = glfwCreateWindow(32, 32, "placeholdertitle", nullptr, nullptr);
 		if (!offscreenContext)
 			return;
 
