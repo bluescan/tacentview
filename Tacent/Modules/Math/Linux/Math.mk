@@ -5,7 +5,7 @@
 ## Release
 ProjectName            :=Math
 ConfigurationName      :=Release
-WorkspacePath          :=/home/tristan/github/tacit-texview/Tacent/UnitTests/Linux
+WorkspacePath          :=/home/tristan/github/tacit-texview/Linux
 ProjectPath            :=/home/tristan/github/tacit-texview/Tacent/Modules/Math/Linux
 IntermediateDirectory  :=$(ConfigurationName)
 OutDir                 := $(IntermediateDirectory)
@@ -77,8 +77,8 @@ $(OutputFile): $(Objects)
 	@echo "" > $(IntermediateDirectory)/.d
 	@echo $(Objects0)  > $(ObjectsFileList)
 	$(AR) $(ArchiveOutputSwitch)$(OutputFile) @$(ObjectsFileList)
-	@$(MakeDirCommand) "/home/tristan/github/tacit-texview/Tacent/UnitTests/Linux/.build-release"
-	@echo rebuilt > "/home/tristan/github/tacit-texview/Tacent/UnitTests/Linux/.build-release/Math"
+	@$(MakeDirCommand) "/home/tristan/github/tacit-texview/Linux/.build-release"
+	@echo rebuilt > "/home/tristan/github/tacit-texview/Linux/.build-release/Math"
 
 MakeIntermediateDirs:
 	@test -d $(ConfigurationName) || $(MakeDirCommand) $(ConfigurationName)

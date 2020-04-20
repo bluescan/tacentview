@@ -5,7 +5,7 @@
 ## Release
 ProjectName            :=Image
 ConfigurationName      :=Release
-WorkspacePath          :=/home/tristan/github/tacit-texview/Tacent/UnitTests/Linux
+WorkspacePath          :=/home/tristan/github/tacit-texview/Linux
 ProjectPath            :=/home/tristan/github/tacit-texview/Tacent/Modules/Image/Linux
 IntermediateDirectory  :=$(ConfigurationName)
 OutDir                 := $(IntermediateDirectory)
@@ -121,8 +121,8 @@ $(OutputFile): $(Objects)
 	@echo $(Objects4) >> $(ObjectsFileList)
 	@echo $(Objects5) >> $(ObjectsFileList)
 	$(AR) $(ArchiveOutputSwitch)$(OutputFile) @$(ObjectsFileList)
-	@$(MakeDirCommand) "/home/tristan/github/tacit-texview/Tacent/UnitTests/Linux/.build-release"
-	@echo rebuilt > "/home/tristan/github/tacit-texview/Tacent/UnitTests/Linux/.build-release/Image"
+	@$(MakeDirCommand) "/home/tristan/github/tacit-texview/Linux/.build-release"
+	@echo rebuilt > "/home/tristan/github/tacit-texview/Linux/.build-release/Image"
 
 MakeIntermediateDirs:
 	@test -d $(ConfigurationName) || $(MakeDirCommand) $(ConfigurationName)
