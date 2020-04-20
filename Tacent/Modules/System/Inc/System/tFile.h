@@ -85,6 +85,8 @@ enum class tFileType
 	TIFF,							// Image.
 	Bitmap,							// Image.
 	BMP								= Bitmap,
+	Icon,							// Image.
+	ICO								= Icon,
 
 	PCX,							// Image.
 	WBMP,							// Image.

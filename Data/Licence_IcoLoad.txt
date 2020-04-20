@@ -1,0 +1,31 @@
+ICO image loading code based on ico.cpp
+
+The tImageICO class knows how to load windows icon (ico) files. It loads the data into multiple tPixel arrays, one for
+each part (ico files may be multiple images at different resolutions). The loading code is a modificaton of code from
+Victor Laskin. In particular the code now:
+a) Loads all parts of an ico, not just the biggest one.
+b) Supports embedded png images.
+c) Supports widths and heights of 256.
+Victor Laskin's header/licence in the original ico.cpp is shown below.
+
+/*
+ *	
+ *	code by Victor Laskin (victor.laskin@gmail.com)
+ *  rev 2 - 1bit color was added, fixes for bit mask
+ *
+ *
+ *	
+ *	THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS
+ *	OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *	WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *	ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY
+ *	DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *	DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ *	GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+ *	IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ *	OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ *	IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+

@@ -134,14 +134,4 @@ bool tImageGIF::Load(const tString& gifFile)
 }
 
 
-tImageGIF::Frame* tImageGIF::StealFrame(int frameNum)
-{
-	Frame* f = GetFrame(frameNum);
-	if (!f)
-		return nullptr;
-
-	return Frames.Remove(f);
-}
-
-
 }

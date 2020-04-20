@@ -19,5 +19,5 @@ namespace TexView
 {
 	const int MajorVersion			= 1;
 	const int MinorVersion			= 0;
-	const int Revision				= 8;
+	const int Revision				= 9;
 }

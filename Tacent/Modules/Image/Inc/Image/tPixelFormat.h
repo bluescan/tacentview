@@ -58,7 +58,9 @@ enum class tPixelFormat
 
 	FirstPAL,
 	PAL_8BIT			= FirstPAL,		// 8bit indexes to a Palette. ex. gif files.
-	LastPAL				= PAL_8BIT,
+	PAL_4BIT,
+	PAL_1BIT,
+	LastPAL				= PAL_1BIT,
 
 	NumPixelFormats,
 	NumNormalFormats	= LastNormal - FirstNormal + 1,

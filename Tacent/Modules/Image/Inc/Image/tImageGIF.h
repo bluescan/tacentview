@@ -79,6 +79,16 @@ inline void tImageGIF::FrameCallbackBridge(void* imgGifRaw, struct GIF_WHDR* whd
 }
 
 
+inline tImageGIF::Frame* tImage::tImageGIF::StealFrame(int frameNum)
+{
+	Frame* f = GetFrame(frameNum);
+	if (!f)
+		return nullptr;
+
+	return Frames.Remove(f);
+}
+
+
 inline tImageGIF::Frame* tImage::tImageGIF::GetFrame(int frameNum)
 {
 	if ((frameNum >= Frames.GetNumItems()) || (frameNum < 0))

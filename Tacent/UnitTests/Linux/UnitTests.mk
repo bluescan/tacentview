@@ -5,15 +5,15 @@
 ## Release
 ProjectName            :=UnitTests
 ConfigurationName      :=Release
-WorkspacePath          :=/home/tristan/github/tacent/UnitTests/Linux
-ProjectPath            :=/home/tristan/github/tacent/UnitTests/Linux
+WorkspacePath          :=/home/tristan/github/tacit-texview/Tacent/UnitTests/Linux
+ProjectPath            :=/home/tristan/github/tacit-texview/Tacent/UnitTests/Linux
 IntermediateDirectory  :=$(ConfigurationName)
 OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Tristan
-Date                   :=02/04/20
+Date                   :=20/04/20
 CodeLitePath           :=/home/tristan/.codelite
 LinkerName             :=/usr/bin/clang++
 SharedObjectLinkerName :=/usr/bin/clang++ -shared -fPIC
@@ -60,7 +60,7 @@ AS       := /usr/bin/llvm-as
 ## User defined environment variables
 ##
 CodeLiteDir:=/usr/share/codelite
-Objects0=$(IntermediateDirectory)/up_Src_TestFoundation.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_TestImage.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_UnitTests.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_TestMath.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_TestSystem.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_TestScene.cpp$(ObjectSuffix) 
+Objects0=$(IntermediateDirectory)/up_Src_TestImage.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_TestFoundation.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_TestScene.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_TestSystem.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_UnitTests.cpp$(ObjectSuffix) $(IntermediateDirectory)/up_Src_TestMath.cpp$(ObjectSuffix) 
 
 
 
@@ -107,7 +107,7 @@ $(OutputFile): $(IntermediateDirectory)/.d ".build-release/Foundation" ".build-r
 
 PostBuild:
 	@echo Executing Post Build commands ...
-	cp Release/UnitTests /home/tristan/github/tacent/UnitTests/Linux/../UnitTests
+	cp Release/UnitTests /home/tristan/github/tacit-texview/Tacent/UnitTests/Linux/../UnitTests
 	@echo Done
 
 MakeIntermediateDirs:
@@ -123,41 +123,41 @@ PreBuild:
 ##
 ## Objects
 ##
-$(IntermediateDirectory)/up_Src_TestFoundation.cpp$(ObjectSuffix): ../Src/TestFoundation.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_TestFoundation.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_TestFoundation.cpp$(DependSuffix) -MM ../Src/TestFoundation.cpp
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacent/UnitTests/Src/TestFoundation.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_TestFoundation.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/up_Src_TestFoundation.cpp$(PreprocessSuffix): ../Src/TestFoundation.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_TestFoundation.cpp$(PreprocessSuffix) ../Src/TestFoundation.cpp
-
 $(IntermediateDirectory)/up_Src_TestImage.cpp$(ObjectSuffix): ../Src/TestImage.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_TestImage.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_TestImage.cpp$(DependSuffix) -MM ../Src/TestImage.cpp
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacent/UnitTests/Src/TestImage.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_TestImage.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacit-texview/Tacent/UnitTests/Src/TestImage.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_TestImage.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/up_Src_TestImage.cpp$(PreprocessSuffix): ../Src/TestImage.cpp
 	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_TestImage.cpp$(PreprocessSuffix) ../Src/TestImage.cpp
 
+$(IntermediateDirectory)/up_Src_TestFoundation.cpp$(ObjectSuffix): ../Src/TestFoundation.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_TestFoundation.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_TestFoundation.cpp$(DependSuffix) -MM ../Src/TestFoundation.cpp
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacit-texview/Tacent/UnitTests/Src/TestFoundation.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_TestFoundation.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/up_Src_TestFoundation.cpp$(PreprocessSuffix): ../Src/TestFoundation.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_TestFoundation.cpp$(PreprocessSuffix) ../Src/TestFoundation.cpp
+
+$(IntermediateDirectory)/up_Src_TestScene.cpp$(ObjectSuffix): ../Src/TestScene.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_TestScene.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_TestScene.cpp$(DependSuffix) -MM ../Src/TestScene.cpp
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacit-texview/Tacent/UnitTests/Src/TestScene.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_TestScene.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/up_Src_TestScene.cpp$(PreprocessSuffix): ../Src/TestScene.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_TestScene.cpp$(PreprocessSuffix) ../Src/TestScene.cpp
+
+$(IntermediateDirectory)/up_Src_TestSystem.cpp$(ObjectSuffix): ../Src/TestSystem.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_TestSystem.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_TestSystem.cpp$(DependSuffix) -MM ../Src/TestSystem.cpp
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacit-texview/Tacent/UnitTests/Src/TestSystem.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_TestSystem.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/up_Src_TestSystem.cpp$(PreprocessSuffix): ../Src/TestSystem.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_TestSystem.cpp$(PreprocessSuffix) ../Src/TestSystem.cpp
+
 $(IntermediateDirectory)/up_Src_UnitTests.cpp$(ObjectSuffix): ../Src/UnitTests.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_UnitTests.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_UnitTests.cpp$(DependSuffix) -MM ../Src/UnitTests.cpp
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacent/UnitTests/Src/UnitTests.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_UnitTests.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacit-texview/Tacent/UnitTests/Src/UnitTests.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_UnitTests.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/up_Src_UnitTests.cpp$(PreprocessSuffix): ../Src/UnitTests.cpp
 	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_UnitTests.cpp$(PreprocessSuffix) ../Src/UnitTests.cpp
 
 $(IntermediateDirectory)/up_Src_TestMath.cpp$(ObjectSuffix): ../Src/TestMath.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_TestMath.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_TestMath.cpp$(DependSuffix) -MM ../Src/TestMath.cpp
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacent/UnitTests/Src/TestMath.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_TestMath.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacit-texview/Tacent/UnitTests/Src/TestMath.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_TestMath.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/up_Src_TestMath.cpp$(PreprocessSuffix): ../Src/TestMath.cpp
 	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_TestMath.cpp$(PreprocessSuffix) ../Src/TestMath.cpp
-
-$(IntermediateDirectory)/up_Src_TestSystem.cpp$(ObjectSuffix): ../Src/TestSystem.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_TestSystem.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_TestSystem.cpp$(DependSuffix) -MM ../Src/TestSystem.cpp
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacent/UnitTests/Src/TestSystem.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_TestSystem.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/up_Src_TestSystem.cpp$(PreprocessSuffix): ../Src/TestSystem.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_TestSystem.cpp$(PreprocessSuffix) ../Src/TestSystem.cpp
-
-$(IntermediateDirectory)/up_Src_TestScene.cpp$(ObjectSuffix): ../Src/TestScene.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/up_Src_TestScene.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/up_Src_TestScene.cpp$(DependSuffix) -MM ../Src/TestScene.cpp
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/tristan/github/tacent/UnitTests/Src/TestScene.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/up_Src_TestScene.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/up_Src_TestScene.cpp$(PreprocessSuffix): ../Src/TestScene.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/up_Src_TestScene.cpp$(PreprocessSuffix) ../Src/TestScene.cpp
 
 
 -include $(IntermediateDirectory)/*$(DependSuffix)

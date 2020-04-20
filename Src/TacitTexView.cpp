@@ -263,6 +263,7 @@ tString TexView::FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles)
 	tSystem::tFindFiles(foundFiles, imagesDir, "hdr");
 	tSystem::tFindFiles(foundFiles, imagesDir, "rgbe");
 	tSystem::tFindFiles(foundFiles, imagesDir, "exr");
+	tSystem::tFindFiles(foundFiles, imagesDir, "ico");
 
 	return imagesDir;
 }

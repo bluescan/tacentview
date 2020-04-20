@@ -5,7 +5,7 @@
 ## Release
 ProjectName            :=Foundation
 ConfigurationName      :=Release
-WorkspacePath          :=/home/tristan/github/tacit-texview/Linux
+WorkspacePath          :=/home/tristan/github/tacit-texview/Tacent/UnitTests/Linux
 ProjectPath            :=/home/tristan/github/tacit-texview/Tacent/Modules/Foundation/Linux
 IntermediateDirectory  :=$(ConfigurationName)
 OutDir                 := $(IntermediateDirectory)
@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Tristan
-Date                   :=12/04/20
+Date                   :=20/04/20
 CodeLitePath           :=/home/tristan/.codelite
 LinkerName             :=/usr/bin/clang++
 SharedObjectLinkerName :=/usr/bin/clang++ -shared -fPIC
@@ -77,8 +77,8 @@ $(OutputFile): $(Objects)
 	@echo "" > $(IntermediateDirectory)/.d
 	@echo $(Objects0)  > $(ObjectsFileList)
 	$(AR) $(ArchiveOutputSwitch)$(OutputFile) @$(ObjectsFileList)
-	@$(MakeDirCommand) "/home/tristan/github/tacit-texview/Linux/.build-release"
-	@echo rebuilt > "/home/tristan/github/tacit-texview/Linux/.build-release/Foundation"
+	@$(MakeDirCommand) "/home/tristan/github/tacit-texview/Tacent/UnitTests/Linux/.build-release"
+	@echo rebuilt > "/home/tristan/github/tacit-texview/Tacent/UnitTests/Linux/.build-release/Foundation"
 
 MakeIntermediateDirs:
 	@test -d $(ConfigurationName) || $(MakeDirCommand) $(ConfigurationName)

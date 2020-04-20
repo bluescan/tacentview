@@ -197,6 +197,7 @@ tSystem::tFileType tSystem::tGetFileTypeFromExtension(const tString& e)
 		{ "wmf",		tFileType::WMF				},
 		{ "jp2",		tFileType::JP2				},
 		{ "jpc",		tFileType::JPC				},
+		{ "ico",		tFileType::ICO				},
 		{ "tex",		tFileType::TEX				},
 		{ "img",		tFileType::IMG				},
 		{ "cub",		tFileType::CUB				},

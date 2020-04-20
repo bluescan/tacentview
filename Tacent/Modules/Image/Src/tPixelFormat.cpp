@@ -99,7 +99,14 @@ int tImage::tGetBitsPerPixel(tPixelFormat format)
 		return 8*HDRFormat_BytesPerPixel[int(format) - int(tPixelFormat::FirstHDR)];
 
 	if (tIsPaletteFormat(format))
-		return 8;
+	{
+		switch (format)
+		{
+			case tPixelFormat::PAL_8BIT:		return 8;
+			case tPixelFormat::PAL_4BIT:		return 4;
+			case tPixelFormat::PAL_1BIT:		return 1;
+		}
+	}
 
 	return -1;
 }
@@ -142,10 +149,12 @@ const char* tImage::tGetPixelFormatName(tPixelFormat pixelFormat)
 		"BC7",
 		"RADIANCE",
 		"EXR",
-		"PAL8BIT"
+		"PAL8BIT",
+		"PAL4BIT",
+		"PAL1BIT"
 	};
 
-	tAssert(int(tPixelFormat::NumPixelFormats)+1 == sizeof(names)/sizeof(*names));
+	tStaticAssert(int(tPixelFormat::NumPixelFormats)+1 == sizeof(names)/sizeof(*names));
 	int index = int(pixelFormat) + 1;
 	return names[index];
 }
