@@ -192,6 +192,7 @@
     <ClInclude Include="..\Inc\Image\tImageEXR.h" />
     <ClInclude Include="..\Inc\Image\tImageGIF.h" />
     <ClInclude Include="..\Inc\Image\tImageHDR.h" />
+    <ClInclude Include="..\Inc\Image\tImageICO.h" />
     <ClInclude Include="..\Inc\Image\tImageTGA.h" />
     <ClInclude Include="..\Inc\Image\tLayer.h" />
     <ClInclude Include="..\Inc\Image\tPicture.h" />
@@ -319,6 +320,7 @@
     <ClCompile Include="..\Src\tImageEXR.cpp" />
     <ClCompile Include="..\Src\tImageGIF.cpp" />
     <ClCompile Include="..\Src\tImageHDR.cpp" />
+    <ClCompile Include="..\Src\tImageICO.cpp" />
     <ClCompile Include="..\Src\tImageTGA.cpp" />
     <ClCompile Include="..\Src\tLayer.cpp" />
     <ClCompile Include="..\Src\tPicture.cpp" />

@@ -549,6 +549,9 @@
     <ClInclude Include="..\..\..\Contrib\gif_load\gif_load.h">
       <Filter>Contrib\gif_load</Filter>
     </ClInclude>
+    <ClInclude Include="..\Inc\Image\tImageICO.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Src\tCubemap.cpp">
@@ -924,6 +927,9 @@
       <Filter>Contrib\OpenEXR</Filter>
     </ClCompile>
     <ClCompile Include="..\Src\tImageGIF.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\tImageICO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
