@@ -13,6 +13,10 @@ The images are Copyright Rafal Mantiuk under the CC3 licence:
 
 -------------------------------------------------------------------------------
 
+The Flipbook.webp is made from CC0 (Public Domain Dedication) images from blogs.unity3d.com. Thank you Unity.
+
+-------------------------------------------------------------------------------
+
 The 8-cell-simple gif (CC0 licence) is from
 https://blog.wikimedia.org/2016/09/22/math-gifs/
 
