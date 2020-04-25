@@ -11,3 +11,7 @@
 !/glfw/Linux/Debug/*.a
 !/glfw/Linux/Release/*.a
 
+!/WebP/Windows/debug-static/x64/lib/*.lib
+!/WebP/Windows/debug-static/x64/lib/*.pdb
+!/WebP/Windows/release-static/x64/lib/*.lib
+!/WebP/Windows/release-static/x64/lib/*.pdb
