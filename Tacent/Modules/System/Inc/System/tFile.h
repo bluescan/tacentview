@@ -82,6 +82,7 @@ enum class tFileType
 	EXR,							// OpenEXR High Dynamic Range image.
 	JPG,							// Image.
 	GIF,							// Image.
+	WEBP,							// Image.
 	TIFF,							// Image.
 	Bitmap,							// Image.
 	BMP								= Bitmap,

@@ -73,7 +73,7 @@ namespace TexView
 		int MaxImageMemMB;					// Max image mem before unloading images.
 		int MaxCacheFiles;					// Max number of cache files before removing oldest.
 		bool AutoPropertyWindow;			// Auto display property editor window for supported file types.
-		bool AutoPlayAnimatedGIFs;			// Automatically play animated gifs.
+		bool AutoPlayAnimatedImages;		// Automatically play animated gifs and WebPs.
 		float MonitorGamma;					// Used when displaying HDR formats to do gamma correction.
 
 		void Load(const tString& filename, int screenWidth, int screenHeight);

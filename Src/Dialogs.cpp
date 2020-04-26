@@ -509,7 +509,7 @@ void TexView::ShowPreferencesWindow(bool* popen)
 	ImGui::Checkbox("Confirm Deletes", &Config.ConfirmDeletes);
 	ImGui::Checkbox("Confirm File Overwrites", &Config.ConfirmFileOverwrites);
 	ImGui::Checkbox("Auto Propery Window", &Config.AutoPropertyWindow);
-	ImGui::Checkbox("Auto Play GIFs", &Config.AutoPlayAnimatedGIFs);
+	ImGui::Checkbox("Auto Play Anims", &Config.AutoPlayAnimatedImages);
 	
 	ImGui::Unindent();
 	ImGui::Separator();

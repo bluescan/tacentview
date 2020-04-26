@@ -254,6 +254,7 @@ tString TexView::FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles)
 	tPrintf("Looking for image files in %s\n", imagesDir.Chars());
 	tSystem::tFindFiles(foundFiles, imagesDir, "jpg");
 	tSystem::tFindFiles(foundFiles, imagesDir, "gif");
+	tSystem::tFindFiles(foundFiles, imagesDir, "webp");
 	tSystem::tFindFiles(foundFiles, imagesDir, "tga");
 	tSystem::tFindFiles(foundFiles, imagesDir, "png");
 	tSystem::tFindFiles(foundFiles, imagesDir, "tif");
@@ -406,7 +407,11 @@ void TexView::LoadCurrImage()
 	if (Config.AutoPropertyWindow)
 		PropEditorWindow = (CurrImage->TypeSupportsProperties() || (CurrImage->GetNumParts() > 1));
 
-	if (Config.AutoPlayAnimatedGIFs && (CurrImage->Filetype == tFileType::GIF) && (CurrImage->GetNumParts() > 1))
+	if
+	(
+		Config.AutoPlayAnimatedImages && (CurrImage->GetNumParts() > 1) &&
+		((CurrImage->Filetype == tFileType::GIF) || (CurrImage->Filetype == tFileType::WEBP))
+	)
 	{
 		CurrImage->PartPlayLooping = true;
 		CurrImage->PartPlayRev = false;

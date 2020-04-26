@@ -552,6 +552,9 @@
     <ClInclude Include="..\Inc\Image\tImageICO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Inc\Image\tImageWEBP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Src\tCubemap.cpp">
@@ -930,6 +933,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Src\tImageICO.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\tImageWEBP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

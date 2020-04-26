@@ -194,6 +194,7 @@
     <ClInclude Include="..\Inc\Image\tImageHDR.h" />
     <ClInclude Include="..\Inc\Image\tImageICO.h" />
     <ClInclude Include="..\Inc\Image\tImageTGA.h" />
+    <ClInclude Include="..\Inc\Image\tImageWEBP.h" />
     <ClInclude Include="..\Inc\Image\tLayer.h" />
     <ClInclude Include="..\Inc\Image\tPicture.h" />
     <ClInclude Include="..\Inc\Image\tPixelFormat.h" />
@@ -322,6 +323,7 @@
     <ClCompile Include="..\Src\tImageHDR.cpp" />
     <ClCompile Include="..\Src\tImageICO.cpp" />
     <ClCompile Include="..\Src\tImageTGA.cpp" />
+    <ClCompile Include="..\Src\tImageWEBP.cpp" />
     <ClCompile Include="..\Src\tLayer.cpp" />
     <ClCompile Include="..\Src\tPicture.cpp" />
     <ClCompile Include="..\Src\tPixelFormat.cpp" />

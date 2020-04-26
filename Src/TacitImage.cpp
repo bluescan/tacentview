@@ -24,6 +24,7 @@
 #include <Math/tFundamentals.h>
 #include <Image/tTexture.h>
 #include <Image/tImageGIF.h>
+#include <Image/tImageWEBP.h>
 #include <Image/tImageICO.h>
 #include <System/tFile.h>
 #include <System/tTime.h>
@@ -167,6 +168,28 @@ bool TacitImage::Load()
 				Pictures.Append(picture);
 			}
 			Info.SrcPixelFormat = gif.SrcPixelFormat;
+			success = true;
+		}
+		else if (Filetype == tSystem::tFileType::WEBP)
+		{
+			tImageWEBP webp;
+			bool ok = webp.Load(Filename.Chars());
+			if (!ok)
+				return false;
+
+			int numFrames = webp.GetNumFrames();
+			for (int f = 0; f < numFrames; f++)
+			{
+				tImageWEBP::Frame* frame = webp.StealFrame(0);
+				tPicture* picture = new tPicture();
+
+				// It's ok to steal the pixels as the frame destructor does not delete them.
+				picture->Set(frame->Width, frame->Height, frame->Pixels, false);
+				picture->Duration = frame->Duration;
+				delete frame;
+				Pictures.Append(picture);
+			}
+			Info.SrcPixelFormat = webp.SrcPixelFormat;
 			success = true;
 		}
 		else if (Filetype == tSystem::tFileType::ICO)

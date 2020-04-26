@@ -65,11 +65,11 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>%(AdditionalDependencies);glfw3.lib;opengl32.lib;uxtheme.lib;dwmapi.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);glfw3.lib;opengl32.lib;uxtheme.lib;dwmapi.lib;libwebp_debug.lib;libwebpdecoder_debug.lib;libwebpdemux_debug.lib</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
-      <AdditionalLibraryDirectories>$(SolutionDir)\..\Tacent\Contrib\glfw\Windows\Debug</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\..\Tacent\Contrib\glfw\Windows\Debug;$(SolutionDir)\..\Tacent\Contrib\WebP\Windows\debug-static\x64\lib</AdditionalLibraryDirectories>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
     <CustomBuildStep>
@@ -101,8 +101,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>%(AdditionalDependencies);glfw3.lib;opengl32.lib;uxtheme.lib;dwmapi.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\..\Tacent\Contrib\glfw\Windows\Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies);glfw3.lib;opengl32.lib;uxtheme.lib;dwmapi.lib;libwebp.lib;libwebpdecoder.lib;libwebpdemux.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\..\Tacent\Contrib\glfw\Windows\Release;$(SolutionDir)\..\Tacent\Contrib\WebP\Windows\release-static\x64\lib</AdditionalLibraryDirectories>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
     <CustomBuildStep>
