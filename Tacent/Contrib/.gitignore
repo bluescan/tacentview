@@ -15,3 +15,6 @@
 !/WebP/Windows/debug-static/x64/lib/*.pdb
 !/WebP/Windows/release-static/x64/lib/*.lib
 !/WebP/Windows/release-static/x64/lib/*.pdb
+!/WebP/Linux/*.a
+
+

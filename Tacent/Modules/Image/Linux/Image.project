@@ -584,6 +584,7 @@
   <Description/>
   <Dependencies/>
   <VirtualDirectory Name="Src">
+    <File Name="../Src/tImageWEBP.cpp"/>
     <File Name="../Src/tImageICO.cpp"/>
     <File Name="../Src/tTexture.cpp"/>
     <File Name="../Src/tPixelFormat.cpp"/>
@@ -597,6 +598,7 @@
     <File Name="../Src/tCubemap.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="Inc">
+    <File Name="../Inc/Image/tImageWEBP.h"/>
     <File Name="../Inc/Image/tImageICO.h"/>
     <File Name="../Inc/Image/tTexture.h"/>
     <File Name="../Inc/Image/tPixelFormat.h"/>

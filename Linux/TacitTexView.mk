@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Tristan
-Date                   :=20/04/20
+Date                   :=25/04/20
 CodeLitePath           :=/home/tristan/.codelite
 LinkerName             :=/usr/bin/clang++
 SharedObjectLinkerName :=/usr/bin/clang++ -shared -fPIC
@@ -39,9 +39,9 @@ LinkOptions            := -pthread
 IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch)../Tacent/Modules/System/Inc $(IncludeSwitch)../Tacent/Modules/Foundation/Inc $(IncludeSwitch)../Tacent/Modules/Math/Inc $(IncludeSwitch)../Tacent/Modules/Image/Inc $(IncludeSwitch)../Tacent/Contrib/imgui $(IncludeSwitch)../Tacent/Contrib/imgui/examples $(IncludeSwitch)../Tacent/Contrib/glad/include $(IncludeSwitch)../Tacent/Contrib/glfw/Linux/include $(IncludeSwitch). 
 IncludePCH             := 
 RcIncludePath          := 
-Libs                   := $(LibrarySwitch)Image $(LibrarySwitch)System $(LibrarySwitch)Math $(LibrarySwitch)Foundation $(LibrarySwitch)glfw3 $(LibrarySwitch)dl 
-ArLibs                 :=  "Image" "System" "Math" "Foundation" "glfw3" "dl" 
-LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch)../Tacent/Modules/Image/Linux/Release $(LibraryPathSwitch)../Tacent/Modules/System/Linux/Release $(LibraryPathSwitch)../Tacent/Modules/Math/Linux/Release $(LibraryPathSwitch)../Tacent/Modules/Foundation/Linux/Release $(LibraryPathSwitch)../Tacent/Contrib/glfw/Linux/Release 
+Libs                   := $(LibrarySwitch)Image $(LibrarySwitch)System $(LibrarySwitch)Math $(LibrarySwitch)Foundation $(LibrarySwitch)glfw3 $(LibrarySwitch)dl $(LibrarySwitch)webp $(LibrarySwitch)webpdemux 
+ArLibs                 :=  "Image" "System" "Math" "Foundation" "glfw3" "dl" "webp" "webpdemux" 
+LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch)../Tacent/Contrib/WebP/Linux $(LibraryPathSwitch)../Tacent/Modules/Image/Linux/Release $(LibraryPathSwitch)../Tacent/Modules/System/Linux/Release $(LibraryPathSwitch)../Tacent/Modules/Math/Linux/Release $(LibraryPathSwitch)../Tacent/Modules/Foundation/Linux/Release $(LibraryPathSwitch)../Tacent/Contrib/glfw/Linux/Release 
 
 ##
 ## Common variables

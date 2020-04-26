@@ -17,7 +17,11 @@
 #include <Foundation/tString.h>
 #include <System/tFile.h>
 #include "Image/tImageWEBP.h"
+#ifdef PLATFORM_WINDOWS
 #include "../../../Contrib/WebP/Windows/include/demux.h"
+#elif defined(PLATFORM_LINUX)
+#include "../../../Contrib/WebP/Linux/include/demux.h"
+#endif
 using namespace tSystem;
 namespace tImage
 {

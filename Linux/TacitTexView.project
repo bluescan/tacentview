@@ -77,12 +77,15 @@
       </Compiler>
       <Linker Options="-pthread">
         <LibraryPath Value="."/>
+        <LibraryPath Value="../Tacent/Contrib/WebP/Linux"/>
         <Library Value="Image"/>
         <Library Value="System"/>
         <Library Value="Math"/>
         <Library Value="Foundation"/>
         <Library Value="glfw3"/>
         <Library Value="dl"/>
+        <Library Value="webp"/>
+        <Library Value="webpdemux"/>
       </Linker>
       <ResourceCompiler Options=""/>
     </GlobalSettings>
