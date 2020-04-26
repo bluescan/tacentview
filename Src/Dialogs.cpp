@@ -24,6 +24,11 @@
 #include <GLFW/glfw3.h>
 #include <../../Contrib/OpenEXR/config/OpenEXRConfig.h>
 #include <../../Contrib/OpenEXR/zlib/zlib.h>
+#ifdef PLATFORM_WINDOWS
+#include <../../Contrib/WebP/Windows/include/decode.h>
+#else
+#include <../../Contrib/WebP/Linux/include/decode.h>
+#endif
 #include "imgui.h"
 #include "Dialogs.h"
 #include "Settings.h"
@@ -197,6 +202,7 @@ void TexView::ShowAboutPopup(bool* popen)
 		ImGui::Text("OpenEXR V %s", OPENEXR_VERSION_STRING);
 		ImGui::Text("ZLib V %s", ZLIB_VERSION);
 		ImGui::Text("Gif Load");
+		ImGui::Text("WebP Decoder V %d.%d", WEBP_DECODER_ABI_VERSION >> 8, WEBP_DECODER_ABI_VERSION & 0xFF);
 	}
 	ImGui::End();
 }
