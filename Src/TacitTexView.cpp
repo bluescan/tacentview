@@ -2072,10 +2072,10 @@ int main(int argc, char** argv)
 	
 	TexView::Config.Load(cfgFile, mode->width, mode->height);
 
-	#ifdef PLATFORM_WINDOWS
-	// We start with window invisible as DwmSetWindowAttribute won't redraw properly otherwise.
+	// We start with window invisible. For windows DwmSetWindowAttribute won't redraw properly otherwise.
+	// For all plats, we want to position the window before displaying it.
 	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-	#elif defined(PLATFORM_LINUX)
+	#if defined(PLATFORM_LINUX)
 	glfwWindowHintString(GLFW_X11_CLASS_NAME, "tacittexview");
 	#endif
 
@@ -2135,7 +2135,7 @@ int main(int argc, char** argv)
 	#endif
 
 	glfwMakeContextCurrent(TexView::Window);
-	
+
 	#ifdef PLATFORM_LINUX
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -2143,13 +2143,13 @@ int main(int argc, char** argv)
 		return 10;
     }
 	#endif
-	
+
 	#ifdef PLATFORM_WINDOWS
 	tPrintf("GLEW V %s\n", glewGetString(GLEW_VERSION));
 	#else
 	tPrintf("GLAD V %s", glGetString(GL_VERSION));
 	#endif	
-	
+
 	glfwSwapInterval(1); // Enable vsync
 	glfwSetWindowRefreshCallback(TexView::Window, TexView::WindowRefreshFun);
 	glfwSetKeyCallback(TexView::Window, TexView::KeyCallback);
@@ -2204,8 +2204,11 @@ int main(int argc, char** argv)
 	glfwGetFramebufferSize(TexView::Window, &dispw, &disph);
 	glViewport(0, 0, dispw, disph);
 
+	// Show the window. Can this just be the glfw call for all platforms?
 	#ifdef PLATFORM_WINDOWS
 	ShowWindow(hwnd, SW_SHOW);
+	#elif defined(PLATFORM_LINUX)
+	glfwShowWindow(TexView::Window);
 	#endif
 		
 	// I don't seem to be able to get Linux to v-sync.
