@@ -1920,8 +1920,14 @@ bool tSystem::tFindFiles(tList<tStringItem>& foundFiles, const tString& dir, con
 	if (dirPath.IsEmpty())
 		dirPath = std::filesystem::current_path().u8string().c_str();
 
-	if ((dirPath[dirPath.Length() - 1] == '/') || (dirPath[dirPath.Length() - 1] == '\\'))
-		dirPath[dirPath.Length() - 1] = '\0';
+	// Even root should look like "/".
+	if (dirPath.IsEmpty())
+		return false;
+
+	//	if ((dirPath[dirPath.Length() - 1] == '/') || (dirPath[dirPath.Length() - 1] == '\\'))
+	//		dirPath[dirPath.Length() - 1] = '\0';
+	if (dirPath[dirPath.Length() - 1] == '\\')
+		dirPath[dirPath.Length() - 1] = '/';
 		
 	for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(dirPath.Text()))
 	{

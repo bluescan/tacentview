@@ -2147,7 +2147,7 @@ int main(int argc, char** argv)
 	#ifdef PLATFORM_WINDOWS
 	tPrintf("GLEW V %s\n", glewGetString(GLEW_VERSION));
 	#else
-	tPrintf("GLAD V %s", glGetString(GL_VERSION));
+	tPrintf("GLAD V %s\n", glGetString(GL_VERSION));
 	#endif	
 
 	glfwSwapInterval(1); // Enable vsync
