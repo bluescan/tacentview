@@ -15,7 +15,7 @@
 #pragma once
 #include <System/tPrint.h>
 #include <System/tFile.h>
-//#define UNIT_TEST_FORCE_PRINT_ALL_OUTPUT
+#define UNIT_TEST_FORCE_PRINT_ALL_OUTPUT
 //#define UNIT_TEST_ONLY_ONE_TEST
 //#define UNIT_TEST_CALLSTACK_ON_FAIL_REQUIREMENT
 //#define UNIT_TEST_CALLSTACK_ON_FAIL_GOAL

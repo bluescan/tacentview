@@ -419,7 +419,7 @@ template<typename T> inline T* tList<T>::Remove()
 		return nullptr;
 
 	T* removed = (T*)HeadItem;
-	HeadItem = HeadItem->NextItem;
+	HeadItem = (T*)HeadItem->NextItem;
 	if (!HeadItem)
 		TailItem = nullptr;
 	else

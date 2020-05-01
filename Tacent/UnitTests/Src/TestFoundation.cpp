@@ -103,8 +103,28 @@ bool LessThanNorm(const NormItem& a, const NormItem& b)
 }
 
 
+struct MySuper : public tLink<MySuper>
+{
+	virtual ~MySuper()			{ tPrintf("Running ~MySuper\n"); }
+};
+
+
+struct MySub : public MySuper
+{
+	MySub(int id) : ID(id)		{ }
+	virtual ~MySub()			{ tPrintf("Running ~MySub ID %d\n", ID); }
+	int ID						= 0;
+};
+
+
 tTestUnit(List)
 {
+	tList<MySub> subs;
+	subs.Append(new MySub(1));
+	subs.Append(new MySub(2));
+	subs.Append(new MySub(3));
+	subs.Clear();
+
 	tList<Item> itemList(true);
 	itemList.Append( new Item(7) );
 	itemList.Append( new Item(3) );
@@ -126,6 +146,8 @@ tTestUnit(List)
 	for (const Item* item = itemList.First(); item; item = item->Next())
 		tPrintf("%d ", item->Value);
 	tPrintf("\n");
+	tRequire(itemList.First()->Value < itemList.First()->Next()->Value);
+	tRequire(itemList.First()->Next()->Value < itemList.First()->Next()->Next()->Value);
 
 	// Test circular on intrusive lists.
 	Item* itm = itemList.First();
