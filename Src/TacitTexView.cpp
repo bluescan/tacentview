@@ -2030,6 +2030,18 @@ int main(int argc, char** argv)
 	tSystem::tSetStdoutRedirectCallback(TexView::PrintRedirectCallback);
 	tCommand::tParse(argc, argv);
 
+	#ifdef PLATFORM_WINDOWS
+	if (TexView::ImageFileParam.IsPresent())
+	{
+		tString dest(MAX_PATH);
+		int numchars = GetLongPathNameA(TexView::ImageFileParam.Param.ConstText(), dest.Text(), MAX_PATH);
+		if (numchars > 0)
+			TexView::ImageFileParam.Param = dest;
+
+		tPrintf("LongPath:%s\n", dest.ConstText());
+	}
+	#endif
+
 	// Setup window
 	glfwSetErrorCallback(TexView::GlfwErrorCallback);
 	if (!glfwInit())
