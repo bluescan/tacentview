@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26430.14
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.452
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests", "UnitTests.vcxproj", "{2FF3CA7A-2E66-42BD-BF34-CBF61CD8748F}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -29,7 +29,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\..\Modules\WoboqTacent.cfg = ..\..\Modules\WoboqTacent.cfg
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Build", "..\..\Modules\Build\Windows\Build.vcxproj", "{68AB18DA-4DF8-41C1-8C0C-1F753EEA0D20}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Pipeline", "..\..\Modules\Pipeline\Windows\Pipeline.vcxproj", "{68AB18DA-4DF8-41C1-8C0C-1F753EEA0D20}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4A67D21F-1B1F-42B6-B530-A4D690B21DB4} = {4A67D21F-1B1F-42B6-B530-A4D690B21DB4}
+		{E3BAD3CE-E59D-4C1F-9759-7D585C145884} = {E3BAD3CE-E59D-4C1F-9759-7D585C145884}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Image", "..\..\Modules\Image\Windows\Image.vcxproj", "{50CDB9D0-9406-45CC-A226-1645F18635F5}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -39,6 +43,16 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Image", "..\..\Modules\Imag
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cximage", "..\..\Contrib\CxImage\CxImage\cximage.vcxproj", "{C739151F-5384-41DF-A1A6-F089E2C1AD56}"
+	ProjectSection(ProjectDependencies) = postProject
+		{43A0E60E-5C4A-4C09-A29B-7683F503BBD7} = {43A0E60E-5C4A-4C09-A29B-7683F503BBD7}
+		{DF861D33-9BC1-418C-82B1-581F590FE169} = {DF861D33-9BC1-418C-82B1-581F590FE169}
+		{0588563C-F05C-428C-B21A-DD74756628B3} = {0588563C-F05C-428C-B21A-DD74756628B3}
+		{40A69F40-063E-43FD-8543-455495D8733E} = {40A69F40-063E-43FD-8543-455495D8733E}
+		{FFDA5DA1-BB65-4695-B678-BE59B4A1355D} = {FFDA5DA1-BB65-4695-B678-BE59B4A1355D}
+		{7B53D2C7-1B4A-4A53-A7D3-E25B92470B81} = {7B53D2C7-1B4A-4A53-A7D3-E25B92470B81}
+		{0DEBB3CC-712B-4AC1-84DF-E2D9D7D5F859} = {0DEBB3CC-712B-4AC1-84DF-E2D9D7D5F859}
+		{818753F2-DBB9-4D3B-898A-A604309BE470} = {818753F2-DBB9-4D3B-898A-A604309BE470}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Contrib", "Contrib", "{C2D247E1-2B37-43B7-9AAB-56F1B7514410}"
 EndProject

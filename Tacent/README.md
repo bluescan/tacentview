@@ -7,15 +7,13 @@ Visual Studio 2019 Community Edition (Windows) and Codelite/Clang (Ubuntu) is be
 
 __Browse the Source__
 
-The files that are currently available can be browsed using Woboq, a Clang-based tool that marks-up C++ to web-ready HTML. This tool is being used under the ShareAlike License and the 'What is this' text has been removed. Attribution links remain in tact. Woboq is being run on Windows 10 using the new Linux Subsystem. The source being browsed is out-of-date, but can bu useful for quick references / code-snips. Perhaps eventually a GitHub action can be made for it.
+The files that are currently available can be browsed using Woboq, a Clang-based tool that marks-up C++ to web-ready HTML. This tool is being used under the ShareAlike License and the 'What is this' text has been removed. Attribution links remain in tact. Woboq is being run on Windows 10 using the new Linux Subsystem. The source being browsed is out-of-date, but can bu useful for quick references / code-snips. Perhaps eventually a GitHub action can be made for it... right now the Woboq stuff is out of date.
 
 [Browse the source here.](http://upperboundsinteractive.com/Tacent/Modules/index.html)
 
 __Download the Source__
 
-The Tacent source and solution/project files are available as a 7-zip archive. The instructions are simple: Unzip the archive somewhere, open Tools/UnitTests/UnitTests.sln, press F7 in Visual Studio to build, and press F5 to run. This code is also not as recent as the GitHub repository. Clone (preferred) or grab a release from GitHub for best results.
-
-[Download the source here.](http://upperboundsinteractive.com/Tacent.7z)
+The build instructions are simple: Open UnitTests/Windows/UnitTests.sln, press F7 in Visual Studio to build, and press F5 to run. Grab the code from this GitHub repository.
 
 ### Overview
 
@@ -51,21 +49,6 @@ This lack of redundancy and clutter just makes it all easier to absorb. You will
 The dependencies are reasonable and well-understood. The code should be easy to port to a different environment for this reason. For example, if you need a printf function that supports custom types beyond floats, ints, and strings, as well as supporting different output channels, go ahead and take the tPrintf.h and tPrintf.cpp files in the System module and adapt them to your environment and needs. The dependencies on Tacent types and framework are not overbearing.
 
 
-### Credits and Thanks
-
-Credits are found directly in the code where appropriate. Here is a list of some of the helpful contributors:
-* Gregory G. Slabaugh for a paper on Euler angles that was referenced to implement the ExtractRotationEulerXYZ function.
-* Robert J. Jenkins Jr. for his hash function circa 1997. See burtleburtle.net
-* M Phillips for his BigInt number class that helped structure the tFixInt implementation. The homepage link in tFixInt.h no longer works.
-* Erik B. Dam, Martin Koch, and Martin Lillholm for their paper "Quaternions, Interpolation and Animation."
-* Alberto Demichelis for his TRex regular expression class.
-* Woboq for their code browser.
-* Microsoft for their Community Edition version of Visual Studio.
-* Simon Brown for his SquishLib texture block compression library.
-* Ignacio Castano and nVidia for nVidia Texture Tools and placing the code under the MIT license.
-* Davide Pizzolato for CxImage and for placing it under the zlib license.
-* Omar Cornut for Dear ImGui.
-
 ### Notes
 
 The easiest way to see how to use the different modules is to look in the unit tests. There may be more information and comments [on the homepage](http://upperboundsinteractive.com/tacent.php). For example, this is how you'd load a png file and save it to a targa. If the png has transparency, so will the tga:
@@ -83,7 +66,7 @@ tChunkWriter writer("Cubemap.tac");
 cubemap.Save(writer);
 ```
 
-The image module uses two excellent third party libraries, both with non-restrictive licences. CxImage (zlib licence) is used to load formats other than tga and dds. nVidia's Texture Tools 2 (MIT licence) is used for block texture compression. Since I wanted the downloadable source to just work, both of these libraries are included in the 7-zip download. They have both been upgraded to vs2017. The Tacent UnitTests solution will build both of these libraries.
+The image module uses a few third party libraries, all with non-restrictive licences. CxImage (zlib licence) is used to load some formats like png. Gif and ico loading originated from elsewhere as well. Tga and dds are native. nVidia's Texture Tools 2 (MIT licence) is used for block texture compression. Since I wanted the downloadable source to just work, both of these libraries are included in the repo and have been been upgraded to vs2019. The Tacent UnitTests solution will build all dependent libraries.
 
 Regarding the command line parsing code, a powerful feature is separation of concerns. In a typical system the knowledge of all the different command line parameters and options is needed in a single place, often in main() where argc and argv are passed in. These values need to somehow be passed all over the place in a large system. With tCommand you specify which options and parameters you care about only in the cpp file you are working in. A command line takes the form:
 
@@ -120,5 +103,25 @@ tOption TimeOption("time", 't', 0, "Print timestamp.");
 tParse(argc, argv);
 ```
 
-Again, the unit tests, while not offering full coverage, do show examples of this.
+The unit tests, while not offering full coverage, do show examples of this.
 
+
+### Credits and Thanks
+
+Credits are found directly in the code where appropriate. Here is a list of some of the helpful contributors:
+* Gregory G. Slabaugh for a paper on Euler angles that was referenced to implement the ExtractRotationEulerXYZ function.
+* Robert J. Jenkins Jr. for his hash function circa 1997. See burtleburtle.net
+* M Phillips for his BigInt number class that helped structure the tFixInt implementation. The homepage link in tFixInt.h no longer works.
+* Erik B. Dam, Martin Koch, and Martin Lillholm for their paper "Quaternions, Interpolation and Animation."
+* Alberto Demichelis for his TRex regular expression class.
+* Woboq for their code browser.
+* Microsoft for their Community Edition version of Visual Studio.
+* Simon Brown for his SquishLib texture block compression library.
+* Ignacio Castano and nVidia for nVidia Texture Tools and placing the code under the MIT license.
+* Davide Pizzolato for CxImage and for placing it under the zlib license.
+* Omar Cornut for Dear ImGui.
+
+
+### Legal
+
+Any 3rd party credits and licences may be found directly in the code at the top of the file. They all follow in the spirit of the MIT licence or are PD. The image-loading module contains the most 3rd-party code. Of note, The tImageHDR.cpp that loads high-dynamic-range (hdr) images includes Radiance software (http://radsite.lbl.gov/) developed by the Lawrence Berkeley National Laboratory (http://www.lbl.gov/). If the hdr code is incuded in your project, attribution is required either in your end-product or its documentation and the word "Radiance" is not to appear in the product name. See tImageHDR.cpp for more details.

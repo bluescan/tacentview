@@ -1,0 +1,51 @@
+What's on and off in the various build configurations. Some of this is just planned.
+
+Configuration:		Debug		Develop		Profile		Release		Ship
+------------------------------------------------------------------------
+
+Compiler Opt		no			yes			yes			yes			yes
+
+Debug Symbols		yes			yes			no			no			no
+
+Asserts				yes			yes			no			yes			no
+
+Debug Draw			yes			yes			no			no			no		(includes screen print and debug primitives)
+
+Live Tuning			yes			yes			no			yes			no
+
+Printf				yes			yes			no			yes			no		(print to string always available)
+
+Debug Camera		yes			yes			yes			yes			no
+
+World Editor		yes			yes			no			no			no
+
+Profiling			no			no			yes			no			no
+
+After Profiling, think of Release as a step before Ship. You can still detect critical asserts, but it should run at near ship speeds. Gathering of marketing materials and screenshots should be done in release.
+
+Configuration defines follow the naming:
+CONFIG_DEBUG
+CONFIG_DEVELOP
+CONFIG_PROFILE
+CONFIG_RELEASE
+CONFIG_SHIP
+
+Platform defines follow the naming:
+PLATFORM_WINDOWS
+PLATFORM_LINUX
+PLATFORM_ANDROID
+PLATFORM_IOS
+
+Architecture defines follow the naming:
+ARCHITECTURE_X86	(Also know as IA-32, i386, x86-32)
+ARCHITECTUTE_X64	(Also know as AMD64, x86-64. NOT IA-64 though, that's for Itanium only)
+
+BUILD_TOOL
+This is defined for all tools. It can be useful for some modules that are compiled for use by both buildtime tools and the runtime.
+
+Pipeline messages (i.e. any stdout prints from any tool) should be prefixed with the following:
+
+Info: An 'info' message is just that, nothing is wrong. Just telling the user something. These messages may omit the 'Info:' first.
+Notice: A notice is a 'light' warning. Not a big deal sort of thing. Build continues.
+Warning: A warning is something that should be fixed, but the pipeline will continue anyways.
+Error: Catastrophic failure. Input must be fixed. Pipeline fails.

@@ -1,1 +1,0 @@
-The whole point of this file is to force the directory the file is in to exist when a clean sync from Perforce/SVN is done. This is required because Visual Studio .net has (or maybe had) a bug where it can't run a build event the first time. It tries to run the event batch file in this directory before it's created.

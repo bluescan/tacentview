@@ -16,8 +16,8 @@
 
 #include <System/tFile.h>
 #include <Math/tFundamentals.h>
-#include "Build/tSolution.h"
-using namespace tBuild;
+#include "Pipeline/tSolution.h"
+using namespace tPipeline;
 
 
 tVisualStudioSolution::tVisualStudioSolution(const tString& slnFile) :

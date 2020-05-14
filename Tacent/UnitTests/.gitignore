@@ -1,6 +1,5 @@
 *.vcxproj.user
 !/Windows/*.vcxproj.user
-/Linux/Makefile
 /Linux/UnitTests.txt
 /TestData/Written*.*
 /UnitTests

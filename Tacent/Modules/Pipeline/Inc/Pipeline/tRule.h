@@ -17,7 +17,7 @@
 #include <Foundation/tString.h>
 #include <Foundation/tList.h>
 #include <System/tThrow.h>
-namespace tBuild
+namespace tPipeline
 {
 
 

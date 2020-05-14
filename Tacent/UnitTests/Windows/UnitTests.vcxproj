@@ -57,7 +57,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>PLATFORM_WINDOWS;CONFIG_DEBUG;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\Modules\Foundation\Inc;..\..\Modules\Math\Inc;..\..\Modules\System\Inc;..\..\Modules\Image\Inc;..\..\Modules\Build\Inc;..\..\Modules\Scene\Inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Modules\Foundation\Inc;..\..\Modules\Math\Inc;..\..\Modules\System\Inc;..\..\Modules\Image\Inc;..\..\Modules\Pipeline\Inc;..\..\Modules\Scene\Inc</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -87,7 +87,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>PLATFORM_WINDOWS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\Modules\Foundation\Inc;..\..\Modules\Math\Inc;..\..\Modules\System\Inc;..\..\Modules\Image\Inc;..\..\Modules\Build\Inc;..\..\Modules\Scene\Inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Modules\Foundation\Inc;..\..\Modules\Math\Inc;..\..\Modules\System\Inc;..\..\Modules\Image\Inc;..\..\Modules\Pipeline\Inc;..\..\Modules\Scene\Inc</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -157,7 +157,7 @@
     <ProjectReference Include="..\..\Contrib\NvidiaTextureTools\project\vs\squish\squish.vcxproj">
       <Project>{ce017322-01fc-4851-9c8b-64e9a8e26c38}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\Modules\Build\Windows\Build.vcxproj">
+    <ProjectReference Include="..\..\Modules\Pipeline\Windows\Pipeline.vcxproj">
       <Project>{68ab18da-4df8-41c1-8c0c-1f753eea0d20}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\Modules\Foundation\Windows\Foundation.vcxproj">
@@ -177,7 +177,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Src\TestBuild.h" />
+    <ClInclude Include="..\Src\TestPipeline.h" />
     <ClInclude Include="..\Src\TestFoundation.h" />
     <ClInclude Include="..\Src\TestImage.h" />
     <ClInclude Include="..\Src\TestMath.h" />
@@ -186,7 +186,7 @@
     <ClInclude Include="..\Src\UnitTests.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Src\TestBuild.cpp" />
+    <ClCompile Include="..\Src\TestPipeline.cpp" />
     <ClCompile Include="..\Src\TestFoundation.cpp" />
     <ClCompile Include="..\Src\TestImage.cpp" />
     <ClCompile Include="..\Src\TestMath.cpp" />

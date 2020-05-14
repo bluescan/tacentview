@@ -161,6 +161,13 @@ tTestUnit(List)
 	tPrintf("PrevCirc Item Val %d\n", itm->Value);
 	tRequire(itm->Value == 1);
 
+	// Insert an item at the right place to keep sorted.
+	itemList.Insert(LessThan, new Item(6));
+	tPrintf("After sorted insert: ");
+	for (const Item* item = itemList.First(); item; item = item->Next())
+		tPrintf("%d ", item->Value);
+	tPrintf("\n");
+
 	// We need this if we didn't construct this list with a true flag.
 	//itemList.Empty();
 

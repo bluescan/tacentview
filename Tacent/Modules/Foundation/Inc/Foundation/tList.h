@@ -91,7 +91,7 @@ public:
 	template<typename CompareFunc> int Sort(CompareFunc, tListSortAlgorithm alg = tListSortAlgorithm::Merge);
 
 	// Inserts item in a sorted list. It will remain sorted.
-	template<typename CompareFunc> T* Insert(const T* item, CompareFunc);
+	template<typename CompareFunc> T* Insert(CompareFunc, const T* item);
 
 	// This does an O(n) single pass of a bubble sort iteration. Allows the cost of sorting to be distributed over time
 	// for objects that do not change their order very often. Do the expensive merge sort when the list is initially
@@ -326,25 +326,25 @@ template<typename T> inline T* tList<T>::Append(const T* item)
 }
 
 
-template<typename T> template<typename CompareFunc> inline T* tList<T>::Insert(const T* item, CompareFunc compare)
+template<typename T> template<typename CompareFunc> inline T* tList<T>::Insert(CompareFunc compare, const T* item)
 {
 	if (!Head())
 	{
 		Insert(item);
-		return item;
+		return (T*)item;
 	}
 
 	// Early exit if it should go before head or after tail.
 	if (compare(*item, *Head()))
 	{
 		Insert(item, Head());
-		return item;
+		return (T*)item;
 	}
 
 	if (!compare(*item, *Tail()))
 	{
 		Append(item);
-		return item;
+		return (T*)item;
 	}
 
 	// The variables here are named as if compare implements 'bool IsLessThan()'
@@ -368,7 +368,7 @@ template<typename T> template<typename CompareFunc> inline T* tList<T>::Insert(c
 
 	// Found it... so this is the item we insert before.
 	Insert(item, insertBefore);
-	return item;
+	return (T*)item;
 }
 
 
@@ -388,7 +388,7 @@ template<typename T> inline T* tList<T>::Insert(const T* item, const T* where)
 		HeadItem = item;
 
 	ItemCount++;
-	return item;
+	return (T*)item;
 }
 
 

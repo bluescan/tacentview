@@ -15,7 +15,7 @@
 #include <Foundation/tVersion.h>
 #include <System/tCommand.h>
 #include "UnitTests.h"
-#include "TestBuild.h"
+#include "TestPipeline.h"
 #include "TestFoundation.h"
 #include "TestImage.h"
 #include "TestMath.h"
@@ -98,7 +98,7 @@ int main(int argc, char** argv)
 	tTest(Image);
 
 	#else
-	tTest(File);
+	tTest(List);
 
 	#endif
 

@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Src\TestBuild.h">
+    <ClInclude Include="..\Src\TestPipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Src\TestFoundation.h">
@@ -50,7 +50,7 @@
     <ClCompile Include="..\Src\TestSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Src\TestBuild.cpp">
+    <ClCompile Include="..\Src\TestPipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Src\TestMath.cpp">

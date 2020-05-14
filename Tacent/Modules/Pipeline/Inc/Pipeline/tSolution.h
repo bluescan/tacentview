@@ -20,7 +20,7 @@
 #endif
 #include <Foundation/tString.h>
 #include <Foundation/tList.h>
-namespace tBuild
+namespace tPipeline
 {
 
 

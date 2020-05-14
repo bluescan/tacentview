@@ -17,8 +17,8 @@
 #include <System/tPrint.h>
 #include <System/tTime.h>
 #include <Math/tFundamentals.h>
-#include "Build/tProcess.h"
-using namespace tBuild;
+#include "Pipeline/tProcess.h"
+using namespace tPipeline;
 
 
 tProcess::tProcess(const tString& cmdLine, const tString& workDir, WindowHandle parent, uint32 userData, bool clearEnvironmentVars, int numEnvPairs, ...) :

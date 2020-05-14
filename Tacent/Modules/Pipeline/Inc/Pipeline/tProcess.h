@@ -22,7 +22,7 @@
 #include <Foundation/tList.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>					// Requires windows because the build methods can send windows messages.
-namespace tBuild
+namespace tPipeline
 {
 
 

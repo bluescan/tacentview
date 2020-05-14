@@ -16,11 +16,11 @@
 #include <System/tThrow.h>
 #include <System/tPrint.h>
 #include <System/tFile.h>
-#include "Build/tRule.h"
+#include "Pipeline/tRule.h"
 #ifdef PLATFORM_WINDOWS
-#include "Build/tSolution.h"
+#include "Pipeline/tSolution.h"
 #endif
-using namespace tBuild;
+using namespace tPipeline;
 
 
 void tRule::SetTarget(const tString& target)
