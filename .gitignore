@@ -6,6 +6,9 @@
 Debug/
 Release/
 tacittexview_*/
+build*/
+
+# Ignore specific directories.
 
 # Filetypes in directories.
 TestImages/FlipbookEXR/
@@ -15,11 +18,11 @@ Data/Cache/
 Linux/TacitTexView.txt
 Linux/*.deb
 
-# Filenames.
+# Specific Files.
 compile_flags.txt
 compile_commands.json
 imgui\.ini
-#Makefile
+.vscode/settings.json
 
 # Filetypes to ignore everywhere.
 *.log
