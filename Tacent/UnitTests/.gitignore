@@ -1,6 +1,0 @@
-*.vcxproj.user
-!/Windows/*.vcxproj.user
-/Linux/UnitTests.txt
-/TestData/Written*.*
-/UnitTests
-
