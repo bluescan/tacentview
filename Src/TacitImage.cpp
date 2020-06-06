@@ -14,11 +14,7 @@
 
 #include <mutex>
 #include <chrono>
-#ifdef PLATFORM_WINDOWS
-#include <GL/glew.h>
-#else
 #include <glad/glad.h>
-#endif
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL definitions.
 #include <Math/tHash.h>
 #include <Math/tFundamentals.h>
@@ -623,11 +619,11 @@ void TacitImage::GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFo
 	dstFormat = GL_RGBA8;
 	compressed = false;
 
-	#ifdef PLATFORM_WINDOWS
-	tAssert(GLEW_ARB_texture_compression);
-	#else
+//	#ifdef PLATFORM_WINDOWS
+//	tAssert(GLEW_ARB_texture_compression);
+//	#else
 	tAssert(GL_EXT_texture_compression_s3tc);
-	#endif
+//	#endif
 	switch (pixelFormat)
 	{
 		case tPixelFormat::R8G8B8:

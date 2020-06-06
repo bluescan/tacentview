@@ -15,11 +15,7 @@
 #pragma once
 #include <thread>
 #include <atomic>
-#ifdef PLATFORM_WINDOWS
-#include <GL/glew.h>
-#else
 #include <glad/glad.h>
-#endif
 #include <Foundation/tList.h>
 #include <Foundation/tString.h>
 #include <System/tFile.h>

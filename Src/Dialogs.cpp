@@ -12,29 +12,29 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
-#include <Foundation/tVersion.h>
+#include <Foundation/tVersion.cmake.h>
 #include <Math/tVector2.h>
 #include <Math/tColour.h>
 #include <Image/tImageHDR.h>
-#ifdef PLATFORM_WINDOWS
-#include <GL/glew.h>
-#else
+//#ifdef PLATFORM_WINDOWS
+//#include <GL/glew.h>
+//#else
 #include <glad/glad.h>
-#endif
+//#endif
 #include <GLFW/glfw3.h>
-#include <../../Contrib/OpenEXR/config/OpenEXRConfig.h>
-#include <../../Contrib/OpenEXR/zlib/zlib.h>
-#ifdef PLATFORM_WINDOWS
-#include <../../Contrib/WebP/Windows/include/decode.h>
-#else
-#include <../../Contrib/WebP/Linux/include/decode.h>
-#endif
+//#include <../../Contrib/OpenEXR/config/OpenEXRConfig.h>
+//#include <../../Contrib/OpenEXR/zlib/zlib.h>
+//#ifdef PLATFORM_WINDOWS
+//#include <../../Contrib/WebP/Windows/include/decode.h>
+//#else
+//#include <../../Contrib/WebP/Linux/include/decode.h>
+//#endif
 #include "imgui.h"
 #include "Dialogs.h"
 #include "Settings.h"
 #include "TacitImage.h"
 #include "TacitTexView.h"
-#include "Version.h"
+#include "Version.cmake.h"
 using namespace tMath;
 
 
@@ -183,15 +183,15 @@ void TexView::ShowAboutPopup(bool* popen)
 	{
 		int glfwMajor = 0; int glfwMinor = 0; int glfwRev = 0;
 		glfwGetVersion(&glfwMajor, &glfwMinor, &glfwRev);
-		ImGui::Text("Tacit Viewer V %d.%d.%d by Tristan Grimmer", TexView::MajorVersion, TexView::MinorVersion, TexView::Revision);
+		ImGui::Text("Tacent Viewer V %d.%d.%d by Tristan Grimmer", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
 		ImGui::Separator();
 		ImGui::Text("The following amazing and liberally licensed frameworks are used by this tool.");
 		ImGui::Text("Dear ImGui V %s", IMGUI_VERSION);
-		#ifdef PLATFORM_WINDOWS
-		ImGui::Text("GLEW V %s", glewGetString(GLEW_VERSION));
-		#else
+//		#ifdef PLATFORM_WINDOWS
+//		ImGui::Text("GLEW V %s", glewGetString(GLEW_VERSION));
+//		#else
 		ImGui::Text("GLAD V %s", glad_glGetString(GL_VERSION));
-		#endif
+//		#endif
 		ImGui::Text("GLFW V %d.%d.%d", glfwMajor, glfwMinor, glfwRev);
 		ImGui::Text("Tacent Library V %d.%d.%d", tVersion::Major, tVersion::Minor, tVersion::Revision);
 		ImGui::Text("CxImage");
@@ -199,10 +199,13 @@ void TexView::ShowAboutPopup(bool* popen)
 		ImGui::Text("Ionicons");
 		ImGui::Text("Roboto Google Font");
 		ImGui::Text("Radiance Software");
-		ImGui::Text("OpenEXR V %s", OPENEXR_VERSION_STRING);
-		ImGui::Text("ZLib V %s", ZLIB_VERSION);
+		ImGui::Text("OpenEXR");
+		ImGui::Text("ZLib");
+//		ImGui::Text("OpenEXR V %s", OPENEXR_VERSION_STRING);
+//		ImGui::Text("ZLib V %s", ZLIB_VERSION);
 		ImGui::Text("Gif Load");
-		ImGui::Text("WebP Decoder V %d.%d", WEBP_DECODER_ABI_VERSION >> 8, WEBP_DECODER_ABI_VERSION & 0xFF);
+//		ImGui::Text("WebP Decoder V %d.%d", WEBP_DECODER_ABI_VERSION >> 8, WEBP_DECODER_ABI_VERSION & 0xFF);
+		ImGui::Text("WebP Decoder");
 	}
 	ImGui::End();
 }

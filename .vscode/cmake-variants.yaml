@@ -1,0 +1,12 @@
+buildType:
+  default: release
+  description: Build Type
+  choices:
+    debug:
+      short: Debug
+      long: Build Debug
+      buildType: Debug
+    release:
+      short: Release
+      long: Build Release
+      buildType: Release

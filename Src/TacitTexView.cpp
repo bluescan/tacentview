@@ -14,11 +14,9 @@
 
 #ifdef PLATFORM_WINDOWS
 #include <dwmapi.h>
-#include <GL/glew.h>
-#else
-#include <glad/glad.h>
 #endif
 
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL declarations.
 
 #ifdef PLATFORM_WINDOWS
@@ -26,7 +24,7 @@
 #include <GLFW/glfw3native.h>
 #endif
 
-#include <Foundation/tVersion.h>
+#include <Foundation/tVersion.cmake.h>
 #include <System/tCommand.h>
 #include <Image/tPicture.h>
 #include <Image/tImageHDR.h>
@@ -47,7 +45,7 @@
 #include "Crop.h"
 #include "SaveDialogs.h"
 #include "Settings.h"
-#include "Version.h"
+#include "Version.cmake.h"
 using namespace tStd;
 using namespace tSystem;
 using namespace tMath;
@@ -2050,7 +2048,7 @@ int main(int argc, char** argv)
 	int glfwMajor = 0; int glfwMinor = 0; int glfwRev = 0;
 	glfwGetVersion(&glfwMajor, &glfwMinor, &glfwRev);
 
-	tPrintf("Tacit Viewer V %d.%d.%d\n", TexView::MajorVersion, TexView::MinorVersion, TexView::Revision);
+	tPrintf("Tacit Viewer V %d.%d.%d\n", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
 	tPrintf("Tacent Library V %d.%d.%d\n", tVersion::Major, tVersion::Minor, tVersion::Revision);
 	tPrintf("Dear ImGui V %s\n", IMGUI_VERSION);
 	tPrintf("GLFW V %d.%d.%d\n", glfwMajor, glfwMinor, glfwRev);
@@ -2147,20 +2145,12 @@ int main(int argc, char** argv)
 	#endif
 
 	glfwMakeContextCurrent(TexView::Window);
-
-	#ifdef PLATFORM_LINUX
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		tPrintf("Failed to initialize GLAD\n");
 		return 10;
     }
-	#endif
-
-	#ifdef PLATFORM_WINDOWS
-	tPrintf("GLEW V %s\n", glewGetString(GLEW_VERSION));
-	#else
 	tPrintf("GLAD V %s\n", glGetString(GL_VERSION));
-	#endif	
 
 	glfwSwapInterval(1); // Enable vsync
 	glfwSetWindowRefreshCallback(TexView::Window, TexView::WindowRefreshFun);
@@ -2171,12 +2161,6 @@ int main(int argc, char** argv)
 	glfwSetDropCallback(TexView::Window, TexView::FileDropCallback);
 	glfwSetWindowFocusCallback(TexView::Window, TexView::FocusCallback);
 	glfwSetWindowIconifyCallback(TexView::Window, TexView::IconifyCallback);
-
-	#ifdef PLATFORM_WINDOWS
-	GLenum err = glewInit();
-	if (err != GLEW_OK)
-		return err;
-	#endif
 
 	// Setup Dear ImGui context.
 	IMGUI_CHECKVERSION();

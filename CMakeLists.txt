@@ -1,21 +1,169 @@
 # Should really specify a range of tested versions.
 cmake_minimum_required(VERSION 3.16)
 
-set(CMAKE_CONFIGURATION_TYPES Debug Release CACHE TYPE INTERNAL FORCE )
-project("Tacent Viewer" VERSION 1.0 LANGUAGES C CXX)
+# Set default build-type (AKA the configuration in other IDEs).
+set(CMAKE_BUILD_TYPE_INIT Release)
 
-# Include any CMake modules we need.
-include(FetchContent)
+# Setup Release and Debug build-types (only).
+# No reason to set CMAKE_CONFIGURATION_TYPES if it's not a multiconfig generator
+# Also no reason mess with CMAKE_BUILD_TYPE if it's a multiconfig generator.
+get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if (isMultiConfig)
+	set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
+else()
+	if (NOT DEFINED CMAKE_BUILD_TYPE)
+		message(STATUS "TacentView -- Default to Release build.")
+		set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose Build Type" FORCE)
+	endif()
+	message(STATUS "TacentView -- Build type set to: ${CMAKE_BUILD_TYPE}")
+	set_property(CACHE CMAKE_BUILD_TYPE PROPERTY HELPSTRING "Choose Build Type")
 
-find_package(Git)
-if (Git_FOUND)
-	message("Git found: ${GIT_EXECUTABLE}")
+	# Set the valid options for cmake-gui drop-down list. CMake tools for vscode does not (but should) respect this.
+	set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 endif()
 
-# Grab the Tacent library from github. At configure time, not build time.
+# This include specifies the project and version.
+include("Src/Version.cmake.h")
+project(TacentViewer VERSION "${VIEWER_VERSION}" LANGUAGES C CXX)
+message(STATUS "Viewer -- Name ${PROJECT_NAME} Version ${PROJECT_VERSION}")
+
+# Find Git module.
+find_package(Git)
+if (Git_FOUND)
+	message(STATUS "Viewer -- Git found: ${GIT_EXECUTABLE}")
+endif()
+
+# Grab the Tacent library from github at configure time.
+include(FetchContent)
 FetchContent_Declare(
 	tacent
 	GIT_REPOSITORY https://github.com/bluescan/tacent.git
-	GIT_TAG        v0.7.1
 )
 FetchContent_MakeAvailable(tacent)
+
+# Files needed to create executable.
+add_executable(
+	${PROJECT_NAME}
+	WIN32
+	Src/Version.cpp
+	Src/ContactSheet.cpp
+	Src/ContentView.cpp
+	Src/Crop.cpp
+	Src/Dialogs.cpp
+	Src/SaveDialogs.cpp
+	Src/Settings.cpp
+	Src/TacitImage.cpp
+	Src/TacitTexView.cpp
+	Src/Version.cmake.h
+	Src/ContactSheet.h
+	Src/ContentView.h
+	Src/Crop.h
+	Src/Dialogs.h
+	Src/SaveDialogs.h
+	Src/Settings.h
+	Src/TacitImage.h
+	Src/TacitTexView.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Windows/TacitTexView.rc
+
+	Contrib/imgui/imgui.cpp
+	Contrib/imgui/imgui_draw.cpp
+	Contrib/imgui/imgui_demo.cpp
+	Contrib/imgui/imgui_widgets.cpp
+	Contrib/imgui/examples/imgui_impl_glfw.cpp
+	Contrib/imgui/examples/imgui_impl_opengl2.cpp
+	Contrib/glad/src/glad.c
+)
+
+# Include directories needed to build.
+target_include_directories(
+	"${PROJECT_NAME}"
+	PRIVATE
+		${CMAKE_CURRENT_SOURCE_DIR}/Src
+		${CMAKE_CURRENT_SOURCE_DIR}/Contrib/imgui
+		${CMAKE_CURRENT_SOURCE_DIR}/Contrib/imgui/examples
+		${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glad/include
+		$<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glad/include/glfw/Linux/include>
+		$<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glad/include/glfw/Windows/include>
+)
+
+target_compile_definitions(
+	${PROJECT_NAME}
+	PRIVATE
+		ARCHITECTURE_X64
+		$<$<CONFIG:Debug>:CONFIG_DEBUG>
+		$<$<CONFIG:Release>:CONFIG_RELEASE>
+		$<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_DEPRECATE>
+		$<$<PLATFORM_ID:Windows>:PLATFORM_WINDOWS>
+		$<$<PLATFORM_ID:Linux>:PLATFORM_LINUX>
+		$<$<PLATFORM_ID:Linux>:GLFW_INCLUDE_NONE>
+)
+
+# Set compiler option flags based on specific compiler and configuration.
+target_compile_options(
+	${PROJECT_NAME}
+	PRIVATE
+		# MSVC compiler.
+		$<$<CXX_COMPILER_ID:MSVC>:/W2 /GS /Gy /Zc:wchar_t /Gm- /Zc:inline /fp:precise /WX- /Zc:forScope /Gd /FC>
+
+		# Clang compiler.
+		$<$<CXX_COMPILER_ID:Clang>:-Wno-switch>
+		$<$<CXX_COMPILER_ID:Clang>:-Wno-format-security>
+
+		# GNU compiler.
+		$<$<CXX_COMPILER_ID:GNU>:-Wno-unused-result>
+		$<$<CXX_COMPILER_ID:GNU>:-Wno-multichar>
+
+		$<$<AND:$<CONFIG:Debug>,$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>>:-O0>
+		$<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:MSVC>>:/Od>
+		$<$<AND:$<CONFIG:Release>,$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>>:-O2>
+		$<$<AND:$<CONFIG:Release>,$<CXX_COMPILER_ID:MSVC>>:/O2>
+)
+
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
+
+# This is how you set things like CMAKE_DEBUG_POSTFIX for a target.
+set_target_properties(
+	${PROJECT_NAME}
+	PROPERTIES
+	# DEBUG_POSTFIX "d"												# Add a 'd' before the extension for debug builds.
+	MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"	# Use multithreaded or multithreaded-debug runtime on windows.
+	# More prop-value pairs here.
+)
+
+# Dependencies.
+target_link_libraries(
+	${PROJECT_NAME}
+	PRIVATE
+		Foundation Math System Image
+
+		$<$<PLATFORM_ID:Windows>:shlwapi.lib>
+		$<$<PLATFORM_ID:Windows>:Dbghelp.lib>
+		$<$<PLATFORM_ID:Windows>:opengl32.lib>
+		$<$<PLATFORM_ID:Windows>:uxtheme.lib>
+		$<$<PLATFORM_ID:Windows>:dwmapi.lib>
+		$<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glfw/Windows/Release/glfw3.lib>
+
+		# $<$<PLATFORM_ID:Linux>:m>
+		# $<$<PLATFORM_ID:Linux>:stdc++>
+		$<$<PLATFORM_ID:Linux>:dl>
+		$<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glfw/Linux/Release/libglfw3.a>
+)
+
+if (MSVC)
+	target_link_options(${PROJECT_NAME} PRIVATE "/ENTRY:\"mainCRTStartup\"")
+	#if (CMAKE_BUILD_TYPE MATCHES Debug)
+	#	target_link_options(${PROJECT_NAME} PRIVATE "/NODEFAULTLIB:\"LIBCMT.lib\"")
+	#endif()
+endif()
+
+# Install
+set(VIEWER_INSTALL_DIR "${CMAKE_BINARY_DIR}/ViewerInstall")
+message(STATUS "Viewer -- ${PROJECT_NAME} will be installed to ${VIEWER_INSTALL_DIR}")
+
+# Installation.
+install(
+	TARGETS ${PROJECT_NAME}
+	RUNTIME DESTINATION "${VIEWER_INSTALL_DIR}"
+)
+install(DIRECTORY TestImages/ DESTINATION "${VIEWER_INSTALL_DIR}/TestImages")
+install(DIRECTORY Data/ DESTINATION "${VIEWER_INSTALL_DIR}/Data")

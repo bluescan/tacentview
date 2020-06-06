@@ -185,6 +185,7 @@
   <ItemGroup>
     <ClInclude Include="..\Src\ContactSheet.h" />
     <ClInclude Include="..\Src\Crop.h" />
+    <ClInclude Include="..\Src\project_viewer_version.h" />
     <ClInclude Include="..\Src\SaveDialogs.h" />
     <ClInclude Include="..\Src\Dialogs.h" />
     <ClInclude Include="..\Src\Settings.h" />
@@ -204,6 +205,7 @@
   <ItemGroup>
     <ClCompile Include="..\Src\ContactSheet.cpp" />
     <ClCompile Include="..\Src\Crop.cpp" />
+    <ClCompile Include="..\Src\project_viewer_version.cpp" />
     <ClCompile Include="..\Src\SaveDialogs.cpp" />
     <ClCompile Include="..\Src\Dialogs.cpp" />
     <ClCompile Include="..\Src\Settings.cpp" />
