@@ -1,11 +1,5 @@
 # Every directory with the name.
 .vs/
-.build-debug/
-.build-release/
-.codelite/
-Debug/
-Release/
-tacittexview_*/
 build*/
 
 # Ignore specific directories.
@@ -13,14 +7,9 @@ build*/
 # Filetypes in directories.
 TestImages/FlipbookEXR/
 TestImages/Exrs/
-Data/*.cfg
-Data/Cache/
-Linux/TacitTexView.txt
 Linux/*.deb
 
 # Specific Files.
-compile_flags.txt
-compile_commands.json
 imgui\.ini
 .vscode/settings.json
 
@@ -29,39 +18,22 @@ imgui\.ini
 *.tlog
 *.obj
 *.o
-*.FileListAbsolute.txt
 *.cpp.o
 *.cpp.o.d
-*.a
-*.d
-#*.mk
-*.idb
-*.ilk
-*.exe
 *.suo
 *.db
 *.db-shm
 *.db-wal
 *.exp
-*.ipch
-*.opendb
-*.aps
 *.iobj
 *.ipdb
-*.so
 *.tags
 *.session
 *.c.o
 *.cxx.o
-*.pdb
 *.tac
 *.zip
 
 # Specific filetypes that have exceptions here or in subdirs.
 *.vcxproj.user
-*.lib
-*.user
 
-!Windows/TacitTexView.vcxproj.user
-
-/TacitTexView
