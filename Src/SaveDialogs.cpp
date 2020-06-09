@@ -15,7 +15,7 @@
 #include "imgui.h"
 #include "SaveDialogs.h"
 #include "TacitImage.h"
-#include "TacitTexView.h"
+#include "TacentView.h"
 using namespace tStd;
 using namespace tSystem;
 using namespace tMath;

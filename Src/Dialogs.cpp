@@ -16,24 +16,13 @@
 #include <Math/tVector2.h>
 #include <Math/tColour.h>
 #include <Image/tImageHDR.h>
-//#ifdef PLATFORM_WINDOWS
-//#include <GL/glew.h>
-//#else
 #include <glad/glad.h>
-//#endif
 #include <GLFW/glfw3.h>
-//#include <../../Contrib/OpenEXR/config/OpenEXRConfig.h>
-//#include <../../Contrib/OpenEXR/zlib/zlib.h>
-//#ifdef PLATFORM_WINDOWS
-//#include <../../Contrib/WebP/Windows/include/decode.h>
-//#else
-//#include <../../Contrib/WebP/Linux/include/decode.h>
-//#endif
 #include "imgui.h"
 #include "Dialogs.h"
 #include "Settings.h"
 #include "TacitImage.h"
-#include "TacitTexView.h"
+#include "TacentView.h"
 #include "Version.cmake.h"
 using namespace tMath;
 

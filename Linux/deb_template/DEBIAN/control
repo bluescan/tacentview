@@ -1,10 +1,10 @@
-Package: tacittexview
-Version: <TacitVersionString>
+Package: tacentview
+Version: <ViewerVersionString>
 Section: base
 Priority: optional
 Architecture: amd64
 Depends: libc6, libstdc++6, libgcc1
 Maintainer: bluescan@users.noreply.github.com
-Description: Tacit Texture Viewer
- A texture viewer and editor for tga, png, exr, dds, gif, hdr, jpg, tiff, ico, webp, and bmp files.
- Uses Dear ImGui, OpenGL, and Tacent. This program is licensed under the ISC licence.
+Description: Tacent View
+ An image and texture viewer for tga, png, exr, dds, gif, hdr, jpg, tiff, ico, webp, and bmp files.
+ This program is licensed under the ISC licence.

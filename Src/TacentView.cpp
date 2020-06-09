@@ -1,4 +1,4 @@
-// TacitTexView.cpp
+// TacentView.cpp
 //
 // A texture viewer for various formats.
 //
@@ -37,7 +37,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl2.h"
-#include "TacitTexView.h"
+#include "TacentView.h"
 #include "TacitImage.h"
 #include "Dialogs.h"
 #include "ContactSheet.h"
@@ -550,7 +550,7 @@ void TexView::SetWindowTitle()
 	if (!Window)
 		return;
 
-	tString title = "Tacit Viewer";
+	tString title = "Tacent Viewer";
 	if (CurrImage && !CurrImage->Filename.IsEmpty())
 	{
 		title = title + " - " + tGetFileName(CurrImage->Filename);
@@ -2048,7 +2048,7 @@ int main(int argc, char** argv)
 	int glfwMajor = 0; int glfwMinor = 0; int glfwRev = 0;
 	glfwGetVersion(&glfwMajor, &glfwMinor, &glfwRev);
 
-	tPrintf("Tacit Viewer V %d.%d.%d\n", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
+	tPrintf("Tacent View V %d.%d.%d\n", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
 	tPrintf("Tacent Library V %d.%d.%d\n", tVersion::Major, tVersion::Minor, tVersion::Revision);
 	tPrintf("Dear ImGui V %s\n", IMGUI_VERSION);
 	tPrintf("GLFW V %d.%d.%d\n", glfwMajor, glfwMinor, glfwRev);
@@ -2063,8 +2063,8 @@ int main(int argc, char** argv)
 	#elif defined(PLATFORM_LINUX)
 	tString progDir = tSystem::tGetProgramDir();
 	bool isDev = (progDir != "/usr/bin/") ? true : false;
-	tString dataDir = isDev ? (progDir + "Data/") : "/usr/share/tacittexview/Data/";
-	tString localAppDir = isDev ? dataDir : tSystem::tGetHomeDir() + ".tacittexview/";
+	tString dataDir = isDev ? (progDir + "Data/") : "/usr/share/tacentviewer/Data/";
+	tString localAppDir = isDev ? dataDir : tSystem::tGetHomeDir() + ".tacentviewer/";
 	if (!tSystem::tDirExists(localAppDir))
 		tSystem::tCreateDir(localAppDir);
 	
@@ -2086,13 +2086,13 @@ int main(int argc, char** argv)
 	// For all plats, we want to position the window before displaying it.
 	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 	#if defined(PLATFORM_LINUX)
-	glfwWindowHintString(GLFW_X11_CLASS_NAME, "tacittexview");
+	glfwWindowHintString(GLFW_X11_CLASS_NAME, "tacentviewer");
 	#endif
 
-	// The title here seems to override the Linux hint above. When we create with the title string "tacittexview",
+	// The title here seems to override the Linux hint above. When we create with the title string "tacentviewer",
 	// glfw makes it the X11 WM_CLASS. This is needed so that the Ubuntu can map the same name in the .desktop file
 	// to find things like the correct dock icon to display. The SetWindowTitle afterwards does not mod the WM_CLASS.
-	TexView::Window = glfwCreateWindow(TexView::Config.WindowW, TexView::Config.WindowH, "tacittexview", nullptr, nullptr);
+	TexView::Window = glfwCreateWindow(TexView::Config.WindowW, TexView::Config.WindowH, "tacentviewer", nullptr, nullptr);
 	if (!TexView::Window)
 		return 1;
 		
@@ -2110,7 +2110,7 @@ int main(int argc, char** argv)
 		::MessageBoxA
 		(
 			hwnd,
-			"Tacit Texture Viewer failed to launch because it was run from a location "
+			"Tacent Texture Viewer failed to launch because it was run from a location "
 			"that did not have the Data directory in it. The executable should be in the "
 			"same place as the Data directory.",
 			"Viewer Message",
@@ -2129,13 +2129,13 @@ int main(int argc, char** argv)
 		system
 		(
 			"zenity --ellipsize --title=\"Warning\" --warning --text=\""
-			"Tacit Texture Viewer failed to launch because it was run from a\n"
+			"Tacent Texture Viewer failed to launch because it was run from a\n"
 			"location that did not have access to the Data directory.\""
 		);
 
 		tPrintf
 		(
-			"Tacit Texture Viewer failed to launch because it was run from a location "
+			"Tacent Texture Viewer failed to launch because it was run from a location "
 			"that did not have the Data directory in it. The executable should be in the "
 			"same place as the Data directory."
 		);

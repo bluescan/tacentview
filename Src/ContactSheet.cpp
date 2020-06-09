@@ -16,7 +16,7 @@
 #include "imgui.h"
 #include "ContactSheet.h"
 #include "SaveDialogs.h"
-#include "TacitTexView.h"
+#include "TacentView.h"
 #include "TacitImage.h"
 using namespace tStd;
 using namespace tMath;

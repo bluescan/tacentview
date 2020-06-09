@@ -1,9 +1,9 @@
 ![Build](https://github.com/bluescan/tacit-texview/workflows/Build/badge.svg)
 
-# tacit-texview
+# tacent view
 An image and texture viewer for tga, png, exr, dds, gif, hdr, jpg, tif, ico, webp, and bmp files. Uses Dear ImGui and the Tacent library. This viewer is targeted to game devs -- It displays alpha channels correctly and can inspect the colour of individual pixels. There is basic editing functionality, batch resizing, and the ability to generate contact sheets for FX etc.
 
-TacitTexView runs on both Windows 10 and Ubuntu Linux.
+Tacent View runs on both Windows 10 and Ubuntu Linux.
 
 ![Tacit Texture Viewer](https://raw.githubusercontent.com/bluescan/tacit-texview/master/Screenshots/Screenshot_CopyColourAs.png)
 

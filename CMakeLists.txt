@@ -12,10 +12,10 @@ if (isMultiConfig)
 	set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
 else()
 	if (NOT DEFINED CMAKE_BUILD_TYPE)
-		message(STATUS "TacentView -- Default to Release build.")
+		message(STATUS "Viewer -- Default to Release build.")
 		set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose Build Type" FORCE)
 	endif()
-	message(STATUS "TacentView -- Build type set to: ${CMAKE_BUILD_TYPE}")
+	message(STATUS "Viewer -- Build type set to: ${CMAKE_BUILD_TYPE}")
 	set_property(CACHE CMAKE_BUILD_TYPE PROPERTY HELPSTRING "Choose Build Type")
 
 	# Set the valid options for cmake-gui drop-down list. CMake tools for vscode does not (but should) respect this.
@@ -24,8 +24,9 @@ endif()
 
 # This include specifies the project and version.
 include("Src/Version.cmake.h")
-project(TacentViewer VERSION "${VIEWER_VERSION}" LANGUAGES C CXX)
+project(TacentView VERSION "${VIEWER_VERSION}" LANGUAGES C CXX)
 message(STATUS "Viewer -- Name ${PROJECT_NAME} Version ${PROJECT_VERSION}")
+message(STATUS "Viewer -- Major:${PROJECT_VERSION_MAJOR} Minor:${PROJECT_VERSION_MINOR} Revision:${PROJECT_VERSION_PATCH}")
 
 # Find Git module.
 find_package(Git)
@@ -53,7 +54,7 @@ add_executable(
 	Src/SaveDialogs.cpp
 	Src/Settings.cpp
 	Src/TacitImage.cpp
-	Src/TacitTexView.cpp
+	Src/TacentView.cpp
 	Src/Version.cmake.h
 	Src/ContactSheet.h
 	Src/ContentView.h
@@ -62,8 +63,8 @@ add_executable(
 	Src/SaveDialogs.h
 	Src/Settings.h
 	Src/TacitImage.h
-	Src/TacitTexView.h
-	${CMAKE_CURRENT_SOURCE_DIR}/Windows/TacitTexView.rc
+	Src/TacentView.h
+	${CMAKE_CURRENT_SOURCE_DIR}/Windows/TacentView.rc
 
 	Contrib/imgui/imgui.cpp
 	Contrib/imgui/imgui_draw.cpp
@@ -112,7 +113,7 @@ target_compile_options(
 		$<$<CXX_COMPILER_ID:GNU>:-Wno-unused-result>
 		$<$<CXX_COMPILER_ID:GNU>:-Wno-multichar>
 
-		# Ckang and GNU.
+		# Clang and GNU.
 		$<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wno-format-security>
 
 		$<$<AND:$<CONFIG:Debug>,$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>>:-O0>
@@ -161,6 +162,8 @@ endif()
 # Install
 set(VIEWER_INSTALL_DIR "${CMAKE_BINARY_DIR}/ViewerInstall")
 message(STATUS "Viewer -- ${PROJECT_NAME} will be installed to ${VIEWER_INSTALL_DIR}")
+set(VIEWER_PACKAGE_DIR "${VIEWER_INSTALL_DIR}/Package")
+message(STATUS "Viewer -- ${PROJECT_NAME} will be packaged to ${VIEWER_PACKAGE_DIR}")
 
 # Installation.
 install(
@@ -169,3 +172,20 @@ install(
 )
 install(DIRECTORY TestImages/ DESTINATION "${VIEWER_INSTALL_DIR}/TestImages")
 install(DIRECTORY Data/ DESTINATION "${VIEWER_INSTALL_DIR}/Data")
+install(DIRECTORY Linux/ DESTINATION "${VIEWER_PACKAGE_DIR}")
+
+configure_file("Linux/create_deb.sh.in" "${VIEWER_PACKAGE_DIR}/create_deb.sh" @ONLY)
+install(CODE
+	"
+	execute_process(
+		COMMAND \"ViewerInstall/Package/create_deb.sh\"
+		RESULT_VARIABLE package_result
+		#OUTPUT_VARIABLE package_output
+	)
+	if (NOT package_result EQUAL \"0\")
+		message(FATAL_ERROR \"Viewer -- Deb package creation failed.\")
+	else()
+		message(STATUS \"Viewer -- Deb package creation succeeded.\")
+	endif()
+	"
+)

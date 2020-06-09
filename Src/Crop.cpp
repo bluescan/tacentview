@@ -12,18 +12,14 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
-//#ifdef PLATFORM_WINDOWS
-//#include <GL/glew.h>
-//#else
 #include <glad/glad.h>
-//#endif
 #include <GLFW/glfw3.h>
 #include "imgui.h"
 #include <Math/tColour.h>
 #include <Math/tGeometry.h>
 #include <System/tPrint.h>
 #include "Crop.h"
-#include "TacitTexView.h"
+#include "TacentView.h"
 #include "TacitImage.h"
 using namespace tMath;
 
