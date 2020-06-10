@@ -7,7 +7,6 @@ build*/
 # Filetypes in directories.
 TestImages/FlipbookEXR/
 TestImages/Exrs/
-Linux/*.deb
 
 # Specific Files.
 imgui\.ini
@@ -36,4 +35,3 @@ imgui\.ini
 
 # Specific filetypes that have exceptions here or in subdirs.
 *.vcxproj.user
-

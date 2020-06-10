@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by TextureViewer.rc
+// Used by TacentView.rc
 //
 #define IDI_ICON1                       106
 
