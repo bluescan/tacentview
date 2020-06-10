@@ -14,7 +14,7 @@ cp -rf deb_template/* ${PackageName}/
 
 sed -i "s/<ViewerVersionString>/${VersionString}/" "${PackageName}/DEBIAN/control"
 
-cp ../TacentView "${PackageName}/usr/bin/tacentview"
+cp ../tacentview "${PackageName}/usr/bin/tacentview"
 
 # png txt ttf
 cp -f ../Data/*.png "${PackageName}/usr/share/tacentview/Data/"

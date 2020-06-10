@@ -1,4 +1,4 @@
-// TacentViewer.h
+// TacentView.h
 //
 // A texture viewer for various formats.
 //

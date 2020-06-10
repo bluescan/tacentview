@@ -24,7 +24,7 @@ endif()
 
 # This include specifies the project and version.
 include("Src/Version.cmake.h")
-project(TacentView VERSION "${VIEWER_VERSION}" LANGUAGES C CXX)
+project(tacentview VERSION "${VIEWER_VERSION}" LANGUAGES C CXX)
 message(STATUS "Viewer -- Name ${PROJECT_NAME} Version ${PROJECT_VERSION}")
 message(STATUS "Viewer -- Major:${PROJECT_VERSION_MAJOR} Minor:${PROJECT_VERSION_MINOR} Revision:${PROJECT_VERSION_PATCH}")
 

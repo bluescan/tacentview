@@ -2063,8 +2063,8 @@ int main(int argc, char** argv)
 	#elif defined(PLATFORM_LINUX)
 	tString progDir = tSystem::tGetProgramDir();
 	bool isDev = (progDir != "/usr/bin/") ? true : false;
-	tString dataDir = isDev ? (progDir + "Data/") : "/usr/share/tacentviewer/Data/";
-	tString localAppDir = isDev ? dataDir : tSystem::tGetHomeDir() + ".tacentviewer/";
+	tString dataDir = isDev ? (progDir + "Data/") : "/usr/share/tacentview/Data/";
+	tString localAppDir = isDev ? dataDir : tSystem::tGetHomeDir() + ".tacentview/";
 	if (!tSystem::tDirExists(localAppDir))
 		tSystem::tCreateDir(localAppDir);
 	
@@ -2086,13 +2086,13 @@ int main(int argc, char** argv)
 	// For all plats, we want to position the window before displaying it.
 	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 	#if defined(PLATFORM_LINUX)
-	glfwWindowHintString(GLFW_X11_CLASS_NAME, "tacentviewer");
+	glfwWindowHintString(GLFW_X11_CLASS_NAME, "tacentview");
 	#endif
 
-	// The title here seems to override the Linux hint above. When we create with the title string "tacentviewer",
+	// The title here seems to override the Linux hint above. When we create with the title string "tacentview",
 	// glfw makes it the X11 WM_CLASS. This is needed so that the Ubuntu can map the same name in the .desktop file
 	// to find things like the correct dock icon to display. The SetWindowTitle afterwards does not mod the WM_CLASS.
-	TexView::Window = glfwCreateWindow(TexView::Config.WindowW, TexView::Config.WindowH, "tacentviewer", nullptr, nullptr);
+	TexView::Window = glfwCreateWindow(TexView::Config.WindowW, TexView::Config.WindowH, "tacentview", nullptr, nullptr);
 	if (!TexView::Window)
 		return 1;
 		
