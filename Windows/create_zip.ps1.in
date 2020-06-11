@@ -1,0 +1,27 @@
+cd @VIEWER_PACKAGE_DIR@
+
+$VersionString="@PROJECT_VERSION_MAJOR@.@PROJECT_VERSION_MINOR@.@PROJECT_VERSION_PATCH@"
+Write-Output "CreateZipPS: Version ${VersionString}"
+
+$PackageName="tacentview_${VersionString}"
+Write-Output $PackageName
+if (Test-Path $PackageName)
+{
+	Remove-Item $PackageName -Recurse
+}
+New-Item $PackageName -itemtype directory
+New-Item "$($PackageName)\\Data" -itemtype directory
+
+Copy-Item -Path "..\\tacentview.exe" -Destination "$($PackageName)\\"
+
+# png txt ttf 
+Copy-Item -Path "..\\Data\\*.png" -Destination "$($PackageName)\\Data"
+Copy-Item -Path "..\\Data\\*.txt" -Destination "$($PackageName)\\Data"
+Copy-Item -Path "..\\Data\\*.ttf" -Destination "$($PackageName)\\Data"
+
+$ZipFile = "$($PackageName).zip"
+if (Test-Path $ZipFile)
+{
+	Remove-Item $ZipFile
+}
+Compress-Archive -Path $PackageName -DestinationPath $ZipFile

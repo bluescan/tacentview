@@ -182,12 +182,32 @@ if (UNIX)
 		execute_process(
 			COMMAND \"ViewerInstall/Package/create_deb.sh\"
 			RESULT_VARIABLE package_result
-			#OUTPUT_VARIABLE package_output
 		)
 		if (NOT package_result EQUAL \"0\")
 			message(FATAL_ERROR \"Viewer -- Deb package creation failed.\")
 		else()
 			message(STATUS \"Viewer -- Deb package creation succeeded.\")
+		endif()
+		"
+	)
+endif()
+
+# A misnomer. Nothing to do with 32 bit. Should just be WINDOWS.
+if (WIN32)
+	install(DIRECTORY Windows/ DESTINATION "${VIEWER_PACKAGE_DIR}")
+	configure_file("Windows/create_zip.ps1.in" "${VIEWER_PACKAGE_DIR}/create_zip.ps1" @ONLY)
+
+	execute_process(COMMAND powershell -ExecutionPolicy Bypass -File ${powershellScriptPath} ${folderPathToZip} ${outputZipPath} OUTPUT_QUIET)
+	install(CODE
+		"
+		execute_process(
+			COMMAND powershell -ExecutionPolicy Bypass -File \"ViewerInstall/Package/create_zip.ps1\"
+			RESULT_VARIABLE package_result
+		)
+		if (NOT package_result EQUAL \"0\")
+			message(FATAL_ERROR \"Viewer -- Zip package creation failed.\")
+		else()
+			message(STATUS \"Viewer -- Zip package creation succeeded.\")
 		endif()
 		"
 	)
