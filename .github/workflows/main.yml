@@ -46,7 +46,7 @@ jobs:
         echo '*** Configuring CMake ***'
         mkdir buildninja
         cd buildninja
-        cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang -DCMAKE_C_COMPILER=clang -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON
+        cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang -DCMAKE_C_COMPILER=clang
         echo '*** Ninja Build ***'
         ninja -v install
         echo '*** Done Building ***'
