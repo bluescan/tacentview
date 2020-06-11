@@ -12,7 +12,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
 
-  # The checkoutbuildwindows job builds tacittexview on windows.
+  # The checkoutbuildwindows job builds tacentview on windows.
   checkoutbuildwindows:
 
     # The type of runner that the job will run on
@@ -22,15 +22,20 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
-      
-    # Use msbuild to build the VS solution
-    - name: Build Solution
+
+    # Build CMake NMake.
+    - uses: ilammy/msvc-dev-cmd@v1.2.0
+    - name: Build using CMake NMake
       run: |
-        echo 'Building Solution'
-        # & 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe' $Env:GITHUB_WORKSPACE\Windows\TacitTexView.sln /p:Configuration=Release
-        echo 'Done Building Solution'
+        echo '*** Configuring CMake ***'
+        mkdir buildnmake
+        cd buildnmake
+        cmake .. -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles"
+        echo '*** NMake Build ***'
+        nmake install
+        echo '*** Done Building ***'
         
-  # The checkoutbuildubuntu job builds tacittexview on ubuntu.
+  # The checkoutbuildubuntu job builds tacentview on ubuntu.
   checkoutbuildubuntu:
     runs-on: ubuntu-latest
     steps:
