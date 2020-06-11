@@ -48,5 +48,5 @@ jobs:
         cd buildninja
         cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang -DCMAKE_C_COMPILER=clang
         echo '*** Ninja Build ***'
-        ninja -v install
+        ninja install
         echo '*** Done Building ***'
