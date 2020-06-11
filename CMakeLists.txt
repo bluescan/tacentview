@@ -196,8 +196,6 @@ endif()
 if (WIN32)
 	install(DIRECTORY Windows/ DESTINATION "${VIEWER_PACKAGE_DIR}")
 	configure_file("Windows/create_zip.ps1.in" "${VIEWER_PACKAGE_DIR}/create_zip.ps1" @ONLY)
-
-	execute_process(COMMAND powershell -ExecutionPolicy Bypass -File ${powershellScriptPath} ${folderPathToZip} ${outputZipPath} OUTPUT_QUIET)
 	install(CODE
 		"
 		execute_process(
