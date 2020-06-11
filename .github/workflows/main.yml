@@ -40,10 +40,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Build Using Make
+    - uses: seanmiddleditch/gha-setup-ninja@master
+    - name: Build Using CMake Ninja
       run: |
-        echo 'Build Using Make'
-        #./Linux/fixup_makefiles_for_github_runner.sh
-        #cd Linux
-        #make All
-        echo 'Done Build Using Make'
+        echo '*** Configuring CMake ***'
+        mkdir buildninja
+        cd buildninja
+        cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang -DCMAKE_C_COMPILER=clang -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON
+        echo '*** Ninja Build ***'
+        ninja -v install
+        echo '*** Done Building ***'
