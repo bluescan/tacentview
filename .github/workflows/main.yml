@@ -25,14 +25,14 @@ jobs:
 
     # Build CMake NMake.
     - uses: ilammy/msvc-dev-cmd@v1.2.0
-    - name: Build using CMake NMake
+    - name: Build using CMake MSVC
       run: |
-        echo '*** Configuring CMake ***'
-        mkdir buildnmake
-        cd buildnmake
-        cmake .. -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles"
-        echo '*** NMake Build ***'
-        nmake install
+        echo '*** CMake Configure ***'
+        mkdir build
+        cd build
+        cmake .. -G"Visual Studio 16 2019" -Ax64
+        echo '*** CMake Build ***'
+        cmake --build . --config Release --target install
         echo '*** Done Building ***'
         
   # The checkoutbuildubuntu job builds tacentview on ubuntu.
