@@ -146,8 +146,8 @@ target_link_libraries(
 		$<$<PLATFORM_ID:Windows>:dwmapi.lib>
 		$<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glfw/Windows/Release/glfw3.lib>
 
-		# $<$<PLATFORM_ID:Linux>:m>
-		# $<$<PLATFORM_ID:Linux>:stdc++>
+		$<$<PLATFORM_ID:Linux>:m>
+		$<$<PLATFORM_ID:Linux>:stdc++>
 		$<$<PLATFORM_ID:Linux>:dl>
 		$<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glfw/Linux/Release/libglfw3.a>
 )
