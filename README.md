@@ -72,43 +72,39 @@ For convenience pre-built binaries are available for Windows and Ubuntu/Debian i
 
 ## windows
 
-Building on Windows requires Visual Studio with the C++ workflow.
-* Install Visual Studio 2019 with the C++ workflow.
-* Open the Windows/TacitTexView.sln
-* Hit F7 to build. Debug and Release configurations are available.
+Building on Windows is tested with the Visual Studio 2019 MSVC compiler (choose the C++ workflow when installing). You will need to install git. Optionally you may want to use VSCode with the CMake Tools extension to build. To build from the Visual Studio x64 Command Prompt:
 
-The Release configuration will also package a zip file with all required content. This is done by a post-build step using a powershell script. You may need to allow ps1 scripts to be run by entering the following command from a powershell window as administrator:
 ```
-Set-ExecutionPolicy Unrestricted
+mkdir build
+cd build
+cmake .. -G"Visual Studio 16 2019" -Ax64
+cmake --build . --config Release --target install
 ```
+
+The install target will also package a zip file with all required content. This is done by an install step using a powershell script.
 
 ## ubuntu
 
-Building for Ubuntu requires Clang (C++17) and the CodeLite IDE. To get the latest CodeLite (14.0.0 is being used) you need to add the correct repository. The 'Software and Updates' app allows you to manage (add and remove) repositories.
+Building for Ubuntu is tested with Clang (9 or 10). CMake and Git are required. Ninja is suggested but optional. The 'Software and Updates' app allows you to manage (add and remove) repositories or use the command line:
 ```
-https://repos.codelite.org/ubuntu3/ eoan universe     # For latest codelite
-```
-
-The command line may also be used:
-```
-* sudo add-apt-repository ppa:example/ppa             # Adds a ppa repo.
-* sudo add-apt-repository --remove ppa:example/ppa    # Removes a ppa repo.
-```
-
-Setting up the build environemnt on Ubuntu Eoan:
-```
-sudo apt-get update                      # Update the OS
-sudo apt-get install gdebi               # Installs gdebi to allow command-line deb file installation.
-sudo apt-get install git                 # Install git or download the sorce as a zip.
+sudo apt-get install gdebi               # Installs gdebi to allow command-line deb file installation. Optional.
+sudo apt-get install git                 # Install git or download the source as a zip.
 sudo gdebi Downloads/smartgit-19_1_7.deb # Install smartgit or some other git frontend. Optional.
 sudo apt-get install llvm                # The compiler.
 sudo apt-get install clang               # The compiler.
-sudo apt-get install lldb                # The debugger.
-sudo apt-get install codelite            # The IDE.
+sudo apt-get install lldb                # The debugger. Optional.
+sudo apt-get install cmake               # CMake.
+sudo apt-get install ninja-build         # Ninja build system.
+sudo update-alternatives --config c++    # Choose clang.
+sudo update-alternatives --config cc     # Choose clang.
 ```
 
-To build:
-* Open the Linux/TacitTexView.workspace in CodeLite.
-* Build the TacitTexView project (F7) in either Debug or Release configurations.
+I usually use VSCode with the CMake Tools to build. Alternatively from the command line:
+```
+mkdir ninjabuild
+cd ninjabuild
+cmake .. -GNinja
+ninja install
+```
 
-The Release configuration will also package a deb file with all required content.
+The install target packages a deb file with all required content. You can pass -DCMAKE_BUILD_TYPE=Debug (or Release) to cmake if so desired.
