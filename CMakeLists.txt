@@ -1,6 +1,8 @@
 # Should really specify a range of tested versions.
 cmake_minimum_required(VERSION 3.16)
 
+cmake_policy(SET CMP0091 NEW)
+
 # Set default build-type (AKA the configuration in other IDEs).
 set(CMAKE_BUILD_TYPE_INIT Release)
 
@@ -139,6 +141,17 @@ target_link_libraries(
 	PRIVATE
 		Foundation Math System Image
 
+		# $<$<PLATFORM_ID:Windows>:kernel32.lib>
+		# $<$<PLATFORM_ID:Windows>:user32.lib>
+		# $<$<PLATFORM_ID:Windows>:gdi32.lib>
+		# $<$<PLATFORM_ID:Windows>:winspool.lib>
+		# $<$<PLATFORM_ID:Windows>:shell32.lib>
+		# $<$<PLATFORM_ID:Windows>:ole32.lib>
+		# $<$<PLATFORM_ID:Windows>:oleaut32.lib>
+		# $<$<PLATFORM_ID:Windows>:uuid.lib>
+		# $<$<PLATFORM_ID:Windows>:comdlg32.lib>
+		# $<$<PLATFORM_ID:Windows>:advapi32.lib>
+
 		$<$<PLATFORM_ID:Windows>:shlwapi.lib>
 		$<$<PLATFORM_ID:Windows>:Dbghelp.lib>
 		$<$<PLATFORM_ID:Windows>:opengl32.lib>
@@ -153,10 +166,10 @@ target_link_libraries(
 )
 
 if (MSVC)
-	target_link_options(${PROJECT_NAME} PRIVATE "/ENTRY:\"mainCRTStartup\"")
-	#if (CMAKE_BUILD_TYPE MATCHES Debug)
-	#	target_link_options(${PROJECT_NAME} PRIVATE "/NODEFAULTLIB:\"LIBCMT.lib\"")
-	#endif()
+	target_link_options(${PROJECT_NAME} PRIVATE "/ENTRY:mainCRTStartup")
+	if (CMAKE_BUILD_TYPE MATCHES Debug)
+		target_link_options(${PROJECT_NAME} PRIVATE "/NODEFAULTLIB:LIBCMT.lib")
+	endif()
 endif()
 
 # Install
@@ -179,6 +192,7 @@ if (UNIX)
 	configure_file("Linux/create_deb.sh.in" "${VIEWER_PACKAGE_DIR}/create_deb.sh" @ONLY)
 	install(CODE
 		"
+		execute_process(COMMAND \"chmod\" \"a+x\" \"ViewerInstall/Package/create_deb.sh\")
 		execute_process(
 			COMMAND \"ViewerInstall/Package/create_deb.sh\"
 			RESULT_VARIABLE package_result
