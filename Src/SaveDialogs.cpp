@@ -14,7 +14,7 @@
 
 #include "imgui.h"
 #include "SaveDialogs.h"
-#include "TacitImage.h"
+#include "Image.h"
 #include "TacentView.h"
 using namespace tStd;
 using namespace tSystem;
@@ -22,18 +22,18 @@ using namespace tMath;
 using namespace tImage;
 
 
-namespace TexView
+namespace Viewer
 {
 	void SaveAllImages(const tString& destDir, const tString& extension, float percent, int width, int height);
 	void GetFilesNeedingOverwrite(const tString& destDir, tListZ<tStringItem>& overwriteFiles, const tString& extension);
 	void AddSavedImageIfNecessary(const tString& savedFile);
 
 	// This function saves the picture to the filename specified.
-	bool SaveImageAs(TacitImage&, const tString& outFile, int width, int height, float scale = 1.0f, Settings::SizeMode = Settings::SizeMode::SetWidthAndHeight);
+	bool SaveImageAs(Image&, const tString& outFile, int width, int height, float scale = 1.0f, Settings::SizeMode = Settings::SizeMode::SetWidthAndHeight);
 }
 
 
-tString TexView::DoSubFolder()
+tString Viewer::DoSubFolder()
 {
 	// Output sub-folder
 	char subFolder[256]; tMemset(subFolder, 0, 256);
@@ -57,7 +57,7 @@ tString TexView::DoSubFolder()
 }
 
 
-tString TexView::DoSaveFiletype()
+tString Viewer::DoSaveFiletype()
 {
 	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "gif" };
 	ImGui::Combo("File Type", &Config.SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
@@ -83,7 +83,7 @@ tString TexView::DoSaveFiletype()
 }
 
 
-bool TexView::SaveImageAs(TacitImage& img, const tString& outFile, int width, int height, float scale, Settings::SizeMode sizeMode)
+bool Viewer::SaveImageAs(Image& img, const tString& outFile, int width, int height, float scale, Settings::SizeMode sizeMode)
 {
 	// We make sure to maintain the loaded/unloaded state. This function may be called many times in succession
 	// so we don't want them all in memory at once by indiscriminantly loading them all.
@@ -153,7 +153,7 @@ bool TexView::SaveImageAs(TacitImage& img, const tString& outFile, int width, in
 }
 
 
-void TexView::DoSaveAsModalDialog(bool justOpened)
+void Viewer::DoSaveAsModalDialog(bool justOpened)
 {
 	tAssert(CurrImage);
 	tPicture* picture = CurrImage->GetCurrentPic();
@@ -257,7 +257,7 @@ void TexView::DoSaveAsModalDialog(bool justOpened)
 				{
 					// This gets a bit tricky. Image A may be saved as the same name as image B also in the list. We need to search for it.
 					// If it's not found, we need to add it to the list iff it was saved to the current folder.
-					TacitImage* foundImage = FindImage(outFile);
+					Image* foundImage = FindImage(outFile);
 					if (foundImage)
 					{
 						foundImage->Unload(true);
@@ -286,7 +286,7 @@ void TexView::DoSaveAsModalDialog(bool justOpened)
 			bool ok = SaveImageAs(*CurrImage, outFile, dstW, dstH);
 			if (ok)
 			{
-				TacitImage* foundImage = FindImage(outFile);
+				Image* foundImage = FindImage(outFile);
 				if (foundImage)
 				{
 					foundImage->Unload(true);
@@ -311,7 +311,7 @@ void TexView::DoSaveAsModalDialog(bool justOpened)
 }
 
 
-void TexView::DoSaveAllModalDialog(bool justOpened)
+void Viewer::DoSaveAllModalDialog(bool justOpened)
 {
 	ImGui::Text("Save all %d images to the image type you select.", Images.GetNumItems()); ImGui::SameLine();
 	ShowHelpMark
@@ -431,9 +431,9 @@ void TexView::DoSaveAllModalDialog(bool justOpened)
 }
 
 
-void TexView::GetFilesNeedingOverwrite(const tString& destDir, tListZ<tStringItem>& overwriteFiles, const tString& extension)
+void Viewer::GetFilesNeedingOverwrite(const tString& destDir, tListZ<tStringItem>& overwriteFiles, const tString& extension)
 {
-	for (TacitImage* image = Images.First(); image; image = image->Next())
+	for (Image* image = Images.First(); image; image = image->Next())
 	{
 		tString baseName = tSystem::tGetFileBaseName(image->Filename);
 		tString outFile = destDir + tString(baseName) + extension;
@@ -445,7 +445,7 @@ void TexView::GetFilesNeedingOverwrite(const tString& destDir, tListZ<tStringIte
 }
 
 
-void TexView::DoOverwriteMultipleFilesModal(const tListZ<tStringItem>& overwriteFiles, bool& pressedOK, bool& pressedCancel)
+void Viewer::DoOverwriteMultipleFilesModal(const tListZ<tStringItem>& overwriteFiles, bool& pressedOK, bool& pressedCancel)
 {
 	tAssert(!overwriteFiles.IsEmpty());
 	tString dir = tSystem::tGetDir(*overwriteFiles.First());
@@ -490,13 +490,13 @@ void TexView::DoOverwriteMultipleFilesModal(const tListZ<tStringItem>& overwrite
 }
 
 
-void TexView::SaveAllImages(const tString& destDir, const tString& extension, float percent, int width, int height)
+void Viewer::SaveAllImages(const tString& destDir, const tString& extension, float percent, int width, int height)
 {
 	float scale = percent/100.0f;
 	tString currFile = CurrImage ? CurrImage->Filename : tString();
 
 	bool anySaved = false;
-	for (TacitImage* image = Images.First(); image; image = image->Next())
+	for (Image* image = Images.First(); image; image = image->Next())
 	{
 		tString baseName = tSystem::tGetFileBaseName(image->Filename);
 		tString outFile = destDir + tString(baseName) + extension;
@@ -504,7 +504,7 @@ void TexView::SaveAllImages(const tString& destDir, const tString& extension, fl
 		bool ok = SaveImageAs(*image, outFile, width, height, scale, Settings::SizeMode(Config.SaveAllSizeMode));
 		if (ok)
 		{
-			TacitImage* foundImage = FindImage(outFile);
+			Image* foundImage = FindImage(outFile);
 			if (foundImage)
 			{
 				foundImage->Unload(true);
@@ -526,19 +526,19 @@ void TexView::SaveAllImages(const tString& destDir, const tString& extension, fl
 }
 
 
-void TexView::AddSavedImageIfNecessary(const tString& savedFile)
+void Viewer::AddSavedImageIfNecessary(const tString& savedFile)
 {
 	if (ImagesDir.IsEqualCI(tGetDir(savedFile)))
 	{
 		// Add to list. It's still unloaded.
-		TacitImage* newImg = new TacitImage(savedFile);
+		Image* newImg = new Image(savedFile);
 		Images.Append(newImg);
 		ImagesLoadTimeSorted.Append(newImg);
 	}
 }
 
 
-void TexView::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool& pressedCancel)
+void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool& pressedCancel)
 {
 	tString file = tSystem::tGetFileName(outFile);
 	tString dir = tSystem::tGetDir(outFile);

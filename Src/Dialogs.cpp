@@ -15,19 +15,18 @@
 #include <Foundation/tVersion.cmake.h>
 #include <Math/tVector2.h>
 #include <Math/tColour.h>
-#include <Image/tImageHDR.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "imgui.h"
 #include "Dialogs.h"
 #include "Settings.h"
-#include "TacitImage.h"
+#include "Image.h"
 #include "TacentView.h"
 #include "Version.cmake.h"
 using namespace tMath;
 
 
-void TexView::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY, float zoom)
+void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY, float zoom)
 {
 	// This overlay function is pretty much taken from the DearImGui demo code.
 	const float margin = 6.0f;
@@ -69,7 +68,7 @@ void TexView::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, fl
 
 			ImGui::SameLine(); ImGui::Text("(%d, %d, %d, %d)", PixelColour.R, PixelColour.G, PixelColour.B, PixelColour.A);
 
-			TacitImage::ImgInfo& info = CurrImage->Info;
+			Image::ImgInfo& info = CurrImage->Info;
 			int bpp = tImage::tGetBitsPerPixel(info.SrcPixelFormat);
 			if (info.IsValid())
 			{
@@ -103,7 +102,7 @@ void TexView::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, fl
 }
 
 
-void TexView::ShowCheatSheetPopup(bool* popen)
+void Viewer::ShowCheatSheetPopup(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(4);
 	ImGui::SetNextWindowBgAlpha(0.80f);
@@ -159,7 +158,7 @@ void TexView::ShowCheatSheetPopup(bool* popen)
 }
 
 
-void TexView::ShowAboutPopup(bool* popen)
+void Viewer::ShowAboutPopup(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(3);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
@@ -176,11 +175,7 @@ void TexView::ShowAboutPopup(bool* popen)
 		ImGui::Separator();
 		ImGui::Text("The following amazing and liberally licensed frameworks are used by this tool.");
 		ImGui::Text("Dear ImGui V %s", IMGUI_VERSION);
-//		#ifdef PLATFORM_WINDOWS
-//		ImGui::Text("GLEW V %s", glewGetString(GLEW_VERSION));
-//		#else
 		ImGui::Text("GLAD V %s", glad_glGetString(GL_VERSION));
-//		#endif
 		ImGui::Text("GLFW V %d.%d.%d", glfwMajor, glfwMinor, glfwRev);
 		ImGui::Text("Tacent Library V %d.%d.%d", tVersion::Major, tVersion::Minor, tVersion::Revision);
 		ImGui::Text("CxImage");
@@ -190,17 +185,17 @@ void TexView::ShowAboutPopup(bool* popen)
 		ImGui::Text("Radiance Software");
 		ImGui::Text("OpenEXR");
 		ImGui::Text("ZLib");
-//		ImGui::Text("OpenEXR V %s", OPENEXR_VERSION_STRING);
-//		ImGui::Text("ZLib V %s", ZLIB_VERSION);
+		ImGui::Text("OpenEXR V %s", tImage::Version_OpenEXR);
+		ImGui::Text("ZLib V %s", tImage::Version_ZLIB);
 		ImGui::Text("Gif Load");
-//		ImGui::Text("WebP Decoder V %d.%d", WEBP_DECODER_ABI_VERSION >> 8, WEBP_DECODER_ABI_VERSION & 0xFF);
+		ImGui::Text("WebP Decoder V %d.%d", tImage::Version_WEBP_Major, tImage::Version_WEBP_Minor);
 		ImGui::Text("WebP Decoder");
 	}
 	ImGui::End();
 }
 
 
-void TexView::ShowPropertyEditorWindow(bool* popen)
+void Viewer::ShowPropertyEditorWindow(bool* popen)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
 
@@ -254,7 +249,7 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 			if (ImGui::Button("Reload All"))
 			{
 				tImage::tPicture::LoadParams params = CurrImage->LoadParams;
-				for (TacitImage* img = Images.First(); img; img = img->Next())
+				for (Image* img = Images.First(); img; img = img->Next())
 				{
 					if (img->Filetype != tSystem::tFileType::HDR)
 						continue;
@@ -311,7 +306,7 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 			if (ImGui::Button("Reload All"))
 			{
 				tImage::tPicture::LoadParams params = CurrImage->LoadParams;
-				for (TacitImage* img = Images.First(); img; img = img->Next())
+				for (Image* img = Images.First(); img; img = img->Next())
 				{
 					if (img->Filetype != tSystem::tFileType::EXR)
 						continue;
@@ -433,7 +428,7 @@ void TexView::ShowPropertyEditorWindow(bool* popen)
 }
 
 
-void TexView::ShowPreferencesWindow(bool* popen)
+void Viewer::ShowPreferencesWindow(bool* popen)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
 
@@ -531,7 +526,7 @@ void TexView::ShowPreferencesWindow(bool* popen)
 }
 
 
-void TexView::ColourCopyAs()
+void Viewer::ColourCopyAs()
 {
 	tColourf floatCol(PixelColour);
 	ImGui::Text("Copy As...");
@@ -582,7 +577,7 @@ void TexView::ColourCopyAs()
 }
 
 
-void TexView::DoDeleteFileModal()
+void Viewer::DoDeleteFileModal()
 {
 	tString fullname = CurrImage->Filename;
 	tString file = tSystem::tGetFileName(fullname);
@@ -614,7 +609,7 @@ void TexView::DoDeleteFileModal()
 }
 
 
-void TexView::DoDeleteFileNoRecycleModal()
+void Viewer::DoDeleteFileNoRecycleModal()
 {
 	tString fullname = CurrImage->Filename;
 	tString file = tSystem::tGetFileName(fullname);
@@ -649,7 +644,7 @@ void TexView::DoDeleteFileNoRecycleModal()
 
 // Parts of this class are a modification of the one that ships with Dear ImGui. The DearImGui
 // licence (MIT) may be found in the txt file Licence_DearImGui_MIT.txt in the Data folder.
-void TexView::NavLogBar::ClearLog()
+void Viewer::NavLogBar::ClearLog()
 {
 	LogBuf.clear();
 	LogLineOffsets.clear();
@@ -657,7 +652,7 @@ void TexView::NavLogBar::ClearLog()
 }
 
 
-void TexView::NavLogBar::AddLog(const char* fmt, ...)
+void Viewer::NavLogBar::AddLog(const char* fmt, ...)
 {
 	int oldSize = LogBuf.size();
 	va_list args;
@@ -673,7 +668,7 @@ void TexView::NavLogBar::AddLog(const char* fmt, ...)
 }
 
 
-void TexView::NavLogBar::Draw()
+void Viewer::NavLogBar::Draw()
 {
 	ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 14.0f);
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 1.0f);
@@ -681,7 +676,7 @@ void TexView::NavLogBar::Draw()
 	if
 	(
 		ImGui::ImageButton(ImTextureID(UpFolderImage.Bind()), tVector2(18,18), tVector2(0,1), tVector2(1,0), 1,
-		TexView::ColourBG, tVector4(1.00f, 1.00f, 1.00f, 1.00f))
+		Viewer::ColourBG, tVector4(1.00f, 1.00f, 1.00f, 1.00f))
 	)
 	{
 		tString upDir = tSystem::tGetUpDir(ImagesDir);
@@ -725,7 +720,7 @@ void TexView::NavLogBar::Draw()
 }
 
 
-void TexView::NavLogBar::DrawLog()
+void Viewer::NavLogBar::DrawLog()
 {
 	if (ImGui::Button("Clear"))
 		ClearLog();

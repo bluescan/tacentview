@@ -1,5 +1,5 @@
 This licence applies to the code used for reading hdr images. It is included at the top of ImageHDR.h/.cpp as well.
-The documentation for tacit-texview is the Readme.txt in this folder, where the product statement is included.
+The documentation for Tacent View is the Readme.txt in this folder, where the product statement is included.
 
 
 The Radiance Software License, Version 1.0

@@ -20,11 +20,11 @@
 #include <System/tPrint.h>
 #include "Crop.h"
 #include "TacentView.h"
-#include "TacitImage.h"
+#include "Image.h"
 using namespace tMath;
 
 
-namespace TexView
+namespace Viewer
 {
 	CropWidget CropGizmo;
 
@@ -33,7 +33,7 @@ namespace TexView
 }
 
 
-void TexView::CropWidget::MouseButton(CropLine& line, bool down, float mouse)
+void Viewer::CropWidget::MouseButton(CropLine& line, bool down, float mouse)
 {
 	// Up or down.
 	line.V += line.PressedDelta;
@@ -54,7 +54,7 @@ void TexView::CropWidget::MouseButton(CropLine& line, bool down, float mouse)
 }
 
 
-void TexView::CropWidget::MouseHovered(CropLine& line, const tVector2& mouse, const tVector2& ends, bool horizontal)
+void Viewer::CropWidget::MouseHovered(CropLine& line, const tVector2& mouse, const tVector2& ends, bool horizontal)
 {
 	tARect2 hitBox;
 	if (horizontal)
@@ -66,7 +66,7 @@ void TexView::CropWidget::MouseHovered(CropLine& line, const tVector2& mouse, co
 }
 
 
-void TexView::CropWidget::MouseButton(bool down, const tVector2& mouse)
+void Viewer::CropWidget::MouseButton(bool down, const tVector2& mouse)
 {
 	MouseButton(LineB, down, mouse.y);
 	MouseButton(LineT, down, mouse.y);
@@ -75,7 +75,7 @@ void TexView::CropWidget::MouseButton(bool down, const tVector2& mouse)
 }
 
 
-void TexView::CropWidget::SetLines(const tVector4& lines)
+void Viewer::CropWidget::SetLines(const tVector4& lines)
 {
 	LineL.V = lines.L;	LineL.PressedDelta = 0.0f;
 	LineR.V = lines.R;	LineR.PressedDelta = 0.0f;
@@ -84,7 +84,7 @@ void TexView::CropWidget::SetLines(const tVector4& lines)
 }
 
 
-void TexView::CropWidget::UpdateDraw
+void Viewer::CropWidget::UpdateDraw
 (
 	const tVector4& imgext, const tVector2& mouse,
 	const tVector2& uvmarg, const tVector2& uvoffset
@@ -116,7 +116,7 @@ void TexView::CropWidget::UpdateDraw
 }
 
 
-void TexView::CropWidget::ConstrainCropLines(const tVector4& imgext, bool forceAll)
+void Viewer::CropWidget::ConstrainCropLines(const tVector4& imgext, bool forceAll)
 {
 	if (LineL.Pressed || forceAll)
 	{
@@ -152,7 +152,7 @@ void TexView::CropWidget::ConstrainCropLines(const tVector4& imgext, bool forceA
 }
 
 
-void TexView::CropWidget::DrawMatt(const tVector4& imext, const tVector2& uvmarg, const tVector2& uvoffset)
+void Viewer::CropWidget::DrawMatt(const tVector4& imext, const tVector2& uvmarg, const tVector2& uvoffset)
 {
 	float l = LineL.V + LineL.PressedDelta;
 	float r = LineR.V + LineR.PressedDelta;
@@ -189,7 +189,7 @@ void TexView::CropWidget::DrawMatt(const tVector4& imext, const tVector2& uvmarg
 }
 
 
-void TexView::CropWidget::DrawLines()
+void Viewer::CropWidget::DrawLines()
 {
 	glColor4fv(tColourf::white.E);
 	float l = LineL.V + LineL.PressedDelta;
@@ -220,7 +220,7 @@ void TexView::CropWidget::DrawLines()
 }
 
 
-void TexView::CropWidget::DrawHandles()
+void Viewer::CropWidget::DrawHandles()
 {
 	float l = LineL.V + LineL.PressedDelta;
 	float r = LineR.V + LineR.PressedDelta;
@@ -271,7 +271,7 @@ void TexView::CropWidget::DrawHandles()
 }
 
 
-void TexView::ShowCropPopup(const tVector4& lrtb, const tVector2& uvmarg, const tVector2& uvoffset)
+void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvmarg, const tVector2& uvoffset)
 {
 	if (!CurrImage)
 	{
@@ -349,7 +349,7 @@ void TexView::ShowCropPopup(const tVector4& lrtb, const tVector2& uvmarg, const 
 			CurrImage->Unbind();
 			CurrImage->Crop(newW, newH, minX, minY);
 			CurrImage->Bind();
-			TexView::SetWindowTitle();
+			Viewer::SetWindowTitle();
 			CropMode = false;
 		}
 	}

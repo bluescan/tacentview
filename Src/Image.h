@@ -1,4 +1,4 @@
-// TacitImage.h
+// Image.h
 //
 // An image class that can load a file from disk into main memory and to VRAM.
 //
@@ -26,16 +26,16 @@
 #include "Settings.h"
 
 
-class TacitImage : public tLink<TacitImage>
+class Image : public tLink<Image>
 {
 public:
-	TacitImage();
+	Image();
 
 	// This constructor does not actually load the image, but Load() may be called at any point afterwards.
-	TacitImage(const tString& filename);
-	virtual ~TacitImage();
+	Image(const tString& filename);
+	virtual ~Image();
 
-	// These params are in principle different to the ones in tPicture since a TacitImage does not necessarily
+	// These params are in principle different to the ones in tPicture since a Image does not necessarily
 	// only use tPicture to do the loading. For example, we might include dds load params here.
 	void ResetLoadParams();
 	tImage::tPicture::LoadParams LoadParams;
@@ -120,9 +120,9 @@ public:
 	std::time_t FileModTime;			// Valid before load.
 	uint64 FileSizeB;					// Valid before load.
 
-	const static int ThumbWidth;	//		= 256;
-	const static int ThumbHeight;	//	= 144;
-	const static int ThumbMinDispWidth;	//= 64;
+	const static int ThumbWidth;		// = 256;
+	const static int ThumbHeight;		// = 144;
+	const static int ThumbMinDispWidth;	// = 64;
 	static tString ThumbCacheDir;
 
 	bool TypeSupportsProperties() const;
@@ -152,7 +152,7 @@ private:
 	tImage::tPicture ThumbnailPicture;
 
 	// These 2 functions run on a helper thread.
-	static void GenerateThumbnailBridge(TacitImage* tacitImage);
+	static void GenerateThumbnailBridge(Image*);
 	void GenerateThumbnail();
 
 	// Zero is invalid and means texture has never been bound and loaded into VRAM.
@@ -176,7 +176,7 @@ private:
 // Implementation only below.
 
 
-inline bool TacitImage::TypeSupportsProperties() const
+inline bool Image::TypeSupportsProperties() const
 {
 	return
 	(

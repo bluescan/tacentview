@@ -16,26 +16,26 @@
 #include <System/tScript.h>
 #include <Math/tFundamentals.h>
 #include "Settings.h"
-#include "TacitImage.h"
+#include "Image.h"
 using namespace tMath;
 #define ReadItem(name) case tHashCT(#name): name = e.Arg1(); break
 #define	WriteItem(name) writer.Comp(#name, name)
 
 
-namespace TexView
+namespace Viewer
 {
 	Settings Config;
 }
 
 
-void TexView::Settings::Reset(int screenW, int screenH)
+void Viewer::Settings::Reset(int screenW, int screenH)
 {
 	ResetUISettings(screenW, screenH);
 	ResetBehaviourSettings();
 }
 
 
-void TexView::Settings::ResetBehaviourSettings()
+void Viewer::Settings::ResetBehaviourSettings()
 {
 	SortKey						= 0;
 	SortAscending				= true;
@@ -57,25 +57,25 @@ void TexView::Settings::ResetBehaviourSettings()
 }
 
 
-void TexView::Settings::ResetUISettings(int screenW, int screenH)
+void Viewer::Settings::ResetUISettings(int screenW, int screenH)
 {
-	WindowW					= 1280;
-	WindowH					= 720;
-	WindowX					= (screenW - WindowW) >> 1;
-	WindowY					= (screenH - WindowH) >> 1;
+	WindowW						= 1280;
+	WindowH						= 720;
+	WindowX						= (screenW - WindowW) >> 1;
+	WindowY						= (screenH - WindowH) >> 1;
 
-	ShowNavBar				= true;
-	ShowImageDetails		= true;
-	ContentViewShow			= false;
-	ThumbnailWidth			= 128.0f;
-	OverlayCorner			= 3;
-	Tile					= false;
-	BackgroundStyle			= 1;
-	BackgroundExtend		= false;
+	ShowNavBar					= true;
+	ShowImageDetails			= true;
+	ContentViewShow				= false;
+	ThumbnailWidth				= 128.0f;
+	OverlayCorner				= 3;
+	Tile						= false;
+	BackgroundStyle				= 1;
+	BackgroundExtend			= false;
 }
 
 
-void TexView::Settings::Load(const tString& filename, int screenW, int screenH)
+void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 {
 	if (!tSystem::tFileExists(filename))
 	{
@@ -129,7 +129,7 @@ void TexView::Settings::Load(const tString& filename, int screenW, int screenH)
 	tiClamp(WindowY, 0, screenH - WindowH);
 	tiClamp(OverlayCorner, 0, 3);
 	tiClamp(SaveFileType, 0, 4);
-	tiClamp(ThumbnailWidth, float(TacitImage::ThumbMinDispWidth), float(TacitImage::ThumbWidth));
+	tiClamp(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
 	tiClamp(SortKey, 0, 3);
 	tiClampMin(MaxImageMemMB, 256);
 	tiClampMin(MaxCacheFiles, 200);
@@ -138,10 +138,10 @@ void TexView::Settings::Load(const tString& filename, int screenW, int screenH)
 }
 
 
-bool TexView::Settings::Save(const tString& filename)
+bool Viewer::Settings::Save(const tString& filename)
 {
 	tScriptWriter writer(filename);
-	writer.Rem("Tacit Texture Viewer Configuration File");
+	writer.Rem("Tacent View Configuration File");
 	writer.CR();
 
 	WriteItem(WindowX);

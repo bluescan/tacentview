@@ -16,7 +16,7 @@
 #include <Foundation/tString.h>
 
 
-namespace TexView
+namespace Viewer
 {
 	struct Settings
 	{
@@ -85,4 +85,3 @@ namespace TexView
 
 	extern Settings Config;
 }
-

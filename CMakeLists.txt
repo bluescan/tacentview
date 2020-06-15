@@ -55,7 +55,7 @@ add_executable(
 	Src/Dialogs.cpp
 	Src/SaveDialogs.cpp
 	Src/Settings.cpp
-	Src/TacitImage.cpp
+	Src/Image.cpp
 	Src/TacentView.cpp
 	Src/Version.cmake.h
 	Src/ContactSheet.h
@@ -64,7 +64,7 @@ add_executable(
 	Src/Dialogs.h
 	Src/SaveDialogs.h
 	Src/Settings.h
-	Src/TacitImage.h
+	Src/Image.h
 	Src/TacentView.h
 	${CMAKE_CURRENT_SOURCE_DIR}/Windows/TacentView.rc
 

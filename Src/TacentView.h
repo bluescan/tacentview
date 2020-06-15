@@ -17,32 +17,32 @@
 #include <Math/tVector4.h>
 #include <System/tCommand.h>
 #include "Settings.h"
-class TacitImage;
+class Image;
 class tColouri;
 
 
-namespace TexView
+namespace Viewer
 {
 	extern Settings Config;
-	extern TacitImage* CurrImage;
+	extern Image* CurrImage;
 	extern tString ImagesDir;
 	extern tList<tStringItem> ImagesSubDirs;
-	extern tList<TacitImage> Images;
-	extern tItList<TacitImage> ImagesLoadTimeSorted;
+	extern tList<Image> Images;
+	extern tItList<Image> ImagesLoadTimeSorted;
 	extern tCommand::tParam ImageFileParam;
 	extern tColouri PixelColour;
-	extern TacitImage DefaultThumbnailImage;
-	extern TacitImage UpFolderImage;
-	extern TacitImage PlayImage;
-	extern TacitImage PlayRevImage;
-	extern TacitImage StopImage;
-	extern TacitImage StopRevImage;
-	extern TacitImage PlayLoopImage;
-	extern TacitImage PlayOnceImage;
-	extern TacitImage PrevImage;
-	extern TacitImage NextImage;
-	extern TacitImage SkipBeginImage;
-	extern TacitImage SkipEndImage;
+	extern Image DefaultThumbnailImage;
+	extern Image UpFolderImage;
+	extern Image PlayImage;
+	extern Image PlayRevImage;
+	extern Image StopImage;
+	extern Image StopRevImage;
+	extern Image PlayLoopImage;
+	extern Image PlayOnceImage;
+	extern Image PrevImage;
+	extern Image NextImage;
+	extern Image SkipBeginImage;
+	extern Image SkipEndImage;
 	extern bool CropMode;
 	extern bool DeleteAllCacheFilesOnExit;
 
@@ -61,7 +61,7 @@ namespace TexView
 	void ShowHelpMark(const char* desc);
 	void ShowToolTip(const char* desc);
 	void PopulateImages();
-	TacitImage* FindImage(const tString& filename);
+	Image* FindImage(const tString& filename);
 	void SetCurrentImage(const tString& currFilename = tString());
 	void LoadCurrImage();
 	bool ChangeScreenMode(bool fullscreeen, bool force = false);

@@ -17,14 +17,14 @@
 #include "ContactSheet.h"
 #include "SaveDialogs.h"
 #include "TacentView.h"
-#include "TacitImage.h"
+#include "Image.h"
 using namespace tStd;
 using namespace tMath;
 using namespace tSystem;
 using namespace tImage;
 
 
-namespace TexView
+namespace Viewer
 {
 	void SaveContactSheetTo
 	(
@@ -36,7 +36,7 @@ namespace TexView
 }
 
 
-void TexView::DoContactSheetModalDialog(bool justOpened)
+void Viewer::DoContactSheetModalDialog(bool justOpened)
 {
 	static int frameWidth = 256;
 	static int frameHeight = 256;
@@ -187,7 +187,7 @@ void TexView::DoContactSheetModalDialog(bool justOpened)
 }
 
 
-void TexView::SaveContactSheetTo
+void Viewer::SaveContactSheetTo
 (
 	const tString& outFile,
 	int contactWidth, int contactHeight,
@@ -207,7 +207,7 @@ void TexView::SaveContactSheetTo
 
 	tPrintf("Loading all frames...\n");
 	bool allOpaque = true;
-	for (TacitImage* img = Images.First(); img; img = img->Next())
+	for (Image* img = Images.First(); img; img = img->Next())
 	{
 		if (!img->IsLoaded())
 			img->Load();
@@ -216,7 +216,7 @@ void TexView::SaveContactSheetTo
 			allOpaque = false;
 	}
 
-	TacitImage* currImg = Images.First();
+	Image* currImg = Images.First();
 	while (currImg)
 	{
 		if (!currImg->IsLoaded())

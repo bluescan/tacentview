@@ -15,7 +15,7 @@
 #pragma once
 
 
-namespace TexView
+namespace Viewer
 {
 	void ShowImageDetailsOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY, float zoom);
 	void ShowCheatSheetPopup(bool* popen);

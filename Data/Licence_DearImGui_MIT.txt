@@ -1,6 +1,6 @@
-This licence applies to DearImGui. The source code for the printf log window in Tacit View is also
-a modification of DearImGui demo code and is covered by the MIT licence below as well as the compatible
-ISC licence of Tacit Tex View.
+This licence applies to DearImGui. The source code for the printf log window in Tacent View is also
+a modification of DearImGui demo code and is covered by the MIT licence in addition to the compatible
+ISC licence of Tacent View.
 
 Copyright (c) 2014-2019 Omar Cornut
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated

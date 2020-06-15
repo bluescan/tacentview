@@ -1,4 +1,4 @@
-// TacitImage.cpp
+// Image.cpp
 //
 // An image class that can load a file from disk into main memory and to VRAM.
 //
@@ -26,24 +26,24 @@
 #include <System/tTime.h>
 #include <System/tMachine.h>
 #include <System/tChunk.h>
-#include "TacitImage.h"
+#include "Image.h"
 #include "Settings.h"
 using namespace tStd;
 using namespace tSystem;
 using namespace tImage;
 using namespace tMath;
-using namespace TexView;
-int TacitImage::ThumbnailNumThreadsRunning = 0;
-tString TacitImage::ThumbCacheDir;
-namespace TexView { extern Settings Config; }
+using namespace Viewer;
+int Image::ThumbnailNumThreadsRunning = 0;
+tString Image::ThumbCacheDir;
+namespace Viewer { extern Settings Config; }
 
 
-const int TacitImage::ThumbWidth		= 256;
-const int TacitImage::ThumbHeight		= 144;
-const int TacitImage::ThumbMinDispWidth	= 64;
+const int Image::ThumbWidth			= 256;
+const int Image::ThumbHeight		= 144;
+const int Image::ThumbMinDispWidth	= 64;
 
 
-TacitImage::TacitImage() :
+Image::Image() :
 	Filename(),
 	Filetype(tFileType::Unknown),
 	FileSizeB(0),
@@ -54,7 +54,7 @@ TacitImage::TacitImage() :
 }
 
 
-TacitImage::TacitImage(const tString& filename) :
+Image::Image(const tString& filename) :
 	Filename(filename),
 	Filetype(tGetFileType(filename)),
 	FileSizeB(0),
@@ -71,14 +71,14 @@ TacitImage::TacitImage(const tString& filename) :
 }
 
 
-TacitImage::~TacitImage()
+Image::~Image()
 {
 	// If we're being destroyed before the thumbnail thread is done, we have to wait because that thread
 	// accesses the thumbnail picture of this object... so 'this' must be valid.
 	if (ThumbnailThread.joinable())
 		ThumbnailThread.join();
 
-	// It is important that the thread count decrements if necessary since TacitImages can be deleted
+	// It is important that the thread count decrements if necessary since Images can be deleted
 	// when changing folders. The threads need to be available to do more work in a new folder.
 	if (ThumbnailRequested && ThumbnailThreadRunning)
 	{
@@ -91,14 +91,14 @@ TacitImage::~TacitImage()
 }
 
 
-void TacitImage::ResetLoadParams()
+void Image::ResetLoadParams()
 {
 	LoadParams = tImage::tPicture::LoadParams();
-	LoadParams.GammaValue = TexView::Config.MonitorGamma;
+	LoadParams.GammaValue = Viewer::Config.MonitorGamma;
 }
 
 
-bool TacitImage::Load(const tString& filename)
+bool Image::Load(const tString& filename)
 {
 	if (filename.IsEmpty())
 		return false;
@@ -116,7 +116,7 @@ bool TacitImage::Load(const tString& filename)
 }
 
 
-bool TacitImage::Load()
+bool Image::Load()
 {
 	if (IsLoaded() && !Dirty)
 	{
@@ -268,7 +268,7 @@ bool TacitImage::Load()
 }
 
 
-int TacitImage::GetMemSizeBytes() const
+int Image::GetMemSizeBytes() const
 {
 	int numBytes = 0;
 	for (tPicture* pic = Pictures.First(); pic; pic = pic->Next())
@@ -279,7 +279,7 @@ int TacitImage::GetMemSizeBytes() const
 }
 
 
-void TacitImage::CreateAltPictureFromDDS_2DMipmaps()
+void Image::CreateAltPictureFromDDS_2DMipmaps()
 {
 	int width = 0;
 	for (tPicture* layer = Pictures.First(); layer; layer = layer->Next())
@@ -304,7 +304,7 @@ void TacitImage::CreateAltPictureFromDDS_2DMipmaps()
 }
 
 
-void TacitImage::CreateAltPictureFromDDS_Cubemap()
+void Image::CreateAltPictureFromDDS_Cubemap()
 {
 	int width = Pictures.First()->GetWidth();
 	int height = Pictures.First()->GetHeight();
@@ -356,7 +356,7 @@ void TacitImage::CreateAltPictureFromDDS_Cubemap()
 }
 
 
-bool TacitImage::Unload(bool force)
+bool Image::Unload(bool force)
 {
 	if (!IsLoaded())
 		return true;
@@ -378,7 +378,7 @@ bool TacitImage::Unload(bool force)
 }
 
 
-void TacitImage::Unbind()
+void Image::Unbind()
 {
 	for (tPicture* pic = Pictures.First(); pic; pic = pic->Next())
 	{
@@ -397,7 +397,7 @@ void TacitImage::Unbind()
 }
 
 
-bool TacitImage::IsOpaque() const
+bool Image::IsOpaque() const
 {
 	if (DDSCubemap.IsValid())
 		return DDSCubemap.AllSidesOpaque();
@@ -413,7 +413,7 @@ bool TacitImage::IsOpaque() const
 }
 
 
-int TacitImage::GetWidth() const
+int Image::GetWidth() const
 {
 	if (AltPicture.IsValid() && AltPictureEnabled)
 		return AltPicture.GetWidth();
@@ -426,7 +426,7 @@ int TacitImage::GetWidth() const
 }
 
 
-int TacitImage::GetHeight() const
+int Image::GetHeight() const
 {
 	if (AltPicture.IsValid() && AltPictureEnabled)
 		return AltPicture.GetHeight();
@@ -439,7 +439,7 @@ int TacitImage::GetHeight() const
 }
 
 
-tColouri TacitImage::GetPixel(int x, int y) const
+tColouri Image::GetPixel(int x, int y) const
 {
 	if (AltPicture.IsValid() && AltPictureEnabled)
 		return AltPicture.GetPixel(x, y);
@@ -454,7 +454,7 @@ tColouri TacitImage::GetPixel(int x, int y) const
 }
 
 
-void TacitImage::Rotate90(bool antiClockWise)
+void Image::Rotate90(bool antiClockWise)
 {
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->Rotate90(antiClockWise);
@@ -463,7 +463,7 @@ void TacitImage::Rotate90(bool antiClockWise)
 }
 
 
-void TacitImage::Flip(bool horizontal)
+void Image::Flip(bool horizontal)
 {
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->Flip(horizontal);
@@ -472,7 +472,7 @@ void TacitImage::Flip(bool horizontal)
 }
 
 
-void TacitImage::Crop(int newWidth, int newHeight, int originX, int originY)
+void Image::Crop(int newWidth, int newHeight, int originX, int originY)
 {
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->Crop(newWidth, newHeight, originX, originY);
@@ -481,7 +481,7 @@ void TacitImage::Crop(int newWidth, int newHeight, int originX, int originY)
 }
 
 
-void TacitImage::PrintInfo()
+void Image::PrintInfo()
 {
 	tPixelFormat format = tPixelFormat::Invalid;
 	if (Filetype == tSystem::tFileType::DDS)
@@ -500,7 +500,7 @@ void TacitImage::PrintInfo()
 }
 
 
-uint64 TacitImage::Bind()
+uint64 Image::Bind()
 {
 	if (AltPictureEnabled && AltPicture.IsValid())
 	{
@@ -561,7 +561,7 @@ uint64 TacitImage::Bind()
 }
 
 
-void TacitImage::BindLayers(const tList<tLayer>& layers, uint texID)
+void Image::BindLayers(const tList<tLayer>& layers, uint texID)
 {
 	if (layers.IsEmpty())
 		return;
@@ -607,7 +607,7 @@ void TacitImage::BindLayers(const tList<tLayer>& layers, uint texID)
 }
 
 
-void TacitImage::GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFormat, bool& compressed, tPixelFormat pixelFormat)
+void Image::GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFormat, bool& compressed, tPixelFormat pixelFormat)
 {
 	srcFormat = GL_RGBA;
 	srcType = GL_UNSIGNED_BYTE;
@@ -691,7 +691,7 @@ void TacitImage::GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFo
 }
 
 
-bool TacitImage::ConvertTexture2DToPicture()
+bool Image::ConvertTexture2DToPicture()
 {
 	if (!DDSTexture2D.IsValid() || !(Pictures.Count() <= 0))
 		return false;
@@ -725,7 +725,7 @@ bool TacitImage::ConvertTexture2DToPicture()
 }
 
 
-bool TacitImage::ConvertCubemapToPicture()
+bool Image::ConvertCubemapToPicture()
 {
 	if (!DDSCubemap.IsValid() || !(Pictures.Count() <= 0))
 		return false;
@@ -767,7 +767,7 @@ bool TacitImage::ConvertCubemapToPicture()
 }
 
 
-uint64 TacitImage::BindThumbnail()
+uint64 Image::BindThumbnail()
 {
 	if (!ThumbnailRequested)
 		return 0;
@@ -827,13 +827,13 @@ uint64 TacitImage::BindThumbnail()
 }
 
 
-void TacitImage::GenerateThumbnailBridge(TacitImage* tacitImage)
+void Image::GenerateThumbnailBridge(Image* img)
 {
-	tacitImage->GenerateThumbnail();
+	img->GenerateThumbnail();
 }
 
 
-void TacitImage::GenerateThumbnail()
+void Image::GenerateThumbnail()
 {
 	// This thread (only) is allowed to access ThumbnailPicture. The main thread will leave it alone until GenerateThumbnail is complete.
 	if (ThumbnailPicture.IsValid())
@@ -873,7 +873,7 @@ void TacitImage::GenerateThumbnail()
 		glfwMakeContextCurrent(offscreenContext);
 	}
 
-	TacitImage thumbLoader;
+	Image thumbLoader;
 	thumbLoader.Load(Filename);
 
 	if (Filetype == tFileType::DDS)
@@ -919,7 +919,7 @@ void TacitImage::GenerateThumbnail()
 }
 
 
-void TacitImage::RequestThumbnail()
+void Image::RequestThumbnail()
 {
 	if (ThumbnailRequested)
 		return;
@@ -944,14 +944,14 @@ void TacitImage::RequestThumbnail()
 }
 
 
-void TacitImage::UnrequestThumbnail()
+void Image::UnrequestThumbnail()
 {
 	if (ThumbnailRequested && !ThumbnailThreadRunning && !ThumbnailPicture.IsValid())
 		ThumbnailRequested = false;
 }
 
 
-void TacitImage::RequestInvalidateThumbnail()
+void Image::RequestInvalidateThumbnail()
 {
 	if (!ThumbnailRequested)
 		return;
@@ -960,20 +960,20 @@ void TacitImage::RequestInvalidateThumbnail()
 }
 
 
-void TacitImage::Play()
+void Image::Play()
 {
 	PartCurrCountdown = PartDurationOverrideEnabled ? PartDurationOverride : GetCurrentPic()->Duration;
 	PartPlaying = true;
 }
 
 
-void TacitImage::Stop()
+void Image::Stop()
 {
 	PartPlaying = false;
 }
 
 
-void TacitImage::UpdatePlaying(float dt)
+void Image::UpdatePlaying(float dt)
 {
 	if (!PartPlaying)
 		return;

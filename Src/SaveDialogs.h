@@ -17,7 +17,7 @@
 #include <Foundation/tString.h>
 
 
-namespace TexView
+namespace Viewer
 {
 	void DoSaveAsModalDialog(bool justOpened);
 	void DoSaveAllModalDialog(bool justOpened);

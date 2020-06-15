@@ -17,11 +17,11 @@
 #include "imgui.h"
 #include "ContentView.h"
 #include "TacentView.h"
-#include "TacitImage.h"
+#include "Image.h"
 using namespace tMath;
 
 
-void TexView::ShowContentViewDialog(bool* popen)
+void Viewer::ShowContentViewDialog(bool* popen)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar;
 	tVector2 windowPos = GetDialogOrigin(1);
@@ -48,7 +48,7 @@ void TexView::ShowContentViewDialog(bool* popen)
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2(minSpacing + extra/float(numPerRow), minSpacing));
 	tVector2 thumbButtonSize(Config.ThumbnailWidth, Config.ThumbnailWidth*9.0f/16.0f); // 64 36, 32 18,
 	int thumbNum = 0;
-	for (TacitImage* i = Images.First(); i; i = i->Next(), thumbNum++)
+	for (Image* i = Images.First(); i; i = i->Next(), thumbNum++)
 	{
 		tVector2 cursor = ImGui::GetCursorPos();
 		if ((thumbNum % numPerRow) == 0)
@@ -114,7 +114,7 @@ void TexView::ShowContentViewDialog(bool* popen)
 	ImGui::SetCursorPos(tVector2(0.0f, 3.0f));
 
 	ImGui::PushItemWidth(200);
-	ImGui::SliderFloat("Size", &Config.ThumbnailWidth, float(TacitImage::ThumbMinDispWidth), float(TacitImage::ThumbWidth), "%.0f");
+	ImGui::SliderFloat("Size", &Config.ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth), "%.0f");
 	ImGui::SameLine();
 	ImGui::PopItemWidth();
 

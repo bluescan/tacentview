@@ -38,7 +38,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl2.h"
 #include "TacentView.h"
-#include "TacitImage.h"
+#include "Image.h"
 #include "Dialogs.h"
 #include "ContactSheet.h"
 #include "ContentView.h"
@@ -51,49 +51,49 @@ using namespace tSystem;
 using namespace tMath;
 
 
-namespace TexView
+namespace Viewer
 {
 	tCommand::tParam ImageFileParam(1, "ImageFile", "File to open.");
 	NavLogBar NavBar;
 	tString ImagesDir;
 	tList<tStringItem> ImagesSubDirs;
-	tList<TacitImage> Images;
-	tItList<TacitImage> ImagesLoadTimeSorted	(false);
+	tList<Image> Images;
+	tItList<Image> ImagesLoadTimeSorted	(false);
 	tuint256 ImagesHash							= 0;
-	TacitImage* CurrImage						= nullptr;
+	Image* CurrImage							= nullptr;
 	
 	void LoadAppImages(const tString& dataDir);
 	void UnloadAppImages();
-	TacitImage ReticleImage;
-	TacitImage PrevImage;
-	TacitImage NextImage;
-	TacitImage PrevArrowImage;
-	TacitImage NextArrowImage;
-	TacitImage FlipHImage;
-	TacitImage FlipVImage;
-	TacitImage RotateACWImage;
-	TacitImage RotateCWImage;
-	TacitImage FullscreenImage;
-	TacitImage WindowedImage;
-	TacitImage SkipBeginImage;
-	TacitImage SkipEndImage;
-	TacitImage MipmapsImage;
-	TacitImage CubemapImage;
-	TacitImage RefreshImage;
-	TacitImage RecycleImage;
-	TacitImage PropEditImage;
-	TacitImage InfoOverlayImage;
-	TacitImage TileImage;
-	TacitImage StopImage;
-	TacitImage StopRevImage;
-	TacitImage PlayImage;
-	TacitImage PlayRevImage;
-	TacitImage PlayLoopImage;
-	TacitImage PlayOnceImage;
-	TacitImage ContentViewImage;
-	TacitImage UpFolderImage;
-	TacitImage CropImage;
-	TacitImage DefaultThumbnailImage;
+	Image ReticleImage;
+	Image PrevImage;
+	Image NextImage;
+	Image PrevArrowImage;
+	Image NextArrowImage;
+	Image FlipHImage;
+	Image FlipVImage;
+	Image RotateACWImage;
+	Image RotateCWImage;
+	Image FullscreenImage;
+	Image WindowedImage;
+	Image SkipBeginImage;
+	Image SkipEndImage;
+	Image MipmapsImage;
+	Image CubemapImage;
+	Image RefreshImage;
+	Image RecycleImage;
+	Image PropEditImage;
+	Image InfoOverlayImage;
+	Image TileImage;
+	Image StopImage;
+	Image StopRevImage;
+	Image PlayImage;
+	Image PlayRevImage;
+	Image PlayLoopImage;
+	Image PlayOnceImage;
+	Image ContentViewImage;
+	Image UpFolderImage;
+	Image CropImage;
+	Image DefaultThumbnailImage;
 
 	GLFWwindow* Window							= nullptr;
 	double DisappearCountdown					= DisappearDuration;
@@ -163,16 +163,16 @@ namespace TexView
 		tFileInfo ib; tGetFileInfo(ib, b);
 		return ia.CreationTime < ib.CreationTime;
 	}
-	bool Compare_ImageLoadTimeAscending(const TacitImage& a, const TacitImage& b)										{ return a.GetLoadedTime() < b.GetLoadedTime(); }
-	bool Compare_ImageFileNameAscending(const TacitImage& a, const TacitImage& b)										{ return tStricmp(a.Filename.Chars(), b.Filename.Chars()) < 0; }
-	bool Compare_ImageFileNameDescending(const TacitImage& a, const TacitImage& b)										{ return tStricmp(a.Filename.Chars(), b.Filename.Chars()) > 0; }
-	bool Compare_ImageFileTypeAscending(const TacitImage& a, const TacitImage& b)										{ return int(a.Filetype) < int(b.Filetype); }
-	bool Compare_ImageFileTypeDescending(const TacitImage& a, const TacitImage& b)										{ return int(a.Filetype) > int(b.Filetype); }
-	bool Compare_ImageModTimeAscending(const TacitImage& a, const TacitImage& b)										{ return a.FileModTime < b.FileModTime; }
-	bool Compare_ImageModTimeDescending(const TacitImage& a, const TacitImage& b)										{ return a.FileModTime > b.FileModTime; }
-	bool Compare_ImageFileSizeAscending(const TacitImage& a, const TacitImage& b)										{ return a.FileSizeB < b.FileSizeB; }
-	bool Compare_ImageFileSizeDescending(const TacitImage& a, const TacitImage& b)										{ return a.FileSizeB > b.FileSizeB; }
-	typedef bool ImageCompareFn(const TacitImage&, const TacitImage&);
+	bool Compare_ImageLoadTimeAscending(const Image& a, const Image& b)										{ return a.GetLoadedTime() < b.GetLoadedTime(); }
+	bool Compare_ImageFileNameAscending(const Image& a, const Image& b)										{ return tStricmp(a.Filename.Chars(), b.Filename.Chars()) < 0; }
+	bool Compare_ImageFileNameDescending(const Image& a, const Image& b)										{ return tStricmp(a.Filename.Chars(), b.Filename.Chars()) > 0; }
+	bool Compare_ImageFileTypeAscending(const Image& a, const Image& b)										{ return int(a.Filetype) < int(b.Filetype); }
+	bool Compare_ImageFileTypeDescending(const Image& a, const Image& b)										{ return int(a.Filetype) > int(b.Filetype); }
+	bool Compare_ImageModTimeAscending(const Image& a, const Image& b)										{ return a.FileModTime < b.FileModTime; }
+	bool Compare_ImageModTimeDescending(const Image& a, const Image& b)										{ return a.FileModTime > b.FileModTime; }
+	bool Compare_ImageFileSizeAscending(const Image& a, const Image& b)										{ return a.FileSizeB < b.FileSizeB; }
+	bool Compare_ImageFileSizeDescending(const Image& a, const Image& b)										{ return a.FileSizeB > b.FileSizeB; }
+	typedef bool ImageCompareFn(const Image&, const Image&);
 
 	void PopulateImagesSubDirs();
 	bool OnPrevious(bool circ = false);
@@ -183,7 +183,7 @@ namespace TexView
 	bool OnSkipEnd();
 	void ResetPan(bool resetX = true, bool resetY = true);
 	void ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan);
-	tString FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles);					// Returns the image folder.
+	tString FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles);	// Returns the image folder.
 	tuint256 ComputeImagesHash(const tList<tStringItem>& files);
 	int RemoveOldCacheFiles(const tString& cacheDir);						// Returns num removed.
 
@@ -199,7 +199,7 @@ namespace TexView
 }
 
 
-void TexView::PrintRedirectCallback(const char* text, int numChars)
+void Viewer::PrintRedirectCallback(const char* text, int numChars)
 {
 	NavBar.AddLog("%s", text);
 	
@@ -210,13 +210,13 @@ void TexView::PrintRedirectCallback(const char* text, int numChars)
 }
 
 
-tVector2 TexView::GetDialogOrigin(float index)
+tVector2 Viewer::GetDialogOrigin(float index)
 {
 	return tVector2(DialogOrigin + DialogDelta*float(index), DialogOrigin + TopUIHeight + DialogDelta*float(index));
 }
 
 
-int TexView::GetNavBarHeight()
+int Viewer::GetNavBarHeight()
 {
 	if (FullscreenMode || !Config.ShowNavBar)
 		return 0;
@@ -225,7 +225,7 @@ int TexView::GetNavBarHeight()
 }
 
 
-void TexView::DrawNavBar(float x, float y, float w, float h)
+void Viewer::DrawNavBar(float x, float y, float w, float h)
 {
 	// We take advantage of the fact that multiple calls to Begin()/End() are appending to the same window.
 	ImGui::SetNextWindowSize(tVector2(w, h), ImGuiCond_Always);
@@ -243,7 +243,7 @@ void TexView::DrawNavBar(float x, float y, float w, float h)
 }
 
 
-tString TexView::FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles)
+tString Viewer::FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles)
 {
 	tString imagesDir = tSystem::tGetCurrentDir();
 	if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
@@ -268,7 +268,7 @@ tString TexView::FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles)
 }
 
 
-tuint256 TexView::ComputeImagesHash(const tList<tStringItem>& files)
+tuint256 Viewer::ComputeImagesHash(const tList<tStringItem>& files)
 {
 	tuint256 hash = 0;
 	for (tStringItem* item = files.First(); item; item = item->Next())
@@ -278,7 +278,7 @@ tuint256 TexView::ComputeImagesHash(const tList<tStringItem>& files)
 }
 
 
-void TexView::PopulateImagesSubDirs()
+void Viewer::PopulateImagesSubDirs()
 {
 	ImagesSubDirs.Clear();
 
@@ -296,7 +296,7 @@ void TexView::PopulateImagesSubDirs()
 }
 
 
-void TexView::PopulateImages()
+void Viewer::PopulateImages()
 {
 	Images.Clear();
 	ImagesLoadTimeSorted.Clear();
@@ -312,7 +312,7 @@ void TexView::PopulateImages()
 	for (tStringItem* filename = foundFiles.First(); filename; filename = filename->Next())
 	{
 		// It is important we don't call Load after newing. We save memory by not having all images loaded.
-		TacitImage* newImg = new TacitImage(*filename);
+		Image* newImg = new Image(*filename);
 		Images.Append(newImg);
 		ImagesLoadTimeSorted.Append(newImg);
 	}
@@ -322,7 +322,7 @@ void TexView::PopulateImages()
 }
 
 
-void TexView::SortImages(Settings::SortKeyEnum key, bool ascending)
+void Viewer::SortImages(Settings::SortKeyEnum key, bool ascending)
 {
 	ImageCompareFn* sortFn;
 	switch (key)
@@ -348,25 +348,25 @@ void TexView::SortImages(Settings::SortKeyEnum key, bool ascending)
 }
 
 
-TacitImage* TexView::FindImage(const tString& filename)
+Image* Viewer::FindImage(const tString& filename)
 {
-	TacitImage* tacitImage = nullptr;
-	for (TacitImage* si = Images.First(); si; si = si->Next())
+	Image* img = nullptr;
+	for (Image* si = Images.First(); si; si = si->Next())
 	{
 		if (si->Filename.IsEqualCI(filename))
 		{
-			tacitImage = si;
+			img = si;
 			break;
 		}
 	}
 
-	return tacitImage;
+	return img;
 }
 
 
-void TexView::SetCurrentImage(const tString& currFilename)
+void Viewer::SetCurrentImage(const tString& currFilename)
 {
-	for (TacitImage* si = Images.First(); si; si = si->Next())
+	for (Image* si = Images.First(); si; si = si->Next())
 	{
 		tString siName = tSystem::tGetFileName(si->Filename);
 		tString imgName = tSystem::tGetFileName(currFilename);
@@ -395,7 +395,7 @@ void TexView::SetCurrentImage(const tString& currFilename)
 }
 
 
-void TexView::LoadCurrImage()
+void Viewer::LoadCurrImage()
 {
 	tAssert(CurrImage);
 	bool imgJustLoaded = false;
@@ -427,16 +427,16 @@ void TexView::LoadCurrImage()
 		ImagesLoadTimeSorted.Sort(Compare_ImageLoadTimeAscending);
 
 		int64 usedMem = 0;
-		for (tItList<TacitImage>::Iter iter = ImagesLoadTimeSorted.First(); iter; iter++)
+		for (tItList<Image>::Iter iter = ImagesLoadTimeSorted.First(); iter; iter++)
 			usedMem += int64((*iter).Info.MemSizeBytes);
 
 		int64 allowedMem = int64(Config.MaxImageMemMB) * 1024 * 1024;
 		if (usedMem > allowedMem)
 		{
 			tPrintf("Used image mem (%|64d) bigger than max (%|64d). Unloading.\n", usedMem, allowedMem);
-			for (tItList<TacitImage>::Iter iter = ImagesLoadTimeSorted.First(); iter; iter++)
+			for (tItList<Image>::Iter iter = ImagesLoadTimeSorted.First(); iter; iter++)
 			{
-				TacitImage* i = iter.GetObject();
+				Image* i = iter.GetObject();
 
 				// Never unload the current image.
 				if (i->IsLoaded() && (i != CurrImage))
@@ -454,7 +454,7 @@ void TexView::LoadCurrImage()
 }
 
 
-bool TexView::OnPrevious(bool circ)
+bool Viewer::OnPrevious(bool circ)
 {
 	if (!CurrImage || (!circ && !CurrImage->Prev()))
 		return false;
@@ -465,7 +465,7 @@ bool TexView::OnPrevious(bool circ)
 }
 
 
-bool TexView::OnNext(bool circ)
+bool Viewer::OnNext(bool circ)
 {
 	if (!CurrImage || (!circ && !CurrImage->Next()))
 		return false;
@@ -476,7 +476,7 @@ bool TexView::OnNext(bool circ)
 }
 
 
-void TexView::OnPreviousPart()
+void Viewer::OnPreviousPart()
 {
 	if (!CurrImage || (CurrImage->GetNumParts() <= 1))
 		return;
@@ -485,7 +485,7 @@ void TexView::OnPreviousPart()
 }
 
 
-void TexView::OnNextPart()
+void Viewer::OnNextPart()
 {
 	if (!CurrImage || (CurrImage->GetNumParts() <= 1))
 		return;
@@ -494,7 +494,7 @@ void TexView::OnNextPart()
 }
 
 
-bool TexView::OnSkipBegin()
+bool Viewer::OnSkipBegin()
 {
 	if (!CurrImage || !Images.First())
 		return false;
@@ -505,7 +505,7 @@ bool TexView::OnSkipBegin()
 }
 
 
-bool TexView::OnSkipEnd()
+bool Viewer::OnSkipEnd()
 {
 	if (!CurrImage || !Images.Last())
 		return false;
@@ -516,7 +516,7 @@ bool TexView::OnSkipEnd()
 }
 
 
-void TexView::ShowHelpMark(const char* desc)
+void Viewer::ShowHelpMark(const char* desc)
 {
 	ImGui::TextDisabled("[?]");
 	if (!ImGui::IsItemHovered())
@@ -530,7 +530,7 @@ void TexView::ShowHelpMark(const char* desc)
 }
 
 
-void TexView::ShowToolTip(const char* desc)
+void Viewer::ShowToolTip(const char* desc)
 {
 	if (!ImGui::IsItemHovered())
 		return;
@@ -545,7 +545,7 @@ void TexView::ShowToolTip(const char* desc)
 }
 
 
-void TexView::SetWindowTitle()
+void Viewer::SetWindowTitle()
 {
 	if (!Window)
 		return;
@@ -562,7 +562,7 @@ void TexView::SetWindowTitle()
 }
 
 
-void TexView::ResetPan(bool resetX, bool resetY)
+void Viewer::ResetPan(bool resetX, bool resetY)
 {
 	if (resetX)
 	{
@@ -578,7 +578,7 @@ void TexView::ResetPan(bool resetX, bool resetY)
 }
 
 
-void TexView::DrawBackground(float bgX, float bgY, float bgW, float bgH)
+void Viewer::DrawBackground(float bgX, float bgY, float bgW, float bgH)
 {
 	switch (Config.BackgroundStyle)
 	{
@@ -662,7 +662,7 @@ void TexView::DrawBackground(float bgX, float bgY, float bgW, float bgH)
 }
 
 
-void TexView::ConvertScreenPosToImagePos
+void Viewer::ConvertScreenPosToImagePos
 (
 	int& imgX, int& imgY,
 	const tVector2& scrPos, const tVector4& lrtb,
@@ -706,7 +706,7 @@ void TexView::ConvertScreenPosToImagePos
 }
 
 
-void TexView::ConvertImagePosToScreenPos
+void Viewer::ConvertImagePosToScreenPos
 (
 	tVector2& scrPos,
 	int imposX, int imposY, const tVector4& lrtb,
@@ -738,7 +738,7 @@ void TexView::ConvertImagePosToScreenPos
 }
 
 
-void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
+void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 {
 	// Poll and handle events like inputs, window resize, etc. You can read the io.WantCaptureMouse,
 	// io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -1543,7 +1543,7 @@ void TexView::Update(GLFWwindow* window, double dt, bool dopoll)
 }
 
 
-bool TexView::DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin)
+bool Viewer::DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin)
 {
 	tString nextImgFile = CurrImage->Next() ? CurrImage->Next()->Filename : tString();
 
@@ -1559,7 +1559,7 @@ bool TexView::DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin)
 }
 
 
-bool TexView::ChangeScreenMode(bool fullscreen, bool force)
+bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 {
 	if (!force && (FullscreenMode == fullscreen))
 		return false;
@@ -1567,8 +1567,8 @@ bool TexView::ChangeScreenMode(bool fullscreen, bool force)
 	// If currently in windowed mode, remember our window geometry.
 	if (!force && !FullscreenMode)
 	{
-		glfwGetWindowPos(TexView::Window, &TexView::Config.WindowX, &TexView::Config.WindowY);
-		glfwGetWindowSize(TexView::Window, &TexView::Config.WindowW, &TexView::Config.WindowH);
+		glfwGetWindowPos(Viewer::Window, &Viewer::Config.WindowX, &Viewer::Config.WindowY);
+		glfwGetWindowSize(Viewer::Window, &Viewer::Config.WindowW, &Viewer::Config.WindowH);
 	}
 
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
@@ -1578,16 +1578,16 @@ bool TexView::ChangeScreenMode(bool fullscreen, bool force)
 	glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
 	glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 	if (fullscreen)
-		glfwSetWindowMonitor(TexView::Window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+		glfwSetWindowMonitor(Viewer::Window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
 	else
-		glfwSetWindowMonitor(TexView::Window, nullptr, TexView::Config.WindowX, TexView::Config.WindowY, TexView::Config.WindowW, TexView::Config.WindowH, mode->refreshRate);
+		glfwSetWindowMonitor(Viewer::Window, nullptr, Viewer::Config.WindowX, Viewer::Config.WindowY, Viewer::Config.WindowW, Viewer::Config.WindowH, mode->refreshRate);
 
 	FullscreenMode = fullscreen;
 	return true;
 }
 
 
-void TexView::ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan)
+void Viewer::ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan)
 {
 	CurrZoomMode = ZoomMode::User;
 	float zoomOrig = ZoomPercent;
@@ -1607,7 +1607,7 @@ void TexView::ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan)
 }
 
 
-void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int modifiers)
+void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int modifiers)
 {
 	if ((action != GLFW_PRESS) && (action != GLFW_REPEAT))
 		return;
@@ -1747,11 +1747,11 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 			break;
 
 		case GLFW_KEY_I:
-			TexView::Config.ShowImageDetails = !TexView::Config.ShowImageDetails;
+			Viewer::Config.ShowImageDetails = !Viewer::Config.ShowImageDetails;
 			break;
 
 		case GLFW_KEY_V:
-			TexView::Config.ContentViewShow = !TexView::Config.ContentViewShow;
+			Viewer::Config.ContentViewShow = !Viewer::Config.ContentViewShow;
 			break;
 
 		case GLFW_KEY_L:
@@ -1802,7 +1802,7 @@ void TexView::KeyCallback(GLFWwindow* window, int key, int scancode, int action,
 }
 
 
-void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press, int mods)
+void Viewer::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press, int mods)
 {
 	if (ImGui::GetIO().WantCaptureMouse)
 		return;
@@ -1855,7 +1855,7 @@ void TexView::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press
 }
 
 
-void TexView::CursorPosCallback(GLFWwindow* window, double x, double y)
+void Viewer::CursorPosCallback(GLFWwindow* window, double x, double y)
 {
 	if (ImGui::GetIO().WantCaptureMouse)
 		return;
@@ -1864,7 +1864,7 @@ void TexView::CursorPosCallback(GLFWwindow* window, double x, double y)
 }
 
 
-void TexView::ScrollWheelCallback(GLFWwindow* window, double x, double y)
+void Viewer::ScrollWheelCallback(GLFWwindow* window, double x, double y)
 {
 	if (ImGui::GetIO().WantCaptureMouse)
 		return;
@@ -1878,7 +1878,7 @@ void TexView::ScrollWheelCallback(GLFWwindow* window, double x, double y)
 }
 
 
-void TexView::FileDropCallback(GLFWwindow* window, int count, const char** files)
+void Viewer::FileDropCallback(GLFWwindow* window, int count, const char** files)
 {
 	if (count < 1)
 		return;
@@ -1890,7 +1890,7 @@ void TexView::FileDropCallback(GLFWwindow* window, int count, const char** files
 }
 
 
-void TexView::FocusCallback(GLFWwindow* window, int gotFocus)
+void Viewer::FocusCallback(GLFWwindow* window, int gotFocus)
 {
 	if (!gotFocus)
 		return;
@@ -1909,7 +1909,7 @@ void TexView::FocusCallback(GLFWwindow* window, int gotFocus)
 		tPrintf("Hash mismatch. Dir contents changed. Resynching.\n");
 		PopulateImages();
 		if (ImageFileParam.IsPresent())
-			SetCurrentImage(TexView::ImageFileParam.Get());
+			SetCurrentImage(Viewer::ImageFileParam.Get());
 		else
 			SetCurrentImage();
 	}
@@ -1920,13 +1920,13 @@ void TexView::FocusCallback(GLFWwindow* window, int gotFocus)
 }
 
 
-void TexView::IconifyCallback(GLFWwindow* window, int iconified)
+void Viewer::IconifyCallback(GLFWwindow* window, int iconified)
 {
 	WindowIconified = iconified;
 }
 
 
-int TexView::RemoveOldCacheFiles(const tString& cacheDir)
+int Viewer::RemoveOldCacheFiles(const tString& cacheDir)
 {
 	tList<tStringItem> cacheFiles;
 	tSystem::tFindFiles(cacheFiles, cacheDir, "bin");
@@ -1953,7 +1953,7 @@ int TexView::RemoveOldCacheFiles(const tString& cacheDir)
 }
 
 
-void TexView::LoadAppImages(const tString& dataDir)
+void Viewer::LoadAppImages(const tString& dataDir)
 {
 	ReticleImage			.Load(dataDir + "Reticle.png");
 	PrevImage				.Load(dataDir + "Prev.png");
@@ -1988,7 +1988,7 @@ void TexView::LoadAppImages(const tString& dataDir)
 }
 
 
-void TexView::UnloadAppImages()
+void Viewer::UnloadAppImages()
 {
 	ReticleImage			.Unload();
 	PrevImage				.Unload();
@@ -2025,23 +2025,23 @@ void TexView::UnloadAppImages()
 
 int main(int argc, char** argv)
 {
-	tSystem::tSetStdoutRedirectCallback(TexView::PrintRedirectCallback);
+	tSystem::tSetStdoutRedirectCallback(Viewer::PrintRedirectCallback);
 	tCommand::tParse(argc, argv);
 
 	#ifdef PLATFORM_WINDOWS
-	if (TexView::ImageFileParam.IsPresent())
+	if (Viewer::ImageFileParam.IsPresent())
 	{
 		tString dest(MAX_PATH);
-		int numchars = GetLongPathNameA(TexView::ImageFileParam.Param.ConstText(), dest.Text(), MAX_PATH);
+		int numchars = GetLongPathNameA(Viewer::ImageFileParam.Param.ConstText(), dest.Text(), MAX_PATH);
 		if (numchars > 0)
-			TexView::ImageFileParam.Param = dest;
+			Viewer::ImageFileParam.Param = dest;
 
 		tPrintf("LongPath:%s\n", dest.ConstText());
 	}
 	#endif
 
 	// Setup window
-	glfwSetErrorCallback(TexView::GlfwErrorCallback);
+	glfwSetErrorCallback(Viewer::GlfwErrorCallback);
 	if (!glfwInit())
 		return 1;
 
@@ -2058,7 +2058,7 @@ int main(int argc, char** argv)
 
 	#ifdef PLATFORM_WINDOWS
 	tString dataDir = tSystem::tGetProgramDir() + "Data/";
-	TacitImage::ThumbCacheDir = dataDir + "Cache/";
+	Image::ThumbCacheDir = dataDir + "Cache/";
 
 	#elif defined(PLATFORM_LINUX)
 	tString progDir = tSystem::tGetProgramDir();
@@ -2068,11 +2068,11 @@ int main(int argc, char** argv)
 	if (!tSystem::tDirExists(localAppDir))
 		tSystem::tCreateDir(localAppDir);
 	
-	TacitImage::ThumbCacheDir = localAppDir + "Cache/";
+	Image::ThumbCacheDir = localAppDir + "Cache/";
 	#endif
 	
-	if (!tSystem::tDirExists(TacitImage::ThumbCacheDir))
-		tSystem::tCreateDir(TacitImage::ThumbCacheDir);
+	if (!tSystem::tDirExists(Image::ThumbCacheDir))
+		tSystem::tCreateDir(Image::ThumbCacheDir);
 
 	#ifdef PLATFORM_WINDOWS
 	tString cfgFile = dataDir + "Settings.cfg";
@@ -2080,7 +2080,7 @@ int main(int argc, char** argv)
 	tString cfgFile = localAppDir + "Settings.cfg";
 	#endif
 	
-	TexView::Config.Load(cfgFile, mode->width, mode->height);
+	Viewer::Config.Load(cfgFile, mode->width, mode->height);
 
 	// We start with window invisible. For windows DwmSetWindowAttribute won't redraw properly otherwise.
 	// For all plats, we want to position the window before displaying it.
@@ -2092,16 +2092,16 @@ int main(int argc, char** argv)
 	// The title here seems to override the Linux hint above. When we create with the title string "tacentview",
 	// glfw makes it the X11 WM_CLASS. This is needed so that the Ubuntu can map the same name in the .desktop file
 	// to find things like the correct dock icon to display. The SetWindowTitle afterwards does not mod the WM_CLASS.
-	TexView::Window = glfwCreateWindow(TexView::Config.WindowW, TexView::Config.WindowH, "tacentview", nullptr, nullptr);
-	if (!TexView::Window)
+	Viewer::Window = glfwCreateWindow(Viewer::Config.WindowW, Viewer::Config.WindowH, "tacentview", nullptr, nullptr);
+	if (!Viewer::Window)
 		return 1;
 		
-	TexView::SetWindowTitle();	
-	glfwSetWindowPos(TexView::Window, TexView::Config.WindowX, TexView::Config.WindowY);
+	Viewer::SetWindowTitle();	
+	glfwSetWindowPos(Viewer::Window, Viewer::Config.WindowX, Viewer::Config.WindowY);
 
 	#ifdef PLATFORM_WINDOWS
 	// Make the window title bar show up in black.
-	HWND hwnd = glfwGetWin32Window(TexView::Window);
+	HWND hwnd = glfwGetWin32Window(Viewer::Window);
 	const int DWMWA_USE_IMMERSIVE_DARK_MODE = 19;
 	BOOL isDarkMode = 1;
 	DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &isDarkMode, sizeof(isDarkMode));
@@ -2117,14 +2117,14 @@ int main(int argc, char** argv)
 			MB_OK
 		);
 
-		glfwDestroyWindow(TexView::Window);
+		glfwDestroyWindow(Viewer::Window);
 		glfwTerminate();
 		return 1;
 	}
 	#else
 	if (!tSystem::tDirExists(dataDir))
 	{
-		glfwDestroyWindow(TexView::Window);
+		glfwDestroyWindow(Viewer::Window);
 		glfwTerminate();
 		system
 		(
@@ -2144,7 +2144,7 @@ int main(int argc, char** argv)
 	}
 	#endif
 
-	glfwMakeContextCurrent(TexView::Window);
+	glfwMakeContextCurrent(Viewer::Window);
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		tPrintf("Failed to initialize GLAD\n");
@@ -2153,14 +2153,14 @@ int main(int argc, char** argv)
 	tPrintf("GLAD V %s\n", glGetString(GL_VERSION));
 
 	glfwSwapInterval(1); // Enable vsync
-	glfwSetWindowRefreshCallback(TexView::Window, TexView::WindowRefreshFun);
-	glfwSetKeyCallback(TexView::Window, TexView::KeyCallback);
-	glfwSetMouseButtonCallback(TexView::Window, TexView::MouseButtonCallback);
-	glfwSetCursorPosCallback(TexView::Window, TexView::CursorPosCallback);
-	glfwSetScrollCallback(TexView::Window, TexView::ScrollWheelCallback);
-	glfwSetDropCallback(TexView::Window, TexView::FileDropCallback);
-	glfwSetWindowFocusCallback(TexView::Window, TexView::FocusCallback);
-	glfwSetWindowIconifyCallback(TexView::Window, TexView::IconifyCallback);
+	glfwSetWindowRefreshCallback(Viewer::Window, Viewer::WindowRefreshFun);
+	glfwSetKeyCallback(Viewer::Window, Viewer::KeyCallback);
+	glfwSetMouseButtonCallback(Viewer::Window, Viewer::MouseButtonCallback);
+	glfwSetCursorPosCallback(Viewer::Window, Viewer::CursorPosCallback);
+	glfwSetScrollCallback(Viewer::Window, Viewer::ScrollWheelCallback);
+	glfwSetDropCallback(Viewer::Window, Viewer::FileDropCallback);
+	glfwSetWindowFocusCallback(Viewer::Window, Viewer::FocusCallback);
+	glfwSetWindowIconifyCallback(Viewer::Window, Viewer::IconifyCallback);
 
 	// Setup Dear ImGui context.
 	IMGUI_CHECKVERSION();
@@ -2177,7 +2177,7 @@ int main(int argc, char** argv)
 	ImGui::StyleColorsDark();
 
 	// Setup platform/renderer bindings.
-	ImGui_ImplGlfw_InitForOpenGL(TexView::Window, true);
+	ImGui_ImplGlfw_InitForOpenGL(Viewer::Window, true);
 	ImGui_ImplOpenGL2_Init();
 
 	glEnable(GL_BLEND);
@@ -2186,38 +2186,38 @@ int main(int argc, char** argv)
 	tString fontFile = dataDir + "Roboto-Medium.ttf";
 	io.Fonts->AddFontFromFileTTF(fontFile.Chars(), 14.0f);
 
-	TexView::LoadAppImages(dataDir);
+	Viewer::LoadAppImages(dataDir);
 	
-	TexView::PopulateImages();
-	if (TexView::ImageFileParam.IsPresent())
-		TexView::SetCurrentImage(TexView::ImageFileParam.Get());
+	Viewer::PopulateImages();
+	if (Viewer::ImageFileParam.IsPresent())
+		Viewer::SetCurrentImage(Viewer::ImageFileParam.Get());
 	else
-		TexView::SetCurrentImage();
+		Viewer::SetCurrentImage();
 
-	glClearColor(TexView::ColourClear.x, TexView::ColourClear.y, TexView::ColourClear.z, TexView::ColourClear.w);
+	glClearColor(Viewer::ColourClear.x, Viewer::ColourClear.y, Viewer::ColourClear.z, Viewer::ColourClear.w);
 	glClear(GL_COLOR_BUFFER_BIT);
 	int dispw, disph;
-	glfwGetFramebufferSize(TexView::Window, &dispw, &disph);
+	glfwGetFramebufferSize(Viewer::Window, &dispw, &disph);
 	glViewport(0, 0, dispw, disph);
 
 	// Show the window. Can this just be the glfw call for all platforms?
 	#ifdef PLATFORM_WINDOWS
 	ShowWindow(hwnd, SW_SHOW);
 	#elif defined(PLATFORM_LINUX)
-	glfwShowWindow(TexView::Window);
+	glfwShowWindow(Viewer::Window);
 	#endif
 		
 	// I don't seem to be able to get Linux to v-sync.
 	// glfwSwapInterval(1);
-	glfwMakeContextCurrent(TexView::Window);
-	glfwSwapBuffers(TexView::Window);
+	glfwMakeContextCurrent(Viewer::Window);
+	glfwSwapBuffers(Viewer::Window);
 
 	// Main loop.
 	static double lastUpdateTime = glfwGetTime();
-	while (!glfwWindowShouldClose(TexView::Window))
+	while (!glfwWindowShouldClose(Viewer::Window))
 	{
 		double currUpdateTime = glfwGetTime();
-		TexView::Update(TexView::Window, currUpdateTime - lastUpdateTime);
+		Viewer::Update(Viewer::Window, currUpdateTime - lastUpdateTime);
 		
 		// I don't seem to be able to get Linux to v-sync. This stops it using all the CPU.
 		#ifdef PLATFORM_LINUX
@@ -2228,31 +2228,31 @@ int main(int argc, char** argv)
 	}
 
 	// This is important. We need the destructors to run BEFORE we shutdown GLFW. Deconstructing the images may block for a bit while shutting
-	// down worker threads. We could show a 'shutting down' popup here if we wanted -- if TacitImage::ThumbnailNumThreadsRunning is > 0.
-	TexView::Images.Clear();
+	// down worker threads. We could show a 'shutting down' popup here if we wanted -- if Image::ThumbnailNumThreadsRunning is > 0.
+	Viewer::Images.Clear();
 	
-	TexView::UnloadAppImages();
+	Viewer::UnloadAppImages();
 
 	// Get current window geometry and set in config file if we're not in fullscreen mode or iconified.
-	if (!TexView::FullscreenMode && !TexView::WindowIconified)
+	if (!Viewer::FullscreenMode && !Viewer::WindowIconified)
 	{
-		glfwGetWindowPos(TexView::Window, &TexView::Config.WindowX, &TexView::Config.WindowY);
-		glfwGetWindowSize(TexView::Window, &TexView::Config.WindowW, &TexView::Config.WindowH);
+		glfwGetWindowPos(Viewer::Window, &Viewer::Config.WindowX, &Viewer::Config.WindowY);
+		glfwGetWindowSize(Viewer::Window, &Viewer::Config.WindowW, &Viewer::Config.WindowH);
 	}
-	TexView::Config.Save(cfgFile);
+	Viewer::Config.Save(cfgFile);
 
 	// Cleanup.
 	ImGui_ImplOpenGL2_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
-	glfwDestroyWindow(TexView::Window);
+	glfwDestroyWindow(Viewer::Window);
 	glfwTerminate();
 
 	// Before we go, lets clear out any old cache files.
-	if (TexView::DeleteAllCacheFilesOnExit)
-		tSystem::tDeleteDir(TacitImage::ThumbCacheDir);
+	if (Viewer::DeleteAllCacheFilesOnExit)
+		tSystem::tDeleteDir(Image::ThumbCacheDir);
 	else
-		TexView::RemoveOldCacheFiles(TacitImage::ThumbCacheDir);
+		Viewer::RemoveOldCacheFiles(Image::ThumbCacheDir);
 	return 0;
 }

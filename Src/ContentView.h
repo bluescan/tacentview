@@ -15,7 +15,7 @@
 #pragma once
 
 
-namespace TexView
+namespace Viewer
 {
 	void ShowContentViewDialog(bool* popen);
 }
