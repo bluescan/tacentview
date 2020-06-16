@@ -550,7 +550,7 @@ void Viewer::SetWindowTitle()
 	if (!Window)
 		return;
 
-	tString title = "Tacent Viewer";
+	tString title = "Tacent View";
 	if (CurrImage && !CurrImage->Filename.IsEmpty())
 	{
 		title = title + " - " + tGetFileName(CurrImage->Filename);
