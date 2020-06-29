@@ -242,7 +242,10 @@ void Viewer::DoSaveAsModalDialog(bool justOpened)
 	{
 		bool dirExists = tDirExists(destDir);
 		if (!dirExists)
+		{
 			dirExists = tCreateDir(destDir);
+			PopulateImagesSubDirs();
+		}
 
 		if (dirExists)
 		{
@@ -390,7 +393,10 @@ void Viewer::DoSaveAllModalDialog(bool justOpened)
 	{
 		bool dirExists = tDirExists(destDir);
 		if (!dirExists)
+		{
 			dirExists = tCreateDir(destDir);
+			PopulateImagesSubDirs();
+		}
 
 		if (dirExists)
 		{

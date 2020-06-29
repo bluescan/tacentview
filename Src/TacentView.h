@@ -61,6 +61,7 @@ namespace Viewer
 	void ShowHelpMark(const char* desc);
 	void ShowToolTip(const char* desc);
 	void PopulateImages();
+	void PopulateImagesSubDirs();
 	Image* FindImage(const tString& filename);
 	void SetCurrentImage(const tString& currFilename = tString());
 	void LoadCurrImage();

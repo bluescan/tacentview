@@ -174,7 +174,6 @@ namespace Viewer
 	bool Compare_ImageFileSizeDescending(const Image& a, const Image& b)												{ return a.FileSizeB > b.FileSizeB; }
 	typedef bool ImageCompareFn(const Image&, const Image&);
 
-	void PopulateImagesSubDirs();
 	bool OnPrevious(bool circ = false);
 	bool OnNext(bool circ = false);
 	void OnPreviousPart();

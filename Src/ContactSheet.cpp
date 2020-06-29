@@ -152,7 +152,10 @@ void Viewer::DoContactSheetModalDialog(bool justOpened)
 	{
 		bool dirExists = tDirExists(destDir);
 		if (!dirExists)
+		{
 			dirExists = tCreateDir(destDir);
+			PopulateImagesSubDirs();
+		}
 
 		if (dirExists)
 		{
@@ -259,10 +262,11 @@ void Viewer::SaveContactSheetTo
 	}
 
 	tImage::tPicture::tColourFormat colourFmt = allOpaque ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
+	tImage::tImageTGA::tFormat tgaFmt = allOpaque ? tImage::tImageTGA::tFormat::Bit24 : tImage::tImageTGA::tFormat::Bit32;
 	if ((finalWidth == contactWidth) && (finalHeight == contactHeight))
 	{
 		if (Config.SaveFileType == 0)
-			outPic.SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
+			outPic.SaveTGA(outFile, tgaFmt, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
 		else
 			outPic.Save(outFile, colourFmt, Config.SaveFileJpgQuality);
 	}
@@ -272,7 +276,7 @@ void Viewer::SaveContactSheetTo
 		finalResampled.Resample(finalWidth, finalHeight, tImage::tPicture::tFilter(Config.ResampleFilter));
 
 		if (Config.SaveFileType == 0)
-			finalResampled.SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
+			finalResampled.SaveTGA(outFile, tgaFmt, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
 		else
 			finalResampled.Save(outFile, colourFmt, Config.SaveFileJpgQuality);
 	}

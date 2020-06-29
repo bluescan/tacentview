@@ -11,6 +11,8 @@ TestImages/Exrs/
 # Specific Files.
 imgui\.ini
 .vscode/settings.json
+.vscode/c_cpp_properties.json
+
 
 # Filetypes to ignore everywhere.
 *.log

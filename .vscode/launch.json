@@ -3,12 +3,12 @@
 	// Hover to view descriptions of existing attributes.
 	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
 	"version": "0.2.0",
-	"configurations": [
+	"configurations":
+	[
 		{
-			"name": "(gdb) Launch",
+			"name": "Launch GDB",
 			"type": "cppdbg",
 			"request": "launch",
-//			"program": "${workspaceFolder}/build/ViewerInstall/TacentView",
 			"program": "/usr/bin/tacentview",
 			"args": [],
 			"stopAtEntry": false,
@@ -16,7 +16,8 @@
 			"environment": [],
 			"externalConsole": false,
 			"MIMode": "gdb",
-			"setupCommands": [
+			"setupCommands":
+			[
 				{
 					"description": "Enable pretty-printing for gdb",
 					"text": "-enable-pretty-printing",
@@ -25,15 +26,15 @@
 			]
 		},
 		{
-			"name": "(Windows) Launch",
+			"name": "Launch Windows",
 			"type": "cppvsdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/build/ViewerInstall/TacentView.exe",
+			"program": "${workspaceFolder}/build/ViewerInstall/tacentview.exe",
 			"args": [],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",
 			"environment": [],
-			"externalConsole": false
+			"externalConsole": false,
 		}
 	]
 }
