@@ -9,7 +9,7 @@
 			"name": "Launch GDB",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "/usr/bin/tacentview",
+			"program": "${workspaceFolder}/build/ViewerInstall/tacentview",
 			"args": [],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",
