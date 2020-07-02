@@ -183,13 +183,10 @@ void Viewer::ShowAboutPopup(bool* popen)
 		ImGui::Text("Ionicons");
 		ImGui::Text("Roboto Google Font");
 		ImGui::Text("Radiance Software");
-		ImGui::Text("OpenEXR");
-		ImGui::Text("ZLib");
 		ImGui::Text("OpenEXR V %s", tImage::Version_OpenEXR);
 		ImGui::Text("ZLib V %s", tImage::Version_ZLIB);
 		ImGui::Text("Gif Load");
 		ImGui::Text("WebP Decoder V %d.%d", tImage::Version_WEBP_Major, tImage::Version_WEBP_Minor);
-		ImGui::Text("WebP Decoder");
 	}
 	ImGui::End();
 }
