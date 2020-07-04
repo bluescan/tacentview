@@ -528,10 +528,11 @@ uint64 Image::Bind()
 		return TexIDAlt;
 	}
 
-	if (GetCurrentPic()->TextureID != 0)
+	tPicture* currPic = GetCurrentPic();
+	if (currPic && (currPic->TextureID != 0))
 	{
-		glBindTexture(GL_TEXTURE_2D, GetCurrentPic()->TextureID);
-		return GetCurrentPic()->TextureID;
+		glBindTexture(GL_TEXTURE_2D, currPic->TextureID);
+		return currPic->TextureID;
 	}
 
 	if (!IsLoaded())

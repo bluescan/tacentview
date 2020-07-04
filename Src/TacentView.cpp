@@ -1547,6 +1547,9 @@ bool Viewer::DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin)
 	tString nextImgFile = CurrImage->Next() ? CurrImage->Next()->Filename : tString();
 
 	bool deleted = tSystem::tDeleteFile(imgFile, true, tryUseRecycleBin);
+	if (!deleted && tryUseRecycleBin)
+		deleted = tSystem::tDeleteFile(imgFile, true, false);
+		
 	if (deleted)
 	{
 		ImageFileParam.Param = nextImgFile;		// We set this so if we lose and gain focus, we go back to the current image.

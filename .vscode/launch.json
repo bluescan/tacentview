@@ -12,7 +12,7 @@
 			"program": "${workspaceFolder}/build/ViewerInstall/tacentview",
 			"args": [],
 			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}",
+			"cwd": "${workspaceFolder}/TestImages/FormatVariety",
 			"environment": [],
 			"externalConsole": false,
 			"MIMode": "gdb",

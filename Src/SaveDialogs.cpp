@@ -77,7 +77,7 @@ tString Viewer::DoSaveFiletype()
 	if (Config.SaveFileType == 0)
 		ImGui::Checkbox("RLE Compression", &Config.SaveFileTargaRLE);
 	else if (Config.SaveFileType == 3)
-		ImGui::SliderFloat("Quality", &Config.SaveFileJpgQuality, 0.0f, 100.0f, "%.1f");
+		ImGui::SliderInt("Quality", &Config.SaveFileJpegQuality, 1, 100, "%d");
 
 	return extension;
 }
@@ -142,7 +142,7 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile, int width, int heig
 	if (Config.SaveFileType == 0)
 		success = outPic.SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
 	else
-		success = outPic.Save(outFile, colourFmt, Config.SaveFileJpgQuality);
+		success = outPic.Save(outFile, colourFmt, Config.SaveFileJpegQuality);
 
 	if (success)
 		tPrintf("Saved image as %s\n", outFile.Chars());

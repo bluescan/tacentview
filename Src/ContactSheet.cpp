@@ -268,7 +268,7 @@ void Viewer::SaveContactSheetTo
 		if (Config.SaveFileType == 0)
 			outPic.SaveTGA(outFile, tgaFmt, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
 		else
-			outPic.Save(outFile, colourFmt, Config.SaveFileJpgQuality);
+			outPic.Save(outFile, colourFmt, Config.SaveFileJpegQuality);
 	}
 	else
 	{
@@ -278,7 +278,7 @@ void Viewer::SaveContactSheetTo
 		if (Config.SaveFileType == 0)
 			finalResampled.SaveTGA(outFile, tgaFmt, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
 		else
-			finalResampled.Save(outFile, colourFmt, Config.SaveFileJpgQuality);
+			finalResampled.Save(outFile, colourFmt, Config.SaveFileJpegQuality);
 	}
 
 	// If we saved to the same dir we are currently viewing, reload

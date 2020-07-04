@@ -61,7 +61,7 @@ namespace Viewer
 		tString SaveSubFolder;
 		int SaveFileType;
 		bool SaveFileTargaRLE;
-		float SaveFileJpgQuality;
+		int SaveFileJpegQuality;			// E [1,100]
 		enum class SizeMode
 		{
 			Percent,
