@@ -183,6 +183,7 @@ void Viewer::ShowAboutPopup(bool* popen)
 		ImGui::Text("Ionicons");
 		ImGui::Text("Roboto Google Font");
 		ImGui::Text("Radiance Software");
+		ImGui::Text("TurboJPEG V %s", tImage::Version_TurboJPEG);
 		ImGui::Text("OpenEXR V %s", tImage::Version_OpenEXR);
 		ImGui::Text("ZLib V %s", tImage::Version_ZLIB);
 		ImGui::Text("Gif Load");

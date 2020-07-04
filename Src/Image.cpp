@@ -884,7 +884,11 @@ void Image::GenerateThumbnail()
 
 	// Thumbnails are generated from the primary (first) picture in the picture list.
 	tPicture* srcPic = thumbLoader.GetPrimaryPic();
-	tAssert(srcPic);
+	if (!srcPic)
+	{
+		tPrintf("Warning: Generation of thumbnail %s failed.\n", Filename.Chars());
+		return;
+	}
 
 	// We make the thumbnail keep its aspect ratio.
 	int srcW = srcPic->GetWidth();
