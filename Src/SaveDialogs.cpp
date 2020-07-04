@@ -534,7 +534,11 @@ void Viewer::SaveAllImages(const tString& destDir, const tString& extension, flo
 
 void Viewer::AddSavedImageIfNecessary(const tString& savedFile)
 {
+	#ifdef PLATFORM_LINUX
+	if (ImagesDir.IsEqual(tGetDir(savedFile)))
+	#else
 	if (ImagesDir.IsEqualCI(tGetDir(savedFile)))
+	#endif
 	{
 		// Add to list. It's still unloaded.
 		Image* newImg = new Image(savedFile);
