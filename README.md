@@ -85,18 +85,18 @@ The install target will also package a zip file with all required content. This 
 
 ## ubuntu
 
-Building for Ubuntu is tested with Clang (9 or 10). CMake and Git are required. Ninja is suggested but optional. The 'Software and Updates' app allows you to manage (add and remove) repositories or use the command line:
+Building for Ubuntu is tested with Clang (9 or 10) and GCC 9.3. CMake and Git are required. Ninja is suggested but optional. The 'Software and Updates' app allows you to manage (add and remove) repositories or use the command line:
 ```
 sudo apt-get install gdebi               # Installs gdebi to allow command-line deb file installation. Optional.
 sudo apt-get install git                 # Install git or download the source as a zip.
 sudo gdebi Downloads/smartgit-19_1_7.deb # Install smartgit or some other git frontend. Optional.
-sudo apt-get install llvm                # The compiler.
-sudo apt-get install clang               # The compiler.
-sudo apt-get install lldb                # The debugger. Optional.
+sudo apt-get install llvm                # The compiler. Optional if not using GCC.
+sudo apt-get install clang               # The compiler. Optional if not using GCC.
+sudo apt-get install lldb                # The debugger. Optional if not using GCC.
 sudo apt-get install cmake               # CMake.
 sudo apt-get install ninja-build         # Ninja build system.
-sudo update-alternatives --config c++    # Choose clang.
-sudo update-alternatives --config cc     # Choose clang.
+sudo update-alternatives --config c++    # Choose clang. Optional if not using GCC.
+sudo update-alternatives --config cc     # Choose clang. Optional if not using GCC.
 ```
 
 I usually use VSCode with the CMake Tools to build. Alternatively from the command line:
