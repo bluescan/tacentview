@@ -248,7 +248,7 @@ tString Viewer::FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles)
 	if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
 		imagesDir = tSystem::tGetDir(ImageFileParam.Get());
 
-	tPrintf("Looking for image files in %s\n", imagesDir.Chars());
+	tPrintf("Finding image files in %s\n", imagesDir.Chars());
 	tSystem::tFindFiles(foundFiles, imagesDir, "jpg");
 	tSystem::tFindFiles(foundFiles, imagesDir, "gif");
 	tSystem::tFindFiles(foundFiles, imagesDir, "webp");
