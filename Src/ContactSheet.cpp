@@ -53,8 +53,8 @@ void Viewer::DoContactSheetModalDialog(bool justOpened)
 	{
 		frameWidth = picW;
 		frameHeight = picH;
-		numRows = int(tMath::tCeiling(tMath::tSqrt(float(Images.Count()))));
-		numCols = int(tMath::tCeiling(tMath::tSqrt(float(Images.Count()))));
+		numRows = int(tCeiling(tSqrt(float(Images.Count()))));
+		numCols = int(tCeiling(tSqrt(float(Images.Count()))));
 	}
 
 	int contactWidth = frameWidth * numCols;
@@ -65,51 +65,58 @@ void Viewer::DoContactSheetModalDialog(bool justOpened)
 		finalHeight = contactHeight;
 	}
 
+	static char lo[32];
+	static char hi[32];
+
 	ImGui::InputInt("Frame Width", &frameWidth);
-	ImGui::SameLine();
-	ShowHelpMark("Single frame width in pixels.");
+	tiClampMin(frameWidth, 4);
+	int loP2W = tNextLowerPower2(frameWidth);	tiClampMin(loP2W, 4);	tsPrintf(lo, "fw%d", loP2W);
+	ImGui::SameLine(); if (ImGui::Button(lo)) frameWidth = loP2W;
+	int hiP2W = tNextHigherPower2(frameWidth);							tsPrintf(hi, "fw%d", hiP2W);
+	ImGui::SameLine(); if (ImGui::Button(hi)) frameWidth = hiP2W;
+	ImGui::SameLine(); ShowHelpMark("Single frame width in pixels.");
 
 	ImGui::InputInt("Frame Height", &frameHeight);
-	ImGui::SameLine();
-	ShowHelpMark("Single frame height in pixels.");
+	tiClampMin(frameHeight, 4);
+	int loP2H = tNextLowerPower2(frameHeight);	tiClampMin(loP2H, 4);	tsPrintf(lo, "fh%d", loP2H);
+	ImGui::SameLine(); if (ImGui::Button(lo)) frameHeight = loP2H;
+	int hiP2H = tNextHigherPower2(frameHeight);							tsPrintf(hi, "fh%d", hiP2H);
+	ImGui::SameLine(); if (ImGui::Button(hi)) frameHeight = hiP2H;
+	ImGui::SameLine(); ShowHelpMark("Single frame height in pixels.");
 
 	ImGui::InputInt("Columns", &numCols);
 	ImGui::SameLine();
-	ShowHelpMark("Number of columns. Determines overall width.");
+	ShowHelpMark("Number of columns.");
  
 	ImGui::InputInt("Rows", &numRows);
 	ImGui::SameLine();
-	ShowHelpMark("Number of rows. Determines overall height.");
+	ShowHelpMark("Number of rows.");
 
-	if (ImGui::Button("Read From Image") && CurrImage)
+	if (ImGui::Button("Reset From Image") && CurrImage)
 	{
 		frameWidth = picW;
 		frameHeight = picH;
-		numRows = int(tMath::tCeiling(tMath::tSqrt(float(Images.Count()))));
-		numCols = int(tMath::tCeiling(tMath::tSqrt(float(Images.Count()))));
+		numRows = int(tCeiling(tSqrt(float(Images.Count()))));
+		numCols = int(tCeiling(tSqrt(float(Images.Count()))));
 	}
-
 	ImGui::Separator();
+
 	ImGui::InputInt("Final Width", &finalWidth);
-	ImGui::SameLine();
-	ShowHelpMark("Final scaled output sheet width in pixels.");
+	tiClampMin(finalWidth, 4);
+	loP2W = tNextLowerPower2(finalWidth);	tiClampMin(loP2W, 4);	tsPrintf(lo, "w%d", loP2W);
+	ImGui::SameLine(); if (ImGui::Button(lo)) finalWidth = loP2W;
+	hiP2W = tNextHigherPower2(finalWidth);							tsPrintf(hi, "w%d", hiP2W);
+	ImGui::SameLine(); if (ImGui::Button(hi)) finalWidth = hiP2W;
+	ImGui::SameLine(); ShowHelpMark("Final scaled output sheet width in pixels.");
 
 	ImGui::InputInt("Final Height", &finalHeight);
-	ImGui::SameLine();
-	ShowHelpMark("Final scaled output sheet height in pixels.");
+	tiClampMin(finalHeight, 4);
+	loP2H = tNextLowerPower2(finalHeight);	tiClampMin(loP2H, 4);	tsPrintf(lo, "h%d", loP2H);
+	ImGui::SameLine(); if (ImGui::Button(lo)) finalHeight = loP2H;
+	hiP2H = tNextHigherPower2(finalHeight);							tsPrintf(hi, "h%d", hiP2H);
+	ImGui::SameLine(); if (ImGui::Button(hi)) finalHeight = hiP2H;
+	ImGui::SameLine(); ShowHelpMark("Final scaled output sheet height in pixels.");
 
-	if (ImGui::Button("Prev Pow2"))
-	{
-		finalWidth = tMath::tNextLowerPower2(contactWidth);
-		finalHeight = tMath::tNextLowerPower2(contactHeight);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Next Pow2"))
-	{
-		finalWidth = tMath::tNextHigherPower2(contactWidth);
-		finalHeight = tMath::tNextHigherPower2(contactHeight);
-	}
-	ImGui::SameLine();
 	if (ImGui::Button("Reset"))
 	{
 		finalWidth = contactWidth;
@@ -134,9 +141,9 @@ void Viewer::DoContactSheetModalDialog(bool justOpened)
 	int numImg = Images.Count();
 	tString genMsg;
 	if (numImg >= 2)
-		tsPrintf(genMsg, "Sheet Will Have %d Frames", numImg);
+		tsPrintf(genMsg, " Sheet will have %d frames with %d images.", numRows*numCols, tMin(numImg, numRows*numCols));
 	else
-		tsPrintf(genMsg, "More Than %d Images Needed", numImg);
+		tsPrintf(genMsg, " Warning: At least 2 images are needed.");
 	ImGui::Text(genMsg.Chars());
 
 	ImGui::NewLine();

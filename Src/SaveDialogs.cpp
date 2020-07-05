@@ -182,8 +182,8 @@ void Viewer::DoSaveAsModalDialog(bool justOpened)
 	static char lo[32];
 	static char hi[32];
 
-	int loP2W = tNextLowerPower2(dstW);		tsPrintf(lo, "w%d", loP2W);
-	int hiP2W = tNextHigherPower2(dstW);	tsPrintf(hi, "w%d", hiP2W);
+	int loP2W = tNextLowerPower2(dstW);		tiClampMin(loP2W, 4);	tsPrintf(lo, "w%d", loP2W);
+	int hiP2W = tNextHigherPower2(dstW);							tsPrintf(hi, "w%d", hiP2W);
 	ImGui::SameLine(); if (ImGui::Button(lo))
 		{ dstW = loP2W; if (lockAspect) dstH = int( float(dstW) / aspect ); }
 	ImGui::SameLine(); if (ImGui::Button(hi))
@@ -202,8 +202,8 @@ void Viewer::DoSaveAsModalDialog(bool justOpened)
 	ImGui::PopItemWidth();
 	tiClampMin(dstW, 4); tiClampMin(dstH, 4);
 
-	int loP2H = tNextLowerPower2(dstH);		tsPrintf(lo, "h%d", loP2H);
-	int hiP2H = tNextHigherPower2(dstH);	tsPrintf(hi, "h%d", hiP2H);
+	int loP2H = tNextLowerPower2(dstH);		tiClampMin(loP2H, 4);	tsPrintf(lo, "h%d", loP2H);
+	int hiP2H = tNextHigherPower2(dstH);							tsPrintf(hi, "h%d", hiP2H);
 	ImGui::SameLine(); if (ImGui::Button(lo))
 		{ dstH = loP2H; if (lockAspect) dstW = int( float(dstH) * aspect ); }
 	ImGui::SameLine(); if (ImGui::Button(hi))
