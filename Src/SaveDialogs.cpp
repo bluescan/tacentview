@@ -177,10 +177,17 @@ void Viewer::DoSaveAsModalDialog(bool justOpened)
 	if (ImGui::InputInt("Width", &dstW) && lockAspect)
 		dstH = int( float(dstW) / aspect );
 	ImGui::PopItemWidth();
-	ImGui::SameLine(); if (ImGui::Button("Pow2 W-"))
-		{ dstW = tMath::tNextLowerPower2(srcW); if (lockAspect) dstH = int( float(dstW) / aspect ); }
-	ImGui::SameLine(); if (ImGui::Button("Pow2 W+"))
-		{ dstW = tMath::tNextHigherPower2(srcW); if (lockAspect) dstH = int( float(dstW) / aspect ); }
+	tiClampMin(dstW, 4); tiClampMin(dstH, 4);
+
+	static char lo[32];
+	static char hi[32];
+
+	int loP2W = tNextLowerPower2(dstW);		tsPrintf(lo, "w%d", loP2W);
+	int hiP2W = tNextHigherPower2(dstW);	tsPrintf(hi, "w%d", hiP2W);
+	ImGui::SameLine(); if (ImGui::Button(lo))
+		{ dstW = loP2W; if (lockAspect) dstH = int( float(dstW) / aspect ); }
+	ImGui::SameLine(); if (ImGui::Button(hi))
+		{ dstW = hiP2W; if (lockAspect) dstH = int( float(dstW) / aspect ); }
 	ImGui::SameLine(); ShowHelpMark("Final output width in pixels.\nIf dimensions match current no scaling.");
 
 	if (ImGui::Checkbox("Lock Aspect", &lockAspect) && lockAspect)
@@ -193,10 +200,14 @@ void Viewer::DoSaveAsModalDialog(bool justOpened)
 	if (ImGui::InputInt("Height", &dstH) && lockAspect)
 		dstW = int( float(dstH) * aspect );
 	ImGui::PopItemWidth();
-	ImGui::SameLine(); if (ImGui::Button("Pow2 H-"))
-		{ dstH = tMath::tNextLowerPower2(srcH); if (lockAspect) dstW = int( float(dstH) * aspect ); }
-	ImGui::SameLine(); if (ImGui::Button("Pow2 H+"))
-		{ dstH = tMath::tNextHigherPower2(srcH); if (lockAspect) dstW = int( float(dstH) * aspect ); }
+	tiClampMin(dstW, 4); tiClampMin(dstH, 4);
+
+	int loP2H = tNextLowerPower2(dstH);		tsPrintf(lo, "h%d", loP2H);
+	int hiP2H = tNextHigherPower2(dstH);	tsPrintf(hi, "h%d", hiP2H);
+	ImGui::SameLine(); if (ImGui::Button(lo))
+		{ dstH = loP2H; if (lockAspect) dstW = int( float(dstH) * aspect ); }
+	ImGui::SameLine(); if (ImGui::Button(hi))
+		{ dstH = hiP2H; if (lockAspect) dstW = int( float(dstH) * aspect ); }
 	ImGui::SameLine(); ShowHelpMark("Final output height in pixels.\nIf dimensions match current no scaling.");
 
 	if (ImGui::Button("Reset"))

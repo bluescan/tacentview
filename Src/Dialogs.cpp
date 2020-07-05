@@ -224,11 +224,11 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 			ImGui::Indent();
 			ImGui::PushItemWidth(110);
 
-			ImGui::InputFloat("Gamma Correction", &CurrImage->LoadParams.GammaValue, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
+			ImGui::InputFloat("Gamma", &CurrImage->LoadParams.GammaValue, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
 			ShowHelpMark("Gamma to use [0.6, 3.0] if you reload this Radiance hdr file. Open preferences to edit default gamma value.");
 			tMath::tiClamp(CurrImage->LoadParams.GammaValue, 0.6f, 3.0f);
 
-			ImGui::InputInt("Exposure Adj", &CurrImage->LoadParams.HDR_Exposure); ImGui::SameLine();
+			ImGui::InputInt("Exposure", &CurrImage->LoadParams.HDR_Exposure); ImGui::SameLine();
 			ShowHelpMark("Exposure adjustment [-10, 10] if you reload this Radiance hdr file.");
 			tMath::tiClamp(CurrImage->LoadParams.HDR_Exposure, -10, 10);
 
@@ -264,7 +264,6 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 
 		case tSystem::tFileType::EXR:
 		{
-			ImGui::Separator();
 			ImGui::Text("Open EXR");
 			ImGui::Indent();
 			ImGui::PushItemWidth(110);
