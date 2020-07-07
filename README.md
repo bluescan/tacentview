@@ -123,3 +123,13 @@ This project relies on myriad 3rd-party libraries. In the Data folder you will f
 * ZLib
 * This software is based in part on the work of the Independent JPEG Group.
 * This software includes [Radiance software](http://radsite.lbl.gov/) developed by the [Lawrence Berkeley National Laboratory](http://www.lbl.gov/).
+
+Various development tools available for open source projects bear mentioning:
+* CMake
+* Ubuntu
+* VS Code Editor
+* Visual Studio Community
+* GCC, Clang, and the MSVC Compiler
+* Github
+* Git and the SmartGit Client
+* OpenGL, GLAD, and GLFW
