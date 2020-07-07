@@ -47,7 +47,7 @@ Users may zoom using Ctrl+/- and pan using the right mouse button. Several zoom 
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_Zoom.png)
 
 
-High Definition Image loading is supported for exr and hdr files. For hdr files the loading code is based on, and is functionally equivalent to, the reference code from the Radiance imaging toolset (Tacent View includes [Radiance software](http://radsite.lbl.gov/) developed by the [Lawrence Berkeley National Laboratory](http://www.lbl.gov/).) Adjustments to gamma correction and exposure are supported when loading radiance hdr files. The images below (Copyright Rafal Mantiuk under Creative Commons 3.0) show an hdr image that loads over-exposed and is subsequentially adjusted to yield a more balanced result.
+High Definition Image loading is supported for exr and hdr files. For hdr files the loading code is based on, and is functionally equivalent to, the reference code from the Radiance imaging toolset. Adjustments to gamma correction and exposure are supported when loading radiance hdr files. The images below (Copyright Rafal Mantiuk under Creative Commons 3.0) show an hdr image that loads over-exposed and is subsequentially adjusted to yield a more balanced result.
 
 ![HDR Loading](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_HDR.png)
 
@@ -108,3 +108,18 @@ ninja install
 ```
 
 The install target packages a deb file with all required content. You can pass -DCMAKE_BUILD_TYPE=Debug (or Release) to cmake if so desired.
+
+## Credit and Thanks
+
+This project relies on myriad 3rd-party libraries. In the Data folder you will find their licences. Some of the more notable dependencies are listed here:
+* Dear ImGui
+* Gif Load
+* Ico Load
+* Ion Icons
+* LibJPeg-Turbo
+* OpenEXR
+* Roboto Font
+* WebP Reference Library
+* ZLib
+* This software is based in part on the work of the Independent JPEG Group.
+* This software includes [Radiance software](http://radsite.lbl.gov/) developed by the [Lawrence Berkeley National Laboratory](http://www.lbl.gov/).
