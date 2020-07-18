@@ -106,8 +106,13 @@ cd ninjabuild
 cmake .. -GNinja
 ninja install
 ```
+You can pass -DCMAKE_BUILD_TYPE=Debug (or Release) to cmake if so desired. The install target packages the viewer into a ViewerInstall directory. Optionally if you configure with:
+```
+cmake .. -GNinja -DVIEWER_DEB=True
+```
 
-The install target packages a deb file with all required content. You can pass -DCMAKE_BUILD_TYPE=Debug (or Release) to cmake if so desired.
+Then a deb file with all required content will be generated.
+If you want to create a deb file you must now pass -DVIEWER_DEB=True to the configure command.
 
 ## Credit and Thanks
 

@@ -187,22 +187,25 @@ install(DIRECTORY Data/ DESTINATION "${VIEWER_INSTALL_DIR}/Data")
 
 # Packaging.
 if (UNIX)
-	install(DIRECTORY Linux/ DESTINATION "${VIEWER_PACKAGE_DIR}")
-	configure_file("Linux/create_deb.sh.in" "${VIEWER_PACKAGE_DIR}/create_deb.sh" @ONLY)
-	install(CODE
-		"
-		execute_process(COMMAND \"chmod\" \"a+x\" \"ViewerInstall/Package/create_deb.sh\")
-		execute_process(
-			COMMAND \"ViewerInstall/Package/create_deb.sh\"
-			RESULT_VARIABLE package_result
+	if (VIEWER_DEB)
+		install(DIRECTORY Linux/ DESTINATION "${VIEWER_PACKAGE_DIR}")
+		configure_file("Linux/create_deb.sh.in" "${VIEWER_PACKAGE_DIR}/create_deb.sh" @ONLY)
+		install(CODE
+			"
+			execute_process(COMMAND \"chmod\" \"a+x\" \"ViewerInstall/Package/create_deb.sh\")
+			execute_process(
+				COMMAND \"ViewerInstall/Package/create_deb.sh\"
+				RESULT_VARIABLE package_result
+			)
+			if (NOT package_result EQUAL \"0\")
+				message(FATAL_ERROR \"Viewer -- Deb package creation failed.\")
+			else()
+				message(STATUS \"Viewer -- Deb package creation succeeded.\")
+			endif()
+			"
 		)
-		if (NOT package_result EQUAL \"0\")
-			message(FATAL_ERROR \"Viewer -- Deb package creation failed.\")
-		else()
-			message(STATUS \"Viewer -- Deb package creation succeeded.\")
-		endif()
-		"
-	)
+	endif()
+
 endif()
 
 # A misnomer. Nothing to do with 32 bit. Should just be WINDOWS.
