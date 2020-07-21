@@ -99,6 +99,9 @@ target_compile_definitions(
 		$<$<PLATFORM_ID:Windows>:PLATFORM_WINDOWS>
 		$<$<PLATFORM_ID:Linux>:PLATFORM_LINUX>
 		$<$<PLATFORM_ID:Linux>:GLFW_INCLUDE_NONE>
+		$<$<AND:$<PLATFORM_ID:Linux>,$<BOOL:${PACKAGE_SNAP}>>:PACKAGE_SNAP>
+		$<$<AND:$<PLATFORM_ID:Linux>,$<BOOL:${PACKAGE_DEB}>>:PACKAGE_DEB>
+		$<$<AND:$<PLATFORM_ID:Windows>,$<BOOL:${PACKAGE_ZIP}>>:PACKAGE_ZIP>
 )
 
 # Set compiler option flags based on specific compiler and configuration.
@@ -187,7 +190,7 @@ install(DIRECTORY Data/ DESTINATION "${VIEWER_INSTALL_DIR}/Data")
 
 # Packaging.
 if (UNIX)
-	if (VIEWER_DEB)
+	if (PACKAGE_DEB)
 		install(DIRECTORY Linux/ DESTINATION "${VIEWER_PACKAGE_DIR}")
 		configure_file("Linux/create_deb.sh.in" "${VIEWER_PACKAGE_DIR}/create_deb.sh" @ONLY)
 		install(CODE

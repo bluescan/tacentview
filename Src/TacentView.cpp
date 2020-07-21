@@ -2061,26 +2061,41 @@ int main(int argc, char** argv)
 	#ifdef PLATFORM_WINDOWS
 	tString dataDir = tSystem::tGetProgramDir() + "Data/";
 	Image::ThumbCacheDir = dataDir + "Cache/";
+	tString cfgFile = dataDir + "Settings.cfg";
 
 	#elif defined(PLATFORM_LINUX)
-	tString progDir = tSystem::tGetProgramDir();
-	bool isDev = (progDir != "/usr/bin/") ? true : false;
-	tString dataDir = isDev ? (progDir + "Data/") : "/usr/share/tacentview/Data/";
-	tString localAppDir = isDev ? dataDir : tSystem::tGetHomeDir() + ".tacentview/";
-	if (!tSystem::tDirExists(localAppDir))
-		tSystem::tCreateDir(localAppDir);
-	
-	Image::ThumbCacheDir = localAppDir + "Cache/";
+
+		//#define PACKAGE_SNAP
+		#ifdef PACKAGE_SNAP
+		// SNAP_USER_DATA is common to all revisions and is backed up. Used for viewer user-configuration file.
+		// SNAP_USER_COMMON is common to all revisions of a snap and is not backed up. Used for viewer cache.
+		tString snapUserData = tSystem::tGetEnvVar("SNAP_USER_DATA") + "/";
+		tString snapUserCommon = tSystem::tGetEnvVar("SNAP_USER_COMMON") + "/";
+
+		tPrintf("snapUserData: %s\n", snapUserData.Chars());
+		tPrintf("snapUserCommon: %s\n", snapUserCommon.Chars());
+
+		tString progDir = tSystem::tGetProgramDir();
+		tString dataDir = progDir + "Data/";
+
+		tString cfgFile = snapUserData + "Settings.cfg";
+		Image::ThumbCacheDir = snapUserCommon + "Cache/";
+
+		#else
+		tString progDir = tSystem::tGetProgramDir();
+		bool isDev = (progDir != "/usr/bin/") ? true : false;
+		tString dataDir = isDev ? (progDir + "Data/") : "/usr/share/tacentview/Data/";
+		tString localAppDir = isDev ? dataDir : tSystem::tGetHomeDir() + ".tacentview/";
+		if (!tSystem::tDirExists(localAppDir))
+			tSystem::tCreateDir(localAppDir);	
+		Image::ThumbCacheDir = localAppDir + "Cache/";
+		tString cfgFile = localAppDir + "Settings.cfg";
+		#endif
+
 	#endif
-	
+
 	if (!tSystem::tDirExists(Image::ThumbCacheDir))
 		tSystem::tCreateDir(Image::ThumbCacheDir);
-
-	#ifdef PLATFORM_WINDOWS
-	tString cfgFile = dataDir + "Settings.cfg";
-	#elif defined(PLATFORM_LINUX)
-	tString cfgFile = localAppDir + "Settings.cfg";
-	#endif
 	
 	Viewer::Config.Load(cfgFile, mode->width, mode->height);
 
