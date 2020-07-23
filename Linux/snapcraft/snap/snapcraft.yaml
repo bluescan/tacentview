@@ -8,10 +8,11 @@ description: |
   correctly and can inspect the colour of individual pixels. There is basic editing functionality, batch resizing,
   and the ability to generate contact sheets for FX etc.
 grade: devel
-confinement: devmode # devmode or strict
+#confinement: devmode # devmode or strict
+confinement: strict
 apps:
   tacentview:
-    command: tacentview
+    command: desktop-launch tacentview
     plugs:
     - x11
     - opengl
@@ -39,9 +40,8 @@ parts:
       cp ../stage/root/parts/tacentview/build/ViewerInstall/tacentview tacentview
       mkdir -p Data
       cp ../stage/root/parts/tacentview/build/ViewerInstall/Data/* Data/
-    after:
-      - glib-only
-  glib-only:
+    after: [desktop-glib-only]
+  desktop-glib-only:
     source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
     source-subdir: glib-only
     plugin: make
