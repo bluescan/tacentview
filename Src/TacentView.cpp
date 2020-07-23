@@ -2051,8 +2051,8 @@ int main(int argc, char** argv)
 	tPrintf("snapUserCommon: %s\n", snapUserCommon.Chars());
 
 	// @todo Remove temp override.
-	snapUserData = "/home/tristan/snap/tacentview/x1/";
-	snapUserCommon = "/home/tristan/snap/tacentview/common/";
+	//snapUserData = "/home/tristan/snap/tacentview/x1/";
+	//snapUserCommon = "/home/tristan/snap/tacentview/common/";
 	#endif
 
 	// Setup window
