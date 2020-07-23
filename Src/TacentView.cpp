@@ -2042,6 +2042,19 @@ int main(int argc, char** argv)
 	}
 	#endif
 
+	#ifdef PACKAGE_SNAP
+	// SNAP_USER_DATA is common to all revisions and is backed up. Used for viewer user-configuration file.
+	// SNAP_USER_COMMON is common to all revisions of a snap and is not backed up. Used for viewer cache.
+	tString snapUserData = tSystem::tGetEnvVar("SNAP_USER_DATA") + "/";
+	tString snapUserCommon = tSystem::tGetEnvVar("SNAP_USER_COMMON") + "/";
+	tPrintf("snapUserData: %s\n", snapUserData.Chars());
+	tPrintf("snapUserCommon: %s\n", snapUserCommon.Chars());
+
+	// @todo Remove temp override.
+	snapUserData = "/home/tristan/snap/tacentview/x1/";
+	snapUserCommon = "/home/tristan/snap/tacentview/common/";
+	#endif
+
 	// Setup window
 	glfwSetErrorCallback(Viewer::GlfwErrorCallback);
 	if (!glfwInit())
@@ -2067,14 +2080,6 @@ int main(int argc, char** argv)
 
 		//#define PACKAGE_SNAP
 		#ifdef PACKAGE_SNAP
-		// SNAP_USER_DATA is common to all revisions and is backed up. Used for viewer user-configuration file.
-		// SNAP_USER_COMMON is common to all revisions of a snap and is not backed up. Used for viewer cache.
-		tString snapUserData = tSystem::tGetEnvVar("SNAP_USER_DATA") + "/";
-		tString snapUserCommon = tSystem::tGetEnvVar("SNAP_USER_COMMON") + "/";
-
-		tPrintf("snapUserData: %s\n", snapUserData.Chars());
-		tPrintf("snapUserCommon: %s\n", snapUserCommon.Chars());
-
 		tString progDir = tSystem::tGetProgramDir();
 		tString dataDir = progDir + "Data/";
 

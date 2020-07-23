@@ -1,0 +1,52 @@
+name: tacentview
+base: core20
+version: '1.0.10'
+summary: An immediate mode GUI image viewer.
+description: |
+  Tacent View is an image and texture viewer for tga, png, exr, dds, gif, hdr, jpg, tif, ico, webp, and bmp files.
+  Uses Dear ImGui and the Tacent library. This viewer is targeted to game devs -- It displays alpha channels
+  correctly and can inspect the colour of individual pixels. There is basic editing functionality, batch resizing,
+  and the ability to generate contact sheets for FX etc.
+grade: devel
+confinement: devmode # devmode or strict
+apps:
+  tacentview:
+    command: tacentview
+    plugs:
+    - x11
+    - opengl
+
+parts:
+  tacentview:
+    stage-packages:
+      - libgl1-mesa-dri
+      - libglu1-mesa
+      - libx11-6
+      - xserver-xorg-video-all
+    plugin: cmake
+    source: https://github.com/bluescan/tacentview.git
+    # source: "tacentview"
+    # source-type: local
+    cmake-parameters:
+      - -G"Unix Makefiles"
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DPACKAGE_SNAP=True
+    build-packages:
+      - g++
+      - make
+    override-prime: |
+      echo OverridePrime
+      cp ../stage/root/parts/tacentview/build/ViewerInstall/tacentview tacentview
+      mkdir -p Data
+      cp ../stage/root/parts/tacentview/build/ViewerInstall/Data/* Data/
+    after:
+      - glib-only
+  glib-only:
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    source-subdir: glib-only
+    plugin: make
+    build-packages:
+      - libglib2.0-dev
+    stage-packages:
+      - libglib2.0-bin
+      
