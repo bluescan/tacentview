@@ -37,10 +37,13 @@ parts:
       - make
     override-prime: |
       echo OverridePrime
+      snapcraftctl prime
+      cp ../stage/bin/desktop-launch ./bin/desktop-launch
       cp ../stage/root/parts/tacentview/build/ViewerInstall/tacentview tacentview
       mkdir -p Data
       cp ../stage/root/parts/tacentview/build/ViewerInstall/Data/* Data/
-    after: [desktop-glib-only]
+    after:
+      - desktop-glib-only
   desktop-glib-only:
     source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
     source-subdir: glib-only
