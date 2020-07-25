@@ -3,16 +3,16 @@ base: core20
 version: '1.0.10'
 summary: An immediate mode GUI image viewer.
 description: |
-  Tacent View is an image and texture viewer for tga, png, exr, dds, gif, hdr, jpg, tif, ico, webp, and bmp files.
-  Uses Dear ImGui and the Tacent library. This viewer is targeted to game devs -- It displays alpha channels
+  An image and texture viewer for tga, png, exr, dds, gif, hdr, jpg, tif, ico, webp, and bmp files.
+  Uses Dear ImGui and the Tacent library. Tacent View is targeted to game devs -- It displays alpha channels
   correctly and can inspect the colour of individual pixels. There is basic editing functionality, batch resizing,
   and the ability to generate contact sheets for FX etc.
 grade: devel
 confinement: strict # can be devmode too.
 apps:
   tacentview:
-#    environment:
-#      LD_LIBRARY_PATH: $LD_LIBRARY_PATH:/usr/lib/$SNAPCRAFT_ARCH_TRIPLET
+    # environment:
+    # LD_LIBRARY_PATH: $LD_LIBRARY_PATH:/usr/lib/$SNAPCRAFT_ARCH_TRIPLET
     command: desktop-launch $SNAP/tacentview
     # command: tacentview
     plugs:
@@ -39,7 +39,7 @@ parts:
       - make
       - cmake
     override-prime: |
-      echo OverridePrime
+      echo OverridePrimeTacentView
       snapcraftctl prime
       cp ../stage/root/parts/tacentview/build/ViewerInstall/tacentview tacentview
       mkdir -p Data
