@@ -1,6 +1,6 @@
 name: tacentview
 base: core20
-version: '1.0.10'
+version: '1.0.11'
 summary: An immediate mode GUI image viewer.
 description: |
   An image and texture viewer for tga, png, exr, dds, gif, hdr, jpg, tif, ico, webp, and bmp files.
@@ -18,6 +18,8 @@ apps:
     plugs:
     - x11
     - opengl
+    - home
+    - removable-media
 
 parts:
   tacentview:
