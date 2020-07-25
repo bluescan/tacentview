@@ -7,8 +7,8 @@ description: |
   Uses Dear ImGui and the Tacent library. Tacent View is targeted to game devs -- It displays alpha channels
   correctly and can inspect the colour of individual pixels. There is basic editing functionality, batch resizing,
   and the ability to generate contact sheets for FX etc.
-grade: devel
-confinement: strict # can be devmode too.
+grade: stable       # Use either devel or stable.
+confinement: strict # Use either devmode or strict.
 apps:
   tacentview:
     # environment:
