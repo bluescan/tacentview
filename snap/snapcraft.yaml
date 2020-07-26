@@ -1,6 +1,8 @@
 name: tacentview
 base: core20
-version: '1.0.11'
+# The version is parsed from Version.cmake.h using adopt-info partname.
+# version: '1.0.11'
+adopt-info: tacentview
 summary: An immediate mode GUI image viewer.
 description: |
   An image and texture viewer for tga, png, exr, dds, gif, hdr, jpg, tif, ico, webp, and bmp files.
@@ -40,6 +42,11 @@ parts:
       - g++
       - make
       - cmake
+    override-pull: |
+      snapcraftctl pull
+      VER=`grep -o '".*"' Src/Version.cmake.h | sed 's/"//g' | sed 's/[^.0-9]//g' # | sed 's/.*/\"&\"/g'`
+      echo Parsed version string: $VER
+      snapcraftctl set-version $VER
     override-prime: |
       echo OverridePrimeTacentView
       snapcraftctl prime
