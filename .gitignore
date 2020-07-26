@@ -34,6 +34,7 @@ imgui\.ini
 *.cxx.o
 *.tac
 *.zip
+*.snap
 
 # Specific filetypes that have exceptions here or in subdirs.
 *.vcxproj.user
