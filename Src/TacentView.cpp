@@ -174,8 +174,8 @@ namespace Viewer
 	bool Compare_ImageFileSizeDescending(const Image& a, const Image& b)												{ return a.FileSizeB > b.FileSizeB; }
 	typedef bool ImageCompareFn(const Image&, const Image&);
 
-	bool OnPrevious(bool circ = false);
-	bool OnNext(bool circ = false);
+	bool OnPrevious();
+	bool OnNext();
 	void OnPreviousPart();
 	void OnNextPart();
 	bool OnSkipBegin();
@@ -455,8 +455,9 @@ void Viewer::LoadCurrImage()
 }
 
 
-bool Viewer::OnPrevious(bool circ)
+bool Viewer::OnPrevious()
 {
+	bool circ = SlideshowPlaying && Config.SlideshowLooping;
 	if (!CurrImage || (!circ && !CurrImage->Prev()))
 		return false;
 
@@ -469,8 +470,9 @@ bool Viewer::OnPrevious(bool circ)
 }
 
 
-bool Viewer::OnNext(bool circ)
+bool Viewer::OnNext()
 {
+	bool circ = SlideshowPlaying && Config.SlideshowLooping;
 	if (!CurrImage || (!circ && !CurrImage->Next()))
 		return false;
 
@@ -1033,7 +1035,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if ((DisappearCountdown > 0.0) && !CropMode)
 	{
 		// Previous arrow.
-		if ((CurrImage != Images.First()) || SlideshowPlaying)
+		if ((CurrImage != Images.First()) || (SlideshowPlaying && Config.SlideshowLooping))
 		{
 			ImGui::SetNextWindowPos(tVector2(0.0f, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
 			ImGui::SetNextWindowSize(tVector2(16, 70), ImGuiCond_Always);
@@ -1045,7 +1047,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 
 		// Next arrow.
-		if ((CurrImage != Images.Last()) || SlideshowPlaying)
+		if ((CurrImage != Images.Last()) || (SlideshowPlaying && Config.SlideshowLooping))
 		{
 			ImGui::SetNextWindowPos(tVector2(workAreaW - 33.0f, float(topUIHeight) + float(workAreaH) * 0.5f - 33.0f));
 			ImGui::SetNextWindowSize(tVector2(16, 70), ImGuiCond_Always);
@@ -1088,13 +1090,16 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		)	OnPrevious();
 		ImGui::End();
 
-		// Slideshow/Stop button.
+		// Slideshow Play/Stop button.
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+0.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
 		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
 		ImGui::Begin("Slideshow", nullptr, flagsImgButton);
 		uint64 psImageID = SlideshowPlaying ? StopImage.Bind() : PlayImage.Bind();
 		if (ImGui::ImageButton(ImTextureID(psImageID), tVector2(24,24), tVector2(0,0), tVector2(1,1), 2, tVector4(0,0,0,0), tVector4(1,1,1,1)))
+		{
 			SlideshowPlaying = !SlideshowPlaying;
+			SlideshowCountdown = Config.SlidehowFrameDuration;
+		}
 		ImGui::End();
 
 		// Next button.
@@ -1550,7 +1555,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		SlideshowCountdown -= dt;
 		if ((SlideshowCountdown <= 0.0f))
 		{
-			bool ok = OnNext(Config.SlideshowLooping);
+			bool ok = OnNext();
 			if (!ok)
 				SlideshowPlaying = false;
 			else
