@@ -25,6 +25,7 @@ namespace Viewer
 		int WindowY;
 		int WindowW;
 		int WindowH;
+		bool ShowMenuBar;
 		bool ShowNavBar;
 		bool ShowImageDetails;
 		bool ContentViewShow;

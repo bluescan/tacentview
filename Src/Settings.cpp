@@ -64,6 +64,7 @@ void Viewer::Settings::ResetUISettings(int screenW, int screenH)
 	WindowX						= (screenW - WindowW) >> 1;
 	WindowY						= (screenH - WindowH) >> 1;
 
+	ShowMenuBar					= true;
 	ShowNavBar					= true;
 	ShowImageDetails			= true;
 	ContentViewShow				= false;
@@ -92,6 +93,7 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(WindowY);
 				ReadItem(WindowW);
 				ReadItem(WindowH);
+				ReadItem(ShowMenuBar);
 				ReadItem(ShowNavBar);
 				ReadItem(ShowImageDetails);
 				ReadItem(ContentViewShow);
@@ -148,6 +150,7 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(WindowY);
 	WriteItem(WindowW);
 	WriteItem(WindowH);
+	WriteItem(ShowMenuBar);
 	WriteItem(ShowNavBar);
 	WriteItem(ShowImageDetails);
 	WriteItem(ContentViewShow);

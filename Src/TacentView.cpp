@@ -753,7 +753,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	glClearColor(ColourClear.x, ColourClear.y, ColourClear.z, ColourClear.w);
 	glClear(GL_COLOR_BUFFER_BIT);
 	int bottomUIHeight	= GetNavBarHeight();
-	int topUIHeight		= FullscreenMode ? 0 : 26;
+	int topUIHeight		= (FullscreenMode || !Config.ShowMenuBar) ? 0 : 26;
 
 	ImGui_ImplOpenGL2_NewFrame();		
 	ImGui_ImplGlfw_NewFrame();
@@ -1124,7 +1124,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	ImGui::SetNextWindowPos(tVector2(0, 0));
 
-	if (!FullscreenMode)
+	if (!FullscreenMode && Config.ShowMenuBar)
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,6));
 		ImGui::BeginMainMenuBar();
@@ -1233,23 +1233,18 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::PopStyleVar();
 			ImGui::EndMenu();
 		}
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
-
-		if (PrefsWindow)
-			ShowPreferencesWindow(&PrefsWindow);
-
-		if (PropEditorWindow)
-			ShowPropertyEditorWindow(&PropEditorWindow);
-
-		ImGui::PopStyleVar();
-
+///////////////////////////////
 		//
 		// View Menu.
 		//
 		if (ImGui::BeginMenu("View"))
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
-			ImGui::MenuItem("Nav Bar", "N", &Config.ShowNavBar);
+			if (!CropMode)
+			{
+				ImGui::MenuItem("Menu Bar", "M", &Config.ShowMenuBar);
+				ImGui::MenuItem("Nav Bar", "N", &Config.ShowNavBar);
+			}
 			ImGui::MenuItem("Image Details", "I", &Config.ShowImageDetails);
 			ImGui::MenuItem("Content View", "V", &Config.ContentViewShow);
 
@@ -1474,6 +1469,16 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::EndMainMenuBar();
 		ImGui::PopStyleVar();
 	}
+
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
+
+	if (PrefsWindow)
+		ShowPreferencesWindow(&PrefsWindow);
+
+	if (PropEditorWindow)
+		ShowPropertyEditorWindow(&PropEditorWindow);
+
+	ImGui::PopStyleVar();
 
 	if (!FullscreenMode && Config.ShowNavBar)
 		DrawNavBar(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
@@ -1744,8 +1749,14 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				ResetPan();
 			break;
 
+		case GLFW_KEY_M:
+			if (!CropMode)
+				Config.ShowMenuBar = !Config.ShowMenuBar;
+			break;
+
 		case GLFW_KEY_N:
-			Config.ShowNavBar = !Config.ShowNavBar;
+			if (!CropMode)
+				Config.ShowNavBar = !Config.ShowNavBar;
 			break;
 
 		case GLFW_KEY_I:
@@ -2252,7 +2263,7 @@ int main(int argc, char** argv)
 	
 	Viewer::UnloadAppImages();
 
-	// Get current window geometry and set in config file if we're not in fullscreen mode or iconified.
+	// Get current window geometry and set in config file if we're not in fullscreen mode and not iconified.
 	if (!Viewer::FullscreenMode && !Viewer::WindowIconified)
 	{
 		glfwGetWindowPos(Viewer::Window, &Viewer::Config.WindowX, &Viewer::Config.WindowY);
