@@ -122,10 +122,10 @@ namespace Viewer
 	{
 		User,
 		Fit,
-		Downscale,
+		DownscaleOnly,
 		OneToOne
 	};
-	ZoomMode CurrZoomMode						= ZoomMode::Downscale;
+	ZoomMode CurrZoomMode						= ZoomMode::DownscaleOnly;
 
 	float ZoomPercent							= 100.0f;
 
@@ -182,6 +182,7 @@ namespace Viewer
 	bool OnSkipEnd();
 	void ResetPan(bool resetX = true, bool resetY = true);
 	void ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan);
+	void SetConfigToBasic();
 	tString FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles);	// Returns the image folder.
 	tuint256 ComputeImagesHash(const tList<tStringItem>& files);
 	int RemoveOldCacheFiles(const tString& cacheDir);						// Returns num removed.
@@ -388,7 +389,7 @@ void Viewer::SetCurrentImage(const tString& currFilename)
 
 	if (CurrImage)
 	{
-		CurrZoomMode = ZoomMode::Downscale;
+		CurrZoomMode = ZoomMode::DownscaleOnly;
 		LoadCurrImage();
 	}
 }
@@ -458,6 +459,9 @@ bool Viewer::OnPrevious(bool circ)
 	if (!CurrImage || (!circ && !CurrImage->Prev()))
 		return false;
 
+	if (SlideshowPlaying)
+		SlideshowCountdown = Config.SlidehowFrameDuration;
+
 	CurrImage = circ ? Images.PrevCirc(CurrImage) : CurrImage->Prev();
 	LoadCurrImage();
 	return true;
@@ -468,6 +472,9 @@ bool Viewer::OnNext(bool circ)
 {
 	if (!CurrImage || (!circ && !CurrImage->Next()))
 		return false;
+
+	if (SlideshowPlaying)
+		SlideshowCountdown = Config.SlidehowFrameDuration;
 
 	CurrImage = circ ? Images.NextCirc(CurrImage) : CurrImage->Next();
 	LoadCurrImage();
@@ -820,7 +827,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		b = tMath::tRound(vmargin);
 		t = tMath::tRound(vmargin+drawh);
 
-		if (CurrZoomMode == ZoomMode::Downscale)
+		if (CurrZoomMode == ZoomMode::DownscaleOnly)
 		{
 			ZoomPercent = 100.0f;
 			if (draww < iw)
@@ -1233,7 +1240,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::PopStyleVar();
 			ImGui::EndMenu();
 		}
-///////////////////////////////
+
 		//
 		// View Menu.
 		//
@@ -1244,6 +1251,15 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			{
 				ImGui::MenuItem("Menu Bar", "M", &Config.ShowMenuBar);
 				ImGui::MenuItem("Nav Bar", "N", &Config.ShowNavBar);
+				bool basicSettings = false;
+				ImGui::MenuItem("Basic View Mode", "B", &basicSettings);
+				if (basicSettings)
+				{
+					if (!Config.ShowMenuBar)
+						Config.ShowMenuBar = true;
+					else
+						Viewer::SetConfigToBasic();
+				}
 			}
 			ImGui::MenuItem("Image Details", "I", &Config.ShowImageDetails);
 			ImGui::MenuItem("Content View", "V", &Config.ContentViewShow);
@@ -1264,11 +1280,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 				CurrZoomMode = ZoomMode::Fit;
 			}
 
-			bool downscale = CurrZoomMode == ZoomMode::Downscale;
+			bool downscale = CurrZoomMode == ZoomMode::DownscaleOnly;
 			if (ImGui::MenuItem("Zoom Downscale", "D", &downscale))
 			{
 				ResetPan();
-				CurrZoomMode = ZoomMode::Downscale;
+				CurrZoomMode = ZoomMode::DownscaleOnly;
 			}
 
 			bool oneToOne = CurrZoomMode == ZoomMode::OneToOne;
@@ -1614,6 +1630,28 @@ void Viewer::ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan)
 }
 
 
+void Viewer::SetConfigToBasic()
+{
+	// This is for the purists. Turns off unnecessary UI elements for the viewer to function only as a simple
+	// viewer. Turns off the nav and menu bars, any dialogs (help, about, thumbnails, info, etc), sets the zoom
+	// mode to downscale-only, makes the background match the border colour, sets the auto prop editor to false,
+	// sets the slideshow/play to looping, and the slideshow duration to 8 seconds.
+	Config.ShowMenuBar = false;
+	Config.ShowNavBar = false;
+	Config.ShowImageDetails = false;
+	Config.AutoPropertyWindow = false;
+	Config.ContentViewShow = false;
+	Config.AutoPlayAnimatedImages = true;
+	Config.BackgroundStyle = int(Settings::BGStyle::None);
+	Config.SlideshowLooping = true;
+	Config.SlidehowFrameDuration = 8.0f;
+	CurrZoomMode = ZoomMode::DownscaleOnly;
+	PropEditorWindow = false;
+	ShowCheatSheet = false;
+	ShowAbout = false;
+}
+
+
 void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int modifiers)
 {
 	if ((action != GLFW_PRESS) && (action != GLFW_REPEAT))
@@ -1675,7 +1713,10 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case GLFW_KEY_ESCAPE:
-			ChangeScreenMode(false);
+			if (FullscreenMode)
+				ChangeScreenMode(false);
+			else if (!Config.ShowMenuBar)
+				Config.ShowMenuBar = true;
 			break;
 
 		case GLFW_KEY_DELETE:
@@ -1749,6 +1790,12 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				ResetPan();
 			break;
 
+		case GLFW_KEY_B:
+			if (CropMode)
+				break;
+			SetConfigToBasic();
+			break;
+
 		case GLFW_KEY_M:
 			if (!CropMode)
 				Config.ShowMenuBar = !Config.ShowMenuBar;
@@ -1780,7 +1827,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case GLFW_KEY_D:
 			ResetPan();
-			CurrZoomMode = ZoomMode::Downscale;
+			CurrZoomMode = ZoomMode::DownscaleOnly;
 			break;
 
 		case GLFW_KEY_Z:
