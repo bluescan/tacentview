@@ -182,7 +182,8 @@ namespace Viewer
 	bool OnSkipEnd();
 	void ResetPan(bool resetX = true, bool resetY = true);
 	void ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan);
-	void SetConfigToBasic();
+	void SetBasicViewAndBehaviour();
+	bool IsBasicViewAndBehaviour();
 	tString FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles);	// Returns the image folder.
 	tuint256 ComputeImagesHash(const tList<tStringItem>& files);
 	int RemoveOldCacheFiles(const tString& cacheDir);						// Returns num removed.
@@ -1247,19 +1248,15 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::BeginMenu("View"))
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
-			if (!CropMode)
+			ImGui::MenuItem("Menu Bar", "M", &Config.ShowMenuBar, !CropMode);
+			ImGui::MenuItem("Nav Bar", "N", &Config.ShowNavBar, !CropMode);
+			bool basicSettings = IsBasicViewAndBehaviour();
+			if (ImGui::MenuItem("Basic View Mode", "B", &basicSettings, !CropMode))
 			{
-				ImGui::MenuItem("Menu Bar", "M", &Config.ShowMenuBar);
-				ImGui::MenuItem("Nav Bar", "N", &Config.ShowNavBar);
-				bool basicSettings = false;
-				ImGui::MenuItem("Basic View Mode", "B", &basicSettings);
 				if (basicSettings)
-				{
-					if (!Config.ShowMenuBar)
-						Config.ShowMenuBar = true;
-					else
-						Viewer::SetConfigToBasic();
-				}
+					Viewer::SetBasicViewAndBehaviour();
+				else
+					Config.ShowMenuBar = true;
 			}
 			ImGui::MenuItem("Image Details", "I", &Config.ShowImageDetails);
 			ImGui::MenuItem("Content View", "V", &Config.ContentViewShow);
@@ -1630,7 +1627,7 @@ void Viewer::ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan)
 }
 
 
-void Viewer::SetConfigToBasic()
+void Viewer::SetBasicViewAndBehaviour()
 {
 	// This is for the purists. Turns off unnecessary UI elements for the viewer to function only as a simple
 	// viewer. Turns off the nav and menu bars, any dialogs (help, about, thumbnails, info, etc), sets the zoom
@@ -1644,11 +1641,26 @@ void Viewer::SetConfigToBasic()
 	Config.AutoPlayAnimatedImages = true;
 	Config.BackgroundStyle = int(Settings::BGStyle::None);
 	Config.SlideshowLooping = true;
-	Config.SlidehowFrameDuration = 8.0f;
+	Config.SlidehowFrameDuration = 8.0;
 	CurrZoomMode = ZoomMode::DownscaleOnly;
 	PropEditorWindow = false;
 	ShowCheatSheet = false;
 	ShowAbout = false;
+}
+
+
+bool Viewer::IsBasicViewAndBehaviour()
+{
+	return
+	(
+		!Config.ShowMenuBar			&& !Config.ShowNavBar			&& !Config.ShowImageDetails			&&
+		!Config.AutoPropertyWindow	&& !Config.ContentViewShow		&& Config.AutoPlayAnimatedImages	&&
+		(Config.BackgroundStyle == int(Settings::BGStyle::None))	&&
+		Config.SlideshowLooping		&&
+		tMath::tApproxEqual(Config.SlidehowFrameDuration, 8.0)			&&
+		(CurrZoomMode == ZoomMode::DownscaleOnly)					&&
+		!PropEditorWindow			&& !ShowCheatSheet				&& !ShowAbout
+	);
 }
 
 
@@ -1793,7 +1805,10 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case GLFW_KEY_B:
 			if (CropMode)
 				break;
-			SetConfigToBasic();
+			if (IsBasicViewAndBehaviour())
+				Config.ShowMenuBar = true;
+			else
+				SetBasicViewAndBehaviour();
 			break;
 
 		case GLFW_KEY_M:
