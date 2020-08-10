@@ -538,25 +538,24 @@ uint64 Image::Bind()
 	if (!IsLoaded())
 		return 0;
 
-	for (tPicture* pic = Pictures.First(); pic; pic = pic->Next())
-		glGenTextures(1, &pic->TextureID);
-
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 	{
-		if (picture && picture->IsValid())
-		{
-			tList<tLayer> layers;
-			layers.Append
-			(
-				new tLayer
-				(
-					tPixelFormat::R8G8B8A8, picture->GetWidth(), picture->GetHeight(),
-					(uint8*)picture->GetPixelPointer()
-				)
-			);
+		if (!picture->IsValid())
+			continue;
 
-			BindLayers(layers, picture->TextureID);
-		}
+		glGenTextures(1, &picture->TextureID);
+
+		tList<tLayer> layers;
+		layers.Append
+		(
+			new tLayer
+			(
+				tPixelFormat::R8G8B8A8, picture->GetWidth(), picture->GetHeight(),
+				(uint8*)picture->GetPixelPointer()
+			)
+		);
+
+		BindLayers(layers, picture->TextureID);
 	}
 	return GetCurrentPic()->TextureID;
 }
@@ -875,7 +874,22 @@ void Image::GenerateThumbnail()
 	}
 
 	Image thumbLoader;
-	thumbLoader.Load(Filename);
+	int maxLoadAttempts = 5;
+	for (int attempt = 0; attempt < maxLoadAttempts; attempt++)
+	{
+		bool thumbLoaded = thumbLoader.Load(Filename);
+		if (thumbLoaded)
+		{
+			if (attempt > 0)
+				tPrintf("Loading of thumbnail %s succeeded on attempt %d.\n", Filename.Chars(), attempt+1);
+			break;
+		}
+		else
+		{
+			tPrintf("Warning: Loading of thumbnail %s failed on attempt %d.\n", Filename.Chars(), attempt+1);
+			tSystem::tSleep(250);
+		}	
+	}
 
 	if (Filetype == tFileType::DDS)
 	{
