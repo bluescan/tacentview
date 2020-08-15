@@ -45,11 +45,16 @@
 #if defined(_WIN32) && !defined(WINGDIAPI)
 #define WINGDIAPI __declspec(dllimport)     // Some Windows OpenGL headers need this
 #endif
+
 #if defined(__APPLE__)
 #define GL_SILENCE_DEPRECATION
 #include <OpenGL/gl.h>
-#else
+
+#elif defined(PLATFORM_WINDOWS)
 #include <GL/gl.h>
+
+#else
+#include <glad/glad.h>
 #endif
 
 // OpenGL Data
