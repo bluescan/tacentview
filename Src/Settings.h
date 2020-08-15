@@ -57,6 +57,7 @@ namespace Viewer
 		bool ConfirmDeletes;
 		bool ConfirmFileOverwrites;
 		bool SlideshowLooping;
+		bool SlideshowProgressArc;
 		double SlidehowFrameDuration;
 
 		tString SaveSubFolder;

@@ -37,6 +37,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl2.h"
+#include "imgui_internal.h"			// For ProgressArc.
 #include "TacentView.h"
 #include "Image.h"
 #include "Dialogs.h"
@@ -197,6 +198,7 @@ namespace Viewer
 	void FileDropCallback(GLFWwindow*, int count, const char** paths);
 	void FocusCallback(GLFWwindow*, int gotFocus);
 	void IconifyCallback(GLFWwindow*, int iconified);
+	void ProgressArc(float radius, float percent, const ImVec4& colour, const ImVec4& colourbg, float thickness = 4.0f, int segments = 32);
 }
 
 
@@ -747,6 +749,25 @@ void Viewer::ConvertImagePosToScreenPos
 }
 
 
+void Viewer::ProgressArc(float radius, float percent, const ImVec4& colour, const ImVec4& colourbg, float thickness, int segments)
+{
+	ImGuiWindow* window = ImGui::GetCurrentWindow();
+	if (window->SkipItems)
+		return;
+
+	tiSaturate(percent);
+	if (percent <= 0.0f)
+		return;
+
+    const ImVec2 pos = window->DC.CursorPos;
+	window->DrawList->PathArcTo(pos, radius, IM_PI/2.0f-0.10f, IM_PI/2.0f + percent*IM_PI*2.0f +0.10f, segments-1);
+    window->DrawList->PathStroke(ImGui::GetColorU32(colourbg), false, thickness+1.5f);
+
+	window->DrawList->PathArcTo(pos, radius, IM_PI/2.0f, IM_PI/2.0f + percent*IM_PI*2.0f, segments-1);
+    window->DrawList->PathStroke(ImGui::GetColorU32(colour), false, thickness);
+}
+
+
 void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 {
 	// Poll and handle events like inputs, window resize, etc. You can read the io.WantCaptureMouse,
@@ -1029,6 +1050,19 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGuiWindowFlags_NoTitleBar		|	ImGuiWindowFlags_NoScrollbar	|	ImGuiWindowFlags_NoMove			| ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoCollapse		|	ImGuiWindowFlags_NoNav			|	ImGuiWindowFlags_NoBackground	| ImGuiWindowFlags_NoBringToFrontOnFocus;
 
+
+	if (SlideshowPlaying && (Config.SlidehowFrameDuration >= 1.0f) && Config.SlideshowProgressArc)
+	{
+
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+7.0f, float(topUIHeight) + float(workAreaH) - 64.0f));
+		ImGui::Begin("SlideProgress", nullptr, flagsImgButton | ImGuiWindowFlags_NoInputs);
+		ImGui::SetCursorPos(tVector2(15, 14));
+
+		float percent = float(SlideshowCountdown / Config.SlidehowFrameDuration);
+		ProgressArc(8.0f, percent, ImVec4(1.0f, 1.0f, 1.0f, 1.0f), Viewer::ColourClear);
+		ImGui::End();
+	}
+
 	if (!ImGui::GetIO().WantCaptureMouse)
 		DisappearCountdown -= dt;
 
@@ -1255,6 +1289,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 			ImGui::MenuItem("Menu Bar", "M", &Config.ShowMenuBar, !CropMode);
 			ImGui::MenuItem("Nav Bar", "N", &Config.ShowNavBar, !CropMode);
+			ImGui::MenuItem("Slideshow Progress", "S", &Config.SlideshowProgressArc, !CropMode);
 			bool basicSettings = IsBasicViewAndBehaviour();
 			if (ImGui::MenuItem("Basic View Mode", "B", &basicSettings, !CropMode))
 			{
@@ -1646,6 +1681,7 @@ void Viewer::SetBasicViewAndBehaviour()
 	Config.AutoPlayAnimatedImages = true;
 	Config.BackgroundStyle = int(Settings::BGStyle::None);
 	Config.SlideshowLooping = true;
+	Config.SlideshowProgressArc = false;
 	Config.SlidehowFrameDuration = 8.0;
 	CurrZoomMode = ZoomMode::DownscaleOnly;
 	PropEditorWindow = false;
@@ -1661,8 +1697,8 @@ bool Viewer::IsBasicViewAndBehaviour()
 		!Config.ShowMenuBar			&& !Config.ShowNavBar			&& !Config.ShowImageDetails			&&
 		!Config.AutoPropertyWindow	&& !Config.ContentViewShow		&& Config.AutoPlayAnimatedImages	&&
 		(Config.BackgroundStyle == int(Settings::BGStyle::None))	&&
-		Config.SlideshowLooping		&&
-		tMath::tApproxEqual(Config.SlidehowFrameDuration, 8.0)			&&
+		Config.SlideshowLooping										&& !Config.SlideshowProgressArc		&&
+		tMath::tApproxEqual(Config.SlidehowFrameDuration, 8.0)		&&
 		(CurrZoomMode == ZoomMode::DownscaleOnly)					&&
 		!PropEditorWindow			&& !ShowCheatSheet				&& !ShowAbout
 	);
@@ -1857,6 +1893,10 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case GLFW_KEY_S:
+			if (!modifiers)
+			{
+				Config.SlideshowProgressArc = !Config.SlideshowProgressArc;
+			}
 			if (CurrImage)
 			{
 				if (modifiers == GLFW_MOD_CONTROL)

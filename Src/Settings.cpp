@@ -43,6 +43,7 @@ void Viewer::Settings::ResetBehaviourSettings()
 	ConfirmDeletes				= true;
 	ConfirmFileOverwrites		= true;
 	SlideshowLooping			= false;
+	SlideshowProgressArc		= true;
 	SlidehowFrameDuration		= 1.0/30.0;
 	SaveSubFolder				.Clear();
 	SaveFileType				= 0;
@@ -108,6 +109,7 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(ConfirmDeletes);
 				ReadItem(ConfirmFileOverwrites);
 				ReadItem(SlideshowLooping);
+				ReadItem(SlideshowProgressArc);
 				ReadItem(SlidehowFrameDuration);
 				ReadItem(SaveSubFolder);
 				ReadItem(SaveFileType);
@@ -165,6 +167,7 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(ConfirmDeletes);
 	WriteItem(ConfirmFileOverwrites);
 	WriteItem(SlideshowLooping);
+	WriteItem(SlideshowProgressArc);
 	WriteItem(SlidehowFrameDuration);
 	WriteItem(SaveSubFolder);
 	WriteItem(SaveFileType);
