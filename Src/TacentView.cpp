@@ -2239,9 +2239,11 @@ int main(int argc, char** argv)
 	#ifdef PLATFORM_WINDOWS
 	// Make the window title bar show up in black.
 	HWND hwnd = glfwGetWin32Window(Viewer::Window);
-	const int DWMWA_USE_IMMERSIVE_DARK_MODE = 19;
+	const int DWMWA_USE_IMMERSIVE_DARK_MODE_A = 19;
+	const int DWMWA_USE_IMMERSIVE_DARK_MODE_B = 20;
 	BOOL isDarkMode = 1;
-	DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &isDarkMode, sizeof(isDarkMode));
+	DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_A, &isDarkMode, sizeof(isDarkMode));
+	DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_B, &isDarkMode, sizeof(isDarkMode));
 	if (!tSystem::tDirExists(dataDir))
 	{
 		::MessageBoxA
