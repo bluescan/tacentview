@@ -1681,7 +1681,7 @@ void Viewer::SetBasicViewAndBehaviour()
 	Config.AutoPlayAnimatedImages = true;
 	Config.BackgroundStyle = int(Settings::BGStyle::None);
 	Config.SlideshowLooping = true;
-	Config.SlideshowProgressArc = false;
+	Config.SlideshowProgressArc = true;
 	Config.SlidehowFrameDuration = 8.0;
 	CurrZoomMode = ZoomMode::DownscaleOnly;
 	PropEditorWindow = false;
@@ -1697,7 +1697,7 @@ bool Viewer::IsBasicViewAndBehaviour()
 		!Config.ShowMenuBar			&& !Config.ShowNavBar			&& !Config.ShowImageDetails			&&
 		!Config.AutoPropertyWindow	&& !Config.ContentViewShow		&& Config.AutoPlayAnimatedImages	&&
 		(Config.BackgroundStyle == int(Settings::BGStyle::None))	&&
-		Config.SlideshowLooping										&& !Config.SlideshowProgressArc		&&
+		Config.SlideshowLooping										&& Config.SlideshowProgressArc		&&
 		tMath::tApproxEqual(Config.SlidehowFrameDuration, 8.0)		&&
 		(CurrZoomMode == ZoomMode::DownscaleOnly)					&&
 		!PropEditorWindow			&& !ShowCheatSheet				&& !ShowAbout

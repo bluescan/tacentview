@@ -458,8 +458,12 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	ImGui::PushItemWidth(110);
 	ImGui::InputDouble("Frame Duration (s)", &Config.SlidehowFrameDuration, 0.001f, 1.0f, "%.3f");
 	ImGui::PopItemWidth();
-	if (ImGui::Button("Reset Duration"))
-		Config.SlidehowFrameDuration = 4.0;
+	ImGui::Checkbox("Countdown Indicator", &Config.SlideshowProgressArc);
+	if (ImGui::Button("Reset Slideshow"))
+	{
+		Config.SlidehowFrameDuration = 8.0;
+		Config.SlideshowProgressArc = true;
+	}
 	ImGui::Unindent();
 
 	ImGui::Separator();
