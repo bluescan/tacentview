@@ -459,7 +459,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	ImGui::InputDouble("Frame Duration (s)", &Config.SlidehowFrameDuration, 0.001f, 1.0f, "%.3f");
 	ImGui::PopItemWidth();
 	if (ImGui::Button("Reset Duration"))
-		Config.SlidehowFrameDuration = 1.0/30.0;
+		Config.SlidehowFrameDuration = 4.0;
 	ImGui::Unindent();
 
 	ImGui::Separator();

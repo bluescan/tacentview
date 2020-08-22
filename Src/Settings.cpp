@@ -44,7 +44,7 @@ void Viewer::Settings::ResetBehaviourSettings()
 	ConfirmFileOverwrites		= true;
 	SlideshowLooping			= false;
 	SlideshowProgressArc		= true;
-	SlidehowFrameDuration		= 1.0/30.0;
+	SlidehowFrameDuration		= 4.0;			// Values as small as 1.0/30.0 also work.
 	SaveSubFolder				.Clear();
 	SaveFileType				= 0;
 	SaveFileTargaRLE			= false;
