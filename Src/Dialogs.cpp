@@ -505,6 +505,9 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			DeleteAllCacheFilesOnExit = false;
 		ImGui::SameLine(); ImGui::Text("Cache will be cleared on exit.");
 	}
+	ImGui::Checkbox("Strict Loading", &Config.StrictLoading); ImGui::SameLine();
+	ShowHelpMark("Some image files are ill-formed. If strict is true no attempt to display them is made.");
+
 	ImGui::PopItemWidth();
 	ImGui::Unindent();
 

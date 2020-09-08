@@ -254,6 +254,7 @@ tString Viewer::FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles)
 
 	tPrintf("Finding image files in %s\n", imagesDir.Chars());
 	tSystem::tFindFiles(foundFiles, imagesDir, "jpg");
+	tSystem::tFindFiles(foundFiles, imagesDir, "jpeg");
 	tSystem::tFindFiles(foundFiles, imagesDir, "gif");
 	tSystem::tFindFiles(foundFiles, imagesDir, "webp");
 	tSystem::tFindFiles(foundFiles, imagesDir, "tga");

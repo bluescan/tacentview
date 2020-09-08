@@ -22,6 +22,7 @@
 #include <Image/tImageGIF.h>
 #include <Image/tImageWEBP.h>
 #include <Image/tImageICO.h>
+#include <Image/tImageJPG.h>
 #include <System/tFile.h>
 #include <System/tTime.h>
 #include <System/tMachine.h>
@@ -208,6 +209,22 @@ bool Image::Load()
 				delete part;
 				Pictures.Append(picture);
 			}
+			success = true;
+		}
+		else if (Filetype == tSystem::tFileType::JPG)
+		{
+			tImageJPG jpg;
+			bool ok = jpg.Load(Filename.Chars(), Viewer::Config.StrictLoading);
+			if (!ok)
+				return false;
+
+			int width = jpg.GetWidth();
+			int height = jpg.GetHeight();
+			tPixel* pixels = jpg.StealPixels();
+
+			Info.SrcPixelFormat = jpg.SrcPixelFormat;
+			tPicture* picture = new tPicture(width, height, pixels, false);
+			Pictures.Append(picture);
 			success = true;
 		}
 		else

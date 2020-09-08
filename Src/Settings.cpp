@@ -52,6 +52,7 @@ void Viewer::Settings::ResetBehaviourSettings()
 	SaveAllSizeMode				= 0;
 	MaxImageMemMB				= 1024;
 	MaxCacheFiles				= 7000;
+	StrictLoading				= false;
 	AutoPropertyWindow			= true;
 	AutoPlayAnimatedImages		= true;
 	MonitorGamma				= tMath::DefaultGamma;
@@ -118,6 +119,7 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(SaveAllSizeMode);
 				ReadItem(MaxImageMemMB);
 				ReadItem(MaxCacheFiles);
+				ReadItem(StrictLoading);
 				ReadItem(AutoPropertyWindow);
 				ReadItem(AutoPlayAnimatedImages);
 				ReadItem(MonitorGamma);
@@ -176,6 +178,7 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(SaveAllSizeMode);
 	WriteItem(MaxImageMemMB);
 	WriteItem(MaxCacheFiles);
+	WriteItem(StrictLoading);
 	WriteItem(AutoPropertyWindow);
 	WriteItem(AutoPlayAnimatedImages);
 	WriteItem(MonitorGamma);

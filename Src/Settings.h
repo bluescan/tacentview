@@ -74,6 +74,7 @@ namespace Viewer
 		int SaveAllSizeMode;
 		int MaxImageMemMB;					// Max image mem before unloading images.
 		int MaxCacheFiles;					// Max number of cache files before removing oldest.
+		bool StrictLoading;					// No attempt to display ill-formed images.
 		bool AutoPropertyWindow;			// Auto display property editor window for supported file types.
 		bool AutoPlayAnimatedImages;		// Automatically play animated gifs and WebPs.
 		float MonitorGamma;					// Used when displaying HDR formats to do gamma correction.
