@@ -24,7 +24,7 @@ jobs:
     - uses: actions/checkout@v2
 
     # Build CMake NMake.
-    - uses: ilammy/msvc-dev-cmd@v1.2.0
+    - uses: ilammy/msvc-dev-cmd@v1.4.1
     - name: Build using CMake MSVC
       run: |
         echo '*** CMake Configure ***'
