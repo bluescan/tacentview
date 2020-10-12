@@ -84,6 +84,8 @@ namespace Viewer
 	Image RecycleImage;
 	Image PropEditImage;
 	Image InfoOverlayImage;
+	Image HelpImage;
+	Image PrefsImage;
 	Image TileImage;
 	Image StopImage;
 	Image StopRevImage;
@@ -1520,6 +1522,20 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		)	Config.ShowImageDetails = !Config.ShowImageDetails;
 		ShowToolTip("Information Overlay");
 
+		if (ImGui::ImageButton
+		(
+			ImTextureID(HelpImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
+			ShowCheatSheet ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	ShowCheatSheet = !ShowCheatSheet;
+		ShowToolTip("Help");
+
+		if (ImGui::ImageButton
+		(
+			ImTextureID(PrefsImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
+			PrefsWindow ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	PrefsWindow = !PrefsWindow;
+		ShowToolTip("Preferences");
+
 		ImGui::EndMainMenuBar();
 		ImGui::PopStyleVar();
 	}
@@ -2095,6 +2111,8 @@ void Viewer::LoadAppImages(const tString& dataDir)
 	RecycleImage			.Load(dataDir + "Recycle.png");
 	PropEditImage			.Load(dataDir + "PropEdit.png");
 	InfoOverlayImage		.Load(dataDir + "InfoOverlay.png");
+	HelpImage				.Load(dataDir + "Help.png");
+	PrefsImage				.Load(dataDir + "Settings.png");
 	TileImage				.Load(dataDir + "Tile.png");
 	StopImage				.Load(dataDir + "Stop.png");
 	StopRevImage			.Load(dataDir + "Stop.png");
@@ -2129,6 +2147,8 @@ void Viewer::UnloadAppImages()
 	RefreshImage			.Unload();
 	RecycleImage			.Unload();
 	PropEditImage			.Unload();
+	PrefsImage				.Unload();
+	HelpImage				.Unload();
 	InfoOverlayImage		.Unload();
 	TileImage				.Unload();
 	StopImage				.Unload();
