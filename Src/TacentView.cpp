@@ -145,12 +145,14 @@ namespace Viewer
 	const tVector4 ColourEnabledTint			= tVector4(1.00f, 1.00f, 1.00f, 1.00f);
 	const tVector4 ColourDisabledTint			= tVector4(0.36f, 0.36f, 0.48f, 1.00f);
 	const tVector4 ColourBG						= tVector4(0.00f, 0.00f, 0.00f, 0.00f);
-	const tVector4 ColourPressedBG				= tVector4(0.26f, 0.59f, 0.98f, 1.00f);
+	const tVector4 ColourPressedBG				= tVector4(0.00f, 0.75f, 0.05f, 1.00f);
 	const tVector4 ColourClear					= tVector4(0.10f, 0.10f, 0.12f, 1.00f);
 
+	const int MenuBarHeight						= 30;
 	const float ZoomMin							= 10.0f;
 	const float ZoomMax							= 2500.0f;
 	uint64 FrameNumber							= 0;
+	tVector2 ToolImageSize						(24.0f, 24.0f);
 
 	void DrawBackground(float bgX, float bgY, float bgW, float bgH);
 	void DrawNavBar(float x, float y, float w, float h);
@@ -787,7 +789,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	glClearColor(ColourClear.x, ColourClear.y, ColourClear.z, ColourClear.w);
 	glClear(GL_COLOR_BUFFER_BIT);
 	int bottomUIHeight	= GetNavBarHeight();
-	int topUIHeight		= (FullscreenMode || !Config.ShowMenuBar) ? 0 : 26;
+	int topUIHeight		= (FullscreenMode || !Config.ShowMenuBar) ? 0 : MenuBarHeight;
 
 	ImGui_ImplOpenGL2_NewFrame();		
 	ImGui_ImplGlfw_NewFrame();
@@ -1056,7 +1058,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	if (SlideshowPlaying && (Config.SlidehowFrameDuration >= 1.0f) && Config.SlideshowProgressArc)
 	{
-
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+7.0f, float(topUIHeight) + float(workAreaH) - 64.0f));
 		ImGui::Begin("SlideProgress", nullptr, flagsImgButton | ImGuiWindowFlags_NoInputs);
 		ImGui::SetCursorPos(tVector2(15, 14));
@@ -1176,7 +1177,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	if (!FullscreenMode && Config.ShowMenuBar)
 	{
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,6));
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,8));
 		ImGui::BeginMainMenuBar();
 
 		//
@@ -1371,8 +1372,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		tColourf floatCol(PixelColour);
 		tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6.0f);			
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
-		if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, tVector2(20,20)))
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
+		if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, tVector2(26,26)))
 			ImGui::OpenPopup("CopyColourAs");
 
 		if (ImGui::BeginPopup("CopyColourAs"))
@@ -1381,7 +1382,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		bool transAvail = CurrImage ? !CurrImage->IsAltPictureEnabled() : false;
 		if (ImGui::ImageButton
 		(
-			ImTextureID(FlipVImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2, ColourBG,
+			ImTextureID(FlipVImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1, ColourBG,
 			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 		)
 		{
@@ -1394,7 +1395,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		if (ImGui::ImageButton
 		(
-			ImTextureID(FlipHImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2, ColourBG,
+			ImTextureID(FlipHImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1, ColourBG,
 			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 		)
 		{
@@ -1407,7 +1408,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		if (ImGui::ImageButton
 		(
-			ImTextureID(RotateACWImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2, ColourBG,
+			ImTextureID(RotateACWImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1, ColourBG,
 			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 		)
 		{
@@ -1420,7 +1421,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		if (ImGui::ImageButton
 		(
-			ImTextureID(RotateCWImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2, ColourBG,
+			ImTextureID(RotateCWImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1, ColourBG,
 			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 		)
 		{
@@ -1434,7 +1435,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		bool cropAvail = CurrImage && transAvail && !Config.Tile;
 		if (ImGui::ImageButton
 		(
-			ImTextureID(CropImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
+			ImTextureID(CropImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
 			CropMode ? ColourPressedBG : ColourBG, cropAvail ? ColourEnabledTint : ColourDisabledTint) && cropAvail
 		)	CropMode = !CropMode;
 		ShowToolTip("Crop");
@@ -1443,7 +1444,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
 		if (ImGui::ImageButton
 		(
-			ImTextureID(MipmapsImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
+			ImTextureID(MipmapsImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
 			altMipmapsPicEnabl ? ColourPressedBG : ColourBG, altMipmapsPicAvail ? ColourEnabledTint : ColourDisabledTint) && altMipmapsPicAvail
 		)
 		{
@@ -1456,7 +1457,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		bool altCubemapPicEnabl = altCubemapPicAvail && CurrImage->IsAltPictureEnabled();
 		if (ImGui::ImageButton
 		(
-			ImTextureID(CubemapImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
+			ImTextureID(CubemapImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
 			altCubemapPicEnabl ? ColourPressedBG : ColourBG, altCubemapPicAvail ? ColourEnabledTint : ColourDisabledTint) && altCubemapPicAvail
 		)
 		{
@@ -1468,7 +1469,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		bool tileAvail = CurrImage ? !CropMode : false;
 		if (ImGui::ImageButton
 		(
-			ImTextureID(TileImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
+			ImTextureID(TileImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
 			Config.Tile ? ColourPressedBG : ColourBG, tileAvail ? ColourEnabledTint : ColourDisabledTint) && tileAvail
 		)
 		{
@@ -1478,10 +1479,32 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 		ShowToolTip("Show Images Tiled");
 
+		bool recycleAvail = CurrImage ? true : false;
+		if (ImGui::ImageButton
+		(
+			ImTextureID(RecycleImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
+			ColourBG, recycleAvail ? ColourEnabledTint : ColourDisabledTint) && recycleAvail
+		)	Request_DeleteFileModal = true;
+		ShowToolTip("Delete Current File");
+
+		if (ImGui::ImageButton
+		(
+			ImTextureID(ContentViewImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
+			Config.ContentViewShow ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	Config.ContentViewShow = !Config.ContentViewShow;
+		ShowToolTip("Content Thumbnail View");
+
+		if (ImGui::ImageButton
+		(
+			ImTextureID(PropEditImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
+			PropEditorWindow ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	PropEditorWindow = !PropEditorWindow;
+		ShowToolTip("Image Property Editor");
+
 		bool refreshAvail = CurrImage ? true : false;
 		if (ImGui::ImageButton
 		(
-			ImTextureID(RefreshImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
+			ImTextureID(RefreshImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
 			ColourBG, refreshAvail ? ColourEnabledTint : ColourDisabledTint) && refreshAvail
 		)
 		{
@@ -1493,45 +1516,23 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 		ShowToolTip("Refresh/Reload Current File");
 
-		bool recycleAvail = CurrImage ? true : false;
 		if (ImGui::ImageButton
 		(
-			ImTextureID(RecycleImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
-			ColourBG, recycleAvail ? ColourEnabledTint : ColourDisabledTint) && recycleAvail
-		)	Request_DeleteFileModal = true;
-		ShowToolTip("Delete Current File");
-
-		if (ImGui::ImageButton
-		(
-			ImTextureID(ContentViewImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
-			Config.ContentViewShow ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	Config.ContentViewShow = !Config.ContentViewShow;
-		ShowToolTip("Content Thumbnail View");
-
-		if (ImGui::ImageButton
-		(
-			ImTextureID(PropEditImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
-			PropEditorWindow ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	PropEditorWindow = !PropEditorWindow;
-		ShowToolTip("Image Property Editor");
-
-		if (ImGui::ImageButton
-		(
-			ImTextureID(InfoOverlayImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
+			ImTextureID(InfoOverlayImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
 			Config.ShowImageDetails ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	Config.ShowImageDetails = !Config.ShowImageDetails;
 		ShowToolTip("Information Overlay");
 
 		if (ImGui::ImageButton
 		(
-			ImTextureID(HelpImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
+			ImTextureID(HelpImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
 			ShowCheatSheet ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	ShowCheatSheet = !ShowCheatSheet;
 		ShowToolTip("Help");
 
 		if (ImGui::ImageButton
 		(
-			ImTextureID(PrefsImage.Bind()), tVector2(17, 17), tVector2(0, 1), tVector2(1, 0), 2,
+			ImTextureID(PrefsImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
 			PrefsWindow ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	PrefsWindow = !PrefsWindow;
 		ShowToolTip("Preferences");

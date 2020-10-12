@@ -176,7 +176,6 @@ void Viewer::ShowAboutPopup(bool* popen)
 		glfwGetVersion(&glfwMajor, &glfwMinor, &glfwRev);
 		ImGui::Text("Tacent View V %d.%d.%d by Tristan Grimmer", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
 		ImGui::Separator();
-		ImGui::Text("The following amazing and liberally licensed frameworks are used by this tool.");
 		ImGui::Text("Dear ImGui V %s", IMGUI_VERSION);
 		ImGui::Text("GLAD V %s", glad_glGetString(GL_VERSION));
 		ImGui::Text("GLFW V %d.%d.%d", glfwMajor, glfwMinor, glfwRev);
