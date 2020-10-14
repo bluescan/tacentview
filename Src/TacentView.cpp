@@ -413,6 +413,9 @@ void Viewer::LoadCurrImage()
 	if (Config.AutoPropertyWindow)
 		PropEditorWindow = (CurrImage->TypeSupportsProperties() || (CurrImage->GetNumParts() > 1));
 
+	if (SlideshowPlaying)
+		PropEditorWindow = false;
+
 	if
 	(
 		Config.AutoPlayAnimatedImages && (CurrImage->GetNumParts() > 1) &&
