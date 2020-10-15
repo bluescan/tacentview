@@ -101,6 +101,7 @@ namespace Viewer
 	GLFWwindow* Window							= nullptr;
 	double DisappearCountdown					= DisappearDuration;
 	double SlideshowCountdown					= 0.0;
+	float ReticleToMouseDist					= 75.0f;
 	bool SlideshowPlaying						= false;
 	bool FullscreenMode							= false;
 	bool WindowIconified						= false;
@@ -973,20 +974,27 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		// Show the reticle.
 		glDisable(GL_TEXTURE_2D);
 		glColor4fv(tColour::white.E);
-		if (!CropMode && (Config.ShowImageDetails || (DisappearCountdown > 0.0)))
+
+		tVector2 mousePos(mouseX, mouseY);
+		tVector2 reticPos(ReticleX, ReticleY);
+		float retMouseDistSq = tMath::tDistBetweenSq(mousePos, reticPos);
+		if
+		(
+			// Must not be cropping.
+			!CropMode &&
+
+			// Must have a colour inspector visible (menu bar and details both have one).
+			((Config.ShowMenuBar && !FullscreenMode) || Config.ShowImageDetails) &&
+
+			// And any of the following: a) details is on, b) disappear countdown not finished, or c) mouse is close.
+			(
+				Config.ShowImageDetails || (DisappearCountdown > 0.0) ||
+
+				// Continue to draw the reticle if mouse is close enough (even if timer expired).
+				(retMouseDistSq < ReticleToMouseDist*ReticleToMouseDist)
+			)
+		)
 		{
-			tVector2 scrPosBL;
-			ConvertImagePosToScreenPos
-			(
-				scrPosBL, imgx, imgy, tVector4(l, r, t, b),
-				tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
-			);
-			tVector2 scrPosTR;
-			ConvertImagePosToScreenPos
-			(
-				scrPosTR, imgx+1, imgy+1, tVector4(l, r, t, b),
-				tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
-			);
 			tColouri hsv = PixelColour;
 			hsv.RGBToHSV();
 			if (hsv.V > 150)
@@ -996,6 +1004,19 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if (ZoomPercent >= 500.0f)
 			{
+				tVector2 scrPosBL;
+				ConvertImagePosToScreenPos
+				(
+					scrPosBL, imgx, imgy, tVector4(l, r, t, b),
+					tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
+				);
+				tVector2 scrPosTR;
+				ConvertImagePosToScreenPos
+				(
+					scrPosTR, imgx+1, imgy+1, tVector4(l, r, t, b),
+					tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
+				);
+
 				glBegin(GL_LINES);
 				glVertex2f(scrPosBL.x-1,	scrPosBL.y-1);
 				glVertex2f(scrPosTR.x,		scrPosBL.y);
