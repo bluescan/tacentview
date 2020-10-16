@@ -830,6 +830,17 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	float uvUMarg = 0.0f;
 	float uvVMarg = 0.0f;
 
+	double mouseXd, mouseYd;
+	glfwGetCursorPos(window, &mouseXd, &mouseYd);
+
+	// Make origin lower-left.
+	float workH = float(Disph - GetNavBarHeight());
+	float mouseX = float(mouseXd);
+	float mouseY = workH - float(mouseYd);
+
+	int mouseXi = int(mouseX);
+	int mouseYi = int(mouseY);
+
 	if (CurrImage)
 	{
 		CurrImage->UpdatePlaying(float(dt));
@@ -891,17 +902,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			float proph = drawh / h;
 			uvVMarg = (1.0f - proph)/2.0f;
 		}
-
-		double mouseXd, mouseYd;
-		glfwGetCursorPos(window, &mouseXd, &mouseYd);
-
-		// Make origin lower-left.
-		float workH = float(Disph - GetNavBarHeight());
-		float mouseX = float(mouseXd);
-		float mouseY = workH - float(mouseYd);
-
-		int mouseXi = int(mouseX);
-		int mouseYi = int(mouseY);
 
 		// Modify the UVs here to magnify.
 		if ((draww < w) || Config.Tile)
@@ -1079,7 +1079,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGuiWindowFlags_NoTitleBar		|	ImGuiWindowFlags_NoScrollbar	|	ImGuiWindowFlags_NoMove			| ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoCollapse		|	ImGuiWindowFlags_NoNav			|	ImGuiWindowFlags_NoBackground	| ImGuiWindowFlags_NoBringToFrontOnFocus;
 
-
 	if (SlideshowPlaying && (Config.SlidehowFrameDuration >= 1.0f) && Config.SlideshowProgressArc)
 	{
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+7.0f, float(topUIHeight) + float(workAreaH) - 64.0f));
@@ -1093,33 +1092,55 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	if (!ImGui::GetIO().WantCaptureMouse)
 		DisappearCountdown -= dt;
+	tVector2 mousePos(mouseX, mouseY);
 
-	if ((DisappearCountdown > 0.0) && !CropMode)
+	tVector2 rectCenterPrevArrow(0.0f, float(workAreaH)*0.5f);
+	tARect2 hitAreaPrevArrow(rectCenterPrevArrow, 160.0f);
+	if
+	(
+		!CropMode &&
+		((DisappearCountdown > 0.0) || hitAreaPrevArrow.IsPointInside(mousePos)) &&
+		((CurrImage != Images.First()) || (SlideshowPlaying && Config.SlideshowLooping))
+	)
 	{
 		// Previous arrow.
-		if ((CurrImage != Images.First()) || (SlideshowPlaying && Config.SlideshowLooping))
-		{
-			ImGui::SetNextWindowPos(tVector2(0.0f, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
-			ImGui::SetNextWindowSize(tVector2(16, 70), ImGuiCond_Always);
-			ImGui::Begin("PrevArrow", nullptr, flagsImgButton);
-			ImGui::SetCursorPos(tVector2(6, 2));
-			if (ImGui::ImageButton(ImTextureID(PrevArrowImage.Bind()), tVector2(15,56), tVector2(0,0), tVector2(1,1), 3, tVector4(0,0,0,0), tVector4(1,1,1,1)))
-				OnPrevious();
-			ImGui::End();
-		}
+		ImGui::SetNextWindowPos(tVector2(0.0f, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
+		ImGui::SetNextWindowSize(tVector2(16, 70), ImGuiCond_Always);
+		ImGui::Begin("PrevArrow", nullptr, flagsImgButton);
+		ImGui::SetCursorPos(tVector2(6, 2));
+		if (ImGui::ImageButton(ImTextureID(PrevArrowImage.Bind()), tVector2(15,56), tVector2(0,0), tVector2(1,1), 3, tVector4(0,0,0,0), tVector4(1,1,1,1)))
+			OnPrevious();
+		ImGui::End();
+	}
 
+	tVector2 rectCenterNextArrow(float(workAreaW), float(workAreaH)*0.5f);
+	tARect2 hitAreaNextArrow(rectCenterNextArrow, 160.0f);
+	if
+	(
+		!CropMode &&
+		((DisappearCountdown > 0.0) || hitAreaNextArrow.IsPointInside(mousePos)) &&
+		((CurrImage != Images.Last()) || (SlideshowPlaying && Config.SlideshowLooping))
+	)
+	{
 		// Next arrow.
-		if ((CurrImage != Images.Last()) || (SlideshowPlaying && Config.SlideshowLooping))
-		{
-			ImGui::SetNextWindowPos(tVector2(workAreaW - 33.0f, float(topUIHeight) + float(workAreaH) * 0.5f - 33.0f));
-			ImGui::SetNextWindowSize(tVector2(16, 70), ImGuiCond_Always);
-			ImGui::Begin("NextArrow", nullptr, flagsImgButton);
-			ImGui::SetCursorPos(tVector2(6, 2));
-			if (ImGui::ImageButton(ImTextureID(NextArrowImage.Bind()), tVector2(15,56), tVector2(0,0), tVector2(1,1), 3, tVector4(0,0,0,0), tVector4(1,1,1,1)))
-				OnNext();
-			ImGui::End();
-		}
+		ImGui::SetNextWindowPos(tVector2(workAreaW - 33.0f, float(topUIHeight) + float(workAreaH) * 0.5f - 33.0f));
+		ImGui::SetNextWindowSize(tVector2(16, 70), ImGuiCond_Always);
+		ImGui::Begin("NextArrow", nullptr, flagsImgButton);
+		ImGui::SetCursorPos(tVector2(6, 2));
+		if (ImGui::ImageButton(ImTextureID(NextArrowImage.Bind()), tVector2(15,56), tVector2(0,0), tVector2(1,1), 3, tVector4(0,0,0,0), tVector4(1,1,1,1)))
+			OnNext();
+		ImGui::End();
+	}
 
+	tVector2 rectMinControlButtons(float(workAreaW)/2.0f-200.0f, 0.0f);
+	tVector2 rectMaxControlButtons(float(workAreaW)/2.0f+200.0f, 90.0f);
+	tARect2 hitAreaControlButtons(rectMinControlButtons, rectMaxControlButtons);
+	if
+	(
+		!CropMode &&
+		((DisappearCountdown > 0.0) || hitAreaControlButtons.IsPointInside(mousePos))
+	)
+	{
 		// Looping button.
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-120.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
 		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
@@ -2191,6 +2212,7 @@ void Viewer::UnloadAppImages()
 
 int main(int argc, char** argv)
 {
+	tSystem::tSetSupplementaryDebuggerOutput();
 	tSystem::tSetStdoutRedirectCallback(Viewer::PrintRedirectCallback);
 	tCommand::tParse(argc, argv);
 
