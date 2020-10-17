@@ -444,11 +444,22 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 	ImGui::Text("Background");
 	ImGui::Indent();
+
+	ImGui::Checkbox("Transparent Work Area", &PendingTransparentWorkArea);
+	if (PendingTransparentWorkArea != Config.TransparentWorkArea)
+	{
+		ImGui::SameLine();
+		ImGui::Text("(Needs Restart)");
+	}
+
 	ImGui::Checkbox("Extend", &Config.BackgroundExtend);
-	const char* backgroundItems[] = { "None", "Checkerboard", "Black", "Grey", "White" };
-	ImGui::PushItemWidth(110);
-	ImGui::Combo("Style", &Config.BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
-	ImGui::PopItemWidth();
+	if (!Config.TransparentWorkArea)
+	{
+		const char* backgroundItems[] = { "None", "Checkerboard", "Black", "Grey", "White" };
+		ImGui::PushItemWidth(110);
+		ImGui::Combo("Style", &Config.BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
+		ImGui::PopItemWidth();
+	}
 	ImGui::Unindent();
 
 	ImGui::Separator();

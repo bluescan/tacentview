@@ -53,6 +53,7 @@ namespace Viewer
 		};
 		int BackgroundStyle;
 		bool BackgroundExtend;				// Extend background past image bounds.
+		bool TransparentWorkArea;
 		int ResampleFilter;					// Matches tImage::tPicture::tFilter.
 		bool ConfirmDeletes;
 		bool ConfirmFileOverwrites;

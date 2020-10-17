@@ -75,6 +75,7 @@ void Viewer::Settings::ResetUISettings(int screenW, int screenH)
 	Tile						= false;
 	BackgroundStyle				= 1;
 	BackgroundExtend			= false;
+	TransparentWorkArea			= false;
 }
 
 
@@ -106,6 +107,7 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(Tile);
 				ReadItem(BackgroundStyle);
 				ReadItem(BackgroundExtend);
+				ReadItem(TransparentWorkArea);
 				ReadItem(ResampleFilter);
 				ReadItem(ConfirmDeletes);
 				ReadItem(ConfirmFileOverwrites);
@@ -163,8 +165,9 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(SortAscending);
 	WriteItem(OverlayCorner);
 	WriteItem(Tile);
-	WriteItem(BackgroundExtend);
 	WriteItem(BackgroundStyle);
+	WriteItem(BackgroundExtend);
+	WriteItem(TransparentWorkArea);
 	WriteItem(ResampleFilter);
 	WriteItem(ConfirmDeletes);
 	WriteItem(ConfirmFileOverwrites);

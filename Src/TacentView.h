@@ -45,6 +45,7 @@ namespace Viewer
 	extern Image SkipEndImage;
 	extern bool CropMode;
 	extern bool DeleteAllCacheFilesOnExit;
+	extern bool PendingTransparentWorkArea;
 	extern double SlideshowCountdown;
 
 	extern const tMath::tVector4 ColourEnabledTint;

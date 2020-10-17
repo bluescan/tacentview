@@ -118,7 +118,7 @@ namespace Viewer
 	bool LMBDown								= false;
 	bool RMBDown								= false;
 	bool DeleteAllCacheFilesOnExit				= false;
-
+	bool PendingTransparentWorkArea				= false;
 	int DragAnchorX								= 0;
 	int DragAnchorY								= 0;
 
@@ -600,6 +600,9 @@ void Viewer::ResetPan(bool resetX, bool resetY)
 
 void Viewer::DrawBackground(float bgX, float bgY, float bgW, float bgH)
 {
+	if (Config.TransparentWorkArea)
+		return;
+
 	switch (Config.BackgroundStyle)
 	{
 		case int(Settings::BGStyle::None):
@@ -790,7 +793,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (dopoll)
 		glfwPollEvents();
 
-	glClearColor(ColourClear.x, ColourClear.y, ColourClear.z, ColourClear.w);
+	if (Config.TransparentWorkArea)
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	else
+		glClearColor(ColourClear.x, ColourClear.y, ColourClear.z, ColourClear.w);
 	glClear(GL_COLOR_BUFFER_BIT);
 	int bottomUIHeight	= GetNavBarHeight();
 	int topUIHeight		= (FullscreenMode || !Config.ShowMenuBar) ? 0 : MenuBarHeight;
@@ -2286,10 +2292,14 @@ int main(int argc, char** argv)
 		tSystem::tCreateDir(Image::ThumbCacheDir);
 	
 	Viewer::Config.Load(cfgFile, mode->width, mode->height);
+	Viewer::PendingTransparentWorkArea = Viewer::Config.TransparentWorkArea;
 
 	// We start with window invisible. For windows DwmSetWindowAttribute won't redraw properly otherwise.
 	// For all plats, we want to position the window before displaying it.
 	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+	if (Viewer::Config.TransparentWorkArea)
+		glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
+
 	#if defined(PLATFORM_LINUX)
 	glfwWindowHintString(GLFW_X11_CLASS_NAME, "tacentview");
 	#endif
@@ -2394,14 +2404,16 @@ int main(int argc, char** argv)
 	io.Fonts->AddFontFromFileTTF(fontFile.Chars(), 14.0f);
 
 	Viewer::LoadAppImages(dataDir);
-	
 	Viewer::PopulateImages();
 	if (Viewer::ImageFileParam.IsPresent())
 		Viewer::SetCurrentImage(Viewer::ImageFileParam.Get());
 	else
 		Viewer::SetCurrentImage();
 
-	glClearColor(Viewer::ColourClear.x, Viewer::ColourClear.y, Viewer::ColourClear.z, Viewer::ColourClear.w);
+	if (Viewer::Config.TransparentWorkArea)
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	else
+		glClearColor(Viewer::ColourClear.x, Viewer::ColourClear.y, Viewer::ColourClear.z, Viewer::ColourClear.w);
 	glClear(GL_COLOR_BUFFER_BIT);
 	int dispw, disph;
 	glfwGetFramebufferSize(Viewer::Window, &dispw, &disph);
@@ -2436,8 +2448,7 @@ int main(int argc, char** argv)
 
 	// This is important. We need the destructors to run BEFORE we shutdown GLFW. Deconstructing the images may block for a bit while shutting
 	// down worker threads. We could show a 'shutting down' popup here if we wanted -- if Image::ThumbnailNumThreadsRunning is > 0.
-	Viewer::Images.Clear();
-	
+	Viewer::Images.Clear();	
 	Viewer::UnloadAppImages();
 
 	// Get current window geometry and set in config file if we're not in fullscreen mode and not iconified.
@@ -2446,6 +2457,8 @@ int main(int argc, char** argv)
 		glfwGetWindowPos(Viewer::Window, &Viewer::Config.WindowX, &Viewer::Config.WindowY);
 		glfwGetWindowSize(Viewer::Window, &Viewer::Config.WindowW, &Viewer::Config.WindowH);
 	}
+
+	Viewer::Config.TransparentWorkArea = Viewer::PendingTransparentWorkArea;
 	Viewer::Config.Save(cfgFile);
 
 	// Cleanup.
