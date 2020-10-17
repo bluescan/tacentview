@@ -2246,7 +2246,7 @@ int main(int argc, char** argv)
 
 	int glfwMajor = 0; int glfwMinor = 0; int glfwRev = 0;
 	glfwGetVersion(&glfwMajor, &glfwMinor, &glfwRev);
-
+	tPrintf("Exe %s\n", tSystem::tGetProgramPath().Chars());
 	tPrintf("Tacent View V %d.%d.%d\n", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
 	tPrintf("Tacent Library V %d.%d.%d\n", tVersion::Major, tVersion::Minor, tVersion::Revision);
 	tPrintf("Dear ImGui V %s\n", IMGUI_VERSION);

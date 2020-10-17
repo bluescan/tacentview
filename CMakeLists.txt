@@ -85,8 +85,7 @@ target_include_directories(
 		${CMAKE_CURRENT_SOURCE_DIR}/Contrib/imgui
 		${CMAKE_CURRENT_SOURCE_DIR}/Contrib/imgui/examples
 		${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glad/include
-		$<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glfw/Linux/include>
-		$<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glfw/Windows/include>
+		${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glfw/include
 )
 
 target_compile_definitions(
@@ -160,12 +159,13 @@ target_link_libraries(
 		$<$<PLATFORM_ID:Windows>:opengl32.lib>
 		$<$<PLATFORM_ID:Windows>:uxtheme.lib>
 		$<$<PLATFORM_ID:Windows>:dwmapi.lib>
-		$<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glfw/Windows/Release/glfw3.lib>
+		$<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glfw/glfw3.lib>
 
+		$<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glfw/libglfw3.a>
 		$<$<PLATFORM_ID:Linux>:m>
 		$<$<PLATFORM_ID:Linux>:stdc++>
 		$<$<PLATFORM_ID:Linux>:dl>
-		$<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glfw/Linux/Release/libglfw3.a>
+		$<$<PLATFORM_ID:Linux>:X11>
 )
 
 if (MSVC)
