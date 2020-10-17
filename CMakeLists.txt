@@ -85,8 +85,8 @@ target_include_directories(
 		${CMAKE_CURRENT_SOURCE_DIR}/Contrib/imgui
 		${CMAKE_CURRENT_SOURCE_DIR}/Contrib/imgui/examples
 		${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glad/include
-		$<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glad/include/glfw/Linux/include>
-		$<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glad/include/glfw/Windows/include>
+		$<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glfw/Linux/include>
+		$<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glfw/Windows/include>
 )
 
 target_compile_definitions(
