@@ -1706,10 +1706,31 @@ bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 	glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
 	glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
 	glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+
 	if (fullscreen)
-		glfwSetWindowMonitor(Viewer::Window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+	{
+		if (Config.TransparentWorkArea)
+		{
+			glfwSetWindowPos(Viewer::Window, 0, 0);
+			glfwSetWindowSize(Viewer::Window, mode->width, mode->height);
+		}
+		else
+		{
+			glfwSetWindowMonitor(Viewer::Window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+		}
+	}
 	else
-		glfwSetWindowMonitor(Viewer::Window, nullptr, Viewer::Config.WindowX, Viewer::Config.WindowY, Viewer::Config.WindowW, Viewer::Config.WindowH, mode->refreshRate);
+	{
+		if (Config.TransparentWorkArea)
+		{
+			glfwSetWindowPos(Viewer::Window, Viewer::Config.WindowX, Viewer::Config.WindowY);
+			glfwSetWindowSize(Viewer::Window, Viewer::Config.WindowW, Viewer::Config.WindowH);
+		}
+		else
+		{
+			glfwSetWindowMonitor(Viewer::Window, nullptr, Viewer::Config.WindowX, Viewer::Config.WindowY, Viewer::Config.WindowW, Viewer::Config.WindowH, mode->refreshRate);
+		}
+	}
 
 	FullscreenMode = fullscreen;
 	return true;
