@@ -1711,8 +1711,8 @@ bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 	{
 		if (Config.TransparentWorkArea)
 		{
-			glfwSetWindowPos(Viewer::Window, 0, 0);
 			glfwSetWindowSize(Viewer::Window, mode->width, mode->height);
+			glfwSetWindowPos(Viewer::Window, 0, 0);
 		}
 		else
 		{
@@ -1723,8 +1723,8 @@ bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 	{
 		if (Config.TransparentWorkArea)
 		{
-			glfwSetWindowPos(Viewer::Window, Viewer::Config.WindowX, Viewer::Config.WindowY);
 			glfwSetWindowSize(Viewer::Window, Viewer::Config.WindowW, Viewer::Config.WindowH);
+			glfwSetWindowPos(Viewer::Window, Viewer::Config.WindowX, Viewer::Config.WindowY);
 		}
 		else
 		{
