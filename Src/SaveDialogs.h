@@ -23,7 +23,7 @@ namespace Viewer
 	void DoSaveAllModalDialog(bool justOpened);
 
 	void DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool& pressedCancel);
-	void DoOverwriteMultipleFilesModal(const tListZ<tStringItem>& overwriteFiles, bool& pressedOK, bool& pressedCancel);
+	void DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFiles, bool& pressedOK, bool& pressedCancel);
 
 	tString DoSubFolder();				// Returns destination dir.
 	tString DoSaveFiletype();			// Returns extension.

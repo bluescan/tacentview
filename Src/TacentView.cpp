@@ -59,9 +59,9 @@ namespace Viewer
 	tString ImagesDir;
 	tList<tStringItem> ImagesSubDirs;
 	tList<Image> Images;
-	tItList<Image> ImagesLoadTimeSorted	(false);
-	tuint256 ImagesHash							= 0;
-	Image* CurrImage							= nullptr;
+	tItList<Image> ImagesLoadTimeSorted(tListMode::External);		// We don't need static here cuz the list is only used after main().
+	tuint256 ImagesHash												= 0;
+	Image* CurrImage												= nullptr;
 	
 	void LoadAppImages(const tString& dataDir);
 	void UnloadAppImages();

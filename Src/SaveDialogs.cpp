@@ -25,7 +25,7 @@ using namespace tImage;
 namespace Viewer
 {
 	void SaveAllImages(const tString& destDir, const tString& extension, float percent, int width, int height);
-	void GetFilesNeedingOverwrite(const tString& destDir, tListZ<tStringItem>& overwriteFiles, const tString& extension);
+	void GetFilesNeedingOverwrite(const tString& destDir, tList<tStringItem>& overwriteFiles, const tString& extension);
 	void AddSavedImageIfNecessary(const tString& savedFile);
 
 	// This function saves the picture to the filename specified.
@@ -398,7 +398,7 @@ void Viewer::DoSaveAllModalDialog(bool justOpened)
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	static tListZ<tStringItem> overwriteFiles;
+	static tList<tStringItem> overwriteFiles(tListMode::Static);
 	bool closeThisModal = false;
 	if (ImGui::Button("Save All", tVector2(100, 0)))
 	{
@@ -448,7 +448,7 @@ void Viewer::DoSaveAllModalDialog(bool justOpened)
 }
 
 
-void Viewer::GetFilesNeedingOverwrite(const tString& destDir, tListZ<tStringItem>& overwriteFiles, const tString& extension)
+void Viewer::GetFilesNeedingOverwrite(const tString& destDir, tList<tStringItem>& overwriteFiles, const tString& extension)
 {
 	for (Image* image = Images.First(); image; image = image->Next())
 	{
@@ -462,7 +462,7 @@ void Viewer::GetFilesNeedingOverwrite(const tString& destDir, tListZ<tStringItem
 }
 
 
-void Viewer::DoOverwriteMultipleFilesModal(const tListZ<tStringItem>& overwriteFiles, bool& pressedOK, bool& pressedCancel)
+void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFiles, bool& pressedOK, bool& pressedCancel)
 {
 	tAssert(!overwriteFiles.IsEmpty());
 	tString dir = tSystem::tGetDir(*overwriteFiles.First());
