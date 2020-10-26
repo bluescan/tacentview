@@ -18,7 +18,7 @@
 #include "Settings.h"
 #include "Image.h"
 using namespace tMath;
-#define ReadItem(name) case tHashCT(#name): name = e.Arg1(); break
+#define ReadItem(name) case tHash::tHashCT(#name): name = e.Arg1(); break
 #define	WriteItem(name) writer.Comp(#name, name)
 
 

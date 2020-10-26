@@ -16,7 +16,7 @@
 #include <chrono>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL definitions.
-#include <Math/tHash.h>
+#include <Foundation/tHash.h>
 #include <Math/tFundamentals.h>
 #include <Image/tTexture.h>
 #include <Image/tImageGIF.h>
@@ -861,13 +861,13 @@ void Image::GenerateThumbnail()
 	int thumbVersion = 1;
 	tFileInfo fileInfo;
 	tGetFileInfo(fileInfo, Filename);
-	hash = tHashData256((uint8*)&thumbVersion, sizeof(thumbVersion));
-	hash = tHashString256(Filename, hash);
-	hash = tHashData256((uint8*)&fileInfo.FileSize, sizeof(fileInfo.FileSize), hash);
-	hash = tHashData256((uint8*)&fileInfo.CreationTime, sizeof(fileInfo.CreationTime), hash);
-	hash = tHashData256((uint8*)&fileInfo.ModificationTime, sizeof(fileInfo.ModificationTime), hash);
-	hash = tHashData256((uint8*)&ThumbWidth, sizeof(ThumbWidth), hash);
-	hash = tHashData256((uint8*)&ThumbHeight, sizeof(ThumbHeight), hash);
+	hash = tHash::tHashData256((uint8*)&thumbVersion, sizeof(thumbVersion));
+	hash = tHash::tHashString256(Filename, hash);
+	hash = tHash::tHashData256((uint8*)&fileInfo.FileSize, sizeof(fileInfo.FileSize), hash);
+	hash = tHash::tHashData256((uint8*)&fileInfo.CreationTime, sizeof(fileInfo.CreationTime), hash);
+	hash = tHash::tHashData256((uint8*)&fileInfo.ModificationTime, sizeof(fileInfo.ModificationTime), hash);
+	hash = tHash::tHashData256((uint8*)&ThumbWidth, sizeof(ThumbWidth), hash);
+	hash = tHash::tHashData256((uint8*)&ThumbHeight, sizeof(ThumbHeight), hash);
 	tString hashFile;
 	tsPrintf(hashFile, "%s%032|256X.bin", ThumbCacheDir.Chars(), hash);
 	if (tFileExists(hashFile))

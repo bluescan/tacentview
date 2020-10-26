@@ -25,6 +25,7 @@
 #endif
 
 #include <Foundation/tVersion.cmake.h>
+#include <Foundation/tHash.h>
 #include <System/tCommand.h>
 #include <Image/tPicture.h>
 #include <Image/tImageHDR.h>
@@ -32,7 +33,6 @@
 #include <System/tTime.h>
 #include <System/tScript.h>
 #include <System/tMachine.h>
-#include <Math/tHash.h>
 #include <Math/tVector2.h>
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -281,7 +281,7 @@ tuint256 Viewer::ComputeImagesHash(const tList<tStringItem>& files)
 {
 	tuint256 hash = 0;
 	for (tStringItem* item = files.First(); item; item = item->Next())
-		hash = tMath::tHashString256(item->Chars(), hash);
+		hash = tHash::tHashString256(item->Chars(), hash);
 
 	return hash;
 }
