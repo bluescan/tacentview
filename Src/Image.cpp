@@ -17,7 +17,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL definitions.
 #include <Foundation/tHash.h>
-#include <Math/tFundamentals.h>
+#include <Foundation/tFundamentals.h>
 #include <Image/tTexture.h>
 #include <Image/tImageGIF.h>
 #include <Image/tImageWEBP.h>

@@ -12,9 +12,9 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+#include <Foundation/tFundamentals.h>
 #include <System/tFile.h>
 #include <System/tScript.h>
-#include <Math/tFundamentals.h>
 #include "Settings.h"
 #include "Image.h"
 using namespace tMath;
