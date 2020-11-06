@@ -44,6 +44,12 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tacent)
 
+# After this call you can use variables tacent_POPULATED (a bool), tacent_BINARY_DIR, and tacent_SOURCE_DIR
+FetchContent_GetProperties(tacent)
+message(STATUS "Viewer -- tacent_POPULATED: ${tacent_POPULATED}")
+message(STATUS "Viewer -- tacent_BINARY_DIR: ${tacent_BINARY_DIR}")
+message(STATUS "Viewer -- tacent_SOURCE_DIR: ${tacent_SOURCE_DIR}")
+
 # Files needed to create executable.
 add_executable(
 	${PROJECT_NAME}
