@@ -59,7 +59,7 @@ tString Viewer::DoSubFolder()
 
 tString Viewer::DoSaveFiletype()
 {
-	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "gif" };
+	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg" };
 	ImGui::Combo("File Type", &Config.SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
 	ImGui::SameLine();
 	ShowHelpMark("Output image format. TGA, PNG, and BMP support an alpha channel.");
@@ -71,7 +71,6 @@ tString Viewer::DoSaveFiletype()
 		case 1: extension = ".png"; break;
 		case 2: extension = ".bmp"; break;
 		case 3: extension = ".jpg"; break;
-		case 4: extension = ".gif"; break;
 	}
 
 	if (Config.SaveFileType == 0)

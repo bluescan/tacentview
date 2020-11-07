@@ -136,7 +136,7 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 	tiClamp(WindowX, 0, screenW - WindowW);
 	tiClamp(WindowY, 0, screenH - WindowH);
 	tiClamp(OverlayCorner, 0, 3);
-	tiClamp(SaveFileType, 0, 4);
+	tiClamp(SaveFileType, 0, 3);
 	tiClamp(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
 	tiClamp(SortKey, 0, 3);
 	tiClampMin(MaxImageMemMB, 256);
