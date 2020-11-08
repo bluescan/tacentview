@@ -397,6 +397,8 @@ void Viewer::DoSaveAllModalDialog(bool justOpened)
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+
+	// This needs to be static since DoSaveModalDialog is called for every frame the modal is open.
 	static tList<tStringItem> overwriteFiles(tListMode::Static);
 	bool closeThisModal = false;
 	if (ImGui::Button("Save All", tVector2(100, 0)))
