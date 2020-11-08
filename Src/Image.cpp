@@ -227,6 +227,9 @@ bool Image::Load()
 			Pictures.Append(picture);
 			success = true;
 		}
+
+		// @todo Lets also handle PNG and EXR directly here. This is more efficient than using tPicture method below
+		// where the same file is loaded multiple times in order to extract each frame.
 		else
 		{
 			// Some image files (like tiff and exr files) may store multiple images in one file. These are called 'parts'.
