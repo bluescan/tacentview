@@ -191,6 +191,7 @@ void Viewer::ShowAboutPopup(bool* popen)
 		ImGui::Text("Gif Load");
 		ImGui::Text("WebP Decoder V %d.%d", tImage::Version_WEBP_Major, tImage::Version_WEBP_Minor);
 		ImGui::Text("LibPNG V %s", tImage::Version_LibPNG);
+		ImGui::Text("ApngDis V %s", tImage::Version_ApngDis);
 	}
 	ImGui::End();
 }

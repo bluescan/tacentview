@@ -22,6 +22,10 @@ https://blog.wikimedia.org/2016/09/22/math-gifs/
 
 -------------------------------------------------------------------------------
 
+Icos4D.apng image is from http://animatedpng.com
+
+-------------------------------------------------------------------------------
+
 The Desk.exr image is from
 https://github.com/AcademySoftwareFoundation/openexr-images
 and has the following licence:

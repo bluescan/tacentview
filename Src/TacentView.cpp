@@ -264,6 +264,7 @@ tString Viewer::FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles)
 	tSystem::tFindFiles(foundFiles, imagesDir, "webp");
 	tSystem::tFindFiles(foundFiles, imagesDir, "tga");
 	tSystem::tFindFiles(foundFiles, imagesDir, "png");
+	tSystem::tFindFiles(foundFiles, imagesDir, "apng");
 	tSystem::tFindFiles(foundFiles, imagesDir, "tif");
 	tSystem::tFindFiles(foundFiles, imagesDir, "tiff");
 	tSystem::tFindFiles(foundFiles, imagesDir, "bmp");
@@ -420,7 +421,7 @@ void Viewer::LoadCurrImage()
 	if
 	(
 		Config.AutoPlayAnimatedImages && (CurrImage->GetNumParts() > 1) &&
-		((CurrImage->Filetype == tFileType::GIF) || (CurrImage->Filetype == tFileType::WEBP))
+		((CurrImage->Filetype == tFileType::GIF) || (CurrImage->Filetype == tFileType::WEBP) || (CurrImage->Filetype == tFileType::APNG))
 	)
 	{
 		CurrImage->PartPlayLooping = true;

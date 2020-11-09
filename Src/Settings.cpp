@@ -75,7 +75,9 @@ void Viewer::Settings::ResetUISettings(int screenW, int screenH)
 	Tile						= false;
 	BackgroundStyle				= 1;
 	BackgroundExtend			= false;
-	TransparentWorkArea			= false;
+
+	// @todo This doesn't work properly here.
+	// TransparentWorkArea		= false;
 }
 
 

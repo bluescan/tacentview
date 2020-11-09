@@ -21,6 +21,7 @@
 #include <Image/tTexture.h>
 #include <Image/tImageGIF.h>
 #include <Image/tImageWEBP.h>
+#include <Image/tImageAPNG.h>
 #include <Image/tImageICO.h>
 #include <Image/tImageJPG.h>
 #include <System/tFile.h>
@@ -187,6 +188,28 @@ bool Image::Load()
 				Pictures.Append(picture);
 			}
 			Info.SrcPixelFormat = webp.SrcPixelFormat;
+			success = true;
+		}
+		else if (Filetype == tSystem::tFileType::APNG)
+		{
+			tImageAPNG apng;
+			bool ok = apng.Load(Filename.Chars());
+			if (!ok)
+				return false;
+
+			int numFrames = apng.GetNumFrames();
+			for (int f = 0; f < numFrames; f++)
+			{
+				tImageAPNG::Frame* frame = apng.StealFrame(0);
+				tPicture* picture = new tPicture();
+
+				// It's ok to steal the pixels as the frame destructor does not delete them.
+				picture->Set(frame->Width, frame->Height, frame->Pixels, false);
+				picture->Duration = frame->Duration;
+				delete frame;
+				Pictures.Append(picture);
+			}
+			Info.SrcPixelFormat = apng.SrcPixelFormat;
 			success = true;
 		}
 		else if (Filetype == tSystem::tFileType::ICO)
