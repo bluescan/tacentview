@@ -13,7 +13,8 @@ The images are Copyright Rafal Mantiuk under the CC3 licence:
 
 -------------------------------------------------------------------------------
 
-The Flipbook.webp is made from CC0 (Public Domain Dedication) images from blogs.unity3d.com. Thank you Unity.
+The Flipbook.webp and Flame.apng images are made from CC0 (Public Domain
+Dedication) images from blogs.unity3d.com. Thank you Unity.
 
 -------------------------------------------------------------------------------
 
