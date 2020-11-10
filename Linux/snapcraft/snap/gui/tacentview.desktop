@@ -5,6 +5,5 @@ Icon=${SNAP}/meta/gui/tacentviewicon.png
 Terminal=false
 Type=Application
 Categories=Development;
-MimeType=image/bmp;image/gif;image/jpeg;image/x-tga;image/png;image/x-apng;image/tiff;image/x-exr;text/x-mpsub;image/x-dds;image/x-icon;image/webp;
-image/ico;StartupNotify=false
+MimeType=image/x-dds;image/x-exr;image/gif;image/jpeg;text/x-mpsub;image/png;image/x-tga;image/tiff;image/webp;image/bmp;image/vnd.microsoft.icon;StartupNotify=false
 Keywords=hdr;exr;webp;development;programming;image;viewer;
