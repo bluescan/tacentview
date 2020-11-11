@@ -2285,7 +2285,7 @@ int main(int argc, char** argv)
 
 	#ifdef PLATFORM_WINDOWS
 	tString dataDir = tSystem::tGetProgramDir() + "Data/";
-	Image::ThumbCacheDir = dataDir + "Cache/";
+	Viewer::Image::ThumbCacheDir = dataDir + "Cache/";
 	tString cfgFile = dataDir + "Settings.cfg";
 
 	#elif defined(PLATFORM_LINUX)
@@ -2295,7 +2295,7 @@ int main(int argc, char** argv)
 		tString dataDir = progDir + "Data/";
 
 		tString cfgFile = snapUserData + "Settings.cfg";
-		Image::ThumbCacheDir = snapUserCommon + "Cache/";
+		Viewer::Image::ThumbCacheDir = snapUserCommon + "Cache/";
 
 		#else
 		tString progDir = tSystem::tGetProgramDir();
