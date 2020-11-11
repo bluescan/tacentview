@@ -28,7 +28,12 @@ parts:
     stage-packages:
       - libgl1-mesa-dri
       - libglu1-mesa
+#      - libx11
       - libx11-6
+#      - libx11-dev
+#      - libx11-xcb-dev
+#      - libxcb1-dev
+#      - libxcb1
     plugin: cmake
     source: https://github.com/bluescan/tacentview.git
     # Handy for iterating src changes locally.
@@ -42,6 +47,8 @@ parts:
       - g++
       - make
       - cmake
+#      - libx11-6
+      - libx11-dev
     override-pull: |
       snapcraftctl pull
       VER=`grep -o '".*"' Src/Version.cmake.h | sed 's/"//g' | sed 's/[^.0-9]//g' # | sed 's/.*/\"&\"/g'`
