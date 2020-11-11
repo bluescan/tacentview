@@ -24,6 +24,8 @@
 #include <Image/tCubemap.h>
 #include <Image/tImageHDR.h>
 #include "Settings.h"
+namespace Viewer
+{
 
 
 class Image : public tLink<Image>
@@ -183,4 +185,7 @@ inline bool Image::TypeSupportsProperties() const
 		(Filetype == tSystem::tFileType::HDR) ||
 		(Filetype == tSystem::tFileType::EXR)
 	);
+}
+
+
 }

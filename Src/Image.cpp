@@ -62,6 +62,9 @@ Image::Image(const tString& filename) :
 	FileSizeB(0),
 	LoadParams()
 {
+	if ((Filetype == tSystem::tFileType::PNG) && Config.DetectAPNGInsidePNG && tImageAPNG::IsAnimatedPNG(Filename))
+		Filetype = tSystem::tFileType::APNG;
+
 	tMemset(&FileModTime, 0, sizeof(FileModTime));
 	ResetLoadParams();
 	tSystem::tFileInfo info;
@@ -107,6 +110,10 @@ bool Image::Load(const tString& filename)
 
 	Filename = filename;
 	Filetype = tGetFileType(Filename);
+
+	if ((Filetype == tSystem::tFileType::PNG) && Config.DetectAPNGInsidePNG && tImageAPNG::IsAnimatedPNG(Filename))
+		Filetype = tSystem::tFileType::APNG;
+
 	tSystem::tFileInfo info;
 	if (tSystem::tGetFileInfo(info, filename))
 	{
@@ -250,8 +257,40 @@ bool Image::Load()
 			Pictures.Append(picture);
 			success = true;
 		}
+		else if (Filetype == tSystem::tFileType::HDR)
+		{
+			tImageHDR hdr;
+			bool ok = hdr.Load(Filename.Chars(), LoadParams.GammaValue, LoadParams.HDR_Exposure);
+			if (!ok)
+				return false;
 
-		// @todo Lets also handle PNG and EXR directly here. This is more efficient than using tPicture method below
+			int width = hdr.GetWidth();
+			int height = hdr.GetHeight();
+			tPixel* pixels = hdr.StealPixels();
+
+			Info.SrcPixelFormat = hdr.SrcPixelFormat;
+			tPicture* picture = new tPicture(width, height, pixels, false);
+			Pictures.Append(picture);
+			success = true;
+		}
+		else if (Filetype == tSystem::tFileType::PNG)
+		{
+			tImagePNG png;
+			bool ok = png.Load(Filename.Chars());
+			if (!ok)
+				return false;
+
+			int width = png.GetWidth();
+			int height = png.GetHeight();
+			tPixel* pixels = png.StealPixels();
+
+			Info.SrcPixelFormat = png.SrcPixelFormat;
+			tPicture* picture = new tPicture(width, height, pixels, false);
+			Pictures.Append(picture);
+			success = true;
+		}
+
+		// @todo Lets also handle EXR directly here. This is more efficient than using tPicture method below
 		// where the same file is loaded multiple times in order to extract each frame.
 		else
 		{

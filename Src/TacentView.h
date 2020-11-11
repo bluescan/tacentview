@@ -17,7 +17,7 @@
 #include <Math/tVector4.h>
 #include <System/tCommand.h>
 #include "Settings.h"
-class Image;
+namespace Viewer { class Image; }
 class tColouri;
 
 
@@ -27,22 +27,22 @@ namespace Viewer
 	extern Image* CurrImage;
 	extern tString ImagesDir;
 	extern tList<tStringItem> ImagesSubDirs;
-	extern tList<Image> Images;
-	extern tItList<Image> ImagesLoadTimeSorted;
+	extern tList<Viewer::Image> Images;
+	extern tItList<Viewer::Image> ImagesLoadTimeSorted;
 	extern tCommand::tParam ImageFileParam;
 	extern tColouri PixelColour;
-	extern Image DefaultThumbnailImage;
-	extern Image UpFolderImage;
-	extern Image PlayImage;
-	extern Image PlayRevImage;
-	extern Image StopImage;
-	extern Image StopRevImage;
-	extern Image PlayLoopImage;
-	extern Image PlayOnceImage;
-	extern Image PrevImage;
-	extern Image NextImage;
-	extern Image SkipBeginImage;
-	extern Image SkipEndImage;
+	extern Viewer::Image DefaultThumbnailImage;
+	extern Viewer::Image UpFolderImage;
+	extern Viewer::Image PlayImage;
+	extern Viewer::Image PlayRevImage;
+	extern Viewer::Image StopImage;
+	extern Viewer::Image StopRevImage;
+	extern Viewer::Image PlayLoopImage;
+	extern Viewer::Image PlayOnceImage;
+	extern Viewer::Image PrevImage;
+	extern Viewer::Image NextImage;
+	extern Viewer::Image SkipBeginImage;
+	extern Viewer::Image SkipEndImage;
 	extern bool CropMode;
 	extern bool DeleteAllCacheFilesOnExit;
 	extern bool PendingTransparentWorkArea;

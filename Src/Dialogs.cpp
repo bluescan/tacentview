@@ -534,6 +534,9 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	ImGui::Checkbox("Strict Loading", &Config.StrictLoading); ImGui::SameLine();
 	ShowHelpMark("Some image files are ill-formed. If strict is true no attempt to display them is made.");
 
+	ImGui::Checkbox("Detect APNG Inside PNG", &Config.DetectAPNGInsidePNG); ImGui::SameLine();
+	ShowHelpMark("Some png image files are really apng files. If detecton is true these png files will be displayed animated.");
+
 	ImGui::PopItemWidth();
 	ImGui::Unindent();
 

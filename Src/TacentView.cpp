@@ -358,7 +358,7 @@ void Viewer::SortImages(Settings::SortKeyEnum key, bool ascending)
 }
 
 
-Image* Viewer::FindImage(const tString& filename)
+Viewer::Image* Viewer::FindImage(const tString& filename)
 {
 	Image* img = nullptr;
 	for (Image* si = Images.First(); si; si = si->Next())
@@ -2304,14 +2304,14 @@ int main(int argc, char** argv)
 		tString localAppDir = isDev ? dataDir : tSystem::tGetHomeDir() + ".tacentview/";
 		if (!tSystem::tDirExists(localAppDir))
 			tSystem::tCreateDir(localAppDir);	
-		Image::ThumbCacheDir = localAppDir + "Cache/";
+		Viewer::Image::ThumbCacheDir = localAppDir + "Cache/";
 		tString cfgFile = localAppDir + "Settings.cfg";
 		#endif
 
 	#endif
 
-	if (!tSystem::tDirExists(Image::ThumbCacheDir))
-		tSystem::tCreateDir(Image::ThumbCacheDir);
+	if (!tSystem::tDirExists(Viewer::Image::ThumbCacheDir))
+		tSystem::tCreateDir(Viewer::Image::ThumbCacheDir);
 	
 	Viewer::Config.Load(cfgFile, mode->width, mode->height);
 	Viewer::PendingTransparentWorkArea = Viewer::Config.TransparentWorkArea;
@@ -2493,8 +2493,8 @@ int main(int argc, char** argv)
 
 	// Before we go, lets clear out any old cache files.
 	if (Viewer::DeleteAllCacheFilesOnExit)
-		tSystem::tDeleteDir(Image::ThumbCacheDir);
+		tSystem::tDeleteDir(Viewer::Image::ThumbCacheDir);
 	else
-		Viewer::RemoveOldCacheFiles(Image::ThumbCacheDir);
+		Viewer::RemoveOldCacheFiles(Viewer::Image::ThumbCacheDir);
 	return 0;
 }
