@@ -1,0 +1,14 @@
+Crazy steps I'm taking to fix the missing desktop file. In snap dir:
+mkdir mnt
+sudo mount -t squashfs -o ro ./tacentview_1.0.16_amd64.snap ./mnt/
+sudo cp -r mnt/ mnt2/
+sudo umount mnt
+mv tacentview_1.0.16_amd64.snap tacentview_1.0.16_amd64.snapZZZ
+cd mnt2/meta
+sudo mkdir gui
+cd gui
+cp ../../../gui/* .
+cd back to snap dir
+mksquashfs mnt2/ tacentview_1.0.16_amd64.snap -noappend -comp xz -all-root -no-xattrs -no-fragments
+# CAN ALSO TRY: snapcraft pack <DIR>
+

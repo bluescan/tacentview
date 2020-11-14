@@ -177,7 +177,13 @@ void Viewer::ShowAboutPopup(bool* popen)
 		ImGui::Text("Tacent View V %d.%d.%d by Tristan Grimmer", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
 		ImGui::Separator();
 		ImGui::Text("Dear ImGui V %s", IMGUI_VERSION);
+
+		// This way of getting the version is 'dynamic'. It will, for example, print mesa compatibility mode if it's being used.
 		ImGui::Text("GLAD V %s", glad_glGetString(GL_VERSION));
+
+		// This is the more 'static' way.
+		// ImGui::Text("GLAD V %d.%d", GLVersion.major, GLVersion.minor);
+
 		ImGui::Text("GLFW V %d.%d.%d", glfwMajor, glfwMinor, glfwRev);
 		ImGui::Text("Tacent Library V %d.%d.%d", tVersion::Major, tVersion::Minor, tVersion::Revision);
 		ImGui::Text("CxImage");
