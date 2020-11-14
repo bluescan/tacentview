@@ -1,7 +1,7 @@
 ![Build](https://github.com/bluescan/tacentview/workflows/Build/badge.svg) [![latest](https://img.shields.io/github/v/release/bluescan/tacentview.svg)](https://github.com/bluescan/tacentview/releases) [![tacentview](https://snapcraft.io//tacentview/badge.svg)](https://snapcraft.io/tacentview)
 
 # tacent view
-An image and texture viewer for tga, png, exr, dds, gif, hdr, jpg, tif, ico, webp, and bmp files. Uses Dear ImGui and the Tacent library. This viewer is targeted to game devs -- It displays alpha channels correctly and can inspect the colour of individual pixels. There is basic editing functionality, batch resizing, and the ability to generate contact sheets for FX etc.
+An image and texture viewer for tga, png, apng, exr, dds, gif, hdr, jpg, tif, ico, webp, and bmp files. Uses Dear ImGui and the Tacent library. This viewer is targeted to game devs -- It displays alpha channels correctly and can inspect the colour of individual pixels. There is basic editing functionality, batch resizing, and the ability to generate contact sheets for FX etc.
 
 Tacent View runs on Windows 10 and Ubuntu Linux. Browse the releases to grab a zip (Windows) or deb (Linux) package -- or install from the snap store.
 
