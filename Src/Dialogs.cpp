@@ -561,6 +561,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 		Config.ResetUISettings(mode->width, mode->height);
+		PendingTransparentWorkArea = false;
 		ChangeScreenMode(false, true);
 	}
 	ShowToolTip("Resets window dimensions/position, nav bar, content view, tiling, background, details, etc.");

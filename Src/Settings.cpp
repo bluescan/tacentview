@@ -32,6 +32,7 @@ void Viewer::Settings::Reset(int screenW, int screenH)
 {
 	ResetUISettings(screenW, screenH);
 	ResetBehaviourSettings();
+	TransparentWorkArea			= false;
 }
 
 
@@ -76,9 +77,6 @@ void Viewer::Settings::ResetUISettings(int screenW, int screenH)
 	Tile						= false;
 	BackgroundStyle				= 1;
 	BackgroundExtend			= false;
-
-	// @todo This doesn't work properly here.
-	// TransparentWorkArea		= false;
 }
 
 
