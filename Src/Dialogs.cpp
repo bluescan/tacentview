@@ -123,6 +123,7 @@ void Viewer::ShowCheatSheetPopup(bool* popen)
 		ImGui::Text("Ctrl +");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom In");
 		ImGui::Text("Ctrl -");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom Out");
 		ImGui::Text("F1");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Cheat Sheet");
+		ImGui::Text("F2");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Rename File");
 		ImGui::Text("F5");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Refresh/Reload Image");
 		ImGui::Text("F11");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Fullscreen");
 		ImGui::Text("Alt-Enter");   ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Fullscreen");
@@ -686,6 +687,47 @@ void Viewer::DoDeleteFileNoRecycleModal()
 	if (ImGui::Button("OK", tVector2(100, 0)))
 	{
 		DeleteImageFile(fullname, false);
+		ImGui::CloseCurrentPopup();
+	}
+
+	ImGui::EndPopup();
+}
+
+
+void Viewer::DoRenameModal(bool justOpened)
+{
+	tString fullname = CurrImage->Filename;
+	tString origname = tSystem::tGetFileName(fullname);
+
+	static char newname[128] = "Filename";
+	if (justOpened)
+		tStd::tStrcpy(newname, origname.Chars());
+
+	bool nameChanged = false;
+	if (ImGui::InputText("", newname, tNumElements(newname), ImGuiInputTextFlags_EnterReturnsTrue))
+		nameChanged = true;
+	ImGui::NewLine();
+
+	if (ImGui::Button("Cancel", tVector2(100, 0)))
+		ImGui::CloseCurrentPopup();
+
+	ImGui::SetItemDefaultFocus();
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+
+	if (ImGui::Button("OK", tVector2(100, 0)) || nameChanged)
+	{
+		if (origname != newname)
+		{
+			tString dir = tSystem::tGetDir(fullname);
+			bool renamed = tSystem::tRenameFile(dir, origname, newname);
+			if (renamed)
+			{
+				PopulateImages();
+				SetCurrentImage(dir+newname);
+			}
+		}
+
 		ImGui::CloseCurrentPopup();
 	}
 

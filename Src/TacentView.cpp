@@ -112,6 +112,7 @@ namespace Viewer
 	bool Request_ContactSheetModal				= false;
 	bool Request_DeleteFileModal				= false;
 	bool Request_DeleteFileNoRecycleModal		= false;
+	bool Request_RenameModal					= false;
 	bool PrefsWindow							= false;
 	bool PropEditorWindow						= false;
 	bool CropMode								= false;
@@ -1629,8 +1630,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		else
 			ImGui::OpenPopup("Delete File");
 	}
-
-	// The unused isOpenDeleteFile bool is just so we get a close button in ImGui. 
+	// The unused isOpenDeleteFile bool is just so we get a close button in ImGui.
 	bool isOpenDeleteFile = true;
 	if (ImGui::BeginPopupModal("Delete File", &isOpenDeleteFile, ImGuiWindowFlags_AlwaysAutoResize))
 		DoDeleteFileModal();
@@ -1640,11 +1640,22 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		Request_DeleteFileNoRecycleModal = false;
 		ImGui::OpenPopup("Delete File Permanently");
 	}
-
-	// The unused isOpenPerm bool is just so we get a close button in ImGui. 
+	// The unused isOpenPerm bool is just so we get a close button in ImGui.
 	bool isOpenPerm = true;
 	if (ImGui::BeginPopupModal("Delete File Permanently", &isOpenPerm, ImGuiWindowFlags_AlwaysAutoResize))
 		DoDeleteFileNoRecycleModal();
+
+	bool renameJustOpened = false;
+	if (Request_RenameModal)
+	{
+		renameJustOpened = true;
+		Request_RenameModal = false;
+		ImGui::OpenPopup("Rename File");
+	}
+	// The unused isOpenRen bool is just so we get a close button in ImGui.
+	bool isOpenRen = true;
+	if (ImGui::BeginPopupModal("Rename File", &isOpenRen, ImGuiWindowFlags_AlwaysAutoResize))
+		DoRenameModal(renameJustOpened);
 
 	ImGui::Render();
 	glViewport(0, 0, dispw, disph);
@@ -1910,6 +1921,12 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case GLFW_KEY_F1:
 			ShowCheatSheet = !ShowCheatSheet;
+			break;
+
+		case GLFW_KEY_F2:
+			if (!CurrImage)
+				break;
+			Request_RenameModal = true;
 			break;
 
 		case GLFW_KEY_F11:
