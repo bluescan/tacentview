@@ -55,7 +55,6 @@ parts:
       cp ../stage/root/parts/tacentview/build/ViewerInstall/tacentview tacentview
       mkdir -p Data
       cp ../stage/root/parts/tacentview/build/ViewerInstall/Data/* Data/
-      rm -rf root/parts/tacentview/build
     after:
       - desktop-glib-only
 

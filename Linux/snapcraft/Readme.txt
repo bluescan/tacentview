@@ -1,4 +1,8 @@
-Crazy steps I'm taking to fix the missing desktop file. In snap dir:
+It is important that when you run snapcraft you are in the Linux/snapcraft directory, not the snap directory.
+
+
+If you ever need to modify a .snap, it is simply a squashfs and can be modified using the below commands:
+
 mkdir mnt
 sudo mount -t squashfs -o ro ./tacentview_1.0.16_amd64.snap ./mnt/
 sudo cp -r mnt/ mnt2/
