@@ -15,6 +15,7 @@
 #include <Foundation/tFundamentals.h>
 #include <System/tFile.h>
 #include <System/tScript.h>
+#include <Image/tResample.h>
 #include "Settings.h"
 #include "Image.h"
 using namespace tMath;
@@ -40,7 +41,8 @@ void Viewer::Settings::ResetBehaviourSettings()
 {
 	SortKey						= 0;
 	SortAscending				= true;
-	ResampleFilter				= 2;
+	ResampleFilter				= 2;			// Bilinear.
+	ResampleEdgeMode			= 0;			// Clamp.
 	ConfirmDeletes				= true;
 	ConfirmFileOverwrites		= true;
 	SlideshowLooping			= false;
@@ -110,6 +112,7 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(BackgroundExtend);
 				ReadItem(TransparentWorkArea);
 				ReadItem(ResampleFilter);
+				ReadItem(ResampleEdgeMode);
 				ReadItem(ConfirmDeletes);
 				ReadItem(ConfirmFileOverwrites);
 				ReadItem(SlideshowLooping);
@@ -131,7 +134,8 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 		}
 	}
 
-	tiClamp(ResampleFilter, 0, 5);
+	tiClamp(ResampleFilter, 0, int(tImage::tResampleFilter::NumFilters)-1);
+	tiClamp(ResampleEdgeMode, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);
 	tiClamp(BackgroundStyle, 0, 4);
 	tiClamp(WindowW, 640, screenW);
 	tiClamp(WindowH, 360, screenH);
@@ -171,6 +175,7 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(BackgroundExtend);
 	WriteItem(TransparentWorkArea);
 	WriteItem(ResampleFilter);
+	WriteItem(ResampleEdgeMode);
 	WriteItem(ConfirmDeletes);
 	WriteItem(ConfirmFileOverwrites);
 	WriteItem(SlideshowLooping);

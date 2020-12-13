@@ -128,6 +128,10 @@ void Viewer::DoContactSheetModalDialog(bool justOpened)
 	ImGui::SameLine();
 	ShowHelpMark("Filtering method to use when resizing images.");
 
+	ImGui::Combo("Filter Edge Mode", &Config.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
+	ImGui::SameLine();
+	ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");
+
 	tString extension = DoSaveFiletype();
 	ImGui::Separator();
 	tString destDir = DoSubFolder();
@@ -241,7 +245,7 @@ void Viewer::SaveContactSheetTo
 		if ((currImg->GetWidth() != frameWidth) || (currImg->GetHeight() != frameHeight))
 		{
 			resampled.Set(*currPic);
-			resampled.Resample(frameWidth, frameHeight, tImage::tResampleFilter(Config.ResampleFilter));
+			resampled.Resample(frameWidth, frameHeight, tImage::tResampleFilter(Config.ResampleFilter), tImage::tResampleEdgeMode(Config.ResampleEdgeMode));
 		}
 
 		// Copy resampled frame into place.
@@ -278,7 +282,7 @@ void Viewer::SaveContactSheetTo
 	else
 	{
 		tImage::tPicture finalResampled(outPic);
-		finalResampled.Resample(finalWidth, finalHeight, tImage::tResampleFilter(Config.ResampleFilter));
+		finalResampled.Resample(finalWidth, finalHeight, tImage::tResampleFilter(Config.ResampleFilter), tImage::tResampleEdgeMode(Config.ResampleEdgeMode));
 
 		if (Config.SaveFileType == 0)
 			finalResampled.SaveTGA(outFile, tgaFmt, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);

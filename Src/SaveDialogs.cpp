@@ -134,7 +134,7 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile, int width, int heig
 	tMath::tiClampMin(outH, 4);
 
 	if ((outPic.GetWidth() != outW) || (outPic.GetHeight() != outH))
-		outPic.Resample(outW, outH, tImage::tResampleFilter(Config.ResampleFilter));
+		outPic.Resample(outW, outH, tImage::tResampleFilter(Config.ResampleFilter), tImage::tResampleEdgeMode(Config.ResampleEdgeMode));
 
 	bool success = false;
 	tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
@@ -222,6 +222,10 @@ void Viewer::DoSaveAsModalDialog(bool justOpened)
 		ImGui::Combo("Filter", &Config.ResampleFilter, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
 		ImGui::SameLine();
 		ShowHelpMark("Filtering method to use when resizing images.");
+
+		ImGui::Combo("Filter Edge Mode", &Config.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
+		ImGui::SameLine();
+		ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");	
 	}
 
 	tString extension = DoSaveFiletype();
@@ -379,6 +383,10 @@ void Viewer::DoSaveAllModalDialog(bool justOpened)
 		ImGui::Combo("Filter", &Config.ResampleFilter, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
 		ImGui::SameLine();
 		ShowHelpMark("Filtering method to use when resizing images.");
+
+		ImGui::Combo("Filter Edge Mode", &Config.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
+		ImGui::SameLine();
+		ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");
 	}
 	tMath::tiClampMin(width, 4);
 	tMath::tiClampMin(height, 4);

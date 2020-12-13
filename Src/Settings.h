@@ -55,6 +55,7 @@ namespace Viewer
 		bool BackgroundExtend;				// Extend background past image bounds.
 		bool TransparentWorkArea;
 		int ResampleFilter;					// Matches tImage::tResampleFilter.
+		int ResampleEdgeMode;				// Matches tImage::tResampleEdgeMode.
 		bool ConfirmDeletes;
 		bool ConfirmFileOverwrites;
 		bool SlideshowLooping;
