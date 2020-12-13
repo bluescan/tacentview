@@ -124,9 +124,7 @@ void Viewer::DoContactSheetModalDialog(bool justOpened)
 	}
 	ImGui::Separator();
 
-	// Matches tImage::tPicture::tFilter.
-	const char* filterItems[] = { "NearestNeighbour", "Box", "Bilinear", "Bicubic", "Quadratic", "Hamming" };
-	ImGui::Combo("Filter", &Config.ResampleFilter, filterItems, tNumElements(filterItems));
+	ImGui::Combo("Filter", &Config.ResampleFilter, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
 	ImGui::SameLine();
 	ShowHelpMark("Filtering method to use when resizing images.");
 
@@ -243,7 +241,7 @@ void Viewer::SaveContactSheetTo
 		if ((currImg->GetWidth() != frameWidth) || (currImg->GetHeight() != frameHeight))
 		{
 			resampled.Set(*currPic);
-			resampled.Resample(frameWidth, frameHeight, tImage::tPicture::tFilter(Config.ResampleFilter));
+			resampled.Resample(frameWidth, frameHeight, tImage::tResampleFilter(Config.ResampleFilter));
 		}
 
 		// Copy resampled frame into place.
@@ -280,7 +278,7 @@ void Viewer::SaveContactSheetTo
 	else
 	{
 		tImage::tPicture finalResampled(outPic);
-		finalResampled.Resample(finalWidth, finalHeight, tImage::tPicture::tFilter(Config.ResampleFilter));
+		finalResampled.Resample(finalWidth, finalHeight, tImage::tResampleFilter(Config.ResampleFilter));
 
 		if (Config.SaveFileType == 0)
 			finalResampled.SaveTGA(outFile, tgaFmt, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);

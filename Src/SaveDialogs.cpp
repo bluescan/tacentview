@@ -134,7 +134,7 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile, int width, int heig
 	tMath::tiClampMin(outH, 4);
 
 	if ((outPic.GetWidth() != outW) || (outPic.GetHeight() != outH))
-		outPic.Resample(outW, outH, tImage::tPicture::tFilter(Config.ResampleFilter));
+		outPic.Resample(outW, outH, tImage::tResampleFilter(Config.ResampleFilter));
 
 	bool success = false;
 	tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
@@ -219,9 +219,7 @@ void Viewer::DoSaveAsModalDialog(bool justOpened)
 
 	if ((dstW != srcW) || (dstH != srcH))
 	{
-		// Matches tImage::tPicture::tFilter.
-		const char* filterItems[] = { "NearestNeighbour", "Box", "Bilinear", "Bicubic", "Quadratic", "Hamming" };
-		ImGui::Combo("Filter", &Config.ResampleFilter, filterItems, tNumElements(filterItems));
+		ImGui::Combo("Filter", &Config.ResampleFilter, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
 		ImGui::SameLine();
 		ShowHelpMark("Filtering method to use when resizing images.");
 	}
@@ -378,9 +376,7 @@ void Viewer::DoSaveAllModalDialog(bool justOpened)
 	ImGui::Separator();
 	if (!((Settings::SizeMode(Config.SaveAllSizeMode) == Settings::SizeMode::Percent) && (percent == 100.0f)))
 	{
-		// Matches tImage::tPicture::tFilter.
-		const char* filterItems[] = { "NearestNeighbour", "Box", "Bilinear", "Bicubic", "Quadratic", "Hamming" };
-		ImGui::Combo("Filter", &Config.ResampleFilter, filterItems, tNumElements(filterItems));
+		ImGui::Combo("Filter", &Config.ResampleFilter, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
 		ImGui::SameLine();
 		ShowHelpMark("Filtering method to use when resizing images.");
 	}

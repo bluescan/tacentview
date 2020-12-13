@@ -1006,7 +1006,7 @@ void Image::GenerateThumbnail()
 	tAssert((iw == ThumbWidth) || (ih == ThumbHeight));
 
 	// Create an image that is big (or small) enough to exactly match either the width or height without ruining the aspect.
-	srcPic->Resample(iw, ih, tPicture::tFilter::Bilinear);
+	srcPic->Resample(iw, ih, tResampleFilter::Bilinear);
 
 	// Center-crop the image to what we need. Cropping to a bigger size adds transparent pixels.
 	srcPic->Crop(ThumbWidth, ThumbHeight);
