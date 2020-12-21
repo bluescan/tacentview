@@ -45,18 +45,18 @@ public:
 	void Play();
 	void Stop();
 	void UpdatePlaying(float dt);
-	bool PartDurationOverrideEnabled = false;
-	float PartDurationOverride = 1.0f/30.0f;
-	float PartCurrCountdown = 0.0f;
-	bool PartPlaying = false;
-	bool PartPlayRev = false;
-	bool PartPlayLooping = true;
-	int PartNum = 0;
+	bool FrameDurationOverrideEnabled = false;
+	float FrameDurationOverride = 1.0f/30.0f;
+	float FrameCurrCountdown = 0.0f;
+	bool FramePlaying = false;
+	bool FramePlayRev = false;
+	bool FramePlayLooping = true;
+	int FrameNum = 0;
 
 	bool Load(const tString& filename);
 	bool Load();						// Load into main memory.
 	bool IsLoaded() const																								{ return (Pictures.Count() > 0); }
-	int GetNumParts() const																								{ return Pictures.Count(); }
+	int GetNumFrames() const																							{ return Pictures.Count(); }
 
 	bool IsOpaque() const;
 	bool Unload(bool force = false);
@@ -72,10 +72,10 @@ public:
 	int GetHeight() const;
 	tColouri GetPixel(int x, int y) const;
 
-	// Some images can store multiple complete images inside a single file (multiple parts).
+	// Some images can store multiple complete images inside a single file (multiple frames).
 	// The primary one is the first one.
 	tImage::tPicture* GetPrimaryPic() const																				{ return Pictures.First(); }
-	tImage::tPicture* GetCurrentPic() const																				{ tImage::tPicture* pic = Pictures.First(); for (int i = 0; i < PartNum; i++) pic = pic ? pic->Next() : nullptr; return pic; }
+	tImage::tPicture* GetCurrentPic() const																				{ tImage::tPicture* pic = Pictures.First(); for (int i = 0; i < FrameNum; i++) pic = pic ? pic->Next() : nullptr; return pic; }
 
 	// Functions that edit and cause dirty flag to be set.
 	void Rotate90(bool antiClockWise);

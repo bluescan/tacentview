@@ -1098,60 +1098,60 @@ void Image::RequestInvalidateThumbnail()
 
 void Image::Play()
 {
-	PartCurrCountdown = PartDurationOverrideEnabled ? PartDurationOverride : GetCurrentPic()->Duration;
-	PartPlaying = true;
+	FrameCurrCountdown = FrameDurationOverrideEnabled ? FrameDurationOverride : GetCurrentPic()->Duration;
+	FramePlaying = true;
 }
 
 
 void Image::Stop()
 {
-	PartPlaying = false;
+	FramePlaying = false;
 }
 
 
 void Image::UpdatePlaying(float dt)
 {
-	if (!PartPlaying)
+	if (!FramePlaying)
 		return;
 
-	int numParts = GetNumParts();
-	if (numParts <= 1)
+	int numFrames = GetNumFrames();
+	if (numFrames <= 1)
 		return;
 
-	PartCurrCountdown -= dt;
-	if (PartCurrCountdown <= 0.0f)
+	FrameCurrCountdown -= dt;
+	if (FrameCurrCountdown <= 0.0f)
 	{
-		if (!PartPlayRev)
+		if (!FramePlayRev)
 		{
-			PartNum++;
-			if (PartNum >= numParts)
+			FrameNum++;
+			if (FrameNum >= numFrames)
 			{
-				if (PartPlayLooping)
-					PartNum = 0;
+				if (FramePlayLooping)
+					FrameNum = 0;
 				else
 				{
-					PartNum = numParts-1;
-					PartPlaying = false;
+					FrameNum = numFrames-1;
+					FramePlaying = false;
 				}
 			}
 		}
 		else
 		{
-			PartNum--;
-			if (PartNum <= 0)
+			FrameNum--;
+			if (FrameNum <= 0)
 			{
-				if (PartPlayLooping)
-					PartNum = numParts-1;
+				if (FramePlayLooping)
+					FrameNum = numFrames-1;
 				else
 				{
-					PartNum = 0;
-					PartPlaying = false;
+					FrameNum = 0;
+					FramePlaying = false;
 				}
 			}
 		}
-		if (PartDurationOverrideEnabled)
-			PartCurrCountdown = PartDurationOverride;
+		if (FrameDurationOverrideEnabled)
+			FrameCurrCountdown = FrameDurationOverride;
 		else
-			PartCurrCountdown = GetCurrentPic()->Duration;
+			FrameCurrCountdown = GetCurrentPic()->Duration;
 	}
 }

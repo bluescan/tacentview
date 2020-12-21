@@ -79,7 +79,7 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 				else
 					ImGui::Text("Bits Per Pixel: --");
 				ImGui::Text("Opaque: %s", info.Opaque ? "true" : "false");
-				ImGui::Text("Parts: %d", CurrImage->GetNumParts());
+				ImGui::Text("Frames: %d", CurrImage->GetNumFrames());
 				tString sizeStr; tsPrintf(sizeStr, "File Size: %'d", info.FileSizeBytes);
 				ImGui::Text(sizeStr.Chars());
 				ImGui::Text("Cursor: (%d, %d)", cursorX, cursorY);
@@ -177,22 +177,22 @@ void Viewer::ShowAboutPopup(bool* popen)
 		glfwGetVersion(&glfwMajor, &glfwMinor, &glfwRev);
 		ImGui::Text("Tacent View V %d.%d.%d by Tristan Grimmer", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
 		ImGui::Separator();
+		ImGui::Text("Tacent Library V %d.%d.%d", tVersion::Major, tVersion::Minor, tVersion::Revision);
 		ImGui::Text("Dear ImGui V %s", IMGUI_VERSION);
 
 		// This way of getting the version is 'dynamic'. It will, for example, print mesa compatibility mode if it's being used.
 		ImGui::Text("GLAD V %s", glad_glGetString(GL_VERSION));
-
 		// This is the more 'static' way.
 		// ImGui::Text("GLAD V %d.%d", GLVersion.major, GLVersion.minor);
 
 		ImGui::Text("GLFW V %d.%d.%d", glfwMajor, glfwMinor, glfwRev);
-		ImGui::Text("Tacent Library V %d.%d.%d", tVersion::Major, tVersion::Minor, tVersion::Revision);
 		ImGui::Text("CxImage");
 		ImGui::Text("nVidia Texture Tools");
 		ImGui::Text("Ionicons");
 		ImGui::Text("Roboto Google Font");
 		ImGui::Text("Radiance Software");
-		ImGui::Text("TurboJPEG V %s", tImage::Version_TurboJPEG);
+		ImGui::Text("LibJPEG-Turbo V %s", tImage::Version_LibJpegTurbo);
+		ImGui::Text("LibTIFF V %s", tImage::Version_LibTIFF);
 		ImGui::Text("OpenEXR V %s", tImage::Version_OpenEXR);
 		ImGui::Text("ZLib V %s", tImage::Version_ZLIB);
 		ImGui::Text("Gif Load");
@@ -330,37 +330,37 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 		}
 	}
 
-	int numParts = CurrImage->GetNumParts();
-	if ((numParts <= 1) && !fileTypeSectionDisplayed)
+	int numFrames = CurrImage->GetNumFrames();
+	if ((numFrames <= 1) && !fileTypeSectionDisplayed)
 		ImGui::Text("No Editable Image Properties Available");
 
-	if (numParts > 1)
+	if (numFrames > 1)
 	{
 		if (fileTypeSectionDisplayed)
 			ImGui::Separator();
 
-		ImGui::Text("%d-Part Image", CurrImage->GetNumParts());
+		ImGui::Text("%d-Frame Image", CurrImage->GetNumFrames());
 		ImGui::Indent();
 		ImGui::PushItemWidth(110);
 
-		int oneBasedPartNum = CurrImage->PartNum + 1;
-		if (ImGui::InputInt("Part", &oneBasedPartNum))
+		int oneBasedFrameNum = CurrImage->FrameNum + 1;
+		if (ImGui::InputInt("Frame", &oneBasedFrameNum))
 		{
-			CurrImage->PartNum = oneBasedPartNum - 1;
-			tMath::tiClamp(CurrImage->PartNum, 0, CurrImage->GetNumParts()-1);
+			CurrImage->FrameNum = oneBasedFrameNum - 1;
+			tMath::tiClamp(CurrImage->FrameNum, 0, CurrImage->GetNumFrames()-1);
 		}
-		ImGui::SameLine(); ShowHelpMark("Which image in a multipart file to display.");
+		ImGui::SameLine(); ShowHelpMark("Which image in a multiframe file to display.");
 
-		ImGui::Checkbox("Override Frame Duration", &CurrImage->PartDurationOverrideEnabled);
-		if (CurrImage->PartDurationOverrideEnabled)
+		ImGui::Checkbox("Override Frame Duration", &CurrImage->FrameDurationOverrideEnabled);
+		if (CurrImage->FrameDurationOverrideEnabled)
 		{
-			ImGui::InputFloat("Frame Duration", &CurrImage->PartDurationOverride, 0.01f, 0.1f, "%.4f");
-			tMath::tiClamp(CurrImage->PartDurationOverride, 0.0f, 60.0f);
+			ImGui::InputFloat("Frame Duration", &CurrImage->FrameDurationOverride, 0.01f, 0.1f, "%.4f");
+			tMath::tiClamp(CurrImage->FrameDurationOverride, 0.0f, 60.0f);
 
-			if (ImGui::Button("1.0s")) CurrImage->PartDurationOverride = 1.0f; ImGui::SameLine();
-			if (ImGui::Button("0.5s")) CurrImage->PartDurationOverride = 0.5f; ImGui::SameLine();
-			if (ImGui::Button("30fps")) CurrImage->PartDurationOverride = 1.0f/30.0f; ImGui::SameLine();
-			if (ImGui::Button("60fps")) CurrImage->PartDurationOverride = 1.0f/60.0f;
+			if (ImGui::Button("1.0s")) CurrImage->FrameDurationOverride = 1.0f; ImGui::SameLine();
+			if (ImGui::Button("0.5s")) CurrImage->FrameDurationOverride = 0.5f; ImGui::SameLine();
+			if (ImGui::Button("30fps")) CurrImage->FrameDurationOverride = 1.0f/30.0f; ImGui::SameLine();
+			if (ImGui::Button("60fps")) CurrImage->FrameDurationOverride = 1.0f/60.0f;
 		}
 
 		ImGui::PopItemWidth();
@@ -370,65 +370,65 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 		ImGui::Separator();
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 
-		uint64 loopImageID = CurrImage->PartPlayLooping ? PlayOnceImage.Bind() : PlayLoopImage.Bind();
+		uint64 loopImageID = CurrImage->FramePlayLooping ? PlayOnceImage.Bind() : PlayLoopImage.Bind();
 		if (ImGui::ImageButton(ImTextureID(loopImageID), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2, ColourBG, ColourEnabledTint))
-			CurrImage->PartPlayLooping = !CurrImage->PartPlayLooping;
+			CurrImage->FramePlayLooping = !CurrImage->FramePlayLooping;
 		ImGui::SameLine();
 
-		bool prevEnabled = !CurrImage->PartPlaying && (CurrImage->PartNum > 0);
+		bool prevEnabled = !CurrImage->FramePlaying && (CurrImage->FrameNum > 0);
 		if (ImGui::ImageButton
 		(
 			ImTextureID(SkipBeginImage.Bind()), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2,
 			ColourBG, prevEnabled ? ColourEnabledTint : ColourDisabledTint) && prevEnabled
-		)	CurrImage->PartNum = 0;
+		)	CurrImage->FrameNum = 0;
 		ImGui::SameLine();
 
 		if (ImGui::ImageButton
 		(
 			ImTextureID(PrevImage.Bind()), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2,
 			ColourBG, prevEnabled ? ColourEnabledTint : ColourDisabledTint) && prevEnabled
-		)	CurrImage->PartNum = tClampMin(CurrImage->PartNum-1, 0);
+		)	CurrImage->FrameNum = tClampMin(CurrImage->FrameNum-1, 0);
 		ImGui::SameLine();
 
-		bool playRevEnabled = !(CurrImage->PartPlaying && !CurrImage->PartPlayRev);
-		uint64 playRevImageID = !CurrImage->PartPlaying ? PlayRevImage.Bind() : StopRevImage.Bind();
+		bool playRevEnabled = !(CurrImage->FramePlaying && !CurrImage->FramePlayRev);
+		uint64 playRevImageID = !CurrImage->FramePlaying ? PlayRevImage.Bind() : StopRevImage.Bind();
 		if (ImGui::ImageButton
 		(
 			ImTextureID(playRevImageID), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2,
 			ColourBG, playRevEnabled ? ColourEnabledTint : ColourDisabledTint) && playRevEnabled
 		)
 		{
-			CurrImage->PartPlayRev = true;
-			if (CurrImage->PartPlaying) CurrImage->Stop(); else CurrImage->Play();
+			CurrImage->FramePlayRev = true;
+			if (CurrImage->FramePlaying) CurrImage->Stop(); else CurrImage->Play();
 		}
 		ImGui::SameLine();
 
-		bool playFwdEnabled = !(CurrImage->PartPlaying && CurrImage->PartPlayRev);
-		uint64 playImageID = !CurrImage->PartPlaying ? PlayImage.Bind() : StopImage.Bind();
+		bool playFwdEnabled = !(CurrImage->FramePlaying && CurrImage->FramePlayRev);
+		uint64 playImageID = !CurrImage->FramePlaying ? PlayImage.Bind() : StopImage.Bind();
 		if (ImGui::ImageButton
 		(
 			ImTextureID(playImageID), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2,
 			ColourBG, playFwdEnabled ? ColourEnabledTint : ColourDisabledTint) && playFwdEnabled
 		)
 		{
-			CurrImage->PartPlayRev = false;
-			if (CurrImage->PartPlaying) CurrImage->Stop(); else CurrImage->Play();
+			CurrImage->FramePlayRev = false;
+			if (CurrImage->FramePlaying) CurrImage->Stop(); else CurrImage->Play();
 		}
 		ImGui::SameLine();
 
-		bool nextEnabled = !CurrImage->PartPlaying && (CurrImage->PartNum < (numParts-1));
+		bool nextEnabled = !CurrImage->FramePlaying && (CurrImage->FrameNum < (numFrames-1));
 		if (ImGui::ImageButton
 		(
 			ImTextureID(NextImage.Bind()), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2,
 			ColourBG, nextEnabled ? ColourEnabledTint : ColourDisabledTint) && nextEnabled
-		)	CurrImage->PartNum = tClampMax(CurrImage->PartNum+1, numParts-1);
+		)	CurrImage->FrameNum = tClampMax(CurrImage->FrameNum+1, numFrames-1);
 		ImGui::SameLine();
 
 		if (ImGui::ImageButton
 		(
 			ImTextureID(SkipEndImage.Bind()), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2,
 			ColourBG, nextEnabled ? ColourEnabledTint : ColourDisabledTint) && nextEnabled
-		)	CurrImage->PartNum = numParts-1;
+		)	CurrImage->FrameNum = numFrames-1;
 		ImGui::SameLine();
 	}
 

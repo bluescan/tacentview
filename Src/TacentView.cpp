@@ -414,19 +414,19 @@ void Viewer::LoadCurrImage()
 		imgJustLoaded = CurrImage->Load();
 
 	if (Config.AutoPropertyWindow)
-		PropEditorWindow = (CurrImage->TypeSupportsProperties() || (CurrImage->GetNumParts() > 1));
+		PropEditorWindow = (CurrImage->TypeSupportsProperties() || (CurrImage->GetNumFrames() > 1));
 
 	if (SlideshowPlaying)
 		PropEditorWindow = false;
 
 	if
 	(
-		Config.AutoPlayAnimatedImages && (CurrImage->GetNumParts() > 1) &&
+		Config.AutoPlayAnimatedImages && (CurrImage->GetNumFrames() > 1) &&
 		((CurrImage->Filetype == tFileType::GIF) || (CurrImage->Filetype == tFileType::WEBP) || (CurrImage->Filetype == tFileType::APNG))
 	)
 	{
-		CurrImage->PartPlayLooping = true;
-		CurrImage->PartPlayRev = false;
+		CurrImage->FramePlayLooping = true;
+		CurrImage->FramePlayRev = false;
 		CurrImage->Play();
 	}
 
@@ -500,19 +500,19 @@ bool Viewer::OnNext()
 
 void Viewer::OnPreviousPart()
 {
-	if (!CurrImage || (CurrImage->GetNumParts() <= 1))
+	if (!CurrImage || (CurrImage->GetNumFrames() <= 1))
 		return;
 
-	CurrImage->PartNum = tClampMin(CurrImage->PartNum-1, 0);
+	CurrImage->FrameNum = tClampMin(CurrImage->FrameNum-1, 0);
 }
 
 
 void Viewer::OnNextPart()
 {
-	if (!CurrImage || (CurrImage->GetNumParts() <= 1))
+	if (!CurrImage || (CurrImage->GetNumFrames() <= 1))
 		return;
 
-	CurrImage->PartNum = tClampMax(CurrImage->PartNum+1, CurrImage->GetNumParts()-1);
+	CurrImage->FrameNum = tClampMax(CurrImage->FrameNum+1, CurrImage->GetNumFrames()-1);
 }
 
 
