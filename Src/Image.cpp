@@ -19,11 +19,6 @@
 #include <Foundation/tHash.h>
 #include <Foundation/tFundamentals.h>
 #include <Image/tTexture.h>
-#include <Image/tImageGIF.h>
-#include <Image/tImageWEBP.h>
-#include <Image/tImageAPNG.h>
-#include <Image/tImageICO.h>
-#include <Image/tImageJPG.h>
 #include <System/tFile.h>
 #include <System/tTime.h>
 #include <System/tMachine.h>
@@ -140,7 +135,29 @@ bool Image::Load()
 	bool success = false;
 	try
 	{
-		if (Filetype == tSystem::tFileType::DDS)
+		if (Filetype == tSystem::tFileType::APNG)
+		{
+			tImageAPNG apng;
+			bool ok = apng.Load(Filename.Chars());
+			if (!ok)
+				return false;
+
+			int numFrames = apng.GetNumFrames();
+			for (int f = 0; f < numFrames; f++)
+			{
+				tImageAPNG::Frame* frame = apng.StealFrame(0);
+				tPicture* picture = new tPicture();
+
+				// It's ok to steal the pixels as the frame destructor does not delete them.
+				picture->Set(frame->Width, frame->Height, frame->Pixels, false);
+				picture->Duration = frame->Duration;
+				delete frame;
+				Pictures.Append(picture);
+			}
+			Info.SrcPixelFormat = apng.SrcPixelFormat;
+			success = true;
+		}
+		else if (Filetype == tSystem::tFileType::DDS)
 		{
 			success = DDSCubemap.Load(Filename);
 			if (success)
@@ -153,6 +170,9 @@ bool Image::Load()
 				Info.SrcPixelFormat = DDSTexture2D.GetPixelFormat();
 			}
 		}
+
+		// @todo Do EXR images here.
+
 		else if (Filetype == tSystem::tFileType::GIF)
 		{
 			tImageGIF gif;
@@ -175,48 +195,20 @@ bool Image::Load()
 			Info.SrcPixelFormat = gif.SrcPixelFormat;
 			success = true;
 		}
-		else if (Filetype == tSystem::tFileType::WEBP)
+		else if (Filetype == tSystem::tFileType::HDR)
 		{
-			tImageWEBP webp;
-			bool ok = webp.Load(Filename.Chars());
+			tImageHDR hdr;
+			bool ok = hdr.Load(Filename.Chars(), LoadParams.GammaValue, LoadParams.HDR_Exposure);
 			if (!ok)
 				return false;
 
-			int numFrames = webp.GetNumFrames();
-			for (int f = 0; f < numFrames; f++)
-			{
-				tImageWEBP::Frame* frame = webp.StealFrame(0);
-				tPicture* picture = new tPicture();
+			int width = hdr.GetWidth();
+			int height = hdr.GetHeight();
+			tPixel* pixels = hdr.StealPixels();
 
-				// It's ok to steal the pixels as the frame destructor does not delete them.
-				picture->Set(frame->Width, frame->Height, frame->Pixels, false);
-				picture->Duration = frame->Duration;
-				delete frame;
-				Pictures.Append(picture);
-			}
-			Info.SrcPixelFormat = webp.SrcPixelFormat;
-			success = true;
-		}
-		else if (Filetype == tSystem::tFileType::APNG)
-		{
-			tImageAPNG apng;
-			bool ok = apng.Load(Filename.Chars());
-			if (!ok)
-				return false;
-
-			int numFrames = apng.GetNumFrames();
-			for (int f = 0; f < numFrames; f++)
-			{
-				tImageAPNG::Frame* frame = apng.StealFrame(0);
-				tPicture* picture = new tPicture();
-
-				// It's ok to steal the pixels as the frame destructor does not delete them.
-				picture->Set(frame->Width, frame->Height, frame->Pixels, false);
-				picture->Duration = frame->Duration;
-				delete frame;
-				Pictures.Append(picture);
-			}
-			Info.SrcPixelFormat = apng.SrcPixelFormat;
+			Info.SrcPixelFormat = hdr.SrcPixelFormat;
+			tPicture* picture = new tPicture(width, height, pixels, false);
+			Pictures.Append(picture);
 			success = true;
 		}
 		else if (Filetype == tSystem::tFileType::ICO)
@@ -257,22 +249,6 @@ bool Image::Load()
 			Pictures.Append(picture);
 			success = true;
 		}
-		else if (Filetype == tSystem::tFileType::HDR)
-		{
-			tImageHDR hdr;
-			bool ok = hdr.Load(Filename.Chars(), LoadParams.GammaValue, LoadParams.HDR_Exposure);
-			if (!ok)
-				return false;
-
-			int width = hdr.GetWidth();
-			int height = hdr.GetHeight();
-			tPixel* pixels = hdr.StealPixels();
-
-			Info.SrcPixelFormat = hdr.SrcPixelFormat;
-			tPicture* picture = new tPicture(width, height, pixels, false);
-			Pictures.Append(picture);
-			success = true;
-		}
 		else if (Filetype == tSystem::tFileType::PNG)
 		{
 			tImagePNG png;
@@ -289,12 +265,71 @@ bool Image::Load()
 			Pictures.Append(picture);
 			success = true;
 		}
+		else if (Filetype == tSystem::tFileType::TGA)
+		{
+			tImageTGA tga;
+			bool ok = tga.Load(Filename.Chars());
+			if (!ok)
+				return false;
 
-		// @todo Lets also handle EXR directly here. This is more efficient than using tPicture method below
+			int width = tga.GetWidth();
+			int height = tga.GetHeight();
+			tPixel* pixels = tga.StealPixels();
+
+			Info.SrcPixelFormat = tga.SrcPixelFormat;
+			tPicture* picture = new tPicture(width, height, pixels, false);
+			Pictures.Append(picture);
+			success = true;
+		}
+		else if (Filetype == tSystem::tFileType::TIFF)
+		{
+			tImageTIFF tiff;
+			bool ok = tiff.Load(Filename.Chars());
+			if (!ok)
+				return false;
+
+			int numFrames = tiff.GetNumFrames();
+			for (int f = 0; f < numFrames; f++)
+			{
+				tImageTIFF::Frame* frame = tiff.StealFrame(0);
+				tPicture* picture = new tPicture();
+
+				// It's ok to steal the pixels as the frame destructor does not delete them.
+				picture->Set(frame->Width, frame->Height, frame->Pixels, false);
+				delete frame;
+				Pictures.Append(picture);
+			}
+			Info.SrcPixelFormat = tiff.SrcPixelFormat;
+			success = true;
+		}
+		else if (Filetype == tSystem::tFileType::WEBP)
+		{
+			tImageWEBP webp;
+			bool ok = webp.Load(Filename.Chars());
+			if (!ok)
+				return false;
+
+			int numFrames = webp.GetNumFrames();
+			for (int f = 0; f < numFrames; f++)
+			{
+				tImageWEBP::Frame* frame = webp.StealFrame(0);
+				tPicture* picture = new tPicture();
+
+				// It's ok to steal the pixels as the frame destructor does not delete them.
+				picture->Set(frame->Width, frame->Height, frame->Pixels, false);
+				picture->Duration = frame->Duration;
+				delete frame;
+				Pictures.Append(picture);
+			}
+			Info.SrcPixelFormat = webp.SrcPixelFormat;
+			success = true;
+		}
+
+		// @todo Lets also handle EXR directly habove. This is more efficient than using tPicture method below
 		// where the same file is loaded multiple times in order to extract each frame.
 		else
 		{
-			// Some image files (like tiff and exr files) may store multiple images in one file. These are called 'parts'.
+			// Some image files (like exr files) may store multiple images in one file. These are called 'parts'.
 			int partNum = 0;
 			bool ok = false;
 			do
