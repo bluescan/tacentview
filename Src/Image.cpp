@@ -157,6 +157,22 @@ bool Image::Load()
 			Info.SrcPixelFormat = apng.SrcPixelFormat;
 			success = true;
 		}
+		else if (Filetype == tSystem::tFileType::BMP)
+		{
+			tImageBMP bmp;
+			bool ok = bmp.Load(Filename.Chars());
+			if (!ok)
+				return false;
+
+			int width = bmp.GetWidth();
+			int height = bmp.GetHeight();
+			tPixel* pixels = bmp.StealPixels();
+
+			Info.SrcPixelFormat = bmp.SrcPixelFormat;
+			tPicture* picture = new tPicture(width, height, pixels, false);
+			Pictures.Append(picture);
+			success = true;
+		}
 		else if (Filetype == tSystem::tFileType::DDS)
 		{
 			success = DDSCubemap.Load(Filename);
@@ -219,16 +235,16 @@ bool Image::Load()
 				return false;
 
 			Info.SrcPixelFormat = ico.GetBestSrcPixelFormat();
-			int numParts = ico.GetNumParts();
-			for (int p = 0; p < numParts; p++)
+			int numFrames = ico.GetNumFrames();
+			for (int p = 0; p < numFrames; p++)
 			{
-				tImageICO::Part* part = ico.StealPart(0);
-				tAssert(part);
+				tImageICO::Frame* frame = ico.StealFrame(0);
+				tAssert(frame);
 				tPicture* picture = new tPicture();
 				
 				// It's ok to steal the pixels as the part destructor does not delete them.
-				picture->Set(part->Width, part->Height, part->Pixels, false);
-				delete part;
+				picture->Set(frame->Width, frame->Height, frame->Pixels, false);
+				delete frame;
 				Pictures.Append(picture);
 			}
 			success = true;
@@ -329,7 +345,7 @@ bool Image::Load()
 		// where the same file is loaded multiple times in order to extract each frame.
 		else
 		{
-			// Some image files (like exr files) may store multiple images in one file. These are called 'parts'.
+			// Some image files (like exr files) may store multiple images (aka frames or parts) in one file.
 			int partNum = 0;
 			bool ok = false;
 			do
