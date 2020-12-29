@@ -44,6 +44,7 @@
 #include "ContactSheet.h"
 #include "ContentView.h"
 #include "Crop.h"
+#include "Resize.h"
 #include "SaveDialogs.h"
 #include "Settings.h"
 #include "Version.cmake.h"
@@ -109,6 +110,7 @@ namespace Viewer
 	bool ShowAbout								= false;
 	bool Request_SaveAsModal					= false;
 	bool Request_SaveAllModal					= false;
+	bool Request_ResizeImageModal				= false;
 	bool Request_ContactSheetModal				= false;
 	bool Request_DeleteFileModal				= false;
 	bool Request_DeleteFileNoRecycleModal		= false;
@@ -1236,12 +1238,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		//
 		// File Menu.
 		//
-		bool saveAsPressed = Request_SaveAsModal;
-		bool saveAllPressed = Request_SaveAllModal;
-		bool saveContactSheetPressed = Request_ContactSheetModal;
-		Request_SaveAsModal = false;
-		Request_SaveAllModal = false;
-		Request_ContactSheetModal = false;
+		bool saveAsPressed = Request_SaveAsModal;					Request_SaveAsModal = false;
+		bool saveAllPressed = Request_SaveAllModal;					Request_SaveAllModal = false;
+		bool saveContactSheetPressed = Request_ContactSheetModal;	Request_ContactSheetModal = false;
 		if (ImGui::BeginMenu("File"))
 		{
 			// Show file menu items...
@@ -1291,6 +1290,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		//
 		// Edit Menu.
 		//
+		bool resizeImagePressed = Request_ResizeImageModal;			Request_ResizeImageModal = false;
 		if (ImGui::BeginMenu("Edit"))
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
@@ -1329,6 +1329,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			ImGui::MenuItem("Crop...", "/", &CropMode);
 
+			if (ImGui::MenuItem("Resize...", "R") && CurrImage)
+				resizeImagePressed = true;
+
 			ImGui::Separator();
 
 			ImGui::MenuItem("Property Editor...", "E", &PropEditorWindow);
@@ -1337,6 +1340,16 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::PopStyleVar();
 			ImGui::EndMenu();
 		}
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
+
+		if (resizeImagePressed)
+			ImGui::OpenPopup("Resize");
+		// The unused isOpenSaveAs bool is just so we get a close button in ImGui. 
+		bool isOpenResizeImage = true;
+		if (ImGui::BeginPopupModal("Resize", &isOpenResizeImage, ImGuiWindowFlags_AlwaysAutoResize))
+			DoResizeImageModalDialog(resizeImagePressed);
+
+		ImGui::PopStyleVar();
 
 		//
 		// View Menu.
@@ -1934,15 +1947,13 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case GLFW_KEY_F5:
-		case GLFW_KEY_R:
-			if (CurrImage)
-			{
-				CurrImage->Unbind();
-				CurrImage->Unload(true);
-				CurrImage->Load();
-				CurrImage->Bind();
-				SetWindowTitle();
-			}
+			if (!CurrImage)
+				break;
+			CurrImage->Unbind();
+			CurrImage->Unload(true);
+			CurrImage->Load();
+			CurrImage->Bind();
+			SetWindowTitle();
 			break;
 
 		case GLFW_KEY_T:
@@ -2000,18 +2011,23 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			CurrZoomMode = ZoomMode::OneToOne;
 			break;
 
-		case GLFW_KEY_S:
+		case GLFW_KEY_R:			// Resize Image.
+			if (!CurrImage)
+				break;
+			Request_ResizeImageModal = true;
+			break;
+
+		case GLFW_KEY_S:			// SaveAs and SaveAll.
 			if (!modifiers)
-			{
 				Config.SlideshowProgressArc = !Config.SlideshowProgressArc;
-			}
-			if (CurrImage)
-			{
-				if (modifiers == GLFW_MOD_CONTROL)
-					Request_SaveAsModal = true;
-				else if (modifiers == GLFW_MOD_ALT)
-					Request_SaveAllModal = true;
-			}
+
+			if (!CurrImage)
+				break;
+
+			if (modifiers == GLFW_MOD_CONTROL)
+				Request_SaveAsModal = true;
+			else if (modifiers == GLFW_MOD_ALT)
+				Request_SaveAllModal = true;
 			break;
 
 		case GLFW_KEY_C:

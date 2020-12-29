@@ -54,24 +54,26 @@ message(STATUS "Viewer -- tacent_SOURCE_DIR: ${tacent_SOURCE_DIR}")
 add_executable(
 	${PROJECT_NAME}
 	WIN32
-	Src/Version.cpp
 	Src/ContactSheet.cpp
-	Src/ContentView.cpp
-	Src/Crop.cpp
-	Src/Dialogs.cpp
-	Src/SaveDialogs.cpp
-	Src/Settings.cpp
-	Src/Image.cpp
-	Src/TacentView.cpp
-	Src/Version.cmake.h
 	Src/ContactSheet.h
+	Src/ContentView.cpp
 	Src/ContentView.h
+	Src/Crop.cpp
 	Src/Crop.h
+	Src/Dialogs.cpp
 	Src/Dialogs.h
-	Src/SaveDialogs.h
-	Src/Settings.h
+	Src/Image.cpp
 	Src/Image.h
+	Src/Resize.cpp
+	Src/Resize.h
+	Src/SaveDialogs.cpp
+	Src/SaveDialogs.h
+	Src/Settings.cpp
+	Src/Settings.h
+	Src/TacentView.cpp
 	Src/TacentView.h
+	Src/Version.cmake.h
+	Src/Version.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Windows/TacentView.rc
 
 	Contrib/imgui/imgui.cpp

@@ -29,7 +29,8 @@ namespace Viewer
 	void AddSavedImageIfNecessary(const tString& savedFile);
 
 	// This function saves the picture to the filename specified.
-	bool SaveImageAs(Image&, const tString& outFile, int width, int height, float scale = 1.0f, Settings::SizeMode = Settings::SizeMode::SetWidthAndHeight);
+	bool SaveImageAs(Image&, const tString& outFile);
+	bool SaveResizeImageAs(Image&, const tString& outFile, int width, int height, float scale = 1.0f, Settings::SizeMode = Settings::SizeMode::SetWidthAndHeight);
 }
 
 
@@ -82,7 +83,35 @@ tString Viewer::DoSaveFiletype()
 }
 
 
-bool Viewer::SaveImageAs(Image& img, const tString& outFile, int width, int height, float scale, Settings::SizeMode sizeMode)
+bool Viewer::SaveImageAs(Image& img, const tString& outFile)
+{
+	// We make sure to maintain the loaded/unloaded state. This function may be called many times in succession
+	// so we don't want them all in memory at once by indiscriminantly loading them all.
+	bool imageLoaded = img.IsLoaded();
+	if (!imageLoaded)
+		img.Load();
+
+	tPicture* picture = img.GetCurrentPic();
+	if (!picture || !picture->IsValid())
+		return false;
+
+	bool success = false;
+	tImage::tPicture::tColourFormat colourFmt = picture->IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
+	if (Config.SaveFileType == 0)
+		success = picture->SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
+	else
+		success = picture->Save(outFile, colourFmt, Config.SaveFileJpegQuality);
+
+	if (success)
+		tPrintf("Saved image as %s\n", outFile.Chars());
+	else
+		tPrintf("Failed to save image %s\n", outFile.Chars());
+
+	return success;
+}
+
+
+bool Viewer::SaveResizeImageAs(Image& img, const tString& outFile, int width, int height, float scale, Settings::SizeMode sizeMode)
 {
 	// We make sure to maintain the loaded/unloaded state. This function may be called many times in succession
 	// so we don't want them all in memory at once by indiscriminantly loading them all.
@@ -158,76 +187,6 @@ void Viewer::DoSaveAsModalDialog(bool justOpened)
 	tPicture* picture = CurrImage->GetCurrentPic();
 	tAssert(picture);
 
-	static int dstW = 512;
-	static int dstH = 512;
-	int srcW = picture->GetWidth();
-	int srcH = picture->GetHeight();
-
-	if (justOpened)
-	{
-		dstW = picture->GetWidth();
-		dstH = picture->GetHeight();
-	}
-
-	float aspect = float(srcW) / float(srcH);
-	static bool lockAspect = true;
-
-	ImGui::PushItemWidth(100);
-	if (ImGui::InputInt("Width", &dstW) && lockAspect)
-		dstH = int( float(dstW) / aspect );
-	ImGui::PopItemWidth();
-	tiClampMin(dstW, 4); tiClampMin(dstH, 4);
-
-	static char lo[32];
-	static char hi[32];
-
-	int loP2W = tNextLowerPower2(dstW);		tiClampMin(loP2W, 4);	tsPrintf(lo, "w%d", loP2W);
-	int hiP2W = tNextHigherPower2(dstW);							tsPrintf(hi, "w%d", hiP2W);
-	ImGui::SameLine(); if (ImGui::Button(lo))
-		{ dstW = loP2W; if (lockAspect) dstH = int( float(dstW) / aspect ); }
-	ImGui::SameLine(); if (ImGui::Button(hi))
-		{ dstW = hiP2W; if (lockAspect) dstH = int( float(dstW) / aspect ); }
-	ImGui::SameLine(); ShowHelpMark("Final output width in pixels.\nIf dimensions match current no scaling.");
-
-	if (ImGui::Checkbox("Lock Aspect", &lockAspect) && lockAspect)
-	{
-		dstW = srcW;
-		dstH = srcH;
-	}
-
-	ImGui::PushItemWidth(100);
-	if (ImGui::InputInt("Height", &dstH) && lockAspect)
-		dstW = int( float(dstH) * aspect );
-	ImGui::PopItemWidth();
-	tiClampMin(dstW, 4); tiClampMin(dstH, 4);
-
-	int loP2H = tNextLowerPower2(dstH);		tiClampMin(loP2H, 4);	tsPrintf(lo, "h%d", loP2H);
-	int hiP2H = tNextHigherPower2(dstH);							tsPrintf(hi, "h%d", hiP2H);
-	ImGui::SameLine(); if (ImGui::Button(lo))
-		{ dstH = loP2H; if (lockAspect) dstW = int( float(dstH) * aspect ); }
-	ImGui::SameLine(); if (ImGui::Button(hi))
-		{ dstH = hiP2H; if (lockAspect) dstW = int( float(dstH) * aspect ); }
-	ImGui::SameLine(); ShowHelpMark("Final output height in pixels.\nIf dimensions match current no scaling.");
-
-	if (ImGui::Button("Reset"))
-	{
-		dstW = srcW;
-		dstH = srcH;
-	}
-
-	ImGui::Separator();
-
-	if ((dstW != srcW) || (dstH != srcH))
-	{
-		ImGui::Combo("Filter", &Config.ResampleFilter, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
-		ImGui::SameLine();
-		ShowHelpMark("Filtering method to use when resizing images.");
-
-		ImGui::Combo("Filter Edge Mode", &Config.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
-		ImGui::SameLine();
-		ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");	
-	}
-
 	tString extension = DoSaveFiletype();
 	ImGui::Separator();
 	tString destDir = DoSubFolder();
@@ -267,7 +226,7 @@ void Viewer::DoSaveAsModalDialog(bool justOpened)
 			}
 			else
 			{
-				bool ok = SaveImageAs(*CurrImage, outFile, dstW, dstH);
+				bool ok = SaveImageAs(*CurrImage, outFile);
 				if (ok)
 				{
 					// This gets a bit tricky. Image A may be saved as the same name as image B also in the list. We need to search for it.
@@ -298,7 +257,7 @@ void Viewer::DoSaveAsModalDialog(bool justOpened)
 		DoOverwriteFileModal(outFile, pressedOK, pressedCancel);
 		if (pressedOK)
 		{
-			bool ok = SaveImageAs(*CurrImage, outFile, dstW, dstH);
+			bool ok = SaveImageAs(*CurrImage, outFile);
 			if (ok)
 			{
 				Image* foundImage = FindImage(outFile);
@@ -523,7 +482,7 @@ void Viewer::SaveAllImages(const tString& destDir, const tString& extension, flo
 		tString baseName = tSystem::tGetFileBaseName(image->Filename);
 		tString outFile = destDir + tString(baseName) + extension;
 
-		bool ok = SaveImageAs(*image, outFile, width, height, scale, Settings::SizeMode(Config.SaveAllSizeMode));
+		bool ok = SaveResizeImageAs(*image, outFile, width, height, scale, Settings::SizeMode(Config.SaveAllSizeMode));
 		if (ok)
 		{
 			Image* foundImage = FindImage(outFile);

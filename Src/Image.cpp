@@ -614,6 +614,15 @@ void Image::Crop(int newWidth, int newHeight, int originX, int originY)
 }
 
 
+void Image::Resample(int newWidth, int newHeight, tImage::tResampleFilter filter, tImage::tResampleEdgeMode edgeMode)
+{
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->Resample(newWidth, newHeight, filter, edgeMode);
+
+	Dirty = true;
+}
+
+
 void Image::PrintInfo()
 {
 	tPixelFormat format = tPixelFormat::Invalid;
