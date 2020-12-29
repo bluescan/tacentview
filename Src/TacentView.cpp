@@ -1820,6 +1820,20 @@ bool Viewer::IsBasicViewAndBehaviour()
 }
 
 
+void Viewer::ZoomFit()
+{
+	ResetPan();
+	CurrZoomMode = ZoomMode::Fit;
+}
+
+
+void Viewer::ZoomDownscaleOnly()
+{
+	ResetPan();
+	CurrZoomMode = ZoomMode::DownscaleOnly;
+}
+
+
 void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int modifiers)
 {
 	if ((action != GLFW_PRESS) && (action != GLFW_REPEAT))

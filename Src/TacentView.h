@@ -71,6 +71,8 @@ namespace Viewer
 	void SortImages(Settings::SortKeyEnum, bool ascending);
 	bool DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin);
 	void SetWindowTitle();
+	void ZoomFit();
+	void ZoomDownscaleOnly();
 	tMath::tVector2 GetDialogOrigin(float index);
 
 	void ConvertScreenPosToImagePos

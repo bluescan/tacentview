@@ -27,22 +27,21 @@ void Viewer::DoResizeImageModalDialog(bool justOpened)
 	tAssert(CurrImage);
 	tPicture* picture = CurrImage->GetCurrentPic();
 	tAssert(picture);
-
-	static int dstW = 512;
-	static int dstH = 512;
 	int srcW = picture->GetWidth();
 	int srcH = picture->GetHeight();
-
-	if (justOpened)
-	{
-		dstW = picture->GetWidth();
-		dstH = picture->GetHeight();
-	}
 
 	//
 	// Dimension resize.
 	//
 	ImGui::Text("Dimension Resize");
+
+	static int dstW = 512;
+	static int dstH = 512;
+	if (justOpened)
+	{
+		dstW = picture->GetWidth();
+		dstH = picture->GetHeight();
+	}
 
 	float aspect = float(srcW) / float(srcH);
 	static bool lockAspect = true;
@@ -106,18 +105,108 @@ void Viewer::DoResizeImageModalDialog(bool justOpened)
 	{
 		if ((dstW != srcW) || (dstH != srcH))
 		{
+			CurrImage->Unbind();
 			CurrImage->Resample(dstW, dstH, tImage::tResampleFilter(Config.ResampleFilter), tImage::tResampleEdgeMode(Config.ResampleEdgeMode));
+			CurrImage->Bind();
 			Viewer::SetWindowTitle();
 		}
 		ImGui::CloseCurrentPopup();
 	}
 	
-	//ImGui::Separator();
-	//ImGui::NewLine();
+	ImGui::Separator();
+
 	//
 	// Aspect resize.
 	//
-	// ImGui::Text("Aspect Resize");
+	ImGui::Text("Aspect Resize");
+
+	ImGui::PushItemWidth(100);
+	ImGui::InputInt("Num", &Config.ResizeAspectNum);
+	ImGui::InputInt("Den", &Config.ResizeAspectDen);
+	ImGui::PopItemWidth();
+	tiClampMin(Config.ResizeAspectNum, 1); tiClampMin(Config.ResizeAspectDen, 1);
+
+	int presetIndex = 0;
+	if      ((Config.ResizeAspectNum == 2 ) && (Config.ResizeAspectDen == 1 ))	presetIndex = 1;
+	else if ((Config.ResizeAspectNum == 16) && (Config.ResizeAspectDen == 9 ))	presetIndex = 2;
+	else if ((Config.ResizeAspectNum == 16) && (Config.ResizeAspectDen == 10))	presetIndex = 3;
+	else if ((Config.ResizeAspectNum == 4 ) && (Config.ResizeAspectDen == 3 ))	presetIndex = 4;
+	else if ((Config.ResizeAspectNum == 1 ) && (Config.ResizeAspectDen == 1 ))	presetIndex = 5;
+	else if ((Config.ResizeAspectNum == 3 ) && (Config.ResizeAspectDen == 4 ))	presetIndex = 6;
+	else if ((Config.ResizeAspectNum == 10) && (Config.ResizeAspectDen == 16))	presetIndex = 7;
+	else if ((Config.ResizeAspectNum == 9 ) && (Config.ResizeAspectDen == 16))	presetIndex = 8;
+	else if ((Config.ResizeAspectNum == 1 ) && (Config.ResizeAspectDen == 2 ))	presetIndex = 9;
+	const char* presetAspects[] = { "Custom", "2:1", "16:9", "16:10", "4:3", "1:1", "3:4", "10:16", "9:16", "1:2" };
+	if (ImGui::Combo("Aspect", &presetIndex, presetAspects, tNumElements(presetAspects), tNumElements(presetAspects)))
+	{
+		switch (presetIndex)
+		{
+			case 0:																	break;
+			case 1:	Config.ResizeAspectNum = 2;		Config.ResizeAspectDen = 1;		break;
+			case 2:	Config.ResizeAspectNum = 16;	Config.ResizeAspectDen = 9;		break;
+			case 3:	Config.ResizeAspectNum = 16;	Config.ResizeAspectDen = 10;	break;
+			case 4:	Config.ResizeAspectNum = 4;		Config.ResizeAspectDen = 3;		break;
+			case 5:	Config.ResizeAspectNum = 1;		Config.ResizeAspectDen = 1;		break;
+			case 6:	Config.ResizeAspectNum = 3;		Config.ResizeAspectDen = 4;		break;
+			case 7:	Config.ResizeAspectNum = 10;	Config.ResizeAspectDen = 16;	break;
+			case 8:	Config.ResizeAspectNum = 9;		Config.ResizeAspectDen = 16;	break;
+			case 9:	Config.ResizeAspectNum = 1;		Config.ResizeAspectDen = 2;		break;
+		}
+	}
+
+	const char* resizeAspectModes[] = { "Crop Mode", "Letterbox Mode" };
+	ImGui::Combo("Resize Mode", &Config.ResizeAspectMode, resizeAspectModes, tNumElements(resizeAspectModes), tNumElements(resizeAspectModes));
+	ImGui::SameLine();
+	ShowHelpMark("Crop mode cuts off sides resulting in a filled image.\nLetterbox mode adds coloured borders resulting in whole image being visible.");
+	if (Config.ResizeAspectMode == 1)
+	{
+		tColourf floatCol(Config.ResizeAspectFillColour);
+		ImGui::ColorPicker4("Fill Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf);
+		Config.ResizeAspectFillColour.Set(floatCol);
+	}
+
+	if (ImGui::Button(" Reset Values ", tVector2(100, 0)))
+	{
+		Config.ResizeAspectNum = 16;
+		Config.ResizeAspectDen = 9;
+		Config.ResizeAspectMode = 0;
+		Config.ResizeAspectFillColour = tColouri::black;
+	}
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	if (ImGui::Button(" Apply ", tVector2(100, 0)))
+	{
+		int newH = srcH;
+		int newW = srcW;
+		float srcAspect = float(srcW)/float(srcH);
+		float dstAspect = float(Config.ResizeAspectNum)/float(Config.ResizeAspectDen);
+		if (Config.ResizeAspectMode == 0)
+		{
+			// Crop Mode.
+			if (dstAspect > srcAspect)
+				newH = tFloatToInt(float(newW) / dstAspect);
+			else if (dstAspect < srcAspect)
+				newW = tFloatToInt(float(newH) * dstAspect);
+		}
+		else
+		{
+			// Letterbox Mode.
+			if (dstAspect > srcAspect)
+				newW = tFloatToInt(float(newH) * dstAspect);
+			else if (dstAspect < srcAspect)
+				newH = tFloatToInt(float(newW) / dstAspect);
+		}
+
+		if ((newW != srcW) || (newH != srcH))
+		{
+			CurrImage->Unbind();
+			CurrImage->Crop(newW, newH, tPicture::Anchor::MiddleMiddle, Config.ResizeAspectFillColour);
+			CurrImage->Bind();
+			Viewer::SetWindowTitle();
+			Viewer::ZoomDownscaleOnly();
+		}
+		ImGui::CloseCurrentPopup();
+	}
 
 	ImGui::EndPopup();
 }

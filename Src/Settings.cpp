@@ -53,6 +53,10 @@ void Viewer::Settings::ResetBehaviourSettings()
 	SaveFileTargaRLE			= false;
 	SaveFileJpegQuality			= 95;
 	SaveAllSizeMode				= 0;
+	ResizeAspectNum				= 16;
+	ResizeAspectDen				= 9;
+	ResizeAspectMode			= 0;
+	ResizeAspectFillColour		= tColouri::black;
 	MaxImageMemMB				= 1024;
 	MaxCacheFiles				= 7000;
 	StrictLoading				= false;
@@ -123,6 +127,10 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(SaveFileTargaRLE);
 				ReadItem(SaveFileJpegQuality);
 				ReadItem(SaveAllSizeMode);
+				ReadItem(ResizeAspectNum);
+				ReadItem(ResizeAspectDen);
+				ReadItem(ResizeAspectMode);
+				ReadItem(ResizeAspectFillColour);
 				ReadItem(MaxImageMemMB);
 				ReadItem(MaxCacheFiles);
 				ReadItem(StrictLoading);
@@ -145,6 +153,9 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 	tiClamp(SaveFileType, 0, 3);
 	tiClamp(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
 	tiClamp(SortKey, 0, 3);
+	tiClampMin(ResizeAspectNum, 1);
+	tiClampMin(ResizeAspectDen, 1);
+	tiClamp(ResizeAspectMode, 0, 1);
 	tiClampMin(MaxImageMemMB, 256);
 	tiClampMin(MaxCacheFiles, 200);
 	tiClamp(SaveAllSizeMode, 0, 3);
@@ -186,6 +197,10 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(SaveFileTargaRLE);
 	WriteItem(SaveFileJpegQuality);
 	WriteItem(SaveAllSizeMode);
+	WriteItem(ResizeAspectNum);
+	WriteItem(ResizeAspectDen);
+	WriteItem(ResizeAspectMode);
+	WriteItem(ResizeAspectFillColour);
 	WriteItem(MaxImageMemMB);
 	WriteItem(MaxCacheFiles);
 	WriteItem(StrictLoading);

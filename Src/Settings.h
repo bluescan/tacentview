@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Foundation/tString.h>
+#include <Math/tColour.h>
 
 
 namespace Viewer
@@ -74,6 +75,10 @@ namespace Viewer
 			SetHeightRetainAspect
 		};
 		int SaveAllSizeMode;
+		int ResizeAspectNum;
+		int ResizeAspectDen;
+		int ResizeAspectMode;				// 0 = Crop Mode. 1 = Letterbox Mode.
+		tColouri ResizeAspectFillColour;
 		int MaxImageMemMB;					// Max image mem before unloading images.
 		int MaxCacheFiles;					// Max number of cache files before removing oldest.
 		bool StrictLoading;					// No attempt to display ill-formed images.

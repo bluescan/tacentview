@@ -614,6 +614,15 @@ void Image::Crop(int newWidth, int newHeight, int originX, int originY)
 }
 
 
+void Image::Crop(int newWidth, int newHeight, tPicture::Anchor anchor, const tColouri& fillColour)
+{
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->Crop(newWidth, newHeight, anchor, fillColour);
+
+	Dirty = true;
+}
+
+
 void Image::Resample(int newWidth, int newHeight, tImage::tResampleFilter filter, tImage::tResampleEdgeMode edgeMode)
 {
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())

@@ -81,6 +81,7 @@ public:
 	void Rotate90(bool antiClockWise);
 	void Flip(bool horizontal);
 	void Crop(int newWidth, int newHeight, int originX, int originY);
+	void Crop(int newWidth, int newHeight, tImage::tPicture::Anchor, const tColouri& fillColour);
 	void Resample(int newWidth, int newHeight, tImage::tResampleFilter filter, tImage::tResampleEdgeMode edgeMode);
 
 	// Since from outside this class you can save to any filename, we need the ability to clear the dirty flag.
