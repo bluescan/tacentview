@@ -22,25 +22,26 @@ using namespace tMath;
 using namespace tImage;
 
 
-void Viewer::DoResizeImageModalDialog(bool justOpened)
+namespace Viewer
+{
+	void DoWidthHeightInterface(int& srcW, int& srcH, int& dstW, int& dstH, bool& justOpened);
+	void DoSampleFilterInterface(int srcW, int srcH, int dstW, int dstH);
+	void DoAnchorInterface();	
+}
+
+
+void Viewer::DoWidthHeightInterface(int& srcW, int& srcH, int& dstW, int& dstH, bool& justOpened)
 {
 	tAssert(CurrImage);
 	tPicture* picture = CurrImage->GetCurrentPic();
 	tAssert(picture);
-	int srcW = picture->GetWidth();
-	int srcH = picture->GetHeight();
+	srcW = picture->GetWidth();
+	srcH = picture->GetHeight();
 
-	//
-	// Dimension resize.
-	//
-	ImGui::Text("Dimension Resize");
-
-	static int dstW = 512;
-	static int dstH = 512;
 	if (justOpened)
 	{
-		dstW = picture->GetWidth();
-		dstH = picture->GetHeight();
+		dstW = srcW;
+		dstH = srcH;
 	}
 
 	float aspect = float(srcW) / float(srcH);
@@ -54,7 +55,6 @@ void Viewer::DoResizeImageModalDialog(bool justOpened)
 
 	static char lo[32];
 	static char hi[32];
-
 	int loP2W = tNextLowerPower2(dstW);		tiClampMin(loP2W, 4);	tsPrintf(lo, "w%d", loP2W);
 	int hiP2W = tNextHigherPower2(dstW);							tsPrintf(hi, "w%d", hiP2W);
 	ImGui::SameLine(); if (ImGui::Button(lo))
@@ -82,26 +82,76 @@ void Viewer::DoResizeImageModalDialog(bool justOpened)
 	ImGui::SameLine(); if (ImGui::Button(hi))
 		{ dstH = hiP2H; if (lockAspect) dstW = int( float(dstH) * aspect ); }
 	ImGui::SameLine(); ShowHelpMark("Final output height in pixels.\nIf dimensions match current no scaling.");
+}
 
-	if ((dstW != srcW) || (dstH != srcH))
+
+void Viewer::DoSampleFilterInterface(int srcW, int srcH, int dstW, int dstH)
+{
+	if ((dstW == srcW) && (dstH == srcH))
+		return;
+
+	ImGui::Combo("Filter", &Config.ResampleFilter, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
+	ImGui::SameLine();
+	ShowHelpMark("Filtering method to use when resizing images.");
+
+	ImGui::Combo("Filter Edge Mode", &Config.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
+	ImGui::SameLine();
+	ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");	
+}
+
+
+void Viewer::DoAnchorInterface()
+{
+	static char* anchorNames[3*3] = { "TL", "TM", "TR", "ML", "MM", "MR", "BL", "BM", "BR" };
+	bool selectedAnchor[3*3] = { false, false, false, false, false, false, false, false, false };
+	selectedAnchor[Config.ResizeAnchor] = true;
+
+	ImGui::Text("\nAnchor");
+	for (int y = 0; y < 3; y++)
 	{
-		ImGui::Combo("Filter", &Config.ResampleFilter, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
-		ImGui::SameLine();
-		ShowHelpMark("Filtering method to use when resizing images.");
-
-		ImGui::Combo("Filter Edge Mode", &Config.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
-		ImGui::SameLine();
-		ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");	
+		for (int x = 0; x < 3; x++)
+		{
+			tVector2 alignment(0.5f, 0.5f);
+			char name[4];
+			tsPrintf(name, "%s", anchorNames[3*y + x]);
+			if (x > 0)
+				ImGui::SameLine();
+			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, alignment);
+			if (ImGui::Selectable(name, &selectedAnchor[3*y + x], ImGuiSelectableFlags_DontClosePopups, ImVec2(22, 22)))
+			{
+				tMemset(selectedAnchor, 0, sizeof(selectedAnchor));
+				Config.ResizeAnchor = 3*y+x;
+				selectedAnchor[Config.ResizeAnchor] = true;
+			}
+			ImGui::PopStyleVar();
+		}
 	}
+}
 
-	if (ImGui::Button("Reset Values", tVector2(100, 0)))
+
+void Viewer::DoResizeImageDialog(bool justOpened)
+{
+	int srcW, srcH;
+	static int dstW = 512;
+	static int dstH = 512;
+	DoWidthHeightInterface(srcW, srcH, dstW, dstH, justOpened);
+	DoSampleFilterInterface(srcW, srcH, dstW, dstH);
+
+	if (ImGui::Button("Reset", tVector2(100, 0)))
 	{
 		dstW = srcW;
 		dstH = srcH;
 	}
+
+	ImGui::NewLine();
+	ImGui::Separator();
+	ImGui::NewLine();
+	if (ImGui::Button("Cancel", tVector2(100, 0)))
+		ImGui::CloseCurrentPopup();
+
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("Apply", tVector2(100, 0)))
+	if (ImGui::Button("Resize", tVector2(100, 0)))
 	{
 		if ((dstW != srcW) || (dstH != srcH))
 		{
@@ -109,16 +159,70 @@ void Viewer::DoResizeImageModalDialog(bool justOpened)
 			CurrImage->Resample(dstW, dstH, tImage::tResampleFilter(Config.ResampleFilter), tImage::tResampleEdgeMode(Config.ResampleEdgeMode));
 			CurrImage->Bind();
 			Viewer::SetWindowTitle();
+			Viewer::ZoomDownscaleOnly();
 		}
-		// ImGui::CloseCurrentPopup();
+		ImGui::CloseCurrentPopup();
 	}
-	
-	ImGui::Separator();
+	ImGui::EndPopup();
+}
 
-	//
-	// Aspect resize.
-	//
-	ImGui::Text("Aspect Resize");
+
+void Viewer::DoResizeCanvasDialog(bool justOpened)
+{
+	int srcW, srcH;
+	static int dstW = 512;
+	static int dstH = 512;
+	DoWidthHeightInterface(srcW, srcH, dstW, dstH, justOpened);
+	DoSampleFilterInterface(srcW, srcH, dstW, dstH);
+	
+	if ((dstW > srcW) || (dstH > srcH))
+	{
+		tColourf floatCol(Config.ResizeFillColour);
+		ImGui::ColorPicker4("Fill Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf);
+		Config.ResizeFillColour.Set(floatCol);
+	}
+
+	DoAnchorInterface();
+
+	if (ImGui::Button("Reset", tVector2(100, 0)))
+	{
+		Config.ResizeAnchor		= 4;
+		Config.ResizeFillColour	= tColouri::black;
+		dstW = srcW;
+		dstH = srcH;
+	}
+
+	ImGui::NewLine();
+	ImGui::Separator();
+	ImGui::NewLine();
+	if (ImGui::Button("Cancel", tVector2(100, 0)))
+		ImGui::CloseCurrentPopup();
+
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	if (ImGui::Button("Resize", tVector2(100, 0)))
+	{
+		if ((dstW != srcW) || (dstH != srcH))
+		{
+			CurrImage->Unbind();
+			CurrImage->Crop(dstW, dstH, tPicture::Anchor(Config.ResizeAnchor), Config.ResizeFillColour);
+			CurrImage->Bind();
+			Viewer::SetWindowTitle();
+			Viewer::ZoomDownscaleOnly();
+		}
+		ImGui::CloseCurrentPopup();
+	}
+	ImGui::EndPopup();
+}
+
+
+void Viewer::DoResizeAspectDialog(bool justOpened)
+{
+	tAssert(CurrImage);
+	tPicture* picture = CurrImage->GetCurrentPic();
+	tAssert(picture);
+	int srcW = picture->GetWidth();
+	int srcH = picture->GetHeight();
 
 	ImGui::PushItemWidth(100);
 	ImGui::InputInt("Num", &Config.ResizeAspectNum);
@@ -154,83 +258,67 @@ void Viewer::DoResizeImageModalDialog(bool justOpened)
 		}
 	}
 
-	static bool selectedAnchor[3*3] = { false, false, false, false, true, false, false, false, false };
-	static char* anchorNames[3*3] = { "TL", "TM", "TR", "ML", "MM", "MR", "BL", "BM", "BR" };
-	static int anchorIndex = 4;
-
-	ImGui::Text("\nAnchor");
-	for (int y = 0; y < 3; y++)
-	{
-		for (int x = 0; x < 3; x++)
-		{
-			tVector2 alignment(0.5f, 0.5f);
-			char name[4];
-			tsPrintf(name, "%s", anchorNames[3*y + x]);
-			if (x > 0)
-				ImGui::SameLine();
-			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, alignment);
-			if (ImGui::Selectable(name, &selectedAnchor[3*y + x], ImGuiSelectableFlags_DontClosePopups, ImVec2(20, 20)))
-			{
-				tMemset(selectedAnchor, 0, sizeof(selectedAnchor));
-				anchorIndex = 3*y+x;
-				selectedAnchor[anchorIndex] = true;
-			}
-			ImGui::PopStyleVar();
-		}
-	}
-
+	DoAnchorInterface();
 	const char* resizeAspectModes[] = { "Crop Mode", "Letterbox Mode" };
 	ImGui::Combo("Resize Mode", &Config.ResizeAspectMode, resizeAspectModes, tNumElements(resizeAspectModes), tNumElements(resizeAspectModes));
 	ImGui::SameLine();
 	ShowHelpMark("Crop mode cuts off sides resulting in a filled image.\nLetterbox mode adds coloured borders resulting in whole image being visible.");
 	if (Config.ResizeAspectMode == 1)
 	{
-		tColourf floatCol(Config.ResizeAspectFillColour);
+		tColourf floatCol(Config.ResizeFillColour);
 		ImGui::ColorPicker4("Fill Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf);
-		Config.ResizeAspectFillColour.Set(floatCol);
+		Config.ResizeFillColour.Set(floatCol);
 	}
 
-	if (ImGui::Button(" Reset Values ", tVector2(100, 0)))
+	if (ImGui::Button("Reset Values", tVector2(100, 0)))
 	{
-		Config.ResizeAspectNum = 16;
-		Config.ResizeAspectDen = 9;
-		Config.ResizeAspectMode = 0;
-		Config.ResizeAspectFillColour = tColouri::black;
+		Config.ResizeAnchor		= 4;
+		Config.ResizeFillColour	= tColouri::black;
+		Config.ResizeAspectNum	= 16;
+		Config.ResizeAspectDen	= 9;
+		Config.ResizeAspectMode	= 0;
 	}
+
+	ImGui::NewLine();
+	ImGui::Separator();
+	ImGui::NewLine();
+	if (ImGui::Button("Cancel", tVector2(100, 0)))
+		ImGui::CloseCurrentPopup();
+
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button(" Apply ", tVector2(100, 0)))
+	if (ImGui::Button("Resize", tVector2(100, 0)))
 	{
-		int newH = srcH;
-		int newW = srcW;
+		int dstH = srcH;
+		int dstW = srcW;
 		float srcAspect = float(srcW)/float(srcH);
 		float dstAspect = float(Config.ResizeAspectNum)/float(Config.ResizeAspectDen);
 		if (Config.ResizeAspectMode == 0)
 		{
 			// Crop Mode.
 			if (dstAspect > srcAspect)
-				newH = tFloatToInt(float(newW) / dstAspect);
+				dstH = tFloatToInt(float(dstW) / dstAspect);
 			else if (dstAspect < srcAspect)
-				newW = tFloatToInt(float(newH) * dstAspect);
+				dstW = tFloatToInt(float(dstH) * dstAspect);
 		}
 		else
 		{
 			// Letterbox Mode.
 			if (dstAspect > srcAspect)
-				newW = tFloatToInt(float(newH) * dstAspect);
+				dstW = tFloatToInt(float(dstH) * dstAspect);
 			else if (dstAspect < srcAspect)
-				newH = tFloatToInt(float(newW) / dstAspect);
+				dstH = tFloatToInt(float(dstW) / dstAspect);
 		}
 
-		if ((newW != srcW) || (newH != srcH))
+		if ((dstW != srcW) || (dstH != srcH))
 		{
 			CurrImage->Unbind();
-			CurrImage->Crop(newW, newH, tPicture::Anchor(anchorIndex), Config.ResizeAspectFillColour);
+			CurrImage->Crop(dstW, dstH, tPicture::Anchor(Config.ResizeAnchor), Config.ResizeFillColour);
 			CurrImage->Bind();
 			Viewer::SetWindowTitle();
 			Viewer::ZoomDownscaleOnly();
 		}
-		// ImGui::CloseCurrentPopup();
+		ImGui::CloseCurrentPopup();
 	}
 
 	ImGui::EndPopup();

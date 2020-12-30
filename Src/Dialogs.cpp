@@ -134,21 +134,21 @@ void Viewer::ShowCheatSheetPopup(bool* popen)
 		ImGui::Text("LMB-Click");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Set Colour Reticle Pos");
 		ImGui::Text("RMB-Drag");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Pan Image");
 		ImGui::Text("Alt-F4");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Quit");
-		ImGui::Text("Ctrl-S");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Save As...");
-		ImGui::Text("Alt-S");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Save All...");
-
 		ImGui::Text("Ctrl <");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Flip Vertically");
 		ImGui::Text("Ctrl >");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Flip Horizontally");
 		ImGui::Text("<");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Rotate Anti-Clockwise");
 		ImGui::Text(">");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Rotate Clockwise");
 		ImGui::Text("/");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Crop");
-
 		ImGui::Text("R");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Resize Image");
+		ImGui::Text("Ctrl-R");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Resize Canvas");
+		ImGui::Text("Alt-R");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Resize Aspect");
 		ImGui::Text("I");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Image Details");
 		ImGui::Text("T");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Tile");
 		ImGui::Text("M");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Menu Bar");
 		ImGui::Text("N");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Nav Bar");
 		ImGui::Text("S");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Slideshow Counddown");
+		ImGui::Text("Ctrl-S");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Save As...");
+		ImGui::Text("Alt-S");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Save All...");
 		ImGui::Text("B");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Basic Mode");
 		ImGui::Text("F");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom Fit");
 		ImGui::Text("L");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Show Debug Log");

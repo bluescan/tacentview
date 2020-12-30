@@ -111,6 +111,8 @@ namespace Viewer
 	bool Request_SaveAsModal					= false;
 	bool Request_SaveAllModal					= false;
 	bool Request_ResizeImageModal				= false;
+	bool Request_ResizeCanvasModal				= false;
+	bool Request_ResizeAspectModal				= false;
 	bool Request_ContactSheetModal				= false;
 	bool Request_DeleteFileModal				= false;
 	bool Request_DeleteFileNoRecycleModal		= false;
@@ -1290,7 +1292,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		//
 		// Edit Menu.
 		//
-		bool resizeImagePressed = Request_ResizeImageModal;			Request_ResizeImageModal = false;
+		bool resizeImagePressed		= Request_ResizeImageModal;		Request_ResizeImageModal = false;
+		bool resizeCanvasPressed	= Request_ResizeCanvasModal;	Request_ResizeCanvasModal = false;
+		bool resizeAspectPressed	= Request_ResizeAspectModal;	Request_ResizeAspectModal = false;
 		if (ImGui::BeginMenu("Edit"))
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
@@ -1329,8 +1333,14 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			ImGui::MenuItem("Crop...", "/", &CropMode);
 
-			if (ImGui::MenuItem("Resize...", "R") && CurrImage)
+			if (ImGui::MenuItem("Resize Image...", "R") && CurrImage)
 				resizeImagePressed = true;
+
+			if (ImGui::MenuItem("Resize Canvas...", "Ctrl-R") && CurrImage)
+				resizeCanvasPressed = true;
+
+			if (ImGui::MenuItem("Resize Aspect...", "Alt-R") && CurrImage)
+				resizeAspectPressed = true;
 
 			ImGui::Separator();
 
@@ -1342,12 +1352,24 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 
+		// The unused isOpen bools are just so we get close buttons in ImGui.
 		if (resizeImagePressed)
-			ImGui::OpenPopup("Resize");
-		// The unused isOpenSaveAs bool is just so we get a close button in ImGui. 
+			ImGui::OpenPopup("Resize Image");
 		bool isOpenResizeImage = true;
-		if (ImGui::BeginPopupModal("Resize", &isOpenResizeImage, ImGuiWindowFlags_AlwaysAutoResize))
-			DoResizeImageModalDialog(resizeImagePressed);
+		if (ImGui::BeginPopupModal("Resize Image", &isOpenResizeImage, ImGuiWindowFlags_AlwaysAutoResize))
+			DoResizeImageDialog(resizeImagePressed);
+
+		if (resizeCanvasPressed)
+			ImGui::OpenPopup("Resize Canvas");
+		bool isOpenResizeCanvas = true;
+		if (ImGui::BeginPopupModal("Resize Canvas", &isOpenResizeCanvas, ImGuiWindowFlags_AlwaysAutoResize))
+			DoResizeCanvasDialog(resizeCanvasPressed);
+
+		if (resizeAspectPressed)
+			ImGui::OpenPopup("Resize Aspect");
+		bool isOpenResizeAspect = true;
+		if (ImGui::BeginPopupModal("Resize Aspect", &isOpenResizeAspect, ImGuiWindowFlags_AlwaysAutoResize))
+			DoResizeAspectDialog(resizeAspectPressed);
 
 		ImGui::PopStyleVar();
 
@@ -2028,7 +2050,12 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case GLFW_KEY_R:			// Resize Image.
 			if (!CurrImage)
 				break;
-			Request_ResizeImageModal = true;
+			if (modifiers == GLFW_MOD_CONTROL)
+				Request_ResizeCanvasModal = true;
+			else if (modifiers == GLFW_MOD_ALT)
+				Request_ResizeAspectModal = true;
+			else
+				Request_ResizeImageModal = true;
 			break;
 
 		case GLFW_KEY_S:			// SaveAs and SaveAll.

@@ -19,5 +19,7 @@
 
 namespace Viewer
 {
-	void DoResizeImageModalDialog(bool justOpened);
+	void DoResizeImageDialog(bool justOpened);
+	void DoResizeCanvasDialog(bool justOpened);
+	void DoResizeAspectDialog(bool justOpened);
 }
