@@ -1,3 +1,8 @@
+Althought we don't use IJG directly, LibJpegTurbo does,
+so we include the IJG licence here:
+
+-----------------------------------------------------------------------------
+
 In plain English:
 
 1. We don't promise that this software works.  (But if you find any bugs,
