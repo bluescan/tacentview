@@ -157,6 +157,7 @@ void Viewer::DoResizeImageDialog(bool justOpened)
 	DoWidthHeightInterface(srcW, srcH, dstW, dstH, justOpened);
 	DoSampleFilterInterface(srcW, srcH, dstW, dstH);
 
+	ImGui::NewLine();
 	if (ImGui::Button("Reset", tVector2(100, 0)))
 	{
 		dstW = srcW;
@@ -195,15 +196,15 @@ void Viewer::DoResizeCanvasDialog(bool justOpened)
 	DoWidthHeightInterface(srcW, srcH, dstW, dstH, justOpened);
 	DoSampleFilterInterface(srcW, srcH, dstW, dstH);
 	
+	DoAnchorInterface();
 	if ((dstW > srcW) || (dstH > srcH))
 	{
 		tColourf floatCol(Config.CropFillColour);
-		ImGui::ColorPicker4("Fill Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf);
+		ImGui::ColorEdit4("Fill Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf);
 		Config.CropFillColour.Set(floatCol);
 	}
 
-	DoAnchorInterface();
-
+	ImGui::NewLine();
 	if (ImGui::Button("Reset", tVector2(100, 0)))
 	{
 		Config.CropAnchor		= 4;
@@ -271,20 +272,21 @@ void Viewer::DoResizeAspectDialog(bool justOpened)
 		}
 	}
 
-	DoAnchorInterface();
-
 	const char* resizeAspectModes[] = { "Crop Mode", "Letterbox Mode" };
 	ImGui::Combo("Resize Mode", &Config.ResizeAspectMode, resizeAspectModes, tNumElements(resizeAspectModes), tNumElements(resizeAspectModes));
 	ImGui::SameLine();
 	ShowHelpMark("Crop mode cuts off sides resulting in a filled image.\nLetterbox mode adds coloured borders resulting in whole image being visible.");
+
+	DoAnchorInterface();
 	if (Config.ResizeAspectMode == 1)
 	{
 		tColourf floatCol(Config.CropFillColour);
-		ImGui::ColorPicker4("Fill Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf);
+		ImGui::ColorEdit4("Fill Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf);
 		Config.CropFillColour.Set(floatCol);
 	}
 
-	if (ImGui::Button("Reset Values", tVector2(100, 0)))
+	ImGui::NewLine();
+	if (ImGui::Button("Reset", tVector2(100, 0)))
 	{
 		Config.CropAnchor		= 4;
 		Config.CropFillColour	= tColouri::black;
