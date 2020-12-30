@@ -186,7 +186,6 @@ void Viewer::ShowAboutPopup(bool* popen)
 		// ImGui::Text("GLAD V %d.%d", GLVersion.major, GLVersion.minor);
 
 		ImGui::Text("GLFW V %d.%d.%d", glfwMajor, glfwMinor, glfwRev);
-		ImGui::Text("CxImage");
 		ImGui::Text("nVidia Texture Tools");
 		ImGui::Text("Ionicons");
 		ImGui::Text("Roboto Google Font");
