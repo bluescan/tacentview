@@ -102,7 +102,7 @@ void Viewer::DoSampleFilterInterface(int srcW, int srcH, int dstW, int dstH)
 
 void Viewer::DoAnchorInterface()
 {
-	static char* anchorNames[3*3] = { "TL", "TM", "TR", "ML", "MM", "MR", "BL", "BM", "BR" };
+	static const char* anchorNames[3*3] = { "TL", "TM", "TR", "ML", "MM", "MR", "BL", "BM", "BR" };
 	bool selectedAnchor[3*3] = { false, false, false, false, false, false, false, false, false };
 	selectedAnchor[Config.ResizeAnchor] = true;
 
