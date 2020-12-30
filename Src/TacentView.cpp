@@ -1081,7 +1081,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	
 	// Show the big demo window. You can browse its code to learn more about Dear ImGui.
 	static bool showDemoWindow = false;
-	//static bool showDemoWindow = true;
+	// static bool showDemoWindow = true;
 	if (showDemoWindow)
 		ImGui::ShowDemoWindow(&showDemoWindow);
 

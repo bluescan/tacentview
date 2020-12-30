@@ -110,7 +110,7 @@ void Viewer::DoResizeImageModalDialog(bool justOpened)
 			CurrImage->Bind();
 			Viewer::SetWindowTitle();
 		}
-		ImGui::CloseCurrentPopup();
+		// ImGui::CloseCurrentPopup();
 	}
 	
 	ImGui::Separator();
@@ -151,6 +151,31 @@ void Viewer::DoResizeImageModalDialog(bool justOpened)
 			case 7:	Config.ResizeAspectNum = 10;	Config.ResizeAspectDen = 16;	break;
 			case 8:	Config.ResizeAspectNum = 9;		Config.ResizeAspectDen = 16;	break;
 			case 9:	Config.ResizeAspectNum = 1;		Config.ResizeAspectDen = 2;		break;
+		}
+	}
+
+	static bool selectedAnchor[3*3] = { false, false, false, false, true, false, false, false, false };
+	static char* anchorNames[3*3] = { "TL", "TM", "TR", "ML", "MM", "MR", "BL", "BM", "BR" };
+	static int anchorIndex = 4;
+
+	ImGui::Text("\nAnchor");
+	for (int y = 0; y < 3; y++)
+	{
+		for (int x = 0; x < 3; x++)
+		{
+			tVector2 alignment(0.5f, 0.5f);
+			char name[4];
+			tsPrintf(name, "%s", anchorNames[3*y + x]);
+			if (x > 0)
+				ImGui::SameLine();
+			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, alignment);
+			if (ImGui::Selectable(name, &selectedAnchor[3*y + x], ImGuiSelectableFlags_DontClosePopups, ImVec2(20, 20)))
+			{
+				tMemset(selectedAnchor, 0, sizeof(selectedAnchor));
+				anchorIndex = 3*y+x;
+				selectedAnchor[anchorIndex] = true;
+			}
+			ImGui::PopStyleVar();
 		}
 	}
 
@@ -200,12 +225,12 @@ void Viewer::DoResizeImageModalDialog(bool justOpened)
 		if ((newW != srcW) || (newH != srcH))
 		{
 			CurrImage->Unbind();
-			CurrImage->Crop(newW, newH, tPicture::Anchor::MiddleMiddle, Config.ResizeAspectFillColour);
+			CurrImage->Crop(newW, newH, tPicture::Anchor(anchorIndex), Config.ResizeAspectFillColour);
 			CurrImage->Bind();
 			Viewer::SetWindowTitle();
 			Viewer::ZoomDownscaleOnly();
 		}
-		ImGui::CloseCurrentPopup();
+		// ImGui::CloseCurrentPopup();
 	}
 
 	ImGui::EndPopup();
