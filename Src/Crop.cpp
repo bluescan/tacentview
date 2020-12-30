@@ -347,7 +347,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvmarg, const t
 			newH = tClampMin(newH, 4);
 
 			CurrImage->Unbind();
-			CurrImage->Crop(newW, newH, minX, minY);
+			CurrImage->Crop(newW, newH, minX, minY, tColouri::transparent);
 			CurrImage->Bind();
 			Viewer::SetWindowTitle();
 			CropMode = false;

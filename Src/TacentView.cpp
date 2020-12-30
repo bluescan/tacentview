@@ -126,6 +126,8 @@ namespace Viewer
 	bool PendingTransparentWorkArea				= false;
 	int DragAnchorX								= 0;
 	int DragAnchorY								= 0;
+	int CursorX									= 0;
+	int CursorY									= 0;
 
 	enum class ZoomMode
 	{
@@ -831,7 +833,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	float draww = 1.0f;		float drawh = 1.0f;
 	float iw = 1.0f;		float ih = 1.0f;
 	float hmargin = 0.0f;	float vmargin = 0.0f;
-	static int imgx = 0;	static int imgy = 0;
+//	static int imgx = 0;	static int imgy = 0;
 
 	float uvUOff = 0.0f;
 	float uvVOff = 0.0f;
@@ -977,11 +979,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		tVector2 scrCursorPos(ReticleX, ReticleY);
 		ConvertScreenPosToImagePos
 		(
-			imgx, imgy, scrCursorPos, tVector4(l, r, t, b),
+			CursorX, CursorY, scrCursorPos, tVector4(l, r, t, b),
 			tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
 		);
 
-		PixelColour = CurrImage->GetPixel(imgx, imgy);
+		PixelColour = CurrImage->GetPixel(CursorX, CursorY);
 
 		// Show the reticle.
 		glDisable(GL_TEXTURE_2D);
@@ -1019,13 +1021,13 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 				tVector2 scrPosBL;
 				ConvertImagePosToScreenPos
 				(
-					scrPosBL, imgx, imgy, tVector4(l, r, t, b),
+					scrPosBL, CursorX, CursorY, tVector4(l, r, t, b),
 					tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
 				);
 				tVector2 scrPosTR;
 				ConvertImagePosToScreenPos
 				(
-					scrPosTR, imgx+1, imgy+1, tVector4(l, r, t, b),
+					scrPosTR, CursorX+1, CursorY+1, tVector4(l, r, t, b),
 					tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
 				);
 
@@ -1644,7 +1646,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	// We allow the overlay and cheatsheet in fullscreen.
 	if (Config.ShowImageDetails)
-		ShowImageDetailsOverlay(&Config.ShowImageDetails, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), imgx, imgy, ZoomPercent);
+		ShowImageDetailsOverlay(&Config.ShowImageDetails, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), CursorX, CursorY, ZoomPercent);
 
 	if (Config.ContentViewShow)
 		ShowContentViewDialog(&Config.ContentViewShow);

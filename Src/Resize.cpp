@@ -26,7 +26,8 @@ namespace Viewer
 {
 	void DoWidthHeightInterface(int& srcW, int& srcH, int& dstW, int& dstH, bool& justOpened);
 	void DoSampleFilterInterface(int srcW, int srcH, int dstW, int dstH);
-	void DoAnchorInterface();	
+	void DoAnchorInterface();
+	void DoCrop(int srcW, int srcH, int dstW, int dstH);
 }
 
 
@@ -102,29 +103,48 @@ void Viewer::DoSampleFilterInterface(int srcW, int srcH, int dstW, int dstH)
 
 void Viewer::DoAnchorInterface()
 {
-	static const char* anchorNames[3*3] = { "TL", "TM", "TR", "ML", "MM", "MR", "BL", "BM", "BR" };
-	bool selectedAnchor[3*3] = { false, false, false, false, false, false, false, false, false };
-	selectedAnchor[Config.ResizeAnchor] = true;
+	static const char* shortNames[3*3] = { "TL", "TM", "TR", "ML", "MM", "MR", "BL", "BM", "BR" };
+	static const char* longNames[3*3] = { "Top-Left", "Top-Middle", "Top-Right", "Middle-Left", "Middle", "Middle-Right", "Bottom-Left", "Bottom-Middle", "Bottom-Right" };
 
-	ImGui::Text("\nAnchor");
+	ImGui::Text("\nAnchor: %s", (Config.CropAnchor == -1) ? "Cursor Position" : longNames[Config.CropAnchor]);
+	ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, tVector2(0.5f, 0.5f));
 	for (int y = 0; y < 3; y++)
 	{
 		for (int x = 0; x < 3; x++)
 		{
-			tVector2 alignment(0.5f, 0.5f);
+			int index = 3*y + x;
 			char name[4];
-			tsPrintf(name, "%s", anchorNames[3*y + x]);
+			tsPrintf(name, "%s", shortNames[index]);
 			if (x > 0)
 				ImGui::SameLine();
-			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, alignment);
-			if (ImGui::Selectable(name, &selectedAnchor[3*y + x], ImGuiSelectableFlags_DontClosePopups, ImVec2(22, 22)))
-			{
-				tMemset(selectedAnchor, 0, sizeof(selectedAnchor));
-				Config.ResizeAnchor = 3*y+x;
-				selectedAnchor[Config.ResizeAnchor] = true;
-			}
-			ImGui::PopStyleVar();
+
+			bool selected = (Config.CropAnchor == index);
+			if (ImGui::Selectable(name, &selected, ImGuiSelectableFlags_DontClosePopups, ImVec2(22, 22)))
+				Config.CropAnchor = !selected ? -1 : index;
 		}
+	}
+	ImGui::PopStyleVar();
+}
+
+
+void Viewer::DoCrop(int srcW, int srcH, int dstW, int dstH)
+{
+	if ((dstW != srcW) || (dstH != srcH))
+	{
+		CurrImage->Unbind();
+		if (Config.CropAnchor == -1)
+		{
+			int originX = (Viewer::CursorX * (srcW - dstW)) / srcW;
+			int originY = (Viewer::CursorY * (srcH - dstH)) / srcH;
+			CurrImage->Crop(dstW, dstH, originX, originY, Config.CropFillColour);
+		}
+		else
+		{
+			CurrImage->Crop(dstW, dstH, tPicture::Anchor(Config.CropAnchor), Config.CropFillColour);
+		}
+		CurrImage->Bind();
+		Viewer::SetWindowTitle();
+		Viewer::ZoomDownscaleOnly();
 	}
 }
 
@@ -177,17 +197,17 @@ void Viewer::DoResizeCanvasDialog(bool justOpened)
 	
 	if ((dstW > srcW) || (dstH > srcH))
 	{
-		tColourf floatCol(Config.ResizeFillColour);
+		tColourf floatCol(Config.CropFillColour);
 		ImGui::ColorPicker4("Fill Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf);
-		Config.ResizeFillColour.Set(floatCol);
+		Config.CropFillColour.Set(floatCol);
 	}
 
 	DoAnchorInterface();
 
 	if (ImGui::Button("Reset", tVector2(100, 0)))
 	{
-		Config.ResizeAnchor		= 4;
-		Config.ResizeFillColour	= tColouri::black;
+		Config.CropAnchor		= 4;
+		Config.CropFillColour	= tColouri::black;
 		dstW = srcW;
 		dstH = srcH;
 	}
@@ -202,14 +222,7 @@ void Viewer::DoResizeCanvasDialog(bool justOpened)
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 	if (ImGui::Button("Resize", tVector2(100, 0)))
 	{
-		if ((dstW != srcW) || (dstH != srcH))
-		{
-			CurrImage->Unbind();
-			CurrImage->Crop(dstW, dstH, tPicture::Anchor(Config.ResizeAnchor), Config.ResizeFillColour);
-			CurrImage->Bind();
-			Viewer::SetWindowTitle();
-			Viewer::ZoomDownscaleOnly();
-		}
+		DoCrop(srcW, srcH, dstW, dstH);
 		ImGui::CloseCurrentPopup();
 	}
 	ImGui::EndPopup();
@@ -259,21 +272,22 @@ void Viewer::DoResizeAspectDialog(bool justOpened)
 	}
 
 	DoAnchorInterface();
+
 	const char* resizeAspectModes[] = { "Crop Mode", "Letterbox Mode" };
 	ImGui::Combo("Resize Mode", &Config.ResizeAspectMode, resizeAspectModes, tNumElements(resizeAspectModes), tNumElements(resizeAspectModes));
 	ImGui::SameLine();
 	ShowHelpMark("Crop mode cuts off sides resulting in a filled image.\nLetterbox mode adds coloured borders resulting in whole image being visible.");
 	if (Config.ResizeAspectMode == 1)
 	{
-		tColourf floatCol(Config.ResizeFillColour);
+		tColourf floatCol(Config.CropFillColour);
 		ImGui::ColorPicker4("Fill Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf);
-		Config.ResizeFillColour.Set(floatCol);
+		Config.CropFillColour.Set(floatCol);
 	}
 
 	if (ImGui::Button("Reset Values", tVector2(100, 0)))
 	{
-		Config.ResizeAnchor		= 4;
-		Config.ResizeFillColour	= tColouri::black;
+		Config.CropAnchor		= 4;
+		Config.CropFillColour	= tColouri::black;
 		Config.ResizeAspectNum	= 16;
 		Config.ResizeAspectDen	= 9;
 		Config.ResizeAspectMode	= 0;
@@ -310,14 +324,7 @@ void Viewer::DoResizeAspectDialog(bool justOpened)
 				dstH = tFloatToInt(float(dstW) / dstAspect);
 		}
 
-		if ((dstW != srcW) || (dstH != srcH))
-		{
-			CurrImage->Unbind();
-			CurrImage->Crop(dstW, dstH, tPicture::Anchor(Config.ResizeAnchor), Config.ResizeFillColour);
-			CurrImage->Bind();
-			Viewer::SetWindowTitle();
-			Viewer::ZoomDownscaleOnly();
-		}
+		DoCrop(srcW, srcH, dstW, dstH);
 		ImGui::CloseCurrentPopup();
 	}
 

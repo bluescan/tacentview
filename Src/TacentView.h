@@ -47,6 +47,8 @@ namespace Viewer
 	extern bool DeleteAllCacheFilesOnExit;
 	extern bool PendingTransparentWorkArea;
 	extern double SlideshowCountdown;
+	extern int CursorX;
+	extern int CursorY;
 
 	extern const tMath::tVector4 ColourEnabledTint;
 	extern const tMath::tVector4 ColourDisabledTint;

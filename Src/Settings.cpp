@@ -53,8 +53,8 @@ void Viewer::Settings::ResetBehaviourSettings()
 	SaveFileTargaRLE			= false;
 	SaveFileJpegQuality			= 95;
 	SaveAllSizeMode				= 0;
-	ResizeAnchor				= 4;
-	ResizeFillColour			= tColouri::black;
+	CropAnchor					= 4;
+	CropFillColour				= tColouri::black;
 	ResizeAspectNum				= 16;
 	ResizeAspectDen				= 9;
 	ResizeAspectMode			= 0;
@@ -128,8 +128,8 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(SaveFileTargaRLE);
 				ReadItem(SaveFileJpegQuality);
 				ReadItem(SaveAllSizeMode);
-				ReadItem(ResizeAnchor);
-				ReadItem(ResizeFillColour);
+				ReadItem(CropAnchor);
+				ReadItem(CropFillColour);
 				ReadItem(ResizeAspectNum);
 				ReadItem(ResizeAspectDen);
 				ReadItem(ResizeAspectMode);
@@ -155,6 +155,7 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 	tiClamp(SaveFileType, 0, 3);
 	tiClamp(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
 	tiClamp(SortKey, 0, 3);
+	tiClamp(CropAnchor, -1, 9);
 	tiClampMin(ResizeAspectNum, 1);
 	tiClampMin(ResizeAspectDen, 1);
 	tiClamp(ResizeAspectMode, 0, 1);
@@ -199,8 +200,8 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(SaveFileTargaRLE);
 	WriteItem(SaveFileJpegQuality);
 	WriteItem(SaveAllSizeMode);
-	WriteItem(ResizeAnchor);
-	WriteItem(ResizeFillColour);
+	WriteItem(CropAnchor);
+	WriteItem(CropFillColour);
 	WriteItem(ResizeAspectNum);
 	WriteItem(ResizeAspectDen);
 	WriteItem(ResizeAspectMode);

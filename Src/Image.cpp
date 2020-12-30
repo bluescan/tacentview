@@ -605,10 +605,10 @@ void Image::Flip(bool horizontal)
 }
 
 
-void Image::Crop(int newWidth, int newHeight, int originX, int originY)
+void Image::Crop(int newWidth, int newHeight, int originX, int originY, const tColouri& fillColour)
 {
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
-		picture->Crop(newWidth, newHeight, originX, originY);
+		picture->Crop(newWidth, newHeight, originX, originY, fillColour);
 
 	Dirty = true;
 }

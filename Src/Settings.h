@@ -75,8 +75,8 @@ namespace Viewer
 			SetHeightRetainAspect
 		};
 		int SaveAllSizeMode;
-		int ResizeAnchor;					// E [0, 9] with 4 being the default (middle).
-		tColouri ResizeFillColour;
+		int CropAnchor;						// E [-1, 9] with 4 being the default (middle), 0 being top-left, and -1 being 'cursor position'.
+		tColouri CropFillColour;
 		int ResizeAspectNum;
 		int ResizeAspectDen;
 		int ResizeAspectMode;				// 0 = Crop Mode. 1 = Letterbox Mode.
