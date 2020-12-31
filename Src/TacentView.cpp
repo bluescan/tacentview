@@ -132,15 +132,6 @@ namespace Viewer
 	int CursorY									= 0;
 	float RotateAnglePreview					= 0.0f;
 
-	float Left									= 0.0f;
-	float Right									= 0.0f;
-	float Top									= 0.0f;
-	float Bottom								= 0.0f;
-	float UOff									= 0.0f;
-	float VOff									= 0.0f;
-	float UMarg									= 0.0f;
-	float VMarg									= 0.0f;
-
 	enum class ZoomMode
 	{
 		User,
@@ -205,10 +196,6 @@ namespace Viewer
 	void OnNextPart();
 	bool OnSkipBegin();
 	bool OnSkipEnd();
-	void OnCursorLeft();
-	void OnCursorRight();
-	void OnCursorUp();
-	void OnCursorDown();
 	void ResetPan(bool resetX = true, bool resetY = true);
 	void ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan);
 	void SetBasicViewAndBehaviour();
@@ -216,6 +203,16 @@ namespace Viewer
 	tString FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles);	// Returns the image folder.
 	tuint256 ComputeImagesHash(const tList<tStringItem>& files);
 	int RemoveOldCacheFiles(const tString& cacheDir);						// Returns num removed.
+
+	enum CursorMove
+	{
+		CursorMove_None,
+		CursorMove_Left,
+		CursorMove_Right,
+		CursorMove_Up,
+		CursorMove_Down
+	};
+	CursorMove RequestCursorMove = CursorMove_None;
 
 	void Update(GLFWwindow* window, double dt, bool dopoll = true);
 	void WindowRefreshFun(GLFWwindow* window)																			{ Update(window, 0.0, false); }
@@ -560,38 +557,6 @@ bool Viewer::OnSkipEnd()
 }
 
 
-void Viewer::OnCursorLeft()
-{
-	CursorX--;			tiClamp(CursorX, 0, CurrImage->GetWidth() - 1);
-	tVector2 ret;		ConvertImagePosToScreenPos(ret, CursorX, CursorY, tVector4(Left, Right, Top, Bottom), tVector2(UMarg, VMarg), tVector2(UOff, VOff));
-	ReticleX = ret.x;	ReticleY = ret.y;
-}
-
-
-void Viewer::OnCursorRight()
-{
-	CursorX++;			tiClamp(CursorX, 0, CurrImage->GetWidth() - 1);
-	tVector2 ret;		ConvertImagePosToScreenPos(ret, CursorX, CursorY, tVector4(Left, Right, Top, Bottom), tVector2(UMarg, VMarg), tVector2(UOff, VOff));
-	ReticleX = ret.x;	ReticleY = ret.y;
-}
-
-
-void Viewer::OnCursorUp()
-{
-	CursorY++;			tiClamp(CursorY, 0, CurrImage->GetHeight() - 1);
-	tVector2 ret;		ConvertImagePosToScreenPos(ret, CursorX, CursorY, tVector4(Left, Right, Top, Bottom), tVector2(UMarg, VMarg), tVector2(UOff, VOff));
-	ReticleX = ret.x;	ReticleY = ret.y;
-}
-
-
-void Viewer::OnCursorDown()
-{
-	CursorY--;			tiClamp(CursorY, 0, CurrImage->GetHeight() - 1);
-	tVector2 ret;		ConvertImagePosToScreenPos(ret, CursorX, CursorY, tVector4(Left, Right, Top, Bottom), tVector2(UMarg, VMarg), tVector2(UOff, VOff));
-	ReticleX = ret.x;	ReticleY = ret.y;
-}
-
-
 void Viewer::ShowHelpMark(const char* desc)
 {
 	ImGui::TextDisabled("[?]");
@@ -878,9 +843,19 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	glLoadIdentity();
 	glOrtho(0, workAreaW, 0, workAreaH, -1, 1);
 	glMatrixMode(GL_MODELVIEW);
-	float draww = 1.0f;		float drawh = 1.0f;
-	float iw = 1.0f;		float ih = 1.0f;
-	float hmargin = 0.0f;	float vmargin = 0.0f;
+	float draww		= 1.0f;		float drawh		= 1.0f;
+	float iw 		= 1.0f;		float ih		= 1.0f;
+	float hmargin	= 0.0f;		float vmargin	= 0.0f;
+
+	float left		= 0.0f;
+	float right		= 0.0f;
+	float top		= 0.0f;
+	float bottom	= 0.0f;
+	float uoff		= 0.0f;
+	float voff		= 0.0f;
+	float umarg		= 0.0f;
+	float vmarg		= 0.0f;
+
 	double mouseXd, mouseYd;
 	glfwGetCursorPos(window, &mouseXd, &mouseYd);
 
@@ -917,10 +892,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 
 		// w and h are the image width and height. draww and drawh are the drawable area width and height.
-		Left	= tMath::tRound(hmargin);
-		Right	= tMath::tRound(hmargin+draww);
-		Bottom	= tMath::tRound(vmargin);
-		Top		= tMath::tRound(vmargin+drawh);
+		left	= tMath::tRound(hmargin);
+		right	= tMath::tRound(hmargin+draww);
+		bottom	= tMath::tRound(vmargin);
+		top		= tMath::tRound(vmargin+drawh);
 
 		if (CurrZoomMode == ZoomMode::DownscaleOnly)
 		{
@@ -940,18 +915,19 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (w < draww)
 		{
 			float offsetW = tMath::tRound((draww - w) / 2.0f);
-			Left += offsetW;
-			Right -= offsetW;
+			left	+= offsetW;
+			right	-= offsetW;
+
 			float offsetH = tMath::tRound((drawh - h) / 2.0f);
-			Bottom += offsetH;
-			Top -= offsetH;
+			bottom	+= offsetH;
+			top		-= offsetH;
 		}
 		else
 		{
 			float propw = draww / w;
-			UMarg = (1.0f - propw)/2.0f;
+			umarg = (1.0f - propw)/2.0f;
 			float proph = drawh / h;
-			VMarg = (1.0f - proph)/2.0f;
+			vmarg = (1.0f - proph)/2.0f;
 		}
 
 		// Modify the UVs here to magnify.
@@ -979,15 +955,15 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if ((drawh > h) && !Config.Tile)
 			ResetPan(false, true);
 
-		UOff = -float(PanOffsetX+PanDragDownOffsetX)/w;
-		VOff = -float(PanOffsetY+PanDragDownOffsetY)/h;
+		uoff = -float(PanOffsetX+PanDragDownOffsetX)/w;
+		voff = -float(PanOffsetY+PanDragDownOffsetY)/h;
 
 		// Draw background.
 		glDisable(GL_TEXTURE_2D);
 		if ((Config.BackgroundExtend || Config.Tile) && !CropMode)
 			DrawBackground(hmargin, vmargin, draww, drawh);
 		else
-			DrawBackground(Left, Bottom, Right-Left, Top-Bottom);
+			DrawBackground(left, bottom, right-left, top-bottom);
 
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		CurrImage->Bind();
@@ -995,8 +971,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		if (RotateAnglePreview != 0.0f)
 		{
-			float origX = Left + (Right-Left)/2.0f;
-			float origY = Bottom + (Top-Bottom)/2.0f;
+			float origX = left + (right-left)/2.0f;
+			float origY = bottom + (top-bottom)/2.0f;
 			tMatrix4 rotMat;	tMakeRotateZ(rotMat, tMath::tDegToRad(RotateAnglePreview));
 			tMatrix4 trnMatA;	tMakeTranslate(trnMatA, tVector3(-origX, -origY, 0.0f));
 			tMatrix4 trnMatB;	tMakeTranslate(trnMatB, tVector3(origX, origY, 0.0f));
@@ -1008,31 +984,50 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		glBegin(GL_QUADS);
 		if (!Config.Tile)
 		{
-			glTexCoord2f(0.0f + UMarg + UOff, 0.0f + VMarg + VOff); glVertex2f(Left, Bottom);
-			glTexCoord2f(0.0f + UMarg + UOff, 1.0f - VMarg + VOff); glVertex2f(Left, Top);
-			glTexCoord2f(1.0f - UMarg + UOff, 1.0f - VMarg + VOff); glVertex2f(Right, Top);
-			glTexCoord2f(1.0f - UMarg + UOff, 0.0f + VMarg + VOff); glVertex2f(Right, Bottom);
+			glTexCoord2f(0.0f + umarg + uoff, 0.0f + vmarg + voff); glVertex2f(left,  bottom);
+			glTexCoord2f(0.0f + umarg + uoff, 1.0f - vmarg + voff); glVertex2f(left,  top);
+			glTexCoord2f(1.0f - umarg + uoff, 1.0f - vmarg + voff); glVertex2f(right, top);
+			glTexCoord2f(1.0f - umarg + uoff, 0.0f + vmarg + voff); glVertex2f(right, bottom);
 		}
 		else
 		{
-			float repU = draww/(Right-Left);	float offU = (1.0f-repU)/2.0f;
-			float repV = drawh/(Top-Bottom);	float offV = (1.0f-repV)/2.0f;
-			glTexCoord2f(offU + 0.0f + UMarg + UOff,	offV + 0.0f + VMarg + VOff);	glVertex2f(hmargin,			vmargin);
-			glTexCoord2f(offU + 0.0f + UMarg + UOff,	offV + repV - VMarg + VOff);	glVertex2f(hmargin,			vmargin+drawh);
-			glTexCoord2f(offU + repU - UMarg + UOff,	offV + repV - VMarg + VOff);	glVertex2f(hmargin+draww,	vmargin+drawh);
-			glTexCoord2f(offU + repU - UMarg + UOff,	offV + 0.0f + VMarg + VOff);	glVertex2f(hmargin+draww,	vmargin);
+			float repU = draww/(right-left);	float offU = (1.0f-repU)/2.0f;
+			float repV = drawh/(top-bottom);	float offV = (1.0f-repV)/2.0f;
+			glTexCoord2f(offU + 0.0f + umarg + uoff,	offV + 0.0f + vmarg + voff);	glVertex2f(hmargin,			vmargin);
+			glTexCoord2f(offU + 0.0f + umarg + uoff,	offV + repV - vmarg + voff);	glVertex2f(hmargin,			vmargin+drawh);
+			glTexCoord2f(offU + repU - umarg + uoff,	offV + repV - vmarg + voff);	glVertex2f(hmargin+draww,	vmargin+drawh);
+			glTexCoord2f(offU + repU - umarg + uoff,	offV + 0.0f + vmarg + voff);	glVertex2f(hmargin+draww,	vmargin);
 		}
 		glEnd();
 
 		if (RotateAnglePreview != 0.0f)
 	 		glPopMatrix();
 
+		// If a request was made to move the cursor/reticle, process the request here,
+		if (RequestCursorMove)
+		{
+			switch (RequestCursorMove)
+			{
+				case CursorMove_Left:	CursorX--;	break;
+				case CursorMove_Right:	CursorX++;	break;
+				case CursorMove_Up:		CursorY++;	break;
+				case CursorMove_Down:	CursorY--;	break;
+			}
+			tiClamp(CursorX, 0, CurrImage->GetWidth() - 1);
+			tiClamp(CursorY, 0, CurrImage->GetHeight() - 1);
+			tVector2 reticle;
+			ConvertImagePosToScreenPos(reticle, CursorX, CursorY, tVector4(left, right, top, bottom), tVector2(umarg, vmarg), tVector2(uoff, voff));
+			ReticleX = reticle.x;
+			ReticleY = reticle.y;
+			RequestCursorMove = CursorMove_None;
+		}
+
 		// Get the colour under the reticle.
 		tVector2 scrCursorPos(ReticleX, ReticleY);
 		ConvertScreenPosToImagePos
 		(
-			CursorX, CursorY, scrCursorPos, tVector4(Left, Right, Top, Bottom),
-			tVector2(UMarg, VMarg), tVector2(UOff, VOff)
+			CursorX, CursorY, scrCursorPos, tVector4(left, right, top, bottom),
+			tVector2(umarg, vmarg), tVector2(uoff, voff)
 		);
 
 		PixelColour = CurrImage->GetPixel(CursorX, CursorY);
@@ -1074,14 +1069,14 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 				tVector2 scrPosBL;
 				ConvertImagePosToScreenPos
 				(
-					scrPosBL, CursorX, CursorY, tVector4(Left, Right, Top, Bottom),
-					tVector2(UMarg, VMarg), tVector2(UOff, VOff)
+					scrPosBL, CursorX, CursorY, tVector4(left, right, top, bottom),
+					tVector2(umarg, vmarg), tVector2(uoff, voff)
 				);
 				tVector2 scrPosTR;
 				ConvertImagePosToScreenPos
 				(
-					scrPosTR, CursorX+1, CursorY+1, tVector4(Left, Right, Top, Bottom),
-					tVector2(UMarg, VMarg), tVector2(UOff, VOff)
+					scrPosTR, CursorX+1, CursorY+1, tVector4(left, right, top, bottom),
+					tVector2(umarg, vmarg), tVector2(uoff, voff)
 				);
 
 				glBegin(GL_LINES);
@@ -1123,12 +1118,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (CropMode)
 		{
 			if (!lastCropMode)
-				CropGizmo.SetLines(tVector4(Left, Right, Top, Bottom));
+				CropGizmo.SetLines(tVector4(left, right, top, bottom));
 
 			CropGizmo.UpdateDraw
 			(
-				tVector4(Left, Right, Top, Bottom), tVector2(mouseX, mouseY),
-				tVector2(UMarg, VMarg), tVector2(UOff, VOff)
+				tVector4(left, right, top, bottom), tVector2(mouseX, mouseY),
+				tVector2(umarg, vmarg), tVector2(uoff, voff)
 			);
 		}
 		lastCropMode = CropMode;
@@ -1720,7 +1715,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (ShowAbout)
 		ShowAboutPopup(&ShowAbout);
 
-	ShowCropPopup(tVector4(Left, Right, Top, Bottom), tVector2(UMarg, VMarg), tVector2(UOff, VOff));
+	ShowCropPopup(tVector4(left, right, top, bottom), tVector2(umarg, vmarg), tVector2(uoff, voff));
 
 	if (Request_DeleteFileModal)
 	{
@@ -1950,7 +1945,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			else if (modifiers == GLFW_MOD_ALT)
 				OnPreviousPart();
 			else if (modifiers == GLFW_MOD_SHIFT)
-				OnCursorLeft();
+				RequestCursorMove = CursorMove_Left;
 			else
 				OnPrevious();
 			break;
@@ -1963,7 +1958,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			else if (modifiers == GLFW_MOD_ALT)
 				OnNextPart();
 			else if (modifiers == GLFW_MOD_SHIFT)
-				OnCursorRight();
+				RequestCursorMove = CursorMove_Right;
 			else
 				OnNext();
 			break;
@@ -1972,14 +1967,14 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			if (!CurrImage)
 				break;
 			if (modifiers == GLFW_MOD_SHIFT)
-				OnCursorUp();
+				RequestCursorMove = CursorMove_Up;
 			break;
 
 		case GLFW_KEY_DOWN:
 			if (!CurrImage)
 				break;
 			if (modifiers == GLFW_MOD_SHIFT)
-				OnCursorDown();
+				RequestCursorMove = CursorMove_Down;
 			break;
 
 		case GLFW_KEY_SPACE:
