@@ -79,6 +79,7 @@ public:
 
 	// Functions that edit and cause dirty flag to be set.
 	void Rotate90(bool antiClockWise);
+	void Rotate(float angle);
 	void Flip(bool horizontal);
 	void Crop(int newWidth, int newHeight, int originX, int originY, const tColouri& fillColour);
 	void Crop(int newWidth, int newHeight, tImage::tPicture::Anchor, const tColouri& fillColour);

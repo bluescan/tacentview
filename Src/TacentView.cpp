@@ -45,6 +45,7 @@
 #include "ContentView.h"
 #include "Crop.h"
 #include "Resize.h"
+#include "Rotate.h"
 #include "SaveDialogs.h"
 #include "Settings.h"
 #include "Version.cmake.h"
@@ -113,6 +114,7 @@ namespace Viewer
 	bool Request_ResizeImageModal				= false;
 	bool Request_ResizeCanvasModal				= false;
 	bool Request_ResizeAspectModal				= false;
+	bool Request_RotateImageModal				= false;
 	bool Request_ContactSheetModal				= false;
 	bool Request_DeleteFileModal				= false;
 	bool Request_DeleteFileNoRecycleModal		= false;
@@ -128,6 +130,7 @@ namespace Viewer
 	int DragAnchorY								= 0;
 	int CursorX									= 0;
 	int CursorY									= 0;
+	float RotateAnglePreview					= 0.0f;
 
 	float Left									= 0.0f;
 	float Right									= 0.0f;
@@ -162,7 +165,7 @@ namespace Viewer
 	const tVector4 ColourEnabledTint			= tVector4(1.00f, 1.00f, 1.00f, 1.00f);
 	const tVector4 ColourDisabledTint			= tVector4(0.36f, 0.36f, 0.48f, 1.00f);
 	const tVector4 ColourBG						= tVector4(0.00f, 0.00f, 0.00f, 0.00f);
-	const tVector4 ColourPressedBG				= tVector4(0.00f, 0.75f, 0.05f, 1.00f);
+	const tVector4 ColourPressedBG				= tVector4(0.21f, 0.45f, 0.21f, 1.00f);
 	const tVector4 ColourClear					= tVector4(0.10f, 0.10f, 0.12f, 1.00f);
 
 	const int MenuBarHeight						= 30;
@@ -990,6 +993,18 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		CurrImage->Bind();
 		glEnable(GL_TEXTURE_2D);
 
+		if (RotateAnglePreview != 0.0f)
+		{
+			float origX = Left + (Right-Left)/2.0f;
+			float origY = Bottom + (Top-Bottom)/2.0f;
+			tMatrix4 rotMat;	tMakeRotateZ(rotMat, tMath::tDegToRad(RotateAnglePreview));
+			tMatrix4 trnMatA;	tMakeTranslate(trnMatA, tVector3(-origX, -origY, 0.0f));
+			tMatrix4 trnMatB;	tMakeTranslate(trnMatB, tVector3(origX, origY, 0.0f));
+			rotMat = trnMatB * rotMat * trnMatA;
+			glPushMatrix();
+			glMultMatrixf(rotMat.E);
+		}
+
 		glBegin(GL_QUADS);
 		if (!Config.Tile)
 		{
@@ -1008,6 +1023,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			glTexCoord2f(offU + repU - UMarg + UOff,	offV + 0.0f + VMarg + VOff);	glVertex2f(hmargin+draww,	vmargin);
 		}
 		glEnd();
+
+		if (RotateAnglePreview != 0.0f)
+	 		glPopMatrix();
 
 		// Get the colour under the reticle.
 		tVector2 scrCursorPos(ReticleX, ReticleY);
@@ -1332,6 +1350,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		bool resizeImagePressed		= Request_ResizeImageModal;		Request_ResizeImageModal = false;
 		bool resizeCanvasPressed	= Request_ResizeCanvasModal;	Request_ResizeCanvasModal = false;
 		bool resizeAspectPressed	= Request_ResizeAspectModal;	Request_ResizeAspectModal = false;
+		bool rotateImagePressed		= Request_RotateImageModal;		Request_RotateImageModal = false;
 		if (ImGui::BeginMenu("Edit"))
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
@@ -1370,14 +1389,17 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			ImGui::MenuItem("Crop...", "/", &CropMode);
 
-			if (ImGui::MenuItem("Resize Image...", "R") && CurrImage)
+			if (ImGui::MenuItem("Resize Image...", "Ctrl-R") && CurrImage)
 				resizeImagePressed = true;
 
-			if (ImGui::MenuItem("Resize Canvas...", "Ctrl-R") && CurrImage)
+			if (ImGui::MenuItem("Resize Canvas...", "Shift-R") && CurrImage)
 				resizeCanvasPressed = true;
 
 			if (ImGui::MenuItem("Resize Aspect...", "Alt-R") && CurrImage)
 				resizeAspectPressed = true;
+
+			if (ImGui::MenuItem("Rotate Image...", "R") && CurrImage)
+				rotateImagePressed = true;
 
 			ImGui::Separator();
 
@@ -1394,19 +1416,25 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::OpenPopup("Resize Image");
 		bool isOpenResizeImage = true;
 		if (ImGui::BeginPopupModal("Resize Image", &isOpenResizeImage, ImGuiWindowFlags_AlwaysAutoResize))
-			DoResizeImageDialog(resizeImagePressed);
+			DoResizeImageModal(resizeImagePressed);
 
 		if (resizeCanvasPressed)
 			ImGui::OpenPopup("Resize Canvas");
 		bool isOpenResizeCanvas = true;
 		if (ImGui::BeginPopupModal("Resize Canvas", &isOpenResizeCanvas, ImGuiWindowFlags_AlwaysAutoResize))
-			DoResizeCanvasDialog(resizeCanvasPressed);
+			DoResizeCanvasModal(resizeCanvasPressed);
 
 		if (resizeAspectPressed)
 			ImGui::OpenPopup("Resize Aspect");
 		bool isOpenResizeAspect = true;
 		if (ImGui::BeginPopupModal("Resize Aspect", &isOpenResizeAspect, ImGuiWindowFlags_AlwaysAutoResize))
-			DoResizeAspectDialog(resizeAspectPressed);
+			DoResizeAspectModal(resizeAspectPressed);
+
+		if (rotateImagePressed)
+			ImGui::OpenPopup("Rotate Image");
+		bool isOpenRotateImage = true;
+		if (ImGui::BeginPopupModal("Rotate Image", &isOpenRotateImage, ImGuiWindowFlags_AlwaysAutoResize))
+			DoRotateImageModal(rotateImagePressed);
 
 		ImGui::PopStyleVar();
 
@@ -2109,11 +2137,13 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			if (!CurrImage)
 				break;
 			if (modifiers == GLFW_MOD_CONTROL)
+				Request_ResizeImageModal = true;
+			else if (modifiers == GLFW_MOD_SHIFT)
 				Request_ResizeCanvasModal = true;
 			else if (modifiers == GLFW_MOD_ALT)
 				Request_ResizeAspectModal = true;
 			else
-				Request_ResizeImageModal = true;
+				Request_RotateImageModal = true;
 			break;
 
 		case GLFW_KEY_S:			// SaveAs and SaveAll.

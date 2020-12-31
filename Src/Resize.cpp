@@ -24,14 +24,14 @@ using namespace tImage;
 
 namespace Viewer
 {
-	void DoWidthHeightInterface(int& srcW, int& srcH, int& dstW, int& dstH, bool& justOpened);
-	void DoSampleFilterInterface(int srcW, int srcH, int dstW, int dstH);
-	void DoAnchorInterface();
-	void DoCrop(int srcW, int srcH, int dstW, int dstH);
+	void DoResizeWidthHeightInterface(int& srcW, int& srcH, int& dstW, int& dstH, bool& justOpened);
+	void DoResizeSampleFilterInterface(int srcW, int srcH, int dstW, int dstH);
+	void DoResizeAnchorInterface();
+	void DoResizeCrop(int srcW, int srcH, int dstW, int dstH);
 }
 
 
-void Viewer::DoWidthHeightInterface(int& srcW, int& srcH, int& dstW, int& dstH, bool& justOpened)
+void Viewer::DoResizeWidthHeightInterface(int& srcW, int& srcH, int& dstW, int& dstH, bool& justOpened)
 {
 	tAssert(CurrImage);
 	tPicture* picture = CurrImage->GetCurrentPic();
@@ -86,7 +86,7 @@ void Viewer::DoWidthHeightInterface(int& srcW, int& srcH, int& dstW, int& dstH, 
 }
 
 
-void Viewer::DoSampleFilterInterface(int srcW, int srcH, int dstW, int dstH)
+void Viewer::DoResizeSampleFilterInterface(int srcW, int srcH, int dstW, int dstH)
 {
 	if ((dstW == srcW) && (dstH == srcH))
 		return;
@@ -101,7 +101,7 @@ void Viewer::DoSampleFilterInterface(int srcW, int srcH, int dstW, int dstH)
 }
 
 
-void Viewer::DoAnchorInterface()
+void Viewer::DoResizeAnchorInterface()
 {
 	static const char* shortNames[3*3] = { "TL", "TM", "TR", "ML", "MM", "MR", "BL", "BM", "BR" };
 	static const char* longNames[3*3] = { "Top-Left", "Top-Middle", "Top-Right", "Middle-Left", "Middle", "Middle-Right", "Bottom-Left", "Bottom-Middle", "Bottom-Right" };
@@ -127,7 +127,7 @@ void Viewer::DoAnchorInterface()
 }
 
 
-void Viewer::DoCrop(int srcW, int srcH, int dstW, int dstH)
+void Viewer::DoResizeCrop(int srcW, int srcH, int dstW, int dstH)
 {
 	if ((dstW != srcW) || (dstH != srcH))
 	{
@@ -149,13 +149,13 @@ void Viewer::DoCrop(int srcW, int srcH, int dstW, int dstH)
 }
 
 
-void Viewer::DoResizeImageDialog(bool justOpened)
+void Viewer::DoResizeImageModal(bool justOpened)
 {
 	int srcW, srcH;
 	static int dstW = 512;
 	static int dstH = 512;
-	DoWidthHeightInterface(srcW, srcH, dstW, dstH, justOpened);
-	DoSampleFilterInterface(srcW, srcH, dstW, dstH);
+	DoResizeWidthHeightInterface(srcW, srcH, dstW, dstH, justOpened);
+	DoResizeSampleFilterInterface(srcW, srcH, dstW, dstH);
 
 	ImGui::NewLine();
 	if (ImGui::Button("Reset", tVector2(100, 0)))
@@ -188,15 +188,16 @@ void Viewer::DoResizeImageDialog(bool justOpened)
 }
 
 
-void Viewer::DoResizeCanvasDialog(bool justOpened)
+void Viewer::DoResizeCanvasModal(bool justOpened)
 {
 	int srcW, srcH;
 	static int dstW = 512;
 	static int dstH = 512;
-	DoWidthHeightInterface(srcW, srcH, dstW, dstH, justOpened);
-	DoSampleFilterInterface(srcW, srcH, dstW, dstH);
-	
-	DoAnchorInterface();
+
+	DoResizeWidthHeightInterface(srcW, srcH, dstW, dstH, justOpened);
+	DoResizeSampleFilterInterface(srcW, srcH, dstW, dstH);
+	DoResizeAnchorInterface();
+
 	if ((dstW > srcW) || (dstH > srcH))
 	{
 		tColourf floatCol(Config.CropFillColour);
@@ -223,14 +224,14 @@ void Viewer::DoResizeCanvasDialog(bool justOpened)
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 	if (ImGui::Button("Resize", tVector2(100, 0)))
 	{
-		DoCrop(srcW, srcH, dstW, dstH);
+		DoResizeCrop(srcW, srcH, dstW, dstH);
 		ImGui::CloseCurrentPopup();
 	}
 	ImGui::EndPopup();
 }
 
 
-void Viewer::DoResizeAspectDialog(bool justOpened)
+void Viewer::DoResizeAspectModal(bool justOpened)
 {
 	tAssert(CurrImage);
 	tPicture* picture = CurrImage->GetCurrentPic();
@@ -277,7 +278,7 @@ void Viewer::DoResizeAspectDialog(bool justOpened)
 	ImGui::SameLine();
 	ShowHelpMark("Crop mode cuts off sides resulting in a filled image.\nLetterbox mode adds coloured borders resulting in whole image being visible.");
 
-	DoAnchorInterface();
+	DoResizeAnchorInterface();
 	if (Config.ResizeAspectMode == 1)
 	{
 		tColourf floatCol(Config.CropFillColour);
@@ -326,7 +327,7 @@ void Viewer::DoResizeAspectDialog(bool justOpened)
 				dstH = tFloatToInt(float(dstW) / dstAspect);
 		}
 
-		DoCrop(srcW, srcH, dstW, dstH);
+		DoResizeCrop(srcW, srcH, dstW, dstH);
 		ImGui::CloseCurrentPopup();
 	}
 

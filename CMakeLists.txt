@@ -66,6 +66,8 @@ add_executable(
 	Src/Image.h
 	Src/Resize.cpp
 	Src/Resize.h
+	Src/Rotate.cpp
+	Src/Rotate.h
 	Src/SaveDialogs.cpp
 	Src/SaveDialogs.h
 	Src/Settings.cpp

@@ -1,8 +1,8 @@
-// Resize.h
+// Rotate.h
 //
-// Dialog for resizing an image.
+// Modal for rotating an image.
 //
-// Copyright (c) 2019, 2020 Tristan Grimmer.
+// Copyright (c) 2020 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -19,7 +19,5 @@
 
 namespace Viewer
 {
-	void DoResizeImageModal(bool justOpened);
-	void DoResizeCanvasModal(bool justOpened);
-	void DoResizeAspectModal(bool justOpened);
+	void DoRotateImageModal(bool justOpened);
 }

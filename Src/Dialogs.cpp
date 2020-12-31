@@ -143,8 +143,9 @@ void Viewer::ShowCheatSheetPopup(bool* popen)
 		ImGui::Text("<");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Rotate Anti-Clockwise");
 		ImGui::Text(">");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Rotate Clockwise");
 		ImGui::Text("/");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Crop");
-		ImGui::Text("R");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Resize Image");
-		ImGui::Text("Ctrl-R");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Resize Canvas");
+		ImGui::Text("R");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Rotate Image");
+		ImGui::Text("Ctrl-R");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Resize Image");
+		ImGui::Text("Shift-R");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Resize Canvas");
 		ImGui::Text("Alt-R");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Resize Aspect");
 		ImGui::Text("I");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Image Details");
 		ImGui::Text("T");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Tile");
