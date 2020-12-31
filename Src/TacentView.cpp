@@ -129,6 +129,15 @@ namespace Viewer
 	int CursorX									= 0;
 	int CursorY									= 0;
 
+	float Left									= 0.0f;
+	float Right									= 0.0f;
+	float Top									= 0.0f;
+	float Bottom								= 0.0f;
+	float UOff									= 0.0f;
+	float VOff									= 0.0f;
+	float UMarg									= 0.0f;
+	float VMarg									= 0.0f;
+
 	enum class ZoomMode
 	{
 		User,
@@ -193,6 +202,10 @@ namespace Viewer
 	void OnNextPart();
 	bool OnSkipBegin();
 	bool OnSkipEnd();
+	void OnCursorLeft();
+	void OnCursorRight();
+	void OnCursorUp();
+	void OnCursorDown();
 	void ResetPan(bool resetX = true, bool resetY = true);
 	void ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan);
 	void SetBasicViewAndBehaviour();
@@ -544,6 +557,38 @@ bool Viewer::OnSkipEnd()
 }
 
 
+void Viewer::OnCursorLeft()
+{
+	CursorX--;			tiClamp(CursorX, 0, CurrImage->GetWidth() - 1);
+	tVector2 ret;		ConvertImagePosToScreenPos(ret, CursorX, CursorY, tVector4(Left, Right, Top, Bottom), tVector2(UMarg, VMarg), tVector2(UOff, VOff));
+	ReticleX = ret.x;	ReticleY = ret.y;
+}
+
+
+void Viewer::OnCursorRight()
+{
+	CursorX++;			tiClamp(CursorX, 0, CurrImage->GetWidth() - 1);
+	tVector2 ret;		ConvertImagePosToScreenPos(ret, CursorX, CursorY, tVector4(Left, Right, Top, Bottom), tVector2(UMarg, VMarg), tVector2(UOff, VOff));
+	ReticleX = ret.x;	ReticleY = ret.y;
+}
+
+
+void Viewer::OnCursorUp()
+{
+	CursorY++;			tiClamp(CursorY, 0, CurrImage->GetHeight() - 1);
+	tVector2 ret;		ConvertImagePosToScreenPos(ret, CursorX, CursorY, tVector4(Left, Right, Top, Bottom), tVector2(UMarg, VMarg), tVector2(UOff, VOff));
+	ReticleX = ret.x;	ReticleY = ret.y;
+}
+
+
+void Viewer::OnCursorDown()
+{
+	CursorY--;			tiClamp(CursorY, 0, CurrImage->GetHeight() - 1);
+	tVector2 ret;		ConvertImagePosToScreenPos(ret, CursorX, CursorY, tVector4(Left, Right, Top, Bottom), tVector2(UMarg, VMarg), tVector2(UOff, VOff));
+	ReticleX = ret.x;	ReticleY = ret.y;
+}
+
+
 void Viewer::ShowHelpMark(const char* desc)
 {
 	ImGui::TextDisabled("[?]");
@@ -833,17 +878,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	float draww = 1.0f;		float drawh = 1.0f;
 	float iw = 1.0f;		float ih = 1.0f;
 	float hmargin = 0.0f;	float vmargin = 0.0f;
-//	static int imgx = 0;	static int imgy = 0;
-
-	float uvUOff = 0.0f;
-	float uvVOff = 0.0f;
-	float l = 0.0f;
-	float r = 0.0f;
-	float b = 0.0f;
-	float t = 0.0f;
-	float uvUMarg = 0.0f;
-	float uvVMarg = 0.0f;
-
 	double mouseXd, mouseYd;
 	glfwGetCursorPos(window, &mouseXd, &mouseYd);
 
@@ -880,10 +914,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 
 		// w and h are the image width and height. draww and drawh are the drawable area width and height.
-		l = tMath::tRound(hmargin);
-		r = tMath::tRound(hmargin+draww);
-		b = tMath::tRound(vmargin);
-		t = tMath::tRound(vmargin+drawh);
+		Left	= tMath::tRound(hmargin);
+		Right	= tMath::tRound(hmargin+draww);
+		Bottom	= tMath::tRound(vmargin);
+		Top		= tMath::tRound(vmargin+drawh);
 
 		if (CurrZoomMode == ZoomMode::DownscaleOnly)
 		{
@@ -903,18 +937,18 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (w < draww)
 		{
 			float offsetW = tMath::tRound((draww - w) / 2.0f);
-			l += offsetW;
-			r -= offsetW;
+			Left += offsetW;
+			Right -= offsetW;
 			float offsetH = tMath::tRound((drawh - h) / 2.0f);
-			b += offsetH;
-			t -= offsetH;
+			Bottom += offsetH;
+			Top -= offsetH;
 		}
 		else
 		{
 			float propw = draww / w;
-			uvUMarg = (1.0f - propw)/2.0f;
+			UMarg = (1.0f - propw)/2.0f;
 			float proph = drawh / h;
-			uvVMarg = (1.0f - proph)/2.0f;
+			VMarg = (1.0f - proph)/2.0f;
 		}
 
 		// Modify the UVs here to magnify.
@@ -942,15 +976,15 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if ((drawh > h) && !Config.Tile)
 			ResetPan(false, true);
 
-		uvUOff = -float(PanOffsetX+PanDragDownOffsetX)/w;
-		uvVOff = -float(PanOffsetY+PanDragDownOffsetY)/h;
+		UOff = -float(PanOffsetX+PanDragDownOffsetX)/w;
+		VOff = -float(PanOffsetY+PanDragDownOffsetY)/h;
 
 		// Draw background.
 		glDisable(GL_TEXTURE_2D);
 		if ((Config.BackgroundExtend || Config.Tile) && !CropMode)
 			DrawBackground(hmargin, vmargin, draww, drawh);
 		else
-			DrawBackground(l, b, r-l, t-b);
+			DrawBackground(Left, Bottom, Right-Left, Top-Bottom);
 
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		CurrImage->Bind();
@@ -959,19 +993,19 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		glBegin(GL_QUADS);
 		if (!Config.Tile)
 		{
-			glTexCoord2f(0.0f + uvUMarg + uvUOff, 0.0f + uvVMarg + uvVOff); glVertex2f(l, b);
-			glTexCoord2f(0.0f + uvUMarg + uvUOff, 1.0f - uvVMarg + uvVOff); glVertex2f(l, t);
-			glTexCoord2f(1.0f - uvUMarg + uvUOff, 1.0f - uvVMarg + uvVOff); glVertex2f(r, t);
-			glTexCoord2f(1.0f - uvUMarg + uvUOff, 0.0f + uvVMarg + uvVOff); glVertex2f(r, b);
+			glTexCoord2f(0.0f + UMarg + UOff, 0.0f + VMarg + VOff); glVertex2f(Left, Bottom);
+			glTexCoord2f(0.0f + UMarg + UOff, 1.0f - VMarg + VOff); glVertex2f(Left, Top);
+			glTexCoord2f(1.0f - UMarg + UOff, 1.0f - VMarg + VOff); glVertex2f(Right, Top);
+			glTexCoord2f(1.0f - UMarg + UOff, 0.0f + VMarg + VOff); glVertex2f(Right, Bottom);
 		}
 		else
 		{
-			float repU = draww/(r-l);	float offU = (1.0f-repU)/2.0f;
-			float repV = drawh/(t-b);	float offV = (1.0f-repV)/2.0f;
-			glTexCoord2f(offU + 0.0f + uvUMarg + uvUOff,	offV + 0.0f + uvVMarg + uvVOff);	glVertex2f(hmargin,			vmargin);
-			glTexCoord2f(offU + 0.0f + uvUMarg + uvUOff,	offV + repV - uvVMarg + uvVOff);	glVertex2f(hmargin,			vmargin+drawh);
-			glTexCoord2f(offU + repU - uvUMarg + uvUOff,	offV + repV - uvVMarg + uvVOff);	glVertex2f(hmargin+draww,	vmargin+drawh);
-			glTexCoord2f(offU + repU - uvUMarg + uvUOff,	offV + 0.0f + uvVMarg + uvVOff);	glVertex2f(hmargin+draww,	vmargin);
+			float repU = draww/(Right-Left);	float offU = (1.0f-repU)/2.0f;
+			float repV = drawh/(Top-Bottom);	float offV = (1.0f-repV)/2.0f;
+			glTexCoord2f(offU + 0.0f + UMarg + UOff,	offV + 0.0f + VMarg + VOff);	glVertex2f(hmargin,			vmargin);
+			glTexCoord2f(offU + 0.0f + UMarg + UOff,	offV + repV - VMarg + VOff);	glVertex2f(hmargin,			vmargin+drawh);
+			glTexCoord2f(offU + repU - UMarg + UOff,	offV + repV - VMarg + VOff);	glVertex2f(hmargin+draww,	vmargin+drawh);
+			glTexCoord2f(offU + repU - UMarg + UOff,	offV + 0.0f + VMarg + VOff);	glVertex2f(hmargin+draww,	vmargin);
 		}
 		glEnd();
 
@@ -979,8 +1013,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		tVector2 scrCursorPos(ReticleX, ReticleY);
 		ConvertScreenPosToImagePos
 		(
-			CursorX, CursorY, scrCursorPos, tVector4(l, r, t, b),
-			tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
+			CursorX, CursorY, scrCursorPos, tVector4(Left, Right, Top, Bottom),
+			tVector2(UMarg, VMarg), tVector2(UOff, VOff)
 		);
 
 		PixelColour = CurrImage->GetPixel(CursorX, CursorY);
@@ -1018,17 +1052,18 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if (ZoomPercent >= 500.0f)
 			{
+				// Draw the reticle as a box.
 				tVector2 scrPosBL;
 				ConvertImagePosToScreenPos
 				(
-					scrPosBL, CursorX, CursorY, tVector4(l, r, t, b),
-					tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
+					scrPosBL, CursorX, CursorY, tVector4(Left, Right, Top, Bottom),
+					tVector2(UMarg, VMarg), tVector2(UOff, VOff)
 				);
 				tVector2 scrPosTR;
 				ConvertImagePosToScreenPos
 				(
-					scrPosTR, CursorX+1, CursorY+1, tVector4(l, r, t, b),
-					tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
+					scrPosTR, CursorX+1, CursorY+1, tVector4(Left, Right, Top, Bottom),
+					tVector2(UMarg, VMarg), tVector2(UOff, VOff)
 				);
 
 				glBegin(GL_LINES);
@@ -1070,12 +1105,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (CropMode)
 		{
 			if (!lastCropMode)
-				CropGizmo.SetLines(tVector4(l,r,t,b));
+				CropGizmo.SetLines(tVector4(Left, Right, Top, Bottom));
 
 			CropGizmo.UpdateDraw
 			(
-				tVector4(l,r,t,b), tVector2(mouseX, mouseY),
-				tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff)
+				tVector4(Left, Right, Top, Bottom), tVector2(mouseX, mouseY),
+				tVector2(UMarg, VMarg), tVector2(UOff, VOff)
 			);
 		}
 		lastCropMode = CropMode;
@@ -1657,7 +1692,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (ShowAbout)
 		ShowAboutPopup(&ShowAbout);
 
-	ShowCropPopup(tVector4(l, r, t, b), tVector2(uvUMarg, uvVMarg), tVector2(uvUOff, uvVOff));
+	ShowCropPopup(tVector4(Left, Right, Top, Bottom), tVector2(UMarg, VMarg), tVector2(UOff, VOff));
 
 	if (Request_DeleteFileModal)
 	{
@@ -1880,21 +1915,43 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 	switch (key)
 	{
 		case GLFW_KEY_LEFT:
+			if (!CurrImage)
+				break;
 			if (modifiers == GLFW_MOD_CONTROL)
 				OnSkipBegin();
 			else if (modifiers == GLFW_MOD_ALT)
 				OnPreviousPart();
+			else if (modifiers == GLFW_MOD_SHIFT)
+				OnCursorLeft();
 			else
 				OnPrevious();
 			break;
 
 		case GLFW_KEY_RIGHT:
+			if (!CurrImage)
+				break;
 			if (modifiers == GLFW_MOD_CONTROL)
 				OnSkipEnd();
 			else if (modifiers == GLFW_MOD_ALT)
 				OnNextPart();
+			else if (modifiers == GLFW_MOD_SHIFT)
+				OnCursorRight();
 			else
 				OnNext();
+			break;
+
+		case GLFW_KEY_UP:
+			if (!CurrImage)
+				break;
+			if (modifiers == GLFW_MOD_SHIFT)
+				OnCursorUp();
+			break;
+
+		case GLFW_KEY_DOWN:
+			if (!CurrImage)
+				break;
+			if (modifiers == GLFW_MOD_SHIFT)
+				OnCursorDown();
 			break;
 
 		case GLFW_KEY_SPACE:
@@ -1926,13 +1983,12 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case GLFW_KEY_DELETE:
-			if (CurrImage)
-			{
-				if (modifiers == GLFW_MOD_SHIFT)
-					Request_DeleteFileNoRecycleModal = true;
-				else
-					Request_DeleteFileModal = true;
-			}
+			if (!CurrImage)
+				break;
+			if (modifiers == GLFW_MOD_SHIFT)
+				Request_DeleteFileNoRecycleModal = true;
+			else
+				Request_DeleteFileModal = true;
 			break;
 
 		case GLFW_KEY_TAB:
