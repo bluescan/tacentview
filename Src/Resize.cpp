@@ -91,7 +91,7 @@ void Viewer::DoResizeSampleFilterInterface(int srcW, int srcH, int dstW, int dst
 	if ((dstW == srcW) && (dstH == srcH))
 		return;
 
-	ImGui::Combo("Filter", &Config.ResampleFilter, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
+	ImGui::Combo("Filter", &Config.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 	ImGui::SameLine();
 	ShowHelpMark("Filtering method to use when resizing images.");
 
