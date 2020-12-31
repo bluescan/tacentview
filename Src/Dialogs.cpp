@@ -119,6 +119,10 @@ void Viewer::ShowCheatSheetPopup(bool* popen)
 		ImGui::Text("Ctrl-Right");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Skip to Last Image");
 		ImGui::Text("Alt-Left");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Previous Image Frame");
 		ImGui::Text("Alt-Right");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Next Image Frame");
+		ImGui::Text("Shift-Left");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("One Pixel Left");
+		ImGui::Text("Shift-Right");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("One Pixel Right");
+		ImGui::Text("Shift-Up");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("One Pixel Up");
+		ImGui::Text("Shift-Down");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("One Pixel Down");
 		ImGui::Text("Space");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Next Image");
 		ImGui::Text("Ctrl +");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom In");
 		ImGui::Text("Ctrl -");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom Out");
