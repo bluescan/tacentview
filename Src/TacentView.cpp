@@ -2,7 +2,7 @@
 //
 // A texture viewer for various formats.
 //
-// Copyright (c) 2018, 2019, 2020 Tristan Grimmer.
+// Copyright (c) 2018, 2019, 2020, 2021 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -113,7 +113,6 @@ namespace Viewer
 	bool Request_SaveAllModal					= false;
 	bool Request_ResizeImageModal				= false;
 	bool Request_ResizeCanvasModal				= false;
-	bool Request_ResizeAspectModal				= false;
 	bool Request_RotateImageModal				= false;
 	bool Request_ContactSheetModal				= false;
 	bool Request_DeleteFileModal				= false;
@@ -1133,7 +1132,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	
 	// Show the big demo window. You can browse its code to learn more about Dear ImGui.
 	static bool showDemoWindow = false;
-	// static bool showDemoWindow = true;
+	//static bool showDemoWindow = true;
 	if (showDemoWindow)
 		ImGui::ShowDemoWindow(&showDemoWindow);
 
@@ -1344,7 +1343,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		//
 		bool resizeImagePressed		= Request_ResizeImageModal;		Request_ResizeImageModal = false;
 		bool resizeCanvasPressed	= Request_ResizeCanvasModal;	Request_ResizeCanvasModal = false;
-		bool resizeAspectPressed	= Request_ResizeAspectModal;	Request_ResizeAspectModal = false;
 		bool rotateImagePressed		= Request_RotateImageModal;		Request_RotateImageModal = false;
 		if (ImGui::BeginMenu("Edit"))
 		{
@@ -1384,14 +1382,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			ImGui::MenuItem("Crop...", "/", &CropMode);
 
-			if (ImGui::MenuItem("Resize Image...", "Ctrl-R") && CurrImage)
+			if (ImGui::MenuItem("Resize Image...", "Alt-R") && CurrImage)
 				resizeImagePressed = true;
 
-			if (ImGui::MenuItem("Resize Canvas...", "Shift-R") && CurrImage)
+			if (ImGui::MenuItem("Resize Canvas...", "Ctrl-R") && CurrImage)
 				resizeCanvasPressed = true;
-
-			if (ImGui::MenuItem("Resize Aspect...", "Alt-R") && CurrImage)
-				resizeAspectPressed = true;
 
 			if (ImGui::MenuItem("Rotate Image...", "R") && CurrImage)
 				rotateImagePressed = true;
@@ -1418,12 +1413,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		bool isOpenResizeCanvas = true;
 		if (ImGui::BeginPopupModal("Resize Canvas", &isOpenResizeCanvas, ImGuiWindowFlags_AlwaysAutoResize))
 			DoResizeCanvasModal(resizeCanvasPressed);
-
-		if (resizeAspectPressed)
-			ImGui::OpenPopup("Resize Aspect");
-		bool isOpenResizeAspect = true;
-		if (ImGui::BeginPopupModal("Resize Aspect", &isOpenResizeAspect, ImGuiWindowFlags_AlwaysAutoResize))
-			DoResizeAspectModal(resizeAspectPressed);
 
 		if (rotateImagePressed)
 			ImGui::OpenPopup("Rotate Image");
@@ -2131,12 +2120,10 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case GLFW_KEY_R:			// Resize Image.
 			if (!CurrImage)
 				break;
-			if (modifiers == GLFW_MOD_CONTROL)
+			if (modifiers == GLFW_MOD_ALT)
 				Request_ResizeImageModal = true;
-			else if (modifiers == GLFW_MOD_SHIFT)
+			else if (modifiers == GLFW_MOD_CONTROL)
 				Request_ResizeCanvasModal = true;
-			else if (modifiers == GLFW_MOD_ALT)
-				Request_ResizeAspectModal = true;
 			else
 				Request_RotateImageModal = true;
 			break;
