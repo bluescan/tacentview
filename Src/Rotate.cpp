@@ -31,6 +31,23 @@ void Viewer::DoRotateImageModal(bool justOpened)
 	ImGui::SliderFloat("Angle", &RotateAnglePreview, -180.0f, 180.0f);
 	ImGui::DragFloat("Fine Tune Drag", &RotateAnglePreview, 0.01f);
 
+	tColourf floatCol(Config.CropFillColour);
+	ImGui::ColorEdit4("Fill Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf);
+	Config.CropFillColour.Set(floatCol);
+
+	static int upFiltInt = 3;
+	ImGui::Combo("Up Filter", &upFiltInt /*Config.ResampleFilter*/, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
+	ImGui::SameLine();
+	ShowHelpMark("Filtering method used during up-sampling.");
+
+	static int dnFiltInt = 3;
+	if (upFiltInt != int(tResampleFilter(tResampleFilter::None)))
+	{
+		ImGui::Combo("Down Filter", &dnFiltInt /*Config.ResampleFilter*/, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
+		ImGui::SameLine();
+		ShowHelpMark("Filtering method used during down-sampling.");
+	}
+
 	ImGui::NewLine();
 	if (ImGui::Button("Reset", tVector2(100, 0)))
 		RotateAnglePreview = 0.0f;
@@ -49,7 +66,7 @@ void Viewer::DoRotateImageModal(bool justOpened)
 	if (ImGui::Button("Rotate", tVector2(100, 0)))
 	{
 		CurrImage->Unbind();
-		CurrImage->Rotate(tDegToRad(RotateAnglePreview));
+		CurrImage->Rotate(tDegToRad(RotateAnglePreview), Config.CropFillColour, tResampleFilter(upFiltInt), tResampleFilter(dnFiltInt));
 		CurrImage->Bind();
 		RotateAnglePreview = 0.0f;
 		Viewer::SetWindowTitle();

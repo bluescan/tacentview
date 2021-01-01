@@ -596,10 +596,10 @@ void Image::Rotate90(bool antiClockWise)
 }
 
 
-void Image::Rotate(float angle)
+void Image::Rotate(float angle, const tColouri& fill, tResampleFilter upFilter, tResampleFilter downFilter)
 {
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
-		picture->RotateCenter(angle, tColouri::transparent, tImage::tResampleFilter::Bilinear);
+		picture->RotateCenter(angle, fill, upFilter, downFilter);
 
 	Dirty = true;
 }
