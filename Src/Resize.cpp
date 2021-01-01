@@ -190,6 +190,16 @@ void Viewer::DoResizeImageModal(bool justOpened)
 
 void Viewer::DoResizeCanvasModal(bool justOpened)
 {
+	static bool justOpenedAnchor = false;
+	static bool justOpenedBorder = false;
+	static bool justOpenedAspect = false;
+	if (justOpened)
+	{
+		justOpenedAnchor = true;
+		justOpenedBorder = true;
+		justOpenedAspect = true;
+	}
+
 	// There are 3 resize canvas modes: Anchor, Border, Aspect. Each gets its own tab.
 	bool tab = false;
 	if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_None))
@@ -198,7 +208,8 @@ void Viewer::DoResizeCanvasModal(bool justOpened)
 		ShowToolTip("Choose an anchor and new dimensions.");
 		if (tab)
 		{
-			DoResizeCanvasAnchorTab(justOpened);
+			DoResizeCanvasAnchorTab(justOpenedAnchor);
+			justOpenedAnchor = false;
 			ImGui::EndTabItem();
 		}
 
@@ -206,7 +217,8 @@ void Viewer::DoResizeCanvasModal(bool justOpened)
 		ShowToolTip("Remove same-coloured border from image.");
 		if (tab)
 		{
-			DoResizeCanvasBorderTab(justOpened);
+			DoResizeCanvasBorderTab(justOpenedBorder);
+			justOpenedBorder = false;
 			ImGui::EndTabItem();
 		}
 
@@ -214,7 +226,8 @@ void Viewer::DoResizeCanvasModal(bool justOpened)
 		ShowToolTip("Choose the new aspect ratio.");
 		if (tab)
 		{
-			DoResizeCanvasAspectTab(justOpened);
+			DoResizeCanvasAspectTab(justOpenedAspect);
+			justOpenedAspect = false;
 			ImGui::EndTabItem();
 		}
 		ImGui::EndTabBar();
