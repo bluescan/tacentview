@@ -2,7 +2,7 @@
 //
 // Viewer settings stored as human-readable symbolic expressions.
 //
-// Copyright (c) 2019, 2020 Tristan Grimmer.
+// Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -41,8 +41,11 @@ void Viewer::Settings::ResetBehaviourSettings()
 {
 	SortKey						= 0;
 	SortAscending				= true;
-	ResampleFilter				= 2;			// Bilinear.
-	ResampleEdgeMode			= 0;			// Clamp.
+	ResampleFilter				= int(tImage::tResampleFilter::Bilinear);
+	ResampleEdgeMode			= int(tImage::tResampleEdgeMode::Clamp);
+	ResampleFilterRotateUp		= int(tImage::tResampleFilter::Bilinear);
+	ResampleFilterRotateDown	= int(tImage::tResampleFilter::None);
+	RotateMode					= 0;
 	ConfirmDeletes				= true;
 	ConfirmFileOverwrites		= true;
 	SlideshowLooping			= false;
@@ -118,6 +121,9 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(TransparentWorkArea);
 				ReadItem(ResampleFilter);
 				ReadItem(ResampleEdgeMode);
+				ReadItem(ResampleFilterRotateUp);
+				ReadItem(ResampleFilterRotateDown);
+				ReadItem(RotateMode);
 				ReadItem(ConfirmDeletes);
 				ReadItem(ConfirmFileOverwrites);
 				ReadItem(SlideshowLooping);
@@ -144,8 +150,11 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 		}
 	}
 
-	tiClamp(ResampleFilter, 0, int(tImage::tResampleFilter::NumFilters)-1);
+	tiClamp(ResampleFilter, 0, int(tImage::tResampleFilter::NumFilters)-1);			// No None allowed.
 	tiClamp(ResampleEdgeMode, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);
+	tiClamp(ResampleFilterRotateUp, 0, int(tImage::tResampleFilter::NumFilters));	// None allowed.
+	tiClamp(ResampleFilterRotateDown, 0, int(tImage::tResampleFilter::NumFilters));	// None allowed.
+	tiClamp(RotateMode, 0, 1);
 	tiClamp(BackgroundStyle, 0, 4);
 	tiClamp(WindowW, 640, screenW);
 	tiClamp(WindowH, 360, screenH);
@@ -190,6 +199,9 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(TransparentWorkArea);
 	WriteItem(ResampleFilter);
 	WriteItem(ResampleEdgeMode);
+	WriteItem(ResampleFilterRotateUp);
+	WriteItem(ResampleFilterRotateDown);
+	WriteItem(RotateMode);
 	WriteItem(ConfirmDeletes);
 	WriteItem(ConfirmFileOverwrites);
 	WriteItem(SlideshowLooping);

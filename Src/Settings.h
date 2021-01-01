@@ -2,7 +2,7 @@
 //
 // Viewer settings stored as human-readable symbolic expressions.
 //
-// Copyright (c) 2019, 2020 Tristan Grimmer.
+// Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -57,6 +57,9 @@ namespace Viewer
 		bool TransparentWorkArea;
 		int ResampleFilter;					// Matches tImage::tResampleFilter.
 		int ResampleEdgeMode;				// Matches tImage::tResampleEdgeMode.
+		int ResampleFilterRotateUp;			// Matches tImage::tResampleFilter.
+		int ResampleFilterRotateDown;		// Matches tImage::tResampleFilter.
+		int RotateMode;						// 0 = Crop. 1 = Fill.
 		bool ConfirmDeletes;
 		bool ConfirmFileOverwrites;
 		bool SlideshowLooping;
