@@ -632,6 +632,15 @@ void Image::Crop(int newWidth, int newHeight, tPicture::Anchor anchor, const tCo
 }
 
 
+void Image::Crop(const tColouri& borderColour, uint32 channels)
+{
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->Crop(borderColour, channels);
+
+	Dirty = true;
+}
+
+
 void Image::Resample(int newWidth, int newHeight, tImage::tResampleFilter filter, tImage::tResampleEdgeMode edgeMode)
 {
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())

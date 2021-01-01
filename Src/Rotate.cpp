@@ -49,12 +49,12 @@ void Viewer::DoRotateImageModal(bool justOpened)
 	}
 
 	ImGui::NewLine();
+	ImGui::Separator();
+	ImGui::NewLine();
+
 	if (ImGui::Button("Reset", tVector2(100, 0)))
 		RotateAnglePreview = 0.0f;
 
-	ImGui::NewLine();
-	ImGui::Separator();
-	ImGui::NewLine();
 	if (ImGui::Button("Cancel", tVector2(100, 0)))
 	{
 		RotateAnglePreview = 0.0f;

@@ -24,27 +24,15 @@ using namespace tImage;
 
 namespace Viewer
 {
-	void DoResizeWidthHeightInterface(int& srcW, int& srcH, int& dstW, int& dstH, bool& justOpened);
-	void DoResizeSampleFilterInterface(int srcW, int srcH, int dstW, int dstH);
+	void DoResizeWidthHeightInterface(int srcW, int srcH, int& dstW, int& dstH);
+	void DoResizeFilterInterface(int srcW, int srcH, int dstW, int dstH);
 	void DoResizeAnchorInterface();
 	void DoResizeCrop(int srcW, int srcH, int dstW, int dstH);
 }
 
 
-void Viewer::DoResizeWidthHeightInterface(int& srcW, int& srcH, int& dstW, int& dstH, bool& justOpened)
+void Viewer::DoResizeWidthHeightInterface(int srcW, int srcH, int& dstW, int& dstH)
 {
-	tAssert(CurrImage);
-	tPicture* picture = CurrImage->GetCurrentPic();
-	tAssert(picture);
-	srcW = picture->GetWidth();
-	srcH = picture->GetHeight();
-
-	if (justOpened)
-	{
-		dstW = srcW;
-		dstH = srcH;
-	}
-
 	float aspect = float(srcW) / float(srcH);
 	static bool lockAspect = true;
 
@@ -86,7 +74,7 @@ void Viewer::DoResizeWidthHeightInterface(int& srcW, int& srcH, int& dstW, int& 
 }
 
 
-void Viewer::DoResizeSampleFilterInterface(int srcW, int srcH, int dstW, int dstH)
+void Viewer::DoResizeFilterInterface(int srcW, int srcH, int dstW, int dstH)
 {
 	if ((dstW == srcW) && (dstH == srcH))
 		return;
@@ -151,22 +139,25 @@ void Viewer::DoResizeCrop(int srcW, int srcH, int dstW, int dstH)
 
 void Viewer::DoResizeImageModal(bool justOpened)
 {
-	int srcW, srcH;
-	static int dstW = 512;
-	static int dstH = 512;
-	DoResizeWidthHeightInterface(srcW, srcH, dstW, dstH, justOpened);
-	DoResizeSampleFilterInterface(srcW, srcH, dstW, dstH);
+	tAssert(CurrImage);		tPicture* picture = CurrImage->GetCurrentPic();		tAssert(picture);
+	int srcW				= picture->GetWidth();
+	int srcH				= picture->GetHeight();
+	static int dstW			= 512;
+	static int dstH			= 512;
+	if (justOpened)			{ dstW = srcW; dstH = srcH; }
+
+	DoResizeWidthHeightInterface(srcW, srcH, dstW, dstH);
+	DoResizeFilterInterface(srcW, srcH, dstW, dstH);
 
 	ImGui::NewLine();
+	ImGui::Separator();
+	ImGui::NewLine();
+
 	if (ImGui::Button("Reset", tVector2(100, 0)))
 	{
 		dstW = srcW;
 		dstH = srcH;
 	}
-
-	ImGui::NewLine();
-	ImGui::Separator();
-	ImGui::NewLine();
 	if (ImGui::Button("Cancel", tVector2(100, 0)))
 		ImGui::CloseCurrentPopup();
 
@@ -190,33 +181,78 @@ void Viewer::DoResizeImageModal(bool justOpened)
 
 void Viewer::DoResizeCanvasModal(bool justOpened)
 {
-	int srcW, srcH;
-	static int dstW = 512;
-	static int dstH = 512;
-
-	DoResizeWidthHeightInterface(srcW, srcH, dstW, dstH, justOpened);
-	DoResizeSampleFilterInterface(srcW, srcH, dstW, dstH);
-	DoResizeAnchorInterface();
-
-	if ((dstW > srcW) || (dstH > srcH))
+	tAssert(CurrImage);			tPicture* picture = CurrImage->GetCurrentPic();		tAssert(picture);
+	int srcW					= picture->GetWidth();
+	int srcH					= picture->GetHeight();
+	static int dstW				= 512;
+	static int dstH				= 512;
+	static bool autoDetectBorder= true;
+	static tColouri borderCol	= tColouri::black;
+	static bool channelR		= true;
+	static bool channelG		= true;
+	static bool channelB		= true;
+	static bool channelA		= true;
+	if (justOpened)
 	{
-		tColourf floatCol(Config.CropFillColour);
-		ImGui::ColorEdit4("Fill Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf);
-		Config.CropFillColour.Set(floatCol);
+		dstW = srcW;
+		dstH = srcH;
+		borderCol.Set(Viewer::PixelColour);
+	}
+
+	// Normal, Remove Border, Remove Border Colour.
+	static int mode = 0;
+	const char* modeNames[] = { "Normal", "Remove Borders" };
+	ImGui::Combo("Mode", &mode, modeNames, tNumElements(modeNames), tNumElements(modeNames));
+	ImGui::SameLine();
+	ShowHelpMark("Normal mode lets you specify dimensions and anchor.\nRemove Borders removes edges that all match a colour.");
+
+	if (mode == 0)
+	{
+		DoResizeWidthHeightInterface(srcW, srcH, dstW, dstH);
+		DoResizeAnchorInterface();
+
+		if ((dstW > srcW) || (dstH > srcH))
+		{
+			tColourf floatCol(Config.CropFillColour);
+			ImGui::ColorEdit4("Fill Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf);
+			Config.CropFillColour.Set(floatCol);
+		}
+	}
+	else if (mode == 1)
+	{
+		ImGui::Checkbox("R", &channelR); ImGui::SameLine();
+		ImGui::Checkbox("G", &channelG); ImGui::SameLine();
+		ImGui::Checkbox("B", &channelB); ImGui::SameLine();
+		ImGui::Checkbox("A", &channelA); ImGui::SameLine();
+		ImGui::Text("Channels");
+		ImGui::Checkbox("Auto-Detect", &autoDetectBorder);
+		if (!autoDetectBorder)
+		{
+			tColourf floatCol(borderCol);
+			ImGui::ColorEdit4("Border Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf);
+			borderCol.Set(floatCol);
+		}
 	}
 
 	ImGui::NewLine();
+	ImGui::Separator();
+	ImGui::NewLine();
+
 	if (ImGui::Button("Reset", tVector2(100, 0)))
 	{
 		Config.CropAnchor		= 4;
 		Config.CropFillColour	= tColouri::black;
 		dstW = srcW;
 		dstH = srcH;
+		autoDetectBorder = true;
+		borderCol.Set(Viewer::PixelColour);
+		channelR		= true;
+		channelG		= true;
+		channelB		= true;
+		channelA		= true;
+		mode = 0;
 	}
 
-	ImGui::NewLine();
-	ImGui::Separator();
-	ImGui::NewLine();
 	if (ImGui::Button("Cancel", tVector2(100, 0)))
 		ImGui::CloseCurrentPopup();
 
@@ -224,7 +260,26 @@ void Viewer::DoResizeCanvasModal(bool justOpened)
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 	if (ImGui::Button("Resize", tVector2(100, 0)))
 	{
-		DoResizeCrop(srcW, srcH, dstW, dstH);
+		if (mode == 0)
+		{
+			DoResizeCrop(srcW, srcH, dstW, dstH);
+		}
+		else if (mode == 1)
+		{
+			CurrImage->Unbind();
+
+			uint32 channels =
+				(channelR ? tMath::ColourChannel_R : 0) |
+				(channelG ? tMath::ColourChannel_G : 0) |
+				(channelB ? tMath::ColourChannel_B : 0) |
+				(channelA ? tMath::ColourChannel_A : 0);
+
+			CurrImage->Crop(autoDetectBorder ? picture->GetPixel(0, 0) : borderCol, channels);
+			CurrImage->Bind();
+			Viewer::SetWindowTitle();
+			Viewer::ZoomDownscaleOnly();
+		}
+
 		ImGui::CloseCurrentPopup();
 	}
 	ImGui::EndPopup();
@@ -287,6 +342,9 @@ void Viewer::DoResizeAspectModal(bool justOpened)
 	}
 
 	ImGui::NewLine();
+	ImGui::Separator();
+	ImGui::NewLine();
+
 	if (ImGui::Button("Reset", tVector2(100, 0)))
 	{
 		Config.CropAnchor		= 4;
@@ -296,9 +354,6 @@ void Viewer::DoResizeAspectModal(bool justOpened)
 		Config.ResizeAspectMode	= 0;
 	}
 
-	ImGui::NewLine();
-	ImGui::Separator();
-	ImGui::NewLine();
 	if (ImGui::Button("Cancel", tVector2(100, 0)))
 		ImGui::CloseCurrentPopup();
 
