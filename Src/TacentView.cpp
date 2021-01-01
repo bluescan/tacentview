@@ -76,6 +76,7 @@ namespace Viewer
 	Image FlipVImage;
 	Image RotateACWImage;
 	Image RotateCWImage;
+	Image RotateThetaImage;
 	Image FullscreenImage;
 	Image WindowedImage;
 	Image SkipBeginImage;
@@ -1569,6 +1570,16 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 		ShowToolTip("Rotate 90 Clockwise");
 
+		if (ImGui::ImageButton
+		(
+			ImTextureID(RotateThetaImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1, ColourBG,
+			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
+		)
+		{
+			Request_RotateImageModal = true;
+		}
+		ShowToolTip("Rotate Theta");
+
 		bool cropAvail = CurrImage && transAvail && !Config.Tile;
 		if (ImGui::ImageButton
 		(
@@ -2319,6 +2330,7 @@ void Viewer::LoadAppImages(const tString& dataDir)
 	FlipVImage				.Load(dataDir + "FlipV.png");
 	RotateACWImage			.Load(dataDir + "RotACW.png");
 	RotateCWImage			.Load(dataDir + "RotCW.png");
+	RotateThetaImage		.Load(dataDir + "RotTheta.png");
 	FullscreenImage			.Load(dataDir + "Fullscreen.png");
 	WindowedImage			.Load(dataDir + "Windowed.png");
 	SkipBeginImage			.Load(dataDir + "SkipBegin.png");
@@ -2356,6 +2368,7 @@ void Viewer::UnloadAppImages()
 	FlipVImage				.Unload();
 	RotateACWImage			.Unload();
 	RotateCWImage			.Unload();
+	RotateThetaImage		.Unload();
 	FullscreenImage			.Unload();
 	WindowedImage			.Unload();
 	SkipBeginImage			.Unload();
