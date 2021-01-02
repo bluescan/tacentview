@@ -29,6 +29,7 @@ namespace Viewer
 		bool ShowMenuBar;
 		bool ShowNavBar;
 		bool ShowImageDetails;
+		bool ShowPixelEditor;
 		bool ContentViewShow;
 		float ThumbnailWidth;
 		enum class SortKeyEnum

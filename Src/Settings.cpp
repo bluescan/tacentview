@@ -81,6 +81,7 @@ void Viewer::Settings::ResetUISettings(int screenW, int screenH)
 	ShowMenuBar					= true;
 	ShowNavBar					= true;
 	ShowImageDetails			= true;
+	ShowPixelEditor				= false;
 	ContentViewShow				= false;
 	ThumbnailWidth				= 128.0f;
 	OverlayCorner				= 3;
@@ -110,6 +111,7 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(ShowMenuBar);
 				ReadItem(ShowNavBar);
 				ReadItem(ShowImageDetails);
+				ReadItem(ShowPixelEditor);
 				ReadItem(ContentViewShow);
 				ReadItem(ThumbnailWidth);
 				ReadItem(SortKey);
@@ -188,6 +190,7 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(ShowMenuBar);
 	WriteItem(ShowNavBar);
 	WriteItem(ShowImageDetails);
+	WriteItem(ShowPixelEditor);
 	WriteItem(ContentViewShow);
 	WriteItem(ThumbnailWidth);
 	WriteItem(SortKey);

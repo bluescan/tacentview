@@ -102,9 +102,82 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 }
 
 
+void Viewer::ShowPixelEditorOverlay(bool* popen)
+{
+	tVector2 windowPos = GetDialogOrigin(3);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+	ImGuiWindowFlags flags =
+		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
+		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoFocusOnAppearing	|
+		ImGuiWindowFlags_NoNav;
+
+	if (ImGui::Begin("Edit Pixel", popen, flags))
+	{
+		static int lastCursorX = -1;
+		static int lastCursorY = -1;
+		static Image* lastImage = nullptr;
+		static tColourf floatCol = tColourf::black;
+		static tColourf floatColReset = tColourf::black;
+		static bool locked = false;
+		if ((lastCursorX != Viewer::CursorX) || (lastCursorY != Viewer::CursorY) || (lastImage != CurrImage))
+		{
+			lastCursorX = Viewer::CursorX;
+			lastCursorY = Viewer::CursorY;
+			lastImage = CurrImage;
+			if (!locked)
+				floatCol.Set(Viewer::PixelColour);
+			floatColReset.Set(Viewer::PixelColour);
+		}
+
+		tColourf origCol = floatCol;
+		if ((ImGui::ColorPicker4("Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf), floatColReset.E) && (floatCol != origCol))
+		{
+			if (!locked)
+			{
+				CurrImage->Unbind();
+				tColouri col; col.Set(floatCol);
+				CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col);
+				CurrImage->Bind();
+				Viewer::SetWindowTitle();
+			}
+			else
+			{
+				floatCol = origCol;
+			}
+		}
+
+		tVector4 resetVecCol(floatColReset.E);
+		bool resetPressed2 = ImGui::ColorButton("Reset Colour", resetVecCol, 0);
+		ImGui::SameLine();
+		bool resetPressed = ImGui::Button("Reset", tVector2(100, 0));
+		ImGui::SameLine();
+		if (resetPressed || resetPressed2)
+		{
+			CurrImage->Unbind();
+			tColouri col; col.Set(floatColReset);
+			CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col);
+			CurrImage->Bind();
+			Viewer::SetWindowTitle();
+		}
+		ImGui::SameLine();
+		ImGui::Checkbox("Lock", &locked);
+		ImGui::SameLine();
+		if (ImGui::Button("Apply", tVector2(100, 0)))
+		{
+			CurrImage->Unbind();
+			tColouri col; col.Set(floatCol);
+			CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col);
+			CurrImage->Bind();
+			Viewer::SetWindowTitle();
+		}
+	}
+	ImGui::End();
+}
+
+
 void Viewer::ShowCheatSheetPopup(bool* popen)
 {
-	tVector2 windowPos = GetDialogOrigin(4);
+	tVector2 windowPos = GetDialogOrigin(5);
 	ImGui::SetNextWindowBgAlpha(0.80f);
 	ImGui::SetNextWindowSize(tVector2(300.0f, 400.0f));
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);

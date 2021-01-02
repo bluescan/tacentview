@@ -2,7 +2,7 @@
 //
 // An image class that can load a file from disk into main memory and to VRAM.
 //
-// Copyright (c) 2019, 2020 Tristan Grimmer.
+// Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -85,6 +85,7 @@ public:
 	void Crop(int newWidth, int newHeight, tImage::tPicture::Anchor, const tColouri& fillColour = tColour::black);
 	void Crop(const tColouri& borderColour, uint32 channels = tMath::ColourChannel_RGBA);
 	void Resample(int newWidth, int newHeight, tImage::tResampleFilter filter, tImage::tResampleEdgeMode edgeMode);
+	void SetPixelColour(int x, int y, const tColouri&);
 
 	// Since from outside this class you can save to any filename, we need the ability to clear the dirty flag.
 	void ClearDirty()																									{ Dirty = false; }

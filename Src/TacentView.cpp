@@ -1392,6 +1392,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::MenuItem("Rotate Image...", "R") && CurrImage)
 				rotateImagePressed = true;
 
+			ImGui::MenuItem("Edit Pixel", "A", &Config.ShowPixelEditor);
 			ImGui::Separator();
 
 			ImGui::MenuItem("Property Editor...", "E", &PropEditorWindow);
@@ -1706,6 +1707,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (Config.ShowImageDetails)
 		ShowImageDetailsOverlay(&Config.ShowImageDetails, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), CursorX, CursorY, ZoomPercent);
 
+	if (Config.ShowPixelEditor)
+		ShowPixelEditorOverlay(&Config.ShowPixelEditor);
+
 	if (Config.ContentViewShow)
 		ShowContentViewDialog(&Config.ContentViewShow);
 
@@ -1873,6 +1877,7 @@ void Viewer::SetBasicViewAndBehaviour()
 	Config.ShowMenuBar = false;
 	Config.ShowNavBar = false;
 	Config.ShowImageDetails = false;
+	Config.ShowPixelEditor = false;
 	Config.AutoPropertyWindow = false;
 	Config.ContentViewShow = false;
 	Config.AutoPlayAnimatedImages = true;
@@ -1891,7 +1896,7 @@ bool Viewer::IsBasicViewAndBehaviour()
 {
 	return
 	(
-		!Config.ShowMenuBar			&& !Config.ShowNavBar			&& !Config.ShowImageDetails			&&
+		!Config.ShowMenuBar			&& !Config.ShowNavBar			&& !Config.ShowImageDetails			&& !Config.ShowPixelEditor	&&
 		!Config.AutoPropertyWindow	&& !Config.ContentViewShow		&& Config.AutoPlayAnimatedImages	&&
 		(Config.BackgroundStyle == int(Settings::BGStyle::None))	&&
 		Config.SlideshowLooping										&& Config.SlideshowProgressArc		&&
@@ -2100,6 +2105,10 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case GLFW_KEY_I:
 			Viewer::Config.ShowImageDetails = !Viewer::Config.ShowImageDetails;
+			break;
+
+		case GLFW_KEY_A:
+			Viewer::Config.ShowPixelEditor = !Viewer::Config.ShowPixelEditor;
 			break;
 
 		case GLFW_KEY_V:

@@ -2,7 +2,7 @@
 //
 // An image class that can load a file from disk into main memory and to VRAM.
 //
-// Copyright (c) 2019, 2020 Tristan Grimmer.
+// Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -645,6 +645,18 @@ void Image::Resample(int newWidth, int newHeight, tImage::tResampleFilter filter
 {
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->Resample(newWidth, newHeight, filter, edgeMode);
+
+	Dirty = true;
+}
+
+
+void Image::SetPixelColour(int x, int y, const tColouri& colour)
+{
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+	{
+		if ((x > 0) && (x < picture->GetWidth()) && (y > 0) && (y < picture->GetHeight()))
+			picture->SetPixel(x, y, colour);
+	}
 
 	Dirty = true;
 }
