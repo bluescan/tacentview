@@ -25,7 +25,7 @@ using namespace tImage;
 void Viewer::DoRotateImageModal(bool justOpened)
 {
 	if (justOpened)
-		Viewer::ZoomDownscaleOnly();
+		Viewer::ResetPan();
 
 	ImGui::InputFloat("Edit Angle", &RotateAnglePreview, 0.01f, 0.1f, "%.3f");
 	ImGui::SliderFloat("Angle", &RotateAnglePreview, -180.0f, 180.0f);
@@ -60,7 +60,9 @@ void Viewer::DoRotateImageModal(bool justOpened)
 	(
 		"Fill will result in a slightly larger image that uses the fill colour where necessary.\n"
 		"Crop will result in a slightly smaller image after rotation but it will be full.\n"
-		"Crop Resize is the same as Crop and then resamples to the original size with upfilter."
+		"Crop Resize is the same as Crop and then resamples to the original size with upfilter.\n"
+		"For both crop modes, the aspect ratio is preserved for rotations that are within +-45\n"
+		"degrees on either side. If the rotation is mostly vertical, the reciprical aspect is used."
 	);
 
 	if (Config.RotateMode == int(Settings::RotMode::Fill))
@@ -90,6 +92,7 @@ void Viewer::DoRotateImageModal(bool justOpened)
 		tPicture* picture = CurrImage->GetCurrentPic(); tAssert(picture);
 		int origW = picture->GetWidth();
 		int origH = picture->GetHeight();
+
 		CurrImage->Unbind();
 		CurrImage->Rotate
 		(
@@ -102,8 +105,29 @@ void Viewer::DoRotateImageModal(bool justOpened)
 		{
 			// If one of the crop modes is selected we need to crop the edges. Since rectangles are made of lines and there
 			// is symmetry and we can compute the reduced size by subtracting the original size from the rotated size.
-			int newW = origW - (picture->GetWidth() - origW);
-			int newH = origH - (picture->GetHeight() - origH);
+			int rotW = picture->GetWidth();
+			int rotH = picture->GetHeight();
+			bool aspectFlip = ((origW > origH) && (rotW < rotH)) || ((origW < origH) && (rotW > rotH));
+			if (aspectFlip)
+				tSwap(origW, origH);
+
+			int dx = rotW - origW;
+			int dy = rotH - origH;
+			int newW = origW - dx;
+			int newH = origH - dy;
+
+			if (dx > origW/2)
+			{
+				newW = origW - origW/2;
+				newH = (newW*origH)/origW;
+			}
+			else if (dy > origH/2)
+			{
+				newH = origH - origH/2;
+				newW = (newH*origW)/origH;
+			}
+
+			// The above code has been tested with a 1x1 input and (newH,newW) result correcty as (1,1). 
 			CurrImage->Crop(newW, newH, tPicture::Anchor::MiddleMiddle);
 		}
 

@@ -76,6 +76,7 @@ namespace Viewer
 	void SetWindowTitle();
 	void ZoomFit();
 	void ZoomDownscaleOnly();
+	void ResetPan(bool resetX = true, bool resetY = true);
 	tMath::tVector2 GetDialogOrigin(float index);
 
 	void ConvertScreenPosToImagePos

@@ -196,7 +196,6 @@ namespace Viewer
 	void OnNextPart();
 	bool OnSkipBegin();
 	bool OnSkipEnd();
-	void ResetPan(bool resetX = true, bool resetY = true);
 	void ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan);
 	void SetBasicViewAndBehaviour();
 	bool IsBasicViewAndBehaviour();
@@ -1421,6 +1420,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		bool isOpenRotateImage = true;
 		if (ImGui::BeginPopupModal("Rotate Image", &isOpenRotateImage, ImGuiWindowFlags_AlwaysAutoResize))
 			DoRotateImageModal(rotateImagePressed);
+		else
+			RotateAnglePreview = 0.0f;
 
 		ImGui::PopStyleVar();
 
