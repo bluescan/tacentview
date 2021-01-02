@@ -53,16 +53,17 @@ void Viewer::DoRotateImageModal(bool justOpened)
 		);
 	}
 
-	static const char* modeNames[] = { "Crop", "Fill" };
+	static const char* modeNames[] = { "Fill", "Crop", "Crop Resize" };
 	ImGui::Combo("Mode", &Config.RotateMode, modeNames, tNumElements(modeNames), tNumElements(modeNames));
 	ImGui::SameLine();
 	ShowHelpMark
 	(
+		"Fill will result in a slightly larger image that uses the fill colour where necessary.\n"
 		"Crop will result in a slightly smaller image after rotation but it will be full.\n"
-		"Fill will result in a slightly larger image that uses the fill colour where necessary."
+		"Crop Resize is the same as Crop and then resamples to the original size with upfilter."
 	);
 
-	if (Config.RotateMode == 1)
+	if (Config.RotateMode == int(Settings::RotMode::Fill))
 	{
 		tColourf floatCol(Config.CropFillColour);
 		ImGui::ColorEdit4("Fill Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf);
@@ -86,6 +87,9 @@ void Viewer::DoRotateImageModal(bool justOpened)
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 	if (ImGui::Button("Rotate", tVector2(100, 0)))
 	{
+		tPicture* picture = CurrImage->GetCurrentPic(); tAssert(picture);
+		int origW = picture->GetWidth();
+		int origH = picture->GetHeight();
 		CurrImage->Unbind();
 		CurrImage->Rotate
 		(
@@ -93,6 +97,23 @@ void Viewer::DoRotateImageModal(bool justOpened)
 			tResampleFilter(Config.ResampleFilterRotateUp),
 			tResampleFilter(Config.ResampleFilterRotateDown)
 		);
+
+		if ((Config.RotateMode == int(Settings::RotMode::Crop)) || (Config.RotateMode == int(Settings::RotMode::CropResize)))
+		{
+			// If one of the crop modes is selected we need to crop the edges. Since rectangles are made of lines and there
+			// is symmetry and we can compute the reduced size by subtracting the original size from the rotated size.
+			int newW = origW - (picture->GetWidth() - origW);
+			int newH = origH - (picture->GetHeight() - origH);
+			CurrImage->Crop(newW, newH, tPicture::Anchor::MiddleMiddle);
+		}
+
+		if (Config.RotateMode == int(Settings::RotMode::CropResize))
+		{
+			// The crop is done. Now resample.
+			tResampleFilter filter = (Config.ResampleFilterRotateUp != int(tResampleFilter::None)) ? tResampleFilter(Config.ResampleFilterRotateUp) : tResampleFilter::Nearest;
+			CurrImage->Resample(origW, origH, filter, tResampleEdgeMode::Clamp);
+		}
+
 		CurrImage->Bind();
 		RotateAnglePreview = 0.0f;
 		Viewer::SetWindowTitle();

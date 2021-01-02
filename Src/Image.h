@@ -81,8 +81,8 @@ public:
 	void Rotate90(bool antiClockWise);
 	void Rotate(float angle, const tColouri& fill, tImage::tResampleFilter upFilter, tImage::tResampleFilter downFilter);
 	void Flip(bool horizontal);
-	void Crop(int newWidth, int newHeight, int originX, int originY, const tColouri& fillColour);
-	void Crop(int newWidth, int newHeight, tImage::tPicture::Anchor, const tColouri& fillColour);
+	void Crop(int newWidth, int newHeight, int originX, int originY, const tColouri& fillColour = tColour::black);
+	void Crop(int newWidth, int newHeight, tImage::tPicture::Anchor, const tColouri& fillColour = tColour::black);
 	void Crop(const tColouri& borderColour, uint32 channels = tMath::ColourChannel_RGBA);
 	void Resample(int newWidth, int newHeight, tImage::tResampleFilter filter, tImage::tResampleEdgeMode edgeMode);
 

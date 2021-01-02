@@ -59,7 +59,15 @@ namespace Viewer
 		int ResampleEdgeMode;				// Matches tImage::tResampleEdgeMode.
 		int ResampleFilterRotateUp;			// Matches tImage::tResampleFilter.
 		int ResampleFilterRotateDown;		// Matches tImage::tResampleFilter.
-		int RotateMode;						// 0 = Crop. 1 = Fill.
+
+		enum class RotMode
+		{
+			Fill,
+			Crop,
+			CropResize,
+			NumModes
+		};
+		int RotateMode;
 		bool ConfirmDeletes;
 		bool ConfirmFileOverwrites;
 		bool SlideshowLooping;

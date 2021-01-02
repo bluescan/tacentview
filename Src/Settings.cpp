@@ -45,7 +45,7 @@ void Viewer::Settings::ResetBehaviourSettings()
 	ResampleEdgeMode			= int(tImage::tResampleEdgeMode::Clamp);
 	ResampleFilterRotateUp		= int(tImage::tResampleFilter::Bilinear);
 	ResampleFilterRotateDown	= int(tImage::tResampleFilter::None);
-	RotateMode					= 0;
+	RotateMode					= int(RotMode::Fill);
 	ConfirmDeletes				= true;
 	ConfirmFileOverwrites		= true;
 	SlideshowLooping			= false;
@@ -154,7 +154,7 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 	tiClamp(ResampleEdgeMode, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);
 	tiClamp(ResampleFilterRotateUp, 0, int(tImage::tResampleFilter::NumFilters));	// None allowed.
 	tiClamp(ResampleFilterRotateDown, 0, int(tImage::tResampleFilter::NumFilters));	// None allowed.
-	tiClamp(RotateMode, 0, 1);
+	tiClamp(RotateMode, 0, int(RotMode::NumModes)-1);
 	tiClamp(BackgroundStyle, 0, 4);
 	tiClamp(WindowW, 640, screenW);
 	tiClamp(WindowH, 360, screenH);
