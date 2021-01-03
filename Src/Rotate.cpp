@@ -20,6 +20,7 @@ using namespace tStd;
 using namespace tSystem;
 using namespace tMath;
 using namespace tImage;
+namespace Viewer { extern void DoFillColourInterface(const char* = nullptr); }
 
 
 void Viewer::DoRotateImageModal(bool justOpened)
@@ -66,11 +67,7 @@ void Viewer::DoRotateImageModal(bool justOpened)
 	);
 
 	if (Config.RotateMode == int(Settings::RotMode::Fill))
-	{
-		tColourf floatCol(Config.CropFillColour);
-		ImGui::ColorEdit4("Fill Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf);
-		Config.CropFillColour.Set(floatCol);
-	}
+		DoFillColourInterface();
 
 	ImGui::NewLine();
 	ImGui::Separator();
@@ -96,7 +93,7 @@ void Viewer::DoRotateImageModal(bool justOpened)
 		CurrImage->Unbind();
 		CurrImage->Rotate
 		(
-			tDegToRad(RotateAnglePreview), Config.CropFillColour,
+			tDegToRad(RotateAnglePreview), Config.FillColour,
 			tResampleFilter(Config.ResampleFilterRotateUp),
 			tResampleFilter(Config.ResampleFilterRotateDown)
 		);

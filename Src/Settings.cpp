@@ -57,7 +57,7 @@ void Viewer::Settings::ResetBehaviourSettings()
 	SaveFileJpegQuality			= 95;
 	SaveAllSizeMode				= 0;
 	CropAnchor					= 4;
-	CropFillColour				= tColouri::black;
+	FillColour					= tColouri::black;
 	ResizeAspectNum				= 16;
 	ResizeAspectDen				= 9;
 	ResizeAspectMode			= 0;
@@ -137,7 +137,7 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(SaveFileJpegQuality);
 				ReadItem(SaveAllSizeMode);
 				ReadItem(CropAnchor);
-				ReadItem(CropFillColour);
+				ReadItem(FillColour);
 				ReadItem(ResizeAspectNum);
 				ReadItem(ResizeAspectDen);
 				ReadItem(ResizeAspectMode);
@@ -216,7 +216,7 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(SaveFileJpegQuality);
 	WriteItem(SaveAllSizeMode);
 	WriteItem(CropAnchor);
-	WriteItem(CropFillColour);
+	WriteItem(FillColour);
 	WriteItem(ResizeAspectNum);
 	WriteItem(ResizeAspectDen);
 	WriteItem(ResizeAspectMode);

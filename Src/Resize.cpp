@@ -27,10 +27,11 @@ namespace Viewer
 	void DoResizeWidthHeightInterface(int srcW, int srcH, int& dstW, int& dstH);
 	void DoResizeFilterInterface(int srcW, int srcH, int dstW, int dstH);
 	void DoResizeAnchorInterface();
+	void DoFillColourInterface(const char* tootTipText = nullptr);
 	void DoResizeCrop(int srcW, int srcH, int dstW, int dstH);
 
 	void DoResizeCanvasAnchorTab(bool justOpened);
-	void DoResizeCanvasBorderTab(bool justOpened);
+	void DoResizeCanvasRemoveBordersTab(bool justOpened);
 	void DoResizeCanvasAspectTab(bool justOpened);
 }
 
@@ -128,16 +129,41 @@ void Viewer::DoResizeCrop(int srcW, int srcH, int dstW, int dstH)
 		{
 			int originX = (Viewer::CursorX * (srcW - dstW)) / srcW;
 			int originY = (Viewer::CursorY * (srcH - dstH)) / srcH;
-			CurrImage->Crop(dstW, dstH, originX, originY, Config.CropFillColour);
+			CurrImage->Crop(dstW, dstH, originX, originY, Config.FillColour);
 		}
 		else
 		{
-			CurrImage->Crop(dstW, dstH, tPicture::Anchor(Config.CropAnchor), Config.CropFillColour);
+			CurrImage->Crop(dstW, dstH, tPicture::Anchor(Config.CropAnchor), Config.FillColour);
 		}
 		CurrImage->Bind();
 		Viewer::SetWindowTitle();
 		Viewer::ZoomDownscaleOnly();
 	}
+}
+
+
+void Viewer::DoFillColourInterface(const char* toolTipText)
+{
+	tColourf floatCol(Config.FillColour);
+	ImGui::ColorEdit4
+	(
+		"Fill Colour", floatCol.E,
+		ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_NoInputs
+	);
+	Config.FillColour.Set(floatCol);
+	if (toolTipText)
+		ShowToolTip(toolTipText);
+
+	ImGui::SameLine();
+	tPicture* picture = CurrImage ? CurrImage->GetCurrentPic() : nullptr;
+	if (ImGui::Button("Origin", tVector2(63, 0)) && picture)
+		Config.FillColour = picture->GetPixel(0, 0);
+	ShowToolTip("Pick the colour from pixel (0, 0) in the current image.");
+
+	ImGui::SameLine();
+	if (ImGui::Button("Cursor", tVector2(63, 0)))
+		Config.FillColour.Set(Viewer::PixelColour);
+	ShowToolTip("Pick the colour from the cursor pixel in the current image.");
 }
 
 
@@ -213,11 +239,11 @@ void Viewer::DoResizeCanvasModal(bool justOpened)
 			ImGui::EndTabItem();
 		}
 
-		tab = ImGui::BeginTabItem("Border");
+		tab = ImGui::BeginTabItem("Remove Borders");
 		ShowToolTip("Remove same-coloured border from image.");
 		if (tab)
 		{
-			DoResizeCanvasBorderTab(justOpenedBorder);
+			DoResizeCanvasRemoveBordersTab(justOpenedBorder);
 			justOpenedBorder = false;
 			ImGui::EndTabItem();
 		}
@@ -239,7 +265,10 @@ void Viewer::DoResizeCanvasModal(bool justOpened)
 
 void Viewer::DoResizeCanvasAnchorTab(bool justOpened)
 {
-	tAssert(CurrImage);			tPicture* picture = CurrImage->GetCurrentPic();		tAssert(picture);
+	tAssert(CurrImage);
+	tPicture* picture = CurrImage->GetCurrentPic();
+	tAssert(picture);
+
 	int srcW					= picture->GetWidth();
 	int srcH					= picture->GetHeight();
 	static int dstW				= 512;
@@ -253,11 +282,8 @@ void Viewer::DoResizeCanvasAnchorTab(bool justOpened)
 	ImGui::NewLine();
 	DoResizeWidthHeightInterface(srcW, srcH, dstW, dstH);
 	if ((dstW > srcW) || (dstH > srcH))
-	{
-		tColourf floatCol(Config.CropFillColour);
-		ImGui::ColorEdit4("Fill Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf);
-		Config.CropFillColour.Set(floatCol);
-	}
+		DoFillColourInterface();
+
 	DoResizeAnchorInterface();
 
 	ImGui::NewLine();
@@ -267,7 +293,7 @@ void Viewer::DoResizeCanvasAnchorTab(bool justOpened)
 	if (ImGui::Button("Reset", tVector2(100, 0)))
 	{
 		Config.CropAnchor		= 4;
-		Config.CropFillColour	= tColouri::black;
+		Config.FillColour		= tColouri::black;
 		dstW = srcW;
 		dstH = srcH;
 	}
@@ -285,18 +311,12 @@ void Viewer::DoResizeCanvasAnchorTab(bool justOpened)
 }
 
 
-void Viewer::DoResizeCanvasBorderTab(bool justOpened)
+void Viewer::DoResizeCanvasRemoveBordersTab(bool justOpened)
 {
-	tAssert(CurrImage);			tPicture* picture = CurrImage->GetCurrentPic();		tAssert(picture);
-	static tColouri borderCol	= tColouri::black;
 	static bool channelR		= true;
 	static bool channelG		= true;
 	static bool channelB		= true;
 	static bool channelA		= true;
-	if (justOpened)
-	{
-		borderCol.Set(Viewer::PixelColour);
-	}
 	ImGui::NewLine();
 
 	// You cannot have all channels off.
@@ -315,17 +335,7 @@ void Viewer::DoResizeCanvasBorderTab(bool justOpened)
 	ImGui::Text("Channels");
 	ShowToolTip("These channels are checked for border colour match.\nAt least one must be selected.");
 
-	tColourf floatCol(borderCol);
-	ImGui::ColorEdit4("Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf);
-	borderCol.Set(floatCol);
-	ShowToolTip("If border matches this colour it will be cropped.");
-
-	if (ImGui::Button("Origin Colour", tVector2(100, 0)))
-		borderCol = picture->GetPixel(0, 0);
-	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("Cursor Colour", tVector2(100, 0)))
-		borderCol.Set(Viewer::PixelColour);
+	DoFillColourInterface("If border matches this colour it will be cropped.");
 
 	ImGui::NewLine();
 	ImGui::Separator();
@@ -333,7 +343,7 @@ void Viewer::DoResizeCanvasBorderTab(bool justOpened)
 
 	if (ImGui::Button("Reset", tVector2(100, 0)))
 	{
-		borderCol.Set(Viewer::PixelColour);
+		Config.FillColour.Set(Viewer::PixelColour);
 		channelR = true;
 		channelG = true;
 		channelB = true;
@@ -354,7 +364,7 @@ void Viewer::DoResizeCanvasBorderTab(bool justOpened)
 			(channelA ? tMath::ColourChannel_A : 0);
 
 		CurrImage->Unbind();
-		CurrImage->Crop(borderCol, channels);
+		CurrImage->Crop(Config.FillColour, channels);
 		CurrImage->Bind();
 		Viewer::SetWindowTitle();
 		Viewer::ZoomDownscaleOnly();
@@ -412,11 +422,7 @@ void Viewer::DoResizeCanvasAspectTab(bool justOpened)
 	ShowHelpMark("Crop mode cuts off sides resulting in a filled image.\nLetterbox mode adds coloured borders resulting in whole image being visible.");
 
 	if (Config.ResizeAspectMode == 1)
-	{
-		tColourf floatCol(Config.CropFillColour);
-		ImGui::ColorEdit4("Fill Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf);
-		Config.CropFillColour.Set(floatCol);
-	}
+		DoFillColourInterface();
 
 	DoResizeAnchorInterface();
 
@@ -427,7 +433,7 @@ void Viewer::DoResizeCanvasAspectTab(bool justOpened)
 	if (ImGui::Button("Reset", tVector2(100, 0)))
 	{
 		Config.CropAnchor		= 4;
-		Config.CropFillColour	= tColouri::black;
+		Config.FillColour		= tColouri::black;
 		Config.ResizeAspectNum	= 16;
 		Config.ResizeAspectDen	= 9;
 		Config.ResizeAspectMode	= 0;
