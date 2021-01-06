@@ -3,6 +3,7 @@
 build*/
 
 # Ignore specific directories.
+/Screenshots/SampleImages/
 
 # Filetypes in directories.
 TestImages/FlipbookEXR/
