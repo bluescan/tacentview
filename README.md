@@ -66,7 +66,7 @@ Alt-Enter toggles fullscreen mode. In this mode the bottom navigation bar and to
 
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_Prefs.png)
 
-The 'transparent work area' option in the preferences allows you to see right through to your desktop -- interpreting the alpha channel in the image, if present, as opacity. If you set the viewer to basic-mode (B) with no UI widgets visible, and enter fullscreen mode (Alt-Enter), you can do things like play animated semitransparent webp file right over your desktop. This works in both Linux and Windows as shown below.
+The 'transparent work area' option in the preferences allows you to see right through to your desktop -- interpreting the alpha channel in the image, if present, as opacity. If you set the viewer to basic-mode (B-key, no UI widgets), and enter fullscreen mode (Alt-Enter), you can do things like play animated semitransparent webp file right over your desktop. The screenshot below shows transparent-work-area turned on while in windowed (non-fullscreen) mode. This works in both Linux and Windows.
 
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_TransparentWorkArea.png)
 
