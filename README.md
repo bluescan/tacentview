@@ -28,7 +28,7 @@ Contact sheet (AKA flipbook) textures may be generated. Images may be 'played' i
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_ContactSheet.png) 
 
 
-Flip, rotate-by-90-degrees, cropping and viewing textures in tiled mode is supported.
+Flip, rotate-by-90-degrees, rotate-arbitrarily (with live preview), cropping, and viewing textures in tiled mode is supported. There are also some powerful tools to resize images either by resampling or adjusting the canvas size. The 'aspect' mode of resize-canvas is useful for changing a photo's aspect ratio without any non-uniform scale. You get to set the anchor and choose whether you want the image letter-boxed or cropped. There is also a border removal tool that finds all matching pixels around the edges of an image and crops them.
 
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_Crop.png)
 
