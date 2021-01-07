@@ -57,7 +57,7 @@ EXR support also uses reference code from OpenEXR and should be able to load mos
 ![EXR Loading](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_EXR.png)
 
 
-Some formats store multiple images inside a single file. A dds for example may be a cubemap with 6 sides or a BC compressed image with mipmaps. The property-editor window allows you to display which image/part you see. The hypercube below (courtesy [Jason Hise](https://blog.wikimedia.org/2016/09/22/math-gifs/) under CC0) shows the options and play controls for a multi-frame animated gif.
+Other formats store multiple images inside a single file. A dds may be a cubemap with 6 sides or a BC compressed image with mipmaps. A tiff may also include multiple 'pages'. Webp and png/apng files may be animated. For these formats the property-editor window allows you to display which frame you see. The hypercube below (courtesy [Jason Hise](https://blog.wikimedia.org/2016/09/22/math-gifs/) under CC0) shows the options and play controls for a multi-frame animated gif.
 
 ![AnimGif](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_Anim.png)
 
@@ -68,7 +68,7 @@ Alt-Enter toggles fullscreen mode. In this mode the bottom navigation bar and to
 
 # building from source
 
-For convenience pre-built binaries are available for Windows and Ubuntu/Debian in the Releases section. Follow the instructions below to build from source.
+For convenience pre-built binaries are available for Windows and Ubuntu/Debian in the Releases section. Other Linuxes can use the [Snap Store Release](https://snapcraft.io/tacentview). Follow the instructions below to build from source.
 
 ## windows
 
@@ -125,6 +125,7 @@ This project relies on myriad 3rd-party libraries. In the Data folder you will f
 * OpenEXR
 * Roboto Font
 * WebP Reference Library
+* LibTIFF
 * ZLib
 * This software is based in part on the work of the Independent JPEG Group.
 * This software includes [Radiance software](http://radsite.lbl.gov/) developed by the [Lawrence Berkeley National Laboratory](http://www.lbl.gov/).
