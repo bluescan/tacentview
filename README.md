@@ -66,6 +66,10 @@ Alt-Enter toggles fullscreen mode. In this mode the bottom navigation bar and to
 
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_Prefs.png)
 
+The 'transparent work area' option in the preferences allows you to see right through to your desktop -- interpreting the alpha channel in the image, if present, as opacity. If you set the viewer to basic-mode (B) with no UI widgets visible, and enter fullscreen mode (Alt-Enter), you can do things like play animated semitransparent webp file right over your desktop. This works in both Linux and Windows as shown below.
+
+![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_TransparentWorkArea.png)
+
 # building from source
 
 For convenience pre-built binaries are available for Windows and Ubuntu/Debian in the Releases section. Other Linuxes can use the [Snap Store Release](https://snapcraft.io/tacentview). Follow the instructions below to build from source.
