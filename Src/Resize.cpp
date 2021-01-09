@@ -99,7 +99,11 @@ void Viewer::DoResizeAnchorInterface()
 	static const char* shortNames[3*3] = { "TL", "TM", "TR", "ML", "MM", "MR", "BL", "BM", "BR" };
 	static const char* longNames[3*3] = { "Top-Left", "Top-Middle", "Top-Right", "Middle-Left", "Middle", "Middle-Right", "Bottom-Left", "Bottom-Middle", "Bottom-Right" };
 
-	ImGui::Text("\nAnchor: %s", (Config.CropAnchor == -1) ? "Cursor Position" : longNames[Config.CropAnchor]);
+	ImGui::NewLine();
+	ImGui::Text("Anchor: %s", (Config.CropAnchor == -1) ? "Cursor Position" : longNames[Config.CropAnchor]);
+	ImGui::SameLine();
+	ShowHelpMark("Choose an anchor below. To use the cursor position, deselect the current anchor.");
+
 	ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, tVector2(0.5f, 0.5f));
 	for (int y = 0; y < 3; y++)
 	{
