@@ -145,12 +145,13 @@ bool Image::Load()
 			int numFrames = apng.GetNumFrames();
 			for (int f = 0; f < numFrames; f++)
 			{
-				tImageAPNG::Frame* frame = apng.StealFrame(0);
+				tFrame* frame = apng.StealFrame(0);
 				tPicture* picture = new tPicture();
 
-				// It's ok to steal the pixels as the frame destructor does not delete them.
-				picture->Set(frame->Width, frame->Height, frame->Pixels, false);
+				picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
 				picture->Duration = frame->Duration;
+
+				// Since the pixels were stolen, the frame destructor will not delete them.
 				delete frame;
 				Pictures.Append(picture);
 			}
@@ -199,12 +200,13 @@ bool Image::Load()
 			int numFrames = gif.GetNumFrames();
 			for (int f = 0; f < numFrames; f++)
 			{
-				tImageGIF::Frame* frame = gif.StealFrame(0);
+				tFrame* frame = gif.StealFrame(0);
 				tPicture* picture = new tPicture();
 				
-				// It's ok to steal the pixels as the frame destructor does not delete them.
-				picture->Set(gif.GetWidth(), gif.GetHeight(), frame->Pixels, false);
+				picture->Set(gif.GetWidth(), gif.GetHeight(), frame->StealPixels(), false);
 				picture->Duration = frame->Duration;
+
+				// Since the pixels were stolen, the frame destructor will not delete them.
 				delete frame;
 				Pictures.Append(picture);
 			}
@@ -238,12 +240,12 @@ bool Image::Load()
 			int numFrames = ico.GetNumFrames();
 			for (int p = 0; p < numFrames; p++)
 			{
-				tImageICO::Frame* frame = ico.StealFrame(0);
+				tFrame* frame = ico.StealFrame(0);
 				tAssert(frame);
 				tPicture* picture = new tPicture();
-				
-				// It's ok to steal the pixels as the part destructor does not delete them.
-				picture->Set(frame->Width, frame->Height, frame->Pixels, false);
+				picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
+
+				// Since the pixels were stolen, the frame destructor will not delete them.
 				delete frame;
 				Pictures.Append(picture);
 			}
@@ -307,11 +309,11 @@ bool Image::Load()
 			int numFrames = tiff.GetNumFrames();
 			for (int f = 0; f < numFrames; f++)
 			{
-				tImageTIFF::Frame* frame = tiff.StealFrame(0);
+				tFrame* frame = tiff.StealFrame(0);
 				tPicture* picture = new tPicture();
+				picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
 
-				// It's ok to steal the pixels as the frame destructor does not delete them.
-				picture->Set(frame->Width, frame->Height, frame->Pixels, false);
+				// Since the pixels were stolen, the frame destructor will not delete them.
 				delete frame;
 				Pictures.Append(picture);
 			}
@@ -328,12 +330,13 @@ bool Image::Load()
 			int numFrames = webp.GetNumFrames();
 			for (int f = 0; f < numFrames; f++)
 			{
-				tImageWEBP::Frame* frame = webp.StealFrame(0);
+				tFrame* frame = webp.StealFrame(0);
 				tPicture* picture = new tPicture();
 
-				// It's ok to steal the pixels as the frame destructor does not delete them.
-				picture->Set(frame->Width, frame->Height, frame->Pixels, false);
+				picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
 				picture->Duration = frame->Duration;
+
+				// Since the pixels were stolen, the frame destructor will not delete them.
 				delete frame;
 				Pictures.Append(picture);
 			}
