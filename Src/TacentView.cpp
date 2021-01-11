@@ -42,6 +42,7 @@
 #include "Image.h"
 #include "Dialogs.h"
 #include "ContactSheet.h"
+#include "MultiFrame.h"
 #include "ContentView.h"
 #include "Crop.h"
 #include "Resize.h"
@@ -116,6 +117,7 @@ namespace Viewer
 	bool Request_ResizeCanvasModal				= false;
 	bool Request_RotateImageModal				= false;
 	bool Request_ContactSheetModal				= false;
+	bool Request_MultiFrameModal				= false;
 	bool Request_DeleteFileModal				= false;
 	bool Request_DeleteFileNoRecycleModal		= false;
 	bool Request_RenameModal					= false;
@@ -1289,9 +1291,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		//
 		// File Menu.
 		//
-		bool saveAsPressed = Request_SaveAsModal;					Request_SaveAsModal = false;
-		bool saveAllPressed = Request_SaveAllModal;					Request_SaveAllModal = false;
-		bool saveContactSheetPressed = Request_ContactSheetModal;	Request_ContactSheetModal = false;
+		bool saveAsPressed				= Request_SaveAsModal;			Request_SaveAsModal			= false;
+		bool saveAllPressed				= Request_SaveAllModal;			Request_SaveAllModal		= false;
+		bool saveContactSheetPressed	= Request_ContactSheetModal;	Request_ContactSheetModal	= false;
+		bool saveMultiFramePressed		= Request_MultiFrameModal;		Request_MultiFrameModal		= false;
 		if (ImGui::BeginMenu("File"))
 		{
 			// Show file menu items...
@@ -1305,6 +1308,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if (ImGui::MenuItem("Save Contact Sheet...", "C") && (Images.GetNumItems() > 1))
 				saveContactSheetPressed = true;
+
+			if (ImGui::MenuItem("Save Multi-Frame...", "Ctrl-M") && (Images.GetNumItems() > 1))
+				saveMultiFramePressed = true;
 
 			ImGui::Separator();
 			if (ImGui::MenuItem("Quit", "Alt-F4"))
@@ -1320,21 +1326,28 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		// The unused isOpenSaveAs bool is just so we get a close button in ImGui. 
 		bool isOpenSaveAs = true;
 		if (ImGui::BeginPopupModal("Save As", &isOpenSaveAs, ImGuiWindowFlags_AlwaysAutoResize))
-			DoSaveAsModalDialog(saveAsPressed);
+			DoSaveAsModal(saveAsPressed);
 
 		if (saveAllPressed)
 			ImGui::OpenPopup("Save All");
 		// The unused isOpenSaveAll bool is just so we get a close button in ImGui. 
 		bool isOpenSaveAll = true;
 		if (ImGui::BeginPopupModal("Save All", &isOpenSaveAll, ImGuiWindowFlags_AlwaysAutoResize))
-			DoSaveAllModalDialog(saveAllPressed);
+			DoSaveAllModal(saveAllPressed);
 
 		if (saveContactSheetPressed)
 			ImGui::OpenPopup("Contact Sheet");
 		// The unused isOpenContactSheet bool is just so we get a close button in ImGui. 
 		bool isOpenContactSheet = true;
 		if (ImGui::BeginPopupModal("Contact Sheet", &isOpenContactSheet, ImGuiWindowFlags_AlwaysAutoResize))
-			DoContactSheetModalDialog(saveContactSheetPressed);
+			DoContactSheetModal(saveContactSheetPressed);
+
+		if (saveMultiFramePressed)
+			ImGui::OpenPopup("Multi Frame");
+		// The unused isOpenMultiFrame bool is just so we get a close button in ImGui. 
+		bool isOpenMultiFrame = true;
+		if (ImGui::BeginPopupModal("Multi Frame", &isOpenMultiFrame, ImGuiWindowFlags_AlwaysAutoResize))
+			DoMultiFrameModal(saveMultiFramePressed);
 
 		ImGui::PopStyleVar();
 
@@ -2095,8 +2108,15 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case GLFW_KEY_M:
-			if (!CropMode)
+			if (modifiers == GLFW_MOD_CONTROL)
+			{
+				if (Images.GetNumItems() > 1)
+					Request_MultiFrameModal = true;
+			}
+			else if (!CropMode)
+			{
 				Config.ShowMenuBar = !Config.ShowMenuBar;
+			}
 			break;
 
 		case GLFW_KEY_N:

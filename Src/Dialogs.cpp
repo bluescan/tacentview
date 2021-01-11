@@ -223,6 +223,7 @@ void Viewer::ShowCheatSheetPopup(bool* popen)
 		ImGui::Text("I");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Image Details");
 		ImGui::Text("T");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Tile");
 		ImGui::Text("M");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Menu Bar");
+		ImGui::Text("Ctrl-M");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Save Multi-Frame Image");
 		ImGui::Text("N");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Nav Bar");
 		ImGui::Text("S");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Slideshow Counddown");
 		ImGui::Text("Ctrl-S");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Save As...");

@@ -64,6 +64,8 @@ add_executable(
 	Src/Dialogs.h
 	Src/Image.cpp
 	Src/Image.h
+	Src/MultiFrame.cpp
+	Src/MultiFrame.h
 	Src/Resize.cpp
 	Src/Resize.h
 	Src/Rotate.cpp

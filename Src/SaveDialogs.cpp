@@ -232,7 +232,7 @@ bool Viewer::SaveResizeImageAs(Image& img, const tString& outFile, int width, in
 }
 
 
-void Viewer::DoSaveAsModalDialog(bool justOpened)
+void Viewer::DoSaveAsModal(bool justOpened)
 {
 	tAssert(CurrImage);
 	tPicture* picture = CurrImage->GetCurrentPic();
@@ -336,7 +336,7 @@ void Viewer::DoSaveAsModalDialog(bool justOpened)
 }
 
 
-void Viewer::DoSaveAllModalDialog(bool justOpened)
+void Viewer::DoSaveAllModal(bool justOpened)
 {
 	ImGui::Text("Save all %d images to the image type you select.", Images.GetNumItems()); ImGui::SameLine();
 	ShowHelpMark
@@ -412,7 +412,7 @@ void Viewer::DoSaveAllModalDialog(bool justOpened)
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 
-	// This needs to be static since DoSaveModalDialog is called for every frame the modal is open.
+	// This needs to be static since DoSaveModal is called for every frame the modal is open.
 	static tList<tStringItem> overwriteFiles(tListMode::Static);
 	bool closeThisModal = false;
 	if (ImGui::Button("Save All", tVector2(100, 0)))

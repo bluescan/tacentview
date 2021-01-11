@@ -1,8 +1,8 @@
-// SaveDialogs.h
+// MultiFrame.h
 //
-// Modal dialogs save-as and save-all.
+// Dialog that generates multiframe images from all image files in the directory.
 //
-// Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
+// Copyright (c) 2021 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -13,18 +13,9 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #pragma once
-#include <Foundation/tList.h>
-#include <Foundation/tString.h>
 
 
 namespace Viewer
 {
-	void DoSaveAsModal(bool justOpened);
-	void DoSaveAllModal(bool justOpened);
-
-	void DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool& pressedCancel);
-	void DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFiles, bool& pressedOK, bool& pressedCancel);
-
-	tString DoSubFolder();				// Returns destination dir.
-	tString DoSaveFiletype();			// Returns extension.
+	void DoMultiFrameModal(bool justOpened);
 }

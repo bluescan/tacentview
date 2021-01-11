@@ -1,8 +1,8 @@
-// ContactSheet.cpp
+// MultiFrame.cpp
 //
-// Dialog that generates contact sheets and processes alpha channel properly.
+// Dialog that generates multiframe images from all image files in the directory.
 //
-// Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
+// Copyright (c) 2021 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -14,7 +14,7 @@
 
 #include <Math/tVector2.h>
 #include "imgui.h"
-#include "ContactSheet.h"
+#include "MultiFrame.h"
 #include "SaveDialogs.h"
 #include "TacentView.h"
 #include "Image.h"
@@ -26,7 +26,7 @@ using namespace tImage;
 
 namespace Viewer
 {
-	void SaveContactSheetTo
+	void SaveMultiFrameTo
 	(
 		const tString& outFile,
 		int contactWidth, int contactHeight,
@@ -36,7 +36,7 @@ namespace Viewer
 }
 
 
-void Viewer::DoContactSheetModal(bool justOpened)
+void Viewer::DoMultiFrameModal(bool justOpened)
 {
 	static int frameWidth = 256;
 	static int frameHeight = 256;
@@ -174,7 +174,7 @@ void Viewer::DoContactSheetModal(bool justOpened)
 			}
 			else
 			{
-				SaveContactSheetTo(outFile, contactWidth, contactHeight, numCols, numRows, finalWidth, finalHeight);
+				SaveMultiFrameTo(outFile, contactWidth, contactHeight, numCols, numRows, finalWidth, finalHeight);
 				closeThisModal = true;
 			}
 		}
@@ -187,7 +187,7 @@ void Viewer::DoContactSheetModal(bool justOpened)
 		bool pressedOK = false, pressedCancel = false;
 		DoOverwriteFileModal(outFile, pressedOK, pressedCancel);
 		if (pressedOK)
-			SaveContactSheetTo(outFile, contactWidth, contactHeight, numCols, numRows, finalWidth, finalHeight);
+			SaveMultiFrameTo(outFile, contactWidth, contactHeight, numCols, numRows, finalWidth, finalHeight);
 		if (pressedOK || pressedCancel)
 			closeThisModal = true;
 	}
@@ -199,7 +199,7 @@ void Viewer::DoContactSheetModal(bool justOpened)
 }
 
 
-void Viewer::SaveContactSheetTo
+void Viewer::SaveMultiFrameTo
 (
 	const tString& outFile,
 	int contactWidth, int contactHeight,
