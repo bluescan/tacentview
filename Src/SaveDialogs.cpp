@@ -2,7 +2,7 @@
 //
 // Modal dialogs save-as and save-all.
 //
-// Copyright (c) 2019, 2020 Tristan Grimmer.
+// Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -60,7 +60,7 @@ tString Viewer::DoSubFolder()
 
 tString Viewer::DoSaveFiletype()
 {
-	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg" };
+	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "webp" };
 	ImGui::Combo("File Type", &Config.SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
 	ImGui::SameLine();
 	ShowHelpMark("Output image format. TGA, PNG, and BMP support an alpha channel.");
@@ -68,16 +68,32 @@ tString Viewer::DoSaveFiletype()
 	tString extension = ".tga";
 	switch (Config.SaveFileType)
 	{
-		case 0: extension = ".tga"; break;
-		case 1: extension = ".png"; break;
-		case 2: extension = ".bmp"; break;
-		case 3: extension = ".jpg"; break;
+		case 0: extension = ".tga";  break;
+		case 1: extension = ".png";  break;
+		case 2: extension = ".bmp";  break;
+		case 3: extension = ".jpg";  break;
+		case 4: extension = ".webp"; break;
 	}
 
-	if (Config.SaveFileType == 0)
-		ImGui::Checkbox("RLE Compression", &Config.SaveFileTargaRLE);
-	else if (Config.SaveFileType == 3)
-		ImGui::SliderInt("Quality", &Config.SaveFileJpegQuality, 1, 100, "%d");
+	// There are different options depending on what type you are saving as.
+	switch (Config.SaveFileType)
+	{
+		case 0:
+			ImGui::Checkbox("RLE Compression", &Config.SaveFileTargaRLE);
+			break;
+
+		case 3:
+			ImGui::SliderInt("Quality", &Config.SaveFileJpegQuality, 1, 100, "%d");
+			break;
+
+		case 4:
+			ImGui::Checkbox("Lossy", &Config.SaveFileWebpLossy);
+			ImGui::SliderFloat("Quality / Compression", &Config.SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
+			ImGui::SameLine(); ShowToolTip("Image quality percent if lossy. Image compression strength if not lossy"); ImGui::NewLine();
+			ImGui::SliderInt("Duration Override", &Config.SaveFileWebpDurOverride, -1, 10000, "%d");
+			ImGui::SameLine(); ShowToolTip("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
+			break;
+	}
 
 	return extension;
 }
@@ -91,16 +107,51 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 	if (!imageLoaded)
 		img.Load();
 
-	tPicture* picture = img.GetCurrentPic();
-	if (!picture || !picture->IsValid())
-		return false;
-
 	bool success = false;
-	tImage::tPicture::tColourFormat colourFmt = picture->IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-	if (Config.SaveFileType == 0)
-		success = picture->SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
-	else
-		success = picture->Save(outFile, colourFmt, Config.SaveFileJpegQuality);
+	switch (Config.SaveFileType)
+	{
+		case 0:		// TGA
+		{
+			tPicture* picture = img.GetCurrentPic();
+			if (!picture || !picture->IsValid())
+				return false;
+			success = picture->SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
+			break;
+		}
+
+		case 4:		// WEBP
+		{
+			tList<tFrame> frames;
+			tList<tImage::tPicture>& pics = img.GetPictures();
+			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
+			{
+				frames.Append
+				(
+					new tFrame
+					(
+						picture->GetPixelPointer(),
+						picture->GetWidth(),
+						picture->GetHeight(),
+						picture->Duration
+					)
+				);
+			}
+
+			tImageWEBP webp(frames, true);
+			success = webp.Save(outFile, Config.SaveFileWebpLossy, Config.SaveFileWebpQualComp, Config.SaveFileWebpDurOverride);
+			break;
+		}
+
+		default:	// BMP,PNG, JPG etc.
+		{
+			tPicture* picture = img.GetCurrentPic();
+			if (!picture || !picture->IsValid())
+				return false;
+			tImage::tPicture::tColourFormat colourFmt = picture->IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
+			success = picture->Save(outFile, colourFmt, Config.SaveFileJpegQuality);
+			break;
+		}
+	}
 
 	if (success)
 		tPrintf("Saved image as %s\n", outFile.Chars());

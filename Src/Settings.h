@@ -78,7 +78,10 @@ namespace Viewer
 		tString SaveSubFolder;
 		int SaveFileType;
 		bool SaveFileTargaRLE;
-		int SaveFileJpegQuality;			// E [1,100]
+		int SaveFileJpegQuality;				// E [1, 100]
+		bool SaveFileWebpLossy;
+		float SaveFileWebpQualComp;				// E [0.0, 100.0]
+		int SaveFileWebpDurOverride;			// E [-1, inf]. In ms.
 		enum class SizeMode
 		{
 			Percent,
