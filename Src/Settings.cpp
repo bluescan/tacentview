@@ -172,7 +172,7 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 	tiClamp(WindowY, 0, screenH - WindowH);
 	tiClamp(OverlayCorner, 0, 3);
 	tiClamp(SaveFileType, 0, 4);
-	tiClamp(SaveFileTypeMultiFrame, 0, 2);
+	tiClamp(SaveFileTypeMultiFrame, 0, 3);
 	tiClamp(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
 	tiClamp(SortKey, 0, 3);
 	tiClamp(CropAnchor, -1, 9);

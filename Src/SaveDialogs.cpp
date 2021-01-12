@@ -101,7 +101,7 @@ tString Viewer::DoSaveFiletype()
 
 tString Viewer::DoSaveFiletypeMultiFrame()
 {
-	const char* fileTypeItems[] = { "webp", "gif", "tif" };
+	const char* fileTypeItems[] = { "webp", "gif", "tif", "apng" };
 	ImGui::Combo("File Type", &Config.SaveFileTypeMultiFrame, fileTypeItems, tNumElements(fileTypeItems));
 	ImGui::SameLine();
 	ShowHelpMark("Multi-frame output image format. Only WEBP currently supported.");
