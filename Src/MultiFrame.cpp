@@ -26,135 +26,130 @@ using namespace tImage;
 
 namespace Viewer
 {
-	void SaveMultiFrameTo
-	(
-		const tString& outFile,
-		int contactWidth, int contactHeight,
-		int numCols, int numRows,
-		int finalWidth, int finalHeight
-	);
+	void SaveMultiFrameTo(const tString& outFile, int finalWidth, int finalHeight, float frameDuration);
+	void ComputeMaxWidthHeight(int& outWidth, int& outHeight);
+	bool AllDimensionsMatch(int width, int height);
+}
+
+
+void Viewer::ComputeMaxWidthHeight(int& outWidth, int& outHeight)
+{
+	outWidth = 0; outHeight = 0;
+	for (Image* img = Images.First(); img; img = img->Next())
+	{
+		if (!img->IsLoaded())
+			img->Load();
+
+		if (!img->IsLoaded())
+			continue;
+
+		tPicture* currPic = img->GetCurrentPic();
+		if (currPic)
+		{
+			if (currPic->GetWidth() > outWidth)		outWidth = currPic->GetWidth();
+			if (currPic->GetHeight() > outHeight)	outHeight = currPic->GetHeight();
+		}
+	}
+}
+
+
+bool Viewer::AllDimensionsMatch(int width, int height)
+{
+	for (Image* img = Images.First(); img; img = img->Next())
+	{
+		if (!img->IsLoaded())
+			img->Load();
+
+		if (!img->IsLoaded())
+			continue;
+
+		tPicture* currPic = img->GetCurrentPic();
+		if (currPic)
+		{
+			if ((currPic->GetWidth() != width) || (currPic->GetHeight() != height))
+				return false;
+		}
+	}
+
+	return true;
 }
 
 
 void Viewer::DoMultiFrameModal(bool justOpened)
 {
-	static int frameWidth = 256;
-	static int frameHeight = 256;
-	static int numRows = 4;
-	static int numCols = 4;
-	static int finalWidth = 2048;
-	static int finalHeight = 2048;
-	tAssert(CurrImage);
-	tPicture* picture = CurrImage->GetCurrentPic();
-	tAssert(picture);
-	int picW = picture->GetWidth();
-	int picH = picture->GetHeight();
-	if (justOpened)
-	{
-		frameWidth = picW;
-		frameHeight = picH;
-		numRows = int(tCeiling(tSqrt(float(Images.Count()))));
-		numCols = int(tCeiling(tSqrt(float(Images.Count()))));
-	}
-
-	int contactWidth = frameWidth * numCols;
-	int contactHeight = frameHeight * numRows;
-	if (justOpened)
-	{
-		finalWidth = contactWidth;
-		finalHeight = contactHeight;
-	}
-
+	static int outWidth = 256;
+	static int outHeight = 256;
 	static char lo[32];
 	static char hi[32];
 
-	ImGui::InputInt("Frame Width", &frameWidth);
-	tiClampMin(frameWidth, 4);
-	int loP2W = tNextLowerPower2(frameWidth);	tiClampMin(loP2W, 4);	tsPrintf(lo, "fw%d", loP2W);
-	ImGui::SameLine(); if (ImGui::Button(lo)) frameWidth = loP2W;
-	int hiP2W = tNextHigherPower2(frameWidth);							tsPrintf(hi, "fw%d", hiP2W);
-	ImGui::SameLine(); if (ImGui::Button(hi)) frameWidth = hiP2W;
-	ImGui::SameLine(); ShowHelpMark("Single frame width in pixels.");
+	// If just opened, loop through all the images and choose the largest width and height.
+	if (justOpened)
+		ComputeMaxWidthHeight(outWidth, outHeight);
 
-	ImGui::InputInt("Frame Height", &frameHeight);
-	tiClampMin(frameHeight, 4);
-	int loP2H = tNextLowerPower2(frameHeight);	tiClampMin(loP2H, 4);	tsPrintf(lo, "fh%d", loP2H);
-	ImGui::SameLine(); if (ImGui::Button(lo)) frameHeight = loP2H;
-	int hiP2H = tNextHigherPower2(frameHeight);							tsPrintf(hi, "fh%d", hiP2H);
-	ImGui::SameLine(); if (ImGui::Button(hi)) frameHeight = hiP2H;
-	ImGui::SameLine(); ShowHelpMark("Single frame height in pixels.");
+	ImGui::InputInt("Width", &outWidth);
+	tiClampMin(outWidth, 4);
+	int loP2W = tNextLowerPower2(outWidth);		tiClampMin(loP2W, 4);	tsPrintf(lo, "w%d", loP2W);
+	ImGui::SameLine(); if (ImGui::Button(lo)) outWidth = loP2W;
+	int hiP2W = tNextHigherPower2(outWidth);							tsPrintf(hi, "w%d", hiP2W);
+	ImGui::SameLine(); if (ImGui::Button(hi)) outWidth = hiP2W;
+	ImGui::SameLine(); ShowHelpMark("Output width in pixels.");
 
-	ImGui::InputInt("Columns", &numCols);
-	ImGui::SameLine();
-	ShowHelpMark("Number of columns.");
- 
-	ImGui::InputInt("Rows", &numRows);
-	ImGui::SameLine();
-	ShowHelpMark("Number of rows.");
+	ImGui::InputInt("Height", &outHeight);
+	tiClampMin(outHeight, 4);
+	int loP2H = tNextLowerPower2(outHeight);	tiClampMin(loP2H, 4);	tsPrintf(lo, "h%d", loP2H);
+	ImGui::SameLine(); if (ImGui::Button(lo)) outHeight = loP2H;
+	int hiP2H = tNextHigherPower2(outHeight);							tsPrintf(hi, "h%d", hiP2H);
+	ImGui::SameLine(); if (ImGui::Button(hi)) outHeight = hiP2H;
+	ImGui::SameLine(); ShowHelpMark("Output height in pixels.");
 
-	if (ImGui::Button("Reset From Image") && CurrImage)
+	if (ImGui::Button("Reset From Images") && CurrImage)
+		ComputeMaxWidthHeight(outWidth, outHeight);
+
+	// @todo This is not a cheap call. No need to do it every frame, only when dims change above.
+	if (!AllDimensionsMatch(outWidth, outHeight))
 	{
-		frameWidth = picW;
-		frameHeight = picH;
-		numRows = int(tCeiling(tSqrt(float(Images.Count()))));
-		numCols = int(tCeiling(tSqrt(float(Images.Count()))));
+		ImGui::Combo("Filter", &Config.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
+		ImGui::SameLine();
+		ShowHelpMark("Filtering method to use when resizing images.");
+
+		ImGui::Combo("Filter Edge Mode", &Config.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
+		ImGui::SameLine();
+		ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");
 	}
+
 	ImGui::Separator();
 
-	ImGui::InputInt("Final Width", &finalWidth);
-	tiClampMin(finalWidth, 4);
-	loP2W = tNextLowerPower2(finalWidth);	tiClampMin(loP2W, 4);	tsPrintf(lo, "w%d", loP2W);
-	ImGui::SameLine(); if (ImGui::Button(lo)) finalWidth = loP2W;
-	hiP2W = tNextHigherPower2(finalWidth);							tsPrintf(hi, "w%d", hiP2W);
-	ImGui::SameLine(); if (ImGui::Button(hi)) finalWidth = hiP2W;
-	ImGui::SameLine(); ShowHelpMark("Final scaled output sheet width in pixels.");
+	static float frameDuration = 1.0f/30.0f;
+	ImGui::InputFloat("Frame Duration", &frameDuration, 0.01f, 0.1f, "%.4f");
+	tMath::tiClamp(frameDuration, 0.0f, 60.0f);
+	if (ImGui::Button("1.0s")) frameDuration = 1.0f; ImGui::SameLine();
+	if (ImGui::Button("0.5s")) frameDuration = 0.5f; ImGui::SameLine();
+	if (ImGui::Button("30fps")) frameDuration = 1.0f/30.0f; ImGui::SameLine();
+	if (ImGui::Button("60fps")) frameDuration = 1.0f/60.0f;
 
-	ImGui::InputInt("Final Height", &finalHeight);
-	tiClampMin(finalHeight, 4);
-	loP2H = tNextLowerPower2(finalHeight);	tiClampMin(loP2H, 4);	tsPrintf(lo, "h%d", loP2H);
-	ImGui::SameLine(); if (ImGui::Button(lo)) finalHeight = loP2H;
-	hiP2H = tNextHigherPower2(finalHeight);							tsPrintf(hi, "h%d", hiP2H);
-	ImGui::SameLine(); if (ImGui::Button(hi)) finalHeight = hiP2H;
-	ImGui::SameLine(); ShowHelpMark("Final scaled output sheet height in pixels.");
-
-	if (ImGui::Button("Reset"))
-	{
-		finalWidth = contactWidth;
-		finalHeight = contactHeight;
-	}
 	ImGui::Separator();
 
-	ImGui::Combo("Filter", &Config.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
-	ImGui::SameLine();
-	ShowHelpMark("Filtering method to use when resizing images.");
+	tString extension = DoSaveFiletypeMultiFrame();
 
-	ImGui::Combo("Filter Edge Mode", &Config.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
-	ImGui::SameLine();
-	ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");
-
-	tString extension = DoSaveFiletype();
 	ImGui::Separator();
+
 	tString destDir = DoSubFolder();
 
-	static char filename[128] = "ContactSheet";
+	static char filename[128] = "MultiFrame";
 	ImGui::InputText("Filename", filename, tNumElements(filename));
 	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
 
 	int numImg = Images.Count();
 	tString genMsg;
-	if (numImg >= 2)
-		tsPrintf(genMsg, " Sheet will have %d frames with %d images.", numRows*numCols, tMin(numImg, numRows*numCols));
-	else
-		tsPrintf(genMsg, " Warning: At least 2 images are needed.");
+	tsPrintf(genMsg, "Image %s%s will have %d frames.", filename, extension.Chars(), numImg);
 	ImGui::Text(genMsg.Chars());
 
 	ImGui::NewLine();
 	if (ImGui::Button("Cancel", tVector2(100, 0)))
 		ImGui::CloseCurrentPopup();
 	ImGui::SameLine();
-	
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 	tString outFile = destDir + tString(filename) + extension;
 	bool closeThisModal = false;
 	if (ImGui::Button("Generate", tVector2(100, 0)) && (numImg >= 2))
@@ -170,11 +165,11 @@ void Viewer::DoMultiFrameModal(bool justOpened)
 		{
 			if (tFileExists(outFile) && Config.ConfirmFileOverwrites)
 			{
-				ImGui::OpenPopup("Overwrite Contact Sheet File");
+				ImGui::OpenPopup("Overwrite Image File");
 			}
 			else
 			{
-				SaveMultiFrameTo(outFile, contactWidth, contactHeight, numCols, numRows, finalWidth, finalHeight);
+				SaveMultiFrameTo(outFile, outWidth, outHeight, frameDuration);
 				closeThisModal = true;
 			}
 		}
@@ -182,12 +177,12 @@ void Viewer::DoMultiFrameModal(bool justOpened)
 
 	// The unused isOpen bool is just so we get a close button in ImGui. 
 	bool isOpen = true;
-	if (ImGui::BeginPopupModal("Overwrite Contact Sheet File", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
+	if (ImGui::BeginPopupModal("Overwrite image File", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
 	{
 		bool pressedOK = false, pressedCancel = false;
 		DoOverwriteFileModal(outFile, pressedOK, pressedCancel);
 		if (pressedOK)
-			SaveMultiFrameTo(outFile, contactWidth, contactHeight, numCols, numRows, finalWidth, finalHeight);
+			SaveMultiFrameTo(outFile, outWidth, outHeight, frameDuration);
 		if (pressedOK || pressedCancel)
 			closeThisModal = true;
 	}
@@ -199,96 +194,31 @@ void Viewer::DoMultiFrameModal(bool justOpened)
 }
 
 
-void Viewer::SaveMultiFrameTo
-(
-	const tString& outFile,
-	int contactWidth, int contactHeight,
-	int numCols, int numRows,
-	int finalWidth, int finalHeight
-)
+void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeight, float frameDuration)
 {
-	tImage::tPicture outPic(contactWidth, contactHeight);
-	outPic.SetAll(tColouri(0, 0, 0, 0));
-
-	// Do the work.
-	int frameWidth = contactWidth / numCols;
-	int frameHeight = contactHeight / numRows;
-	int ix = 0;
-	int iy = 0;
-	int frame = 0;
-
-	tPrintf("Loading all frames...\n");
-	bool allOpaque = true;
+	tList<tFrame> frames;
 	for (Image* img = Images.First(); img; img = img->Next())
 	{
 		if (!img->IsLoaded())
 			img->Load();
 
-		if (img->IsLoaded() && !img->IsOpaque())
-			allOpaque = false;
-	}
-
-	Image* currImg = Images.First();
-	while (currImg)
-	{
-		if (!currImg->IsLoaded())
-		{
-			currImg = currImg->Next();
+		if (!img->IsLoaded())
 			continue;
-		}
 
-		tPrintf("Processing frame %d : %s at (%d, %d).\n", frame, currImg->Filename.Chars(), ix, iy);
-		frame++;
-		tImage::tPicture* currPic = currImg->GetCurrentPic();
+		tImage::tPicture* currPic = img->GetCurrentPic();
+		if (!currPic)
+			continue;
 
-		tImage::tPicture resampled;
-		if ((currImg->GetWidth() != frameWidth) || (currImg->GetHeight() != frameHeight))
-		{
-			resampled.Set(*currPic);
-			resampled.Resample(frameWidth, frameHeight, tImage::tResampleFilter(Config.ResampleFilter), tImage::tResampleEdgeMode(Config.ResampleEdgeMode));
-		}
+		tImage::tPicture resampled(*currPic);
+		if ((resampled.GetWidth() != outWidth) || (resampled.GetHeight() != outHeight))
+			resampled.Resample(outWidth, outHeight, tImage::tResampleFilter(Config.ResampleFilter), tImage::tResampleEdgeMode(Config.ResampleEdgeMode));
 
-		// Copy resampled frame into place.
-		for (int y = 0; y < frameHeight; y++)
-			for (int x = 0; x < frameWidth; x++)
-				outPic.SetPixel
-				(
-					x + (ix*frameWidth),
-					y + ((numRows-1-iy)*frameHeight),
-					resampled.IsValid() ? resampled.GetPixel(x, y) : currPic->GetPixel(x, y)
-				);
-
-		currImg = currImg->Next();
-
-		ix++;
-		if (ix >= numCols)
-		{
-			ix = 0;
-			iy++;
-			if (iy >= numRows)
-				break;
-		}
+		tFrame* frame = new tFrame(resampled.StealPixels(), outWidth, outHeight, frameDuration);
+		frames.Append(frame);
 	}
 
-	tImage::tPicture::tColourFormat colourFmt = allOpaque ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-	tImage::tImageTGA::tFormat tgaFmt = allOpaque ? tImage::tImageTGA::tFormat::Bit24 : tImage::tImageTGA::tFormat::Bit32;
-	if ((finalWidth == contactWidth) && (finalHeight == contactHeight))
-	{
-		if (Config.SaveFileType == 0)
-			outPic.SaveTGA(outFile, tgaFmt, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
-		else
-			outPic.Save(outFile, colourFmt, Config.SaveFileJpegQuality);
-	}
-	else
-	{
-		tImage::tPicture finalResampled(outPic);
-		finalResampled.Resample(finalWidth, finalHeight, tImage::tResampleFilter(Config.ResampleFilter), tImage::tResampleEdgeMode(Config.ResampleEdgeMode));
-
-		if (Config.SaveFileType == 0)
-			finalResampled.SaveTGA(outFile, tgaFmt, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
-		else
-			finalResampled.Save(outFile, colourFmt, Config.SaveFileJpegQuality);
-	}
+	tImageWEBP webp(frames, true);
+	bool success = webp.Save(outFile, Config.SaveFileWebpLossy, Config.SaveFileWebpQualComp, Config.SaveFileWebpDurOverride);
 
 	// If we saved to the same dir we are currently viewing, reload
 	// and set the current image to the generated one.

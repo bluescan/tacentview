@@ -77,6 +77,7 @@ namespace Viewer
 
 		tString SaveSubFolder;
 		int SaveFileType;
+		int SaveFileTypeMultiFrame;
 		bool SaveFileTargaRLE;
 		int SaveFileJpegQuality;				// E [1, 100]
 		bool SaveFileWebpLossy;

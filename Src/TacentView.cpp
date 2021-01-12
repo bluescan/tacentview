@@ -1796,7 +1796,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 bool Viewer::DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin)
 {
+	// Try to find an image in the same dir that is valid.
 	tString nextImgFile = CurrImage->Next() ? CurrImage->Next()->Filename : tString();
+	if (nextImgFile.IsEmpty())
+		nextImgFile = CurrImage->Prev() ? CurrImage->Prev()->Filename : tString();
 
 	bool deleted = tSystem::tDeleteFile(imgFile, true, tryUseRecycleBin);
 	if (!deleted && tryUseRecycleBin)

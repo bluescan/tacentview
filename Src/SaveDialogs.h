@@ -27,4 +27,5 @@ namespace Viewer
 
 	tString DoSubFolder();				// Returns destination dir.
 	tString DoSaveFiletype();			// Returns extension.
+	tString DoSaveFiletypeMultiFrame();	// Returns extension.
 }

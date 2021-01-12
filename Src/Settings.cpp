@@ -53,6 +53,7 @@ void Viewer::Settings::ResetBehaviourSettings()
 	SlidehowFrameDuration		= 8.0;			// Values as small as 1.0/30.0 also work.
 	SaveSubFolder				.Clear();
 	SaveFileType				= 0;
+	SaveFileTypeMultiFrame		= 0;
 	SaveFileTargaRLE			= false;
 	SaveFileJpegQuality			= 95;
 	SaveFileWebpLossy			= false;
@@ -136,6 +137,7 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(SlidehowFrameDuration);
 				ReadItem(SaveSubFolder);
 				ReadItem(SaveFileType);
+				ReadItem(SaveFileTypeMultiFrame);
 				ReadItem(SaveFileTargaRLE);
 				ReadItem(SaveFileJpegQuality);
 				ReadItem(SaveFileWebpLossy);
@@ -170,6 +172,7 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 	tiClamp(WindowY, 0, screenH - WindowH);
 	tiClamp(OverlayCorner, 0, 3);
 	tiClamp(SaveFileType, 0, 4);
+	tiClamp(SaveFileTypeMultiFrame, 0, 2);
 	tiClamp(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
 	tiClamp(SortKey, 0, 3);
 	tiClamp(CropAnchor, -1, 9);
@@ -220,6 +223,7 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(SlidehowFrameDuration);
 	WriteItem(SaveSubFolder);
 	WriteItem(SaveFileType);
+	WriteItem(SaveFileTypeMultiFrame);
 	WriteItem(SaveFileTargaRLE);
 	WriteItem(SaveFileJpegQuality);
 	WriteItem(SaveFileWebpLossy);

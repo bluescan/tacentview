@@ -99,6 +99,38 @@ tString Viewer::DoSaveFiletype()
 }
 
 
+tString Viewer::DoSaveFiletypeMultiFrame()
+{
+	const char* fileTypeItems[] = { "webp", "gif", "tif" };
+	ImGui::Combo("File Type", &Config.SaveFileTypeMultiFrame, fileTypeItems, tNumElements(fileTypeItems));
+	ImGui::SameLine();
+	ShowHelpMark("Multi-frame output image format. Only WEBP currently supported.");
+	Config.SaveFileTypeMultiFrame = 0;
+
+	tString extension = ".webp";
+	switch (Config.SaveFileType)
+	{
+		case 0: extension = ".webp"; break;
+		case 1: extension = ".gif";  break;
+		case 2: extension = ".tif";  break;
+	}
+
+	// There are different options depending on what type you are saving as.
+	switch (Config.SaveFileTypeMultiFrame)
+	{
+		case 0:
+			ImGui::Checkbox("Lossy", &Config.SaveFileWebpLossy);
+			ImGui::SliderFloat("Quality / Compression", &Config.SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
+			ImGui::SameLine(); ShowToolTip("Image quality percent if lossy. Image compression strength if not lossy"); ImGui::NewLine();
+			ImGui::SliderInt("Duration Override", &Config.SaveFileWebpDurOverride, -1, 10000, "%d");
+			ImGui::SameLine(); ShowToolTip("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
+			break;
+	}
+
+	return extension;
+}
+
+
 bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 {
 	// We make sure to maintain the loaded/unloaded state. This function may be called many times in succession
