@@ -59,6 +59,9 @@ void Viewer::Settings::ResetBehaviourSettings()
 	SaveFileWebpLossy			= false;
 	SaveFileWebpQualComp		= 90.0f;
 	SaveFileWebpDurOverride		= -1;
+	SaveFileGifDurOverride		= -1;
+	SaveFileWebpDurMultiFrame	= 33;
+	SaveFileGifDurMultiFrame	= 3;
 	SaveAllSizeMode				= 0;
 	CropAnchor					= 4;
 	FillColour					= tColouri::black;
@@ -143,6 +146,9 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(SaveFileWebpLossy);
 				ReadItem(SaveFileWebpQualComp);
 				ReadItem(SaveFileWebpDurOverride);
+				ReadItem(SaveFileGifDurOverride);
+				ReadItem(SaveFileWebpDurMultiFrame);
+				ReadItem(SaveFileGifDurMultiFrame);
 				ReadItem(SaveAllSizeMode);
 				ReadItem(CropAnchor);
 				ReadItem(FillColour);
@@ -171,8 +177,8 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 	tiClamp(WindowX, 0, screenW - WindowW);
 	tiClamp(WindowY, 0, screenH - WindowH);
 	tiClamp(OverlayCorner, 0, 3);
-	tiClamp(SaveFileType, 0, 4);
-	tiClamp(SaveFileTypeMultiFrame, 0, 3);
+	tiClamp(SaveFileType, 0, 5);
+	tiClamp(SaveFileTypeMultiFrame, 0, 1);
 	tiClamp(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
 	tiClamp(SortKey, 0, 3);
 	tiClamp(CropAnchor, -1, 9);
@@ -185,6 +191,9 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 	tiClamp(SaveFileJpegQuality, 1, 100);
 	tiClamp(SaveFileWebpQualComp, 0.0f, 100.0f);
 	tiClampMin(SaveFileWebpDurOverride, -1);
+	tiClampMin(SaveFileGifDurOverride, -1);
+	tiClampMin(SaveFileWebpDurMultiFrame, 0);
+	tiClampMin(SaveFileGifDurMultiFrame, 0);
 }
 
 
@@ -229,6 +238,9 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(SaveFileWebpLossy);
 	WriteItem(SaveFileWebpQualComp);
 	WriteItem(SaveFileWebpDurOverride);
+	WriteItem(SaveFileGifDurOverride);
+	WriteItem(SaveFileWebpDurMultiFrame);
+	WriteItem(SaveFileGifDurMultiFrame);
 	WriteItem(SaveAllSizeMode);
 	WriteItem(CropAnchor);
 	WriteItem(FillColour);

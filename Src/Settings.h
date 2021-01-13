@@ -83,6 +83,9 @@ namespace Viewer
 		bool SaveFileWebpLossy;
 		float SaveFileWebpQualComp;				// E [0.0, 100.0]
 		int SaveFileWebpDurOverride;			// E [-1, inf]. In ms.
+		int SaveFileGifDurOverride;				// E [-1, inf]. In 1/100 seconds.
+		int SaveFileWebpDurMultiFrame;			// E [0, inf]. In ms.
+		int SaveFileGifDurMultiFrame;			// E [0, inf]. In 1/100 seconds.
 		enum class SizeMode
 		{
 			Percent,

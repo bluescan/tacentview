@@ -60,10 +60,10 @@ tString Viewer::DoSubFolder()
 
 tString Viewer::DoSaveFiletype()
 {
-	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "webp" };
+	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "webp", "gif" };
 	ImGui::Combo("File Type", &Config.SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
 	ImGui::SameLine();
-	ShowHelpMark("Output image format. TGA, PNG, and BMP support an alpha channel.");
+	ShowHelpMark("Output image format. Alpha supported by tga, png, bmp, and webp.");
 
 	tString extension = ".tga";
 	switch (Config.SaveFileType)
@@ -73,6 +73,7 @@ tString Viewer::DoSaveFiletype()
 		case 2: extension = ".bmp";  break;
 		case 3: extension = ".jpg";  break;
 		case 4: extension = ".webp"; break;
+		case 5: extension = ".gif";  break;
 	}
 
 	// There are different options depending on what type you are saving as.
@@ -92,6 +93,19 @@ tString Viewer::DoSaveFiletype()
 			ImGui::SameLine(); ShowToolTip("Image quality percent if lossy. Image compression strength if not lossy"); ImGui::NewLine();
 			ImGui::SliderInt("Duration Override", &Config.SaveFileWebpDurOverride, -1, 10000, "%d");
 			ImGui::SameLine(); ShowToolTip("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
+			if (ImGui::Button("1.0s"))  Config.SaveFileWebpDurOverride = 1000; ImGui::SameLine();
+			if (ImGui::Button("0.5s"))  Config.SaveFileWebpDurOverride = 500;  ImGui::SameLine();
+			if (ImGui::Button("30fps")) Config.SaveFileWebpDurOverride = 33;   ImGui::SameLine();
+			if (ImGui::Button("60fps")) Config.SaveFileWebpDurOverride = 16;
+			break;
+
+		case 5:
+			ImGui::SliderInt("Duration Override", &Config.SaveFileGifDurOverride, -1, 1000, "%d");
+			ImGui::SameLine(); ShowToolTip("In 1/100 seconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
+			if (ImGui::Button("1.0s"))  Config.SaveFileGifDurOverride = 100; ImGui::SameLine();
+			if (ImGui::Button("0.5s"))  Config.SaveFileGifDurOverride = 50;  ImGui::SameLine();
+			if (ImGui::Button("15fps")) Config.SaveFileGifDurOverride = 6;   ImGui::SameLine();
+			if (ImGui::Button("30fps")) Config.SaveFileGifDurOverride = 3;
 			break;
 	}
 
@@ -101,29 +115,37 @@ tString Viewer::DoSaveFiletype()
 
 tString Viewer::DoSaveFiletypeMultiFrame()
 {
-	const char* fileTypeItems[] = { "webp", "gif", "tif", "apng" };
+	const char* fileTypeItems[] = { "webp", "gif" };
 	ImGui::Combo("File Type", &Config.SaveFileTypeMultiFrame, fileTypeItems, tNumElements(fileTypeItems));
 	ImGui::SameLine();
-	ShowHelpMark("Multi-frame output image format. Only WEBP currently supported.");
-	Config.SaveFileTypeMultiFrame = 0;
-
-	tString extension = ".webp";
-	switch (Config.SaveFileType)
-	{
-		case 0: extension = ".webp"; break;
-		case 1: extension = ".gif";  break;
-		case 2: extension = ".tif";  break;
-	}
+	ShowHelpMark("Multi-frame output image format. Webp and gif supported. Tiff and apng not yet.");
 
 	// There are different options depending on what type you are saving as.
+	tString extension = ".webp";
 	switch (Config.SaveFileTypeMultiFrame)
 	{
 		case 0:
+			extension = ".webp";
 			ImGui::Checkbox("Lossy", &Config.SaveFileWebpLossy);
 			ImGui::SliderFloat("Quality / Compression", &Config.SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
 			ImGui::SameLine(); ShowToolTip("Image quality percent if lossy. Image compression strength if not lossy"); ImGui::NewLine();
-			ImGui::SliderInt("Duration Override", &Config.SaveFileWebpDurOverride, -1, 10000, "%d");
-			ImGui::SameLine(); ShowToolTip("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
+			ImGui::SliderInt("Frame Duration", &Config.SaveFileWebpDurMultiFrame, 0, 10000, "%d");
+			ImGui::SameLine(); ShowToolTip("In milliseconds."); ImGui::NewLine();
+			if (ImGui::Button("1.0s"))  Config.SaveFileWebpDurMultiFrame = 1000; ImGui::SameLine();
+			if (ImGui::Button("0.5s"))  Config.SaveFileWebpDurMultiFrame = 500;  ImGui::SameLine();
+			if (ImGui::Button("30fps")) Config.SaveFileWebpDurMultiFrame = 33;   ImGui::SameLine();
+			if (ImGui::Button("60fps")) Config.SaveFileWebpDurMultiFrame = 16;
+			break;
+
+		case 1:
+			extension = ".gif";
+			ImGui::SliderInt("Frame Duration", &Config.SaveFileGifDurMultiFrame, 0, 1000, "%d");
+			ImGui::SameLine(); ShowToolTip("In 1/100 seconds."); ImGui::NewLine();
+			if (ImGui::Button("1.0s"))  Config.SaveFileGifDurMultiFrame = 100; ImGui::SameLine();
+			if (ImGui::Button("0.5s"))  Config.SaveFileGifDurMultiFrame = 50;  ImGui::SameLine();
+			if (ImGui::Button("15fps")) Config.SaveFileGifDurMultiFrame = 6;   ImGui::SameLine();
+			if (ImGui::Button("30fps")) Config.SaveFileGifDurMultiFrame = 3;   ImGui::SameLine();
+			if (ImGui::Button("50fps")) Config.SaveFileGifDurMultiFrame = 2;
 			break;
 	}
 
@@ -174,7 +196,30 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 			break;
 		}
 
-		default:	// BMP,PNG, JPG etc.
+		case 5:		// GIF
+		{
+			tList<tFrame> frames;
+			tList<tImage::tPicture>& pics = img.GetPictures();
+			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
+			{
+				frames.Append
+				(
+					new tFrame
+					(
+						picture->GetPixelPointer(),
+						picture->GetWidth(),
+						picture->GetHeight(),
+						picture->Duration
+					)
+				);
+			}
+
+			tImageGIF gif(frames, true);
+			success = gif.Save(outFile, Config.SaveFileGifDurOverride);
+			break;
+		}
+
+		default:	// BMP, PNG, JPG etc.
 		{
 			tPicture* picture = img.GetCurrentPic();
 			if (!picture || !picture->IsValid())

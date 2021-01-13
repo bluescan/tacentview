@@ -26,7 +26,7 @@ using namespace tImage;
 
 namespace Viewer
 {
-	void SaveMultiFrameTo(const tString& outFile, int finalWidth, int finalHeight, float frameDuration);
+	void SaveMultiFrameTo(const tString& outFile, int finalWidth, int finalHeight);
 	void ComputeMaxWidthHeight(int& outWidth, int& outHeight);
 	bool AllDimensionsMatch(int width, int height);
 }
@@ -119,16 +119,6 @@ void Viewer::DoMultiFrameModal(bool justOpened)
 
 	ImGui::Separator();
 
-	static float frameDuration = 1.0f/30.0f;
-	ImGui::InputFloat("Frame Duration", &frameDuration, 0.01f, 0.1f, "%.4f");
-	tMath::tiClamp(frameDuration, 0.0f, 60.0f);
-	if (ImGui::Button("1.0s")) frameDuration = 1.0f; ImGui::SameLine();
-	if (ImGui::Button("0.5s")) frameDuration = 0.5f; ImGui::SameLine();
-	if (ImGui::Button("30fps")) frameDuration = 1.0f/30.0f; ImGui::SameLine();
-	if (ImGui::Button("60fps")) frameDuration = 1.0f/60.0f;
-
-	ImGui::Separator();
-
 	tString extension = DoSaveFiletypeMultiFrame();
 
 	ImGui::Separator();
@@ -169,7 +159,7 @@ void Viewer::DoMultiFrameModal(bool justOpened)
 			}
 			else
 			{
-				SaveMultiFrameTo(outFile, outWidth, outHeight, frameDuration);
+				SaveMultiFrameTo(outFile, outWidth, outHeight);
 				closeThisModal = true;
 			}
 		}
@@ -182,7 +172,7 @@ void Viewer::DoMultiFrameModal(bool justOpened)
 		bool pressedOK = false, pressedCancel = false;
 		DoOverwriteFileModal(outFile, pressedOK, pressedCancel);
 		if (pressedOK)
-			SaveMultiFrameTo(outFile, outWidth, outHeight, frameDuration);
+			SaveMultiFrameTo(outFile, outWidth, outHeight);
 		if (pressedOK || pressedCancel)
 			closeThisModal = true;
 	}
@@ -194,7 +184,7 @@ void Viewer::DoMultiFrameModal(bool justOpened)
 }
 
 
-void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeight, float frameDuration)
+void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeight)
 {
 	tList<tFrame> frames;
 	for (Image* img = Images.First(); img; img = img->Next())
@@ -213,12 +203,30 @@ void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeigh
 		if ((resampled.GetWidth() != outWidth) || (resampled.GetHeight() != outHeight))
 			resampled.Resample(outWidth, outHeight, tImage::tResampleFilter(Config.ResampleFilter), tImage::tResampleEdgeMode(Config.ResampleEdgeMode));
 
-		tFrame* frame = new tFrame(resampled.StealPixels(), outWidth, outHeight, frameDuration);
+		tFrame* frame = new tFrame(resampled.StealPixels(), outWidth, outHeight, currPic->Duration);
 		frames.Append(frame);
 	}
 
-	tImageWEBP webp(frames, true);
-	bool success = webp.Save(outFile, Config.SaveFileWebpLossy, Config.SaveFileWebpQualComp, Config.SaveFileWebpDurOverride);
+	bool success = false;
+	switch (Config.SaveFileTypeMultiFrame)
+	{
+		case 0:			// WEBP
+		{
+			tImageWEBP webp(frames, true);
+			success = webp.Save(outFile, Config.SaveFileWebpLossy, Config.SaveFileWebpQualComp, Config.SaveFileWebpDurMultiFrame);
+			break;
+		}
+
+		case 1:			// GIF
+		{
+			tImageGIF gif(frames, true);
+			success = gif.Save(outFile, Config.SaveFileGifDurMultiFrame);
+			break;
+		}
+	}
+
+	if (!success)
+		return;
 
 	// If we saved to the same dir we are currently viewing, reload
 	// and set the current image to the generated one.
