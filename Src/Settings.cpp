@@ -70,6 +70,7 @@ void Viewer::Settings::ResetBehaviourSettings()
 	ResizeAspectMode			= 0;
 	MaxImageMemMB				= 1024;
 	MaxCacheFiles				= 7000;
+	MaxUndoSteps				= 16;
 	StrictLoading				= false;
 	DetectAPNGInsidePNG			= true;
 	AutoPropertyWindow			= true;
@@ -157,6 +158,7 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(ResizeAspectMode);
 				ReadItem(MaxImageMemMB);
 				ReadItem(MaxCacheFiles);
+				ReadItem(MaxUndoSteps);
 				ReadItem(StrictLoading);
 				ReadItem(DetectAPNGInsidePNG);
 				ReadItem(AutoPropertyWindow);
@@ -186,7 +188,8 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 	tiClampMin(ResizeAspectDen, 1);
 	tiClamp(ResizeAspectMode, 0, 1);
 	tiClampMin(MaxImageMemMB, 256);
-	tiClampMin(MaxCacheFiles, 200);
+	tiClampMin(MaxCacheFiles, 200);	
+	tiClamp(MaxUndoSteps, 1, 32);
 	tiClamp(SaveAllSizeMode, 0, 3);
 	tiClamp(SaveFileJpegQuality, 1, 100);
 	tiClamp(SaveFileWebpQualComp, 0.0f, 100.0f);
@@ -249,6 +252,7 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(ResizeAspectMode);
 	WriteItem(MaxImageMemMB);
 	WriteItem(MaxCacheFiles);
+	WriteItem(MaxUndoSteps);
 	WriteItem(StrictLoading);
 	WriteItem(DetectAPNGInsidePNG);
 	WriteItem(AutoPropertyWindow);

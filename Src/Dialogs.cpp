@@ -111,20 +111,20 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoFocusOnAppearing	|
 		ImGuiWindowFlags_NoNav;
 
+	static bool live = true;
+	static tColourf floatCol = tColourf::black;
 	if (ImGui::Begin("Edit Pixel", popen, flags))
 	{
 		static int lastCursorX = -1;
 		static int lastCursorY = -1;
 		static Image* lastImage = nullptr;
-		static tColourf floatCol = tColourf::black;
 		static tColourf floatColReset = tColourf::black;
-		static bool locked = false;
 		if ((lastCursorX != Viewer::CursorX) || (lastCursorY != Viewer::CursorY) || (lastImage != CurrImage))
 		{
 			lastCursorX = Viewer::CursorX;
 			lastCursorY = Viewer::CursorY;
 			lastImage = CurrImage;
-			if (!locked)
+			if (live)
 				floatCol.Set(Viewer::PixelColour);
 			floatColReset.Set(Viewer::PixelColour);
 		}
@@ -132,17 +132,15 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 		tColourf origCol = floatCol;
 		if ((ImGui::ColorPicker4("Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf), floatColReset.E) && (floatCol != origCol))
 		{
-			if (!locked)
+			if (live)
 			{
 				CurrImage->Unbind();
 				tColouri col; col.Set(floatCol);
-				CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col);
+
+				// Don't push undo steps if we're dragging around the cursor.
+				CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col, false);
 				CurrImage->Bind();
 				Viewer::SetWindowTitle();
-			}
-			else
-			{
-				floatCol = origCol;
 			}
 		}
 
@@ -153,23 +151,40 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 		ImGui::SameLine();
 		if (resetPressed || resetPressed2)
 		{
-			CurrImage->Unbind();
-			tColouri col; col.Set(floatColReset);
-			CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col);
-			CurrImage->Bind();
-			Viewer::SetWindowTitle();
+			if (live)
+			{
+				CurrImage->Unbind();
+				tColouri col; col.Set(floatColReset);
+				CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col, true);
+				CurrImage->Bind();
+				Viewer::SetWindowTitle();
+			}
+			else
+			{
+				floatCol = floatColReset;
+			}
 		}
 		ImGui::SameLine();
-		ImGui::Checkbox("Lock", &locked);
+		ImGui::Checkbox("Live", &live);
 		ImGui::SameLine();
-		if (ImGui::Button("Apply", tVector2(100, 0)))
+		if (!live && ImGui::Button("Apply", tVector2(100, 0)))
 		{
 			CurrImage->Unbind();
 			tColouri col; col.Set(floatCol);
-			CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col);
+			CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col, true);
 			CurrImage->Bind();
 			Viewer::SetWindowTitle();
 		}
+	}
+
+	// If we closed the dialog and we're live, set the colour one more time but push to the undo stack.
+	if (popen && (*popen == false) && live)
+	{
+		CurrImage->Unbind();
+		tColouri col; col.Set(floatCol);
+		CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col, true);
+		CurrImage->Bind();
+		Viewer::SetWindowTitle();
 	}
 	ImGui::End();
 }
@@ -616,6 +631,12 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			DeleteAllCacheFilesOnExit = false;
 		ImGui::SameLine(); ImGui::Text("Cache will be cleared on exit.");
 	}
+
+	ImGui::PushItemWidth(110);
+	ImGui::InputInt("Max Undo Steps", &Config.MaxUndoSteps); ImGui::SameLine();
+	ShowHelpMark("Maximum number of Ctrl-Z undo steps.");
+	tMath::tiClamp(Config.MaxUndoSteps, 1, 32);
+
 	ImGui::Checkbox("Strict Loading", &Config.StrictLoading); ImGui::SameLine();
 	ShowHelpMark("Some image files are ill-formed. If strict is true no attempt to display them is made.");
 

@@ -79,6 +79,9 @@ namespace Viewer
 	void ResetPan(bool resetX = true, bool resetY = true);
 	tMath::tVector2 GetDialogOrigin(float index);
 
+	void Undo();
+	void Redo();
+
 	void ConvertScreenPosToImagePos
 	(
 		int& imgX, int& imgY,

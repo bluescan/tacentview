@@ -592,6 +592,8 @@ tColouri Image::GetPixel(int x, int y) const
 
 void Image::Rotate90(bool antiClockWise)
 {
+	tString desc; tsPrintf(desc, "Rotate %s", antiClockWise ? "ACW" : "CW");
+	PushUndo(desc);
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->Rotate90(antiClockWise);
 
@@ -601,6 +603,8 @@ void Image::Rotate90(bool antiClockWise)
 
 void Image::Rotate(float angle, const tColouri& fill, tResampleFilter upFilter, tResampleFilter downFilter)
 {
+	tString desc; tsPrintf(desc, "Rotate %5.1f", angle);
+	PushUndo(desc);
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->RotateCenter(angle, fill, upFilter, downFilter);
 
@@ -610,6 +614,8 @@ void Image::Rotate(float angle, const tColouri& fill, tResampleFilter upFilter, 
 
 void Image::Flip(bool horizontal)
 {
+	tString desc; tsPrintf(desc, "Flip %s", horizontal ? "Horiz" : "Vert");
+	PushUndo(desc);
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->Flip(horizontal);
 
@@ -619,6 +625,8 @@ void Image::Flip(bool horizontal)
 
 void Image::Crop(int newWidth, int newHeight, int originX, int originY, const tColouri& fillColour)
 {
+	tString desc; tsPrintf(desc, "Crop %d %d", newWidth, newHeight);
+	PushUndo(desc);
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->Crop(newWidth, newHeight, originX, originY, fillColour);
 
@@ -628,6 +636,8 @@ void Image::Crop(int newWidth, int newHeight, int originX, int originY, const tC
 
 void Image::Crop(int newWidth, int newHeight, tPicture::Anchor anchor, const tColouri& fillColour)
 {
+	tString desc; tsPrintf(desc, "Crop %d %d", newWidth, newHeight);
+	PushUndo(desc);
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->Crop(newWidth, newHeight, anchor, fillColour);
 
@@ -637,6 +647,7 @@ void Image::Crop(int newWidth, int newHeight, tPicture::Anchor anchor, const tCo
 
 void Image::Crop(const tColouri& borderColour, uint32 channels)
 {
+	PushUndo("Crop Borders");
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->Crop(borderColour, channels);
 
@@ -646,6 +657,8 @@ void Image::Crop(const tColouri& borderColour, uint32 channels)
 
 void Image::Resample(int newWidth, int newHeight, tImage::tResampleFilter filter, tImage::tResampleEdgeMode edgeMode)
 {
+	tString desc; tsPrintf(desc, "Resample %d %d", newWidth, newHeight);
+	PushUndo(desc);
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->Resample(newWidth, newHeight, filter, edgeMode);
 
@@ -653,8 +666,14 @@ void Image::Resample(int newWidth, int newHeight, tImage::tResampleFilter filter
 }
 
 
-void Image::SetPixelColour(int x, int y, const tColouri& colour)
+void Image::SetPixelColour(int x, int y, const tColouri& colour, bool pushUndo)
 {
+	if (pushUndo)
+	{
+		tString desc; tsPrintf(desc, "Pixel Colour (%d,%d)", x, y);
+		PushUndo(desc);
+	}
+
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 	{
 		if ((x > 0) && (x < picture->GetWidth()) && (y > 0) && (y < picture->GetHeight()))

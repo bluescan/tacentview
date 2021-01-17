@@ -76,6 +76,8 @@ add_executable(
 	Src/Settings.h
 	Src/TacentView.cpp
 	Src/TacentView.h
+	Src/Undo.cpp
+	Src/Undo.h
 	Src/Version.cmake.h
 	Src/Version.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Windows/TacentView.rc

@@ -1361,6 +1361,18 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 
+			bool undoEnabled = CurrImage && CurrImage->IsUndoAvailable();
+			tString undoDesc = undoEnabled ? CurrImage->GetUndoDesc() : tString();
+			tString undoStr; tsPrintf(undoStr, "Undo %s", undoDesc.Chars());
+			if (ImGui::MenuItem(undoStr, "Ctrl-Z", false, undoEnabled))
+				Undo();
+
+			bool redoEnabled = CurrImage && CurrImage->IsRedoAvailable();
+			tString redoDesc = redoEnabled ? CurrImage->GetRedoDesc() : tString();
+			tString redoStr; tsPrintf(redoStr, "Redo %s", redoDesc.Chars());
+			if (ImGui::MenuItem(redoStr, "Ctrl-Y", false, redoEnabled))
+				Redo();
+
 			if (ImGui::MenuItem("Flip Vertically", "Ctrl <", false, CurrImage && !CurrImage->IsAltPictureEnabled()))
 			{
 				CurrImage->Unbind();
@@ -1938,6 +1950,26 @@ void Viewer::ZoomDownscaleOnly()
 }
 
 
+void Viewer::Undo()
+{
+	tAssert(CurrImage && CurrImage->IsUndoAvailable());
+	CurrImage->Unbind();
+	CurrImage->Undo();
+	CurrImage->Bind();
+	SetWindowTitle();
+}
+
+
+void Viewer::Redo()
+{
+	tAssert(CurrImage && CurrImage->IsRedoAvailable());
+	CurrImage->Unbind();
+	CurrImage->Redo();
+	CurrImage->Bind();
+	SetWindowTitle();
+}
+
+
 void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int modifiers)
 {
 	if ((action != GLFW_PRESS) && (action != GLFW_REPEAT))
@@ -2155,10 +2187,26 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			CurrZoomMode = ZoomMode::DownscaleOnly;
 			break;
 
+		case GLFW_KEY_Y:		// Redo.
+			if (modifiers == GLFW_MOD_CONTROL)
+			{
+				if (CurrImage && CurrImage->IsRedoAvailable())
+					Redo();
+			}
+			break;
+
 		case GLFW_KEY_Z:
-			ZoomPercent = 100.0f;
-			ResetPan();
-			CurrZoomMode = ZoomMode::OneToOne;
+			if (modifiers == GLFW_MOD_CONTROL)
+			{
+				if (CurrImage && CurrImage->IsUndoAvailable())
+					Undo();
+			}
+			else
+			{
+				ZoomPercent = 100.0f;
+				ResetPan();
+				CurrZoomMode = ZoomMode::OneToOne;
+			}
 			break;
 
 		case GLFW_KEY_R:			// Resize Image.

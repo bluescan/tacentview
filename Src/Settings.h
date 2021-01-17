@@ -101,6 +101,7 @@ namespace Viewer
 		int ResizeAspectMode;				// 0 = Crop Mode. 1 = Letterbox Mode.
 		int MaxImageMemMB;					// Max image mem before unloading images.
 		int MaxCacheFiles;					// Max number of cache files before removing oldest.
+		int MaxUndoSteps;
 		bool StrictLoading;					// No attempt to display ill-formed images.
 		bool DetectAPNGInsidePNG;			// Look for APNG data (animated) hidden inside a regular PNG file.
 		bool AutoPropertyWindow;			// Auto display property editor window for supported file types.

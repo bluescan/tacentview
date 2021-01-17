@@ -24,6 +24,7 @@
 #include <Image/tCubemap.h>
 #include <Image/tImageHDR.h>
 #include "Settings.h"
+#include "Undo.h"
 namespace Viewer
 {
 
@@ -86,7 +87,15 @@ public:
 	void Crop(int newWidth, int newHeight, tImage::tPicture::Anchor, const tColouri& fillColour = tColour::black);
 	void Crop(const tColouri& borderColour, uint32 channels = tMath::ColourChannel_RGBA);
 	void Resample(int newWidth, int newHeight, tImage::tResampleFilter filter, tImage::tResampleEdgeMode edgeMode);
-	void SetPixelColour(int x, int y, const tColouri&);
+	void SetPixelColour(int x, int y, const tColouri&, bool pushUndo);
+
+	// Undo and redo functions.
+	void Undo()																											{ UndoStack.Undo(Pictures, Dirty); }
+	void Redo()																											{ UndoStack.Redo(Pictures, Dirty); }
+	bool IsUndoAvailable() const																						{ return UndoStack.UndoAvailable(); }
+	bool IsRedoAvailable() const																						{ return UndoStack.RedoAvailable(); }
+	tString GetUndoDesc() const																							{ return UndoStack.GetUndoDesc(); }
+	tString GetRedoDesc() const																							{ return UndoStack.GetRedoDesc(); }
 
 	// Since from outside this class you can save to any filename, we need the ability to clear the dirty flag.
 	void ClearDirty()																									{ Dirty = false; }
@@ -136,6 +145,8 @@ public:
 	bool TypeSupportsProperties() const;
 
 private:
+	void PushUndo(const tString& desc)																					{ UndoStack.Push(Pictures, desc, Dirty); }
+
 	// Dds files are special and already in HW ready format. The tTexture can store dds files, while tPicture stores
 	// other types (tga, gif, jpg, bmp, tif, png, etc). If the image is a dds file, the tTexture is valid and in order
 	// to read pixel data, the image is fetched from the framebuffer to ALSO make a valid PictureImage.
@@ -143,7 +154,6 @@ private:
 	// Note: A tTexture contains all mipmap levels while a tPicture does not. That's why we have a list of tPictures.
 	tImage::tTexture DDSTexture2D;
 	tImage::tCubemap DDSCubemap;
-
 	tList<tImage::tPicture> Pictures;
 
 	// The 'alternative' picture is valid when there is another valid way of displaying the image.
@@ -178,6 +188,9 @@ private:
 
 	float LoadedTime = -1.0f;
 	bool Dirty = false;
+
+	// Undo / Redo
+	Undo::Stack UndoStack;
 };
 
 
