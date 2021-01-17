@@ -113,12 +113,12 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 
 	static bool live = true;
 	static tColourf floatCol = tColourf::black;
+	static tColourf floatColReset = tColourf::black;
 	if (ImGui::Begin("Edit Pixel", popen, flags))
 	{
 		static int lastCursorX = -1;
 		static int lastCursorY = -1;
 		static Image* lastImage = nullptr;
-		static tColourf floatColReset = tColourf::black;
 		if ((lastCursorX != Viewer::CursorX) || (lastCursorY != Viewer::CursorY) || (lastImage != CurrImage))
 		{
 			lastCursorX = Viewer::CursorX;
@@ -138,7 +138,7 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 				tColouri col; col.Set(floatCol);
 
 				// Don't push undo steps if we're dragging around the cursor.
-				CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col, false);
+				CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col, false, true);
 				CurrImage->Bind();
 				Viewer::SetWindowTitle();
 			}
@@ -155,7 +155,7 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 			{
 				CurrImage->Unbind();
 				tColouri col; col.Set(floatColReset);
-				CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col, true);
+				CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col, true, true);
 				CurrImage->Bind();
 				Viewer::SetWindowTitle();
 			}
@@ -181,7 +181,10 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 	if (popen && (*popen == false) && live)
 	{
 		CurrImage->Unbind();
-		tColouri col; col.Set(floatCol);
+		tColouri col;
+		col.Set(floatColReset);
+		CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col, false, true);
+		col.Set(floatCol);
 		CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col, true);
 		CurrImage->Bind();
 		Viewer::SetWindowTitle();

@@ -592,7 +592,7 @@ tColouri Image::GetPixel(int x, int y) const
 
 void Image::Rotate90(bool antiClockWise)
 {
-	tString desc; tsPrintf(desc, "Rotate %s", antiClockWise ? "ACW" : "CW");
+	tString desc; tsPrintf(desc, "Rotate 90 %s", antiClockWise ? "ACW" : "CW");
 	PushUndo(desc);
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->Rotate90(antiClockWise);
@@ -603,7 +603,7 @@ void Image::Rotate90(bool antiClockWise)
 
 void Image::Rotate(float angle, const tColouri& fill, tResampleFilter upFilter, tResampleFilter downFilter)
 {
-	tString desc; tsPrintf(desc, "Rotate %5.1f", angle);
+	tString desc; tsPrintf(desc, "Rotate %.1f", tRadToDeg(angle));
 	PushUndo(desc);
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->RotateCenter(angle, fill, upFilter, downFilter);
@@ -666,7 +666,7 @@ void Image::Resample(int newWidth, int newHeight, tImage::tResampleFilter filter
 }
 
 
-void Image::SetPixelColour(int x, int y, const tColouri& colour, bool pushUndo)
+void Image::SetPixelColour(int x, int y, const tColouri& colour, bool pushUndo, bool surpressDirty)
 {
 	if (pushUndo)
 	{
@@ -680,7 +680,8 @@ void Image::SetPixelColour(int x, int y, const tColouri& colour, bool pushUndo)
 			picture->SetPixel(x, y, colour);
 	}
 
-	Dirty = true;
+	if (!surpressDirty)
+		Dirty = true;
 }
 
 

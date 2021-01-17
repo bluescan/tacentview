@@ -87,15 +87,15 @@ public:
 	void Crop(int newWidth, int newHeight, tImage::tPicture::Anchor, const tColouri& fillColour = tColour::black);
 	void Crop(const tColouri& borderColour, uint32 channels = tMath::ColourChannel_RGBA);
 	void Resample(int newWidth, int newHeight, tImage::tResampleFilter filter, tImage::tResampleEdgeMode edgeMode);
-	void SetPixelColour(int x, int y, const tColouri&, bool pushUndo);
+	void SetPixelColour(int x, int y, const tColouri&, bool pushUndo, bool supressDirty = false);
 
 	// Undo and redo functions.
 	void Undo()																											{ UndoStack.Undo(Pictures, Dirty); }
 	void Redo()																											{ UndoStack.Redo(Pictures, Dirty); }
 	bool IsUndoAvailable() const																						{ return UndoStack.UndoAvailable(); }
 	bool IsRedoAvailable() const																						{ return UndoStack.RedoAvailable(); }
-	tString GetUndoDesc() const																							{ return UndoStack.GetUndoDesc(); }
-	tString GetRedoDesc() const																							{ return UndoStack.GetRedoDesc(); }
+	tString GetUndoDesc() const																							{ tString desc; tsPrintf(desc, "[%s]", UndoStack.GetUndoDesc().Chars()); return desc; }
+	tString GetRedoDesc() const																							{ tString desc; tsPrintf(desc, "[%s]", UndoStack.GetRedoDesc().Chars()); return desc; }
 
 	// Since from outside this class you can save to any filename, we need the ability to clear the dirty flag.
 	void ClearDirty()																									{ Dirty = false; }
