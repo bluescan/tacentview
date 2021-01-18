@@ -1,7 +1,7 @@
 ![Build](https://github.com/bluescan/tacentview/workflows/Build/badge.svg) [![latest](https://img.shields.io/github/v/release/bluescan/tacentview.svg)](https://github.com/bluescan/tacentview/releases) [![tacentview](https://snapcraft.io//tacentview/badge.svg)](https://snapcraft.io/tacentview)
 
 # tacent view
-An image and texture viewer for tga, png, apng, exr, dds, gif, hdr, jpg, tif, ico, webp, and bmp files. Uses Dear ImGui and the Tacent library. This viewer is targeted to game devs -- It displays alpha channels correctly and can inspect/edit the colour of individual pixels. There is basic editing functionality, batch resizing, rotations/flips, and the ability to generate contact sheets for FX etc. Tacent View can save tga, png, bmp, jpg, (animated) webp, and (animated) gif files.
+An image and texture viewer for tga, png, apng, exr, dds, gif, hdr, jpg, tif, ico, webp, and bmp files. Uses Dear ImGui and the Tacent library. This viewer is targeted to game devs -- It displays alpha channels correctly and can inspect/edit the colour of individual pixels. There is basic editing functionality, batch resizing, rotations/flips, and the ability to generate contact sheets for FX etc. Tacent View can save tga, png, bmp, jpg, (animated) webp, (animated) gif, and (animated) apng files.
 
 Tacent View runs on Windows 10 and Ubuntu Linux. Browse the releases to grab a zip (Windows) or deb (Linux) package -- or install from the [Snap Store](https://snapcraft.io/tacentview).
 
@@ -28,7 +28,7 @@ Contact sheet (AKA flipbook) textures may be generated. Images may be 'played' i
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_ContactSheet.png) 
 
 
-Flip, rotate-by-90-degrees, rotate-arbitrarily (with live preview), cropping, and viewing textures in tiled mode is supported. There are also some powerful tools to resize images either by resampling or adjusting the canvas size. The 'aspect' mode of resize-canvas is useful for changing a photo's aspect ratio without any non-uniform scale. You get to set the anchor and choose whether you want the image letter-boxed or cropped. There is also a border removal tool that finds all matching pixels around the edges of an image and crops them.
+Flip, rotate-by-90-degrees, rotate-arbitrarily (with live preview), cropping, and viewing textures in tiled mode is supported. There are also some powerful tools to resize images either by resampling or adjusting the canvas size. The 'aspect' mode in resize-canvas is useful for changing a photo's aspect ratio without any non-uniform scale. You get to set the anchor and choose whether you want the image letter-boxed or cropped. The border removal tool finds all matching pixels around the edges of an image and crops them. All edit operations are backed by a full undo (ctrl-z) and redo (ctrl-y) stack.
 
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_Crop.png)
 
