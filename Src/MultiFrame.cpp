@@ -223,6 +223,13 @@ void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeigh
 			success = gif.Save(outFile, Config.SaveFileGifDurMultiFrame);
 			break;
 		}
+
+		case 2:			// APNG
+		{
+			tImageAPNG apng(frames, true);
+			success = apng.Save(outFile, Config.SaveFileApngDurMultiFrame);
+			break;
+		}
 	}
 
 	if (!success)

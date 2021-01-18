@@ -60,8 +60,10 @@ void Viewer::Settings::ResetBehaviourSettings()
 	SaveFileWebpQualComp		= 90.0f;
 	SaveFileWebpDurOverride		= -1;
 	SaveFileGifDurOverride		= -1;
+	SaveFileApngDurOverride		= -1;
 	SaveFileWebpDurMultiFrame	= 33;
 	SaveFileGifDurMultiFrame	= 3;
+	SaveFileApngDurMultiFrame	= 33;
 	SaveAllSizeMode				= 0;
 	CropAnchor					= 4;
 	FillColour					= tColouri::black;
@@ -148,8 +150,10 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(SaveFileWebpQualComp);
 				ReadItem(SaveFileWebpDurOverride);
 				ReadItem(SaveFileGifDurOverride);
+				ReadItem(SaveFileApngDurOverride);
 				ReadItem(SaveFileWebpDurMultiFrame);
 				ReadItem(SaveFileGifDurMultiFrame);
+				ReadItem(SaveFileApngDurMultiFrame);
 				ReadItem(SaveAllSizeMode);
 				ReadItem(CropAnchor);
 				ReadItem(FillColour);
@@ -168,35 +172,37 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 		}
 	}
 
-	tiClamp(ResampleFilter, 0, int(tImage::tResampleFilter::NumFilters)-1);			// No None allowed.
-	tiClamp(ResampleEdgeMode, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);
-	tiClamp(ResampleFilterRotateUp, 0, int(tImage::tResampleFilter::NumFilters));	// None allowed.
-	tiClamp(ResampleFilterRotateDown, 0, int(tImage::tResampleFilter::NumFilters));	// None allowed.
-	tiClamp(RotateMode, 0, int(RotMode::NumModes)-1);
-	tiClamp(BackgroundStyle, 0, 4);
-	tiClamp(WindowW, 640, screenW);
-	tiClamp(WindowH, 360, screenH);
-	tiClamp(WindowX, 0, screenW - WindowW);
-	tiClamp(WindowY, 0, screenH - WindowH);
-	tiClamp(OverlayCorner, 0, 3);
-	tiClamp(SaveFileType, 0, 5);
-	tiClamp(SaveFileTypeMultiFrame, 0, 1);
-	tiClamp(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
-	tiClamp(SortKey, 0, 3);
-	tiClamp(CropAnchor, -1, 9);
-	tiClampMin(ResizeAspectNum, 1);
-	tiClampMin(ResizeAspectDen, 1);
-	tiClamp(ResizeAspectMode, 0, 1);
-	tiClampMin(MaxImageMemMB, 256);
-	tiClampMin(MaxCacheFiles, 200);	
-	tiClamp(MaxUndoSteps, 1, 32);
-	tiClamp(SaveAllSizeMode, 0, 3);
-	tiClamp(SaveFileJpegQuality, 1, 100);
-	tiClamp(SaveFileWebpQualComp, 0.0f, 100.0f);
-	tiClampMin(SaveFileWebpDurOverride, -1);
-	tiClampMin(SaveFileGifDurOverride, -1);
-	tiClampMin(SaveFileWebpDurMultiFrame, 0);
-	tiClampMin(SaveFileGifDurMultiFrame, 0);
+	tiClamp		(ResampleFilter, 0, int(tImage::tResampleFilter::NumFilters)-1);		// No None allowed.
+	tiClamp		(ResampleEdgeMode, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);
+	tiClamp		(ResampleFilterRotateUp, 0, int(tImage::tResampleFilter::NumFilters));	// None allowed.
+	tiClamp		(ResampleFilterRotateDown, 0, int(tImage::tResampleFilter::NumFilters));// None allowed.
+	tiClamp		(RotateMode, 0, int(RotMode::NumModes)-1);
+	tiClamp		(BackgroundStyle, 0, 4);
+	tiClamp		(WindowW, 640, screenW);
+	tiClamp		(WindowH, 360, screenH);
+	tiClamp		(WindowX, 0, screenW - WindowW);
+	tiClamp		(WindowY, 0, screenH - WindowH);
+	tiClamp		(OverlayCorner, 0, 3);
+	tiClamp		(SaveFileType, 0, 6);
+	tiClamp		(SaveFileTypeMultiFrame, 0, 2);
+	tiClamp		(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
+	tiClamp		(SortKey, 0, 3);
+	tiClamp		(CropAnchor, -1, 9);
+	tiClampMin	(ResizeAspectNum, 1);
+	tiClampMin	(ResizeAspectDen, 1);
+	tiClamp		(ResizeAspectMode, 0, 1);
+	tiClampMin	(MaxImageMemMB, 256);
+	tiClampMin	(MaxCacheFiles, 200);	
+	tiClamp		(MaxUndoSteps, 1, 32);
+	tiClamp		(SaveAllSizeMode, 0, 3);
+	tiClamp		(SaveFileJpegQuality, 1, 100);
+	tiClamp		(SaveFileWebpQualComp, 0.0f, 100.0f);
+	tiClampMin	(SaveFileWebpDurOverride, -1);
+	tiClampMin	(SaveFileGifDurOverride, -1);
+	tiClamp		(SaveFileApngDurOverride, -1, 65535);
+	tiClampMin	(SaveFileWebpDurMultiFrame, 0);
+	tiClampMin	(SaveFileGifDurMultiFrame, 0);
+	tiClamp		(SaveFileApngDurMultiFrame, 0, 65535);
 }
 
 
@@ -242,8 +248,10 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(SaveFileWebpQualComp);
 	WriteItem(SaveFileWebpDurOverride);
 	WriteItem(SaveFileGifDurOverride);
+	WriteItem(SaveFileApngDurOverride);
 	WriteItem(SaveFileWebpDurMultiFrame);
 	WriteItem(SaveFileGifDurMultiFrame);
+	WriteItem(SaveFileApngDurMultiFrame);
 	WriteItem(SaveAllSizeMode);
 	WriteItem(CropAnchor);
 	WriteItem(FillColour);
