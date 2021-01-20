@@ -686,6 +686,27 @@ void Image::SetPixelColour(int x, int y, const tColouri& colour, bool pushUndo, 
 }
 
 
+void Image::SetFrameDuration(float duration, bool allFrames)
+{
+	tString desc; tsPrintf(desc, "Frame Dur %.3f", duration);
+	PushUndo(desc);
+
+	if (allFrames)
+	{
+		for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+			picture->Duration = duration;
+	}
+	else
+	{
+		tPicture* pic = GetCurrentPic();
+		if (pic)
+			pic->Duration = duration;
+	}
+
+	Dirty = true;
+}
+
+
 void Image::PrintInfo()
 {
 	tPixelFormat format = tPixelFormat::Invalid;
@@ -1186,7 +1207,7 @@ void Image::RequestInvalidateThumbnail()
 
 void Image::Play()
 {
-	FrameCurrCountdown = FrameDurationOverrideEnabled ? FrameDurationOverride : GetCurrentPic()->Duration;
+	FrameCurrCountdown = FrameDurationPreviewEnabled ? FrameDurationPreview : GetCurrentPic()->Duration;
 	FramePlaying = true;
 }
 
@@ -1237,8 +1258,8 @@ void Image::UpdatePlaying(float dt)
 				}
 			}
 		}
-		if (FrameDurationOverrideEnabled)
-			FrameCurrCountdown = FrameDurationOverride;
+		if (FrameDurationPreviewEnabled)
+			FrameCurrCountdown = FrameDurationPreview;
 		else
 			FrameCurrCountdown = GetCurrentPic()->Duration;
 	}

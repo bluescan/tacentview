@@ -46,13 +46,13 @@ public:
 	void Play();
 	void Stop();
 	void UpdatePlaying(float dt);
-	bool FrameDurationOverrideEnabled = false;
-	float FrameDurationOverride = 1.0f/30.0f;
-	float FrameCurrCountdown = 0.0f;
-	bool FramePlaying = false;
-	bool FramePlayRev = false;
-	bool FramePlayLooping = true;
-	int FrameNum = 0;
+	bool FrameDurationPreviewEnabled	= false;
+	float FrameDurationPreview			= 1.0f/30.0f;
+	float FrameCurrCountdown			= 0.0f;
+	bool FramePlaying					= false;
+	bool FramePlayRev					= false;
+	bool FramePlayLooping				= true;
+	int FrameNum						= 0;
 
 	bool Load(const tString& filename);
 	bool Load();						// Load into main memory.
@@ -88,6 +88,7 @@ public:
 	void Crop(const tColouri& borderColour, uint32 channels = tMath::ColourChannel_RGBA);
 	void Resample(int newWidth, int newHeight, tImage::tResampleFilter filter, tImage::tResampleEdgeMode edgeMode);
 	void SetPixelColour(int x, int y, const tColouri&, bool pushUndo, bool supressDirty = false);
+	void SetFrameDuration(float duration, bool allFrames = false);
 
 	// Undo and redo functions.
 	void Undo()																											{ UndoStack.Undo(Pictures, Dirty); }
@@ -128,7 +129,7 @@ public:
 
 	// You are allowed to unrequest. It will succeed if a worker was never assigned.
 	void UnrequestThumbnail();
-	bool IsThumbnailWorkerActive() const { return ThumbnailThreadRunning; }
+	bool IsThumbnailWorkerActive() const																				{ return ThumbnailThreadRunning; }
 	uint64 BindThumbnail();
 
 	ImgInfo Info;						// Info is only valid AFTER loading.

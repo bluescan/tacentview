@@ -447,18 +447,46 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 			tMath::tiClamp(CurrImage->FrameNum, 0, CurrImage->GetNumFrames()-1);
 		}
 		ImGui::SameLine(); ShowHelpMark("Which image in a multiframe file to display.");
+		ImGui::Unindent();
+		ImGui::Separator();
 
-		ImGui::Checkbox("Override Frame Durations", &CurrImage->FrameDurationOverrideEnabled);
-		if (CurrImage->FrameDurationOverrideEnabled)
+		ImGui::Checkbox("Preview Duration", &CurrImage->FrameDurationPreviewEnabled);
+		ImGui::SameLine(); ShowHelpMark("If enabled this number of seconds is used for all frame durations while playing.");
+		ImGui::Indent();
+
+		if (CurrImage->FrameDurationPreviewEnabled)
 		{
-			ImGui::InputFloat("Frame Duration", &CurrImage->FrameDurationOverride, 0.01f, 0.1f, "%.4f");
-			tMath::tiClamp(CurrImage->FrameDurationOverride, 0.0f, 60.0f);
-
-			if (ImGui::Button("1.0s")) CurrImage->FrameDurationOverride = 1.0f; ImGui::SameLine();
-			if (ImGui::Button("0.5s")) CurrImage->FrameDurationOverride = 0.5f; ImGui::SameLine();
-			if (ImGui::Button("30fps")) CurrImage->FrameDurationOverride = 1.0f/30.0f; ImGui::SameLine();
-			if (ImGui::Button("60fps")) CurrImage->FrameDurationOverride = 1.0f/60.0f;
+			ImGui::InputFloat("Preview Dur", &CurrImage->FrameDurationPreview, 0.01f, 0.1f, "%.4f");
+			tMath::tiClamp(CurrImage->FrameDurationPreview, 0.0f, 60.0f);
+			if (ImGui::Button("1.0s")) CurrImage->FrameDurationPreview = 1.0f; ImGui::SameLine();
+			if (ImGui::Button("0.5s")) CurrImage->FrameDurationPreview = 0.5f; ImGui::SameLine();
+			if (ImGui::Button("30fps")) CurrImage->FrameDurationPreview = 1.0f/30.0f; ImGui::SameLine();
+			if (ImGui::Button("60fps")) CurrImage->FrameDurationPreview = 1.0f/60.0f;
+			if (ImGui::Button("Set All"))
+			{
+				CurrImage->SetFrameDuration(CurrImage->FrameDurationPreview, true);
+				SetWindowTitle();
+				CurrImage->FrameDurationPreviewEnabled = false;
+			}
+			ImGui::SameLine(); ShowHelpMark("Set every frame duration to the preview duration.");
 		}
+		else
+		{
+			tImage::tPicture* currFramePic = CurrImage->GetCurrentPic();
+			float duration = currFramePic->Duration;
+			if (ImGui::InputFloat("Edit Dur", &duration, 0.01f, 0.1f, "%.4f", ImGuiInputTextFlags_EnterReturnsTrue))
+			{
+				tMath::tiClamp(duration, 0.0f, 60.0f);
+				CurrImage->SetFrameDuration(duration);
+				SetWindowTitle();
+			}
+
+			if (ImGui::Button("1.0s"))	{ CurrImage->SetFrameDuration(1.0f); SetWindowTitle(); }		ImGui::SameLine();
+			if (ImGui::Button("0.5s"))	{ CurrImage->SetFrameDuration(0.5f); SetWindowTitle(); }		ImGui::SameLine();
+			if (ImGui::Button("30fps"))	{ CurrImage->SetFrameDuration(1.0f/30.0f); SetWindowTitle(); }	ImGui::SameLine();
+			if (ImGui::Button("60fps"))	{ CurrImage->SetFrameDuration(1.0f/60.0f); SetWindowTitle(); }
+		}
+		
 
 		ImGui::PopItemWidth();
 		ImGui::Unindent();
