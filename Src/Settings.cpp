@@ -52,18 +52,25 @@ void Viewer::Settings::ResetBehaviourSettings()
 	SlideshowProgressArc		= true;
 	SlidehowFrameDuration		= 8.0;			// Values as small as 1.0/30.0 also work.
 	SaveSubFolder				.Clear();
+
 	SaveFileType				= 0;
 	SaveFileTypeMultiFrame		= 0;
 	SaveFileTargaRLE			= false;
 	SaveFileJpegQuality			= 95;
 	SaveFileWebpLossy			= false;
 	SaveFileWebpQualComp		= 90.0f;
+	SaveFileTiffZLibDeflate		= true;
+
 	SaveFileWebpDurOverride		= -1;
 	SaveFileGifDurOverride		= -1;
 	SaveFileApngDurOverride		= -1;
+	SaveFileTiffDurOverride		= -1;
+
 	SaveFileWebpDurMultiFrame	= 33;
 	SaveFileGifDurMultiFrame	= 3;
 	SaveFileApngDurMultiFrame	= 33;
+	SaveFileTiffDurMultiFrame	= 33;
+
 	SaveAllSizeMode				= 0;
 	CropAnchor					= 4;
 	FillColour					= tColouri::black;
@@ -141,6 +148,7 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(SlideshowLooping);
 				ReadItem(SlideshowProgressArc);
 				ReadItem(SlidehowFrameDuration);
+
 				ReadItem(SaveSubFolder);
 				ReadItem(SaveFileType);
 				ReadItem(SaveFileTypeMultiFrame);
@@ -148,12 +156,18 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(SaveFileJpegQuality);
 				ReadItem(SaveFileWebpLossy);
 				ReadItem(SaveFileWebpQualComp);
+				ReadItem(SaveFileTiffZLibDeflate);
+
 				ReadItem(SaveFileWebpDurOverride);
 				ReadItem(SaveFileGifDurOverride);
 				ReadItem(SaveFileApngDurOverride);
+				ReadItem(SaveFileTiffDurOverride);
+
 				ReadItem(SaveFileWebpDurMultiFrame);
 				ReadItem(SaveFileGifDurMultiFrame);
 				ReadItem(SaveFileApngDurMultiFrame);
+				ReadItem(SaveFileTiffDurMultiFrame);
+
 				ReadItem(SaveAllSizeMode);
 				ReadItem(CropAnchor);
 				ReadItem(FillColour);
@@ -183,8 +197,8 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 	tiClamp		(WindowX, 0, screenW - WindowW);
 	tiClamp		(WindowY, 0, screenH - WindowH);
 	tiClamp		(OverlayCorner, 0, 3);
-	tiClamp		(SaveFileType, 0, 6);
-	tiClamp		(SaveFileTypeMultiFrame, 0, 2);
+	tiClamp		(SaveFileType, 0, 7);
+	tiClamp		(SaveFileTypeMultiFrame, 0, 3);
 	tiClamp		(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
 	tiClamp		(SortKey, 0, 3);
 	tiClamp		(CropAnchor, -1, 9);
@@ -197,12 +211,16 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 	tiClamp		(SaveAllSizeMode, 0, 3);
 	tiClamp		(SaveFileJpegQuality, 1, 100);
 	tiClamp		(SaveFileWebpQualComp, 0.0f, 100.0f);
+
 	tiClampMin	(SaveFileWebpDurOverride, -1);
 	tiClampMin	(SaveFileGifDurOverride, -1);
 	tiClamp		(SaveFileApngDurOverride, -1, 65535);
+	tiClampMin	(SaveFileTiffDurOverride, -1);
+
 	tiClampMin	(SaveFileWebpDurMultiFrame, 0);
 	tiClampMin	(SaveFileGifDurMultiFrame, 0);
 	tiClamp		(SaveFileApngDurMultiFrame, 0, 65535);
+	tiClampMin	(SaveFileTiffDurMultiFrame, 0);
 }
 
 
@@ -239,6 +257,7 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(SlideshowLooping);
 	WriteItem(SlideshowProgressArc);
 	WriteItem(SlidehowFrameDuration);
+
 	WriteItem(SaveSubFolder);
 	WriteItem(SaveFileType);
 	WriteItem(SaveFileTypeMultiFrame);
@@ -246,12 +265,18 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(SaveFileJpegQuality);
 	WriteItem(SaveFileWebpLossy);
 	WriteItem(SaveFileWebpQualComp);
+	WriteItem(SaveFileTiffZLibDeflate);
+
 	WriteItem(SaveFileWebpDurOverride);
 	WriteItem(SaveFileGifDurOverride);
 	WriteItem(SaveFileApngDurOverride);
+	WriteItem(SaveFileTiffDurOverride);
+
 	WriteItem(SaveFileWebpDurMultiFrame);
 	WriteItem(SaveFileGifDurMultiFrame);
 	WriteItem(SaveFileApngDurMultiFrame);
+	WriteItem(SaveFileTiffDurMultiFrame);
+
 	WriteItem(SaveAllSizeMode);
 	WriteItem(CropAnchor);
 	WriteItem(FillColour);

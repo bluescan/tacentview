@@ -230,6 +230,13 @@ void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeigh
 			success = apng.Save(outFile, Config.SaveFileApngDurMultiFrame);
 			break;
 		}
+
+		case 3:			// TIFF
+		{
+			tImageTIFF tiff(frames, true);
+			success = tiff.Save(outFile, Config.SaveFileTiffZLibDeflate, Config.SaveFileTiffDurMultiFrame);
+			break;
+		}
 	}
 
 	if (!success)

@@ -442,7 +442,12 @@ void Viewer::LoadCurrImage()
 	if
 	(
 		Config.AutoPlayAnimatedImages && (CurrImage->GetNumFrames() > 1) &&
-		((CurrImage->Filetype == tFileType::GIF) || (CurrImage->Filetype == tFileType::WEBP) || (CurrImage->Filetype == tFileType::APNG))
+		(
+			(CurrImage->Filetype == tFileType::GIF) ||
+			(CurrImage->Filetype == tFileType::WEBP) ||
+			(CurrImage->Filetype == tFileType::APNG) ||
+			(CurrImage->Filetype == tFileType::TIFF)
+		)
 	)
 	{
 		CurrImage->FramePlayLooping = true;

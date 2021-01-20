@@ -76,18 +76,23 @@ namespace Viewer
 		double SlidehowFrameDuration;
 
 		tString SaveSubFolder;
-		int SaveFileType;
-		int SaveFileTypeMultiFrame;
-		bool SaveFileTargaRLE;
-		int SaveFileJpegQuality;				// E [1, 100]
-		bool SaveFileWebpLossy;
-		float SaveFileWebpQualComp;				// E [0.0, 100.0]
+		int		SaveFileType;
+		int		SaveFileTypeMultiFrame;
+		bool	SaveFileTargaRLE;
+		int		SaveFileJpegQuality;			// E [1, 100]
+		bool	SaveFileWebpLossy;
+		float	SaveFileWebpQualComp;			// E [0.0, 100.0]
+		bool	SaveFileTiffZLibDeflate;
+
 		int SaveFileWebpDurOverride;			// E [-1, inf]. In ms.
 		int SaveFileGifDurOverride;				// E [-1, inf]. In 1/100 seconds.
 		int SaveFileApngDurOverride;			// E [-1, 65535]. In ms.
+		int SaveFileTiffDurOverride;			// E [-1, inf]. In ms.
+
 		int SaveFileWebpDurMultiFrame;			// E [0, inf]. In ms.
 		int SaveFileGifDurMultiFrame;			// E [0, inf]. In 1/100 seconds.
 		int SaveFileApngDurMultiFrame;			// E [0, 65536]. In ms.
+		int SaveFileTiffDurMultiFrame;			// E [0, inf]. In ms.
 		enum class SizeMode
 		{
 			Percent,

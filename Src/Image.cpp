@@ -312,6 +312,7 @@ bool Image::Load()
 				tFrame* frame = tiff.StealFrame(0);
 				tPicture* picture = new tPicture();
 				picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
+				picture->Duration = frame->Duration;
 
 				// Since the pixels were stolen, the frame destructor will not delete them.
 				delete frame;

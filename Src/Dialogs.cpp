@@ -291,11 +291,11 @@ void Viewer::ShowAboutPopup(bool* popen)
 		ImGui::Text("LibTIFF V %s", tImage::Version_LibTIFF);
 		ImGui::Text("OpenEXR V %s", tImage::Version_OpenEXR);
 		ImGui::Text("ZLib V %s", tImage::Version_ZLIB);
-		ImGui::Text("Gif Load");
-		ImGui::Text("WebP Decoder V %d.%d", tImage::Version_WEBP_Major, tImage::Version_WEBP_Minor);
+		ImGui::Text("GIF Load");
+		ImGui::Text("LibWEBP V %d.%d", tImage::Version_WEBP_Major, tImage::Version_WEBP_Minor);
 		ImGui::Text("LibPNG V %s", tImage::Version_LibPNG);
-		ImGui::Text("ApngDis V %s", tImage::Version_ApngDis);
-		ImGui::Text("ApngAsm V %s", tImage::Version_ApngAsm);
+		ImGui::Text("APNGDis V %s", tImage::Version_ApngDis);
+		ImGui::Text("APNGAsm V %s", tImage::Version_ApngAsm);
 	}
 	ImGui::End();
 }
@@ -448,7 +448,7 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 		}
 		ImGui::SameLine(); ShowHelpMark("Which image in a multiframe file to display.");
 
-		ImGui::Checkbox("Override Frame Duration", &CurrImage->FrameDurationOverrideEnabled);
+		ImGui::Checkbox("Override Frame Durations", &CurrImage->FrameDurationOverrideEnabled);
 		if (CurrImage->FrameDurationOverrideEnabled)
 		{
 			ImGui::InputFloat("Frame Duration", &CurrImage->FrameDurationOverride, 0.01f, 0.1f, "%.4f");
