@@ -187,9 +187,29 @@ bool Image::Load()
 				Info.SrcPixelFormat = DDSTexture2D.GetPixelFormat();
 			}
 		}
+		if (Filetype == tSystem::tFileType::EXR)
+		{
+			tImageEXR exr;
+			bool ok = exr.Load(Filename.Chars());
+			if (!ok)
+				return false;
 
-		// @todo Do EXR images here.
+			int numFrames = exr.GetNumFrames();
+			for (int f = 0; f < numFrames; f++)
+			{
+				tFrame* frame = exr.StealFrame(0);
+				tPicture* picture = new tPicture();
 
+				picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
+				picture->Duration = frame->Duration;
+
+				// Since the pixels were stolen, the frame destructor will not delete them.
+				delete frame;
+				Pictures.Append(picture);
+			}
+			Info.SrcPixelFormat = exr.SrcPixelFormat;
+			success = true;
+		}
 		else if (Filetype == tSystem::tFileType::GIF)
 		{
 			tImageGIF gif;
@@ -345,11 +365,10 @@ bool Image::Load()
 			success = true;
 		}
 
-		// @todo Lets also handle EXR directly habove. This is more efficient than using tPicture method below
-		// where the same file is loaded multiple times in order to extract each frame.
+		// I don't believe we'll get to this catchall. Everything should be handled above.
 		else
 		{
-			// Some image files (like exr files) may store multiple images (aka frames or parts) in one file.
+			// Some image files may store multiple images (aka frames or parts) in one file.
 			int partNum = 0;
 			bool ok = false;
 			do
