@@ -1,6 +1,6 @@
 // Dialogs.h
 //
-// Various dialogs and helpers including a log window, info overlay, cheatsheet, help window, about window, and prefs.
+// Various dialogs and helpers including a log window, info overlay, cheatsheet, help window, and about window.
 //
 // Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
@@ -21,8 +21,6 @@ namespace Viewer
 	void ShowPixelEditorOverlay(bool* popen);
 	void ShowCheatSheetPopup(bool* popen);
 	void ShowAboutPopup(bool* popen);
-	void ShowPreferencesWindow(bool* popen);
-	void ShowPropertyEditorWindow(bool* popen);
 	void ColourCopyAs();
 	void DoDeleteFileModal();
 	void DoDeleteFileNoRecycleModal();

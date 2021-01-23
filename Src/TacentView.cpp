@@ -28,7 +28,6 @@
 #include <Foundation/tHash.h>
 #include <System/tCommand.h>
 #include <Image/tPicture.h>
-#include <Image/tImageHDR.h>
 #include <System/tFile.h>
 #include <System/tTime.h>
 #include <System/tScript.h>
@@ -41,6 +40,8 @@
 #include "TacentView.h"
 #include "Image.h"
 #include "Dialogs.h"
+#include "Preferences.h"
+#include "PropertyEditor.h"
 #include "ContactSheet.h"
 #include "MultiFrame.h"
 #include "ContentView.h"
@@ -460,7 +461,7 @@ void Viewer::LoadCurrImage()
 
 	// We only need to consider unloading an image when a new one is loaded... in this function.
 	// We currently do not allow unloading when in slideshow and the frame duration is small.
-	bool slideshowSmallDuration = SlideshowPlaying && (Config.SlidehowFrameDuration < 0.5f);
+	bool slideshowSmallDuration = SlideshowPlaying && (Config.SlideshowPeriod < 0.5f);
 	if (imgJustLoaded && !slideshowSmallDuration)
 	{
 		ImagesLoadTimeSorted.Sort(Compare_ImageLoadTimeAscending);
@@ -500,7 +501,7 @@ bool Viewer::OnPrevious()
 		return false;
 
 	if (SlideshowPlaying)
-		SlideshowCountdown = Config.SlidehowFrameDuration;
+		SlideshowCountdown = Config.SlideshowPeriod;
 
 	CurrImage = circ ? Images.PrevCirc(CurrImage) : CurrImage->Prev();
 	LoadCurrImage();
@@ -515,7 +516,7 @@ bool Viewer::OnNext()
 		return false;
 
 	if (SlideshowPlaying)
-		SlideshowCountdown = Config.SlidehowFrameDuration;
+		SlideshowCountdown = Config.SlideshowPeriod;
 
 	CurrImage = circ ? Images.NextCirc(CurrImage) : CurrImage->Next();
 	LoadCurrImage();
@@ -1147,13 +1148,13 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGuiWindowFlags_NoTitleBar		|	ImGuiWindowFlags_NoScrollbar	|	ImGuiWindowFlags_NoMove			| ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoCollapse		|	ImGuiWindowFlags_NoNav			|	ImGuiWindowFlags_NoBackground	| ImGuiWindowFlags_NoBringToFrontOnFocus;
 
-	if (SlideshowPlaying && (Config.SlidehowFrameDuration >= 1.0f) && Config.SlideshowProgressArc)
+	if (SlideshowPlaying && (Config.SlideshowPeriod >= 1.0f) && Config.SlideshowProgressArc)
 	{
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+7.0f, float(topUIHeight) + float(workAreaH) - 64.0f));
 		ImGui::Begin("SlideProgress", nullptr, flagsImgButton | ImGuiWindowFlags_NoInputs);
 		ImGui::SetCursorPos(tVector2(15, 14));
 
-		float percent = float(SlideshowCountdown / Config.SlidehowFrameDuration);
+		float percent = float(SlideshowCountdown / Config.SlideshowPeriod);
 		ProgressArc(8.0f, percent, ImVec4(1.0f, 1.0f, 1.0f, 1.0f), Viewer::ColourClear);
 		ImGui::End();
 	}
@@ -1249,7 +1250,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton(ImTextureID(psImageID), tVector2(24,24), tVector2(0,0), tVector2(1,1), 2, tVector4(0,0,0,0), tVector4(1,1,1,1)))
 		{
 			SlideshowPlaying = !SlideshowPlaying;
-			SlideshowCountdown = Config.SlidehowFrameDuration;
+			SlideshowCountdown = Config.SlideshowPeriod;
 		}
 		ImGui::End();
 
@@ -1805,7 +1806,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (!ok)
 				SlideshowPlaying = false;
 			else
-				SlideshowCountdown = Config.SlidehowFrameDuration;
+				SlideshowCountdown = Config.SlideshowPeriod;
 		}
 	}
 }
@@ -1908,21 +1909,21 @@ void Viewer::SetBasicViewAndBehaviour()
 	// viewer. Turns off the nav and menu bars, any dialogs (help, about, thumbnails, info, etc), sets the zoom
 	// mode to downscale-only, makes the background match the border colour, sets the auto prop editor to false,
 	// sets the slideshow/play to looping, and the slideshow duration to 8 seconds.
-	Config.ShowMenuBar = false;
-	Config.ShowNavBar = false;
-	Config.ShowImageDetails = false;
-	Config.ShowPixelEditor = false;
-	Config.AutoPropertyWindow = false;
-	Config.ContentViewShow = false;
-	Config.AutoPlayAnimatedImages = true;
-	Config.BackgroundStyle = int(Settings::BGStyle::None);
-	Config.SlideshowLooping = true;
-	Config.SlideshowProgressArc = true;
-	Config.SlidehowFrameDuration = 8.0;
-	CurrZoomMode = ZoomMode::DownscaleOnly;
-	PropEditorWindow = false;
-	ShowCheatSheet = false;
-	ShowAbout = false;
+	Config.ShowMenuBar				= false;
+	Config.ShowNavBar				= false;
+	Config.ShowImageDetails			= false;
+	Config.ShowPixelEditor			= false;
+	Config.AutoPropertyWindow		= false;
+	Config.ContentViewShow			= false;
+	Config.AutoPlayAnimatedImages	= true;
+	Config.BackgroundStyle			= int(Settings::BGStyle::None);
+	Config.SlideshowLooping			= true;
+	Config.SlideshowProgressArc		= true;
+	Config.SlideshowPeriod			= 8.0;
+	CurrZoomMode					= ZoomMode::DownscaleOnly;
+	PropEditorWindow				= false;
+	ShowCheatSheet					= false;
+	ShowAbout						= false;
 }
 
 
@@ -1934,7 +1935,7 @@ bool Viewer::IsBasicViewAndBehaviour()
 		!Config.AutoPropertyWindow	&& !Config.ContentViewShow		&& Config.AutoPlayAnimatedImages	&&
 		(Config.BackgroundStyle == int(Settings::BGStyle::None))	&&
 		Config.SlideshowLooping										&& Config.SlideshowProgressArc		&&
-		tMath::tApproxEqual(Config.SlidehowFrameDuration, 8.0)		&&
+		tMath::tApproxEqual(Config.SlideshowPeriod, 8.0)			&&
 		(CurrZoomMode == ZoomMode::DownscaleOnly)					&&
 		!PropEditorWindow			&& !ShowCheatSheet				&& !ShowAbout
 	);

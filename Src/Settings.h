@@ -73,7 +73,7 @@ namespace Viewer
 		bool ConfirmFileOverwrites;
 		bool SlideshowLooping;
 		bool SlideshowProgressArc;
-		double SlidehowFrameDuration;
+		double SlideshowPeriod;
 
 		tString SaveSubFolder;
 		int		SaveFileType;

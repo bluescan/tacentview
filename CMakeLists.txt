@@ -66,6 +66,10 @@ add_executable(
 	Src/Image.h
 	Src/MultiFrame.cpp
 	Src/MultiFrame.h
+	Src/Preferences.cpp
+	Src/Preferences.h
+	Src/PropertyEditor.cpp
+	Src/PropertyEditor.h
 	Src/Resize.cpp
 	Src/Resize.h
 	Src/Rotate.cpp

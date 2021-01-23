@@ -50,7 +50,7 @@ void Viewer::Settings::ResetBehaviourSettings()
 	ConfirmFileOverwrites		= true;
 	SlideshowLooping			= false;
 	SlideshowProgressArc		= true;
-	SlidehowFrameDuration		= 8.0;			// Values as small as 1.0/30.0 also work.
+	SlideshowPeriod				= 8.0;			// Values as small as 1.0/60.0 also work.
 	SaveSubFolder				.Clear();
 
 	SaveFileType				= 0;
@@ -147,7 +147,7 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(ConfirmFileOverwrites);
 				ReadItem(SlideshowLooping);
 				ReadItem(SlideshowProgressArc);
-				ReadItem(SlidehowFrameDuration);
+				ReadItem(SlideshowPeriod);
 
 				ReadItem(SaveSubFolder);
 				ReadItem(SaveFileType);
@@ -191,6 +191,7 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 	tiClamp		(ResampleFilterRotateUp, 0, int(tImage::tResampleFilter::NumFilters));	// None allowed.
 	tiClamp		(ResampleFilterRotateDown, 0, int(tImage::tResampleFilter::NumFilters));// None allowed.
 	tiClamp		(RotateMode, 0, int(RotMode::NumModes)-1);
+	tiClampMin	(SlideshowPeriod, 1.0/60.0);
 	tiClamp		(BackgroundStyle, 0, 4);
 	tiClamp		(WindowW, 640, screenW);
 	tiClamp		(WindowH, 360, screenH);
@@ -256,7 +257,7 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(ConfirmFileOverwrites);
 	WriteItem(SlideshowLooping);
 	WriteItem(SlideshowProgressArc);
-	WriteItem(SlidehowFrameDuration);
+	WriteItem(SlideshowPeriod);
 
 	WriteItem(SaveSubFolder);
 	WriteItem(SaveFileType);
