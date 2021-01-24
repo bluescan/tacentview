@@ -292,6 +292,7 @@ void Viewer::ShowAboutPopup(bool* popen)
 		ImGui::Text("OpenEXR V %s", tImage::Version_OpenEXR);
 		ImGui::Text("ZLib V %s", tImage::Version_ZLIB);
 		ImGui::Text("GIF Load");
+		ImGui::Text("GIF Save");
 		ImGui::Text("LibWEBP V %d.%d", tImage::Version_WEBP_Major, tImage::Version_WEBP_Minor);
 		ImGui::Text("LibPNG V %s", tImage::Version_LibPNG);
 		ImGui::Text("APNGDis V %s", tImage::Version_ApngDis);
