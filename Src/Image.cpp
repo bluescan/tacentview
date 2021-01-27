@@ -212,7 +212,15 @@ bool Image::Load()
 			case tSystem::tFileType::EXR:
 			{
 				tImageEXR exr;
-				bool ok = exr.Load(Filename.Chars());
+				bool ok = exr.Load
+				(
+					Filename.Chars(),
+					LoadParams.GammaValue,
+					LoadParams.EXR_Exposure,
+					LoadParams.EXR_Defog,
+					LoadParams.EXR_KneeLow,
+					LoadParams.EXR_KneeHigh
+				);
 				if (!ok)
 					return false;
 
