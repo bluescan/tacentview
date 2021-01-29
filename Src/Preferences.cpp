@@ -176,6 +176,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			
 			ImGui::EndTabItem();
 		}
+		ImGui::EndTabBar();
 	}
 
 	ImGui::NewLine();

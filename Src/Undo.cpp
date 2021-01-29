@@ -27,7 +27,6 @@ Undo::Step_PictureList::Step_PictureList(const tString& desc, bool dirty, const 
 {
 	for (tPicture* pic = pics.First(); pic; pic = pic->Next())
 		Pictures.Append(new tPicture(*pic));
-
 }
 
 

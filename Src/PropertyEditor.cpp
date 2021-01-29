@@ -48,7 +48,6 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 		case tSystem::tFileType::HDR:
 		{
 			ImGui::Text("Radiance HDR");
-			ImGui::Indent();
 			ImGui::PushItemWidth(110);
 
 			ImGui::InputFloat("Gamma", &CurrImage->LoadParams.GammaValue, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
@@ -84,7 +83,6 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 				}
 			}
 
-			ImGui::Unindent();
 			fileTypeSectionDisplayed = true;
 			break;
 		}
@@ -92,7 +90,6 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 		case tSystem::tFileType::EXR:
 		{
 			ImGui::Text("Open EXR");
-			ImGui::Indent();
 			ImGui::PushItemWidth(110);
 
 			ImGui::InputFloat("Gamma", &CurrImage->LoadParams.GammaValue, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
@@ -140,7 +137,6 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 				}
 			}
 
-			ImGui::Unindent();
 			fileTypeSectionDisplayed = true;
 			break;
 		}
@@ -156,7 +152,6 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 			ImGui::Separator();
 
 		ImGui::Text("%d-Frame Image", CurrImage->GetNumFrames());
-		ImGui::Indent();
 		ImGui::PushItemWidth(110);
 
 		int oneBasedFrameNum = CurrImage->FrameNum + 1;
@@ -166,16 +161,16 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 			tMath::tiClamp(CurrImage->FrameNum, 0, CurrImage->GetNumFrames()-1);
 		}
 		ImGui::SameLine(); ShowHelpMark("Which image in a multiframe file to display.");
-		ImGui::Unindent();
+		ImGui::Checkbox("Show Frame Scrubber", &Config.ShowFrameScrubber);
+
 		ImGui::Separator();
 
-		ImGui::Checkbox("Preview Duration", &CurrImage->FrameDurationPreviewEnabled);
+		ImGui::Checkbox("Preview Frame Duration", &CurrImage->FrameDurationPreviewEnabled);
 		ImGui::SameLine(); ShowHelpMark("If enabled this number of seconds is used for all frame durations while playing.");
-		ImGui::Indent();
 
 		if (CurrImage->FrameDurationPreviewEnabled)
 		{
-			ImGui::InputFloat("Preview Dur", &CurrImage->FrameDurationPreview, 0.01f, 0.1f, "%.4f");
+			ImGui::InputFloat("Preview Duration", &CurrImage->FrameDurationPreview, 0.01f, 0.1f, "%.4f");
 			tMath::tiClamp(CurrImage->FrameDurationPreview, 0.0f, 60.0f);
 			if (ImGui::Button("1.0s")) CurrImage->FrameDurationPreview = 1.0f; ImGui::SameLine();
 			if (ImGui::Button("0.5s")) CurrImage->FrameDurationPreview = 0.5f; ImGui::SameLine();
@@ -187,13 +182,15 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 				SetWindowTitle();
 				CurrImage->FrameDurationPreviewEnabled = false;
 			}
-			ImGui::SameLine(); ShowHelpMark("Set every frame duration to the preview duration.");
+			ImGui::SameLine(); ShowHelpMark("Sets every frame duration to the preview duration.");
 		}
 		else
 		{
 			tImage::tPicture* currFramePic = CurrImage->GetCurrentPic();
 			float duration = currFramePic->Duration;
-			if (ImGui::InputFloat("Edit Dur", &duration, 0.01f, 0.1f, "%.4f", ImGuiInputTextFlags_EnterReturnsTrue))
+			char frameDurText[64];
+			tsPrintf(frameDurText, "Frame %d Duration", oneBasedFrameNum);
+			if (ImGui::InputFloat(frameDurText, &duration, 0.01f, 0.1f, "%.4f", ImGuiInputTextFlags_EnterReturnsTrue))
 			{
 				tMath::tiClamp(duration, 0.0f, 60.0f);
 				CurrImage->SetFrameDuration(duration);
@@ -208,7 +205,6 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 		
 
 		ImGui::PopItemWidth();
-		ImGui::Unindent();
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 		ImGui::Separator();

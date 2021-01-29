@@ -30,6 +30,7 @@ namespace Viewer
 		bool ShowNavBar;
 		bool ShowImageDetails;
 		bool ShowPixelEditor;
+		bool ShowFrameScrubber;
 		bool ContentViewShow;
 		float ThumbnailWidth;
 		enum class SortKeyEnum

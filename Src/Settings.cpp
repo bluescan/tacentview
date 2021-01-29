@@ -82,7 +82,6 @@ void Viewer::Settings::ResetBehaviourSettings()
 	MaxUndoSteps				= 16;
 	StrictLoading				= false;
 	DetectAPNGInsidePNG			= true;
-	AutoPropertyWindow			= true;
 	AutoPlayAnimatedImages		= true;
 	MonitorGamma				= tMath::DefaultGamma;
 }
@@ -99,9 +98,11 @@ void Viewer::Settings::ResetUISettings(int screenW, int screenH)
 	ShowNavBar					= true;
 	ShowImageDetails			= true;
 	ShowPixelEditor				= false;
+	ShowFrameScrubber			= true;
+	AutoPropertyWindow			= true;
 	ContentViewShow				= false;
 	ThumbnailWidth				= 128.0f;
-	OverlayCorner				= 3;
+	OverlayCorner				= 1;
 	Tile						= false;
 	BackgroundStyle				= 1;
 	BackgroundExtend			= false;
@@ -129,6 +130,7 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 				ReadItem(ShowNavBar);
 				ReadItem(ShowImageDetails);
 				ReadItem(ShowPixelEditor);
+				ReadItem(ShowFrameScrubber);
 				ReadItem(ContentViewShow);
 				ReadItem(ThumbnailWidth);
 				ReadItem(SortKey);
@@ -239,6 +241,7 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(ShowNavBar);
 	WriteItem(ShowImageDetails);
 	WriteItem(ShowPixelEditor);
+	WriteItem(ShowFrameScrubber);
 	WriteItem(ContentViewShow);
 	WriteItem(ThumbnailWidth);
 	WriteItem(SortKey);

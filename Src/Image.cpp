@@ -140,7 +140,7 @@ bool Image::Load()
 			case tSystem::tFileType::APNG:
 			{
 				tImageAPNG apng;
-				bool ok = apng.Load(Filename.Chars());
+				bool ok = apng.Load(Filename);
 				if (!ok)
 					return false;
 
@@ -165,7 +165,7 @@ bool Image::Load()
 			case tSystem::tFileType::BMP:
 			{
 				tImageBMP bmp;
-				bool ok = bmp.Load(Filename.Chars());
+				bool ok = bmp.Load(Filename);
 				if (!ok)
 					return false;
 
@@ -214,7 +214,7 @@ bool Image::Load()
 				tImageEXR exr;
 				bool ok = exr.Load
 				(
-					Filename.Chars(),
+					Filename,
 					LoadParams.GammaValue,
 					LoadParams.EXR_Exposure,
 					LoadParams.EXR_Defog,
@@ -245,7 +245,7 @@ bool Image::Load()
 			case tSystem::tFileType::GIF:
 			{
 				tImageGIF gif;
-				bool ok = gif.Load(Filename.Chars());
+				bool ok = gif.Load(Filename);
 				if (!ok)
 					return false;
 
@@ -270,7 +270,7 @@ bool Image::Load()
 			case tSystem::tFileType::HDR:
 			{
 				tImageHDR hdr;
-				bool ok = hdr.Load(Filename.Chars(), LoadParams.GammaValue, LoadParams.HDR_Exposure);
+				bool ok = hdr.Load(Filename, LoadParams.GammaValue, LoadParams.HDR_Exposure);
 				if (!ok)
 					return false;
 
@@ -288,7 +288,7 @@ bool Image::Load()
 			case tSystem::tFileType::ICO:
 			{
 				tImageICO ico;
-				bool ok = ico.Load(Filename.Chars());
+				bool ok = ico.Load(Filename);
 				if (!ok)
 					return false;
 
@@ -312,7 +312,7 @@ bool Image::Load()
 			case tSystem::tFileType::JPG:
 			{
 				tImageJPG jpg;
-				bool ok = jpg.Load(Filename.Chars(), Viewer::Config.StrictLoading);
+				bool ok = jpg.Load(Filename, Viewer::Config.StrictLoading);
 				if (!ok)
 					return false;
 
@@ -330,7 +330,7 @@ bool Image::Load()
 			case tSystem::tFileType::PNG:
 			{
 				tImagePNG png;
-				bool ok = png.Load(Filename.Chars());
+				bool ok = png.Load(Filename);
 				if (!ok)
 					return false;
 
@@ -348,7 +348,7 @@ bool Image::Load()
 			case tSystem::tFileType::TGA:
 			{
 				tImageTGA tga;
-				bool ok = tga.Load(Filename.Chars());
+				bool ok = tga.Load(Filename);
 				if (!ok)
 					return false;
 
@@ -366,7 +366,7 @@ bool Image::Load()
 			case tSystem::tFileType::TIFF:
 			{
 				tImageTIFF tiff;
-				bool ok = tiff.Load(Filename.Chars());
+				bool ok = tiff.Load(Filename);
 				if (!ok)
 					return false;
 
@@ -390,7 +390,7 @@ bool Image::Load()
 			case tSystem::tFileType::WEBP:
 			{
 				tImageWEBP webp;
-				bool ok = webp.Load(Filename.Chars());
+				bool ok = webp.Load(Filename);
 				if (!ok)
 					return false;
 

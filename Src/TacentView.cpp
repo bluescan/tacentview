@@ -195,8 +195,8 @@ namespace Viewer
 
 	bool OnPrevious();
 	bool OnNext();
-	void OnPreviousPart();
-	void OnNextPart();
+	void OnPrevImageFrame();
+	void OnNextImageFrame();
 	bool OnSkipBegin();
 	bool OnSkipEnd();
 	void ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan);
@@ -524,20 +524,22 @@ bool Viewer::OnNext()
 }
 
 
-void Viewer::OnPreviousPart()
+void Viewer::OnPrevImageFrame()
 {
 	if (!CurrImage || (CurrImage->GetNumFrames() <= 1))
 		return;
 
+	CurrImage->Stop();
 	CurrImage->FrameNum = tClampMin(CurrImage->FrameNum-1, 0);
 }
 
 
-void Viewer::OnNextPart()
+void Viewer::OnNextImageFrame()
 {
 	if (!CurrImage || (CurrImage->GetNumFrames() <= 1))
 		return;
 
+	CurrImage->Stop();
 	CurrImage->FrameNum = tClampMax(CurrImage->FrameNum+1, CurrImage->GetNumFrames()-1);
 }
 
@@ -862,6 +864,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	float voff		= 0.0f;
 	float umarg		= 0.0f;
 	float vmarg		= 0.0f;
+	static bool skipUpdatePlaying = false;
 
 	double mouseXd, mouseYd;
 	glfwGetCursorPos(window, &mouseXd, &mouseYd);
@@ -876,7 +879,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	if (CurrImage)
 	{
-		CurrImage->UpdatePlaying(float(dt));
+		if (!skipUpdatePlaying)
+			CurrImage->UpdatePlaying(float(dt));
 
 		iw = float(CurrImage->GetWidth());
 		ih = float(CurrImage->GetHeight());
@@ -1210,6 +1214,26 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		((DisappearCountdown > 0.0) || hitAreaControlButtons.IsPointInside(mousePos))
 	)
 	{
+		// Scrubber
+		if (Config.ShowFrameScrubber && CurrImage && (CurrImage->GetNumFrames() > 1) && !CurrImage->IsAltPictureEnabled())
+		{
+			ImGui::SetNextWindowPos(tVector2(0.0f, float(topUIHeight) + float(workAreaH) - 62.0f));
+			ImGui::SetNextWindowSize(tVector2(float(workAreaW), 5.0f), ImGuiCond_Always);
+			ImGui::Begin("Scrubber", nullptr, flagsImgButton);
+			ImGui::PushItemWidth(-1);
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(7.0f, 0.0f));
+			int frmNum = CurrImage->FrameNum + 1;
+			if (ImGui::SliderInt("", &frmNum, 1, CurrImage->GetNumFrames(), "%d", ImGuiSliderFlags_ClampOnInput))
+			{
+				tMath::tiClamp(frmNum, 1, CurrImage->GetNumFrames());
+				CurrImage->FrameNum = frmNum-1;
+			}
+			skipUpdatePlaying = ImGui::IsItemActive();
+			ImGui::PopStyleVar();
+			ImGui::PopItemWidth();
+			ImGui::End();
+		}
+
 		// Looping button.
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-120.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
 		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
@@ -1469,9 +1493,15 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::MenuItem("Basic View Mode", "B", &basicSettings, !CropMode))
 			{
 				if (basicSettings)
+				{
 					Viewer::SetBasicViewAndBehaviour();
+				}
 				else
-					Config.ShowMenuBar = true;
+				{
+					GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+					const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+					Config.ResetUISettings(mode->width, mode->height);
+				}
 			}
 			ImGui::MenuItem("Image Details", "I", &Config.ShowImageDetails);
 			ImGui::MenuItem("Content View", "V", &Config.ContentViewShow);
@@ -1913,6 +1943,7 @@ void Viewer::SetBasicViewAndBehaviour()
 	Config.ShowNavBar				= false;
 	Config.ShowImageDetails			= false;
 	Config.ShowPixelEditor			= false;
+	Config.ShowFrameScrubber		= false;
 	Config.AutoPropertyWindow		= false;
 	Config.ContentViewShow			= false;
 	Config.AutoPlayAnimatedImages	= true;
@@ -1931,10 +1962,10 @@ bool Viewer::IsBasicViewAndBehaviour()
 {
 	return
 	(
-		!Config.ShowMenuBar			&& !Config.ShowNavBar			&& !Config.ShowImageDetails			&& !Config.ShowPixelEditor	&&
-		!Config.AutoPropertyWindow	&& !Config.ContentViewShow		&& Config.AutoPlayAnimatedImages	&&
+		!Config.ShowMenuBar			&& !Config.ShowNavBar			&& !Config.ShowImageDetails		&& !Config.ShowPixelEditor	&&
+		!Config.ShowFrameScrubber	&& !Config.AutoPropertyWindow	&& !Config.ContentViewShow		&& Config.AutoPlayAnimatedImages	&&
 		(Config.BackgroundStyle == int(Settings::BGStyle::None))	&&
-		Config.SlideshowLooping										&& Config.SlideshowProgressArc		&&
+		Config.SlideshowLooping										&& Config.SlideshowProgressArc	&&
 		tMath::tApproxEqual(Config.SlideshowPeriod, 8.0)			&&
 		(CurrZoomMode == ZoomMode::DownscaleOnly)					&&
 		!PropEditorWindow			&& !ShowCheatSheet				&& !ShowAbout
@@ -2003,7 +2034,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			if (modifiers == GLFW_MOD_CONTROL)
 				OnSkipBegin();
 			else if (modifiers == GLFW_MOD_ALT)
-				OnPreviousPart();
+				OnPrevImageFrame();
 			else if (modifiers == GLFW_MOD_SHIFT)
 				RequestCursorMove = CursorMove_Left;
 			else
@@ -2016,7 +2047,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			if (modifiers == GLFW_MOD_CONTROL)
 				OnSkipEnd();
 			else if (modifiers == GLFW_MOD_ALT)
-				OnNextPart();
+				OnNextImageFrame();
 			else if (modifiers == GLFW_MOD_SHIFT)
 				RequestCursorMove = CursorMove_Right;
 			else
@@ -2143,9 +2174,15 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			if (CropMode)
 				break;
 			if (IsBasicViewAndBehaviour())
-				Config.ShowMenuBar = true;
+			{
+				GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+				const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+				Config.ResetUISettings(mode->width, mode->height);
+			}
 			else
+			{
 				SetBasicViewAndBehaviour();
+			}
 			break;
 
 		case GLFW_KEY_M:
