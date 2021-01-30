@@ -202,6 +202,8 @@ namespace Viewer
 	void ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan);
 	void SetBasicViewAndBehaviour();
 	bool IsBasicViewAndBehaviour();
+	void AutoPropertyWindow();
+
 	tString FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles);	// Returns the image folder.
 	tuint256 ComputeImagesHash(const tList<tStringItem>& files);
 	int RemoveOldCacheFiles(const tString& cacheDir);						// Returns num removed.
@@ -427,6 +429,16 @@ void Viewer::SetCurrentImage(const tString& currFilename)
 }
 
 
+void Viewer::AutoPropertyWindow()
+{
+	if (Config.AutoPropertyWindow)
+		PropEditorWindow = (CurrImage->TypeSupportsProperties() || (CurrImage->GetNumFrames() > 1));
+
+	if (SlideshowPlaying)
+		PropEditorWindow = false;
+}
+
+
 void Viewer::LoadCurrImage()
 {
 	tAssert(CurrImage);
@@ -434,12 +446,7 @@ void Viewer::LoadCurrImage()
 	if (!CurrImage->IsLoaded())
 		imgJustLoaded = CurrImage->Load();
 
-	if (Config.AutoPropertyWindow)
-		PropEditorWindow = (CurrImage->TypeSupportsProperties() || (CurrImage->GetNumFrames() > 1));
-
-	if (SlideshowPlaying)
-		PropEditorWindow = false;
-
+	AutoPropertyWindow();
 	if
 	(
 		Config.AutoPlayAnimatedImages && (CurrImage->GetNumFrames() > 1) &&
@@ -1154,7 +1161,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	if (SlideshowPlaying && (Config.SlideshowPeriod >= 1.0f) && Config.SlideshowProgressArc)
 	{
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+7.0f, float(topUIHeight) + float(workAreaH) - 64.0f));
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+7.0f, float(topUIHeight) + float(workAreaH) - 92.0f));
 		ImGui::Begin("SlideProgress", nullptr, flagsImgButton | ImGuiWindowFlags_NoInputs);
 		ImGui::SetCursorPos(tVector2(15, 14));
 
@@ -1205,37 +1212,42 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::End();
 	}
 
+	// Scrubber
+	if
+	(
+		!CropMode && PropEditorWindow &&
+		Config.ShowFrameScrubber && CurrImage && (CurrImage->GetNumFrames() > 1) && !CurrImage->IsAltPictureEnabled()
+	)
+	{
+		ImGui::SetNextWindowPos(tVector2(0.0f, float(topUIHeight) + float(workAreaH) - 32.0f));
+		ImGui::SetNextWindowSize(tVector2(float(workAreaW), 5.0f), ImGuiCond_Always);
+		ImGui::Begin("Scrubber", nullptr, flagsImgButton);
+		ImGui::PushItemWidth(-1);
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(7.0f, 0.0f));
+		int frmNum = CurrImage->FrameNum + 1;
+		if (ImGui::SliderInt("", &frmNum, 1, CurrImage->GetNumFrames(), "%d", ImGuiSliderFlags_ClampOnInput))
+		{
+			tMath::tiClamp(frmNum, 1, CurrImage->GetNumFrames());
+			CurrImage->FrameNum = frmNum-1;
+		}
+		skipUpdatePlaying = ImGui::IsItemActive();
+		ImGui::PopStyleVar();
+		ImGui::PopItemWidth();
+		ImGui::End();
+	}
+
 	tVector2 rectMinControlButtons(float(workAreaW)/2.0f-200.0f, 0.0f);
 	tVector2 rectMaxControlButtons(float(workAreaW)/2.0f+200.0f, 90.0f);
 	tARect2 hitAreaControlButtons(rectMinControlButtons, rectMaxControlButtons);
+	float buttonHeightOffset = 68.0f;
 	if
 	(
 		!CropMode &&
 		((DisappearCountdown > 0.0) || hitAreaControlButtons.IsPointInside(mousePos))
 	)
 	{
-		// Scrubber
-		if (Config.ShowFrameScrubber && CurrImage && (CurrImage->GetNumFrames() > 1) && !CurrImage->IsAltPictureEnabled())
-		{
-			ImGui::SetNextWindowPos(tVector2(0.0f, float(topUIHeight) + float(workAreaH) - 62.0f));
-			ImGui::SetNextWindowSize(tVector2(float(workAreaW), 5.0f), ImGuiCond_Always);
-			ImGui::Begin("Scrubber", nullptr, flagsImgButton);
-			ImGui::PushItemWidth(-1);
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(7.0f, 0.0f));
-			int frmNum = CurrImage->FrameNum + 1;
-			if (ImGui::SliderInt("", &frmNum, 1, CurrImage->GetNumFrames(), "%d", ImGuiSliderFlags_ClampOnInput))
-			{
-				tMath::tiClamp(frmNum, 1, CurrImage->GetNumFrames());
-				CurrImage->FrameNum = frmNum-1;
-			}
-			skipUpdatePlaying = ImGui::IsItemActive();
-			ImGui::PopStyleVar();
-			ImGui::PopItemWidth();
-			ImGui::End();
-		}
-
 		// Looping button.
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-120.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-120.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
 		ImGui::Begin("Repeat", nullptr, flagsImgButton);
 		uint64 playModeImageID = Config.SlideshowLooping ? PlayOnceImage.Bind() : PlayLoopImage.Bind();
@@ -1245,7 +1257,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		// Skip to beginning button.
 		bool prevAvail = (CurrImage != Images.First()) || SlideshowPlaying;
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-80.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-80.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
 		ImGui::Begin("SkipBegin", nullptr, flagsImgButton);
 		if (ImGui::ImageButton
@@ -1256,7 +1268,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::End();
 
 		// Prev button.
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-40.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-40.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
 		ImGui::Begin("Prev", nullptr, flagsImgButton);
 		if (ImGui::ImageButton
@@ -1267,7 +1279,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::End();
 
 		// Slideshow Play/Stop button.
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+0.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+0.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
 		ImGui::Begin("Slideshow", nullptr, flagsImgButton);
 		uint64 psImageID = SlideshowPlaying ? StopImage.Bind() : PlayImage.Bind();
@@ -1280,7 +1292,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		// Next button.
 		bool nextAvail = (CurrImage != Images.Last()) || SlideshowPlaying;
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+40.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+40.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
 		ImGui::Begin("Next", nullptr, flagsImgButton);
 		if (ImGui::ImageButton
@@ -1291,7 +1303,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::End();
 
 		// Skip to end button.
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+80.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+80.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
 		ImGui::Begin("SkipEnd", nullptr, flagsImgButton);
 		if (ImGui::ImageButton
@@ -1302,13 +1314,27 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::End();
 
 		// Fullscreen / Windowed button.
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+120.0f, float(topUIHeight) + float(workAreaH) - 42.0f));
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+120.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
 		ImGui::Begin("Fullscreen", nullptr, flagsImgButton);
 		uint64 fsImageID = FullscreenMode ? WindowedImage.Bind() : FullscreenImage.Bind();
 		if (ImGui::ImageButton(ImTextureID(fsImageID), tVector2(24,24), tVector2(0,0), tVector2(1,1), 2, tVector4(0,0,0,0), tVector4(1,1,1,1)))
 			ChangeScreenMode(!FullscreenMode);
 		ImGui::End();
+
+		// Exit basic mode
+		if (IsBasicViewAndBehaviour())
+		{
+			ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+160.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
+			ImGui::SetNextWindowSize(tVector2(120, 40), ImGuiCond_Always);
+			ImGui::Begin("ExitBasic", nullptr, flagsImgButton);
+			if (ImGui::Button("ESC", tVector2(50,28)))
+			{
+				Config.ResetUISettings();
+				AutoPropertyWindow();
+			}
+			ImGui::End();
+		}
 	}
 
 	ImGui::SetNextWindowPos(tVector2(0, 0));
@@ -1494,13 +1520,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			{
 				if (basicSettings)
 				{
-					Viewer::SetBasicViewAndBehaviour();
+					SetBasicViewAndBehaviour();
 				}
 				else
 				{
-					GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-					const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-					Config.ResetUISettings(mode->width, mode->height);
+					Config.ResetUISettings();
+					AutoPropertyWindow();
 				}
 			}
 			ImGui::MenuItem("Image Details", "I", &Config.ShowImageDetails);
@@ -1962,7 +1987,7 @@ bool Viewer::IsBasicViewAndBehaviour()
 {
 	return
 	(
-		!Config.ShowMenuBar			&& !Config.ShowNavBar			&& !Config.ShowImageDetails		&& !Config.ShowPixelEditor	&&
+		!Config.ShowMenuBar			&& !Config.ShowNavBar			&& !Config.ShowImageDetails		&& !Config.ShowPixelEditor			&&
 		!Config.ShowFrameScrubber	&& !Config.AutoPropertyWindow	&& !Config.ContentViewShow		&& Config.AutoPlayAnimatedImages	&&
 		(Config.BackgroundStyle == int(Settings::BGStyle::None))	&&
 		Config.SlideshowLooping										&& Config.SlideshowProgressArc	&&
@@ -2175,9 +2200,8 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				break;
 			if (IsBasicViewAndBehaviour())
 			{
-				GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-				const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-				Config.ResetUISettings(mode->width, mode->height);
+				Config.ResetUISettings();
+				AutoPropertyWindow();
 			}
 			else
 			{
@@ -2561,9 +2585,6 @@ int main(int argc, char** argv)
 	tPrintf("Dear ImGui V %s\n", IMGUI_VERSION);
 	tPrintf("GLFW V %d.%d.%d\n", glfwMajor, glfwMinor, glfwRev);
 
-	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-	const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-
 	#ifdef PLATFORM_WINDOWS
 	tString dataDir = tSystem::tGetProgramDir() + "Data/";
 	Viewer::Image::ThumbCacheDir = dataDir + "Cache/";
@@ -2594,7 +2615,7 @@ int main(int argc, char** argv)
 	if (!tSystem::tDirExists(Viewer::Image::ThumbCacheDir))
 		tSystem::tCreateDir(Viewer::Image::ThumbCacheDir);
 	
-	Viewer::Config.Load(cfgFile, mode->width, mode->height);
+	Viewer::Config.Load(cfgFile);
 	Viewer::PendingTransparentWorkArea = Viewer::Config.TransparentWorkArea;
 
 	// We start with window invisible. For windows DwmSetWindowAttribute won't redraw properly otherwise.

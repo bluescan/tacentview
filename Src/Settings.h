@@ -116,11 +116,11 @@ namespace Viewer
 		bool AutoPlayAnimatedImages;		// Automatically play animated gifs, apngs, and WebPs.
 		float MonitorGamma;					// Used when displaying HDR formats to do gamma correction.
 
-		void Load(const tString& filename, int screenWidth, int screenHeight);
+		void Load(const tString& filename);
 		bool Save(const tString& filename);
-		void Reset(int screenWidth = 1280, int screenHeight = 720);
+		void Reset();
 		void ResetBehaviourSettings();
-		void ResetUISettings(int screenWidth, int screenHeight);
+		void ResetUISettings();
 	};
 
 	extern Settings Config;

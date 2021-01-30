@@ -12,6 +12,18 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+#ifdef PLATFORM_WINDOWS
+#include <dwmapi.h>
+#endif
+
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL declarations.
+
+#ifdef PLATFORM_WINDOWS
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+#endif
+
 #include <Foundation/tFundamentals.h>
 #include <System/tFile.h>
 #include <System/tScript.h>
@@ -29,9 +41,9 @@ namespace Viewer
 }
 
 
-void Viewer::Settings::Reset(int screenW, int screenH)
+void Viewer::Settings::Reset()
 {
-	ResetUISettings(screenW, screenH);
+	ResetUISettings();
 	ResetBehaviourSettings();
 	TransparentWorkArea			= false;
 }
@@ -87,8 +99,13 @@ void Viewer::Settings::ResetBehaviourSettings()
 }
 
 
-void Viewer::Settings::ResetUISettings(int screenW, int screenH)
+void Viewer::Settings::ResetUISettings()
 {
+	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+	const GLFWvidmode* mode = monitor ? glfwGetVideoMode(monitor) : nullptr;
+	int screenW = mode ? mode->width  : 1280;
+	int screenH = mode ? mode->height : 720;
+
 	WindowW						= 1280;
 	WindowH						= 720;
 	WindowX						= (screenW - WindowW) >> 1;
@@ -109,11 +126,11 @@ void Viewer::Settings::ResetUISettings(int screenW, int screenH)
 }
 
 
-void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
+void Viewer::Settings::Load(const tString& filename)
 {
 	if (!tSystem::tFileExists(filename))
 	{
-		Reset(screenW, screenH);
+		Reset();
 	}
 	else
 	{
@@ -187,6 +204,11 @@ void Viewer::Settings::Load(const tString& filename, int screenW, int screenH)
 			}
 		}
 	}
+
+	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+	const GLFWvidmode* mode = monitor ? glfwGetVideoMode(monitor) : nullptr;
+	int screenW = mode ? mode->width  : 1280;
+	int screenH = mode ? mode->height : 720;
 
 	tiClamp		(ResampleFilter, 0, int(tImage::tResampleFilter::NumFilters)-1);		// No None allowed.
 	tiClamp		(ResampleEdgeMode, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);

@@ -191,9 +191,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 	if (ImGui::Button("Reset UI", tVector2(100, 0)))
 	{
-		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-		Config.ResetUISettings(mode->width, mode->height);
+		Config.ResetUISettings();
 		PendingTransparentWorkArea = false;
 		ChangeScreenMode(false, true);
 	}

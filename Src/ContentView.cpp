@@ -24,7 +24,7 @@ using namespace tMath;
 void Viewer::ShowContentViewDialog(bool* popen)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar;
-	tVector2 windowPos = GetDialogOrigin(1);
+	tVector2 windowPos = GetDialogOrigin(0);
 	
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(tVector2(640, 374), ImGuiCond_FirstUseEver);

@@ -26,10 +26,10 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 
 	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
 	// do it to make the Demo applications a little more welcoming.
-	tVector2 windowPos = GetDialogOrigin(0);
+	tVector2 windowPos = GetDialogOrigin(1);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
-	if (!ImGui::Begin("Image Property Editor", popen, windowFlags))
+	if (!ImGui::Begin("Property Editor", popen, windowFlags))
 	{
 		ImGui::End();
 		return;
@@ -151,7 +151,7 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 		if (fileTypeSectionDisplayed)
 			ImGui::Separator();
 
-		ImGui::Text("%d-Frame Image", CurrImage->GetNumFrames());
+		ImGui::Text("Frames %d", CurrImage->GetNumFrames());
 		ImGui::PushItemWidth(110);
 
 		int oneBasedFrameNum = CurrImage->FrameNum + 1;
@@ -161,19 +161,21 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 			tMath::tiClamp(CurrImage->FrameNum, 0, CurrImage->GetNumFrames()-1);
 		}
 		ImGui::SameLine(); ShowHelpMark("Which image in a multiframe file to display.");
-		ImGui::Checkbox("Show Frame Scrubber", &Config.ShowFrameScrubber);
+		ImGui::Checkbox("Scrubber", &Config.ShowFrameScrubber);
 
 		ImGui::Separator();
 
-		ImGui::Checkbox("Preview Frame Duration", &CurrImage->FrameDurationPreviewEnabled);
+		ImGui::Text("Frame Duration");
+		ImGui::Checkbox("Preview", &CurrImage->FrameDurationPreviewEnabled);
 		ImGui::SameLine(); ShowHelpMark("If enabled this number of seconds is used for all frame durations while playing.");
 
 		if (CurrImage->FrameDurationPreviewEnabled)
 		{
 			ImGui::InputFloat("Preview Duration", &CurrImage->FrameDurationPreview, 0.01f, 0.1f, "%.4f");
 			tMath::tiClamp(CurrImage->FrameDurationPreview, 0.0f, 60.0f);
-			if (ImGui::Button("1.0s")) CurrImage->FrameDurationPreview = 1.0f; ImGui::SameLine();
-			if (ImGui::Button("0.5s")) CurrImage->FrameDurationPreview = 0.5f; ImGui::SameLine();
+			if (ImGui::Button("1.0s"))  CurrImage->FrameDurationPreview = 1.0f; ImGui::SameLine();
+			if (ImGui::Button("0.5s"))  CurrImage->FrameDurationPreview = 0.5f; ImGui::SameLine();
+			if (ImGui::Button("0.1s"))  CurrImage->FrameDurationPreview = 0.1f; ImGui::SameLine();
 			if (ImGui::Button("30fps")) CurrImage->FrameDurationPreview = 1.0f/30.0f; ImGui::SameLine();
 			if (ImGui::Button("60fps")) CurrImage->FrameDurationPreview = 1.0f/60.0f;
 			if (ImGui::Button("Set All"))
@@ -199,11 +201,11 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 
 			if (ImGui::Button("1.0s"))	{ CurrImage->SetFrameDuration(1.0f); SetWindowTitle(); }		ImGui::SameLine();
 			if (ImGui::Button("0.5s"))	{ CurrImage->SetFrameDuration(0.5f); SetWindowTitle(); }		ImGui::SameLine();
+			if (ImGui::Button("0.1s"))	{ CurrImage->SetFrameDuration(0.1f); SetWindowTitle(); }		ImGui::SameLine();
 			if (ImGui::Button("30fps"))	{ CurrImage->SetFrameDuration(1.0f/30.0f); SetWindowTitle(); }	ImGui::SameLine();
 			if (ImGui::Button("60fps"))	{ CurrImage->SetFrameDuration(1.0f/60.0f); SetWindowTitle(); }
 		}
 		
-
 		ImGui::PopItemWidth();
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
