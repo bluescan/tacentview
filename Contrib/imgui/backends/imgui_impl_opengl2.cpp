@@ -49,8 +49,12 @@
 #if defined(__APPLE__)
 #define GL_SILENCE_DEPRECATION
 #include <OpenGL/gl.h>
-#else
+
+// @tacent Include glad for linux.
+#elif defined(PLATFORM_WINDOWS)
 #include <GL/gl.h>
+#else
+#include <glad/glad.h>
 #endif
 
 // OpenGL Data
