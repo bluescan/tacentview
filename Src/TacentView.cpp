@@ -2767,18 +2767,20 @@ int main(int argc, char** argv)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		// Second arg is mipmap level (0=original).
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, (fmt == 0) ? GL_BGRA : GL_RGBA, GL_UNSIGNED_BYTE, data);
-//		GL_GENERATE_MIPMAP
-//		glGenerateMipmap(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, 0);
 
-		return (void*)tex;
+		// Second arg is mipmap level (0=original) if we want to use mipmaps.
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, (fmt == 0) ? GL_BGRA : GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+		// glGenerateMipmap is not available in OpenGL2.
+		// glGenerateMipmap(GL_TEXTURE_2D);
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+		return (void*)(uint64(tex));
 	};
 
 	ifd::FileDialog::Instance().DeleteTexture = [](void* tex)
 	{
-		GLuint texID = (GLuint)tex;
+		GLuint texID = GLuint(uint64(tex));
 		glDeleteTextures(1, &texID);
 	};
 
