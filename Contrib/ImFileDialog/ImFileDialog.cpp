@@ -18,6 +18,7 @@
 // @tacent
 // #define STB_IMAGE_IMPLEMENTATION
 // #include "stb_image.h"
+#include <Image/tPicture.h>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -35,11 +36,11 @@
 #define PI 3.141592f
 
 // @tacent
-enum ImGuiSortDirection
-{
-	ImGuiSortDirection_Descending,
-	ImGuiSortDirection_Ascending
-};
+//enum ImGuiSortDirection
+//{
+//	ImGuiSortDirection_Descending,
+//	ImGuiSortDirection_Ascending
+//};
 
 namespace ifd {
 	/* UI CONTROLS */
@@ -866,8 +867,11 @@ namespace ifd {
 			data.HasIconPreview = false;
 			this->DeleteTexture(data.IconPreview);
 
-			if (data.IconPreviewData != nullptr) {
-				stbi_image_free(data.IconPreviewData);
+			// @tacent
+			if (data.IconPreviewData != nullptr)
+			{
+				// stbi_image_free(data.IconPreviewData);
+				delete[] (tPixel*)data.IconPreviewData;
 				data.IconPreviewData = nullptr;
 			}
 		}
@@ -892,14 +896,28 @@ namespace ifd {
 			if (data.HasIconPreview)
 				continue;
 
-			if (data.Path.has_extension()) {
-				std::string ext = data.Path.extension().u8string();
-				if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".tga") {
-					int width, height, nrChannels;
-					unsigned char* image = stbi_load(data.Path.u8string().c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
-
-					if (image == nullptr || width == 0 || height == 0)
+			if (data.Path.has_extension())
+			{
+				// @tacent
+				// std::string ext = data.Path.extension().u8string();
+				// if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".tga")
+				if (tImage::tPicture::CanLoad(data.Path.u8string().c_str()))
+				{
+					// @tacent
+					// int width, height, nrChannels;
+					// unsigned char* image = stbi_load(data.Path.u8string().c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
+					tImage::tPicture pic(data.Path.u8string().c_str());
+					if (!pic.IsValid())
 						continue;
+
+					int width = pic.GetWidth();
+					int height = pic.GetHeight();
+
+					uint8* image = (uint8*)pic.StealPixels();
+					tAssert(image);
+					// @tacent
+					// if (image == nullptr || width == 0 || height == 0)
+					//	continue;
 
 					data.HasIconPreview = true;
 					data.IconPreviewData = image;
@@ -1104,7 +1122,6 @@ namespace ifd {
 
 		// table view
 		if (m_zoom == 1.0f) {
-			ImGui::Table
 			if (ImGui::BeginTable("##contentTable", 3, /*ImGuiTableFlags_Resizable |*/ ImGuiTableFlags_Sortable, ImVec2(0, -FLT_MIN))) {
 				// header
 				ImGui::TableSetupColumn("Name##filename", ImGuiTableColumnFlags_WidthStretch, 0.0f -1.0f, 0);
@@ -1175,9 +1192,13 @@ namespace ifd {
 			// content
 			int fileId = 0;
 			for (auto& entry : m_content) {
-				if (entry.HasIconPreview && entry.IconPreviewData != nullptr) {
+				if (entry.HasIconPreview && entry.IconPreviewData != nullptr)
+				{
 					entry.IconPreview = this->CreateTexture(entry.IconPreviewData, entry.IconPreviewWidth, entry.IconPreviewHeight, 1);
-					stbi_image_free(entry.IconPreviewData);
+
+					// @tacent
+					// stbi_image_free(entry.IconPreviewData);
+					delete[] (tPixel*)entry.IconPreviewData;
 					entry.IconPreviewData = nullptr;
 				}
 

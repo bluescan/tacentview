@@ -1161,7 +1161,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	if (SlideshowPlaying && (Config.SlideshowPeriod >= 1.0f) && Config.SlideshowProgressArc)
 	{
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+7.0f, float(topUIHeight) + float(workAreaH) - 92.0f));
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+7.0f, float(topUIHeight) + float(workAreaH) - 93.0f));
 		ImGui::Begin("SlideProgress", nullptr, flagsImgButton | ImGuiWindowFlags_NoInputs);
 		ImGui::SetCursorPos(tVector2(15, 14));
 
@@ -1219,11 +1219,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		Config.ShowFrameScrubber && CurrImage && (CurrImage->GetNumFrames() > 1) && !CurrImage->IsAltPictureEnabled()
 	)
 	{
-		ImGui::SetNextWindowPos(tVector2(0.0f, float(topUIHeight) + float(workAreaH) - 32.0f));
+		ImGui::SetNextWindowPos(tVector2(0.0f, float(topUIHeight) + float(workAreaH) - 34.0f));
 		ImGui::SetNextWindowSize(tVector2(float(workAreaW), 5.0f), ImGuiCond_Always);
 		ImGui::Begin("Scrubber", nullptr, flagsImgButton);
 		ImGui::PushItemWidth(-1);
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(7.0f, 0.0f));
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(7.0f, 2.0f));
 		int frmNum = CurrImage->FrameNum + 1;
 		if (ImGui::SliderInt("", &frmNum, 1, CurrImage->GetNumFrames(), "%d", ImGuiSliderFlags_ClampOnInput))
 		{
@@ -1239,7 +1239,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	tVector2 rectMinControlButtons(float(workAreaW)/2.0f-200.0f, 0.0f);
 	tVector2 rectMaxControlButtons(float(workAreaW)/2.0f+200.0f, 90.0f);
 	tARect2 hitAreaControlButtons(rectMinControlButtons, rectMaxControlButtons);
-	float buttonHeightOffset = 68.0f;
+	float buttonHeightOffset = 69.0f;
 	if
 	(
 		!CropMode &&

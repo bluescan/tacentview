@@ -95,8 +95,8 @@ add_executable(
 	Contrib/imgui/backends/imgui_impl_opengl2.cpp
 	Contrib/glad/src/glad.c
 
-#	Contrib/ImFileDialog/ImFileDialog.cpp
-#	Contrib/ImFileDialog/ImFileDialog.h
+	Contrib/ImFileDialog/ImFileDialog.cpp
+	Contrib/ImFileDialog/ImFileDialog.h
 )
 
 # Include directories needed to build.
