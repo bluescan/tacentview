@@ -37,6 +37,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl2.h"
 #include "imgui_internal.h"			// For ProgressArc.
+#include "ImFileDialog.h"
 #include "TacentView.h"
 #include "Image.h"
 #include "Dialogs.h"
@@ -2754,6 +2755,32 @@ int main(int argc, char** argv)
 	// glfwSwapInterval(1);
 	glfwMakeContextCurrent(Viewer::Window);
 	glfwSwapBuffers(Viewer::Window);
+
+	// Setup for the file open/save dialog.
+	ifd::FileDialog::Instance().CreateTexture = [](uint8_t* data, int w, int h, char fmt) -> void*
+	{
+		GLuint tex;
+
+		glGenTextures(1, &tex);
+		glBindTexture(GL_TEXTURE_2D, tex);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		// Second arg is mipmap level (0=original).
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, (fmt == 0) ? GL_BGRA : GL_RGBA, GL_UNSIGNED_BYTE, data);
+//		GL_GENERATE_MIPMAP
+//		glGenerateMipmap(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		return (void*)tex;
+	};
+
+	ifd::FileDialog::Instance().DeleteTexture = [](void* tex)
+	{
+		GLuint texID = (GLuint)tex;
+		glDeleteTextures(1, &texID);
+	};
 
 	// Main loop.
 	static double lastUpdateTime = glfwGetTime();

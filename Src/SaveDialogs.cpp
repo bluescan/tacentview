@@ -16,6 +16,7 @@
 #include "SaveDialogs.h"
 #include "Image.h"
 #include "TacentView.h"
+#include "ImFileDialog.h"
 using namespace tStd;
 using namespace tSystem;
 using namespace tMath;
@@ -33,46 +34,6 @@ namespace Viewer
 	bool SaveResizeImageAs(Image&, const tString& outFile, int width, int height, float scale = 1.0f, Settings::SizeMode = Settings::SizeMode::SetWidthAndHeight);
 }
 
-
-#if 0
-ifd::FileDialog::Instance().CreateTexture = [](uint8_t* data, int w, int h, char fmt) -> void*
-{
-	GLuint tex;
-
-	glGenTextures(1, &tex);
-	glBindTexture(GL_TEXTURE_2D, tex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, (fmt == 0) ? GL_BGRA : GL_RGBA, GL_UNSIGNED_BYTE, data);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	return (void*)tex;
-};
-ifd::FileDialog::Instance().DeleteTexture = [](void* tex)
-{
-	GLuint texID = (GLuint)tex;
-	glDeleteTextures(1, &texID);
-};
-
-// Open a file dialog on button press.
-// File filter syntax: Name1 {.ext1,.ext2}, Name2 {.ext3,.ext4},.*
-if (ImGui::Button("Open a texture"))
-	ifd::FileDialog::Instance().Open("TextureOpenDialog", "Open a texture", "Image file (*.png;*.jpg;*.jpeg;*.bmp;*.tga){.png,.jpg,.jpeg,.bmp,.tga},.*");
-
-// Render and check if done.
-if (ifd::FileDialog::Instance().IsDone("TextureOpenDialog"))
-{
-	if (ifd::FileDialog::Instance().HasResult())
-	{
-		const std::wstring& res = ifd::FileDialog::Instance().GetResult();
-		printf("OPEN[%s]\n", std::string(res.begin(), res.end()).c_str());
-	}
-	ifd::FileDialog::Instance().Close();
-}
-#endif
 
 tString Viewer::DoSubFolder()
 {
@@ -100,6 +61,25 @@ tString Viewer::DoSubFolder()
 
 tString Viewer::DoSaveFiletype()
 {
+#if 0
+	// WIP TESTING
+	// Open a file dialog on button press.
+	// File filter syntax: Name1 {.ext1,.ext2}, Name2 {.ext3,.ext4},.*
+	if (ImGui::Button("Open a texture"))
+		ifd::FileDialog::Instance().Open("TextureOpenDialog", "Open a texture", "Image file (*.png;*.jpg;*.jpeg;*.bmp;*.tga){.png,.jpg,.jpeg,.bmp,.tga},.*");
+
+	// Render and check if done.
+	if (ifd::FileDialog::Instance().IsDone("TextureOpenDialog"))
+	{
+		if (ifd::FileDialog::Instance().HasResult())
+		{
+			const std::wstring& res = ifd::FileDialog::Instance().GetResult();
+			printf("OPEN[%s]\n", std::string(res.begin(), res.end()).c_str());
+		}
+		ifd::FileDialog::Instance().Close();
+	}
+#endif
+
 	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "webp", "gif", "apng", "tiff" };
 	ImGui::Combo("File Type", &Config.SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
 	ImGui::SameLine();
