@@ -1254,7 +1254,9 @@ namespace ifd {
 				ImGui::CloseCurrentPopup();
 			else {
 				const FileData& data = m_content[m_selectedFileItem];
-				ImGui::TextWrapped("Are you sure you want to delete %s?", data.Path.filename().u8string());
+
+				// @tacent This fails on clang without the .c_str
+				ImGui::TextWrapped("Are you sure you want to delete %s?", data.Path.filename().u8string().c_str());
 				if (ImGui::Button("Yes")) {
 					std::error_code ec;
 					std::filesystem::remove_all(data.Path, ec);
