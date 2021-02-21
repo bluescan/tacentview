@@ -848,8 +848,11 @@ namespace ifd {
 	}
 	void FileDialog::m_refreshIconPreview()
 	{
-		if (m_zoom >= 5.0f) {
-			if (m_previewLoader == nullptr) {
+		// @tacent Zoom > 1.0 shows thumbnail. Was >= 5.0.
+		if (m_zoom > 1.0f)
+		{
+			if (m_previewLoader == nullptr)
+			{
 				m_previewLoaderRunning = true;
 				m_previewLoader = new std::thread(&FileDialog::m_loadPreview, this);
 			}
@@ -1383,10 +1386,6 @@ namespace ifd {
 				m_renderContent();
 			ImGui::EndChild();
 
-			// @tacent Added zoom slider.
-//			if (ImGui::SliderFloat("Size", &m_zoom, 1.0f, 10.0f))
-//				m_refreshIconPreview();
-
 			// @tacent Set max to 10.0f from 25.0.
 			if (ImGui::IsItemHovered() && ImGui::GetIO().KeyCtrl && ImGui::GetIO().MouseWheel != 0.0f)
 			{
@@ -1399,12 +1398,18 @@ namespace ifd {
 
 			ImGui::EndTable();
 		}
-
-
 		
 		/***** BOTTOM BAR *****/
-		ImGui::Text("File name:");
+		// @tacent removed Text
+		// ImGui::Text("File name:");
+		// ImGui::SameLine();
+
+		// @tacent Added zoom slider.
+		ImGui::SetNextItemWidth(100.0f);
+		if (ImGui::SliderFloat("", &m_zoom, 1.0f, 10.0f, "zoom %3.1f"))
+			m_refreshIconPreview();
 		ImGui::SameLine();
+
 		if (ImGui::InputTextEx("##file_input", "Filename", m_inputTextbox, 1024, ImVec2((m_type != IFD_DIALOG_DIRECTORY) ? -250.0f : -FLT_MIN, 0), ImGuiInputTextFlags_EnterReturnsTrue)) {
 			bool success = m_finalize(std::string(m_inputTextbox));
 #ifdef _WIN32
@@ -1412,6 +1417,7 @@ namespace ifd {
 				MessageBeep(MB_ICONERROR);
 #endif
 		}
+
 		if (m_type != IFD_DIALOG_DIRECTORY) {
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(-FLT_MIN);
@@ -1419,21 +1425,28 @@ namespace ifd {
 				m_setDirectory(m_currentDirectory, false); // refresh
 		}
 
+		// @tacent Cancel on left.
 		// buttons
-		ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 250);
-		if (ImGui::Button(m_type == IFD_DIALOG_SAVE ? "Save" : "Open", ImVec2(250 / 2 - ImGui::GetStyle().ItemSpacing.x, 0.0f))) {
+		// ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 250);
+		// if (ImGui::Button("Cancel", ImVec2(250 / 2 - ImGui::GetStyle().ItemSpacing.x, 0.0f)))
+		if (ImGui::Button("Cancel", ImVec2(100.0f, 0.0f)))
+			m_finalize();
+
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+
+		// if (ImGui::Button(m_type == IFD_DIALOG_SAVE ? "Save" : "Open", ImVec2(-FLT_MIN, 0.0f)))
+		if (ImGui::Button(m_type == IFD_DIALOG_SAVE ? "Save" : "Open", ImVec2(100.0f, 0.0f)))
+		{
 			std::string filename(m_inputTextbox);
 			bool success = false;
 			if (!filename.empty() || m_type == IFD_DIALOG_DIRECTORY)
 				success = m_finalize(filename);
-#ifdef _WIN32
+			#ifdef _WIN32
 			if (!success)
 				MessageBeep(MB_ICONERROR);
-#endif
+			#endif
 		}
-		ImGui::SameLine();
-		if (ImGui::Button("Cancel", ImVec2(-FLT_MIN, 0.0f)))
-			m_finalize();
 	}
 }
 
