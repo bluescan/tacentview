@@ -34,7 +34,7 @@
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/TestImages/FormatVariety",
 			"environment": [],
-			"externalConsole": false,
+			"console": "internalConsole",	// Or externalConsole.
 		}
 	]
 }

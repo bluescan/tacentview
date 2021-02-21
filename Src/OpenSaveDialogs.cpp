@@ -1,6 +1,6 @@
-// SaveDialogs.cpp
+// OpenSaveDialogs.cpp
 //
-// Modal dialogs save-as and save-all.
+// Modal dialogs open-file, open-dir, save-as and save-all.
 //
 // Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
@@ -13,7 +13,7 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #include "imgui.h"
-#include "SaveDialogs.h"
+#include "OpenSaveDialogs.h"
 #include "Image.h"
 #include "TacentView.h"
 #include "ImFileDialog.h"
@@ -32,6 +32,90 @@ namespace Viewer
 	// This function saves the picture to the filename specified.
 	bool SaveImageAs(Image&, const tString& outFile);
 	bool SaveResizeImageAs(Image&, const tString& outFile, int width, int height, float scale = 1.0f, Settings::SizeMode = Settings::SizeMode::SetWidthAndHeight);
+}
+
+
+void Viewer::OpenFileModal()
+{
+	ifd::FileDialog::Instance().Open
+	(
+		"OpenFileModal", "Open Image",
+
+		"Image file "
+		"(*.png;*.apng;*.dds;*.exr;*.gif;*.hdr;*.ico;*.jpg;*.jpeg;*.bmp;*.tga;*.tif;*.tiff)"
+		"{.png,.apng,.dds,.exr,.gif,.hdr,.ico,.jpg,.jpeg,.bmp,.tga,.tif,.tiff,.webp},.*",
+
+		false,
+		ImagesDir.Chars()
+	);
+}
+
+
+void Viewer::DoOpenFileModal()
+{
+	if (!ifd::FileDialog::Instance().IsDone("OpenFileModal"))
+		return;
+
+	if (ifd::FileDialog::Instance().HasResult())
+	{
+		const std::filesystem::path& result = ifd::FileDialog::Instance().GetResult();
+		tString fileToOpen(result.u8string().c_str());
+		fileToOpen.Replace('\\', '/');
+
+		tPrintf("Opening file: %s\n", fileToOpen.Chars());
+		ImageFileParam.Param = fileToOpen;
+		PopulateImages();
+		SetCurrentImage(fileToOpen);
+		SetWindowTitle();
+	}
+	ifd::FileDialog::Instance().Close();
+
+	const std::vector<std::string> favs = ifd::FileDialog::Instance().GetFavorites();
+	for (std::string fav : favs)
+	{
+		tPrintf("Favourite: %s\n", fav.c_str());
+	}
+}
+
+
+void Viewer::OpenDirModal()
+{
+	ifd::FileDialog::Instance().Open
+	(
+		"OpenDirModal", "Open Directory",
+		"",
+		false,
+		ImagesDir.Chars()
+	);
+}
+
+
+void Viewer::DoOpenDirModal()
+{
+	if (!ifd::FileDialog::Instance().IsDone("OpenDirModal"))
+		return;
+
+	if (ifd::FileDialog::Instance().HasResult())
+	{
+		const std::filesystem::path& result = ifd::FileDialog::Instance().GetResult();
+		tString dirToOpen(result.u8string().c_str());
+		dirToOpen.Replace('\\', '/');
+		if (dirToOpen[dirToOpen.Length()-1] != '/')
+			dirToOpen += "/";
+
+		tPrintf("Opening directory: %s\n", dirToOpen.Chars());
+		ImageFileParam.Param = dirToOpen + "dummyfile.txt";
+		PopulateImages();
+		SetCurrentImage();
+		SetWindowTitle();
+	}
+	ifd::FileDialog::Instance().Close();
+
+	const std::vector<std::string> favs = ifd::FileDialog::Instance().GetFavorites();
+	for (std::string fav : favs)
+	{
+		tPrintf("Favourite: %s\n", fav.c_str());
+	}
 }
 
 
@@ -61,25 +145,6 @@ tString Viewer::DoSubFolder()
 
 tString Viewer::DoSaveFiletype()
 {
-#if 0
-	// WIP TESTING
-	// Open a file dialog on button press.
-	// File filter syntax: Name1 {.ext1,.ext2}, Name2 {.ext3,.ext4},.*
-	if (ImGui::Button("Open a texture"))
-		ifd::FileDialog::Instance().Open("TextureOpenDialog", "Open a texture", "Image file (*.png;*.jpg;*.jpeg;*.bmp;*.tga){.png,.jpg,.jpeg,.bmp,.tga},.*");
-
-	// Render and check if done.
-	if (ifd::FileDialog::Instance().IsDone("TextureOpenDialog"))
-	{
-		if (ifd::FileDialog::Instance().HasResult())
-		{
-			const std::wstring& res = ifd::FileDialog::Instance().GetResult();
-			printf("OPEN[%s]\n", std::string(res.begin(), res.end()).c_str());
-		}
-		ifd::FileDialog::Instance().Close();
-	}
-#endif
-
 	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "webp", "gif", "apng", "tiff" };
 	ImGui::Combo("File Type", &Config.SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
 	ImGui::SameLine();

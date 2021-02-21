@@ -1382,8 +1382,15 @@ namespace ifd {
 			ImGui::BeginChild("##contentContainer", ImVec2(0, -bottomBarHeight));
 				m_renderContent();
 			ImGui::EndChild();
-			if (ImGui::IsItemHovered() && ImGui::GetIO().KeyCtrl && ImGui::GetIO().MouseWheel != 0.0f) {
-				m_zoom = std::min<float>(25.0f, std::max<float>(1.0f, m_zoom + ImGui::GetIO().MouseWheel));
+
+			// @tacent Added zoom slider.
+//			if (ImGui::SliderFloat("Size", &m_zoom, 1.0f, 10.0f))
+//				m_refreshIconPreview();
+
+			// @tacent Set max to 10.0f from 25.0.
+			if (ImGui::IsItemHovered() && ImGui::GetIO().KeyCtrl && ImGui::GetIO().MouseWheel != 0.0f)
+			{
+				m_zoom = std::min<float>(10.0f, std::max<float>(1.0f, m_zoom + ImGui::GetIO().MouseWheel));
 				m_refreshIconPreview();
 			}
 

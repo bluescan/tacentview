@@ -1,6 +1,6 @@
-// SaveDialogs.h
+// OpenSaveDialogs.h
 //
-// Modal dialogs save-as and save-all.
+// Modal dialogs open-file, open-dir, save-as and save-all.
 //
 // Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
@@ -19,6 +19,12 @@
 
 namespace Viewer
 {
+	void OpenFileModal();
+	void DoOpenFileModal();
+
+	void OpenDirModal();
+	void DoOpenDirModal();
+
 	void DoSaveAsModal(bool justOpened);
 	void DoSaveAllModal(bool justOpened);
 

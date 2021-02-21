@@ -66,6 +66,8 @@ add_executable(
 	Src/Image.h
 	Src/MultiFrame.cpp
 	Src/MultiFrame.h
+	Src/OpenSaveDialogs.cpp
+	Src/OpenSaveDialogs.h
 	Src/Preferences.cpp
 	Src/Preferences.h
 	Src/PropertyEditor.cpp
@@ -74,8 +76,6 @@ add_executable(
 	Src/Resize.h
 	Src/Rotate.cpp
 	Src/Rotate.h
-	Src/SaveDialogs.cpp
-	Src/SaveDialogs.h
 	Src/Settings.cpp
 	Src/Settings.h
 	Src/TacentView.cpp

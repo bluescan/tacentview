@@ -49,7 +49,7 @@
 #include "Crop.h"
 #include "Resize.h"
 #include "Rotate.h"
-#include "SaveDialogs.h"
+#include "OpenSaveDialogs.h"
 #include "Settings.h"
 #include "Version.cmake.h"
 using namespace tStd;
@@ -113,6 +113,8 @@ namespace Viewer
 	bool WindowIconified						= false;
 	bool ShowCheatSheet							= false;
 	bool ShowAbout								= false;
+	bool Request_OpenFileModal					= false;
+	bool Request_OpenDirModal					= false;
 	bool Request_SaveAsModal					= false;
 	bool Request_SaveAllModal					= false;
 	bool Request_ResizeImageModal				= false;
@@ -1348,6 +1350,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		//
 		// File Menu.
 		//
+		bool openFilePressed			= Request_OpenFileModal;		Request_OpenFileModal		= false;
+		bool openDirPressed				= Request_OpenDirModal;			Request_OpenDirModal		= false;
 		bool saveAsPressed				= Request_SaveAsModal;			Request_SaveAsModal			= false;
 		bool saveAllPressed				= Request_SaveAllModal;			Request_SaveAllModal		= false;
 		bool saveContactSheetPressed	= Request_ContactSheetModal;	Request_ContactSheetModal	= false;
@@ -1356,6 +1360,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			// Show file menu items...
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
+
+			if (ImGui::MenuItem("Open File...", "Ctrl-O"))
+				openFilePressed = true;
+
+			if (ImGui::MenuItem("Open Dir...", "Alt-O"))
+				openDirPressed = true;
 
 			if (ImGui::MenuItem("Save As...", "Ctrl-S") && CurrImage)
 				saveAsPressed = true;
@@ -1377,6 +1387,14 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::EndMenu();
 		}
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
+
+		if (openFilePressed)
+			OpenFileModal();
+		DoOpenFileModal();
+
+		if (openDirPressed)
+			OpenDirModal();
+		DoOpenDirModal();
 
 		if (saveAsPressed)
 			ImGui::OpenPopup("Save As");
@@ -2286,6 +2304,13 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				Request_ResizeCanvasModal = true;
 			else
 				Request_RotateImageModal = true;
+			break;
+
+		case GLFW_KEY_O:
+			if (modifiers == GLFW_MOD_ALT)
+				Request_OpenDirModal = true;
+			else if (modifiers == GLFW_MOD_CONTROL)
+				Request_OpenFileModal = true;
 			break;
 
 		case GLFW_KEY_S:			// SaveAs and SaveAll.
