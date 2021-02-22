@@ -2,6 +2,9 @@
 	// Use IntelliSense to learn about possible attributes.
 	// Hover to view descriptions of existing attributes.
 	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	//
+	// Really? No comments in json and it's human editable?
+	// In any case, internalConsole and externalConsole are also valid with console.
 	"version": "0.2.0",
 	"configurations":
 	[
@@ -34,7 +37,7 @@
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/TestImages/FormatVariety",
 			"environment": [],
-			"console": "internalConsole",	// Or externalConsole.
+			"console": "integratedTerminal",
 		}
 	]
 }

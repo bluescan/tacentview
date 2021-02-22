@@ -285,21 +285,9 @@ tString Viewer::FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles)
 		imagesDir = tSystem::tGetDir(ImageFileParam.Get());
 
 	tPrintf("Finding image files in %s\n", imagesDir.Chars());
-	tSystem::tFindFiles(foundFiles, imagesDir, "jpg");
-	tSystem::tFindFiles(foundFiles, imagesDir, "jpeg");
-	tSystem::tFindFiles(foundFiles, imagesDir, "gif");
-	tSystem::tFindFiles(foundFiles, imagesDir, "webp");
-	tSystem::tFindFiles(foundFiles, imagesDir, "tga");
-	tSystem::tFindFiles(foundFiles, imagesDir, "png");
-	tSystem::tFindFiles(foundFiles, imagesDir, "apng");
-	tSystem::tFindFiles(foundFiles, imagesDir, "tif");
-	tSystem::tFindFiles(foundFiles, imagesDir, "tiff");
-	tSystem::tFindFiles(foundFiles, imagesDir, "bmp");
-	tSystem::tFindFiles(foundFiles, imagesDir, "dds");
-	tSystem::tFindFiles(foundFiles, imagesDir, "hdr");
-	tSystem::tFindFiles(foundFiles, imagesDir, "rgbe");
-	tSystem::tFindFiles(foundFiles, imagesDir, "exr");
-	tSystem::tFindFiles(foundFiles, imagesDir, "ico");
+	tSystem::tExtensions extensions;
+	Image::GetCanLoad(extensions);
+	tSystem::tFindFiles(foundFiles, imagesDir, extensions);
 
 	return imagesDir;
 }

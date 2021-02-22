@@ -54,8 +54,9 @@ public:
 	bool FramePlayLooping				= true;
 	int FrameNum						= 0;
 
+	static void GetCanLoad(tSystem::tExtensions&);					// Clears the extensions ref before populating.
 	bool Load(const tString& filename);
-	bool Load();						// Load into main memory.
+	bool Load();													// Load into main memory.
 	bool IsLoaded() const																								{ return (Pictures.Count() > 0); }
 	int GetNumFrames() const																							{ return Pictures.Count(); }
 
