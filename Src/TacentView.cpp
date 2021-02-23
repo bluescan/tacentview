@@ -2776,16 +2776,29 @@ int main(int argc, char** argv)
 
 		glGenTextures(1, &tex);
 		glBindTexture(GL_TEXTURE_2D, tex);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-		// Second arg is mipmap level (0=original) if we want to use mipmaps.
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, (fmt == 0) ? GL_BGRA : GL_RGBA, GL_UNSIGNED_BYTE, data);
+		int level = 0;
+		tImage::tPicture mipPic(w, h, (tPixel*)data);
+		w = 128; h = 128;
+		mipPic.Resample(w, h, tImage::tResampleFilter::Bilinear);
+		int dim = tMax(w, h);
 
-		// glGenerateMipmap is not available in OpenGL2.
-		// glGenerateMipmap(GL_TEXTURE_2D);
+		// Gen mipmaps.
+		while (dim >= 1)
+		{
+			// Second arg is mipmap level (0=original).
+			glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA, w, h, 0, (fmt == 0) ? GL_BGRA : GL_RGBA, GL_UNSIGNED_BYTE, (uint8*)mipPic.GetPixels());
+			bool ok = mipPic.ScaleHalf();
+			if (!ok)
+				break;
+			w = mipPic.GetWidth();
+			h = mipPic.GetHeight();
+			dim >>= 1;
+		}
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 		return (void*)(uint64(tex));
