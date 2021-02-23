@@ -316,7 +316,8 @@ namespace ifd {
 		if (hovered || active || isSelected)
 			window->DrawList->AddRectFilled(window->DC.LastItemRect.Min, window->DC.LastItemRect.Max, ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[active ? ImGuiCol_HeaderActive : (isSelected ? ImGuiCol_Header : ImGuiCol_HeaderHovered)]));
 
-		if (hasPreview) {
+		if (hasPreview)
+		{
 			ImVec2 availSize = ImVec2(size.x, iconSize);
 
 			float scale = std::min<float>(availSize.x / previewWidth, availSize.y / previewHeight);
@@ -326,9 +327,19 @@ namespace ifd {
 			float previewPosX = pos.x + (size.x - availSize.x) / 2.0f;
 			float previewPosY = pos.y + (iconSize - availSize.y) / 2.0f;
 
-			window->DrawList->AddImage(icon, ImVec2(previewPosX, previewPosY), ImVec2(previewPosX + availSize.x, previewPosY + availSize.y));
-		} else
+			// @tacent Adjust uvs since tacentview rows start at bottom.
+			window->DrawList->AddImage
+			(
+				icon,
+				ImVec2(previewPosX, previewPosY), ImVec2(previewPosX + availSize.x, previewPosY + availSize.y),
+				ImVec2(0.0f, 1.0f),
+				ImVec2(1.0f, 0.0f)
+			);
+		}
+		else
+		{
 			window->DrawList->AddImage(icon, ImVec2(iconPosX, pos.y), ImVec2(iconPosX + iconSize, pos.y + iconSize));
+		}
 		
 		window->DrawList->AddText(g.Font, g.FontSize, ImVec2(pos.x + (size.x-textSize.x) / 2.0f, pos.y + iconSize), ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]), label, 0, size.x);
 
