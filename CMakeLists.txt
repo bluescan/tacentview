@@ -62,6 +62,8 @@ add_executable(
 	Src/Crop.h
 	Src/Dialogs.cpp
 	Src/Dialogs.h
+	Src/FileDialog.cpp
+	Src/FileDialog.h
 	Src/Image.cpp
 	Src/Image.h
 	Src/MultiFrame.cpp

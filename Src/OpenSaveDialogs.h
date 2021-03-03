@@ -19,13 +19,10 @@
 
 namespace Viewer
 {
-	void OpenFileModal();
-	void DoOpenFileModal();
+	void DoOpenFileModal(bool openFilePressed);
+	void DoOpenDirModal(bool openDirPressed);
 
-	void OpenDirModal();
-	void DoOpenDirModal();
-
-	void DoSaveAsModal(bool justOpened);
+	void DoSaveAsModal(bool saveAsPressed);
 	void DoSaveAllModal(bool justOpened);
 
 	void DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool& pressedCancel);

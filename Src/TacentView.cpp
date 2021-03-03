@@ -1338,8 +1338,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		//
 		// File Menu.
 		//
-		bool openFilePressed			= Request_OpenFileModal;		Request_OpenFileModal		= false;
-		bool openDirPressed				= Request_OpenDirModal;			Request_OpenDirModal		= false;
+//		bool openFilePressed			= Request_OpenFileModal;		Request_OpenFileModal		= false;
+//		bool openDirPressed				= Request_OpenDirModal;			Request_OpenDirModal		= false;
+		bool openFilePressed			= false;						Request_OpenFileModal		= false;
+		bool openDirPressed				= false;						Request_OpenDirModal		= false;
 		bool saveAsPressed				= Request_SaveAsModal;			Request_SaveAsModal			= false;
 		bool saveAllPressed				= Request_SaveAllModal;			Request_SaveAllModal		= false;
 		bool saveContactSheetPressed	= Request_ContactSheetModal;	Request_ContactSheetModal	= false;
@@ -1349,11 +1351,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			// Show file menu items...
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 
-			if (ImGui::MenuItem("Open File...", "Ctrl-O"))
-				openFilePressed = true;
+//			if (ImGui::MenuItem("Open File...", "Ctrl-O"))
+//				openFilePressed = true;
 
-			if (ImGui::MenuItem("Open Dir...", "Alt-O"))
-				openDirPressed = true;
+//			if (ImGui::MenuItem("Open Dir...", "Alt-O"))
+//				openDirPressed = true;
 
 			if (ImGui::MenuItem("Save As...", "Ctrl-S") && CurrImage)
 				saveAsPressed = true;
@@ -1376,21 +1378,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 
-		if (openFilePressed)
-			OpenFileModal();
-		DoOpenFileModal();
+		DoOpenFileModal(openFilePressed);
+		DoOpenDirModal(openDirPressed);
+		DoSaveAsModal(saveAsPressed);
 
-		if (openDirPressed)
-			OpenDirModal();
-		DoOpenDirModal();
-
-		if (saveAsPressed)
-			ImGui::OpenPopup("Save As");
-		// The unused isOpenSaveAs bool is just so we get a close button in ImGui. 
-		bool isOpenSaveAs = true;
-		if (ImGui::BeginPopupModal("Save As", &isOpenSaveAs, ImGuiWindowFlags_AlwaysAutoResize))
-			DoSaveAsModal(saveAsPressed);
-
+		// @todo Work in progress. Make look like above.
 		if (saveAllPressed)
 			ImGui::OpenPopup("Save All");
 		// The unused isOpenSaveAll bool is just so we get a close button in ImGui. 

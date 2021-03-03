@@ -17,6 +17,7 @@
 #include "Image.h"
 #include "TacentView.h"
 #include "ImFileDialog.h"
+#include "FileDialog.h"
 using namespace tStd;
 using namespace tSystem;
 using namespace tMath;
@@ -35,6 +36,7 @@ namespace Viewer
 }
 
 
+/*
 void Viewer::OpenFileModal()
 {
 	ifd::FileDialog::Instance().Open
@@ -49,72 +51,44 @@ void Viewer::OpenFileModal()
 		ImagesDir.Chars()
 	);
 }
+*/
+FileDialog OpenFileDialog(FileDialog::DialogMode::OpenFile);
+FileDialog OpenDirDialog(FileDialog::DialogMode::OpenDir);
+FileDialog SaveFileDialog(FileDialog::DialogMode::SaveFile);
 
 
-void Viewer::DoOpenFileModal()
+void Viewer::DoOpenFileModal(bool openFilePressed)
 {
-	if (!ifd::FileDialog::Instance().IsDone("OpenFileModal"))
-		return;
+	if (openFilePressed)
+		OpenFileDialog.OpenPopup();
 
-	if (ifd::FileDialog::Instance().HasResult())
+	FileDialog::DialogResult result = OpenFileDialog.DoPopup();
+	if (result == FileDialog::DialogResult::OK)
 	{
-		const std::filesystem::path& result = ifd::FileDialog::Instance().GetResult();
-		tString fileToOpen(result.u8string().c_str());
-		fileToOpen.Replace('\\', '/');
-
-		tPrintf("Opening file: %s\n", fileToOpen.Chars());
-		ImageFileParam.Param = fileToOpen;
+		tString chosenFile = OpenFileDialog.GetResult();
+		tPrintf("Opening file: %s\n", chosenFile.Chars());
+		ImageFileParam.Param = chosenFile;
 		PopulateImages();
-		SetCurrentImage(fileToOpen);
+		SetCurrentImage(chosenFile);
 		SetWindowTitle();
 	}
-	ifd::FileDialog::Instance().Close();
-
-	const std::vector<std::string> favs = ifd::FileDialog::Instance().GetFavorites();
-	for (std::string fav : favs)
-	{
-		tPrintf("Favourite: %s\n", fav.c_str());
-	}
 }
 
 
-void Viewer::OpenDirModal()
+void Viewer::DoOpenDirModal(bool openDirPressed)
 {
-	ifd::FileDialog::Instance().Open
-	(
-		"OpenDirModal", "Open Directory",
-		"",
-		false,
-		ImagesDir.Chars()
-	);
-}
+	if (openDirPressed)
+		OpenDirDialog.OpenPopup();
 
-
-void Viewer::DoOpenDirModal()
-{
-	if (!ifd::FileDialog::Instance().IsDone("OpenDirModal"))
-		return;
-
-	if (ifd::FileDialog::Instance().HasResult())
+	FileDialog::DialogResult result = OpenDirDialog.DoPopup();
+	if (result == FileDialog::DialogResult::OK)
 	{
-		const std::filesystem::path& result = ifd::FileDialog::Instance().GetResult();
-		tString dirToOpen(result.u8string().c_str());
-		dirToOpen.Replace('\\', '/');
-		if (dirToOpen[dirToOpen.Length()-1] != '/')
-			dirToOpen += "/";
-
-		tPrintf("Opening directory: %s\n", dirToOpen.Chars());
-		ImageFileParam.Param = dirToOpen + "dummyfile.txt";
+		tString chosenDir = OpenDirDialog.GetResult();
+		tPrintf("Opening dir: %s\n", chosenDir.Chars());
+		ImageFileParam.Param = chosenDir + "dummyfile.txt";
 		PopulateImages();
 		SetCurrentImage();
 		SetWindowTitle();
-	}
-	ifd::FileDialog::Instance().Close();
-
-	const std::vector<std::string> favs = ifd::FileDialog::Instance().GetFavorites();
-	for (std::string fav : favs)
-	{
-		tPrintf("Favourite: %s\n", fav.c_str());
 	}
 }
 
@@ -480,8 +454,16 @@ bool Viewer::SaveResizeImageAs(Image& img, const tString& outFile, int width, in
 }
 
 
-void Viewer::DoSaveAsModal(bool justOpened)
+void Viewer::DoSaveAsModal(bool saveAsPressed)
 {
+	if (saveAsPressed)
+		ImGui::OpenPopup("Save As");
+
+	// The unused isOpenSaveAs bool is just so we get a close button in ImGui. 
+	bool isOpenSaveAs = true;
+	if (!ImGui::BeginPopupModal("Save As", &isOpenSaveAs, ImGuiWindowFlags_AlwaysAutoResize))
+		return;
+	
 	tAssert(CurrImage);
 	tPicture* picture = CurrImage->GetCurrentPic();
 	tAssert(picture);
@@ -491,7 +473,7 @@ void Viewer::DoSaveAsModal(bool justOpened)
 	tString destDir = DoSubFolder();
 
 	static char filename[128] = "Filename";
-	if (justOpened)
+	if (saveAsPressed)
 	{
 		tString baseName = tSystem::tGetFileBaseName(CurrImage->Filename);
 		tStrcpy(filename, baseName.Chars());

@@ -288,8 +288,13 @@ namespace ifd {
 
 		return ret;
 	}
-	bool FileIcon(const char* label, bool isSelected, ImTextureID icon, ImVec2 size, bool hasPreview, int previewWidth, int previewHeight)
+	bool FileIcon(const char* labl, bool isSelected, ImTextureID icon, ImVec2 size, bool hasPreview, int previewWidth, int previewHeight)
 	{
+		tString label(labl);
+		int maxChars = int(size.x / 8.0f); tMath::tiClampMin(maxChars, 4);
+		if (label.Length() > maxChars)
+			label[maxChars] = '\0';
+
 		ImGuiStyle& style = ImGui::GetStyle();
 		ImGuiContext& g = *GImGui;
 		ImGuiWindow* window = g.CurrentWindow;
@@ -298,7 +303,7 @@ namespace ifd {
 		ImVec2 pos = window->DC.CursorPos;
 		bool ret = false;
 
-		if (ImGui::InvisibleButton(label, size))
+		if (ImGui::InvisibleButton(label.Chars(), size))
 			ret = true;
 
 		bool hovered = ImGui::IsItemHovered();
@@ -310,7 +315,7 @@ namespace ifd {
 
 		float iconSize = size.y - g.FontSize * 2;
 		float iconPosX = pos.x + (size.x - iconSize) / 2.0f;
-		ImVec2 textSize = ImGui::CalcTextSize(label, 0, true, size.x);
+		ImVec2 textSize = ImGui::CalcTextSize(label.Chars(), 0, true, size.x);
 
 		
 		if (hovered || active || isSelected)
@@ -341,7 +346,7 @@ namespace ifd {
 			window->DrawList->AddImage(icon, ImVec2(iconPosX, pos.y), ImVec2(iconPosX + iconSize, pos.y + iconSize));
 		}
 		
-		window->DrawList->AddText(g.Font, g.FontSize, ImVec2(pos.x + (size.x-textSize.x) / 2.0f, pos.y + iconSize), ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]), label, 0, size.x);
+		window->DrawList->AddText(g.Font, g.FontSize, ImVec2(pos.x + (size.x-textSize.x) / 2.0f, pos.y + iconSize), ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]), label.Chars(), 0, size.x);
 
 
 		float lastButtomPos = ImGui::GetItemRectMax().x;
@@ -1005,6 +1010,9 @@ namespace ifd {
 					if (!info.IsDirectory && m_type == IFD_DIALOG_DIRECTORY)
 						continue;
 
+					std::string flename = info.Path.u8string();
+					tPrintf("FoundFile: %s\n", flename.c_str());
+
 					// check if filename matches search query
 					if (m_searchBuffer[0]) {
 						std::string filename = info.Path.u8string();
@@ -1202,10 +1210,73 @@ namespace ifd {
 			}
 		}
 		// "icon" view
-		else {
+		else
+		{
 			// content
 			int fileId = 0;
-			for (auto& entry : m_content) {
+
+			ImGuiWindowFlags thumbWindowFlags = 0;
+			ImGui::BeginChild("Thumbnails", ImVec2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight()-61.0f), false, thumbWindowFlags);
+
+			ImGuiStyle& style = ImGui::GetStyle();
+			float visibleW = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+
+			float minSpacing = 4.0f;
+			float thumbWidth = 64.0f;
+			float numPerRowF = ImGui::GetWindowContentRegionMax().x / (thumbWidth + minSpacing);
+			int numPerRow = tMath::tClampMin(int(numPerRowF), 1);
+			float extra = ImGui::GetWindowContentRegionMax().x - (float(numPerRow) * (thumbWidth + minSpacing));
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(minSpacing + extra/float(numPerRow), minSpacing));
+			ImVec2 thumbButtonSize(thumbWidth, thumbWidth*9.0f/16.0f); // 64 36, 32 18,
+			int thumbNum = 0;
+
+
+
+			for (auto& entry : m_content)
+			{
+				///////////
+				ImVec2 cursor = ImGui::GetCursorPos();
+				if ((thumbNum % numPerRow) == 0)
+					ImGui::SetCursorPos(ImVec2(0.5f*extra/float(numPerRow), cursor.y));
+
+				ImGui::PushID(thumbNum);
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+				bool isCurr = false; //(i == CurrImage);
+
+				// Unlike other widgets, BeginChild ALWAYS needs a corresponding EndChild, even if it's invisible.
+				bool visible = ImGui::BeginChild("FileThumbItem", thumbButtonSize+ImVec2(0.0, 32.0f), false, ImGuiWindowFlags_NoDecoration);
+				if (visible)
+				{
+
+					//void* texID = (ImTextureID)m_getIcon(entry.Path);
+					void* texID = entry.HasIconPreview ? entry.IconPreview : (void*)1;//(ImTextureID)m_getIcon(entry.Path);
+
+					//void* texID = entry.HasIconPreview ? entry.IconPreview : (ImTextureID)m_getIcon(entry.Path);
+
+					ImGui::ImageButton
+					(
+						ImTextureID(texID), thumbButtonSize,
+						ImVec2(0,1), ImVec2(1,0), 0
+						//,
+						//ColourBG, ColourEnabledTint
+					);
+
+					tString filename(entry.Path.filename().u8string().c_str());
+					//tString filename = tSystem::tGetFileName(i->Filename);
+					ImGui::Text(filename.Chars());
+
+					// We use a separator to indicate the current item.
+					if (isCurr)
+						ImGui::Separator(2.0f);
+				}
+				ImGui::EndChild();
+				ImGui::PopStyleVar();
+
+				if ((thumbNum+1) % numPerRow)
+					ImGui::SameLine();
+				ImGui::PopID();
+
+
 				if (entry.HasIconPreview && entry.IconPreviewData != nullptr)
 				{
 					entry.IconPreview = this->CreateTexture(entry.IconPreviewData, entry.IconPreviewWidth, entry.IconPreviewHeight, 1);
@@ -1220,9 +1291,13 @@ namespace ifd {
 				if (filename.size() == 0)
 					filename = entry.Path.u8string(); // drive
 
-				bool isSelected = std::count(m_selections.begin(), m_selections.end(), entry.Path);
+//				bool isSelected = std::count(m_selections.begin(), m_selections.end(), entry.Path);
 
-				if (FileIcon(filename.c_str(), isSelected, entry.HasIconPreview ? entry.IconPreview : (ImTextureID)m_getIcon(entry.Path), ImVec2(32 + 16 * m_zoom, 32 + 16 * m_zoom), entry.HasIconPreview, entry.IconPreviewWidth, entry.IconPreviewHeight)) {
+//					tPrintf("FoundFile: %s\n", filename.c_str());
+
+				//if (FileIcon(filename.c_str(), isSelected, (ImTextureID)m_getIcon(entry.Path), ImVec2(ICON_SIZE + 16 * m_zoom, ICON_SIZE + 16 * m_zoom), entry.HasIconPreview, entry.IconPreviewWidth, entry.IconPreviewHeight)) {
+					/*
+				if (FileIcon(filename.c_str(), isSelected, texID, ImVec2(32 + 16 * m_zoom, 32 + 16 * m_zoom), entry.HasIconPreview, entry.IconPreviewWidth, entry.IconPreviewHeight)) {
 					std::error_code ec;
 					bool isDir = std::filesystem::is_directory(entry.Path, ec);
 
@@ -1239,10 +1314,16 @@ namespace ifd {
 							m_select(entry.Path, ImGui::GetIO().KeyCtrl);
 					}
 				}
+				*/
 				if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
 					m_selectedFileItem = fileId;
 				fileId++;
+				thumbNum++;
 			}
+
+			ImGui::PopStyleVar();
+			ImGui::EndChild();
+	
 		}
 	}
 	void FileDialog::m_renderPopups()
