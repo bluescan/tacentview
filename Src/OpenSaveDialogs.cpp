@@ -22,6 +22,7 @@ using namespace tStd;
 using namespace tSystem;
 using namespace tMath;
 using namespace tImage;
+using namespace tInterface;
 
 
 namespace Viewer

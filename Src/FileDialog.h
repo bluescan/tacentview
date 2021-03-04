@@ -16,13 +16,24 @@
 #include <Foundation/tString.h>
 
 
-class FileEntry
+// This seems like a reasonable namespace for all generic ImGui widgets and dialogs that may eventually find a home
+// outside this viewer app.
+namespace tInterface
 {
-};
 
 
-class DirEntry
+// Tree nodes are in the left panel. Used for directories and containers with special names
+// like favourites, local, and network. A TreeNode has children TreeNodes.
+class TreeNode
 {
+public:
+	TreeNode()															: Name(), Parent(nullptr) { }
+	TreeNode(const tString& name, TreeNode* parent = nullptr)			: Name(name), Parent(parent) { }
+	void AppendChild(const tString& name)								{ Children.Append(new TreeNode(name, this)); }
+
+	tString Name;
+	TreeNode* Parent;
+	tItList<TreeNode> Children;
 };
 
 
@@ -53,4 +64,9 @@ public:
 private:
 	DialogMode Mode;
 	tString Result;
+
+	TreeNode RootTreeNode;
 };
+
+
+}
