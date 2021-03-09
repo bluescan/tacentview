@@ -160,7 +160,7 @@ namespace Viewer
 	tColouri PixelColour						= tColouri::black;
 
 	const tVector4 ColourEnabledTint			= tVector4(1.00f, 1.00f, 1.00f, 1.00f);
-	const tVector4 ColourDisabledTint			= tVector4(0.36f, 0.36f, 0.48f, 1.00f);
+	const tVector4 ColourDisabledTint			= tVector4(0.54f, 0.54f, 0.54f, 1.00f);
 	const tVector4 ColourBG						= tVector4(0.00f, 0.00f, 0.00f, 0.00f);
 	const tVector4 ColourPressedBG				= tVector4(0.21f, 0.45f, 0.21f, 1.00f);
 	const tVector4 ColourClear					= tVector4(0.10f, 0.10f, 0.12f, 1.00f);
@@ -202,7 +202,7 @@ namespace Viewer
 	void OnNextImageFrame();
 	bool OnSkipBegin();
 	bool OnSkipEnd();
-	void ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan);
+	void ApplyZoomDelta(float zoomDelta);
 	void SetBasicViewAndBehaviour();
 	bool IsBasicViewAndBehaviour();
 	void AutoPropertyWindow();
@@ -352,7 +352,7 @@ void Viewer::SortImages(Settings::SortKeyEnum key, bool ascending)
 	ImageCompareFn* sortFn;
 	switch (key)
 	{
-		case Settings::SortKeyEnum::Alphabetical:
+		case Settings::SortKeyEnum::FileName:
 			sortFn = ascending ? Compare_ImageFileNameAscending : &Compare_ImageFileNameDescending;
 			break;
 
@@ -1568,7 +1568,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			tsPrintf(currZoomStr, "%0.0f%%", ZoomPercent);
 			int zoomIdx = 0;
 			if (ImGui::Combo(currZoomStr.Chars(), &zoomIdx, zoomItems, tNumElements(zoomItems)) && (zoomIdx > 0))
-				ApplyZoomDelta( zoomVals[zoomIdx]-ZoomPercent, 1.0f, true);
+				ApplyZoomDelta(zoomVals[zoomIdx]-ZoomPercent);
 			ImGui::PopItemWidth();
 
 			ImGui::Separator();
@@ -1937,7 +1937,7 @@ bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 }
 
 
-void Viewer::ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan)
+void Viewer::ApplyZoomDelta(float zoomDelta)
 {
 	CurrZoomMode = ZoomMode::User;
 	float zoomOrig = ZoomPercent;
@@ -1947,13 +1947,10 @@ void Viewer::ApplyZoomDelta(float zoomDelta, float roundTo, bool correctPan)
 
 	tMath::tiClamp(ZoomPercent, ZoomMin, ZoomMax);
 
-	if (correctPan)
-	{
-		PanOffsetX += PanDragDownOffsetX; PanDragDownOffsetX = 0;
-		PanOffsetY += PanDragDownOffsetY; PanDragDownOffsetY = 0;
-		PanOffsetX = int(float(PanOffsetX)*ZoomPercent/zoomOrig);
-		PanOffsetY = int(float(PanOffsetY)*ZoomPercent/zoomOrig);
-	}
+	PanOffsetX += PanDragDownOffsetX; PanDragDownOffsetX = 0;
+	PanOffsetY += PanDragDownOffsetY; PanDragDownOffsetY = 0;
+	PanOffsetX = int(float(PanOffsetX)*ZoomPercent/zoomOrig);
+	PanOffsetY = int(float(PanOffsetY)*ZoomPercent/zoomOrig);
 }
 
 
@@ -2099,13 +2096,13 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case GLFW_KEY_EQUAL:
 			// Ctrl +
 			if (modifiers == GLFW_MOD_CONTROL)
-				ApplyZoomDelta(tMath::tRound(ZoomPercent*0.1f), 1.0f, true);
+				ApplyZoomDelta(tMath::tRound(ZoomPercent*0.1f));
 			break;
 
 		case GLFW_KEY_MINUS:
 			// Ctrl -
 			if (modifiers == GLFW_MOD_CONTROL)
-				ApplyZoomDelta(tMath::tRound(ZoomPercent*(0.909090909f - 1.0f)), 1.0f, true);
+				ApplyZoomDelta(tMath::tRound(ZoomPercent*(0.909090909f - 1.0f)));
 			break;
 
 		case GLFW_KEY_ENTER:
@@ -2394,7 +2391,7 @@ void Viewer::ScrollWheelCallback(GLFWwindow* window, double x, double y)
 	CurrZoomMode = ZoomMode::User;
 	float percentChange = (y > 0.0) ? 0.1f : 1.0f-0.909090909f;
 	float zoomDelta = ZoomPercent * percentChange * float(y);
-	ApplyZoomDelta(zoomDelta, 10.0f, true);
+	ApplyZoomDelta(zoomDelta);
 }
 
 

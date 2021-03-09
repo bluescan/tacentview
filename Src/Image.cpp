@@ -811,15 +811,7 @@ uint64 Image::Bind()
 			return 0;
 
 		tList<tLayer> layers;
-		layers.Append
-		(
-			new tLayer
-			(
-				tPixelFormat::R8G8B8A8, AltPicture.GetWidth(), AltPicture.GetHeight(),
-				(uint8*)AltPicture.GetPixelPointer()
-			)
-		);
-
+		AltPicture.GenerateLayers(layers, tResampleFilter(Config.MipmapFilter), tResampleEdgeMode::Clamp, Config.MipmapChaining);
 		BindLayers(layers, TexIDAlt);
 		return TexIDAlt;
 	}
@@ -842,15 +834,7 @@ uint64 Image::Bind()
 		glGenTextures(1, &picture->TextureID);
 
 		tList<tLayer> layers;
-		layers.Append
-		(
-			new tLayer
-			(
-				tPixelFormat::R8G8B8A8, picture->GetWidth(), picture->GetHeight(),
-				(uint8*)picture->GetPixelPointer()
-			)
-		);
-
+		picture->GenerateLayers(layers, tResampleFilter(Config.MipmapFilter), tResampleEdgeMode::Clamp, Config.MipmapChaining);
 		BindLayers(layers, picture->TextureID);
 	}
 	return GetCurrentPic()->TextureID;
@@ -915,11 +899,7 @@ void Image::GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFormat,
 	dstFormat = GL_RGBA8;
 	compressed = false;
 
-//	#ifdef PLATFORM_WINDOWS
-//	tAssert(GLEW_ARB_texture_compression);
-//	#else
 	tAssert(GL_EXT_texture_compression_s3tc);
-//	#endif
 	switch (pixelFormat)
 	{
 		case tPixelFormat::R8G8B8:
@@ -1048,15 +1028,12 @@ bool Image::ConvertCubemapToPicture()
 		glGenTextures(1, &tempTexID);
 
 		tTexture* tex = DDSCubemap.GetSide(tCubemap::tSide(side));
-		tList<tLayer> layers;
-		layers.Append(new tLayer(*tex->GetLayers().First()));
-		BindLayers(layers, tempTexID);
+		BindLayers(tex->GetLayers(), tempTexID);
 
 		uint8* rgbaData = new uint8[w * h * 4];
 		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgbaData);
 		Pictures.Append(new tPicture(w, h, (tPixel*)rgbaData, false));
 
-		layers.Empty();
 		glDeleteTextures(1, &tempTexID);
 	}
 	return true;
@@ -1106,15 +1083,7 @@ uint64 Image::BindThumbnail()
 			return 0;
 
 		tList<tLayer> layers;
-		layers.Append
-		(
-			new tLayer
-			(
-				tPixelFormat::R8G8B8A8, ThumbnailPicture.GetWidth(), ThumbnailPicture.GetHeight(),
-				(uint8*)ThumbnailPicture.GetPixelPointer()
-			)
-		);
-
+		ThumbnailPicture.GenerateLayers(layers, tResampleFilter(Config.MipmapFilter), tResampleEdgeMode::Clamp, Config.MipmapChaining);
 		BindLayers(layers, TexIDThumbnail);
 		return TexIDThumbnail;
 	}

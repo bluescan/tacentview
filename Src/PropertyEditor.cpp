@@ -151,7 +151,7 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 		if (fileTypeSectionDisplayed)
 			ImGui::Separator();
 
-		ImGui::Text("Frames %d", CurrImage->GetNumFrames());
+		ImGui::Text("Frames (%d)", CurrImage->GetNumFrames());
 		ImGui::PushItemWidth(110);
 
 		int oneBasedFrameNum = CurrImage->FrameNum + 1;
@@ -161,23 +161,12 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 			tMath::tiClamp(CurrImage->FrameNum, 0, CurrImage->GetNumFrames()-1);
 		}
 		ImGui::SameLine(); ShowHelpMark("Which image in a multiframe file to display.");
-		ImGui::Checkbox("Scrubber", &Config.ShowFrameScrubber);
-
-		ImGui::Separator();
-
-		ImGui::Text("Frame Duration");
-		ImGui::Checkbox("Preview", &CurrImage->FrameDurationPreviewEnabled);
-		ImGui::SameLine(); ShowHelpMark("If enabled this number of seconds is used for all frame durations while playing.");
 
 		if (CurrImage->FrameDurationPreviewEnabled)
 		{
-			ImGui::InputFloat("Preview Duration", &CurrImage->FrameDurationPreview, 0.01f, 0.1f, "%.4f");
+			ImGui::InputFloat("Seconds", &CurrImage->FrameDurationPreview, 0.01f, 0.1f, "%.4f");
 			tMath::tiClamp(CurrImage->FrameDurationPreview, 0.0f, 60.0f);
-			if (ImGui::Button("1.0s"))  CurrImage->FrameDurationPreview = 1.0f; ImGui::SameLine();
-			if (ImGui::Button("0.5s"))  CurrImage->FrameDurationPreview = 0.5f; ImGui::SameLine();
-			if (ImGui::Button("0.1s"))  CurrImage->FrameDurationPreview = 0.1f; ImGui::SameLine();
-			if (ImGui::Button("30fps")) CurrImage->FrameDurationPreview = 1.0f/30.0f; ImGui::SameLine();
-			if (ImGui::Button("60fps")) CurrImage->FrameDurationPreview = 1.0f/60.0f;
+			ImGui::SameLine();
 			if (ImGui::Button("Set All"))
 			{
 				CurrImage->SetFrameDuration(CurrImage->FrameDurationPreview, true);
@@ -185,14 +174,20 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 				CurrImage->FrameDurationPreviewEnabled = false;
 			}
 			ImGui::SameLine(); ShowHelpMark("Sets every frame duration to the preview duration.");
+
+			if (ImGui::Button("1.0s"))  CurrImage->FrameDurationPreview = 1.0f; ImGui::SameLine();
+			if (ImGui::Button("0.5s"))  CurrImage->FrameDurationPreview = 0.5f; ImGui::SameLine();
+			if (ImGui::Button("0.1s"))  CurrImage->FrameDurationPreview = 0.1f; ImGui::SameLine();
+			if (ImGui::Button("30fps")) CurrImage->FrameDurationPreview = 1.0f/30.0f; ImGui::SameLine();
+			if (ImGui::Button("60fps")) CurrImage->FrameDurationPreview = 1.0f/60.0f; ImGui::SameLine();
+			ShowHelpMark("Predefined frame duration buttons.");
 		}
 		else
 		{
 			tImage::tPicture* currFramePic = CurrImage->GetCurrentPic();
 			float duration = currFramePic->Duration;
 			char frameDurText[64];
-			tsPrintf(frameDurText, "Frame %d Duration", oneBasedFrameNum);
-			if (ImGui::InputFloat(frameDurText, &duration, 0.01f, 0.1f, "%.4f", ImGuiInputTextFlags_EnterReturnsTrue))
+			if (ImGui::InputFloat("Seconds", &duration, 0.01f, 0.1f, "%.4f", ImGuiInputTextFlags_EnterReturnsTrue))
 			{
 				tMath::tiClamp(duration, 0.0f, 60.0f);
 				CurrImage->SetFrameDuration(duration);
@@ -203,14 +198,19 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 			if (ImGui::Button("0.5s"))	{ CurrImage->SetFrameDuration(0.5f); SetWindowTitle(); }		ImGui::SameLine();
 			if (ImGui::Button("0.1s"))	{ CurrImage->SetFrameDuration(0.1f); SetWindowTitle(); }		ImGui::SameLine();
 			if (ImGui::Button("30fps"))	{ CurrImage->SetFrameDuration(1.0f/30.0f); SetWindowTitle(); }	ImGui::SameLine();
-			if (ImGui::Button("60fps"))	{ CurrImage->SetFrameDuration(1.0f/60.0f); SetWindowTitle(); }
+			if (ImGui::Button("60fps"))	{ CurrImage->SetFrameDuration(1.0f/60.0f); SetWindowTitle(); }	ImGui::SameLine();
+			ShowHelpMark("Predefined frame duration buttons.");
 		}
-		
+		ImGui::Checkbox("Preview Duration", &CurrImage->FrameDurationPreviewEnabled);
+		ImGui::SameLine(); ShowHelpMark("If enabled this number of seconds is used for all frame durations while playing.");
+		ImGui::Checkbox("Scrubber", &Config.ShowFrameScrubber);
+
 		ImGui::PopItemWidth();
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 		ImGui::Separator();
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 11);
 
 		uint64 loopImageID = CurrImage->FramePlayLooping ? PlayOnceImage.Bind() : PlayLoopImage.Bind();
 		if (ImGui::ImageButton(ImTextureID(loopImageID), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2, ColourBG, ColourEnabledTint))

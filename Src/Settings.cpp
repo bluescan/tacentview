@@ -94,6 +94,8 @@ void Viewer::Settings::ResetBehaviourSettings()
 	MaxUndoSteps				= 16;
 	StrictLoading				= false;
 	DetectAPNGInsidePNG			= true;
+	MipmapFilter				= int(tImage::tResampleFilter::Bilinear);
+	MipmapChaining				= true;
 	AutoPlayAnimatedImages		= true;
 	MonitorGamma				= tMath::DefaultGamma;
 }
@@ -198,6 +200,8 @@ void Viewer::Settings::Load(const tString& filename)
 				ReadItem(MaxUndoSteps);
 				ReadItem(StrictLoading);
 				ReadItem(DetectAPNGInsidePNG);
+				ReadItem(MipmapFilter);
+				ReadItem(MipmapChaining);
 				ReadItem(AutoPropertyWindow);
 				ReadItem(AutoPlayAnimatedImages);
 				ReadItem(MonitorGamma);
@@ -233,6 +237,7 @@ void Viewer::Settings::Load(const tString& filename)
 	tiClampMin	(MaxImageMemMB, 256);
 	tiClampMin	(MaxCacheFiles, 200);	
 	tiClamp		(MaxUndoSteps, 1, 32);
+	tiClamp		(MipmapFilter, 0, int(tImage::tResampleFilter::NumFilters));	// None allowed.
 	tiClamp		(SaveAllSizeMode, 0, 3);
 	tiClamp		(SaveFileJpegQuality, 1, 100);
 	tiClamp		(SaveFileWebpQualComp, 0.0f, 100.0f);
@@ -314,6 +319,8 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(MaxUndoSteps);
 	WriteItem(StrictLoading);
 	WriteItem(DetectAPNGInsidePNG);
+	WriteItem(MipmapFilter);
+	WriteItem(MipmapChaining);
 	WriteItem(AutoPropertyWindow);
 	WriteItem(AutoPlayAnimatedImages);
 	WriteItem(MonitorGamma);

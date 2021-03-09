@@ -119,7 +119,7 @@ void Viewer::ShowContentViewDialog(bool* popen)
 	ImGui::PopItemWidth();
 
 	ImGui::PushItemWidth(100);
-	const char* sortItems[] = { "Alphabetical", "Date", "Size", "Type" };
+	const char* sortItems[] = { "Name", "Date", "Size", "Type" };
 	if (ImGui::Combo("Sort", &Config.SortKey, sortItems, tNumElements(sortItems)))
 		SortImages(Settings::SortKeyEnum(Config.SortKey), Config.SortAscending);
 	ImGui::SameLine();

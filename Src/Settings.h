@@ -35,7 +35,7 @@ namespace Viewer
 		float ThumbnailWidth;
 		enum class SortKeyEnum
 		{
-			Alphabetical,
+			FileName,
 			FileModTime,
 			FileSize,
 			FileType
@@ -57,6 +57,7 @@ namespace Viewer
 		int BackgroundStyle;
 		bool BackgroundExtend;				// Extend background past image bounds.
 		bool TransparentWorkArea;
+
 		int ResampleFilter;					// Matches tImage::tResampleFilter.
 		int ResampleEdgeMode;				// Matches tImage::tResampleEdgeMode.
 		int ResampleFilterRotateUp;			// Matches tImage::tResampleFilter.
@@ -80,20 +81,20 @@ namespace Viewer
 		int		SaveFileType;
 		int		SaveFileTypeMultiFrame;
 		bool	SaveFileTargaRLE;
-		int		SaveFileJpegQuality;			// E [1, 100]
+		int		SaveFileJpegQuality;		// E [1, 100]
 		bool	SaveFileWebpLossy;
-		float	SaveFileWebpQualComp;			// E [0.0, 100.0]
+		float	SaveFileWebpQualComp;		// E [0.0, 100.0]
 		bool	SaveFileTiffZLibDeflate;
 
-		int SaveFileWebpDurOverride;			// E [-1, inf]. In ms.
-		int SaveFileGifDurOverride;				// E [-1, inf]. In 1/100 seconds.
-		int SaveFileApngDurOverride;			// E [-1, 65535]. In ms.
-		int SaveFileTiffDurOverride;			// E [-1, inf]. In ms.
+		int SaveFileWebpDurOverride;		// E [-1, inf]. In ms.
+		int SaveFileGifDurOverride;			// E [-1, inf]. In 1/100 seconds.
+		int SaveFileApngDurOverride;		// E [-1, 65535]. In ms.
+		int SaveFileTiffDurOverride;		// E [-1, inf]. In ms.
 
-		int SaveFileWebpDurMultiFrame;			// E [0, inf]. In ms.
-		int SaveFileGifDurMultiFrame;			// E [0, inf]. In 1/100 seconds.
-		int SaveFileApngDurMultiFrame;			// E [0, 65536]. In ms.
-		int SaveFileTiffDurMultiFrame;			// E [0, inf]. In ms.
+		int SaveFileWebpDurMultiFrame;		// E [0, inf]. In ms.
+		int SaveFileGifDurMultiFrame;		// E [0, inf]. In 1/100 seconds.
+		int SaveFileApngDurMultiFrame;		// E [0, 65536]. In ms.
+		int SaveFileTiffDurMultiFrame;		// E [0, inf]. In ms.
 		enum class SizeMode
 		{
 			Percent,
@@ -112,6 +113,8 @@ namespace Viewer
 		int MaxUndoSteps;
 		bool StrictLoading;					// No attempt to display ill-formed images.
 		bool DetectAPNGInsidePNG;			// Look for APNG data (animated) hidden inside a regular PNG file.
+		int MipmapFilter;					// Matches tImage::tResampleFilter. Use None for no mipmaps.
+		bool MipmapChaining;				// True for faster mipmap generation. False for a lot slower and slightly better results.
 		bool AutoPropertyWindow;			// Auto display property editor window for supported file types.
 		bool AutoPlayAnimatedImages;		// Automatically play animated gifs, apngs, and WebPs.
 		float MonitorGamma;					// Used when displaying HDR formats to do gamma correction.
