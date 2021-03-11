@@ -36,8 +36,16 @@ namespace Viewer
 }
 
 
-void Viewer::DoContactSheetModal(bool justOpened)
+void Viewer::DoContactSheetModal(bool saveContactSheetPressed)
 {
+	if (saveContactSheetPressed)
+		ImGui::OpenPopup("Contact Sheet");
+
+	// The unused isOpenContactSheet bool is just so we get a close button in ImGui. Returns false if popup not open.
+	bool isOpenContactSheet = true;
+	if (!ImGui::BeginPopupModal("Contact Sheet", &isOpenContactSheet, ImGuiWindowFlags_AlwaysAutoResize))
+		return;
+
 	static int frameWidth = 256;
 	static int frameHeight = 256;
 	static int numRows = 4;
@@ -49,7 +57,7 @@ void Viewer::DoContactSheetModal(bool justOpened)
 	tAssert(picture);
 	int picW = picture->GetWidth();
 	int picH = picture->GetHeight();
-	if (justOpened)
+	if (saveContactSheetPressed)
 	{
 		frameWidth = picW;
 		frameHeight = picH;
@@ -59,7 +67,7 @@ void Viewer::DoContactSheetModal(bool justOpened)
 
 	int contactWidth = frameWidth * numCols;
 	int contactHeight = frameHeight * numRows;
-	if (justOpened)
+	if (saveContactSheetPressed)
 	{
 		finalWidth = contactWidth;
 		finalHeight = contactHeight;
@@ -180,7 +188,7 @@ void Viewer::DoContactSheetModal(bool justOpened)
 		}
 	}
 
-	// The unused isOpen bool is just so we get a close button in ImGui. 
+	// The unused isOpen bool is just so we get a close button in ImGui.
 	bool isOpen = true;
 	if (ImGui::BeginPopupModal("Overwrite Contact Sheet File", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
 	{

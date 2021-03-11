@@ -75,15 +75,23 @@ bool Viewer::AllDimensionsMatch(int width, int height)
 }
 
 
-void Viewer::DoMultiFrameModal(bool justOpened)
+void Viewer::DoMultiFrameModal(bool saveMultiFramePressed)
 {
+	if (saveMultiFramePressed)
+		ImGui::OpenPopup("Multi Frame");
+
+	// The unused isOpenMultiFrame bool is just so we get a close button in ImGui. Returns false if popup not open.
+	bool isOpenMultiFrame = true;
+	if (!ImGui::BeginPopupModal("Multi Frame", &isOpenMultiFrame, ImGuiWindowFlags_AlwaysAutoResize))
+		return;
+
 	static int outWidth = 256;
 	static int outHeight = 256;
 	static char lo[32];
 	static char hi[32];
 
 	// If just opened, loop through all the images and choose the largest width and height.
-	if (justOpened)
+	if (saveMultiFramePressed)
 		ComputeMaxWidthHeight(outWidth, outHeight);
 
 	ImGui::InputInt("Width", &outWidth);

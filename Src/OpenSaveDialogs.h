@@ -23,7 +23,7 @@ namespace Viewer
 	void DoOpenDirModal(bool openDirPressed);
 
 	void DoSaveAsModal(bool saveAsPressed);
-	void DoSaveAllModal(bool justOpened);
+	void DoSaveAllModal(bool saveAllPressed);
 
 	void DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool& pressedCancel);
 	void DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFiles, bool& pressedOK, bool& pressedCancel);

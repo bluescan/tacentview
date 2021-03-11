@@ -460,7 +460,7 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 	if (saveAsPressed)
 		ImGui::OpenPopup("Save As");
 
-	// The unused isOpenSaveAs bool is just so we get a close button in ImGui. 
+	// The unused isOpenSaveAs bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isOpenSaveAs = true;
 	if (!ImGui::BeginPopupModal("Save As", &isOpenSaveAs, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
@@ -567,8 +567,16 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 }
 
 
-void Viewer::DoSaveAllModal(bool justOpened)
+void Viewer::DoSaveAllModal(bool saveAllPressed)
 {
+	if (saveAllPressed)
+		ImGui::OpenPopup("Save All");
+
+	// The unused isOpenSaveAll bool is just so we get a close button in ImGui. Returns false if popup not open.
+	bool isOpenSaveAll = true;
+	if (!ImGui::BeginPopupModal("Save All", &isOpenSaveAll, ImGuiWindowFlags_AlwaysAutoResize))
+		return;
+
 	ImGui::Text("Save all %d images to the image type you select.", Images.GetNumItems()); ImGui::SameLine();
 	ShowHelpMark
 	(

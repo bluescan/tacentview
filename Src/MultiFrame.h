@@ -17,5 +17,5 @@
 
 namespace Viewer
 {
-	void DoMultiFrameModal(bool justOpened);
+	void DoMultiFrameModal(bool saveMultiFramePressed);
 }

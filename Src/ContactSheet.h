@@ -17,5 +17,5 @@
 
 namespace Viewer
 {
-	void DoContactSheetModal(bool justOpened);
+	void DoContactSheetModal(bool saveContactSheetPressed);
 }

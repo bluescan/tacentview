@@ -1381,28 +1381,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		DoOpenFileModal(openFilePressed);
 		DoOpenDirModal(openDirPressed);
 		DoSaveAsModal(saveAsPressed);
-
-		// @todo Work in progress. Make look like above.
-		if (saveAllPressed)
-			ImGui::OpenPopup("Save All");
-		// The unused isOpenSaveAll bool is just so we get a close button in ImGui. 
-		bool isOpenSaveAll = true;
-		if (ImGui::BeginPopupModal("Save All", &isOpenSaveAll, ImGuiWindowFlags_AlwaysAutoResize))
-			DoSaveAllModal(saveAllPressed);
-
-		if (saveContactSheetPressed)
-			ImGui::OpenPopup("Contact Sheet");
-		// The unused isOpenContactSheet bool is just so we get a close button in ImGui. 
-		bool isOpenContactSheet = true;
-		if (ImGui::BeginPopupModal("Contact Sheet", &isOpenContactSheet, ImGuiWindowFlags_AlwaysAutoResize))
-			DoContactSheetModal(saveContactSheetPressed);
-
-		if (saveMultiFramePressed)
-			ImGui::OpenPopup("Multi Frame");
-		// The unused isOpenMultiFrame bool is just so we get a close button in ImGui. 
-		bool isOpenMultiFrame = true;
-		if (ImGui::BeginPopupModal("Multi Frame", &isOpenMultiFrame, ImGuiWindowFlags_AlwaysAutoResize))
-			DoMultiFrameModal(saveMultiFramePressed);
+		DoSaveAllModal(saveAllPressed);
+		DoContactSheetModal(saveContactSheetPressed);
+		DoMultiFrameModal(saveMultiFramePressed);
 
 		ImGui::PopStyleVar();
 
