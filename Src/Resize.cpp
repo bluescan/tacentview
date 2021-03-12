@@ -176,14 +176,21 @@ void Viewer::DoFillColourInterface(const char* toolTipText)
 //
 
 
-void Viewer::DoResizeImageModal(bool justOpened)
+void Viewer::DoResizeImageModal(bool resizeImagePressed)
 {
+	if (resizeImagePressed)
+		ImGui::OpenPopup("Resize Image");
+
+	bool isOpenResizeImage = true;
+	if (!ImGui::BeginPopupModal("Resize Image", &isOpenResizeImage, ImGuiWindowFlags_AlwaysAutoResize))
+		return;
+
 	tAssert(CurrImage);		tPicture* picture = CurrImage->GetCurrentPic();		tAssert(picture);
 	int srcW				= picture->GetWidth();
 	int srcH				= picture->GetHeight();
 	static int dstW			= 512;
 	static int dstH			= 512;
-	if (justOpened)			{ dstW = srcW; dstH = srcH; }
+	if (resizeImagePressed)	{ dstW = srcW; dstH = srcH; }
 
 	DoResizeWidthHeightInterface(srcW, srcH, dstW, dstH);
 	DoResizeFilterInterface(srcW, srcH, dstW, dstH);
@@ -218,12 +225,18 @@ void Viewer::DoResizeImageModal(bool justOpened)
 }
 
 
-void Viewer::DoResizeCanvasModal(bool justOpened)
+void Viewer::DoResizeCanvasModal(bool resizeCanvasPressed)
 {
+	if (resizeCanvasPressed)
+		ImGui::OpenPopup("Resize Canvas");
+	bool isOpenResizeCanvas = true;
+	if (!ImGui::BeginPopupModal("Resize Canvas", &isOpenResizeCanvas, ImGuiWindowFlags_AlwaysAutoResize))
+		return;
+
 	static bool justOpenedAnchor = false;
 	static bool justOpenedBorder = false;
 	static bool justOpenedAspect = false;
-	if (justOpened)
+	if (resizeCanvasPressed)
 	{
 		justOpenedAnchor = true;
 		justOpenedBorder = true;

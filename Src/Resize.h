@@ -19,6 +19,6 @@
 
 namespace Viewer
 {
-	void DoResizeImageModal(bool justOpened);
-	void DoResizeCanvasModal(bool justOpened);
+	void DoResizeImageModal(bool resizeImagePressed);
+	void DoResizeCanvasModal(bool resizeCanvasPressed);
 }

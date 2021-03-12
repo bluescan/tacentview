@@ -1461,29 +1461,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::PopStyleVar();
 			ImGui::EndMenu();
 		}
+
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
-
-		// The unused isOpen bools are just so we get close buttons in ImGui.
-		if (resizeImagePressed)
-			ImGui::OpenPopup("Resize Image");
-		bool isOpenResizeImage = true;
-		if (ImGui::BeginPopupModal("Resize Image", &isOpenResizeImage, ImGuiWindowFlags_AlwaysAutoResize))
-			DoResizeImageModal(resizeImagePressed);
-
-		if (resizeCanvasPressed)
-			ImGui::OpenPopup("Resize Canvas");
-		bool isOpenResizeCanvas = true;
-		if (ImGui::BeginPopupModal("Resize Canvas", &isOpenResizeCanvas, ImGuiWindowFlags_AlwaysAutoResize))
-			DoResizeCanvasModal(resizeCanvasPressed);
-
-		if (rotateImagePressed)
-			ImGui::OpenPopup("Rotate Image");
-		bool isOpenRotateImage = true;
-		if (ImGui::BeginPopupModal("Rotate Image", &isOpenRotateImage, ImGuiWindowFlags_AlwaysAutoResize))
-			DoRotateImageModal(rotateImagePressed);
-		else
-			RotateAnglePreview = 0.0f;
-
+		DoResizeImageModal(resizeImagePressed);
+		DoResizeCanvasModal(resizeCanvasPressed);
+		DoRotateImageModal(rotateImagePressed);
 		ImGui::PopStyleVar();
 
 		//
@@ -1816,8 +1798,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	{
 		renameJustOpened = true;
 		Request_RenameModal = false;
-		ImGui::OpenPopup("Rename File");
 	}
+
+	if (renameJustOpened)
+		ImGui::OpenPopup("Rename File");	
 	// The unused isOpenRen bool is just so we get a close button in ImGui.
 	bool isOpenRen = true;
 	if (ImGui::BeginPopupModal("Rename File", &isOpenRen, ImGuiWindowFlags_AlwaysAutoResize))

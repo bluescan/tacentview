@@ -23,9 +23,19 @@ using namespace tImage;
 namespace Viewer { extern void DoFillColourInterface(const char* = nullptr); }
 
 
-void Viewer::DoRotateImageModal(bool justOpened)
+void Viewer::DoRotateImageModal(bool rotateImagePressed)
 {
-	if (justOpened)
+	if (rotateImagePressed)
+		ImGui::OpenPopup("Rotate Image");
+
+	bool isOpenRotateImage = true;
+	if (!ImGui::BeginPopupModal("Rotate Image", &isOpenRotateImage, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		RotateAnglePreview = 0.0f;
+		return;
+	}
+
+	if (rotateImagePressed)
 		Viewer::ResetPan();
 
 	ImGui::InputFloat("Edit Angle", &RotateAnglePreview, 0.01f, 0.1f, "%.3f");
