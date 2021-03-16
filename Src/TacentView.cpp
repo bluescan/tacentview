@@ -1142,7 +1142,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	
 	// Show the big demo window. You can browse its code to learn more about Dear ImGui.
 	static bool showDemoWindow = false;
-	//static bool showDemoWindow = true;
+//	static bool showDemoWindow = true;
 	if (showDemoWindow)
 		ImGui::ShowDemoWindow(&showDemoWindow);
 
@@ -1376,15 +1376,14 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::PopStyleVar();
 			ImGui::EndMenu();
 		}
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 		DoOpenFileModal(openFilePressed);
 		DoOpenDirModal(openDirPressed);
 		DoSaveAsModal(saveAsPressed);
 		DoSaveAllModal(saveAllPressed);
 		DoContactSheetModal(saveContactSheetPressed);
 		DoMultiFrameModal(saveMultiFramePressed);
-
 		ImGui::PopStyleVar();
 
 		//

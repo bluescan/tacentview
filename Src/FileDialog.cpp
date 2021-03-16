@@ -26,11 +26,13 @@ using namespace tInterface;
 
 FileDialog::FileDialog(DialogMode mode) :
 	Mode(mode),
-	RootTreeNode()
+	RootTreeNode(nullptr)
 {
-	RootTreeNode.AppendChild("Favourites");
-	RootTreeNode.AppendChild("Local");
-	RootTreeNode.AppendChild("Network");
+	//RootTreeNode = new TreeNode("Everything");
+	RootTreeNode = new TreeNode();
+	PopulateFavourites();
+	PopulateLocal();
+	PopulateNetwork();
 }
 
 
@@ -38,6 +40,65 @@ void FileDialog::OpenPopup()
 {
 	ImGui::SetNextWindowSize(tVector2(600.0f, 400.0f), ImGuiCond_FirstUseEver);
 	ImGui::OpenPopup("Open File");
+}
+
+
+void FileDialog::PopulateFavourites()
+{
+	TreeNode* favourites = new TreeNode("Favourites", RootTreeNode);
+	RootTreeNode->AppendChild(favourites);
+}
+
+
+void FileDialog::PopulateLocal()
+{
+	TreeNode* local = new TreeNode("Local", RootTreeNode);
+	RootTreeNode->AppendChild(local);
+
+	TreeNode* driveC = new TreeNode("C:", local);
+	local->AppendChild(driveC);
+
+	TreeNode* driveD = new TreeNode("D:", local);
+	local->AppendChild(driveD);
+}
+
+
+void FileDialog::PopulateNetwork()
+{
+	TreeNode* network = new TreeNode("Network", RootTreeNode);
+	RootTreeNode->AppendChild(network);
+}
+
+
+void FileDialog::RecursiveTreeNode(TreeNode* node)
+{
+	// Process node.
+//	if (!node || node->Name.IsEmpty())
+//		return;
+
+//
+	if (node->Name.IsEmpty())
+	{
+		for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
+			RecursiveTreeNode(child.GetObject());
+		
+		return;
+	}
+
+	int flags = (node->Children.GetNumItems() == 0) ? ImGuiTreeNodeFlags_Leaf : 0;
+	if (ImGui::TreeNodeEx(node->Name, flags))
+	{
+		// Recurse children.
+		for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
+		{
+			RecursiveTreeNode(child.GetObject());
+		}
+		//ImGui::TreeNode("FavouriteA");
+		//ImGui::TreeNode("FavouriteB");
+		//ImGui::TreeNode("FavouriteC");
+		//if (node->Parent && node->Parent->Children.GetNumItems() > 0)
+		ImGui::TreePop();
+	}
 }
 
 
@@ -62,17 +123,32 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		// Left tree panel.
 		ImGui::TableSetColumnIndex(0);
 		ImGui::BeginChild("LeftTreePanel", tVector2(0.0f, -bottomBarHeight));
+
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(0,3));
+
+		RecursiveTreeNode(RootTreeNode);
+
+		ImGui::PopStyleVar();
+
+/*
 		if (ImGui::TreeNode("Favourites"))
 		{
-			ImGui::TreeNode("FavouriteA");
-			ImGui::TreeNode("FavouriteB");
-			ImGui::TreeNode("FavouriteC");
+			if (ImGui::TreeNodeEx("FavouriteA", ImGuiTreeNodeFlags_Leaf))
+				ImGui::TreePop();
+			if (ImGui::TreeNodeEx("FavouriteB", 0))
+				ImGui::TreePop();
+			if (ImGui::TreeNodeEx("FavouriteC", ImGuiTreeNodeFlags_Leaf))
+				ImGui::TreePop();
+
 			ImGui::TreePop();
 		}
+
 		if (ImGui::TreeNode("Local"))
 			ImGui::TreePop();
 		if (ImGui::TreeNode("Network"))
 			ImGui::TreePop();
+			*/
+
 		ImGui::EndChild();
 		
 		// Right content panel.

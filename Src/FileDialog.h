@@ -29,7 +29,8 @@ class TreeNode
 public:
 	TreeNode()															: Name(), Parent(nullptr) { }
 	TreeNode(const tString& name, TreeNode* parent = nullptr)			: Name(name), Parent(parent) { }
-	void AppendChild(const tString& name)								{ Children.Append(new TreeNode(name, this)); }
+//	void AppendChild(const tString& name)								{ Children.Append(new TreeNode(name, this)); }
+	void AppendChild(TreeNode* treeNode)								{ Children.Append(treeNode); }
 
 	tString Name;
 	TreeNode* Parent;
@@ -62,10 +63,16 @@ public:
 	tString GetResult();
 
 private:
+	void PopulateFavourites();
+	void PopulateLocal();
+	void PopulateNetwork();
+
+	void RecursiveTreeNode(TreeNode*);
+
 	DialogMode Mode;
 	tString Result;
 
-	TreeNode RootTreeNode;
+	TreeNode* RootTreeNode;
 };
 
 
