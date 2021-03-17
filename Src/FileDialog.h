@@ -22,17 +22,23 @@ namespace tInterface
 {
 
 
+class FileDialog;
+
+
 // Tree nodes are in the left panel. Used for directories and containers with special names
 // like favourites, local, and network. A TreeNode has children TreeNodes.
 class TreeNode
 {
 public:
 	TreeNode()															: Name(), Parent(nullptr) { }
-	TreeNode(const tString& name, TreeNode* parent = nullptr)			: Name(name), Parent(parent) { }
+	TreeNode(const tString& name, FileDialog* dialog, TreeNode* parent = nullptr)
+		: Name(name), Dialog(dialog), Parent(parent) { }
 //	void AppendChild(const tString& name)								{ Children.Append(new TreeNode(name, this)); }
 	void AppendChild(TreeNode* treeNode)								{ Children.Append(treeNode); }
 
 	tString Name;
+	FileDialog* Dialog;
+	bool ChildrenPopulated = false;
 	TreeNode* Parent;
 	tItList<TreeNode> Children;
 };
@@ -72,7 +78,24 @@ private:
 	DialogMode Mode;
 	tString Result;
 
+	tString GetSelectedDir()
+	{
+		if (!SelectedNode)
+			return tString();
+		tString dir;
+		TreeNode* curr = SelectedNode;
+		while (curr)
+		{
+			if (!curr->Name.IsEmpty() && (curr->Name != "Local"))
+				dir = curr->Name + "/" + dir;
+			//dir += curr->Name;
+			curr = curr->Parent;
+		}
+		//ir.ExtractLeft('/');
+		return dir;
+	}
 	TreeNode* RootTreeNode;
+	TreeNode* SelectedNode = nullptr;
 };
 
 

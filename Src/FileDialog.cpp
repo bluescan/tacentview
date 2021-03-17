@@ -45,27 +45,32 @@ void FileDialog::OpenPopup()
 
 void FileDialog::PopulateFavourites()
 {
-	TreeNode* favourites = new TreeNode("Favourites", RootTreeNode);
+	TreeNode* favourites = new TreeNode("Favourites", this, RootTreeNode);
 	RootTreeNode->AppendChild(favourites);
 }
 
 
 void FileDialog::PopulateLocal()
 {
-	TreeNode* local = new TreeNode("Local", RootTreeNode);
+	TreeNode* local = new TreeNode("Local", this, RootTreeNode);
 	RootTreeNode->AppendChild(local);
 
-	TreeNode* driveC = new TreeNode("C:", local);
-	local->AppendChild(driveC);
+	#if defined(PLATFORM_WINDOWS)
+	tList<tStringItem> drives;
+	tSystem::tGetDrives(drives);
 
-	TreeNode* driveD = new TreeNode("D:", local);
-	local->AppendChild(driveD);
+	for (tStringItem* drive = drives.First(); drive; drive = drive->Next())
+	{
+		TreeNode* driveNode = new TreeNode(*drive, this, local);
+		local->AppendChild(driveNode);	
+	}
+	#endif
 }
 
 
 void FileDialog::PopulateNetwork()
 {
-	TreeNode* network = new TreeNode("Network", RootTreeNode);
+	TreeNode* network = new TreeNode("Network", this, RootTreeNode);
 	RootTreeNode->AppendChild(network);
 }
 
@@ -86,7 +91,14 @@ void FileDialog::RecursiveTreeNode(TreeNode* node)
 	}
 
 	int flags = (node->Children.GetNumItems() == 0) ? ImGuiTreeNodeFlags_Leaf : 0;
-	if (ImGui::TreeNodeEx(node->Name, flags))
+	if (SelectedNode == node)
+		flags |= ImGuiTreeNodeFlags_Selected;
+	flags |= ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+
+	bool isOpen = ImGui::TreeNodeEx(node->Name, flags);
+	bool isClicked = ImGui::IsItemClicked();
+
+	if (isOpen)
 	{
 		// Recurse children.
 		for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
@@ -99,6 +111,33 @@ void FileDialog::RecursiveTreeNode(TreeNode* node)
 		//if (node->Parent && node->Parent->Children.GetNumItems() > 0)
 		ImGui::TreePop();
 	}
+
+	if (isClicked)
+	{
+		SelectedNode = node;
+		if (!node->ChildrenPopulated)
+		{
+			tString currDir = GetSelectedDir();
+			tPrintf("SelectedDir: %s\n", currDir.Chars());
+			tList<tStringItem> foundDirs;
+			tSystem::tFindDirs(foundDirs, currDir);
+			for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
+			{
+				//TreeNode* network = new TreeNode("Network", this, RootTreeNode);
+				//RootTreeNode->AppendChild(network);
+				tString relDir = tSystem::tGetRelativePath(currDir, *dir);
+				relDir.RemoveLeading("./");
+				relDir.RemoveTrailing("/");
+
+				tPrintf("ChildDir: %s\n", relDir.Chars());
+				TreeNode* child = new TreeNode(relDir, this, node);
+				node->AppendChild(child);
+
+			}
+			node->ChildrenPopulated = true;
+		}
+	}
+
 }
 
 
