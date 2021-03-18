@@ -77,11 +77,6 @@ void FileDialog::PopulateNetwork()
 
 void FileDialog::RecursiveTreeNode(TreeNode* node)
 {
-	// Process node.
-//	if (!node || node->Name.IsEmpty())
-//		return;
-
-//
 	if (node->Name.IsEmpty())
 	{
 		for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
@@ -102,13 +97,8 @@ void FileDialog::RecursiveTreeNode(TreeNode* node)
 	{
 		// Recurse children.
 		for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
-		{
 			RecursiveTreeNode(child.GetObject());
-		}
-		//ImGui::TreeNode("FavouriteA");
-		//ImGui::TreeNode("FavouriteB");
-		//ImGui::TreeNode("FavouriteC");
-		//if (node->Parent && node->Parent->Children.GetNumItems() > 0)
+
 		ImGui::TreePop();
 	}
 
@@ -123,11 +113,9 @@ void FileDialog::RecursiveTreeNode(TreeNode* node)
 			tSystem::tFindDirs(foundDirs, currDir);
 			for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
 			{
-				//TreeNode* network = new TreeNode("Network", this, RootTreeNode);
-				//RootTreeNode->AppendChild(network);
 				tString relDir = tSystem::tGetRelativePath(currDir, *dir);
-				relDir.RemoveLeading("./");
-				relDir.RemoveTrailing("/");
+				relDir.ExtractLeft("./");
+				relDir.ExtractRight("/");
 
 				tPrintf("ChildDir: %s\n", relDir.Chars());
 				TreeNode* child = new TreeNode(relDir, this, node);
