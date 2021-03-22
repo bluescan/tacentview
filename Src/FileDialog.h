@@ -73,7 +73,9 @@ private:
 	void PopulateLocal();
 	void PopulateNetwork();
 
-	void RecursiveTreeNode(TreeNode*);
+	void FavouritesTreeNodeFlat(TreeNode*);
+	void LocalTreeNodeRecursive(TreeNode*);
+	void NetworkTreeNodeRecursive(TreeNode*);
 
 	DialogMode Mode;
 	tString Result;
@@ -94,7 +96,9 @@ private:
 		//ir.ExtractLeft('/');
 		return dir;
 	}
-	TreeNode* RootTreeNode;
+	TreeNode* FavouritesTreeNode;
+	TreeNode* LocalTreeNode;
+	TreeNode* NetworkTreeNode;
 	TreeNode* SelectedNode = nullptr;
 };
 

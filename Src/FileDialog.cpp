@@ -25,11 +25,11 @@ using namespace tInterface;
 
 
 FileDialog::FileDialog(DialogMode mode) :
-	Mode(mode),
-	RootTreeNode(nullptr)
+	Mode(mode)
 {
-	//RootTreeNode = new TreeNode("Everything");
-	RootTreeNode = new TreeNode();
+	FavouritesTreeNode = new TreeNode("Favourites", this);
+	LocalTreeNode = new TreeNode("Local", this);
+	NetworkTreeNode = new TreeNode("Network", this);
 	PopulateFavourites();
 	PopulateLocal();
 	PopulateNetwork();
@@ -45,15 +45,15 @@ void FileDialog::OpenPopup()
 
 void FileDialog::PopulateFavourites()
 {
-	TreeNode* favourites = new TreeNode("Favourites", this, RootTreeNode);
-	RootTreeNode->AppendChild(favourites);
+	TreeNode* favouriteA = new TreeNode("FavouriteA", this, FavouritesTreeNode);
+	FavouritesTreeNode->AppendChild(favouriteA);
 }
 
 
 void FileDialog::PopulateLocal()
 {
-	TreeNode* local = new TreeNode("Local", this, RootTreeNode);
-	RootTreeNode->AppendChild(local);
+//	TreeNode* local = new TreeNode("Local", this, LocalTreeNode);
+//	LocalTreeNode->AppendChild(local);
 
 	#if defined(PLATFORM_WINDOWS)
 	tList<tStringItem> drives;
@@ -61,8 +61,8 @@ void FileDialog::PopulateLocal()
 
 	for (tStringItem* drive = drives.First(); drive; drive = drive->Next())
 	{
-		TreeNode* driveNode = new TreeNode(*drive, this, local);
-		local->AppendChild(driveNode);	
+		TreeNode* driveNode = new TreeNode(*drive, this, LocalTreeNode);
+		LocalTreeNode->AppendChild(driveNode);	
 	}
 	#endif
 }
@@ -70,20 +70,41 @@ void FileDialog::PopulateLocal()
 
 void FileDialog::PopulateNetwork()
 {
-	TreeNode* network = new TreeNode("Network", this, RootTreeNode);
-	RootTreeNode->AppendChild(network);
+	TreeNode* networkA = new TreeNode("NetworkA", this, NetworkTreeNode);
+	NetworkTreeNode->AppendChild(networkA);
 }
 
 
-void FileDialog::RecursiveTreeNode(TreeNode* node)
+void FileDialog::FavouritesTreeNodeFlat(TreeNode* node)
 {
-	if (node->Name.IsEmpty())
+	int flags = (node->Children.GetNumItems() == 0) ? ImGuiTreeNodeFlags_Leaf : 0;
+	if (SelectedNode == node)
+		flags |= ImGuiTreeNodeFlags_Selected;
+	flags |= ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+
+	bool isOpen = ImGui::TreeNodeEx(node->Name, flags);
+	bool isClicked = ImGui::IsItemClicked();
+
+	if (isOpen)
 	{
+		// Recurse children.
 		for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
-			RecursiveTreeNode(child.GetObject());
-		
-		return;
+			FavouritesTreeNodeFlat(child.GetObject());
+
+		ImGui::TreePop();
 	}
+}
+
+
+void FileDialog::LocalTreeNodeRecursive(TreeNode* node)
+{
+//	if (node->Name.IsEmpty())
+//	{
+//		for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
+//			RecursiveTreeNode(child.GetObject());
+//		
+//		return;
+//	}
 
 	int flags = (node->Children.GetNumItems() == 0) ? ImGuiTreeNodeFlags_Leaf : 0;
 	if (SelectedNode == node)
@@ -97,7 +118,7 @@ void FileDialog::RecursiveTreeNode(TreeNode* node)
 	{
 		// Recurse children.
 		for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
-			RecursiveTreeNode(child.GetObject());
+			LocalTreeNodeRecursive(child.GetObject());
 
 		ImGui::TreePop();
 	}
@@ -125,8 +146,29 @@ void FileDialog::RecursiveTreeNode(TreeNode* node)
 			node->ChildrenPopulated = true;
 		}
 	}
-
 }
+
+
+void FileDialog::NetworkTreeNodeRecursive(TreeNode* node)
+{
+	int flags = (node->Children.GetNumItems() == 0) ? ImGuiTreeNodeFlags_Leaf : 0;
+	if (SelectedNode == node)
+		flags |= ImGuiTreeNodeFlags_Selected;
+	flags |= ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+
+	bool isOpen = ImGui::TreeNodeEx(node->Name, flags);
+	bool isClicked = ImGui::IsItemClicked();
+
+	if (isOpen)
+	{
+		// Recurse children.
+		for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
+			NetworkTreeNodeRecursive(child.GetObject());
+
+		ImGui::TreePop();
+	}
+}
+
 
 
 FileDialog::DialogResult FileDialog::DoPopup()
@@ -153,7 +195,9 @@ FileDialog::DialogResult FileDialog::DoPopup()
 
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(0,3));
 
-		RecursiveTreeNode(RootTreeNode);
+		FavouritesTreeNodeFlat(FavouritesTreeNode);
+		LocalTreeNodeRecursive(LocalTreeNode);
+		NetworkTreeNodeRecursive(NetworkTreeNode);
 
 		ImGui::PopStyleVar();
 
