@@ -39,7 +39,20 @@ FileDialog::FileDialog(DialogMode mode) :
 void FileDialog::OpenPopup()
 {
 	ImGui::SetNextWindowSize(tVector2(600.0f, 400.0f), ImGuiCond_FirstUseEver);
-	ImGui::OpenPopup("Open File");
+	switch (Mode)
+	{
+		case DialogMode::OpenDir:
+			ImGui::OpenPopup("Open Dir");
+			break;
+
+		case DialogMode::OpenFile:
+			ImGui::OpenPopup("Open File");
+			break;
+
+		case DialogMode::SaveFile:
+			ImGui::OpenPopup("Save File");
+			break;
+	}
 }
 
 
@@ -52,9 +65,6 @@ void FileDialog::PopulateFavourites()
 
 void FileDialog::PopulateLocal()
 {
-//	TreeNode* local = new TreeNode("Local", this, LocalTreeNode);
-//	LocalTreeNode->AppendChild(local);
-
 	#if defined(PLATFORM_WINDOWS)
 	tList<tStringItem> drives;
 	tSystem::tGetDrives(drives);
@@ -98,14 +108,6 @@ void FileDialog::FavouritesTreeNodeFlat(TreeNode* node)
 
 void FileDialog::LocalTreeNodeRecursive(TreeNode* node)
 {
-//	if (node->Name.IsEmpty())
-//	{
-//		for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
-//			RecursiveTreeNode(child.GetObject());
-//		
-//		return;
-//	}
-
 	int flags = (node->Children.GetNumItems() == 0) ? ImGuiTreeNodeFlags_Leaf : 0;
 	if (SelectedNode == node)
 		flags |= ImGuiTreeNodeFlags_Selected;
@@ -129,7 +131,7 @@ void FileDialog::LocalTreeNodeRecursive(TreeNode* node)
 		if (!node->ChildrenPopulated)
 		{
 			tString currDir = GetSelectedDir();
-			tPrintf("SelectedDir: %s\n", currDir.Chars());
+			//tPrintf("SelectedDir: %s\n", currDir.Chars());
 			tList<tStringItem> foundDirs;
 			tSystem::tFindDirs(foundDirs, currDir);
 			for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
@@ -173,9 +175,16 @@ void FileDialog::NetworkTreeNodeRecursive(TreeNode* node)
 
 FileDialog::DialogResult FileDialog::DoPopup()
 {
-	// The unused isOpenFile bool is just so we get a close button in ImGui. 
-	bool isOpenFile = true;
-	if (!ImGui::BeginPopupModal("Open File", &isOpenFile, ImGuiWindowFlags_NoScrollbar /*ImGuiWindowFlags_AlwaysAutoResize*/))
+	// The unused isOpen bool is just so we get a close button in ImGui. 
+	bool isOpen = true;
+	char* label = nullptr;
+	switch (Mode)
+	{
+		case DialogMode::OpenDir:		label = "Open Dir";		break;
+		case DialogMode::OpenFile:		label = "Open File";	break;
+		case DialogMode::SaveFile:		label = "Open File";	break;
+	}
+	if (!ImGui::BeginPopupModal(label, &isOpen, ImGuiWindowFlags_NoScrollbar /*ImGuiWindowFlags_AlwaysAutoResize*/))
 		return DialogResult::Closed;
 
 	DialogResult result = DialogResult::Open;
@@ -201,35 +210,71 @@ FileDialog::DialogResult FileDialog::DoPopup()
 
 		ImGui::PopStyleVar();
 
-/*
-		if (ImGui::TreeNode("Favourites"))
-		{
-			if (ImGui::TreeNodeEx("FavouriteA", ImGuiTreeNodeFlags_Leaf))
-				ImGui::TreePop();
-			if (ImGui::TreeNodeEx("FavouriteB", 0))
-				ImGui::TreePop();
-			if (ImGui::TreeNodeEx("FavouriteC", ImGuiTreeNodeFlags_Leaf))
-				ImGui::TreePop();
-
-			ImGui::TreePop();
-		}
-
-		if (ImGui::TreeNode("Local"))
-			ImGui::TreePop();
-		if (ImGui::TreeNode("Network"))
-			ImGui::TreePop();
-			*/
-
 		ImGui::EndChild();
 		
 		// Right content panel.
 		ImGui::TableSetColumnIndex(1);
 		ImGui::BeginChild("RightContentPanel", tVector2(0.0f, -bottomBarHeight));
-		ImGui::Text("RightPanelFileA");
-		ImGui::Separator();
-		ImGui::Text("RightPanelFileB");
-		ImGui::EndChild();
 
+		if (SelectedNode)
+		{
+			if (!SelectedNode->ContentsPopulated)
+			{
+				tString selDir = GetSelectedDir();
+				tPrintf("Selected Dir: %s\n", selDir.Chars());
+
+//				if (Mode == DialogMode::OpenDir)
+				{
+					tList<tStringItem> foundDirs;
+					tSystem::tFindDirs(foundDirs, selDir);
+					for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
+					{
+						(*dir)[dir->Length()-1] = '\0';				// Remove slash.
+						tStringItem* dirName = new tStringItem(tSystem::tGetFileName(*dir) + "/");
+						SelectedNode->Contents.Append(dirName);
+					}
+				}
+//				else if (Mode == DialogMode::OpenFile)
+				{
+					tList<tStringItem> foundFiles;
+					tSystem::tFindFiles(foundFiles, selDir);
+					for (tStringItem* file = foundFiles.First(); file; file = file->Next())
+					{
+						//(*dir)[dir->Length()-1] = '\0';				// Remove slash.
+						tStringItem* fileName = new tStringItem(tSystem::tGetFileName(*file));
+						SelectedNode->Contents.Append(fileName);
+					}
+				}
+
+				SelectedNode->ContentsPopulated = true;
+			}
+
+            if (ImGui::BeginTable("split2", 3, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings))
+			{
+				int itemNum = 0;
+				for (tStringItem* item = SelectedNode->Contents.First(); item; item = item->Next(), itemNum++)
+				{
+					ImGui::TableNextRow();
+					bool selected = (itemNum == 4) ? true : false;
+					ImGui::TableNextColumn();
+					ImGui::Selectable(item->Chars(), &selected);// ImGui::SameLine(300); ImGui::Text(" 2,345 bytes");
+
+					ImGui::TableNextColumn();
+                    ImGui::Selectable("2022-11-23 2:45am", &selected);
+                    //ImGui::Text("2022-11-23 2:45am");
+                    ImGui::TableNextColumn();
+					ImGui::Selectable("123456 Bytes", &selected);
+    //                ImGui::Text("123456 Bytes");
+	//				if (ImGui::Selectable(item->Chars(), false))
+	//				{
+	//					// Select it.
+	//				}
+				}
+				ImGui::EndTable();
+			}
+		}
+
+		ImGui::EndChild();
 		ImGui::EndTable();
 	}
 
@@ -244,7 +289,6 @@ FileDialog::DialogResult FileDialog::DoPopup()
 	ImGui::SameLine();
 	if (ImGui::Button("Cancel"))
 		result = DialogResult::Cancel;
-	ImGui::Text("OPEN FILE");
 
 	if (result != DialogResult::Open)
 		ImGui::CloseCurrentPopup();

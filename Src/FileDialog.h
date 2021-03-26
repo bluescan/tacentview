@@ -41,6 +41,10 @@ public:
 	bool ChildrenPopulated = false;
 	TreeNode* Parent;
 	tItList<TreeNode> Children;
+
+	// Contents
+	bool ContentsPopulated = false;
+	tList<tStringItem> Contents;
 };
 
 

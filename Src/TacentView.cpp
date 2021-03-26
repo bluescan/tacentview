@@ -1338,10 +1338,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		//
 		// File Menu.
 		//
-//		bool openFilePressed			= Request_OpenFileModal;		Request_OpenFileModal		= false;
-		bool openFilePressed			= false;						Request_OpenFileModal		= false;
-//		bool openDirPressed				= Request_OpenDirModal;			Request_OpenDirModal		= false;
-		bool openDirPressed				= false;						Request_OpenDirModal		= false;
+		bool openFilePressed			= Request_OpenFileModal;		Request_OpenFileModal		= false;
+//		bool openFilePressed			= false;						Request_OpenFileModal		= false;
+		bool openDirPressed				= Request_OpenDirModal;			Request_OpenDirModal		= false;
+//		bool openDirPressed				= false;						Request_OpenDirModal		= false;
 		bool saveAsPressed				= Request_SaveAsModal;			Request_SaveAsModal			= false;
 		bool saveAllPressed				= Request_SaveAllModal;			Request_SaveAllModal		= false;
 		bool saveContactSheetPressed	= Request_ContactSheetModal;	Request_ContactSheetModal	= false;
