@@ -19,8 +19,11 @@
 
 namespace Viewer
 {
+	// #define ENABLE_FILE_DIALOG_SUPPORT
+	#ifdef ENABLE_FILE_DIALOG_SUPPORT
 	void DoOpenFileModal(bool openFilePressed);
 	void DoOpenDirModal(bool openDirPressed);
+	#endif
 
 	void DoSaveAsModal(bool saveAsPressed);
 	void DoSaveAllModal(bool saveAllPressed);

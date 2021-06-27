@@ -244,6 +244,12 @@ void Viewer::ShowCheatSheetPopup(bool* popen)
 		ImGui::Text("Ctrl-M");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Save Multi-Frame Image");
 		ImGui::Text("N");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Nav Bar");
 		ImGui::Text("S");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Slideshow Counddown");
+
+		#ifdef ENABLE_FILE_DIALOG_SUPPORT
+		ImGui::Text("Ctrl-O");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Open File...");
+		ImGui::Text("Alt-O");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Open Dir...");
+		#endif
+	
 		ImGui::Text("Ctrl-S");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Save As...");
 		ImGui::Text("Alt-S");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Save All...");
 		ImGui::Text("B");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Basic Mode");

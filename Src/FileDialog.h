@@ -30,11 +30,16 @@ class FileDialog;
 class TreeNode
 {
 public:
-	TreeNode()															: Name(), Parent(nullptr) { }
-	TreeNode(const tString& name, FileDialog* dialog, TreeNode* parent = nullptr)
-		: Name(name), Dialog(dialog), Parent(parent) { }
-//	void AppendChild(const tString& name)								{ Children.Append(new TreeNode(name, this)); }
-	void AppendChild(TreeNode* treeNode)								{ Children.Append(treeNode); }
+	TreeNode() :
+		Name(), Parent(nullptr) { }
+	TreeNode(const tString& name, FileDialog* dialog, TreeNode* parent = nullptr) :
+		Name(name), Dialog(dialog), Parent(parent) { }
+
+	// void AppendChild(const tString& name)								{ Children.Append(new TreeNode(name, this)); }
+	void AppendChild(TreeNode* treeNode)
+	{
+		Children.Append(treeNode);
+	}
 
 	tString Name;
 	FileDialog* Dialog;

@@ -223,7 +223,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				tString selDir = GetSelectedDir();
 				tPrintf("Selected Dir: %s\n", selDir.Chars());
 
-//				if (Mode == DialogMode::OpenDir)
+				// if (Mode == DialogMode::OpenDir)
 				{
 					tList<tStringItem> foundDirs;
 					tSystem::tFindDirs(foundDirs, selDir);
@@ -234,7 +234,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 						SelectedNode->Contents.Append(dirName);
 					}
 				}
-//				else if (Mode == DialogMode::OpenFile)
+				// else if (Mode == DialogMode::OpenFile)
 				{
 					tList<tStringItem> foundFiles;
 					tSystem::tFindFiles(foundFiles, selDir);
@@ -261,14 +261,14 @@ FileDialog::DialogResult FileDialog::DoPopup()
 
 					ImGui::TableNextColumn();
                     ImGui::Selectable("2022-11-23 2:45am", &selected);
-                    //ImGui::Text("2022-11-23 2:45am");
+                    // ImGui::Text("2022-11-23 2:45am");
                     ImGui::TableNextColumn();
 					ImGui::Selectable("123456 Bytes", &selected);
-    //                ImGui::Text("123456 Bytes");
-	//				if (ImGui::Selectable(item->Chars(), false))
-	//				{
-	//					// Select it.
-	//				}
+    				//	ImGui::Text("123456 Bytes");
+					//	if (ImGui::Selectable(item->Chars(), false))
+					//	{
+					//		Select it.
+					//	}
 				}
 				ImGui::EndTable();
 			}

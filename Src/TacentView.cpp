@@ -113,8 +113,12 @@ namespace Viewer
 	bool WindowIconified						= false;
 	bool ShowCheatSheet							= false;
 	bool ShowAbout								= false;
+	
+	#ifdef ENABLE_FILE_DIALOG_SUPPORT
 	bool Request_OpenFileModal					= false;
 	bool Request_OpenDirModal					= false;
+	#endif
+
 	bool Request_SaveAsModal					= false;
 	bool Request_SaveAllModal					= false;
 	bool Request_ResizeImageModal				= false;
@@ -1338,10 +1342,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		//
 		// File Menu.
 		//
+		#ifdef ENABLE_FILE_DIALOG_SUPPORT
 		bool openFilePressed			= Request_OpenFileModal;		Request_OpenFileModal		= false;
-//		bool openFilePressed			= false;						Request_OpenFileModal		= false;
 		bool openDirPressed				= Request_OpenDirModal;			Request_OpenDirModal		= false;
-//		bool openDirPressed				= false;						Request_OpenDirModal		= false;
+		#endif
+
 		bool saveAsPressed				= Request_SaveAsModal;			Request_SaveAsModal			= false;
 		bool saveAllPressed				= Request_SaveAllModal;			Request_SaveAllModal		= false;
 		bool saveContactSheetPressed	= Request_ContactSheetModal;	Request_ContactSheetModal	= false;
@@ -1351,11 +1356,13 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			// Show file menu items...
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 
-//			if (ImGui::MenuItem("Open File...", "Ctrl-O"))
-//				openFilePressed = true;
+			#ifdef ENABLE_FILE_DIALOG_SUPPORT
+			if (ImGui::MenuItem("Open File...", "Ctrl-O"))
+				openFilePressed = true;
 
-//			if (ImGui::MenuItem("Open Dir...", "Alt-O"))
-//				openDirPressed = true;
+			if (ImGui::MenuItem("Open Dir...", "Alt-O"))
+				openDirPressed = true;
+			#endif
 
 			if (ImGui::MenuItem("Save As...", "Ctrl-S") && CurrImage)
 				saveAsPressed = true;
@@ -1378,8 +1385,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
+
+		#ifdef ENABLE_FILE_DIALOG_SUPPORT
 		DoOpenFileModal(openFilePressed);
 		DoOpenDirModal(openDirPressed);
+		#endif
+		
 		DoSaveAsModal(saveAsPressed);
 		DoSaveAllModal(saveAllPressed);
 		DoContactSheetModal(saveContactSheetPressed);
@@ -2247,12 +2258,14 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				Request_RotateImageModal = true;
 			break;
 
+		#ifdef ENABLE_FILE_DIALOG_SUPPORT
 		case GLFW_KEY_O:
 			if (modifiers == GLFW_MOD_ALT)
 				Request_OpenDirModal = true;
 			else if (modifiers == GLFW_MOD_CONTROL)
 				Request_OpenFileModal = true;
 			break;
+		#endif
 
 		case GLFW_KEY_S:			// SaveAs and SaveAll.
 			if (!modifiers)
