@@ -177,7 +177,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 {
 	// The unused isOpen bool is just so we get a close button in ImGui. 
 	bool isOpen = true;
-	char* label = nullptr;
+	const char* label = nullptr;
 	switch (Mode)
 	{
 		case DialogMode::OpenDir:		label = "Open Dir";		break;
