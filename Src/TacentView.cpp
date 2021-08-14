@@ -180,6 +180,7 @@ namespace Viewer
 	int GetNavBarHeight();
 	void PrintRedirectCallback(const char* text, int numChars);
 	void GlfwErrorCallback(int error, const char* description)															{ tPrintf("Glfw Error %d: %s\n", error, description); }
+	void SetWindowIcon(const tString& icoFile);
 
 	// When compare functions are used to sort, they result in ascending order if they return a < b.
 	bool Compare_AlphabeticalAscending(const tStringItem& a, const tStringItem& b)										{ return tStricmp(a.Chars(), b.Chars()) < 0; }
@@ -611,6 +612,35 @@ void Viewer::SetWindowTitle()
 	}
 
 	glfwSetWindowTitle(Window, title.Chars());
+}
+
+
+void Viewer::SetWindowIcon(const tString& icoFile)
+{
+	// Some window manager in Linux show an app icon (like KDE) while some don't by default (Gnome).
+	// For windows, the icon is set as an exe resource, so no need to call this for that platform.
+	#ifdef PLATFORM_LINUX
+	tImage::tImageICO icon(icoFile);
+	if (!icon.IsValid())
+		return;
+
+	const int maxImages = 16;
+	GLFWimage* imageTable[maxImages];
+	GLFWimage images[maxImages];
+	int numImages = tMath::tMin(icon.GetNumFrames(), maxImages);
+	for (int i = 0; i < numImages; i++)
+	{
+		imageTable[i] = &images[i];
+		tImage::tFrame* frame = icon.GetFrame(i);
+		frame->ReverseRows();
+		images[i].width = frame->Width;
+		images[i].height = frame->Height;
+		images[i].pixels = (uint8*)frame->Pixels;
+	}
+
+	// This copies the pixel data out so we can let the tImageICO clean itself up afterwards afterwards.
+	glfwSetWindowIcon(Viewer::Window, numImages, *imageTable);
+	#endif
 }
 
 
@@ -2614,8 +2644,9 @@ int main(int argc, char** argv)
 	Viewer::Window = glfwCreateWindow(Viewer::Config.WindowW, Viewer::Config.WindowH, "tacentview", nullptr, nullptr);
 	if (!Viewer::Window)
 		return 1;
-		
-	Viewer::SetWindowTitle();	
+
+	Viewer::SetWindowIcon(dataDir + "TacentView.ico");
+	Viewer::SetWindowTitle();
 	glfwSetWindowPos(Viewer::Window, Viewer::Config.WindowX, Viewer::Config.WindowY);
 
 	#ifdef PLATFORM_WINDOWS
