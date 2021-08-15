@@ -465,6 +465,39 @@ void Viewer::DoRenameModal(bool justOpened)
 }
 
 
+void Viewer::DoSnapMessageModal(bool justPressed)
+{
+	if (justPressed)
+		ImGui::OpenPopup("Message");
+
+	// The unused isMessage bool is just so we get a close button in ImGui. Returns false if popup not open.
+	bool isMessage = true;
+	if
+	(
+		!ImGui::BeginPopupModal
+		(
+			"Message", &isMessage,
+			ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
+		)
+	)
+	{
+		return;
+	}
+	
+	ImGui::Text
+	(
+		"The Snap version of Tacent View does not support opening Nautilus or Dolphin.\n\n"
+		"Please use the deb install or compile if you need the feature on Linux."
+	);
+	ImGui::NewLine();
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	if (ImGui::Button("OK", tVector2(100, 0)))
+		ImGui::CloseCurrentPopup();
+
+	ImGui::EndPopup();
+}
+
+
 // Parts of this class are a modification of the one that ships with Dear ImGui. The DearImGui
 // licence (MIT) may be found in the txt file Licence_DearImGui_MIT.txt in the Data folder.
 void Viewer::NavLogBar::ClearLog()

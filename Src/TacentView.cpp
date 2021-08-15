@@ -128,6 +128,7 @@ namespace Viewer
 	bool Request_DeleteFileModal				= false;
 	bool Request_DeleteFileNoRecycleModal		= false;
 	bool Request_RenameModal					= false;
+	bool Request_SnapMessage					= false;
 	bool PrefsWindow							= false;
 	bool PropEditorWindow						= false;
 	bool CropMode								= false;
@@ -1380,6 +1381,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		bool saveAllPressed				= Request_SaveAllModal;			Request_SaveAllModal		= false;
 		bool saveContactSheetPressed	= Request_ContactSheetModal;	Request_ContactSheetModal	= false;
 		bool saveMultiFramePressed		= Request_MultiFrameModal;		Request_MultiFrameModal		= false;
+		bool snapMessagePressed			= Request_SnapMessage;			Request_SnapMessage			= false;
 		if (ImGui::BeginMenu("File"))
 		{
 			// Show file menu items...
@@ -1424,6 +1426,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		DoSaveAllModal(saveAllPressed);
 		DoContactSheetModal(saveContactSheetPressed);
 		DoMultiFrameModal(saveMultiFramePressed);
+		DoSnapMessageModal(snapMessagePressed);
 		ImGui::PopStyleVar();
 
 		//
@@ -2131,9 +2134,17 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case GLFW_KEY_TAB:
+		{
+			#ifdef PACKAGE_SNAP
+			static int messageCount = 2;
+			if (messageCount-- > 0)
+				Request_SnapMessage = true;
+			#else
 			if (CurrImage)
 				tSystem::tOpenSystemFileExplorer(CurrImage->Filename);
+			#endif
 			break;
+		}
 
 		case GLFW_KEY_COMMA:
 			if (CurrImage && !CurrImage->IsAltPictureEnabled())
