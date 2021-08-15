@@ -96,9 +96,6 @@ add_executable(
 	Contrib/imgui/backends/imgui_impl_glfw.cpp
 	Contrib/imgui/backends/imgui_impl_opengl2.cpp
 	Contrib/glad/src/glad.c
-
-	Contrib/ImFileDialog/ImFileDialog.cpp
-	Contrib/ImFileDialog/ImFileDialog.h
 )
 
 # Include directories needed to build.
@@ -108,7 +105,6 @@ target_include_directories(
 		${CMAKE_CURRENT_SOURCE_DIR}/Src
 		${CMAKE_CURRENT_SOURCE_DIR}/Contrib/imgui
 		${CMAKE_CURRENT_SOURCE_DIR}/Contrib/imgui/backends
-		${CMAKE_CURRENT_SOURCE_DIR}/Contrib/ImFileDialog
 		${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glad/include
 		${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glfw/include
 )

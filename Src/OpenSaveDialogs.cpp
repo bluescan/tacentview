@@ -16,7 +16,6 @@
 #include "OpenSaveDialogs.h"
 #include "Image.h"
 #include "TacentView.h"
-#include "ImFileDialog.h"
 #include "FileDialog.h"
 using namespace tStd;
 using namespace tSystem;
