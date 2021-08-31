@@ -279,6 +279,24 @@ void Viewer::ShowAboutPopup(bool* popen)
 		int glfwMajor = 0; int glfwMinor = 0; int glfwRev = 0;
 		glfwGetVersion(&glfwMajor, &glfwMinor, &glfwRev);
 		ImGui::Text("Tacent View V %d.%d.%d by Tristan Grimmer", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
+
+		tString platform	= tGetPlatformName( tGetPlatform() );
+		tString architec	= tGetArchitectureNameLong( tGetArchitecture() );
+		tString config 		= tGetConfigurationName( tGetConfiguration() );
+		tString package		= "Native";
+		#if defined PACKAGE_SNAP
+			package = "Snap";
+		#elif defined PACKAGE_DEB
+			package = "Deb";
+		#elif defined PACKAGE_ZIP
+			package = "Zip";
+		#endif
+
+		ImGui::Text("Platform: %s", platform.Chars());
+		ImGui::Text("Architecture: %s", architec.Chars());
+		ImGui::Text("Configuration: %s", config.Chars());
+		ImGui::Text("Package: %s", package.Chars());
+
 		ImGui::Separator();
 		ImGui::Text("Tacent Library V %d.%d.%d", tVersion::Major, tVersion::Minor, tVersion::Revision);
 		ImGui::Text("Dear ImGui V %s", IMGUI_VERSION);
