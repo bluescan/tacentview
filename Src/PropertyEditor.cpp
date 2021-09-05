@@ -57,30 +57,25 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 			ImGui::InputInt("Exposure", &CurrImage->LoadParams.HDR_Exposure); ImGui::SameLine();
 			ShowHelpMark("Exposure adjustment [-10, 10] if you reload this Radiance hdr file.");
 			tMath::tiClamp(CurrImage->LoadParams.HDR_Exposure, -10, 10);
-
 			ImGui::PopItemWidth();
-			if (ImGui::Button("Reset"))
-				CurrImage->ResetLoadParams();
-			ImGui::SameLine();
 
-			if (ImGui::Button("Reload"))
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+			ImGui::Separator();
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+
+			if (ImGui::Button("Reset", tVector2(100, 0)))
 			{
+				CurrImage->ResetLoadParams();
 				CurrImage->Unload();
 				CurrImage->Load();
 			}
 			ImGui::SameLine();
 
-			if (ImGui::Button("Reload All"))
+			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+			if (ImGui::Button("Reload", tVector2(100, 0)))
 			{
-				tImage::tPicture::LoadParams params = CurrImage->LoadParams;
-				for (Image* img = Images.First(); img; img = img->Next())
-				{
-					if (img->Filetype != tSystem::tFileType::HDR)
-						continue;
-					img->Unload();
-					img->LoadParams = params;
-					img->Load();
-				}
+				CurrImage->Unload();
+				CurrImage->Load();
 			}
 
 			fileTypeSectionDisplayed = true;
@@ -111,30 +106,25 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 			ImGui::InputFloat("Knee High", &CurrImage->LoadParams.EXR_KneeHigh, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
 			ShowHelpMark("Upper bound knee taper [3.5, 7.5] if you reload this exr file.");
 			tMath::tiClamp(CurrImage->LoadParams.EXR_KneeHigh, 3.5f, 7.5f);
-
 			ImGui::PopItemWidth();
-			if (ImGui::Button("Reset"))
-				CurrImage->ResetLoadParams();
-			ImGui::SameLine();
 
-			if (ImGui::Button("Reload"))
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+			ImGui::Separator();
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+
+			if (ImGui::Button("Reset", tVector2(100, 0)))
 			{
+				CurrImage->ResetLoadParams();
 				CurrImage->Unload();
 				CurrImage->Load();
 			}
 			ImGui::SameLine();
 
-			if (ImGui::Button("Reload All"))
+			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+			if (ImGui::Button("Reload", tVector2(100, 0)))
 			{
-				tImage::tPicture::LoadParams params = CurrImage->LoadParams;
-				for (Image* img = Images.First(); img; img = img->Next())
-				{
-					if (img->Filetype != tSystem::tFileType::EXR)
-						continue;
-					img->Unload();
-					img->LoadParams = params;
-					img->Load();
-				}
+				CurrImage->Unload();
+				CurrImage->Load();
 			}
 
 			fileTypeSectionDisplayed = true;

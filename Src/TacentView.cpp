@@ -292,7 +292,7 @@ tString Viewer::FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles)
 	tPrintf("Finding image files in %s\n", imagesDir.Chars());
 	tSystem::tExtensions extensions;
 	Image::GetCanLoad(extensions);
-	tSystem::tFindFiles(foundFiles, imagesDir, extensions);
+	tSystem::tFindFilesFast(foundFiles, imagesDir, extensions);
 
 	return imagesDir;
 }
@@ -450,6 +450,7 @@ void Viewer::LoadCurrImage()
 			(CurrImage->Filetype == tFileType::GIF) ||
 			(CurrImage->Filetype == tFileType::WEBP) ||
 			(CurrImage->Filetype == tFileType::APNG) ||
+			(CurrImage->Filetype == tFileType::PNG) ||		// PNGs that have APNGs inside (more than one frame), also autoplay.
 			(CurrImage->Filetype == tFileType::TIFF)
 		)
 	)
@@ -2463,7 +2464,7 @@ void Viewer::IconifyCallback(GLFWwindow* window, int iconified)
 int Viewer::RemoveOldCacheFiles(const tString& cacheDir)
 {
 	tList<tStringItem> cacheFiles;
-	tSystem::tFindFiles(cacheFiles, cacheDir, "bin");
+	tSystem::tFindFilesFast(cacheFiles, cacheDir, "bin");
 	int numFiles = cacheFiles.NumItems();
 	if (numFiles <= Config.MaxCacheFiles)
 		return 0;

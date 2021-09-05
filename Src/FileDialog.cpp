@@ -237,7 +237,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				// else if (Mode == DialogMode::OpenFile)
 				{
 					tList<tStringItem> foundFiles;
-					tSystem::tFindFiles(foundFiles, selDir);
+					tSystem::tFindFilesFast(foundFiles, selDir);
 					for (tStringItem* file = foundFiles.First(); file; file = file->Next())
 					{
 						//(*dir)[dir->Length()-1] = '\0';				// Remove slash.

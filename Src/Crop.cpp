@@ -338,7 +338,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvmarg, const t
 		if (ImGui::Button("Cancel", tVector2(64, 0)))
 			CropMode = false;
 
-		ImGui::SameLine();	
+		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 64.0f);
 
 		if (ImGui::Button("Apply", tVector2(64, 0)))

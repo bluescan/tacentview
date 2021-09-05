@@ -57,9 +57,6 @@ Image::Image(const tString& filename) :
 	FileSizeB(0),
 	LoadParams()
 {
-	if ((Filetype == tSystem::tFileType::PNG) && Config.DetectAPNGInsidePNG && tImageAPNG::IsAnimatedPNG(Filename))
-		Filetype = tSystem::tFileType::APNG;
-
 	tMemset(&FileModTime, 0, sizeof(FileModTime));
 	ResetLoadParams();
 	tSystem::tFileInfo info;
@@ -106,9 +103,6 @@ bool Image::Load(const tString& filename)
 	Filename = filename;
 	Filetype = tGetFileType(Filename);
 
-	if ((Filetype == tSystem::tFileType::PNG) && Config.DetectAPNGInsidePNG && tImageAPNG::IsAnimatedPNG(Filename))
-		Filetype = tSystem::tFileType::APNG;
-
 	tSystem::tFileInfo info;
 	if (tSystem::tGetFileInfo(info, filename))
 	{
@@ -149,11 +143,23 @@ bool Image::Load()
 	if (Filetype == tFileType::Unknown)
 		return false;
 
+	// If the type is a png file, we may actually be dealing with an apng file inside.
+	// It is more efficient to only use the apng loader if we need to (even though it will
+	// handle non apng files). To this end, we modify the filetype used for loading if necessary.
+	// Note also that from the outside, we only determine the type from the extension. The 
+	// IsAnimatedPNG call is quite expensive -- it needs to load part of the fileinto memory,
+	// not something we want to do before actually loading an image. If DetectAPNGInsidePNG is
+	// false, the PNG loader will always be used for .png files even if they have an apng inside.
+	// The designers of apng made the format backwards compatible with single-frame png loaders.
+	tSystem::tFileType loadingFiletype = Filetype;
+	if ((Filetype == tSystem::tFileType::PNG) && Config.DetectAPNGInsidePNG && tImageAPNG::IsAnimatedPNG(Filename))
+		loadingFiletype = tSystem::tFileType::APNG;
+
 	Info.SrcPixelFormat = tPixelFormat::Invalid;
 	bool success = false;
 	try
 	{
-		switch (Filetype)
+		switch (loadingFiletype)
 		{
 			case tSystem::tFileType::APNG:
 			{
@@ -774,25 +780,6 @@ void Image::SetFrameDuration(float duration, bool allFrames)
 	}
 
 	Dirty = true;
-}
-
-
-void Image::PrintInfo()
-{
-	tPixelFormat format = tPixelFormat::Invalid;
-	if (Filetype == tSystem::tFileType::DDS)
-	{
-		if (DDSCubemap.IsValid())
-			format = DDSCubemap.GetSide(tCubemap::tSide::PosX)->GetPixelFormat();
-		else
-			format = DDSTexture2D.GetPixelFormat();
-	}
-	else
-	{
-		tPicture* picture = Pictures.First();
-		if (picture)
-			format = picture->IsOpaque() ? tPixelFormat::R8G8B8 : tPixelFormat::R8G8B8A8;
-	}
 }
 
 

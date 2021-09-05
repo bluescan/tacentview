@@ -111,7 +111,6 @@ public:
 		int FileSizeBytes					= 0;
 		int MemSizeBytes					= 0;
 	};
-	void PrintInfo();
 
 	bool IsAltMipmapsPictureAvail() const																				{ return DDSTexture2D.IsValid() && AltPicture.IsValid(); }
 	bool IsAltCubemapPictureAvail() const																				{ return DDSCubemap.IsValid() && AltPicture.IsValid(); }
@@ -135,7 +134,7 @@ public:
 
 	ImgInfo Info;						// Info is only valid AFTER loading.
 	tString Filename;					// Valid before load.
-	tSystem::tFileType Filetype;		// Valid before load.
+	tSystem::tFileType Filetype;		// Valid before load. Based on extension.
 	std::time_t FileModTime;			// Valid before load.
 	uint64 FileSizeB;					// Valid before load.
 
@@ -196,7 +195,7 @@ private:
 };
 
 
-// Implementation only below.
+// Implementation below.
 
 
 inline bool Image::TypeSupportsProperties() const
