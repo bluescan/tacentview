@@ -284,11 +284,11 @@ void Viewer::ShowAboutPopup(bool* popen)
 		tString architec	= tGetArchitectureNameLong( tGetArchitecture() );
 		tString config 		= tGetConfigurationName( tGetConfiguration() );
 		tString package		= "Native";
-		#if defined PACKAGE_SNAP
+		#if defined(PACKAGE_SNAP)
 			package = "Snap";
-		#elif defined PACKAGE_DEB
+		#elif defined(PACKAGE_DEB)
 			package = "Deb";
-		#elif defined PACKAGE_ZIP
+		#elif defined(PACKAGE_ZIP)
 			package = "Zip";
 		#endif
 
