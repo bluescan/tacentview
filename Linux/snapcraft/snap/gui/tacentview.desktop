@@ -1,6 +1,8 @@
 [Desktop Entry]
 Encoding=UTF-8
 Name=Tacent View
+GenericName=Image Viewer
+Comment=View image file
 Exec=tacentview %f
 Icon=${SNAP}/meta/gui/tacentview.png
 Terminal=false
