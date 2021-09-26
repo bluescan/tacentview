@@ -46,11 +46,19 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		{
 			ImGui::NewLine();
 			ImGui::Checkbox("Transparent Work Area", &PendingTransparentWorkArea);
+			#ifndef PACKAGE_SNAP
 			if (PendingTransparentWorkArea != Config.TransparentWorkArea)
 			{
 				ImGui::SameLine();
 				ImGui::Text("(Needs Restart)");
 			}
+			#else
+			if (PendingTransparentWorkArea)
+			{
+				ImGui::SameLine();
+				ImGui::Text("(No Snap Support)");
+			}
+			#endif
 
 			ImGui::Checkbox("Extend", &Config.BackgroundExtend);
 			if (!Config.TransparentWorkArea)

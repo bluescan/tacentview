@@ -128,7 +128,8 @@ namespace Viewer
 	bool Request_DeleteFileModal				= false;
 	bool Request_DeleteFileNoRecycleModal		= false;
 	bool Request_RenameModal					= false;
-	bool Request_SnapMessage					= false;
+	bool Request_SnapMessage_NoFileBrowse		= false;
+	bool Request_SnapMessage_NoFrameTrans		= false;
 	bool PrefsWindow							= false;
 	bool PropEditorWindow						= false;
 	bool CropMode								= false;
@@ -1374,15 +1375,16 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		// File Menu.
 		//
 		#ifdef ENABLE_FILE_DIALOG_SUPPORT
-		bool openFilePressed			= Request_OpenFileModal;		Request_OpenFileModal		= false;
-		bool openDirPressed				= Request_OpenDirModal;			Request_OpenDirModal		= false;
+		bool openFilePressed			= Request_OpenFileModal;			Request_OpenFileModal				= false;
+		bool openDirPressed				= Request_OpenDirModal;				Request_OpenDirModal				= false;
 		#endif
 
-		bool saveAsPressed				= Request_SaveAsModal;			Request_SaveAsModal			= false;
-		bool saveAllPressed				= Request_SaveAllModal;			Request_SaveAllModal		= false;
-		bool saveContactSheetPressed	= Request_ContactSheetModal;	Request_ContactSheetModal	= false;
-		bool saveMultiFramePressed		= Request_MultiFrameModal;		Request_MultiFrameModal		= false;
-		bool snapMessagePressed			= Request_SnapMessage;			Request_SnapMessage			= false;
+		bool saveAsPressed				= Request_SaveAsModal;				Request_SaveAsModal					= false;
+		bool saveAllPressed				= Request_SaveAllModal;				Request_SaveAllModal				= false;
+		bool saveContactSheetPressed	= Request_ContactSheetModal;		Request_ContactSheetModal			= false;
+		bool saveMultiFramePressed		= Request_MultiFrameModal;			Request_MultiFrameModal				= false;
+		bool snapMessageNoFileBrowse	= Request_SnapMessage_NoFileBrowse;	Request_SnapMessage_NoFileBrowse	= false;
+		bool snapMessageNoFrameTrans	= Request_SnapMessage_NoFrameTrans;	Request_SnapMessage_NoFrameTrans	= false;
 		if (ImGui::BeginMenu("File"))
 		{
 			// Show file menu items...
@@ -1427,7 +1429,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		DoSaveAllModal(saveAllPressed);
 		DoContactSheetModal(saveContactSheetPressed);
 		DoMultiFrameModal(saveMultiFramePressed);
-		DoSnapMessageModal(snapMessagePressed);
+		DoSnapMessageNoFileBrowseModal(snapMessageNoFileBrowse);
+		DoSnapMessageNoFrameTransModal(snapMessageNoFrameTrans);
 		ImGui::PopStyleVar();
 
 		//
@@ -2642,8 +2645,14 @@ int main(int argc, char** argv)
 	// We start with window invisible. For windows DwmSetWindowAttribute won't redraw properly otherwise.
 	// For all plats, we want to position the window before displaying it.
 	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+	bool requestSnapMessageNoTrans = false;
 	if (Viewer::Config.TransparentWorkArea)
+	{
 		glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
+		#ifdef PACKAGE_SNAP
+		requestSnapMessageNoTrans = true;
+		#endif
+	}
 
 	#if defined(PLATFORM_LINUX)
 	glfwWindowHintString(GLFW_X11_CLASS_NAME, "tacentview");
@@ -2783,6 +2792,13 @@ int main(int argc, char** argv)
 	{
 		double currUpdateTime = glfwGetTime();
 		Viewer::Update(Viewer::Window, currUpdateTime - lastUpdateTime);
+
+		// Modal dialogs only seem to work after the first Update. May be a ImGui bug?
+		if (requestSnapMessageNoTrans)
+		{
+			Viewer::Request_SnapMessage_NoFrameTrans = true;
+			requestSnapMessageNoTrans = false;
+		}
 		
 		// I don't seem to be able to get Linux to v-sync. This stops it using all the CPU.
 		#ifdef PLATFORM_LINUX

@@ -197,7 +197,7 @@ void Viewer::ShowCheatSheetPopup(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(5);
 	ImGui::SetNextWindowBgAlpha(0.80f);
-	ImGui::SetNextWindowSize(tVector2(300.0f, 400.0f));
+	ImGui::SetNextWindowSize(tVector2(310.0f, 400.0f));
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
 
@@ -223,7 +223,11 @@ void Viewer::ShowCheatSheetPopup(bool* popen)
 		ImGui::Text("F11");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Fullscreen");
 		ImGui::Text("Alt-Enter");   ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Fullscreen");
 		ImGui::Text("Esc");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Exit Fullscreen / Basic Mode");
-		ImGui::Text("Tab");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Open Explorer Window");
+		#ifdef PACKAGE_SNAP
+		ImGui::Text("Tab");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Open File Browser (No Snap Support)");
+		#else
+		ImGui::Text("Tab");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Open File Browser");
+		#endif
 		ImGui::Text("Delete");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Delete Current Image");
 		ImGui::Text("Shift-Delete");ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Delete Current Image Permanently");
 		ImGui::Text("LMB-Click");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Set Colour Reticle Pos");
@@ -483,10 +487,10 @@ void Viewer::DoRenameModal(bool justOpened)
 }
 
 
-void Viewer::DoSnapMessageModal(bool justPressed)
+void Viewer::DoSnapMessageNoFileBrowseModal(bool justPressed)
 {
 	if (justPressed)
-		ImGui::OpenPopup("Message");
+		ImGui::OpenPopup("Message_NoFileBrowse");
 
 	// The unused isMessage bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isMessage = true;
@@ -494,7 +498,7 @@ void Viewer::DoSnapMessageModal(bool justPressed)
 	(
 		!ImGui::BeginPopupModal
 		(
-			"Message", &isMessage,
+			"Message_NoFileBrowse", &isMessage,
 			ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
 		)
 	)
@@ -504,8 +508,45 @@ void Viewer::DoSnapMessageModal(bool justPressed)
 	
 	ImGui::Text
 	(
-		"The Snap version of Tacent View does not support opening Nautilus or Dolphin.\n\n"
-		"Please use the deb install or compile if you need the feature on Linux."
+		"The Snap version of Tacent View does not\n"
+		"support opening Nautilus or Dolphin.\n\n"
+		"Please use the deb install or compile if\n"
+		"you need the feature on Linux."
+	);
+	ImGui::NewLine();
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	if (ImGui::Button("OK", tVector2(100, 0)))
+		ImGui::CloseCurrentPopup();
+
+	ImGui::EndPopup();
+}
+
+
+void Viewer::DoSnapMessageNoFrameTransModal(bool justPressed)
+{
+	if (justPressed)
+		ImGui::OpenPopup("Message_NoFrameTrans");
+
+	// The unused isMessage bool is just so we get a close button in ImGui. Returns false if popup not open.
+	bool isMessage = true;
+	if
+	(
+		!ImGui::BeginPopupModal
+		(
+			"Message_NoFrameTrans", &isMessage,
+			ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
+		)
+	)
+	{
+		return;
+	}
+
+	ImGui::Text
+	(
+		"The Snap version of Tacent View does not\n"
+		"support transparent work area.\n\n"
+		"Please use the deb install or compile if\n"
+		"you need the feature on Linux."
 	);
 	ImGui::NewLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
