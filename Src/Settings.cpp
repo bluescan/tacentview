@@ -229,7 +229,7 @@ void Viewer::Settings::Load(const tString& filename)
 	tiClamp		(SaveFileType, 0, 7);
 	tiClamp		(SaveFileTypeMultiFrame, 0, 3);
 	tiClamp		(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
-	tiClamp		(SortKey, 0, 3);
+	tiClamp		(SortKey, 0, 6);
 	tiClamp		(CropAnchor, -1, 9);
 	tiClampMin	(ResizeAspectNum, 1);
 	tiClampMin	(ResizeAspectDen, 1);

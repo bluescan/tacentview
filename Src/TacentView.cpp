@@ -191,16 +191,22 @@ namespace Viewer
 		tFileInfo ib; tGetFileInfo(ib, b);
 		return ia.CreationTime < ib.CreationTime;
 	}
-	bool Compare_ImageLoadTimeAscending(const Image& a, const Image& b)													{ return a.GetLoadedTime() < b.GetLoadedTime(); }
-	bool Compare_ImageFileNameAscending(const Image& a, const Image& b)													{ return tStricmp(a.Filename.Chars(), b.Filename.Chars()) < 0; }
+	bool Compare_ImageLoadTimeAscending	(const Image& a, const Image& b)												{ return a.GetLoadedTime() < b.GetLoadedTime(); }
+	bool Compare_ImageFileNameAscending	(const Image& a, const Image& b)												{ return tStricmp(a.Filename.Chars(), b.Filename.Chars()) < 0; }
 	bool Compare_ImageFileNameDescending(const Image& a, const Image& b)												{ return tStricmp(a.Filename.Chars(), b.Filename.Chars()) > 0; }
-	bool Compare_ImageFileTypeAscending(const Image& a, const Image& b)													{ return int(a.Filetype) < int(b.Filetype); }
+	bool Compare_ImageFileTypeAscending	(const Image& a, const Image& b)												{ return int(a.Filetype) < int(b.Filetype); }
 	bool Compare_ImageFileTypeDescending(const Image& a, const Image& b)												{ return int(a.Filetype) > int(b.Filetype); }
-	bool Compare_ImageModTimeAscending(const Image& a, const Image& b)													{ return a.FileModTime < b.FileModTime; }
-	bool Compare_ImageModTimeDescending(const Image& a, const Image& b)													{ return a.FileModTime > b.FileModTime; }
-	bool Compare_ImageFileSizeAscending(const Image& a, const Image& b)													{ return a.FileSizeB < b.FileSizeB; }
+	bool Compare_ImageModTimeAscending	(const Image& a, const Image& b)												{ return a.FileModTime < b.FileModTime; }
+	bool Compare_ImageModTimeDescending	(const Image& a, const Image& b)												{ return a.FileModTime > b.FileModTime; }
+	bool Compare_ImageFileSizeAscending	(const Image& a, const Image& b)												{ return a.FileSizeB < b.FileSizeB; }
 	bool Compare_ImageFileSizeDescending(const Image& a, const Image& b)												{ return a.FileSizeB > b.FileSizeB; }
-	typedef bool ImageCompareFn(const Image&, const Image&);
+	bool Compare_ImageAreaAscending		(const Image& a, const Image& b)												{ return a.CachePrimaryArea < b.CachePrimaryArea; }
+	bool Compare_ImageAreaDescending	(const Image& a, const Image& b)												{ return a.CachePrimaryArea > b.CachePrimaryArea; }
+	bool Compare_ImageWidthAscending	(const Image& a, const Image& b)												{ return a.CachePrimaryWidth < b.CachePrimaryWidth; }
+	bool Compare_ImageWidthDescending	(const Image& a, const Image& b)												{ return a.CachePrimaryWidth > b.CachePrimaryWidth; }
+	bool Compare_ImageHeightAscending	(const Image& a, const Image& b)												{ return a.CachePrimaryHeight < b.CachePrimaryHeight; }
+	bool Compare_ImageHeightDescending	(const Image& a, const Image& b)												{ return a.CachePrimaryHeight > b.CachePrimaryHeight; }
+	typedef bool ImageCompareFn			(const Image&, const Image&);
 
 	bool OnPrevious();
 	bool OnNext();
@@ -372,6 +378,18 @@ void Viewer::SortImages(Settings::SortKeyEnum key, bool ascending)
 
 		case Settings::SortKeyEnum::FileType:
 			sortFn = ascending ? Compare_ImageFileTypeAscending : Compare_ImageFileTypeDescending;
+			break;
+
+		case Settings::SortKeyEnum::ImageArea:
+			sortFn = ascending ? Compare_ImageAreaAscending : Compare_ImageAreaDescending;
+			break;
+
+		case Settings::SortKeyEnum::ImageWidth:
+			sortFn = ascending ? Compare_ImageWidthAscending : Compare_ImageWidthDescending;
+			break;
+
+		case Settings::SortKeyEnum::ImageHeight:
+			sortFn = ascending ? Compare_ImageHeightAscending : Compare_ImageHeightDescending;
 			break;
 	}
 

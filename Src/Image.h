@@ -72,6 +72,7 @@ public:
 	void Unbind();
 	int GetWidth() const;
 	int GetHeight() const;
+	int GetArea() const;
 	tColouri GetPixel(int x, int y) const;
 
 	// Some images can store multiple complete images inside a single file (multiple frames).
@@ -137,7 +138,11 @@ public:
 	tSystem::tFileType Filetype;		// Valid before load. Based on extension.
 	std::time_t FileModTime;			// Valid before load.
 	uint64 FileSizeB;					// Valid before load.
+	int CachePrimaryWidth	= 0;		// Valid once thumbnail loaded. Used for sorting without having to do full load.
+	int CachePrimaryHeight	= 0;
+	int CachePrimaryArea	= 0;
 
+	const static uint32 ThumbChunkInfoID;
 	const static int ThumbWidth;		// = 256;
 	const static int ThumbHeight;		// = 144;
 	const static int ThumbMinDispWidth;	// = 64;

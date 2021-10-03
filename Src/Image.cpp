@@ -35,9 +35,10 @@ tString Image::ThumbCacheDir;
 namespace Viewer { extern Settings Config; }
 
 
-const int Image::ThumbWidth			= 256;
-const int Image::ThumbHeight		= 144;
-const int Image::ThumbMinDispWidth	= 64;
+const uint32 Image::ThumbChunkInfoID	= 0x0B000000;
+const int Image::ThumbWidth				= 256;
+const int Image::ThumbHeight			= 144;
+const int Image::ThumbMinDispWidth		= 64;
 
 
 Image::Image() :
@@ -652,6 +653,19 @@ int Image::GetHeight() const
 }
 
 
+int Image::GetArea() const
+{
+	if (AltPicture.IsValid() && AltPictureEnabled)
+		return AltPicture.GetArea();
+
+	tPicture* picture = GetCurrentPic();
+	if (picture && picture->IsValid())
+		return picture->GetArea();
+
+	return 0;
+}
+
+
 tColouri Image::GetPixel(int x, int y) const
 {
 	if (AltPicture.IsValid() && AltPictureEnabled)
@@ -1093,7 +1107,7 @@ void Image::GenerateThumbnail()
 
 	// Retrieve from cache if possible.
 	tuint256 hash = 0;
-	int thumbVersion = 1;
+	int thumbVersion = 2;
 	tFileInfo fileInfo;
 	tGetFileInfo(fileInfo, Filename);
 	hash = tHash::tHashData256((uint8*)&thumbVersion, sizeof(thumbVersion));
@@ -1107,9 +1121,26 @@ void Image::GenerateThumbnail()
 	tsPrintf(hashFile, "%s%032|256X.bin", ThumbCacheDir.Chars(), hash);
 	if (tFileExists(hashFile))
 	{
+		bool loaded = false;
 		tChunkReader chunk(hashFile);
-		ThumbnailPicture.Load(chunk.First());
-		return;
+		for (tChunk ch = chunk.First(); ch.IsValid(); ch = ch.Next())
+		{
+			switch (ch.ID())
+			{
+				case ThumbChunkInfoID:
+					ch.GetItem(CachePrimaryWidth);
+					ch.GetItem(CachePrimaryHeight);
+					ch.GetItem(CachePrimaryArea);
+					break;
+
+				case tChunkID::Image_Picture:
+					ThumbnailPicture.Load(ch);
+					loaded = true;
+					break;
+			}
+		}
+		if (loaded)
+			return;
 	}
 
 	// We need an opengl context if we are processing dds files (for now... opengl is used for decompression). GLFW doesn't support creating
@@ -1160,6 +1191,10 @@ void Image::GenerateThumbnail()
 	// We make the thumbnail keep its aspect ratio.
 	int srcW = srcPic->GetWidth();
 	int srcH = srcPic->GetHeight();
+	CachePrimaryWidth = srcW;
+	CachePrimaryHeight = srcH;
+	CachePrimaryArea = srcW * srcH;
+
 	float scaleX = float(ThumbWidth)  / float(srcW);
 	float scaleY = float(ThumbHeight) / float(srcH);
 	int iw, ih;
@@ -1185,6 +1220,12 @@ void Image::GenerateThumbnail()
 
 	// Write to cache file.
 	tChunkWriter writer(hashFile);
+	writer.Begin(ThumbChunkInfoID);
+	writer.Write(CachePrimaryWidth);
+	writer.Write(CachePrimaryHeight);
+	writer.Write(CachePrimaryArea);
+	writer.Write(0x00000000);
+	writer.End();
 	ThumbnailPicture.Save(writer);
 	// std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }

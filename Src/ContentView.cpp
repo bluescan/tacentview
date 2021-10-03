@@ -23,6 +23,20 @@ using namespace tMath;
 
 void Viewer::ShowContentViewDialog(bool* popen)
 {
+	// Let's keep generating thumnails even if they're not visible... in the background.
+	// Only use one thread (one request) at a time for this low-priority task.
+	// @todo Need to think about this a bit more before enabling. We don't want to loop
+	// through the images when we don't need to.
+	/*
+	static bool currGeneratingThumb = false;
+	if (numGeneratedThumbs < Images.GetNumItems())
+	{
+		for (Image* i = Images.First(); i; i = i->Next())
+		{
+		}
+	}
+	*/
+
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar;
 	tVector2 windowPos = GetDialogOrigin(0);
 	
@@ -48,6 +62,8 @@ void Viewer::ShowContentViewDialog(bool* popen)
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2(minSpacing + extra/float(numPerRow), minSpacing));
 	tVector2 thumbButtonSize(Config.ThumbnailWidth, Config.ThumbnailWidth*9.0f/16.0f); // 64 36, 32 18,
 	int thumbNum = 0;
+	int numGeneratedThumbs = 0;
+	static int numThumbsWhenSorted = 0;
 	for (Image* i = Images.First(); i; i = i->Next(), thumbNum++)
 	{
 		tVector2 cursor = ImGui::GetCursorPos();
@@ -57,6 +73,10 @@ void Viewer::ShowContentViewDialog(bool* popen)
 		ImGui::PushID(thumbNum);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2::zero);
 		bool isCurr = (i == CurrImage);
+
+		// It's ok to call bind even if a request has not been made yet. Takes no time.
+		if (i->BindThumbnail())
+			numGeneratedThumbs++;
 
 		// Unlike other widgets, BeginChild ALWAYS needs a corresponding EndChild, even if it's invisible.
 		bool visible = ImGui::BeginChild("ThumbItem", thumbButtonSize+tVector2(0.0, 32.0f), false, ImGuiWindowFlags_NoDecoration);
@@ -81,9 +101,26 @@ void Viewer::ShowContentViewDialog(bool* popen)
 			ImGui::Text(filename.Chars());
 
 			tString ttStr;
-			tsPrintf(ttStr, "%s\n%s\n%'d Bytes", 
-				filename.Chars(),
-				tSystem::tConvertTimeToString(tSystem::tConvertTimeToLocal(i->FileModTime)).Chars(), i->FileSizeB);
+			if (i->CachePrimaryWidth && i->CachePrimaryHeight)
+				tsPrintf
+				(
+					ttStr, "%s\n%s\n%'d Bytes\nW:%'d\nH:%'d\nArea:%'d",
+					filename.Chars(),
+					tSystem::tConvertTimeToString(tSystem::tConvertTimeToLocal(i->FileModTime)).Chars(),
+					i->FileSizeB,
+					i->CachePrimaryWidth,
+					i->CachePrimaryHeight,
+					i->CachePrimaryArea
+				);
+			else
+				tsPrintf
+				(
+					ttStr, "%s\n%s\n%'d Bytes",
+					filename.Chars(),
+					tSystem::tConvertTimeToString(tSystem::tConvertTimeToLocal(i->FileModTime)).Chars(),
+					i->FileSizeB
+				);
+
 			ShowToolTip(ttStr.Chars());
 
 			// We use a separator to indicate the current item.
@@ -93,6 +130,7 @@ void Viewer::ShowContentViewDialog(bool* popen)
 		else
 		{
 			// We need to keep calling bind even if the image is not visible. It frees up the worker threads.
+			// The unrequest call just keeps the visible ones as the priority.
 			if (i->IsThumbnailWorkerActive())
 				i->BindThumbnail();
 			else
@@ -119,12 +157,23 @@ void Viewer::ShowContentViewDialog(bool* popen)
 	ImGui::PopItemWidth();
 
 	ImGui::PushItemWidth(100);
-	const char* sortItems[] = { "Name", "Date", "Size", "Type" };
+	const char* sortItems[] = { "Name", "Date", "Size", "Type", "Area", "Width", "Height" };
 	if (ImGui::Combo("Sort", &Config.SortKey, sortItems, tNumElements(sortItems)))
 		SortImages(Settings::SortKeyEnum(Config.SortKey), Config.SortAscending);
 	ImGui::SameLine();
 	if (ImGui::Checkbox("Ascending", &Config.SortAscending))
 		SortImages(Settings::SortKeyEnum(Config.SortKey), Config.SortAscending);
+
+	// If we are sorting by a thumbnail cached key, resort if necessary.
+	Settings::SortKeyEnum sortKey = Settings::SortKeyEnum(Config.SortKey);
+	if ((sortKey == Settings::SortKeyEnum::ImageArea) || (sortKey == Settings::SortKeyEnum::ImageWidth) || (sortKey == Settings::SortKeyEnum::ImageHeight))
+	{
+		if (numThumbsWhenSorted != numGeneratedThumbs)
+		{
+			SortImages(sortKey, Config.SortAscending);
+			numThumbsWhenSorted = numGeneratedThumbs;
+		}
+	}
 
 	ImGui::PopItemWidth();
 	ImGui::EndChild();

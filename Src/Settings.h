@@ -38,7 +38,10 @@ namespace Viewer
 			FileName,
 			FileModTime,
 			FileSize,
-			FileType
+			FileType,
+			ImageArea,
+			ImageWidth,
+			ImageHeight
 		};
 		int SortKey;						// Matches SortKeyEnum values.
 		bool SortAscending;					// Sort direction.
