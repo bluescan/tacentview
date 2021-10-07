@@ -36,6 +36,7 @@
 			"args": [],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/TestImages/FormatVariety",
+			// "cwd": "G:/My Drive/Google Photos",
 			"environment": [],
 			"console": "integratedTerminal",
 		}

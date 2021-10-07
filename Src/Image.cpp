@@ -1162,16 +1162,9 @@ void Image::GenerateThumbnail()
 	{
 		bool thumbLoaded = thumbLoader.Load(Filename);
 		if (thumbLoaded)
-		{
-			if (attempt > 0)
-				tPrintf("Loading of thumbnail %s succeeded on attempt %d.\n", Filename.Chars(), attempt+1);
 			break;
-		}
 		else
-		{
-			tPrintf("Warning: Loading of thumbnail %s failed on attempt %d.\n", Filename.Chars(), attempt+1);
 			tSystem::tSleep(250);
-		}	
 	}
 
 	if (Filetype == tFileType::DDS)
@@ -1183,10 +1176,7 @@ void Image::GenerateThumbnail()
 	// Thumbnails are generated from the primary (first) picture in the picture list.
 	tPicture* srcPic = thumbLoader.GetPrimaryPic();
 	if (!srcPic)
-	{
-		tPrintf("Warning: Generation of thumbnail %s failed.\n", Filename.Chars());
 		return;
-	}
 
 	// We make the thumbnail keep its aspect ratio.
 	int srcW = srcPic->GetWidth();

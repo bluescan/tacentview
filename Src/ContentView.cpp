@@ -2,7 +2,7 @@
 //
 // Dialog that displays folder contents as thumbnails.
 //
-// Copyright (c) 2020 Tristan Grimmer.
+// Copyright (c) 2020, 2021 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -23,20 +23,6 @@ using namespace tMath;
 
 void Viewer::ShowContentViewDialog(bool* popen)
 {
-	// Let's keep generating thumnails even if they're not visible... in the background.
-	// Only use one thread (one request) at a time for this low-priority task.
-	// @todo Need to think about this a bit more before enabling. We don't want to loop
-	// through the images when we don't need to.
-	/*
-	static bool currGeneratingThumb = false;
-	if (numGeneratedThumbs < Images.GetNumItems())
-	{
-		for (Image* i = Images.First(); i; i = i->Next())
-		{
-		}
-	}
-	*/
-
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar;
 	tVector2 windowPos = GetDialogOrigin(0);
 	
@@ -75,15 +61,18 @@ void Viewer::ShowContentViewDialog(bool* popen)
 		bool isCurr = (i == CurrImage);
 
 		// It's ok to call bind even if a request has not been made yet. Takes no time.
-		if (i->BindThumbnail())
+		// Calling bind also frees up the worker threads when requests are fulfilled.
+		uint64 thumbnailTexID = i->BindThumbnail();
+		if (thumbnailTexID)
 			numGeneratedThumbs++;
 
 		// Unlike other widgets, BeginChild ALWAYS needs a corresponding EndChild, even if it's invisible.
 		bool visible = ImGui::BeginChild("ThumbItem", thumbButtonSize+tVector2(0.0, 32.0f), false, ImGuiWindowFlags_NoDecoration);
 		if (visible)
 		{
+			// Give priority to creating thumbnails for visible widgets. Later on, if no threads are active
+			// we request non-visible ones.
 			i->RequestThumbnail();
-			uint64 thumbnailTexID = i->BindThumbnail();
 			if (!thumbnailTexID)
 				thumbnailTexID = DefaultThumbnailImage.Bind();
 			if
@@ -127,15 +116,12 @@ void Viewer::ShowContentViewDialog(bool* popen)
 			if (isCurr)
 				ImGui::Separator(2.0f);
 		}
-		else
-		{
-			// We need to keep calling bind even if the image is not visible. It frees up the worker threads.
-			// The unrequest call just keeps the visible ones as the priority.
-			if (i->IsThumbnailWorkerActive())
-				i->BindThumbnail();
-			else
-				i->UnrequestThumbnail();
-		}
+
+		// Not visible. If we're not doing anything, request non-visible thumbnail generation. For the
+		// offscreen ones we only do one at a time -- no threads can be currently active.
+		else if (Image::GetThumbnailNumThreadsRunning() == 0)
+			i->RequestThumbnail();
+
 		ImGui::EndChild();
 		ImGui::PopStyleVar();
 

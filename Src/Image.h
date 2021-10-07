@@ -132,6 +132,7 @@ public:
 	void UnrequestThumbnail();
 	bool IsThumbnailWorkerActive() const																				{ return ThumbnailThreadRunning; }
 	uint64 BindThumbnail();
+	inline static int GetThumbnailNumThreadsRunning()																	{ return ThumbnailNumThreadsRunning; }
 
 	ImgInfo Info;						// Info is only valid AFTER loading.
 	tString Filename;					// Valid before load.
