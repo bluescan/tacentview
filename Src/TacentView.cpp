@@ -184,13 +184,8 @@ namespace Viewer
 	void SetWindowIcon(const tString& icoFile);
 
 	// When compare functions are used to sort, they result in ascending order if they return a < b.
-	bool Compare_AlphabeticalAscending(const tStringItem& a, const tStringItem& b)										{ return tStricmp(a.Chars(), b.Chars()) < 0; }
-	bool Compare_FileCreationTimeAscending(const tStringItem& a, const tStringItem& b)
-	{
-		tFileInfo ia; tGetFileInfo(ia, a);
-		tFileInfo ib; tGetFileInfo(ib, b);
-		return ia.CreationTime < ib.CreationTime;
-	}
+	bool Compare_AlphabeticalAscending(const tSystem::tFileInfo& a, const tSystem::tFileInfo& b)						{ return tStricmp(a.FileName.Chars(), b.FileName.Chars()) < 0; }
+	bool Compare_FileCreationTimeAscending(const tSystem::tFileInfo& a, const tSystem::tFileInfo& b)					{ return a.CreationTime < b.CreationTime; }
 	bool Compare_ImageLoadTimeAscending	(const Image& a, const Image& b)												{ return a.GetLoadedTime() < b.GetLoadedTime(); }
 	bool Compare_ImageFileNameAscending	(const Image& a, const Image& b)												{ return tStricmp(a.Filename.Chars(), b.Filename.Chars()) < 0; }
 	bool Compare_ImageFileNameDescending(const Image& a, const Image& b)												{ return tStricmp(a.Filename.Chars(), b.Filename.Chars()) > 0; }
@@ -219,9 +214,9 @@ namespace Viewer
 	bool IsBasicViewAndBehaviour();
 	void AutoPropertyWindow();
 
-	tString FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles);	// Returns the image folder.
-	tuint256 ComputeImagesHash(const tList<tStringItem>& files);
-	int RemoveOldCacheFiles(const tString& cacheDir);						// Returns num removed.
+	tString FindImageFilesInCurrentFolder(tList<tSystem::tFileInfo>& foundFiles);	// Returns the image folder.
+	tuint256 ComputeImagesHash(const tList<tSystem::tFileInfo>& files);
+	int RemoveOldCacheFiles(const tString& cacheDir);								// Returns num removed.
 
 	enum CursorMove
 	{
@@ -290,7 +285,7 @@ void Viewer::DrawNavBar(float x, float y, float w, float h)
 }
 
 
-tString Viewer::FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles)
+tString Viewer::FindImageFilesInCurrentFolder(tList<tSystem::tFileInfo>& foundFiles)
 {
 	tString imagesDir = tSystem::tGetCurrentDir();
 	if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
@@ -305,11 +300,11 @@ tString Viewer::FindImageFilesInCurrentFolder(tList<tStringItem>& foundFiles)
 }
 
 
-tuint256 Viewer::ComputeImagesHash(const tList<tStringItem>& files)
+tuint256 Viewer::ComputeImagesHash(const tList<tSystem::tFileInfo>& files)
 {
 	tuint256 hash = 0;
-	for (tStringItem* item = files.First(); item; item = item->Next())
-		hash = tHash::tHashString256(item->Chars(), hash);
+	for (tSystem::tFileInfo* item = files.First(); item; item = item->Next())
+		hash = tHash::tHashString256(item->FileName.Chars(), hash);
 
 	return hash;
 }
@@ -338,7 +333,7 @@ void Viewer::PopulateImages()
 	Images.Clear();
 	ImagesLoadTimeSorted.Clear();
 
-	tList<tStringItem> foundFiles;
+	tList<tSystem::tFileInfo> foundFiles;
 	ImagesDir = FindImageFilesInCurrentFolder(foundFiles);
 	PopulateImagesSubDirs();
 
@@ -346,10 +341,10 @@ void Viewer::PopulateImages()
 	foundFiles.Sort(Compare_AlphabeticalAscending, tListSortAlgorithm::Merge);
 	ImagesHash = ComputeImagesHash(foundFiles);
 
-	for (tStringItem* filename = foundFiles.First(); filename; filename = filename->Next())
+	for (tSystem::tFileInfo* fileInfo = foundFiles.First(); fileInfo; fileInfo = fileInfo->Next())
 	{
 		// It is important we don't call Load after newing. We save memory by not having all images loaded.
-		Image* newImg = new Image(*filename);
+		Image* newImg = new Image(*fileInfo);
 		Images.Append(newImg);
 		ImagesLoadTimeSorted.Append(newImg);
 	}
@@ -2452,7 +2447,7 @@ void Viewer::FocusCallback(GLFWwindow* window, int gotFocus)
 		return;
 
 	// If we got focus, rescan the current folder to see if the hash is different.
-	tList<tStringItem> files;
+	tList<tSystem::tFileInfo> files;
 	ImagesDir = FindImageFilesInCurrentFolder(files);
 	PopulateImagesSubDirs();
 
@@ -2484,7 +2479,7 @@ void Viewer::IconifyCallback(GLFWwindow* window, int iconified)
 
 int Viewer::RemoveOldCacheFiles(const tString& cacheDir)
 {
-	tList<tStringItem> cacheFiles;
+	tList<tSystem::tFileInfo> cacheFiles;
 	tSystem::tFindFilesFast(cacheFiles, cacheDir, "bin");
 	int numFiles = cacheFiles.NumItems();
 	if (numFiles <= Config.MaxCacheFiles)
@@ -2498,8 +2493,8 @@ int Viewer::RemoveOldCacheFiles(const tString& cacheDir)
 	int deletedCount = 0;
 	while (numToRemove)
 	{
-		tStringItem* head = cacheFiles.Remove();
-		if (tDeleteFile(*head))
+		tSystem::tFileInfo* head = cacheFiles.Remove();
+		if (tDeleteFile(head->FileName))
 			deletedCount++;
 		delete head;
 		numToRemove--;

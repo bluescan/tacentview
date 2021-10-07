@@ -69,6 +69,17 @@ Image::Image(const tString& filename) :
 }
 
 
+Image::Image(const tSystem::tFileInfo& fileInfo) :
+	Filename(fileInfo.FileName),
+	Filetype(tGetFileType(Filename)),
+	FileModTime(fileInfo.ModificationTime),
+	FileSizeB(fileInfo.FileSize),
+	LoadParams()
+{
+	ResetLoadParams();
+}
+
+
 Image::~Image()
 {
 	// If we're being destroyed before the thumbnail thread is done, we have to wait because that thread

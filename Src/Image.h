@@ -34,8 +34,9 @@ class Image : public tLink<Image>
 public:
 	Image();
 
-	// This constructor does not actually load the image, but Load() may be called at any point afterwards.
+	// These constructors do not actually load the image, but Load() may be called at any point afterwards.
 	Image(const tString& filename);
+	Image(const tSystem::tFileInfo& fileInfo);
 	virtual ~Image();
 
 	// These params are in principle different to the ones in tPicture since a Image does not necessarily
