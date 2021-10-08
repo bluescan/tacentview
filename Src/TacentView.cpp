@@ -2155,7 +2155,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			#ifdef PACKAGE_SNAP
 			static int messageCount = 2;
 			if (messageCount-- > 0)
-				Request_SnapMessage = true;
+				Request_SnapMessage_NoFileBrowse = true;
 			#else
 			if (CurrImage)
 				tSystem::tOpenSystemFileExplorer(CurrImage->Filename);
