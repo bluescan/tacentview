@@ -68,6 +68,7 @@ void Viewer::ShowContentViewDialog(bool* popen)
 
 		// Unlike other widgets, BeginChild ALWAYS needs a corresponding EndChild, even if it's invisible.
 		bool visible = ImGui::BeginChild("ThumbItem", thumbButtonSize+tVector2(0.0, 32.0f), false, ImGuiWindowFlags_NoDecoration);
+		int maxNonVisibleThumbThreads = 2;
 		if (visible)
 		{
 			// Give priority to creating thumbnails for visible widgets. Later on, if no threads are active
@@ -117,9 +118,9 @@ void Viewer::ShowContentViewDialog(bool* popen)
 				ImGui::Separator(2.0f);
 		}
 
-		// Not visible. If we're not doing anything, request non-visible thumbnail generation. For the
-		// offscreen ones we only do one at a time -- no threads can be currently active.
-		else if (Image::GetThumbnailNumThreadsRunning() == 0)
+		// Not visible. If we're not doing much, request non-visible thumbnail generation. For the
+		// offscreen ones we only do maxNonVisibleThumbThreads at a time.
+		else if (Image::GetThumbnailNumThreadsRunning() < maxNonVisibleThumbThreads)
 			i->RequestThumbnail();
 
 		ImGui::EndChild();
@@ -158,6 +159,23 @@ void Viewer::ShowContentViewDialog(bool* popen)
 		{
 			SortImages(sortKey, Config.SortAscending);
 			numThumbsWhenSorted = numGeneratedThumbs;
+		}
+	}
+
+	if (numGeneratedThumbs < Images.GetNumItems())
+	{
+		tString progText;
+		tsPrintf(progText, "%d/%d", numGeneratedThumbs, Images.GetNumItems());
+		tVector2 textSize = ImGui::CalcTextSize(progText.Chars());
+		float rightx = ImGui::GetWindowContentRegionMax().x - 4.0f;
+		float textx = rightx - textSize.x;
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY()+1.0f);
+		if (textx > 470)
+		{
+			ImGui::SameLine();
+			ImGui::SetCursorPosX(textx);
+			ImGui::Text(progText.Chars());
+			ImGui::ProgressBar(float(numGeneratedThumbs)/float(Images.GetNumItems()), tVector2(rightx, 0));
 		}
 	}
 

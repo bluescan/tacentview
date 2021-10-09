@@ -8,6 +8,7 @@
 	"version": "0.2.0",
 	"configurations":
 	[
+
 		{
 			"name": "Launch GDB",
 			"type": "cppdbg",
@@ -16,6 +17,7 @@
 			"args": [],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/TestImages/FormatVariety",
+//			"cwd": "/home/tristan/GoogleDrive/Google Photos",
 			"environment": [],
 			"externalConsole": false,
 			"MIMode": "gdb",
