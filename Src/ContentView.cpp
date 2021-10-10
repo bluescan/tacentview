@@ -68,7 +68,7 @@ void Viewer::ShowContentViewDialog(bool* popen)
 
 		// Unlike other widgets, BeginChild ALWAYS needs a corresponding EndChild, even if it's invisible.
 		bool visible = ImGui::BeginChild("ThumbItem", thumbButtonSize+tVector2(0.0, 32.0f), false, ImGuiWindowFlags_NoDecoration);
-		int maxNonVisibleThumbThreads = 2;
+		int maxNonVisibleThumbThreads = 3;
 		if (visible)
 		{
 			// Give priority to creating thumbnails for visible widgets. Later on, if no threads are active

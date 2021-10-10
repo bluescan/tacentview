@@ -1237,8 +1237,8 @@ void Image::RequestThumbnail()
 	if (ThumbnailRequested)
 		return;
 
-	// Leave two cores free unless we are on a three core or lower machine, in which case we always use a min of 2 threads.
-	int numThreadsMax = tClampMin((tSystem::tGetNumCores()) - 2, 2);
+	// Leave one core free unless we are on a two core or lower machine, in which case we always use a min of 2 threads.
+	int numThreadsMax = tClampMin((tSystem::tGetNumCores()) - 1, 2);
 	if (ThumbnailNumThreadsRunning >= numThreadsMax)
 		return;
 

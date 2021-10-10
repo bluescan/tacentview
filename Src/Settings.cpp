@@ -89,8 +89,8 @@ void Viewer::Settings::ResetBehaviourSettings()
 	ResizeAspectNum				= 16;
 	ResizeAspectDen				= 9;
 	ResizeAspectMode			= 0;
-	MaxImageMemMB				= 1024;
-	MaxCacheFiles				= 7000;
+	MaxImageMemMB				= 2048;
+	MaxCacheFiles				= 8192;
 	MaxUndoSteps				= 16;
 	StrictLoading				= false;
 	DetectAPNGInsidePNG			= true;
