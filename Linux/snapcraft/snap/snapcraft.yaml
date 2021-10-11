@@ -11,6 +11,8 @@ description: |
   contact sheets for FX etc.
 grade: stable       # Use either devel or stable.
 confinement: strict # Use either devmode or strict.
+architectures:
+  - build-on: amd64
 apps:
   tacentview:
     # environment:
