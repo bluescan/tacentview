@@ -2,7 +2,7 @@
 //
 // A texture viewer for various formats.
 //
-// Copyright (c) 2019, 2020 Tristan Grimmer.
+// Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -15,7 +15,7 @@
 #pragma once
 #include <Math/tVector2.h>
 #include <Math/tVector4.h>
-#include <System/tCommand.h>
+#include <System/tCmdLine.h>
 #include "Settings.h"
 namespace Viewer { class Image; }
 class tColouri;
@@ -29,7 +29,7 @@ namespace Viewer
 	extern tList<tStringItem> ImagesSubDirs;
 	extern tList<Viewer::Image> Images;
 	extern tItList<Viewer::Image> ImagesLoadTimeSorted;
-	extern tCommand::tParam ImageFileParam;
+	extern tCmdLine::tParam ImageFileParam;
 	extern tColouri PixelColour;
 	extern Viewer::Image DefaultThumbnailImage;
 	extern Viewer::Image UpFolderImage;

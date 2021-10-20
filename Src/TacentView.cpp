@@ -26,7 +26,7 @@
 
 #include <Foundation/tVersion.cmake.h>
 #include <Foundation/tHash.h>
-#include <System/tCommand.h>
+#include <System/tCmdLine.h>
 #include <Image/tPicture.h>
 #include <System/tFile.h>
 #include <System/tTime.h>
@@ -58,7 +58,7 @@ using namespace tMath;
 
 namespace Viewer
 {
-	tCommand::tParam ImageFileParam(1, "ImageFile", "File to open.");
+	tCmdLine::tParam ImageFileParam(1, "ImageFile", "File to open.");
 	NavLogBar NavBar;
 	tString ImagesDir;
 	tList<tStringItem> ImagesSubDirs;
@@ -2584,7 +2584,7 @@ int main(int argc, char** argv)
 {
 	tSystem::tSetSupplementaryDebuggerOutput();
 	tSystem::tSetStdoutRedirectCallback(Viewer::PrintRedirectCallback);
-	tCommand::tParse(argc, argv);
+	tCmdLine::tParse(argc, argv);
 
 	#ifdef PLATFORM_WINDOWS
 	if (Viewer::ImageFileParam.IsPresent())
