@@ -222,7 +222,7 @@ void Viewer::ShowCheatSheetPopup(bool* popen)
 		ImGui::Text("F5");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Refresh/Reload Image");
 		ImGui::Text("F11");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Fullscreen");
 		ImGui::Text("Alt-Enter");   ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Fullscreen");
-		ImGui::Text("Esc");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Exit Fullscreen / Basic Mode");
+		ImGui::Text("Esc");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Quit / Exit Fullscreen / Basic");
 		#ifdef PACKAGE_SNAP
 		ImGui::Text("Tab");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Open File Browser (No Snap Support)");
 		#else
@@ -256,7 +256,7 @@ void Viewer::ShowCheatSheetPopup(bool* popen)
 	
 		ImGui::Text("Ctrl-S");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Save As...");
 		ImGui::Text("Alt-S");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Save All...");
-		ImGui::Text("B");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Basic Mode");
+		ImGui::Text("B");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Basic Mode");
 		ImGui::Text("F");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom Fit");
 		ImGui::Text("L");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Show Debug Log");
 		ImGui::Text("D");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom Downscale Only");

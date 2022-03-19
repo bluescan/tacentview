@@ -130,6 +130,7 @@ namespace Viewer
 	bool Request_RenameModal					= false;
 	bool Request_SnapMessage_NoFileBrowse		= false;
 	bool Request_SnapMessage_NoFrameTrans		= false;
+	bool Request_Quit							= false;
 	bool PrefsWindow							= false;
 	bool PropEditorWindow						= false;
 	bool CropMode								= false;
@@ -2137,8 +2138,13 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case GLFW_KEY_ESCAPE:
 			if (FullscreenMode)
 				ChangeScreenMode(false);
-			else if (!Config.ShowMenuBar)
-				Config.ShowMenuBar = true;
+			else if (IsBasicViewAndBehaviour())
+			{
+				Config.ResetUISettings();
+				AutoPropertyWindow();
+			}
+			else
+				Viewer::Request_Quit = true;				
 			break;
 
 		case GLFW_KEY_DELETE:
@@ -2801,7 +2807,7 @@ int main(int argc, char** argv)
 
 	// Main loop.
 	static double lastUpdateTime = glfwGetTime();
-	while (!glfwWindowShouldClose(Viewer::Window))
+	while (!glfwWindowShouldClose(Viewer::Window) && !Viewer::Request_Quit)
 	{
 		double currUpdateTime = glfwGetTime();
 		Viewer::Update(Viewer::Window, currUpdateTime - lastUpdateTime);
