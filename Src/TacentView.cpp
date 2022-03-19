@@ -2072,6 +2072,11 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		lastRepeatFrameNum = FrameNumber;
 	}
 
+	// Convert key codes to support non-US keyboards.
+	const char* keyName = glfwGetKeyName(key, 0);
+	if (keyName && *keyName)
+		key = tStd::tChrupr(keyName[0]);
+
 	switch (key)
 	{
 		case GLFW_KEY_LEFT:
