@@ -98,6 +98,7 @@ void Viewer::Settings::ResetBehaviourSettings()
 	MipmapChaining				= true;
 	AutoPlayAnimatedImages		= true;
 	MonitorGamma				= tMath::DefaultGamma;
+	EscCanQuit					= true;
 }
 
 
@@ -205,6 +206,7 @@ void Viewer::Settings::Load(const tString& filename)
 				ReadItem(AutoPropertyWindow);
 				ReadItem(AutoPlayAnimatedImages);
 				ReadItem(MonitorGamma);
+				ReadItem(EscCanQuit);
 			}
 		}
 	}
@@ -324,6 +326,7 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(AutoPropertyWindow);
 	WriteItem(AutoPlayAnimatedImages);
 	WriteItem(MonitorGamma);
+	WriteItem(EscCanQuit);
 
 	return true;
 }

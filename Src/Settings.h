@@ -121,6 +121,7 @@ namespace Viewer
 		bool AutoPropertyWindow;			// Auto display property editor window for supported file types.
 		bool AutoPlayAnimatedImages;		// Automatically play animated gifs, apngs, and WebPs.
 		float MonitorGamma;					// Used when displaying HDR formats to do gamma correction.
+		bool EscCanQuit;					// Can pressing the Esc key quit the app,
 
 		void Load(const tString& filename);
 		bool Save(const tString& filename);

@@ -192,6 +192,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::Checkbox("Confirm File Overwrites", &Config.ConfirmFileOverwrites);
 			ImGui::Checkbox("Auto Propery Window", &Config.AutoPropertyWindow);
 			ImGui::Checkbox("Auto Play Anims", &Config.AutoPlayAnimatedImages);
+			ImGui::Checkbox("Esc Key Can Quit", &Config.EscCanQuit);
 			
 			ImGui::EndTabItem();
 		}

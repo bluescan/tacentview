@@ -2143,7 +2143,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				Config.ResetUISettings();
 				AutoPropertyWindow();
 			}
-			else
+			else if (Config.EscCanQuit)
 				Viewer::Request_Quit = true;				
 			break;
 
