@@ -2,7 +2,7 @@
 //
 // A texture viewer for various formats.
 //
-// Copyright (c) 2018, 2019, 2020, 2021 Tristan Grimmer.
+// Copyright (c) 2018, 2019, 2020, 2021, 2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -49,7 +49,7 @@
 #include "Resize.h"
 #include "Rotate.h"
 #include "OpenSaveDialogs.h"
-#include "Settings.h"
+#include "Config.h"
 #include "Version.cmake.h"
 using namespace tStd;
 using namespace tSystem;
@@ -261,7 +261,7 @@ tVector2 Viewer::GetDialogOrigin(float index)
 
 int Viewer::GetNavBarHeight()
 {
-	if (FullscreenMode || !Config.ShowNavBar)
+	if (FullscreenMode || !Config::Current.ShowNavBar)
 		return 0;
 
 	return NavBar.GetShowLog() ? 150 : 24;
@@ -350,41 +350,41 @@ void Viewer::PopulateImages()
 		ImagesLoadTimeSorted.Append(newImg);
 	}
 
-	SortImages(Settings::SortKeyEnum(Config.SortKey), Config.SortAscending);
+	SortImages(Config::Settings::SortKeyEnum(Config::Current.SortKey), Config::Current.SortAscending);
 	CurrImage = nullptr;
 }
 
 
-void Viewer::SortImages(Settings::SortKeyEnum key, bool ascending)
+void Viewer::SortImages(Config::Settings::SortKeyEnum key, bool ascending)
 {
 	ImageCompareFn* sortFn;
 	switch (key)
 	{
-		case Settings::SortKeyEnum::FileName:
+		case Config::Settings::SortKeyEnum::FileName:
 			sortFn = ascending ? Compare_ImageFileNameAscending : &Compare_ImageFileNameDescending;
 			break;
 
-		case Settings::SortKeyEnum::FileModTime:
+		case Config::Settings::SortKeyEnum::FileModTime:
 			sortFn = ascending ? Compare_ImageModTimeAscending : Compare_ImageModTimeDescending;
 			break;
 
-		case Settings::SortKeyEnum::FileSize:
+		case Config::Settings::SortKeyEnum::FileSize:
 			sortFn = ascending ? Compare_ImageFileSizeAscending : Compare_ImageFileSizeDescending;
 			break;
 
-		case Settings::SortKeyEnum::FileType:
+		case Config::Settings::SortKeyEnum::FileType:
 			sortFn = ascending ? Compare_ImageFileTypeAscending : Compare_ImageFileTypeDescending;
 			break;
 
-		case Settings::SortKeyEnum::ImageArea:
+		case Config::Settings::SortKeyEnum::ImageArea:
 			sortFn = ascending ? Compare_ImageAreaAscending : Compare_ImageAreaDescending;
 			break;
 
-		case Settings::SortKeyEnum::ImageWidth:
+		case Config::Settings::SortKeyEnum::ImageWidth:
 			sortFn = ascending ? Compare_ImageWidthAscending : Compare_ImageWidthDescending;
 			break;
 
-		case Settings::SortKeyEnum::ImageHeight:
+		case Config::Settings::SortKeyEnum::ImageHeight:
 			sortFn = ascending ? Compare_ImageHeightAscending : Compare_ImageHeightDescending;
 			break;
 	}
@@ -442,7 +442,7 @@ void Viewer::SetCurrentImage(const tString& currFilename)
 
 void Viewer::AutoPropertyWindow()
 {
-	if (Config.AutoPropertyWindow)
+	if (Config::Current.AutoPropertyWindow)
 		PropEditorWindow = (CurrImage->TypeSupportsProperties() || (CurrImage->GetNumFrames() > 1));
 
 	if (SlideshowPlaying)
@@ -460,7 +460,7 @@ void Viewer::LoadCurrImage()
 	AutoPropertyWindow();
 	if
 	(
-		Config.AutoPlayAnimatedImages && (CurrImage->GetNumFrames() > 1) &&
+		Config::Current.AutoPlayAnimatedImages && (CurrImage->GetNumFrames() > 1) &&
 		(
 			(CurrImage->Filetype == tFileType::GIF) ||
 			(CurrImage->Filetype == tFileType::WEBP) ||
@@ -480,7 +480,7 @@ void Viewer::LoadCurrImage()
 
 	// We only need to consider unloading an image when a new one is loaded... in this function.
 	// We currently do not allow unloading when in slideshow and the frame duration is small.
-	bool slideshowSmallDuration = SlideshowPlaying && (Config.SlideshowPeriod < 0.5f);
+	bool slideshowSmallDuration = SlideshowPlaying && (Config::Current.SlideshowPeriod < 0.5f);
 	if (imgJustLoaded && !slideshowSmallDuration)
 	{
 		ImagesLoadTimeSorted.Sort(Compare_ImageLoadTimeAscending);
@@ -489,7 +489,7 @@ void Viewer::LoadCurrImage()
 		for (tItList<Image>::Iter iter = ImagesLoadTimeSorted.First(); iter; iter++)
 			usedMem += int64((*iter).Info.MemSizeBytes);
 
-		int64 allowedMem = int64(Config.MaxImageMemMB) * 1024 * 1024;
+		int64 allowedMem = int64(Config::Current.MaxImageMemMB) * 1024 * 1024;
 		if (usedMem > allowedMem)
 		{
 			tPrintf("Used image mem (%|64d) bigger than max (%|64d). Unloading.\n", usedMem, allowedMem);
@@ -515,12 +515,12 @@ void Viewer::LoadCurrImage()
 
 bool Viewer::OnPrevious()
 {
-	bool circ = SlideshowPlaying && Config.SlideshowLooping;
+	bool circ = SlideshowPlaying && Config::Current.SlideshowLooping;
 	if (!CurrImage || (!circ && !CurrImage->Prev()))
 		return false;
 
 	if (SlideshowPlaying)
-		SlideshowCountdown = Config.SlideshowPeriod;
+		SlideshowCountdown = Config::Current.SlideshowPeriod;
 
 	CurrImage = circ ? Images.PrevCirc(CurrImage) : CurrImage->Prev();
 	LoadCurrImage();
@@ -530,12 +530,12 @@ bool Viewer::OnPrevious()
 
 bool Viewer::OnNext()
 {
-	bool circ = SlideshowPlaying && Config.SlideshowLooping;
+	bool circ = SlideshowPlaying && Config::Current.SlideshowLooping;
 	if (!CurrImage || (!circ && !CurrImage->Next()))
 		return false;
 
 	if (SlideshowPlaying)
-		SlideshowCountdown = Config.SlideshowPeriod;
+		SlideshowCountdown = Config::Current.SlideshowPeriod;
 
 	CurrImage = circ ? Images.NextCirc(CurrImage) : CurrImage->Next();
 	LoadCurrImage();
@@ -678,15 +678,15 @@ void Viewer::ResetPan(bool resetX, bool resetY)
 
 void Viewer::DrawBackground(float bgX, float bgY, float bgW, float bgH)
 {
-	if (Config.TransparentWorkArea)
+	if (Config::Current.TransparentWorkArea)
 		return;
 
-	switch (Config.BackgroundStyle)
+	switch (Config::Current.BackgroundStyle)
 	{
-		case int(Settings::BGStyle::None):
+		case int(Config::Settings::BGStyle::None):
 			return;
 
-		case int(Settings::BGStyle::Checkerboard):
+		case int(Config::Settings::BGStyle::Checkerboard):
 		{
 			// Semitransparent checkerboard background.
 			int x = 0;
@@ -735,15 +735,15 @@ void Viewer::DrawBackground(float bgX, float bgY, float bgW, float bgH)
 			break;
 		}
 
-		case int(Settings::BGStyle::Black):
-		case int(Settings::BGStyle::Grey):
-		case int(Settings::BGStyle::White):
+		case int(Config::Settings::BGStyle::Black):
+		case int(Config::Settings::BGStyle::Grey):
+		case int(Config::Settings::BGStyle::White):
 		{
-			switch (Config.BackgroundStyle)
+			switch (Config::Current.BackgroundStyle)
 			{
-				case int(Settings::BGStyle::Black):	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);		break;
-				case int(Settings::BGStyle::Grey):	glColor4f(0.25f, 0.25f, 0.3f, 1.0f);	break;
-				case int(Settings::BGStyle::White):	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);		break;
+				case int(Config::Settings::BGStyle::Black):	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);		break;
+				case int(Config::Settings::BGStyle::Grey):	glColor4f(0.25f, 0.25f, 0.3f, 1.0f);	break;
+				case int(Config::Settings::BGStyle::White):	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);		break;
 			}
 			float l = tMath::tRound(bgX);
 			float r = tMath::tRound(bgX+bgW);
@@ -775,7 +775,7 @@ void Viewer::ConvertScreenPosToImagePos
 	float picY = (scrPos.y) - lrtb.B;
 	float normX = picX / (lrtb.R-lrtb.L);
 	float normY = picY / (lrtb.T-lrtb.B);
-	if (Config.Tile)
+	if (Config::Current.Tile)
 	{
 		normX = tMath::tMod(normX, 1.0f);
 		if (normX < 0.0f) normX += 1.0f;
@@ -792,7 +792,7 @@ void Viewer::ConvertScreenPosToImagePos
 
 	imgX = int(imposX);
 	imgY = int(imposY);
-	if (!Config.Tile)
+	if (!Config::Current.Tile)
 	{
 		tMath::tiClamp(imgX, 0, CurrImage->GetWidth() - 1);
 		tMath::tiClamp(imgY, 0, CurrImage->GetHeight() - 1);
@@ -871,13 +871,13 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (dopoll)
 		glfwPollEvents();
 
-	if (Config.TransparentWorkArea)
+	if (Config::Current.TransparentWorkArea)
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	else
 		glClearColor(ColourClear.x, ColourClear.y, ColourClear.z, ColourClear.w);
 	glClear(GL_COLOR_BUFFER_BIT);
 	int bottomUIHeight	= GetNavBarHeight();
-	int topUIHeight		= (FullscreenMode || !Config.ShowMenuBar) ? 0 : MenuBarHeight;
+	int topUIHeight		= (FullscreenMode || !Config::Current.ShowMenuBar) ? 0 : MenuBarHeight;
 
 	ImGui_ImplOpenGL2_NewFrame();		
 	ImGui_ImplGlfw_NewFrame();
@@ -990,28 +990,28 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 
 		// Modify the UVs here to magnify.
-		if ((draww < w) || Config.Tile)
+		if ((draww < w) || Config::Current.Tile)
 		{
 			if (RMBDown)
 				PanDragDownOffsetX = mouseXi - DragAnchorX;
 
-			if (!Config.Tile)
+			if (!Config::Current.Tile)
 				tMath::tiClamp(PanDragDownOffsetX, int(-(w-draww)/2.0f) - PanOffsetX, int((w-draww)/2.0f) - PanOffsetX);
 		}
 
-		if ((drawh < h) || Config.Tile)
+		if ((drawh < h) || Config::Current.Tile)
 		{
 			if (RMBDown)
 				PanDragDownOffsetY = mouseYi - DragAnchorY;
 
-			if (!Config.Tile)
+			if (!Config::Current.Tile)
 				tMath::tiClamp(PanDragDownOffsetY, int(-(h-drawh)/2.0f) - PanOffsetY, int((h-drawh)/2.0f) - PanOffsetY);
 		}
 
-		if ((draww > w) && !Config.Tile)
+		if ((draww > w) && !Config::Current.Tile)
 			ResetPan(true, false);
 
-		if ((drawh > h) && !Config.Tile)
+		if ((drawh > h) && !Config::Current.Tile)
 			ResetPan(false, true);
 
 		uoff = -float(PanOffsetX+PanDragDownOffsetX)/w;
@@ -1019,7 +1019,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		// Draw background.
 		glDisable(GL_TEXTURE_2D);
-		if ((Config.BackgroundExtend || Config.Tile) && !CropMode)
+		if ((Config::Current.BackgroundExtend || Config::Current.Tile) && !CropMode)
 			DrawBackground(hmargin, vmargin, draww, drawh);
 		else
 			DrawBackground(left, bottom, right-left, top-bottom);
@@ -1041,7 +1041,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 
 		glBegin(GL_QUADS);
-		if (!Config.Tile)
+		if (!Config::Current.Tile)
 		{
 			glTexCoord2f(0.0f + umarg + uoff, 0.0f + vmarg + voff); glVertex2f(left,  bottom);
 			glTexCoord2f(0.0f + umarg + uoff, 1.0f - vmarg + voff); glVertex2f(left,  top);
@@ -1104,11 +1104,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			!CropMode &&
 
 			// Must have a colour inspector visible (menu bar and details both have one).
-			((Config.ShowMenuBar && !FullscreenMode) || Config.ShowImageDetails) &&
+			((Config::Current.ShowMenuBar && !FullscreenMode) || Config::Current.ShowImageDetails) &&
 
 			// And any of the following: a) details is on, b) disappear countdown not finished, or c) mouse is close.
 			(
-				Config.ShowImageDetails || (DisappearCountdown > 0.0) ||
+				Config::Current.ShowImageDetails || (DisappearCountdown > 0.0) ||
 
 				// Continue to draw the reticle if mouse is close enough (even if timer expired).
 				(retMouseDistSq < ReticleToMouseDist*ReticleToMouseDist)
@@ -1200,13 +1200,13 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGuiWindowFlags_NoTitleBar		|	ImGuiWindowFlags_NoScrollbar	|	ImGuiWindowFlags_NoMove			| ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoCollapse		|	ImGuiWindowFlags_NoNav			|	ImGuiWindowFlags_NoBackground	| ImGuiWindowFlags_NoBringToFrontOnFocus;
 
-	if (SlideshowPlaying && (Config.SlideshowPeriod >= 1.0f) && Config.SlideshowProgressArc)
+	if (SlideshowPlaying && (Config::Current.SlideshowPeriod >= 1.0f) && Config::Current.SlideshowProgressArc)
 	{
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+7.0f, float(topUIHeight) + float(workAreaH) - 93.0f));
 		ImGui::Begin("SlideProgress", nullptr, flagsImgButton | ImGuiWindowFlags_NoInputs);
 		ImGui::SetCursorPos(tVector2(15, 14));
 
-		float percent = float(SlideshowCountdown / Config.SlideshowPeriod);
+		float percent = float(SlideshowCountdown / Config::Current.SlideshowPeriod);
 		ProgressArc(8.0f, percent, ImVec4(1.0f, 1.0f, 1.0f, 1.0f), Viewer::ColourClear);
 		ImGui::End();
 	}
@@ -1221,7 +1221,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	(
 		!CropMode &&
 		((DisappearCountdown > 0.0) || hitAreaPrevArrow.IsPointInside(mousePos)) &&
-		((CurrImage != Images.First()) || (SlideshowPlaying && Config.SlideshowLooping))
+		((CurrImage != Images.First()) || (SlideshowPlaying && Config::Current.SlideshowLooping))
 	)
 	{
 		// Previous arrow.
@@ -1240,7 +1240,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	(
 		!CropMode &&
 		((DisappearCountdown > 0.0) || hitAreaNextArrow.IsPointInside(mousePos)) &&
-		((CurrImage != Images.Last()) || (SlideshowPlaying && Config.SlideshowLooping))
+		((CurrImage != Images.Last()) || (SlideshowPlaying && Config::Current.SlideshowLooping))
 	)
 	{
 		// Next arrow.
@@ -1257,7 +1257,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if
 	(
 		!CropMode && PropEditorWindow &&
-		Config.ShowFrameScrubber && CurrImage && (CurrImage->GetNumFrames() > 1) && !CurrImage->IsAltPictureEnabled()
+		Config::Current.ShowFrameScrubber && CurrImage && (CurrImage->GetNumFrames() > 1) && !CurrImage->IsAltPictureEnabled()
 	)
 	{
 		ImGui::SetNextWindowPos(tVector2(0.0f, float(topUIHeight) + float(workAreaH) - 34.0f));
@@ -1291,9 +1291,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-120.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
 		ImGui::Begin("Repeat", nullptr, flagsImgButton);
-		uint64 playModeImageID = Config.SlideshowLooping ? PlayOnceImage.Bind() : PlayLoopImage.Bind();
+		uint64 playModeImageID = Config::Current.SlideshowLooping ? PlayOnceImage.Bind() : PlayLoopImage.Bind();
 		if (ImGui::ImageButton(ImTextureID(playModeImageID), tVector2(24,24), tVector2(0,0), tVector2(1,1), 2, tVector4(0,0,0,0), tVector4(1,1,1,1)))
-			Config.SlideshowLooping = !Config.SlideshowLooping;
+			Config::Current.SlideshowLooping = !Config::Current.SlideshowLooping;
 		ImGui::End();
 
 		// Skip to beginning button.
@@ -1327,7 +1327,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton(ImTextureID(psImageID), tVector2(24,24), tVector2(0,0), tVector2(1,1), 2, tVector4(0,0,0,0), tVector4(1,1,1,1)))
 		{
 			SlideshowPlaying = !SlideshowPlaying;
-			SlideshowCountdown = Config.SlideshowPeriod;
+			SlideshowCountdown = Config::Current.SlideshowPeriod;
 		}
 		ImGui::End();
 
@@ -1371,7 +1371,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::Begin("ExitBasic", nullptr, flagsImgButton);
 			if (ImGui::Button("ESC", tVector2(50,28)))
 			{
-				Config.ResetUISettings();
+				Config::Current.ResetUISettings();
 				AutoPropertyWindow();
 			}
 			ImGui::End();
@@ -1380,7 +1380,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	ImGui::SetNextWindowPos(tVector2(0, 0));
 
-	if (!FullscreenMode && Config.ShowMenuBar)
+	if (!FullscreenMode && Config::Current.ShowMenuBar)
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,8));
 		ImGui::BeginMainMenuBar();
@@ -1512,7 +1512,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::MenuItem("Rotate Image...", "R") && CurrImage)
 				rotateImagePressed = true;
 
-			ImGui::MenuItem("Edit Pixel", "A", &Config.ShowPixelEditor);
+			ImGui::MenuItem("Edit Pixel", "A", &Config::Current.ShowPixelEditor);
 			ImGui::Separator();
 
 			ImGui::MenuItem("Property Editor...", "E", &PropEditorWindow);
@@ -1534,9 +1534,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::BeginMenu("View"))
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
-			ImGui::MenuItem("Menu Bar", "M", &Config.ShowMenuBar, !CropMode);
-			ImGui::MenuItem("Nav Bar", "N", &Config.ShowNavBar, !CropMode);
-			ImGui::MenuItem("Slideshow Progress", "S", &Config.SlideshowProgressArc, !CropMode);
+			ImGui::MenuItem("Menu Bar", "M", &Config::Current.ShowMenuBar, !CropMode);
+			ImGui::MenuItem("Nav Bar", "N", &Config::Current.ShowNavBar, !CropMode);
+			ImGui::MenuItem("Slideshow Progress", "S", &Config::Current.SlideshowProgressArc, !CropMode);
 			bool basicSettings = IsBasicViewAndBehaviour();
 			if (ImGui::MenuItem("Basic View Mode", "B", &basicSettings, !CropMode))
 			{
@@ -1546,12 +1546,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 				}
 				else
 				{
-					Config.ResetUISettings();
+					Config::Current.ResetUISettings();
 					AutoPropertyWindow();
 				}
 			}
-			ImGui::MenuItem("Image Details", "I", &Config.ShowImageDetails);
-			ImGui::MenuItem("Content View", "V", &Config.ContentViewShow);
+			ImGui::MenuItem("Image Details", "I", &Config::Current.ShowImageDetails);
+			ImGui::MenuItem("Content View", "V", &Config::Current.ContentViewShow);
 
 			ImGui::Separator();
 
@@ -1690,7 +1690,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 		ShowToolTip("Rotate Theta");
 
-		bool cropAvail = CurrImage && transAvail && !Config.Tile;
+		bool cropAvail = CurrImage && transAvail && !Config::Current.Tile;
 		if (ImGui::ImageButton
 		(
 			ImTextureID(CropImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
@@ -1728,11 +1728,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton
 		(
 			ImTextureID(TileImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
-			Config.Tile ? ColourPressedBG : ColourBG, tileAvail ? ColourEnabledTint : ColourDisabledTint) && tileAvail
+			Config::Current.Tile ? ColourPressedBG : ColourBG, tileAvail ? ColourEnabledTint : ColourDisabledTint) && tileAvail
 		)
 		{
-			Config.Tile = !Config.Tile;
-			if (!Config.Tile)
+			Config::Current.Tile = !Config::Current.Tile;
+			if (!Config::Current.Tile)
 				ResetPan();
 		}
 		ShowToolTip("Show Images Tiled");
@@ -1748,8 +1748,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton
 		(
 			ImTextureID(ContentViewImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
-			Config.ContentViewShow ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	Config.ContentViewShow = !Config.ContentViewShow;
+			Config::Current.ContentViewShow ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	Config::Current.ContentViewShow = !Config::Current.ContentViewShow;
 		ShowToolTip("Content Thumbnail View");
 
 		if (ImGui::ImageButton
@@ -1777,8 +1777,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton
 		(
 			ImTextureID(InfoOverlayImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
-			Config.ShowImageDetails ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	Config.ShowImageDetails = !Config.ShowImageDetails;
+			Config::Current.ShowImageDetails ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	Config::Current.ShowImageDetails = !Config::Current.ShowImageDetails;
 		ShowToolTip("Information Overlay");
 
 		if (ImGui::ImageButton
@@ -1809,18 +1809,18 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	ImGui::PopStyleVar();
 
-	if (!FullscreenMode && Config.ShowNavBar)
+	if (!FullscreenMode && Config::Current.ShowNavBar)
 		DrawNavBar(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
 
 	// We allow the overlay and cheatsheet in fullscreen.
-	if (Config.ShowImageDetails)
-		ShowImageDetailsOverlay(&Config.ShowImageDetails, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), CursorX, CursorY, ZoomPercent);
+	if (Config::Current.ShowImageDetails)
+		ShowImageDetailsOverlay(&Config::Current.ShowImageDetails, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), CursorX, CursorY, ZoomPercent);
 
-	if (Config.ShowPixelEditor)
-		ShowPixelEditorOverlay(&Config.ShowPixelEditor);
+	if (Config::Current.ShowPixelEditor)
+		ShowPixelEditorOverlay(&Config::Current.ShowPixelEditor);
 
-	if (Config.ContentViewShow)
-		ShowContentViewDialog(&Config.ContentViewShow);
+	if (Config::Current.ContentViewShow)
+		ShowContentViewDialog(&Config::Current.ContentViewShow);
 
 	if (ShowCheatSheet)
 		ShowCheatSheetPopup(&ShowCheatSheet);
@@ -1833,7 +1833,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (Request_DeleteFileModal)
 	{
 		Request_DeleteFileModal = false;
-		if (!Config.ConfirmDeletes)
+		if (!Config::Current.ConfirmDeletes)
 			DeleteImageFile(CurrImage->Filename, true);
 		else
 			ImGui::OpenPopup("Delete File");
@@ -1885,7 +1885,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (!ok)
 				SlideshowPlaying = false;
 			else
-				SlideshowCountdown = Config.SlideshowPeriod;
+				SlideshowCountdown = Config::Current.SlideshowPeriod;
 		}
 	}
 }
@@ -1921,8 +1921,8 @@ bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 	// If currently in windowed mode, remember our window geometry.
 	if (!force && !FullscreenMode)
 	{
-		glfwGetWindowPos(Viewer::Window, &Viewer::Config.WindowX, &Viewer::Config.WindowY);
-		glfwGetWindowSize(Viewer::Window, &Viewer::Config.WindowW, &Viewer::Config.WindowH);
+		glfwGetWindowPos(Viewer::Window, &Viewer::Config::Current.WindowX, &Viewer::Config::Current.WindowY);
+		glfwGetWindowSize(Viewer::Window, &Viewer::Config::Current.WindowW, &Viewer::Config::Current.WindowH);
 	}
 
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
@@ -1934,7 +1934,7 @@ bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 
 	if (fullscreen)
 	{
-		if (Config.TransparentWorkArea)
+		if (Config::Current.TransparentWorkArea)
 		{
 			glfwSetWindowSize(Viewer::Window, mode->width, mode->height);
 			glfwSetWindowPos(Viewer::Window, 0, 0);
@@ -1946,14 +1946,14 @@ bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 	}
 	else
 	{
-		if (Config.TransparentWorkArea)
+		if (Config::Current.TransparentWorkArea)
 		{
-			glfwSetWindowSize(Viewer::Window, Viewer::Config.WindowW, Viewer::Config.WindowH);
-			glfwSetWindowPos(Viewer::Window, Viewer::Config.WindowX, Viewer::Config.WindowY);
+			glfwSetWindowSize(Viewer::Window, Viewer::Config::Current.WindowW, Viewer::Config::Current.WindowH);
+			glfwSetWindowPos(Viewer::Window, Viewer::Config::Current.WindowX, Viewer::Config::Current.WindowY);
 		}
 		else
 		{
-			glfwSetWindowMonitor(Viewer::Window, nullptr, Viewer::Config.WindowX, Viewer::Config.WindowY, Viewer::Config.WindowW, Viewer::Config.WindowH, mode->refreshRate);
+			glfwSetWindowMonitor(Viewer::Window, nullptr, Viewer::Config::Current.WindowX, Viewer::Config::Current.WindowY, Viewer::Config::Current.WindowW, Viewer::Config::Current.WindowH, mode->refreshRate);
 		}
 	}
 
@@ -1985,22 +1985,22 @@ void Viewer::SetBasicViewAndBehaviour()
 	// viewer. Turns off the nav and menu bars, any dialogs (help, about, thumbnails, info, etc), sets the zoom
 	// mode to downscale-only, makes the background match the border colour, sets the auto prop editor to false,
 	// sets the slideshow/play to looping, and the slideshow duration to 8 seconds.
-	Config.ShowMenuBar				= false;
-	Config.ShowNavBar				= false;
-	Config.ShowImageDetails			= false;
-	Config.ShowPixelEditor			= false;
-	Config.ShowFrameScrubber		= false;
-	Config.AutoPropertyWindow		= false;
-	Config.ContentViewShow			= false;
-	Config.AutoPlayAnimatedImages	= true;
-	Config.BackgroundStyle			= int(Settings::BGStyle::None);
-	Config.SlideshowLooping			= true;
-	Config.SlideshowProgressArc		= true;
-	Config.SlideshowPeriod			= 8.0;
-	CurrZoomMode					= ZoomMode::DownscaleOnly;
-	PropEditorWindow				= false;
-	ShowCheatSheet					= false;
-	ShowAbout						= false;
+	Config::Current.ShowMenuBar				= false;
+	Config::Current.ShowNavBar				= false;
+	Config::Current.ShowImageDetails		= false;
+	Config::Current.ShowPixelEditor			= false;
+	Config::Current.ShowFrameScrubber		= false;
+	Config::Current.AutoPropertyWindow		= false;
+	Config::Current.ContentViewShow			= false;
+	Config::Current.AutoPlayAnimatedImages	= true;
+	Config::Current.BackgroundStyle			= int(Config::Settings::BGStyle::None);
+	Config::Current.SlideshowLooping		= true;
+	Config::Current.SlideshowProgressArc	= true;
+	Config::Current.SlideshowPeriod			= 8.0;
+	CurrZoomMode							= ZoomMode::DownscaleOnly;
+	PropEditorWindow						= false;
+	ShowCheatSheet							= false;
+	ShowAbout								= false;
 }
 
 
@@ -2008,11 +2008,11 @@ bool Viewer::IsBasicViewAndBehaviour()
 {
 	return
 	(
-		!Config.ShowMenuBar			&& !Config.ShowNavBar			&& !Config.ShowImageDetails		&& !Config.ShowPixelEditor			&&
-		!Config.ShowFrameScrubber	&& !Config.AutoPropertyWindow	&& !Config.ContentViewShow		&& Config.AutoPlayAnimatedImages	&&
-		(Config.BackgroundStyle == int(Settings::BGStyle::None))	&&
-		Config.SlideshowLooping										&& Config.SlideshowProgressArc	&&
-		tMath::tApproxEqual(Config.SlideshowPeriod, 8.0)			&&
+		!Config::Current.ShowMenuBar			&& !Config::Current.ShowNavBar			&& !Config::Current.ShowImageDetails		&& !Config::Current.ShowPixelEditor			&&
+		!Config::Current.ShowFrameScrubber	&& !Config::Current.AutoPropertyWindow	&& !Config::Current.ContentViewShow		&& Config::Current.AutoPlayAnimatedImages	&&
+		(Config::Current.BackgroundStyle == int(Config::Settings::BGStyle::None))	&&
+		Config::Current.SlideshowLooping										&& Config::Current.SlideshowProgressArc	&&
+		tMath::tApproxEqual(Config::Current.SlideshowPeriod, 8.0)			&&
 		(CurrZoomMode == ZoomMode::DownscaleOnly)					&&
 		!PropEditorWindow			&& !ShowCheatSheet				&& !ShowAbout
 	);
@@ -2145,10 +2145,10 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				ChangeScreenMode(false);
 			else if (IsBasicViewAndBehaviour())
 			{
-				Config.ResetUISettings();
+				Config::Current.ResetUISettings();
 				AutoPropertyWindow();
 			}
-			else if (Config.EscCanQuit)
+			else if (Config::Current.EscCanQuit)
 				Viewer::Request_Quit = true;				
 			break;
 
@@ -2229,8 +2229,8 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case GLFW_KEY_T:
-			Config.Tile = !Config.Tile;
-			if (!Config.Tile)
+			Config::Current.Tile = !Config::Current.Tile;
+			if (!Config::Current.Tile)
 				ResetPan();
 			break;
 
@@ -2239,7 +2239,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				break;
 			if (IsBasicViewAndBehaviour())
 			{
-				Config.ResetUISettings();
+				Config::Current.ResetUISettings();
 				AutoPropertyWindow();
 			}
 			else
@@ -2256,31 +2256,31 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			}
 			else if (!CropMode)
 			{
-				Config.ShowMenuBar = !Config.ShowMenuBar;
+				Config::Current.ShowMenuBar = !Config::Current.ShowMenuBar;
 			}
 			break;
 
 		case GLFW_KEY_N:
 			if (!CropMode)
-				Config.ShowNavBar = !Config.ShowNavBar;
+				Config::Current.ShowNavBar = !Config::Current.ShowNavBar;
 			break;
 
 		case GLFW_KEY_I:
-			Viewer::Config.ShowImageDetails = !Viewer::Config.ShowImageDetails;
+			Viewer::Config::Current.ShowImageDetails = !Viewer::Config::Current.ShowImageDetails;
 			break;
 
 		case GLFW_KEY_A:
-			Viewer::Config.ShowPixelEditor = !Viewer::Config.ShowPixelEditor;
+			Viewer::Config::Current.ShowPixelEditor = !Viewer::Config::Current.ShowPixelEditor;
 			break;
 
 		case GLFW_KEY_V:
-			Viewer::Config.ContentViewShow = !Viewer::Config.ContentViewShow;
+			Viewer::Config::Current.ContentViewShow = !Viewer::Config::Current.ContentViewShow;
 			break;
 
 		case GLFW_KEY_L:
 			NavBar.SetShowLog( !NavBar.GetShowLog() );
-			if (NavBar.GetShowLog() && !Config.ShowNavBar)
-				Config.ShowNavBar = true;
+			if (NavBar.GetShowLog() && !Config::Current.ShowNavBar)
+				Config::Current.ShowNavBar = true;
 			break;
 
 		case GLFW_KEY_F:
@@ -2337,7 +2337,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case GLFW_KEY_S:			// SaveAs and SaveAll.
 			if (!modifiers)
-				Config.SlideshowProgressArc = !Config.SlideshowProgressArc;
+				Config::Current.SlideshowProgressArc = !Config::Current.SlideshowProgressArc;
 
 			if (!CurrImage)
 				break;
@@ -2493,11 +2493,11 @@ int Viewer::RemoveOldCacheFiles(const tString& cacheDir)
 	tList<tSystem::tFileInfo> cacheFiles;
 	tSystem::tFindFilesFast(cacheFiles, cacheDir, "bin");
 	int numFiles = cacheFiles.NumItems();
-	if (numFiles <= Config.MaxCacheFiles)
+	if (numFiles <= Config::Current.MaxCacheFiles)
 		return 0;
 
 	cacheFiles.Sort(Compare_FileCreationTimeAscending);
-	int targetCount = tClampMin(Config.MaxCacheFiles - 100, 0);
+	int targetCount = tClampMin(Config::Current.MaxCacheFiles - 100, 0);
 
 	int numToRemove = numFiles - targetCount;
 	tAssert(numToRemove >= 0);
@@ -2636,7 +2636,7 @@ int main(int argc, char** argv)
 	#ifdef PLATFORM_WINDOWS
 	tString dataDir = tSystem::tGetProgramDir() + "Data/";
 	Viewer::Image::ThumbCacheDir = dataDir + "Cache/";
-	tString cfgFile = dataDir + "Settings.cfg";
+	tString cfgFile = dataDir + "Viewer.cfg";
 
 	#elif defined(PLATFORM_LINUX)
 
@@ -2644,7 +2644,7 @@ int main(int argc, char** argv)
 		tString progDir = tSystem::tGetProgramDir();
 		tString dataDir = progDir + "Data/";
 
-		tString cfgFile = snapUserData + "Settings.cfg";
+		tString cfgFile = snapUserData + "Viewer.cfg";
 		Viewer::Image::ThumbCacheDir = snapUserCommon + "Cache/";
 
 		#else
@@ -2655,7 +2655,7 @@ int main(int argc, char** argv)
 		if (!tSystem::tDirExists(localAppDir))
 			tSystem::tCreateDir(localAppDir);	
 		Viewer::Image::ThumbCacheDir = localAppDir + "Cache/";
-		tString cfgFile = localAppDir + "Settings.cfg";
+		tString cfgFile = localAppDir + "Viewer.cfg";
 		#endif
 
 	#endif
@@ -2663,14 +2663,14 @@ int main(int argc, char** argv)
 	if (!tSystem::tDirExists(Viewer::Image::ThumbCacheDir))
 		tSystem::tCreateDir(Viewer::Image::ThumbCacheDir);
 	
-	Viewer::Config.Load(cfgFile);
-	Viewer::PendingTransparentWorkArea = Viewer::Config.TransparentWorkArea;
+	Viewer::Config::Load(cfgFile);
+	Viewer::PendingTransparentWorkArea = Viewer::Config::Current.TransparentWorkArea;
 
 	// We start with window invisible. For windows DwmSetWindowAttribute won't redraw properly otherwise.
 	// For all plats, we want to position the window before displaying it.
 	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 	bool requestSnapMessageNoTrans = false;
-	if (Viewer::Config.TransparentWorkArea)
+	if (Viewer::Config::Current.TransparentWorkArea)
 	{
 		glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
 		#ifdef PACKAGE_SNAP
@@ -2685,13 +2685,13 @@ int main(int argc, char** argv)
 	// The title here seems to override the Linux hint above. When we create with the title string "tacentview",
 	// glfw makes it the X11 WM_CLASS. This is needed so that the Ubuntu can map the same name in the .desktop file
 	// to find things like the correct dock icon to display. The SetWindowTitle afterwards does not mod the WM_CLASS.
-	Viewer::Window = glfwCreateWindow(Viewer::Config.WindowW, Viewer::Config.WindowH, "tacentview", nullptr, nullptr);
+	Viewer::Window = glfwCreateWindow(Viewer::Config::Current.WindowW, Viewer::Config::Current.WindowH, "tacentview", nullptr, nullptr);
 	if (!Viewer::Window)
 		return 1;
 
 	Viewer::SetWindowIcon(dataDir + "TacentView.ico");
 	Viewer::SetWindowTitle();
-	glfwSetWindowPos(Viewer::Window, Viewer::Config.WindowX, Viewer::Config.WindowY);
+	glfwSetWindowPos(Viewer::Window, Viewer::Config::Current.WindowX, Viewer::Config::Current.WindowY);
 
 	#ifdef PLATFORM_WINDOWS
 	// Make the window title bar show up in black.
@@ -2789,7 +2789,7 @@ int main(int argc, char** argv)
 	else
 		Viewer::SetCurrentImage();
 
-	if (Viewer::Config.TransparentWorkArea)
+	if (Viewer::Config::Current.TransparentWorkArea)
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	else
 		glClearColor(Viewer::ColourClear.x, Viewer::ColourClear.y, Viewer::ColourClear.z, Viewer::ColourClear.w);
@@ -2840,12 +2840,12 @@ int main(int argc, char** argv)
 	// Get current window geometry and set in config file if we're not in fullscreen mode and not iconified.
 	if (!Viewer::FullscreenMode && !Viewer::WindowIconified)
 	{
-		glfwGetWindowPos(Viewer::Window, &Viewer::Config.WindowX, &Viewer::Config.WindowY);
-		glfwGetWindowSize(Viewer::Window, &Viewer::Config.WindowW, &Viewer::Config.WindowH);
+		glfwGetWindowPos(Viewer::Window, &Viewer::Config::Current.WindowX, &Viewer::Config::Current.WindowY);
+		glfwGetWindowSize(Viewer::Window, &Viewer::Config::Current.WindowW, &Viewer::Config::Current.WindowH);
 	}
 
-	Viewer::Config.TransparentWorkArea = Viewer::PendingTransparentWorkArea;
-	Viewer::Config.Save(cfgFile);
+	Viewer::Config::Current.TransparentWorkArea = Viewer::PendingTransparentWorkArea;
+	Viewer::Config::Save(cfgFile);
 
 	// Cleanup.
 	ImGui_ImplOpenGL2_Shutdown();

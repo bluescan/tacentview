@@ -2,7 +2,7 @@
 //
 // Various dialogs and helpers including a log window, info overlay, cheatsheet, help window, and about window.
 //
-// Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
+// Copyright (c) 2019, 2020, 2021, 2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -19,7 +19,7 @@
 #include <GLFW/glfw3.h>
 #include "imgui.h"
 #include "Dialogs.h"
-#include "Settings.h"
+#include "Config.h"
 #include "Image.h"
 #include "TacentView.h"
 #include "Version.cmake.h"
@@ -33,13 +33,13 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 
 	tVector2 windowPos = tVector2
 	(
-		x + ((Config.OverlayCorner & 1) ? w - margin : margin),
-		y + ((Config.OverlayCorner & 2) ? h - margin : margin)
+		x + ((Config::Current.OverlayCorner & 1) ? w - margin : margin),
+		y + ((Config::Current.OverlayCorner & 2) ? h - margin : margin)
 	);
 	tVector2 windowPivot = tVector2
 	(
-		(Config.OverlayCorner & 1) ? 1.0f : 0.0f,
-		(Config.OverlayCorner & 2) ? 1.0f : 0.0f
+		(Config::Current.OverlayCorner & 1) ? 1.0f : 0.0f,
+		(Config::Current.OverlayCorner & 2) ? 1.0f : 0.0f
 	);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, windowPivot);
 	ImGui::SetNextWindowBgAlpha(0.6f);
@@ -90,10 +90,10 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 
 		if (ImGui::BeginPopupContextWindow())
 		{
-			if (ImGui::MenuItem("Top-left",		nullptr, Config.OverlayCorner == 0)) Config.OverlayCorner = 0;
-			if (ImGui::MenuItem("Top-right",	nullptr, Config.OverlayCorner == 1)) Config.OverlayCorner = 1;
-			if (ImGui::MenuItem("Bottom-left",  nullptr, Config.OverlayCorner == 2)) Config.OverlayCorner = 2;
-			if (ImGui::MenuItem("Bottom-right", nullptr, Config.OverlayCorner == 3)) Config.OverlayCorner = 3;
+			if (ImGui::MenuItem("Top-left",		nullptr, Config::Current.OverlayCorner == 0)) Config::Current.OverlayCorner = 0;
+			if (ImGui::MenuItem("Top-right",	nullptr, Config::Current.OverlayCorner == 1)) Config::Current.OverlayCorner = 1;
+			if (ImGui::MenuItem("Bottom-left",  nullptr, Config::Current.OverlayCorner == 2)) Config::Current.OverlayCorner = 2;
+			if (ImGui::MenuItem("Bottom-right", nullptr, Config::Current.OverlayCorner == 3)) Config::Current.OverlayCorner = 3;
 			if (popen && ImGui::MenuItem("Close")) *popen = false;
 			ImGui::EndPopup();
 		}
@@ -222,7 +222,7 @@ void Viewer::ShowCheatSheetPopup(bool* popen)
 		ImGui::Text("F5");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Refresh/Reload Image");
 		ImGui::Text("F11");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Fullscreen");
 		ImGui::Text("Alt-Enter");   ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Fullscreen");
-		if (Config.EscCanQuit)
+		if (Config::Current.EscCanQuit)
 			{ ImGui::Text("Esc");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Quit / Exit Fullscreen or Basic"); }
 		else
 			{ ImGui::Text("Esc");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Exit Fullscreen / Exit Basic"); }
@@ -397,7 +397,7 @@ void Viewer::DoDeleteFileModal()
 	ImGui::Separator();
 
 	ImGui::NewLine();
-	ImGui::Checkbox("Confirm file deletions in the future?", &Config.ConfirmDeletes);
+	ImGui::Checkbox("Confirm file deletions in the future?", &Config::Current.ConfirmDeletes);
 	ImGui::NewLine();
 
 	if (ImGui::Button("Cancel", tVector2(100, 0)))

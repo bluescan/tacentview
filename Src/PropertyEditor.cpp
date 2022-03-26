@@ -2,7 +2,7 @@
 //
 // Image property editor window.
 //
-// Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
+// Copyright (c) 2019, 2020, 2021, 2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -14,7 +14,7 @@
 
 #include "imgui.h"
 #include "PropertyEditor.h"
-#include "Settings.h"
+#include "Config.h"
 #include "Image.h"
 #include "TacentView.h"
 using namespace tMath;
@@ -193,7 +193,7 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 		}
 		ImGui::Checkbox("Preview Duration", &CurrImage->FrameDurationPreviewEnabled);
 		ImGui::SameLine(); ShowHelpMark("If enabled this number of seconds is used for all frame durations while playing.");
-		ImGui::Checkbox("Scrubber", &Config.ShowFrameScrubber);
+		ImGui::Checkbox("Scrubber", &Config::Current.ShowFrameScrubber);
 
 		ImGui::PopItemWidth();
 

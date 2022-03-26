@@ -2,7 +2,7 @@
 //
 // An image class that can load a file from disk into main memory and to VRAM.
 //
-// Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
+// Copyright (c) 2019, 2020, 2021, 2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -23,7 +23,7 @@
 #include <Image/tTexture.h>
 #include <Image/tCubemap.h>
 #include <Image/tImageHDR.h>
-#include "Settings.h"
+#include "Config.h"
 #include "Undo.h"
 namespace Viewer
 {

@@ -2,7 +2,7 @@
 //
 // Dialog for resizing an image.
 //
-// Copyright (c) 2020, 2021 Tristan Grimmer.
+// Copyright (c) 2020, 2021, 2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -84,11 +84,11 @@ void Viewer::DoResizeFilterInterface(int srcW, int srcH, int dstW, int dstH)
 	if ((dstW == srcW) && (dstH == srcH))
 		return;
 
-	ImGui::Combo("Filter", &Config.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
+	ImGui::Combo("Filter", &Config::Current.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 	ImGui::SameLine();
 	ShowHelpMark("Filtering method to use when resizing images.");
 
-	ImGui::Combo("Filter Edge Mode", &Config.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
+	ImGui::Combo("Filter Edge Mode", &Config::Current.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
 	ImGui::SameLine();
 	ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");	
 }
@@ -100,7 +100,7 @@ void Viewer::DoResizeAnchorInterface()
 	static const char* longNames[3*3] = { "Top-Left", "Top-Middle", "Top-Right", "Middle-Left", "Middle", "Middle-Right", "Bottom-Left", "Bottom-Middle", "Bottom-Right" };
 
 	ImGui::NewLine();
-	ImGui::Text("Anchor: %s", (Config.CropAnchor == -1) ? "Cursor Position" : longNames[Config.CropAnchor]);
+	ImGui::Text("Anchor: %s", (Config::Current.CropAnchor == -1) ? "Cursor Position" : longNames[Config::Current.CropAnchor]);
 	ImGui::SameLine();
 	ShowHelpMark("Choose an anchor below. To use the cursor position, deselect the current anchor.");
 
@@ -115,9 +115,9 @@ void Viewer::DoResizeAnchorInterface()
 			if (x > 0)
 				ImGui::SameLine();
 
-			bool selected = (Config.CropAnchor == index);
+			bool selected = (Config::Current.CropAnchor == index);
 			if (ImGui::Selectable(name, &selected, ImGuiSelectableFlags_DontClosePopups, ImVec2(22, 22)))
-				Config.CropAnchor = !selected ? -1 : index;
+				Config::Current.CropAnchor = !selected ? -1 : index;
 		}
 	}
 	ImGui::PopStyleVar();
@@ -129,15 +129,15 @@ void Viewer::DoResizeCrop(int srcW, int srcH, int dstW, int dstH)
 	if ((dstW != srcW) || (dstH != srcH))
 	{
 		CurrImage->Unbind();
-		if (Config.CropAnchor == -1)
+		if (Config::Current.CropAnchor == -1)
 		{
 			int originX = (Viewer::CursorX * (srcW - dstW)) / srcW;
 			int originY = (Viewer::CursorY * (srcH - dstH)) / srcH;
-			CurrImage->Crop(dstW, dstH, originX, originY, Config.FillColour);
+			CurrImage->Crop(dstW, dstH, originX, originY, Config::Current.FillColour);
 		}
 		else
 		{
-			CurrImage->Crop(dstW, dstH, tPicture::Anchor(Config.CropAnchor), Config.FillColour);
+			CurrImage->Crop(dstW, dstH, tPicture::Anchor(Config::Current.CropAnchor), Config::Current.FillColour);
 		}
 		CurrImage->Bind();
 		Viewer::SetWindowTitle();
@@ -148,25 +148,25 @@ void Viewer::DoResizeCrop(int srcW, int srcH, int dstW, int dstH)
 
 void Viewer::DoFillColourInterface(const char* toolTipText)
 {
-	tColourf floatCol(Config.FillColour);
+	tColourf floatCol(Config::Current.FillColour);
 	ImGui::ColorEdit4
 	(
 		"Fill Colour", floatCol.E,
 		ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_NoInputs
 	);
-	Config.FillColour.Set(floatCol);
+	Config::Current.FillColour.Set(floatCol);
 	if (toolTipText)
 		ShowToolTip(toolTipText);
 
 	ImGui::SameLine();
 	tPicture* picture = CurrImage ? CurrImage->GetCurrentPic() : nullptr;
 	if (ImGui::Button("Origin", tVector2(63, 0)) && picture)
-		Config.FillColour = picture->GetPixel(0, 0);
+		Config::Current.FillColour = picture->GetPixel(0, 0);
 	ShowToolTip("Pick the colour from pixel (0, 0) in the current image.");
 
 	ImGui::SameLine();
 	if (ImGui::Button("Cursor", tVector2(63, 0)))
-		Config.FillColour.Set(Viewer::PixelColour);
+		Config::Current.FillColour.Set(Viewer::PixelColour);
 	ShowToolTip("Pick the colour from the cursor pixel in the current image.");
 }
 
@@ -214,7 +214,7 @@ void Viewer::DoResizeImageModal(bool resizeImagePressed)
 		if ((dstW != srcW) || (dstH != srcH))
 		{
 			CurrImage->Unbind();
-			CurrImage->Resample(dstW, dstH, tImage::tResampleFilter(Config.ResampleFilter), tImage::tResampleEdgeMode(Config.ResampleEdgeMode));
+			CurrImage->Resample(dstW, dstH, tImage::tResampleFilter(Config::Current.ResampleFilter), tImage::tResampleEdgeMode(Config::Current.ResampleEdgeMode));
 			CurrImage->Bind();
 			Viewer::SetWindowTitle();
 			Viewer::ZoomDownscaleOnly();
@@ -309,10 +309,10 @@ void Viewer::DoResizeCanvasAnchorTab(bool justOpened)
 
 	if (ImGui::Button("Reset", tVector2(100, 0)))
 	{
-		Config.CropAnchor		= 4;
-		Config.FillColour		= tColouri::black;
-		dstW = srcW;
-		dstH = srcH;
+		Config::Current.CropAnchor		= 4;
+		Config::Current.FillColour		= tColouri::black;
+		dstW							= srcW;
+		dstH							= srcH;
 	}
 
 	if (ImGui::Button("Cancel", tVector2(100, 0)))
@@ -360,7 +360,7 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool justOpened)
 
 	if (ImGui::Button("Reset", tVector2(100, 0)))
 	{
-		Config.FillColour.Set(Viewer::PixelColour);
+		Config::Current.FillColour.Set(Viewer::PixelColour);
 		channelR = true;
 		channelG = true;
 		channelB = true;
@@ -381,7 +381,7 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool justOpened)
 			(channelA ? tMath::ColourChannel_A : 0);
 
 		CurrImage->Unbind();
-		CurrImage->Crop(Config.FillColour, channels);
+		CurrImage->Crop(Config::Current.FillColour, channels);
 		CurrImage->Bind();
 		Viewer::SetWindowTitle();
 		Viewer::ZoomDownscaleOnly();
@@ -400,49 +400,49 @@ void Viewer::DoResizeCanvasAspectTab(bool justOpened)
 
 	ImGui::NewLine();
 	ImGui::PushItemWidth(100);
-	ImGui::InputInt("Num", &Config.ResizeAspectNum);
-	ImGui::InputInt("Den", &Config.ResizeAspectDen);
+	ImGui::InputInt("Num", &Config::Current.ResizeAspectNum);
+	ImGui::InputInt("Den", &Config::Current.ResizeAspectDen);
 	ImGui::PopItemWidth();
-	tiClampMin(Config.ResizeAspectNum, 1); tiClampMin(Config.ResizeAspectDen, 1);
+	tiClampMin(Config::Current.ResizeAspectNum, 1); tiClampMin(Config::Current.ResizeAspectDen, 1);
 
 	int presetIndex = 0;
-	if      ((Config.ResizeAspectNum == 2 ) && (Config.ResizeAspectDen == 1 ))	presetIndex = 1;
-	else if ((Config.ResizeAspectNum == 16) && (Config.ResizeAspectDen == 9 ))	presetIndex = 2;
-	else if ((Config.ResizeAspectNum == 16) && (Config.ResizeAspectDen == 10))	presetIndex = 3;
-	else if ((Config.ResizeAspectNum == 3 ) && (Config.ResizeAspectDen == 2 ))	presetIndex = 4;
-	else if ((Config.ResizeAspectNum == 4 ) && (Config.ResizeAspectDen == 3 ))	presetIndex = 5;
-	else if ((Config.ResizeAspectNum == 1 ) && (Config.ResizeAspectDen == 1 ))	presetIndex = 6;
-	else if ((Config.ResizeAspectNum == 3 ) && (Config.ResizeAspectDen == 4 ))	presetIndex = 7;
-	else if ((Config.ResizeAspectNum == 2 ) && (Config.ResizeAspectDen == 3 ))	presetIndex = 8;
-	else if ((Config.ResizeAspectNum == 10) && (Config.ResizeAspectDen == 16))	presetIndex = 9;
-	else if ((Config.ResizeAspectNum == 9 ) && (Config.ResizeAspectDen == 16))	presetIndex = 10;
-	else if ((Config.ResizeAspectNum == 1 ) && (Config.ResizeAspectDen == 2 ))	presetIndex = 11;
+	if      ((Config::Current.ResizeAspectNum == 2 ) && (Config::Current.ResizeAspectDen == 1 ))	presetIndex = 1;
+	else if ((Config::Current.ResizeAspectNum == 16) && (Config::Current.ResizeAspectDen == 9 ))	presetIndex = 2;
+	else if ((Config::Current.ResizeAspectNum == 16) && (Config::Current.ResizeAspectDen == 10))	presetIndex = 3;
+	else if ((Config::Current.ResizeAspectNum == 3 ) && (Config::Current.ResizeAspectDen == 2 ))	presetIndex = 4;
+	else if ((Config::Current.ResizeAspectNum == 4 ) && (Config::Current.ResizeAspectDen == 3 ))	presetIndex = 5;
+	else if ((Config::Current.ResizeAspectNum == 1 ) && (Config::Current.ResizeAspectDen == 1 ))	presetIndex = 6;
+	else if ((Config::Current.ResizeAspectNum == 3 ) && (Config::Current.ResizeAspectDen == 4 ))	presetIndex = 7;
+	else if ((Config::Current.ResizeAspectNum == 2 ) && (Config::Current.ResizeAspectDen == 3 ))	presetIndex = 8;
+	else if ((Config::Current.ResizeAspectNum == 10) && (Config::Current.ResizeAspectDen == 16))	presetIndex = 9;
+	else if ((Config::Current.ResizeAspectNum == 9 ) && (Config::Current.ResizeAspectDen == 16))	presetIndex = 10;
+	else if ((Config::Current.ResizeAspectNum == 1 ) && (Config::Current.ResizeAspectDen == 2 ))	presetIndex = 11;
 	const char* presetAspects[] = { "Custom", "2:1", "16:9", "16:10", "3:2", "4:3", "1:1", "3:4", "2:3", "10:16", "9:16", "1:2" };
 	if (ImGui::Combo("Aspect", &presetIndex, presetAspects, tNumElements(presetAspects), tNumElements(presetAspects)))
 	{
 		switch (presetIndex)
 		{
-			case 0:																		break;
-			case 1:		Config.ResizeAspectNum = 2;		Config.ResizeAspectDen = 1;		break;
-			case 2:		Config.ResizeAspectNum = 16;	Config.ResizeAspectDen = 9;		break;
-			case 3:		Config.ResizeAspectNum = 16;	Config.ResizeAspectDen = 10;	break;
-			case 4:		Config.ResizeAspectNum = 3;		Config.ResizeAspectDen = 2;		break;
-			case 5:		Config.ResizeAspectNum = 4;		Config.ResizeAspectDen = 3;		break;
-			case 6:		Config.ResizeAspectNum = 1;		Config.ResizeAspectDen = 1;		break;
-			case 7:		Config.ResizeAspectNum = 3;		Config.ResizeAspectDen = 4;		break;
-			case 8:		Config.ResizeAspectNum = 2;		Config.ResizeAspectDen = 3;		break;
-			case 9:		Config.ResizeAspectNum = 10;	Config.ResizeAspectDen = 16;	break;
-			case 10:	Config.ResizeAspectNum = 9;		Config.ResizeAspectDen = 16;	break;
-			case 11:	Config.ResizeAspectNum = 1;		Config.ResizeAspectDen = 2;		break;
+			case 0:																						break;
+			case 1:		Config::Current.ResizeAspectNum = 2;	Config::Current.ResizeAspectDen = 1;	break;
+			case 2:		Config::Current.ResizeAspectNum = 16;	Config::Current.ResizeAspectDen = 9;	break;
+			case 3:		Config::Current.ResizeAspectNum = 16;	Config::Current.ResizeAspectDen = 10;	break;
+			case 4:		Config::Current.ResizeAspectNum = 3;	Config::Current.ResizeAspectDen = 2;	break;
+			case 5:		Config::Current.ResizeAspectNum = 4;	Config::Current.ResizeAspectDen = 3;	break;
+			case 6:		Config::Current.ResizeAspectNum = 1;	Config::Current.ResizeAspectDen = 1;	break;
+			case 7:		Config::Current.ResizeAspectNum = 3;	Config::Current.ResizeAspectDen = 4;	break;
+			case 8:		Config::Current.ResizeAspectNum = 2;	Config::Current.ResizeAspectDen = 3;	break;
+			case 9:		Config::Current.ResizeAspectNum = 10;	Config::Current.ResizeAspectDen = 16;	break;
+			case 10:	Config::Current.ResizeAspectNum = 9;	Config::Current.ResizeAspectDen = 16;	break;
+			case 11:	Config::Current.ResizeAspectNum = 1;	Config::Current.ResizeAspectDen = 2;	break;
 		}
 	}
 
 	const char* resizeAspectModes[] = { "Crop", "Letterbox" };
-	ImGui::Combo("Mode", &Config.ResizeAspectMode, resizeAspectModes, tNumElements(resizeAspectModes), tNumElements(resizeAspectModes));
+	ImGui::Combo("Mode", &Config::Current.ResizeAspectMode, resizeAspectModes, tNumElements(resizeAspectModes), tNumElements(resizeAspectModes));
 	ImGui::SameLine();
 	ShowHelpMark("Crop mode cuts off sides resulting in a filled image.\nLetterbox mode adds coloured borders resulting in whole image being visible.");
 
-	if (Config.ResizeAspectMode == 1)
+	if (Config::Current.ResizeAspectMode == 1)
 		DoFillColourInterface();
 
 	DoResizeAnchorInterface();
@@ -453,11 +453,11 @@ void Viewer::DoResizeCanvasAspectTab(bool justOpened)
 
 	if (ImGui::Button("Reset", tVector2(100, 0)))
 	{
-		Config.CropAnchor		= 4;
-		Config.FillColour		= tColouri::black;
-		Config.ResizeAspectNum	= 16;
-		Config.ResizeAspectDen	= 9;
-		Config.ResizeAspectMode	= 0;
+		Config::Current.CropAnchor		= 4;
+		Config::Current.FillColour		= tColouri::black;
+		Config::Current.ResizeAspectNum	= 16;
+		Config::Current.ResizeAspectDen	= 9;
+		Config::Current.ResizeAspectMode	= 0;
 	}
 
 	if (ImGui::Button("Cancel", tVector2(100, 0)))
@@ -470,8 +470,8 @@ void Viewer::DoResizeCanvasAspectTab(bool justOpened)
 		int dstH = srcH;
 		int dstW = srcW;
 		float srcAspect = float(srcW)/float(srcH);
-		float dstAspect = float(Config.ResizeAspectNum)/float(Config.ResizeAspectDen);
-		if (Config.ResizeAspectMode == 0)
+		float dstAspect = float(Config::Current.ResizeAspectNum)/float(Config::Current.ResizeAspectDen);
+		if (Config::Current.ResizeAspectMode == 0)
 		{
 			// Crop Mode.
 			if (dstAspect > srcAspect)

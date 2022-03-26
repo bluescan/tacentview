@@ -2,7 +2,7 @@
 //
 // Dialog that generates contact sheets and processes alpha channel properly.
 //
-// Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
+// Copyright (c) 2019, 2020, 2021, 2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -132,11 +132,11 @@ void Viewer::DoContactSheetModal(bool saveContactSheetPressed)
 	}
 	ImGui::Separator();
 
-	ImGui::Combo("Filter", &Config.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
+	ImGui::Combo("Filter", &Config::Current.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 	ImGui::SameLine();
 	ShowHelpMark("Filtering method to use when resizing images.");
 
-	ImGui::Combo("Filter Edge Mode", &Config.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
+	ImGui::Combo("Filter Edge Mode", &Config::Current.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
 	ImGui::SameLine();
 	ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");
 
@@ -176,7 +176,7 @@ void Viewer::DoContactSheetModal(bool saveContactSheetPressed)
 
 		if (dirExists)
 		{
-			if (tFileExists(outFile) && Config.ConfirmFileOverwrites)
+			if (tFileExists(outFile) && Config::Current.ConfirmFileOverwrites)
 			{
 				ImGui::OpenPopup("Overwrite Contact Sheet File");
 			}
@@ -253,7 +253,7 @@ void Viewer::SaveContactSheetTo
 		if ((currImg->GetWidth() != frameWidth) || (currImg->GetHeight() != frameHeight))
 		{
 			resampled.Set(*currPic);
-			resampled.Resample(frameWidth, frameHeight, tImage::tResampleFilter(Config.ResampleFilter), tImage::tResampleEdgeMode(Config.ResampleEdgeMode));
+			resampled.Resample(frameWidth, frameHeight, tImage::tResampleFilter(Config::Current.ResampleFilter), tImage::tResampleEdgeMode(Config::Current.ResampleEdgeMode));
 		}
 
 		// Copy resampled frame into place.
@@ -282,20 +282,20 @@ void Viewer::SaveContactSheetTo
 	tImage::tImageTGA::tFormat tgaFmt = allOpaque ? tImage::tImageTGA::tFormat::Bit24 : tImage::tImageTGA::tFormat::Bit32;
 	if ((finalWidth == contactWidth) && (finalHeight == contactHeight))
 	{
-		if (Config.SaveFileType == 0)
-			outPic.SaveTGA(outFile, tgaFmt, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
+		if (Config::Current.SaveFileType == 0)
+			outPic.SaveTGA(outFile, tgaFmt, Config::Current.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
 		else
-			outPic.Save(outFile, colourFmt, Config.SaveFileJpegQuality);
+			outPic.Save(outFile, colourFmt, Config::Current.SaveFileJpegQuality);
 	}
 	else
 	{
 		tImage::tPicture finalResampled(outPic);
-		finalResampled.Resample(finalWidth, finalHeight, tImage::tResampleFilter(Config.ResampleFilter), tImage::tResampleEdgeMode(Config.ResampleEdgeMode));
+		finalResampled.Resample(finalWidth, finalHeight, tImage::tResampleFilter(Config::Current.ResampleFilter), tImage::tResampleEdgeMode(Config::Current.ResampleEdgeMode));
 
-		if (Config.SaveFileType == 0)
-			finalResampled.SaveTGA(outFile, tgaFmt, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
+		if (Config::Current.SaveFileType == 0)
+			finalResampled.SaveTGA(outFile, tgaFmt, Config::Current.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
 		else
-			finalResampled.Save(outFile, colourFmt, Config.SaveFileJpegQuality);
+			finalResampled.Save(outFile, colourFmt, Config::Current.SaveFileJpegQuality);
 	}
 
 	// If we saved to the same dir we are currently viewing, reload

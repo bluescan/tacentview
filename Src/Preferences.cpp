@@ -2,7 +2,7 @@
 //
 // Priferences window.
 //
-// Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
+// Copyright (c) 2019, 2020, 2021, 2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -16,7 +16,7 @@
 #include <GLFW/glfw3.h>
 #include "imgui.h"
 #include "Preferences.h"
-#include "Settings.h"
+#include "Config.h"
 #include "Image.h"
 #include "TacentView.h"
 #include "Version.cmake.h"
@@ -47,7 +47,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::NewLine();
 			ImGui::Checkbox("Transparent Work Area", &PendingTransparentWorkArea);
 			#ifndef PACKAGE_SNAP
-			if (PendingTransparentWorkArea != Config.TransparentWorkArea)
+			if (PendingTransparentWorkArea != Config::Current.TransparentWorkArea)
 			{
 				ImGui::SameLine();
 				ImGui::Text("(Needs Restart)");
@@ -60,12 +60,12 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			}
 			#endif
 
-			ImGui::Checkbox("Extend", &Config.BackgroundExtend);
-			if (!Config.TransparentWorkArea)
+			ImGui::Checkbox("Extend", &Config::Current.BackgroundExtend);
+			if (!Config::Current.TransparentWorkArea)
 			{
 				const char* backgroundItems[] = { "None", "Checkerboard", "Black", "Grey", "White" };
 				ImGui::PushItemWidth(110);
-				ImGui::Combo("Style", &Config.BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
+				ImGui::Combo("Style", &Config::Current.BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
 				ImGui::PopItemWidth();
 			}
 			ImGui::EndTabItem();
@@ -76,53 +76,53 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		{
 			ImGui::NewLine();
 			ImGui::PushItemWidth(110);
-			if (ImGui::InputDouble("Period (s)", &Config.SlideshowPeriod, 0.001f, 1.0f, "%.3f"))
+			if (ImGui::InputDouble("Period (s)", &Config::Current.SlideshowPeriod, 0.001f, 1.0f, "%.3f"))
 			{
-				tiClampMin(Config.SlideshowPeriod, 1.0/60.0);
-				Viewer::SlideshowCountdown = Config.SlideshowPeriod;
+				tiClampMin(Config::Current.SlideshowPeriod, 1.0/60.0);
+				Viewer::SlideshowCountdown = Config::Current.SlideshowPeriod;
 			}
 			ImGui::PopItemWidth();
 			if (ImGui::Button("8 s"))
 			{
-				Config.SlideshowPeriod = 8.0;
-				Viewer::SlideshowCountdown = Config.SlideshowPeriod;
+				Config::Current.SlideshowPeriod = 8.0;
+				Viewer::SlideshowCountdown = Config::Current.SlideshowPeriod;
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("4 s"))
 			{
-				Config.SlideshowPeriod = 4.0;
-				Viewer::SlideshowCountdown = Config.SlideshowPeriod;
+				Config::Current.SlideshowPeriod = 4.0;
+				Viewer::SlideshowCountdown = Config::Current.SlideshowPeriod;
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("1 s"))
 			{
-				Config.SlideshowPeriod = 1.0;
-				Viewer::SlideshowCountdown = Config.SlideshowPeriod;
+				Config::Current.SlideshowPeriod = 1.0;
+				Viewer::SlideshowCountdown = Config::Current.SlideshowPeriod;
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("10 fps"))
 			{
-				Config.SlideshowPeriod = 1.0/10.0;
-				Viewer::SlideshowCountdown = Config.SlideshowPeriod;
+				Config::Current.SlideshowPeriod = 1.0/10.0;
+				Viewer::SlideshowCountdown = Config::Current.SlideshowPeriod;
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("30 fps"))
 			{
-				Config.SlideshowPeriod = 1.0/30.0;
-				Viewer::SlideshowCountdown = Config.SlideshowPeriod;
+				Config::Current.SlideshowPeriod = 1.0/30.0;
+				Viewer::SlideshowCountdown = Config::Current.SlideshowPeriod;
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("60 fps"))
 			{
-				Config.SlideshowPeriod = 1.0/60.0;
-				Viewer::SlideshowCountdown = Config.SlideshowPeriod;
+				Config::Current.SlideshowPeriod = 1.0/60.0;
+				Viewer::SlideshowCountdown = Config::Current.SlideshowPeriod;
 			}
-			ImGui::Checkbox("Countdown Indicator", &Config.SlideshowProgressArc);
+			ImGui::Checkbox("Countdown Indicator", &Config::Current.SlideshowProgressArc);
 			if (ImGui::Button("Reset"))
 			{
-				Config.SlideshowPeriod = 8.0;
-				Viewer::SlideshowCountdown = Config.SlideshowPeriod;
-				Config.SlideshowProgressArc = true;
+				Config::Current.SlideshowPeriod = 8.0;
+				Viewer::SlideshowCountdown = Config::Current.SlideshowPeriod;
+				Config::Current.SlideshowProgressArc = true;
 			}
 			ImGui::EndTabItem();
 		}
@@ -132,12 +132,12 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		{
 			ImGui::NewLine();
 			ImGui::PushItemWidth(110);
-			ImGui::InputInt("Max Mem (MB)", &Config.MaxImageMemMB); ImGui::SameLine();
+			ImGui::InputInt("Max Mem (MB)", &Config::Current.MaxImageMemMB); ImGui::SameLine();
 			ShowHelpMark("Approx memory use limit of this app. Minimum 256 MB.");
-			tMath::tiClampMin(Config.MaxImageMemMB, 256);
-			ImGui::InputInt("Max Cache Files", &Config.MaxCacheFiles); ImGui::SameLine();
+			tMath::tiClampMin(Config::Current.MaxImageMemMB, 256);
+			ImGui::InputInt("Max Cache Files", &Config::Current.MaxCacheFiles); ImGui::SameLine();
 			ShowHelpMark("Maximum number of cache files that may be created. Minimum 200.");
-			tMath::tiClampMin(Config.MaxCacheFiles, 200);
+			tMath::tiClampMin(Config::Current.MaxCacheFiles, 200);
 			if (!DeleteAllCacheFilesOnExit)
 			{
 				if (ImGui::Button("Clear Cache"))
@@ -151,24 +151,24 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			}
 
 			ImGui::PushItemWidth(110);
-			ImGui::InputInt("Max Undo Steps", &Config.MaxUndoSteps); ImGui::SameLine();
+			ImGui::InputInt("Max Undo Steps", &Config::Current.MaxUndoSteps); ImGui::SameLine();
 			ShowHelpMark("Maximum number of Ctrl-Z undo steps.");
-			tMath::tiClamp(Config.MaxUndoSteps, 1, 32);
+			tMath::tiClamp(Config::Current.MaxUndoSteps, 1, 32);
 
 			ImGui::NewLine();
 			ImGui::Separator();
 			ImGui::NewLine();
 
-			ImGui::Checkbox("Strict Loading", &Config.StrictLoading); ImGui::SameLine();
+			ImGui::Checkbox("Strict Loading", &Config::Current.StrictLoading); ImGui::SameLine();
 			ShowHelpMark("Some image files are ill-formed. If strict is true no attempt to display them is made.");
 
-			ImGui::Checkbox("Detect APNG Inside PNG", &Config.DetectAPNGInsidePNG); ImGui::SameLine();
+			ImGui::Checkbox("Detect APNG Inside PNG", &Config::Current.DetectAPNGInsidePNG); ImGui::SameLine();
 			ShowHelpMark("Some png image files are really apng files. If detecton is true these png files will be displayed animated.");
 
-			ImGui::Checkbox("Mipmap Chaining", &Config.MipmapChaining); ImGui::SameLine();
+			ImGui::Checkbox("Mipmap Chaining", &Config::Current.MipmapChaining); ImGui::SameLine();
 			ShowHelpMark("Chaining generates mipmaps faster. No chaining gives slightly\nbetter results at cost of large generation time.");
 
-			ImGui::Combo("Mipmap Filter", &Config.MipmapFilter, tImage::tResampleFilterNames, int(tImage::tResampleFilter::NumFilters), int(tImage::tResampleFilter::NumFilters));
+			ImGui::Combo("Mipmap Filter", &Config::Current.MipmapFilter, tImage::tResampleFilterNames, int(tImage::tResampleFilter::NumFilters), int(tImage::tResampleFilter::NumFilters));
 			ImGui::SameLine();
 			ShowHelpMark("Filtering method to use when generating minification mipmaps.\nUse None for no mipmapping.");
 
@@ -176,10 +176,10 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::Separator();
 			ImGui::NewLine();
 
-			ImGui::InputFloat("Monitor Gamma", &Config.MonitorGamma, 0.01f, 0.1f, "%.3f");
+			ImGui::InputFloat("Monitor Gamma", &Config::Current.MonitorGamma, 0.01f, 0.1f, "%.3f");
 			ImGui::PopItemWidth();
 			if (ImGui::Button("Reset Gamma"))
-				Config.MonitorGamma = tMath::DefaultGamma;
+				Config::Current.MonitorGamma = tMath::DefaultGamma;
 	
 			ImGui::EndTabItem();
 		}
@@ -188,11 +188,11 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		if (tab)
 		{
 			ImGui::NewLine();
-			ImGui::Checkbox("Confirm Deletes", &Config.ConfirmDeletes);
-			ImGui::Checkbox("Confirm File Overwrites", &Config.ConfirmFileOverwrites);
-			ImGui::Checkbox("Auto Propery Window", &Config.AutoPropertyWindow);
-			ImGui::Checkbox("Auto Play Anims", &Config.AutoPlayAnimatedImages);
-			ImGui::Checkbox("Esc Key Can Quit", &Config.EscCanQuit);
+			ImGui::Checkbox("Confirm Deletes", &Config::Current.ConfirmDeletes);
+			ImGui::Checkbox("Confirm File Overwrites", &Config::Current.ConfirmFileOverwrites);
+			ImGui::Checkbox("Auto Propery Window", &Config::Current.AutoPropertyWindow);
+			ImGui::Checkbox("Auto Play Anims", &Config::Current.AutoPlayAnimatedImages);
+			ImGui::Checkbox("Esc Key Can Quit", &Config::Current.EscCanQuit);
 			
 			ImGui::EndTabItem();
 		}
@@ -205,13 +205,13 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 	if (ImGui::Button("Reset Behaviour", tVector2(100, 0)))
 	{
-		Config.ResetBehaviourSettings();
+		Config::Current.ResetBehaviourSettings();
 	}
 	ShowToolTip("Resets sort order, resample filters, confirmations, preferred file type, cache size, etc.");
 
 	if (ImGui::Button("Reset UI", tVector2(100, 0)))
 	{
-		Config.ResetUISettings();
+		Config::Current.ResetUISettings();
 		PendingTransparentWorkArea = false;
 		ChangeScreenMode(false, true);
 	}

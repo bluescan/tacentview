@@ -56,6 +56,8 @@ message(STATUS "Viewer -- tacent_SOURCE_DIR: ${tacent_SOURCE_DIR}")
 add_executable(
 	${PROJECT_NAME}
 	WIN32
+	Src/Config.cpp
+	Src/Config.h
 	Src/ContactSheet.cpp
 	Src/ContactSheet.h
 	Src/ContentView.cpp
@@ -80,8 +82,6 @@ add_executable(
 	Src/Resize.h
 	Src/Rotate.cpp
 	Src/Rotate.h
-	Src/Settings.cpp
-	Src/Settings.h
 	Src/TacentView.cpp
 	Src/TacentView.h
 	Src/Undo.cpp

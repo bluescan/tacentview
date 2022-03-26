@@ -2,7 +2,7 @@
 //
 // An image class that can load a file from disk into main memory and to VRAM.
 //
-// Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
+// Copyright (c) 2019, 2020, 2021, 2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -24,7 +24,7 @@
 #include <System/tMachine.h>
 #include <System/tChunk.h>
 #include "Image.h"
-#include "Settings.h"
+#include "Config.h"
 using namespace tStd;
 using namespace tSystem;
 using namespace tImage;
@@ -32,7 +32,6 @@ using namespace tMath;
 using namespace Viewer;
 int Image::ThumbnailNumThreadsRunning = 0;
 tString Image::ThumbCacheDir;
-namespace Viewer { extern Settings Config; }
 
 
 const uint32 Image::ThumbChunkInfoID	= 0x0B000000;
@@ -103,7 +102,7 @@ Image::~Image()
 void Image::ResetLoadParams()
 {
 	LoadParams = tImage::tPicture::LoadParams();
-	LoadParams.GammaValue = Viewer::Config.MonitorGamma;
+	LoadParams.GammaValue = Viewer::Config::Current.MonitorGamma;
 }
 
 
@@ -164,7 +163,7 @@ bool Image::Load()
 	// false, the PNG loader will always be used for .png files even if they have an apng inside.
 	// The designers of apng made the format backwards compatible with single-frame png loaders.
 	tSystem::tFileType loadingFiletype = Filetype;
-	if ((Filetype == tSystem::tFileType::PNG) && Config.DetectAPNGInsidePNG && tImageAPNG::IsAnimatedPNG(Filename))
+	if ((Filetype == tSystem::tFileType::PNG) && Config::Current.DetectAPNGInsidePNG && tImageAPNG::IsAnimatedPNG(Filename))
 		loadingFiletype = tSystem::tFileType::APNG;
 
 	Info.SrcPixelFormat = tPixelFormat::Invalid;
@@ -348,7 +347,7 @@ bool Image::Load()
 			case tSystem::tFileType::JPG:
 			{
 				tImageJPG jpg;
-				bool ok = jpg.Load(Filename, Viewer::Config.StrictLoading);
+				bool ok = jpg.Load(Filename, Viewer::Config::Current.StrictLoading);
 				if (!ok)
 					return false;
 
@@ -823,7 +822,7 @@ uint64 Image::Bind()
 			return 0;
 
 		tList<tLayer> layers;
-		AltPicture.GenerateLayers(layers, tResampleFilter(Config.MipmapFilter), tResampleEdgeMode::Clamp, Config.MipmapChaining);
+		AltPicture.GenerateLayers(layers, tResampleFilter(Config::Current.MipmapFilter), tResampleEdgeMode::Clamp, Config::Current.MipmapChaining);
 		BindLayers(layers, TexIDAlt);
 		return TexIDAlt;
 	}
@@ -846,7 +845,7 @@ uint64 Image::Bind()
 		glGenTextures(1, &picture->TextureID);
 
 		tList<tLayer> layers;
-		picture->GenerateLayers(layers, tResampleFilter(Config.MipmapFilter), tResampleEdgeMode::Clamp, Config.MipmapChaining);
+		picture->GenerateLayers(layers, tResampleFilter(Config::Current.MipmapFilter), tResampleEdgeMode::Clamp, Config::Current.MipmapChaining);
 		BindLayers(layers, picture->TextureID);
 	}
 	return GetCurrentPic()->TextureID;
@@ -1095,7 +1094,7 @@ uint64 Image::BindThumbnail()
 			return 0;
 
 		tList<tLayer> layers;
-		ThumbnailPicture.GenerateLayers(layers, tResampleFilter(Config.MipmapFilter), tResampleEdgeMode::Clamp, Config.MipmapChaining);
+		ThumbnailPicture.GenerateLayers(layers, tResampleFilter(Config::Current.MipmapFilter), tResampleEdgeMode::Clamp, Config::Current.MipmapChaining);
 		BindLayers(layers, TexIDThumbnail);
 		return TexIDThumbnail;
 	}

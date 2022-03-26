@@ -2,7 +2,7 @@
 //
 // Dialog that displays folder contents as thumbnails.
 //
-// Copyright (c) 2020, 2021 Tristan Grimmer.
+// Copyright (c) 2020, 2021, 2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -42,11 +42,11 @@ void Viewer::ShowContentViewDialog(bool* popen)
 	float visibleW = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 
 	float minSpacing = 4.0f;
-	float numPerRowF = ImGui::GetWindowContentRegionMax().x / (Config.ThumbnailWidth + minSpacing);
+	float numPerRowF = ImGui::GetWindowContentRegionMax().x / (Config::Current.ThumbnailWidth + minSpacing);
 	int numPerRow = tMath::tClampMin(int(numPerRowF), 1);
-	float extra = ImGui::GetWindowContentRegionMax().x - (float(numPerRow) * (Config.ThumbnailWidth + minSpacing));
+	float extra = ImGui::GetWindowContentRegionMax().x - (float(numPerRow) * (Config::Current.ThumbnailWidth + minSpacing));
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2(minSpacing + extra/float(numPerRow), minSpacing));
-	tVector2 thumbButtonSize(Config.ThumbnailWidth, Config.ThumbnailWidth*9.0f/16.0f); // 64 36, 32 18,
+	tVector2 thumbButtonSize(Config::Current.ThumbnailWidth, Config::Current.ThumbnailWidth*9.0f/16.0f); // 64 36, 32 18,
 	int thumbNum = 0;
 	int numGeneratedThumbs = 0;
 	static int numThumbsWhenSorted = 0;
@@ -139,25 +139,25 @@ void Viewer::ShowContentViewDialog(bool* popen)
 	ImGui::SetCursorPos(tVector2(0.0f, 3.0f));
 
 	ImGui::PushItemWidth(200);
-	ImGui::SliderFloat("Size", &Config.ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth), "%.0f");
+	ImGui::SliderFloat("Size", &Config::Current.ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth), "%.0f");
 	ImGui::SameLine();
 	ImGui::PopItemWidth();
 
 	ImGui::PushItemWidth(100);
 	const char* sortItems[] = { "Name", "Date", "Size", "Type", "Area", "Width", "Height" };
-	if (ImGui::Combo("Sort", &Config.SortKey, sortItems, tNumElements(sortItems)))
-		SortImages(Settings::SortKeyEnum(Config.SortKey), Config.SortAscending);
+	if (ImGui::Combo("Sort", &Config::Current.SortKey, sortItems, tNumElements(sortItems)))
+		SortImages(Config::Settings::SortKeyEnum(Config::Current.SortKey), Config::Current.SortAscending);
 	ImGui::SameLine();
-	if (ImGui::Checkbox("Ascending", &Config.SortAscending))
-		SortImages(Settings::SortKeyEnum(Config.SortKey), Config.SortAscending);
+	if (ImGui::Checkbox("Ascending", &Config::Current.SortAscending))
+		SortImages(Config::Settings::SortKeyEnum(Config::Current.SortKey), Config::Current.SortAscending);
 
 	// If we are sorting by a thumbnail cached key, resort if necessary.
-	Settings::SortKeyEnum sortKey = Settings::SortKeyEnum(Config.SortKey);
-	if ((sortKey == Settings::SortKeyEnum::ImageArea) || (sortKey == Settings::SortKeyEnum::ImageWidth) || (sortKey == Settings::SortKeyEnum::ImageHeight))
+	Config::Settings::SortKeyEnum sortKey = Config::Settings::SortKeyEnum(Config::Current.SortKey);
+	if ((sortKey == Config::Settings::SortKeyEnum::ImageArea) || (sortKey == Config::Settings::SortKeyEnum::ImageWidth) || (sortKey == Config::Settings::SortKeyEnum::ImageHeight))
 	{
 		if (numThumbsWhenSorted != numGeneratedThumbs)
 		{
-			SortImages(sortKey, Config.SortAscending);
+			SortImages(sortKey, Config::Current.SortAscending);
 			numThumbsWhenSorted = numGeneratedThumbs;
 		}
 	}

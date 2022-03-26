@@ -2,7 +2,7 @@
 //
 // Dialog that generates multiframe images from all image files in the directory.
 //
-// Copyright (c) 2021 Tristan Grimmer.
+// Copyright (c) 2021, 2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -18,6 +18,7 @@
 #include "OpenSaveDialogs.h"
 #include "TacentView.h"
 #include "Image.h"
+#include "Config.h"
 using namespace tStd;
 using namespace tMath;
 using namespace tSystem;
@@ -116,11 +117,11 @@ void Viewer::DoMultiFrameModal(bool saveMultiFramePressed)
 	// @todo This is not a cheap call. No need to do it every frame, only when dims change above.
 	if (!AllDimensionsMatch(outWidth, outHeight))
 	{
-		ImGui::Combo("Filter", &Config.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
+		ImGui::Combo("Filter", &Config::Current.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 		ImGui::SameLine();
 		ShowHelpMark("Filtering method to use when resizing images.");
 
-		ImGui::Combo("Filter Edge Mode", &Config.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
+		ImGui::Combo("Filter Edge Mode", &Config::Current.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
 		ImGui::SameLine();
 		ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");
 	}
@@ -161,7 +162,7 @@ void Viewer::DoMultiFrameModal(bool saveMultiFramePressed)
 
 		if (dirExists)
 		{
-			if (tFileExists(outFile) && Config.ConfirmFileOverwrites)
+			if (tFileExists(outFile) && Config::Current.ConfirmFileOverwrites)
 			{
 				ImGui::OpenPopup("Overwrite Image File");
 			}
@@ -209,40 +210,40 @@ void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeigh
 
 		tImage::tPicture resampled(*currPic);
 		if ((resampled.GetWidth() != outWidth) || (resampled.GetHeight() != outHeight))
-			resampled.Resample(outWidth, outHeight, tImage::tResampleFilter(Config.ResampleFilter), tImage::tResampleEdgeMode(Config.ResampleEdgeMode));
+			resampled.Resample(outWidth, outHeight, tImage::tResampleFilter(Config::Current.ResampleFilter), tImage::tResampleEdgeMode(Config::Current.ResampleEdgeMode));
 
 		tFrame* frame = new tFrame(resampled.StealPixels(), outWidth, outHeight, currPic->Duration);
 		frames.Append(frame);
 	}
 
 	bool success = false;
-	switch (Config.SaveFileTypeMultiFrame)
+	switch (Config::Current.SaveFileTypeMultiFrame)
 	{
 		case 0:			// WEBP
 		{
 			tImageWEBP webp(frames, true);
-			success = webp.Save(outFile, Config.SaveFileWebpLossy, Config.SaveFileWebpQualComp, Config.SaveFileWebpDurMultiFrame);
+			success = webp.Save(outFile, Config::Current.SaveFileWebpLossy, Config::Current.SaveFileWebpQualComp, Config::Current.SaveFileWebpDurMultiFrame);
 			break;
 		}
 
 		case 1:			// GIF
 		{
 			tImageGIF gif(frames, true);
-			success = gif.Save(outFile, Config.SaveFileGifDurMultiFrame);
+			success = gif.Save(outFile, Config::Current.SaveFileGifDurMultiFrame);
 			break;
 		}
 
 		case 2:			// APNG
 		{
 			tImageAPNG apng(frames, true);
-			success = apng.Save(outFile, Config.SaveFileApngDurMultiFrame);
+			success = apng.Save(outFile, Config::Current.SaveFileApngDurMultiFrame);
 			break;
 		}
 
 		case 3:			// TIFF
 		{
 			tImageTIFF tiff(frames, true);
-			success = tiff.Save(outFile, Config.SaveFileTiffZLibDeflate, Config.SaveFileTiffDurMultiFrame);
+			success = tiff.Save(outFile, Config::Current.SaveFileTiffZLibDeflate, Config::Current.SaveFileTiffDurMultiFrame);
 			break;
 		}
 	}

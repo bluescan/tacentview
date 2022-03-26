@@ -1,8 +1,8 @@
-// Settings.cpp
+// Config.cpp
 //
 // Viewer settings stored as human-readable symbolic expressions.
 //
-// Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
+// Copyright (c) 2019, 2020, 2021, 2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -28,20 +28,140 @@
 #include <System/tFile.h>
 #include <System/tScript.h>
 #include <Image/tResample.h>
-#include "Settings.h"
+#include "Config.h"
 #include "Image.h"
 using namespace tMath;
 #define ReadItem(name) case tHash::tHashCT(#name): name = e.Arg1(); break
 #define	WriteItem(name) writer.Comp(#name, name)
+#define	WriteLast(name) writer.Coms(#name, name)
+namespace Viewer {
 
 
-namespace Viewer
+namespace Config
 {
-	Settings Config;
+	GlobalSettings Global;
+	Settings MainSettings;
+	Settings BasicSettings;
+	Settings& Current = MainSettings;
+	Profile CurrentProfile = Profile::Main;
+
+	const int ConfigFileVersion = 2;
 }
 
 
-void Viewer::Settings::Reset()
+void Config::SetProfile(Profile profile)
+{
+	if (profile == CurrentProfile)
+		return;
+
+	switch (profile)
+	{
+		case Profile::Main:		Current = MainSettings;		break;
+		case Profile::Basic:	Current = BasicSettings;	break;
+	}
+	CurrentProfile = profile;
+}
+
+
+Config::Profile Config::GetProfile()
+{
+	return CurrentProfile;
+}
+
+
+void Config::Load(const tString& filename)
+{
+	if (!tSystem::tFileExists(filename))
+	{
+		Global.Reset();
+		MainSettings.Reset();
+		BasicSettings.Reset();
+		Current = MainSettings;
+		CurrentProfile = Profile::Main;
+		return;
+	}
+
+	tScriptReader reader(filename);
+	for (tExpr e = reader.First(); e.IsValid(); e = e.Next())
+	{
+		switch (e.Item0().Hash())
+		{
+			case tHash::tHashCT("Global"):
+				Global.Load(e);
+				break;
+
+			case tHash::tHashCT("MainProfile"):
+				MainSettings.Load(e);
+				break;
+			
+			case tHash::tHashCT("BasicProfile"):
+				BasicSettings.Load(e);
+				break;
+		}
+	}
+}
+
+
+void Config::Save(const tString& filename)
+{
+	tScriptWriter writer(filename);
+	writer.Rem("Tacent View Configuration File");
+	writer.CR();
+
+	Global.ConfigVersion = ConfigFileVersion;
+	Global.Save(writer);
+	writer.CR();
+	writer.CR();
+
+	MainSettings.Profile = "MainProfile";
+	MainSettings.Save(writer);
+	writer.CR();
+	writer.CR();
+
+	BasicSettings.Profile = "BasicProfile";
+	BasicSettings.Save(writer);
+	writer.CR();
+}
+
+
+void Config::GlobalSettings::Save(tScriptWriter& writer)
+{
+	writer.Begin();
+	writer.Indent();
+	writer.CR();
+	writer.WriteAtom("Global");
+	writer.CR();
+
+	WriteItem(ConfigVersion);
+	WriteLast(CurrentProfile);
+
+	writer.Dedent();
+	writer.CR();
+	writer.End();
+}
+
+
+void Config::GlobalSettings::Load(tExpression expr)
+{
+	for (tExpr e = expr.Item1(); e.IsValid(); e = e.Next())
+	{
+		switch (e.Command().Hash())
+		{
+			ReadItem(ConfigVersion);
+			ReadItem(CurrentProfile);
+		}
+	}
+}
+
+
+void Config::GlobalSettings::Reset()
+{
+	ConfigVersion = ConfigFileVersion;
+	CurrentProfile = int(Profile::Main);
+}
+
+
+void Config::Settings::Reset()
 {
 	ResetUISettings();
 	ResetBehaviourSettings();
@@ -49,7 +169,7 @@ void Viewer::Settings::Reset()
 }
 
 
-void Viewer::Settings::ResetBehaviourSettings()
+void Config::Settings::ResetBehaviourSettings()
 {
 	SortKey						= 0;
 	SortAscending				= true;
@@ -102,7 +222,7 @@ void Viewer::Settings::ResetBehaviourSettings()
 }
 
 
-void Viewer::Settings::ResetUISettings()
+void Config::Settings::ResetUISettings()
 {
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 	const GLFWvidmode* mode = monitor ? glfwGetVideoMode(monitor) : nullptr;
@@ -129,85 +249,77 @@ void Viewer::Settings::ResetUISettings()
 }
 
 
-void Viewer::Settings::Load(const tString& filename)
+void Config::Settings::Load(tExpression expr)
 {
-	if (!tSystem::tFileExists(filename))
+	for (tExpr e = expr.Item1(); e.IsValid(); e = e.Next())
 	{
-		Reset();
-	}
-	else
-	{
-		tScriptReader reader(filename);
-		for (tExpr e = reader.First(); e.IsValid(); e = e.Next())
+		switch (e.Command().Hash())
 		{
-			switch (e.Command().Hash())
-			{
-				ReadItem(WindowX);
-				ReadItem(WindowY);
-				ReadItem(WindowW);
-				ReadItem(WindowH);
-				ReadItem(ShowMenuBar);
-				ReadItem(ShowNavBar);
-				ReadItem(ShowImageDetails);
-				ReadItem(ShowPixelEditor);
-				ReadItem(ShowFrameScrubber);
-				ReadItem(ContentViewShow);
-				ReadItem(ThumbnailWidth);
-				ReadItem(SortKey);
-				ReadItem(SortAscending);
-				ReadItem(OverlayCorner);
-				ReadItem(Tile);
-				ReadItem(BackgroundStyle);
-				ReadItem(BackgroundExtend);
-				ReadItem(TransparentWorkArea);
-				ReadItem(ResampleFilter);
-				ReadItem(ResampleEdgeMode);
-				ReadItem(ResampleFilterRotateUp);
-				ReadItem(ResampleFilterRotateDown);
-				ReadItem(RotateMode);
-				ReadItem(ConfirmDeletes);
-				ReadItem(ConfirmFileOverwrites);
-				ReadItem(SlideshowLooping);
-				ReadItem(SlideshowProgressArc);
-				ReadItem(SlideshowPeriod);
+			ReadItem(WindowX);
+			ReadItem(WindowY);
+			ReadItem(WindowW);
+			ReadItem(WindowH);
+			ReadItem(ShowMenuBar);
+			ReadItem(ShowNavBar);
+			ReadItem(ShowImageDetails);
+			ReadItem(ShowPixelEditor);
+			ReadItem(ShowFrameScrubber);
+			ReadItem(ContentViewShow);
+			ReadItem(ThumbnailWidth);
+			ReadItem(SortKey);
+			ReadItem(SortAscending);
+			ReadItem(OverlayCorner);
+			ReadItem(Tile);
+			ReadItem(BackgroundStyle);
+			ReadItem(BackgroundExtend);
+			ReadItem(TransparentWorkArea);
+			ReadItem(ResampleFilter);
+			ReadItem(ResampleEdgeMode);
+			ReadItem(ResampleFilterRotateUp);
+			ReadItem(ResampleFilterRotateDown);
+			ReadItem(RotateMode);
+			ReadItem(ConfirmDeletes);
+			ReadItem(ConfirmFileOverwrites);
+			ReadItem(SlideshowLooping);
+			ReadItem(SlideshowProgressArc);
+			ReadItem(SlideshowPeriod);
 
-				ReadItem(SaveSubFolder);
-				ReadItem(SaveFileType);
-				ReadItem(SaveFileTypeMultiFrame);
-				ReadItem(SaveFileTargaRLE);
-				ReadItem(SaveFileJpegQuality);
-				ReadItem(SaveFileWebpLossy);
-				ReadItem(SaveFileWebpQualComp);
-				ReadItem(SaveFileTiffZLibDeflate);
+			ReadItem(SaveSubFolder);
+			ReadItem(SaveFileType);
+			ReadItem(SaveFileTypeMultiFrame);
+			ReadItem(SaveFileTargaRLE);
+			ReadItem(SaveFileJpegQuality);
+			ReadItem(SaveFileWebpLossy);
+			ReadItem(SaveFileWebpQualComp);
+			ReadItem(SaveFileTiffZLibDeflate);
 
-				ReadItem(SaveFileWebpDurOverride);
-				ReadItem(SaveFileGifDurOverride);
-				ReadItem(SaveFileApngDurOverride);
-				ReadItem(SaveFileTiffDurOverride);
+			ReadItem(SaveFileWebpDurOverride);
+			ReadItem(SaveFileGifDurOverride);
+			ReadItem(SaveFileApngDurOverride);
+			ReadItem(SaveFileTiffDurOverride);
 
-				ReadItem(SaveFileWebpDurMultiFrame);
-				ReadItem(SaveFileGifDurMultiFrame);
-				ReadItem(SaveFileApngDurMultiFrame);
-				ReadItem(SaveFileTiffDurMultiFrame);
+			ReadItem(SaveFileWebpDurMultiFrame);
+			ReadItem(SaveFileGifDurMultiFrame);
+			ReadItem(SaveFileApngDurMultiFrame);
+			ReadItem(SaveFileTiffDurMultiFrame);
 
-				ReadItem(SaveAllSizeMode);
-				ReadItem(CropAnchor);
-				ReadItem(FillColour);
-				ReadItem(ResizeAspectNum);
-				ReadItem(ResizeAspectDen);
-				ReadItem(ResizeAspectMode);
-				ReadItem(MaxImageMemMB);
-				ReadItem(MaxCacheFiles);
-				ReadItem(MaxUndoSteps);
-				ReadItem(StrictLoading);
-				ReadItem(DetectAPNGInsidePNG);
-				ReadItem(MipmapFilter);
-				ReadItem(MipmapChaining);
-				ReadItem(AutoPropertyWindow);
-				ReadItem(AutoPlayAnimatedImages);
-				ReadItem(MonitorGamma);
-				ReadItem(EscCanQuit);
-			}
+			ReadItem(SaveAllSizeMode);
+			ReadItem(CropAnchor);
+			ReadItem(FillColour);
+			ReadItem(ResizeAspectNum);
+			ReadItem(ResizeAspectDen);
+			ReadItem(ResizeAspectMode);
+			ReadItem(MaxImageMemMB);
+			ReadItem(MaxCacheFiles);
+			ReadItem(MaxUndoSteps);
+			ReadItem(StrictLoading);
+			ReadItem(DetectAPNGInsidePNG);
+			ReadItem(MipmapFilter);
+			ReadItem(MipmapChaining);
+			ReadItem(AutoPropertyWindow);
+			ReadItem(AutoPlayAnimatedImages);
+			ReadItem(MonitorGamma);
+			ReadItem(EscCanQuit);
 		}
 	}
 
@@ -256,10 +368,12 @@ void Viewer::Settings::Load(const tString& filename)
 }
 
 
-bool Viewer::Settings::Save(const tString& filename)
+bool Config::Settings::Save(tScriptWriter& writer)
 {
-	tScriptWriter writer(filename);
-	writer.Rem("Tacent View Configuration File");
+	writer.Begin();
+	writer.Indent();
+	writer.CR();
+	writer.WriteAtom(Profile);
 	writer.CR();
 
 	WriteItem(WindowX);
@@ -326,7 +440,14 @@ bool Viewer::Settings::Save(const tString& filename)
 	WriteItem(AutoPropertyWindow);
 	WriteItem(AutoPlayAnimatedImages);
 	WriteItem(MonitorGamma);
-	WriteItem(EscCanQuit);
+	WriteLast(EscCanQuit);
+
+	writer.Dedent();
+	writer.CR();
+	writer.End();
 
 	return true;
+}
+
+
 }

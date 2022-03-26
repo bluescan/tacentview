@@ -2,7 +2,7 @@
 //
 // Modal dialogs open-file, open-dir, save-as and save-all.
 //
-// Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
+// Copyright (c) 2019, 2020, 2021, 2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -34,7 +34,7 @@ namespace Viewer
 
 	// This function saves the picture to the filename specified.
 	bool SaveImageAs(Image&, const tString& outFile);
-	bool SaveResizeImageAs(Image&, const tString& outFile, int width, int height, float scale = 1.0f, Settings::SizeMode = Settings::SizeMode::SetWidthAndHeight);
+	bool SaveResizeImageAs(Image&, const tString& outFile, int width, int height, float scale = 1.0f, Config::Settings::SizeMode = Config::Settings::SizeMode::SetWidthAndHeight);
 }
 
 
@@ -87,21 +87,21 @@ tString Viewer::DoSubFolder()
 {
 	// Output sub-folder
 	char subFolder[256]; tMemset(subFolder, 0, 256);
-	tStrncpy(subFolder, Config.SaveSubFolder.Chars(), 255);
+	tStrncpy(subFolder, Config::Current.SaveSubFolder.Chars(), 255);
 	ImGui::InputText("SubFolder", subFolder, 256);
-	Config.SaveSubFolder.Set(subFolder);
+	Config::Current.SaveSubFolder.Set(subFolder);
 	tString destDir = ImagesDir;
-	if (!Config.SaveSubFolder.IsEmpty())
-		destDir += Config.SaveSubFolder + "/";
+	if (!Config::Current.SaveSubFolder.IsEmpty())
+		destDir += Config::Current.SaveSubFolder + "/";
 	tString toolTipText;
 	tsPrintf(toolTipText, "Save to %s", destDir.Chars());
 	ShowToolTip(toolTipText.Chars());
 	ImGui::SameLine();
 	if (ImGui::Button("Default"))
-		Config.SaveSubFolder.Set("Saved");
+		Config::Current.SaveSubFolder.Set("Saved");
 	ImGui::SameLine();
 	if (ImGui::Button("Here"))
-		Config.SaveSubFolder.Clear();
+		Config::Current.SaveSubFolder.Clear();
 
 	return destDir;
 }
@@ -110,12 +110,12 @@ tString Viewer::DoSubFolder()
 tString Viewer::DoSaveFiletype()
 {
 	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "webp", "gif", "apng", "tiff" };
-	ImGui::Combo("File Type", &Config.SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
+	ImGui::Combo("File Type", &Config::Current.SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
 	ImGui::SameLine();
 	ShowHelpMark("Output image format.\nAlpha supported by tga, png, apng, bmp, tiff, and webp.\nAnimation supported by webp, gif, tiff, and apng.");
 
 	tString extension = ".tga";
-	switch (Config.SaveFileType)
+	switch (Config::Current.SaveFileType)
 	{
 		case 0: extension = ".tga";  break;
 		case 1: extension = ".png";  break;
@@ -128,53 +128,53 @@ tString Viewer::DoSaveFiletype()
 	}
 
 	// There are different options depending on what type you are saving as.
-	switch (Config.SaveFileType)
+	switch (Config::Current.SaveFileType)
 	{
 		case 0:
-			ImGui::Checkbox("RLE Compression", &Config.SaveFileTargaRLE);
+			ImGui::Checkbox("RLE Compression", &Config::Current.SaveFileTargaRLE);
 			break;
 
 		case 3:
-			ImGui::SliderInt("Quality", &Config.SaveFileJpegQuality, 1, 100, "%d");
+			ImGui::SliderInt("Quality", &Config::Current.SaveFileJpegQuality, 1, 100, "%d");
 			break;
 
 		case 4:
-			ImGui::Checkbox("Lossy", &Config.SaveFileWebpLossy);
-			ImGui::SliderFloat("Quality / Compression", &Config.SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
+			ImGui::Checkbox("Lossy", &Config::Current.SaveFileWebpLossy);
+			ImGui::SliderFloat("Quality / Compression", &Config::Current.SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
 			ImGui::SameLine(); ShowToolTip("Image quality percent if lossy. Image compression strength if not lossy"); ImGui::NewLine();
-			ImGui::SliderInt("Duration Override", &Config.SaveFileWebpDurOverride, -1, 10000, "%d");
+			ImGui::SliderInt("Duration Override", &Config::Current.SaveFileWebpDurOverride, -1, 10000, "%d");
 			ImGui::SameLine(); ShowToolTip("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
-			if (ImGui::Button("1.0s"))  Config.SaveFileWebpDurOverride = 1000; ImGui::SameLine();
-			if (ImGui::Button("0.5s"))  Config.SaveFileWebpDurOverride = 500;  ImGui::SameLine();
-			if (ImGui::Button("30fps")) Config.SaveFileWebpDurOverride = 33;   ImGui::SameLine();
-			if (ImGui::Button("60fps")) Config.SaveFileWebpDurOverride = 16;
+			if (ImGui::Button("1.0s"))  Config::Current.SaveFileWebpDurOverride = 1000; ImGui::SameLine();
+			if (ImGui::Button("0.5s"))  Config::Current.SaveFileWebpDurOverride = 500;  ImGui::SameLine();
+			if (ImGui::Button("30fps")) Config::Current.SaveFileWebpDurOverride = 33;   ImGui::SameLine();
+			if (ImGui::Button("60fps")) Config::Current.SaveFileWebpDurOverride = 16;
 			break;
 
 		case 5:
-			ImGui::SliderInt("Duration Override", &Config.SaveFileGifDurOverride, -1, 1000, "%d");
+			ImGui::SliderInt("Duration Override", &Config::Current.SaveFileGifDurOverride, -1, 1000, "%d");
 			ImGui::SameLine(); ShowToolTip("In 1/100 seconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
-			if (ImGui::Button("1.0s"))  Config.SaveFileGifDurOverride = 100; ImGui::SameLine();
-			if (ImGui::Button("0.5s"))  Config.SaveFileGifDurOverride = 50;  ImGui::SameLine();
-			if (ImGui::Button("15fps")) Config.SaveFileGifDurOverride = 6;   ImGui::SameLine();
-			if (ImGui::Button("30fps")) Config.SaveFileGifDurOverride = 3;
+			if (ImGui::Button("1.0s"))  Config::Current.SaveFileGifDurOverride = 100; ImGui::SameLine();
+			if (ImGui::Button("0.5s"))  Config::Current.SaveFileGifDurOverride = 50;  ImGui::SameLine();
+			if (ImGui::Button("15fps")) Config::Current.SaveFileGifDurOverride = 6;   ImGui::SameLine();
+			if (ImGui::Button("30fps")) Config::Current.SaveFileGifDurOverride = 3;
 			break;
 
 		case 6:
-			ImGui::SliderInt("Duration Override", &Config.SaveFileApngDurOverride, -1, 10000, "%d");
+			ImGui::SliderInt("Duration Override", &Config::Current.SaveFileApngDurOverride, -1, 10000, "%d");
 			ImGui::SameLine(); ShowToolTip("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
-			if (ImGui::Button("1.0s"))  Config.SaveFileApngDurOverride = 1000; ImGui::SameLine();
-			if (ImGui::Button("0.5s"))  Config.SaveFileApngDurOverride = 500;  ImGui::SameLine();
-			if (ImGui::Button("30fps")) Config.SaveFileApngDurOverride = 33;   ImGui::SameLine();
-			if (ImGui::Button("60fps")) Config.SaveFileApngDurOverride = 16;
+			if (ImGui::Button("1.0s"))  Config::Current.SaveFileApngDurOverride = 1000; ImGui::SameLine();
+			if (ImGui::Button("0.5s"))  Config::Current.SaveFileApngDurOverride = 500;  ImGui::SameLine();
+			if (ImGui::Button("30fps")) Config::Current.SaveFileApngDurOverride = 33;   ImGui::SameLine();
+			if (ImGui::Button("60fps")) Config::Current.SaveFileApngDurOverride = 16;
 			break;
 
 		case 7:
-			ImGui::SliderInt("Duration Override", &Config.SaveFileTiffDurOverride, -1, 10000, "%d");
+			ImGui::SliderInt("Duration Override", &Config::Current.SaveFileTiffDurOverride, -1, 10000, "%d");
 			ImGui::SameLine(); ShowToolTip("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
-			if (ImGui::Button("1.0s"))  Config.SaveFileTiffDurOverride = 1000; ImGui::SameLine();
-			if (ImGui::Button("0.5s"))  Config.SaveFileTiffDurOverride = 500;  ImGui::SameLine();
-			if (ImGui::Button("30fps")) Config.SaveFileTiffDurOverride = 33;   ImGui::SameLine();
-			if (ImGui::Button("60fps")) Config.SaveFileTiffDurOverride = 16;
+			if (ImGui::Button("1.0s"))  Config::Current.SaveFileTiffDurOverride = 1000; ImGui::SameLine();
+			if (ImGui::Button("0.5s"))  Config::Current.SaveFileTiffDurOverride = 500;  ImGui::SameLine();
+			if (ImGui::Button("30fps")) Config::Current.SaveFileTiffDurOverride = 33;   ImGui::SameLine();
+			if (ImGui::Button("60fps")) Config::Current.SaveFileTiffDurOverride = 16;
 			break;
 	}
 
@@ -185,56 +185,56 @@ tString Viewer::DoSaveFiletype()
 tString Viewer::DoSaveFiletypeMultiFrame()
 {
 	const char* fileTypeItems[] = { "webp", "gif", "apng", "tiff" };
-	ImGui::Combo("File Type", &Config.SaveFileTypeMultiFrame, fileTypeItems, tNumElements(fileTypeItems));
+	ImGui::Combo("File Type", &Config::Current.SaveFileTypeMultiFrame, fileTypeItems, tNumElements(fileTypeItems));
 	ImGui::SameLine();
 	ShowHelpMark("Multi-frame output image format.");
 
 	// There are different options depending on what type you are saving as.
 	tString extension = ".webp";
-	switch (Config.SaveFileTypeMultiFrame)
+	switch (Config::Current.SaveFileTypeMultiFrame)
 	{
 		case 0:
 			extension = ".webp";
-			ImGui::Checkbox("Lossy", &Config.SaveFileWebpLossy);
-			ImGui::SliderFloat("Quality / Compression", &Config.SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
+			ImGui::Checkbox("Lossy", &Config::Current.SaveFileWebpLossy);
+			ImGui::SliderFloat("Quality / Compression", &Config::Current.SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
 			ImGui::SameLine(); ShowToolTip("Image quality percent if lossy. Image compression strength if not lossy"); ImGui::NewLine();
-			ImGui::SliderInt("Frame Duration", &Config.SaveFileWebpDurMultiFrame, 0, 10000, "%d");
+			ImGui::SliderInt("Frame Duration", &Config::Current.SaveFileWebpDurMultiFrame, 0, 10000, "%d");
 			ImGui::SameLine(); ShowToolTip("In milliseconds."); ImGui::NewLine();
-			if (ImGui::Button("1.0s"))  Config.SaveFileWebpDurMultiFrame = 1000; ImGui::SameLine();
-			if (ImGui::Button("0.5s"))  Config.SaveFileWebpDurMultiFrame = 500;  ImGui::SameLine();
-			if (ImGui::Button("30fps")) Config.SaveFileWebpDurMultiFrame = 33;   ImGui::SameLine();
-			if (ImGui::Button("60fps")) Config.SaveFileWebpDurMultiFrame = 16;
+			if (ImGui::Button("1.0s"))  Config::Current.SaveFileWebpDurMultiFrame = 1000; ImGui::SameLine();
+			if (ImGui::Button("0.5s"))  Config::Current.SaveFileWebpDurMultiFrame = 500;  ImGui::SameLine();
+			if (ImGui::Button("30fps")) Config::Current.SaveFileWebpDurMultiFrame = 33;   ImGui::SameLine();
+			if (ImGui::Button("60fps")) Config::Current.SaveFileWebpDurMultiFrame = 16;
 			break;
 
 		case 1:
 			extension = ".gif";
-			ImGui::SliderInt("Frame Duration", &Config.SaveFileGifDurMultiFrame, 0, 1000, "%d");
+			ImGui::SliderInt("Frame Duration", &Config::Current.SaveFileGifDurMultiFrame, 0, 1000, "%d");
 			ImGui::SameLine(); ShowToolTip("In 1/100 seconds."); ImGui::NewLine();
-			if (ImGui::Button("1.0s"))  Config.SaveFileGifDurMultiFrame = 100; ImGui::SameLine();
-			if (ImGui::Button("0.5s"))  Config.SaveFileGifDurMultiFrame = 50;  ImGui::SameLine();
-			if (ImGui::Button("15fps")) Config.SaveFileGifDurMultiFrame = 6;   ImGui::SameLine();
-			if (ImGui::Button("30fps")) Config.SaveFileGifDurMultiFrame = 3;   ImGui::SameLine();
-			if (ImGui::Button("50fps")) Config.SaveFileGifDurMultiFrame = 2;
+			if (ImGui::Button("1.0s"))  Config::Current.SaveFileGifDurMultiFrame = 100; ImGui::SameLine();
+			if (ImGui::Button("0.5s"))  Config::Current.SaveFileGifDurMultiFrame = 50;  ImGui::SameLine();
+			if (ImGui::Button("15fps")) Config::Current.SaveFileGifDurMultiFrame = 6;   ImGui::SameLine();
+			if (ImGui::Button("30fps")) Config::Current.SaveFileGifDurMultiFrame = 3;   ImGui::SameLine();
+			if (ImGui::Button("50fps")) Config::Current.SaveFileGifDurMultiFrame = 2;
 			break;
 
 		case 2:
 			extension = ".apng";
-			ImGui::SliderInt("Frame Duration", &Config.SaveFileApngDurMultiFrame, 0, 10000, "%d");
+			ImGui::SliderInt("Frame Duration", &Config::Current.SaveFileApngDurMultiFrame, 0, 10000, "%d");
 			ImGui::SameLine(); ShowToolTip("In milliseconds."); ImGui::NewLine();
-			if (ImGui::Button("1.0s"))  Config.SaveFileApngDurMultiFrame = 1000; ImGui::SameLine();
-			if (ImGui::Button("0.5s"))  Config.SaveFileApngDurMultiFrame = 500;  ImGui::SameLine();
-			if (ImGui::Button("30fps")) Config.SaveFileApngDurMultiFrame = 33;   ImGui::SameLine();
-			if (ImGui::Button("60fps")) Config.SaveFileApngDurMultiFrame = 16;
+			if (ImGui::Button("1.0s"))  Config::Current.SaveFileApngDurMultiFrame = 1000; ImGui::SameLine();
+			if (ImGui::Button("0.5s"))  Config::Current.SaveFileApngDurMultiFrame = 500;  ImGui::SameLine();
+			if (ImGui::Button("30fps")) Config::Current.SaveFileApngDurMultiFrame = 33;   ImGui::SameLine();
+			if (ImGui::Button("60fps")) Config::Current.SaveFileApngDurMultiFrame = 16;
 			break;
 
 		case 3:
 			extension = ".tiff";
-			ImGui::SliderInt("Frame Duration", &Config.SaveFileTiffDurMultiFrame, 0, 10000, "%d");
+			ImGui::SliderInt("Frame Duration", &Config::Current.SaveFileTiffDurMultiFrame, 0, 10000, "%d");
 			ImGui::SameLine(); ShowToolTip("In milliseconds."); ImGui::NewLine();
-			if (ImGui::Button("1.0s"))  Config.SaveFileTiffDurMultiFrame = 1000; ImGui::SameLine();
-			if (ImGui::Button("0.5s"))  Config.SaveFileTiffDurMultiFrame = 500;  ImGui::SameLine();
-			if (ImGui::Button("30fps")) Config.SaveFileTiffDurMultiFrame = 33;   ImGui::SameLine();
-			if (ImGui::Button("60fps")) Config.SaveFileTiffDurMultiFrame = 16;
+			if (ImGui::Button("1.0s"))  Config::Current.SaveFileTiffDurMultiFrame = 1000; ImGui::SameLine();
+			if (ImGui::Button("0.5s"))  Config::Current.SaveFileTiffDurMultiFrame = 500;  ImGui::SameLine();
+			if (ImGui::Button("30fps")) Config::Current.SaveFileTiffDurMultiFrame = 33;   ImGui::SameLine();
+			if (ImGui::Button("60fps")) Config::Current.SaveFileTiffDurMultiFrame = 16;
 			break;
 	}
 
@@ -251,14 +251,14 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 		img.Load();
 
 	bool success = false;
-	switch (Config.SaveFileType)
+	switch (Config::Current.SaveFileType)
 	{
 		case 0:		// TGA
 		{
 			tPicture* picture = img.GetCurrentPic();
 			if (!picture || !picture->IsValid())
 				return false;
-			success = picture->SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
+			success = picture->SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config::Current.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
 			break;
 		}
 
@@ -281,7 +281,7 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 			}
 
 			tImageWEBP webp(frames, true);
-			success = webp.Save(outFile, Config.SaveFileWebpLossy, Config.SaveFileWebpQualComp, Config.SaveFileWebpDurOverride);
+			success = webp.Save(outFile, Config::Current.SaveFileWebpLossy, Config::Current.SaveFileWebpQualComp, Config::Current.SaveFileWebpDurOverride);
 			break;
 		}
 
@@ -304,7 +304,7 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 			}
 
 			tImageGIF gif(frames, true);
-			success = gif.Save(outFile, Config.SaveFileGifDurOverride);
+			success = gif.Save(outFile, Config::Current.SaveFileGifDurOverride);
 			break;
 		}
 
@@ -327,7 +327,7 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 			}
 
 			tImageAPNG apng(frames, true);
-			success = apng.Save(outFile, Config.SaveFileApngDurOverride);
+			success = apng.Save(outFile, Config::Current.SaveFileApngDurOverride);
 			break;
 		}
 
@@ -350,7 +350,7 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 			}
 
 			tImageTIFF tiff(frames, true);
-			success = tiff.Save(outFile, Config.SaveFileTiffZLibDeflate, Config.SaveFileTiffDurOverride);
+			success = tiff.Save(outFile, Config::Current.SaveFileTiffZLibDeflate, Config::Current.SaveFileTiffDurOverride);
 			break;
 		}
 
@@ -360,7 +360,7 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 			if (!picture || !picture->IsValid())
 				return false;
 			tImage::tPicture::tColourFormat colourFmt = picture->IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-			success = picture->Save(outFile, colourFmt, Config.SaveFileJpegQuality);
+			success = picture->Save(outFile, colourFmt, Config::Current.SaveFileJpegQuality);
 			break;
 		}
 	}
@@ -374,7 +374,7 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 }
 
 
-bool Viewer::SaveResizeImageAs(Image& img, const tString& outFile, int width, int height, float scale, Settings::SizeMode sizeMode)
+bool Viewer::SaveResizeImageAs(Image& img, const tString& outFile, int width, int height, float scale, Config::Settings::SizeMode sizeMode)
 {
 	// We make sure to maintain the loaded/unloaded state. This function may be called many times in succession
 	// so we don't want them all in memory at once by indiscriminantly loading them all.
@@ -400,24 +400,24 @@ bool Viewer::SaveResizeImageAs(Image& img, const tString& outFile, int width, in
 
 	switch (sizeMode)
 	{
-		case Settings::SizeMode::Percent:
+		case Config::Settings::SizeMode::Percent:
 			if (tMath::tApproxEqual(scale, 1.0f, 0.01f))
 				break;
 			outW = int( tRound(float(outW)*scale) );
 			outH = int( tRound(float(outH)*scale) );
 			break;
 
-		case Settings::SizeMode::SetWidthAndHeight:
+		case Config::Settings::SizeMode::SetWidthAndHeight:
 			outW = width;
 			outH = height;
 			break;
 
-		case Settings::SizeMode::SetWidthRetainAspect:
+		case Config::Settings::SizeMode::SetWidthRetainAspect:
 			outW = width;
 			outH = int( tRound(float(width) / aspect) );
 			break;
 
-		case Settings::SizeMode::SetHeightRetainAspect:
+		case Config::Settings::SizeMode::SetHeightRetainAspect:
 			outH = height;
 			outW = int( tRound(float(height) * aspect) );
 			break;
@@ -426,14 +426,14 @@ bool Viewer::SaveResizeImageAs(Image& img, const tString& outFile, int width, in
 	tMath::tiClampMin(outH, 4);
 
 	if ((outPic.GetWidth() != outW) || (outPic.GetHeight() != outH))
-		outPic.Resample(outW, outH, tImage::tResampleFilter(Config.ResampleFilter), tImage::tResampleEdgeMode(Config.ResampleEdgeMode));
+		outPic.Resample(outW, outH, tImage::tResampleFilter(Config::Current.ResampleFilter), tImage::tResampleEdgeMode(Config::Current.ResampleEdgeMode));
 
 	bool success = false;
 	tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-	if (Config.SaveFileType == 0)
-		success = outPic.SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
+	if (Config::Current.SaveFileType == 0)
+		success = outPic.SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config::Current.SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
 	else
-		success = outPic.Save(outFile, colourFmt, Config.SaveFileJpegQuality);
+		success = outPic.Save(outFile, colourFmt, Config::Current.SaveFileJpegQuality);
 
 	if (success)
 		tPrintf("Saved image as %s\n", outFile.Chars());
@@ -491,7 +491,7 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 
 		if (dirExists)
 		{
-			if (tFileExists(outFile) && Config.ConfirmFileOverwrites)
+			if (tFileExists(outFile) && Config::Current.ConfirmFileOverwrites)
 			{
 				ImGui::OpenPopup("Overwrite File");
 			}
@@ -512,7 +512,7 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 					else
 						AddSavedImageIfNecessary(outFile);
 
-					SortImages(Settings::SortKeyEnum(Config.SortKey), Config.SortAscending);
+					SortImages(Config::Settings::SortKeyEnum(Config::Current.SortKey), Config::Current.SortAscending);
 					SetCurrentImage(outFile);
 				}
 				closeThisModal = true;
@@ -541,7 +541,7 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 				else
 					AddSavedImageIfNecessary(outFile);
 
-				SortImages(Settings::SortKeyEnum(Config.SortKey), Config.SortAscending);
+				SortImages(Config::Settings::SortKeyEnum(Config::Current.SortKey), Config::Current.SortAscending);
 				SetCurrentImage(outFile);
 			}
 		}
@@ -594,35 +594,35 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 	static int height = 512;
 	static float percent = 100.0f;
 	const char* sizeModeNames[] = { "Percent of Original", "Set Width and Height", "Set Width - Retain Aspect", "Set Height - Retain Aspect" };
-	ImGui::Combo("Size Mode", &Config.SaveAllSizeMode, sizeModeNames, tNumElements(sizeModeNames));
-	switch (Settings::SizeMode(Config.SaveAllSizeMode))
+	ImGui::Combo("Size Mode", &Config::Current.SaveAllSizeMode, sizeModeNames, tNumElements(sizeModeNames));
+	switch (Config::Settings::SizeMode(Config::Current.SaveAllSizeMode))
 	{
-		case Settings::SizeMode::Percent:
+		case Config::Settings::SizeMode::Percent:
 			ImGui::InputFloat("Percent", &percent, 1.0f, 10.0f, "%.1f");	ImGui::SameLine();	ShowHelpMark("Percent of original size.");
 			break;
 
-		case Settings::SizeMode::SetWidthAndHeight:
+		case Config::Settings::SizeMode::SetWidthAndHeight:
 			ImGui::InputInt("Width", &width);	ImGui::SameLine();	ShowHelpMark("Output width in pixels for all images.");
 			ImGui::InputInt("Height", &height);	ImGui::SameLine();	ShowHelpMark("Output height in pixels for all images.");
 			break;
 
-		case Settings::SizeMode::SetWidthRetainAspect:
+		case Config::Settings::SizeMode::SetWidthRetainAspect:
 			ImGui::InputInt("Width", &width);	ImGui::SameLine();	ShowHelpMark("Output width in pixels for all images.");
 			break;
 
-		case Settings::SizeMode::SetHeightRetainAspect:
+		case Config::Settings::SizeMode::SetHeightRetainAspect:
 			ImGui::InputInt("Height", &height);	ImGui::SameLine();	ShowHelpMark("Output height in pixels for all images.");
 			break;
 	};
 
 	ImGui::Separator();
-	if (!((Settings::SizeMode(Config.SaveAllSizeMode) == Settings::SizeMode::Percent) && (percent == 100.0f)))
+	if (!((Config::Settings::SizeMode(Config::Current.SaveAllSizeMode) == Config::Settings::SizeMode::Percent) && (percent == 100.0f)))
 	{
-		ImGui::Combo("Filter", &Config.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
+		ImGui::Combo("Filter", &Config::Current.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 		ImGui::SameLine();
 		ShowHelpMark("Filtering method to use when resizing images.");
 
-		ImGui::Combo("Filter Edge Mode", &Config.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
+		ImGui::Combo("Filter Edge Mode", &Config::Current.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
 		ImGui::SameLine();
 		ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");
 	}
@@ -656,7 +656,7 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 		{
 			overwriteFiles.Empty();
 			GetFilesNeedingOverwrite(destDir, overwriteFiles, extension);
-			if (!overwriteFiles.IsEmpty() && Config.ConfirmFileOverwrites)
+			if (!overwriteFiles.IsEmpty() && Config::Current.ConfirmFileOverwrites)
 			{
 				ImGui::OpenPopup("Overwrite Multiple Files");
 			}
@@ -729,7 +729,7 @@ void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFi
 	ImGui::NewLine();
 	ImGui::Separator();
 	ImGui::NewLine();
-	ImGui::Checkbox("Confirm file overwrites in the future?", &Config.ConfirmFileOverwrites);
+	ImGui::Checkbox("Confirm file overwrites in the future?", &Config::Current.ConfirmFileOverwrites);
 	ImGui::NewLine();
 
 	if (ImGui::Button("Cancel", tVector2(100, 0)))
@@ -761,7 +761,7 @@ void Viewer::SaveAllImages(const tString& destDir, const tString& extension, flo
 		tString baseName = tSystem::tGetFileBaseName(image->Filename);
 		tString outFile = destDir + tString(baseName) + extension;
 
-		bool ok = SaveResizeImageAs(*image, outFile, width, height, scale, Settings::SizeMode(Config.SaveAllSizeMode));
+		bool ok = SaveResizeImageAs(*image, outFile, width, height, scale, Config::Settings::SizeMode(Config::Current.SaveAllSizeMode));
 		if (ok)
 		{
 			Image* foundImage = FindImage(outFile);
@@ -780,7 +780,7 @@ void Viewer::SaveAllImages(const tString& destDir, const tString& extension, flo
 	// If we saved to the same dir we are currently viewing we need to reload and set the current image again.
 	if (anySaved)
 	{
-		SortImages(Settings::SortKeyEnum(Config.SortKey), Config.SortAscending);
+		SortImages(Config::Settings::SortKeyEnum(Config::Current.SortKey), Config::Current.SortAscending);
 		SetCurrentImage(currFile);
 	}
 }
@@ -814,7 +814,7 @@ void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool&
 	ImGui::Separator();
 
 	ImGui::NewLine();
-	ImGui::Checkbox("Confirm file overwrites in the future?", &Config.ConfirmFileOverwrites);
+	ImGui::Checkbox("Confirm file overwrites in the future?", &Config::Current.ConfirmFileOverwrites);
 	ImGui::NewLine();
 
 	if (ImGui::Button("Cancel", tVector2(100, 0)))

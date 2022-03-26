@@ -2,7 +2,7 @@
 //
 // A texture viewer for various formats.
 //
-// Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
+// Copyright (c) 2019, 2020, 2021, 2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -16,14 +16,13 @@
 #include <Math/tVector2.h>
 #include <Math/tVector4.h>
 #include <System/tCmdLine.h>
-#include "Settings.h"
+#include "Config.h"
 namespace Viewer { class Image; }
 class tColouri;
 
 
 namespace Viewer
 {
-	extern Settings Config;
 	extern Image* CurrImage;
 	extern tString ImagesDir;
 	extern tList<tStringItem> ImagesSubDirs;
@@ -71,7 +70,7 @@ namespace Viewer
 	void SetCurrentImage(const tString& currFilename = tString());
 	void LoadCurrImage();
 	bool ChangeScreenMode(bool fullscreeen, bool force = false);
-	void SortImages(Settings::SortKeyEnum, bool ascending);
+	void SortImages(Config::Settings::SortKeyEnum, bool ascending);
 	bool DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin);
 	void SetWindowTitle();
 	void ZoomFit();
