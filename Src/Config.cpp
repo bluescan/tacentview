@@ -39,34 +39,32 @@ namespace Viewer {
 
 namespace Config
 {
+	const int ConfigFileVersion = 2;
+
 	GlobalSettings Global;
 	Settings MainSettings;
 	Settings BasicSettings;
-	Settings& Current = MainSettings;
-	Profile CurrentProfile = Profile::Main;
-
-	const int ConfigFileVersion = 2;
+	Settings* Current = &MainSettings;
 }
 
 
 void Config::SetProfile(Profile profile)
 {
-	if (profile == CurrentProfile)
+	if (profile == Profile(Global.CurrentProfile))
 		return;
 
 	switch (profile)
 	{
-		case Profile::Main:		Current = MainSettings;		break;
-		case Profile::Basic:	Current = BasicSettings;	break;
+		case Profile::Main:		Current = &MainSettings;	break;
+		case Profile::Basic:	Current = &BasicSettings;	break;
 	}
-	CurrentProfile = profile;
+	Global.CurrentProfile = int(profile);
 }
 
 
-Config::Profile Config::GetProfile()
-{
-	return CurrentProfile;
-}
+Config::Profile Config::GetProfile()			{ return Profile(Global.CurrentProfile); }
+void Config::ResetProfile(Category category)	{ Current->Reset(Profile(Global.CurrentProfile), category); }
+void Config::ResetAll()							{ MainSettings.Reset(Profile::Main); BasicSettings.Reset(Profile::Basic); }
 
 
 void Config::Load(const tString& filename)
@@ -74,10 +72,10 @@ void Config::Load(const tString& filename)
 	if (!tSystem::tFileExists(filename))
 	{
 		Global.Reset();
-		MainSettings.Reset();
-		BasicSettings.Reset();
-		Current = MainSettings;
-		CurrentProfile = Profile::Main;
+		MainSettings.Reset(Profile::Main, Category::Everything);
+		BasicSettings.Reset(Profile::Basic, Category::Everything);
+		Current = &MainSettings;
+		Global.CurrentProfile = int(Profile::Main);
 		return;
 	}
 
@@ -98,6 +96,14 @@ void Config::Load(const tString& filename)
 				BasicSettings.Load(e);
 				break;
 		}
+	}
+
+	// I think it makes sense to restore the currently selected profile when the config file is loaded.
+	// This means if you were in Basic profile when you close, you will be in basic when you start the app again.
+	switch (Profile(Global.CurrentProfile))
+	{
+		case Profile::Main:		Current = &MainSettings;	break;
+		case Profile::Basic:	Current = &BasicSettings;	break;
 	}
 }
 
@@ -161,91 +167,93 @@ void Config::GlobalSettings::Reset()
 }
 
 
-void Config::Settings::Reset()
+void Config::Settings::Reset(Config::Profile profile, Config::Category category)
 {
-	ResetUISettings();
-	ResetBehaviourSettings();
-	TransparentWorkArea			= false;
-}
+	if (category == Category::Everything)
+	{
+		GLFWmonitor* monitor		= glfwGetPrimaryMonitor();
+		const GLFWvidmode* mode		= monitor ? glfwGetVideoMode(monitor) : nullptr;
+		int screenW					= mode ? mode->width  : 1280;
+		int screenH					= mode ? mode->height : 720;
+		WindowW						= 1280;
+		WindowH						= 720;
+		WindowX						= (screenW - WindowW) >> 1;
+		WindowY						= (screenH - WindowH) >> 1;
 
+		ShowMenuBar					= (profile == Profile::Basic) ? false : true;
+		ShowNavBar					= (profile == Profile::Basic) ? false : true;
+		ShowImageDetails			= (profile == Profile::Basic) ? false : true;
+		ShowPixelEditor				= false;
+		ShowFrameScrubber			= (profile == Profile::Basic) ? false : true;
+		ContentViewShow				= false;
+		ThumbnailWidth				= 128.0f;
+		SortKey						= 0;
+		SortAscending				= true;
+		OverlayCorner				= 1;
+		Tile						= false;
+		ResampleFilter				= int(tImage::tResampleFilter::Bilinear);
+		ResampleEdgeMode			= int(tImage::tResampleEdgeMode::Clamp);
+		ResampleFilterRotateUp		= int(tImage::tResampleFilter::Bilinear);
+		ResampleFilterRotateDown	= int(tImage::tResampleFilter::None);
+		RotateMode					= int(RotMode::Fill);
+		SlideshowLooping			= (profile == Profile::Basic) ? true : false;
+		SaveSubFolder				.Clear();
+		SaveFileType				= 0;
+		SaveFileTypeMultiFrame		= 0;
+		SaveFileTargaRLE			= false;
+		SaveFileJpegQuality			= 95;
+		SaveFileWebpLossy			= false;
+		SaveFileWebpQualComp		= 90.0f;
+		SaveFileTiffZLibDeflate		= true;
+		SaveFileWebpDurOverride		= -1;
+		SaveFileGifDurOverride		= -1;
+		SaveFileApngDurOverride		= -1;
+		SaveFileTiffDurOverride		= -1;
+		SaveFileWebpDurMultiFrame	= 33;
+		SaveFileGifDurMultiFrame	= 3;
+		SaveFileApngDurMultiFrame	= 33;
+		SaveFileTiffDurMultiFrame	= 33;
+		SaveAllSizeMode				= 0;
+		CropAnchor					= 4;
+		FillColour					= tColouri::black;
+		ResizeAspectNum				= 16;
+		ResizeAspectDen				= 9;
+		ResizeAspectMode			= 0;
+	}
 
-void Config::Settings::ResetBehaviourSettings()
-{
-	SortKey						= 0;
-	SortAscending				= true;
-	ResampleFilter				= int(tImage::tResampleFilter::Bilinear);
-	ResampleEdgeMode			= int(tImage::tResampleEdgeMode::Clamp);
-	ResampleFilterRotateUp		= int(tImage::tResampleFilter::Bilinear);
-	ResampleFilterRotateDown	= int(tImage::tResampleFilter::None);
-	RotateMode					= int(RotMode::Fill);
-	ConfirmDeletes				= true;
-	ConfirmFileOverwrites		= true;
-	SlideshowLooping			= false;
-	SlideshowProgressArc		= true;
-	SlideshowPeriod				= 8.0;			// Values as small as 1.0/60.0 also work.
-	SaveSubFolder				.Clear();
+	if ((category == Category::Everything) || (category == Category::Background))
+	{
+		BackgroundStyle				= (profile == Profile::Basic) ? int(BGStyle::None) : int(BGStyle::Checkerboard);
+		BackgroundExtend			= false;
+		TransparentWorkArea			= false;
+	}
 
-	SaveFileType				= 0;
-	SaveFileTypeMultiFrame		= 0;
-	SaveFileTargaRLE			= false;
-	SaveFileJpegQuality			= 95;
-	SaveFileWebpLossy			= false;
-	SaveFileWebpQualComp		= 90.0f;
-	SaveFileTiffZLibDeflate		= true;
+	if ((category == Category::Everything) || (category == Category::Slideshow))
+	{
+		SlideshowProgressArc		= true;
+		SlideshowPeriod				= (profile == Profile::Basic) ? 8.0 : 4.0;			// Values as small as 1.0/60.0 also work.
+	}
 
-	SaveFileWebpDurOverride		= -1;
-	SaveFileGifDurOverride		= -1;
-	SaveFileApngDurOverride		= -1;
-	SaveFileTiffDurOverride		= -1;
+	if ((category == Category::Everything) || (category == Category::System))
+	{
+		MaxImageMemMB				= 2048;
+		MaxCacheFiles				= 8192;
+		MaxUndoSteps				= 16;
+		StrictLoading				= false;
+		DetectAPNGInsidePNG			= true;
+		MipmapFilter				= int(tImage::tResampleFilter::Bilinear);
+		MipmapChaining				= true;
+		MonitorGamma				= tMath::DefaultGamma;
+	}
 
-	SaveFileWebpDurMultiFrame	= 33;
-	SaveFileGifDurMultiFrame	= 3;
-	SaveFileApngDurMultiFrame	= 33;
-	SaveFileTiffDurMultiFrame	= 33;
-
-	SaveAllSizeMode				= 0;
-	CropAnchor					= 4;
-	FillColour					= tColouri::black;
-	ResizeAspectNum				= 16;
-	ResizeAspectDen				= 9;
-	ResizeAspectMode			= 0;
-	MaxImageMemMB				= 2048;
-	MaxCacheFiles				= 8192;
-	MaxUndoSteps				= 16;
-	StrictLoading				= false;
-	DetectAPNGInsidePNG			= true;
-	MipmapFilter				= int(tImage::tResampleFilter::Bilinear);
-	MipmapChaining				= true;
-	AutoPlayAnimatedImages		= true;
-	MonitorGamma				= tMath::DefaultGamma;
-	EscCanQuit					= true;
-}
-
-
-void Config::Settings::ResetUISettings()
-{
-	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-	const GLFWvidmode* mode = monitor ? glfwGetVideoMode(monitor) : nullptr;
-	int screenW = mode ? mode->width  : 1280;
-	int screenH = mode ? mode->height : 720;
-
-	WindowW						= 1280;
-	WindowH						= 720;
-	WindowX						= (screenW - WindowW) >> 1;
-	WindowY						= (screenH - WindowH) >> 1;
-
-	ShowMenuBar					= true;
-	ShowNavBar					= true;
-	ShowImageDetails			= true;
-	ShowPixelEditor				= false;
-	ShowFrameScrubber			= true;
-	AutoPropertyWindow			= true;
-	ContentViewShow				= false;
-	ThumbnailWidth				= 128.0f;
-	OverlayCorner				= 1;
-	Tile						= false;
-	BackgroundStyle				= 1;
-	BackgroundExtend			= false;
+	if ((category == Category::Everything) || (category == Category::Interface))
+	{
+		ConfirmDeletes				= true;
+		ConfirmFileOverwrites		= true;
+		AutoPropertyWindow			= (profile == Profile::Basic) ? false : true;
+		AutoPlayAnimatedImages		= true;
+		EscCanQuit					= true;
+	}
 }
 
 

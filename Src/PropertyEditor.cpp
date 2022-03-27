@@ -193,7 +193,7 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 		}
 		ImGui::Checkbox("Preview Duration", &CurrImage->FrameDurationPreviewEnabled);
 		ImGui::SameLine(); ShowHelpMark("If enabled this number of seconds is used for all frame durations while playing.");
-		ImGui::Checkbox("Scrubber", &Config::Current.ShowFrameScrubber);
+		ImGui::Checkbox("Scrubber", &Config::Current->ShowFrameScrubber);
 
 		ImGui::PopItemWidth();
 

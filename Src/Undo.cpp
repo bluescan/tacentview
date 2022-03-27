@@ -46,7 +46,7 @@ void Undo::Stack::Push(tList<tImage::tPicture>& preOpState, const tString& desc,
 
 	// Drop one from the end if we've reached the limit.
 	int numUndoSteps = UndoSteps.Count();
-	if (numUndoSteps > Viewer::Config::Current.MaxUndoSteps)
+	if (numUndoSteps > Viewer::Config::Current->MaxUndoSteps)
 		delete UndoSteps.Drop();
 }
 

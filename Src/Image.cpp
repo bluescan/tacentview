@@ -102,7 +102,7 @@ Image::~Image()
 void Image::ResetLoadParams()
 {
 	LoadParams = tImage::tPicture::LoadParams();
-	LoadParams.GammaValue = Viewer::Config::Current.MonitorGamma;
+	LoadParams.GammaValue = Viewer::Config::Current->MonitorGamma;
 }
 
 
@@ -163,7 +163,7 @@ bool Image::Load()
 	// false, the PNG loader will always be used for .png files even if they have an apng inside.
 	// The designers of apng made the format backwards compatible with single-frame png loaders.
 	tSystem::tFileType loadingFiletype = Filetype;
-	if ((Filetype == tSystem::tFileType::PNG) && Config::Current.DetectAPNGInsidePNG && tImageAPNG::IsAnimatedPNG(Filename))
+	if ((Filetype == tSystem::tFileType::PNG) && Config::Current->DetectAPNGInsidePNG && tImageAPNG::IsAnimatedPNG(Filename))
 		loadingFiletype = tSystem::tFileType::APNG;
 
 	Info.SrcPixelFormat = tPixelFormat::Invalid;
@@ -347,7 +347,7 @@ bool Image::Load()
 			case tSystem::tFileType::JPG:
 			{
 				tImageJPG jpg;
-				bool ok = jpg.Load(Filename, Viewer::Config::Current.StrictLoading);
+				bool ok = jpg.Load(Filename, Config::Current->StrictLoading);
 				if (!ok)
 					return false;
 
@@ -822,7 +822,7 @@ uint64 Image::Bind()
 			return 0;
 
 		tList<tLayer> layers;
-		AltPicture.GenerateLayers(layers, tResampleFilter(Config::Current.MipmapFilter), tResampleEdgeMode::Clamp, Config::Current.MipmapChaining);
+		AltPicture.GenerateLayers(layers, tResampleFilter(Config::Current->MipmapFilter), tResampleEdgeMode::Clamp, Config::Current->MipmapChaining);
 		BindLayers(layers, TexIDAlt);
 		return TexIDAlt;
 	}
@@ -845,7 +845,7 @@ uint64 Image::Bind()
 		glGenTextures(1, &picture->TextureID);
 
 		tList<tLayer> layers;
-		picture->GenerateLayers(layers, tResampleFilter(Config::Current.MipmapFilter), tResampleEdgeMode::Clamp, Config::Current.MipmapChaining);
+		picture->GenerateLayers(layers, tResampleFilter(Config::Current->MipmapFilter), tResampleEdgeMode::Clamp, Config::Current->MipmapChaining);
 		BindLayers(layers, picture->TextureID);
 	}
 	return GetCurrentPic()->TextureID;
@@ -1094,7 +1094,7 @@ uint64 Image::BindThumbnail()
 			return 0;
 
 		tList<tLayer> layers;
-		ThumbnailPicture.GenerateLayers(layers, tResampleFilter(Config::Current.MipmapFilter), tResampleEdgeMode::Clamp, Config::Current.MipmapChaining);
+		ThumbnailPicture.GenerateLayers(layers, tResampleFilter(Config::Current->MipmapFilter), tResampleEdgeMode::Clamp, Config::Current->MipmapChaining);
 		BindLayers(layers, TexIDThumbnail);
 		return TexIDThumbnail;
 	}

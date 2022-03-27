@@ -44,7 +44,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 	ImGui::DragFloat("Fine Tune Drag", &RotateAnglePreview, 0.01f);
 	ImGui::NewLine();
 
-	ImGui::Combo("Up Filter", &Config::Current.ResampleFilterRotateUp, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
+	ImGui::Combo("Up Filter", &Config::Current->ResampleFilterRotateUp, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
 	ImGui::SameLine();
 	ShowHelpMark
 	(
@@ -53,9 +53,9 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 		"nearest neighbour, fast, for pixel art."
 	);
 
-	if (Config::Current.ResampleFilterRotateUp != int(tResampleFilter(tResampleFilter::None)))
+	if (Config::Current->ResampleFilterRotateUp != int(tResampleFilter(tResampleFilter::None)))
 	{
-		ImGui::Combo("Down Filter", &Config::Current.ResampleFilterRotateDown, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
+		ImGui::Combo("Down Filter", &Config::Current->ResampleFilterRotateDown, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
 		ImGui::SameLine();
 		ShowHelpMark
 		(
@@ -66,7 +66,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 	}
 
 	static const char* modeNames[] = { "Fill", "Crop", "Crop Resize" };
-	ImGui::Combo("Mode", &Config::Current.RotateMode, modeNames, tNumElements(modeNames), tNumElements(modeNames));
+	ImGui::Combo("Mode", &Config::Current->RotateMode, modeNames, tNumElements(modeNames), tNumElements(modeNames));
 	ImGui::SameLine();
 	ShowHelpMark
 	(
@@ -77,7 +77,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 		"degrees on either side. If the rotation is mostly vertical, the reciprical aspect is used."
 	);
 
-	if (Config::Current.RotateMode == int(Config::Settings::RotMode::Fill))
+	if (Config::Current->RotateMode == int(Config::Settings::RotMode::Fill))
 		DoFillColourInterface();
 
 	ImGui::NewLine();
@@ -104,12 +104,12 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 		CurrImage->Unbind();
 		CurrImage->Rotate
 		(
-			tDegToRad(RotateAnglePreview), Config::Current.FillColour,
-			tResampleFilter(Config::Current.ResampleFilterRotateUp),
-			tResampleFilter(Config::Current.ResampleFilterRotateDown)
+			tDegToRad(RotateAnglePreview), Config::Current->FillColour,
+			tResampleFilter(Config::Current->ResampleFilterRotateUp),
+			tResampleFilter(Config::Current->ResampleFilterRotateDown)
 		);
 
-		if ((Config::Current.RotateMode == int(Config::Settings::RotMode::Crop)) || (Config::Current.RotateMode == int(Config::Settings::RotMode::CropResize)))
+		if ((Config::Current->RotateMode == int(Config::Settings::RotMode::Crop)) || (Config::Current->RotateMode == int(Config::Settings::RotMode::CropResize)))
 		{
 			// If one of the crop modes is selected we need to crop the edges. Since rectangles are made of lines and there
 			// is symmetry and we can compute the reduced size by subtracting the original size from the rotated size.
@@ -139,10 +139,10 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 			CurrImage->Crop(newW, newH, tPicture::Anchor::MiddleMiddle);
 		}
 
-		if (Config::Current.RotateMode == int(Config::Settings::RotMode::CropResize))
+		if (Config::Current->RotateMode == int(Config::Settings::RotMode::CropResize))
 		{
 			// The crop is done. Now resample.
-			tResampleFilter filter = (Config::Current.ResampleFilterRotateUp != int(tResampleFilter::None)) ? tResampleFilter(Config::Current.ResampleFilterRotateUp) : tResampleFilter::Nearest;
+			tResampleFilter filter = (Config::Current->ResampleFilterRotateUp != int(tResampleFilter::None)) ? tResampleFilter(Config::Current->ResampleFilterRotateUp) : tResampleFilter::Nearest;
 			CurrImage->Resample(origW, origH, filter, tResampleEdgeMode::Clamp);
 		}
 

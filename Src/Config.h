@@ -21,12 +21,29 @@
 namespace Viewer { namespace Config {
 
 
+enum class Profile
+{
+	Main,
+	Basic
+};
+
+
+enum class Category
+{
+	Everything,		// Special case that includes things not in a category.
+	Background,
+	Slideshow,
+	System,
+	Interface
+};
+
+
 // The settings struct represents a single set of all configurable parameters.
 // There can be multiple instances for different profiles. Currently we only have
 // two profiles: normal and basic.
 struct Settings
 {
-	Settings()							: Profile() { Reset(); }
+	Settings()							: Profile() { Reset(Profile::Main); }
 	tString Profile;
 	int WindowX;
 	int WindowY;
@@ -131,16 +148,12 @@ struct Settings
 
 	void Load(tExpression);
 	bool Save(tScriptWriter&);
-	void Reset();
-	void ResetBehaviourSettings();
-	void ResetUISettings();
+
+	// Yes, this struct only represents a single profile, but the defaults are different
+	// depending on which profile is chosen, so we need to pass it in.
+	void Reset(Config::Profile, Config::Category = Category::Everything);
 };
 
-enum class Profile
-{
-	Main,
-	Basic
-};
 
 struct GlobalSettings
 {
@@ -161,6 +174,13 @@ void Save(const tString& filename);
 
 void SetProfile(Profile);
 Profile GetProfile();
-extern Settings& Current;
+
+// Current profile reset. If category is 'Everything' it resets all categories plus stuff not in a category.
+void ResetProfile(Category = Category::Everything);
+
+// All profiles reset. Resets everything.
+void ResetAll();
+
+extern Settings* Current;
 
 } }

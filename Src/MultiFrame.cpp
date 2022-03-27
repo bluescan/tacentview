@@ -117,11 +117,11 @@ void Viewer::DoMultiFrameModal(bool saveMultiFramePressed)
 	// @todo This is not a cheap call. No need to do it every frame, only when dims change above.
 	if (!AllDimensionsMatch(outWidth, outHeight))
 	{
-		ImGui::Combo("Filter", &Config::Current.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
+		ImGui::Combo("Filter", &Config::Current->ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 		ImGui::SameLine();
 		ShowHelpMark("Filtering method to use when resizing images.");
 
-		ImGui::Combo("Filter Edge Mode", &Config::Current.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
+		ImGui::Combo("Filter Edge Mode", &Config::Current->ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
 		ImGui::SameLine();
 		ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");
 	}
@@ -162,7 +162,7 @@ void Viewer::DoMultiFrameModal(bool saveMultiFramePressed)
 
 		if (dirExists)
 		{
-			if (tFileExists(outFile) && Config::Current.ConfirmFileOverwrites)
+			if (tFileExists(outFile) && Config::Current->ConfirmFileOverwrites)
 			{
 				ImGui::OpenPopup("Overwrite Image File");
 			}
@@ -210,40 +210,40 @@ void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeigh
 
 		tImage::tPicture resampled(*currPic);
 		if ((resampled.GetWidth() != outWidth) || (resampled.GetHeight() != outHeight))
-			resampled.Resample(outWidth, outHeight, tImage::tResampleFilter(Config::Current.ResampleFilter), tImage::tResampleEdgeMode(Config::Current.ResampleEdgeMode));
+			resampled.Resample(outWidth, outHeight, tImage::tResampleFilter(Config::Current->ResampleFilter), tImage::tResampleEdgeMode(Config::Current->ResampleEdgeMode));
 
 		tFrame* frame = new tFrame(resampled.StealPixels(), outWidth, outHeight, currPic->Duration);
 		frames.Append(frame);
 	}
 
 	bool success = false;
-	switch (Config::Current.SaveFileTypeMultiFrame)
+	switch (Config::Current->SaveFileTypeMultiFrame)
 	{
 		case 0:			// WEBP
 		{
 			tImageWEBP webp(frames, true);
-			success = webp.Save(outFile, Config::Current.SaveFileWebpLossy, Config::Current.SaveFileWebpQualComp, Config::Current.SaveFileWebpDurMultiFrame);
+			success = webp.Save(outFile, Config::Current->SaveFileWebpLossy, Config::Current->SaveFileWebpQualComp, Config::Current->SaveFileWebpDurMultiFrame);
 			break;
 		}
 
 		case 1:			// GIF
 		{
 			tImageGIF gif(frames, true);
-			success = gif.Save(outFile, Config::Current.SaveFileGifDurMultiFrame);
+			success = gif.Save(outFile, Config::Current->SaveFileGifDurMultiFrame);
 			break;
 		}
 
 		case 2:			// APNG
 		{
 			tImageAPNG apng(frames, true);
-			success = apng.Save(outFile, Config::Current.SaveFileApngDurMultiFrame);
+			success = apng.Save(outFile, Config::Current->SaveFileApngDurMultiFrame);
 			break;
 		}
 
 		case 3:			// TIFF
 		{
 			tImageTIFF tiff(frames, true);
-			success = tiff.Save(outFile, Config::Current.SaveFileTiffZLibDeflate, Config::Current.SaveFileTiffDurMultiFrame);
+			success = tiff.Save(outFile, Config::Current->SaveFileTiffZLibDeflate, Config::Current->SaveFileTiffDurMultiFrame);
 			break;
 		}
 	}
