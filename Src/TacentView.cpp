@@ -1624,6 +1624,15 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::BeginPopup("CopyColourAs"))
 			ColourCopyAs();
 
+		if (ImGui::ImageButton
+		(
+			ImTextureID(ContentViewImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
+			Config::Current->ContentViewShow ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	Config::Current->ContentViewShow = !Config::Current->ContentViewShow;
+		ShowToolTip("Content Thumbnail View");
+
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical, 3.0f);
+
 		bool transAvail = CurrImage ? !CurrImage->IsAltPictureEnabled() : false;
 		if (ImGui::ImageButton
 		(
@@ -1695,6 +1704,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		)	CropMode = !CropMode;
 		ShowToolTip("Crop");
 
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical, 3.0f);
+
 		bool altMipmapsPicAvail = CurrImage ? CurrImage->IsAltMipmapsPictureAvail() && !CropMode : false;
 		bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
 		if (ImGui::ImageButton
@@ -1734,20 +1745,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 		ShowToolTip("Show Images Tiled");
 
-		bool recycleAvail = CurrImage ? true : false;
-		if (ImGui::ImageButton
-		(
-			ImTextureID(RecycleImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
-			ColourBG, recycleAvail ? ColourEnabledTint : ColourDisabledTint) && recycleAvail
-		)	Request_DeleteFileModal = true;
-		ShowToolTip("Delete Current File");
-
-		if (ImGui::ImageButton
-		(
-			ImTextureID(ContentViewImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
-			Config::Current->ContentViewShow ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	Config::Current->ContentViewShow = !Config::Current->ContentViewShow;
-		ShowToolTip("Content Thumbnail View");
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical, 3.0f);
 
 		if (ImGui::ImageButton
 		(
@@ -1755,6 +1753,13 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			PropEditorWindow ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	PropEditorWindow = !PropEditorWindow;
 		ShowToolTip("Image Property Editor");
+
+		if (ImGui::ImageButton
+		(
+			ImTextureID(InfoOverlayImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
+			Config::Current->ShowImageDetails ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	Config::Current->ShowImageDetails = !Config::Current->ShowImageDetails;
+		ShowToolTip("Information Overlay");
 
 		bool refreshAvail = CurrImage ? true : false;
 		if (ImGui::ImageButton
@@ -1771,12 +1776,15 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 		ShowToolTip("Refresh/Reload Current File");
 
+		bool recycleAvail = CurrImage ? true : false;
 		if (ImGui::ImageButton
 		(
-			ImTextureID(InfoOverlayImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
-			Config::Current->ShowImageDetails ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	Config::Current->ShowImageDetails = !Config::Current->ShowImageDetails;
-		ShowToolTip("Information Overlay");
+			ImTextureID(RecycleImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
+			ColourBG, recycleAvail ? ColourEnabledTint : ColourDisabledTint) && recycleAvail
+		)	Request_DeleteFileModal = true;
+		ShowToolTip("Delete Current File");
+
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical, 3.0f);
 
 		if (ImGui::ImageButton
 		(
