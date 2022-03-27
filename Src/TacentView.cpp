@@ -975,11 +975,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			float offsetW = tMath::tRound((draww - w) / 2.0f);
 			left	+= offsetW;
-			right	-= offsetW;
+			right	= left+w;		// Fix by Oddwarg. I had "right -= offsetW".
 
 			float offsetH = tMath::tRound((drawh - h) / 2.0f);
 			bottom	+= offsetH;
-			top		-= offsetH;
+			top		= bottom+h;		// Fix by Oddwarg. I had "top -= offsetH".
 		}
 		else
 		{
