@@ -1631,6 +1631,19 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		)	Config::Current->ContentViewShow = !Config::Current->ContentViewShow;
 		ShowToolTip("Content Thumbnail View");
 
+		bool tileAvail = CurrImage ? !CropMode : false;
+		if (ImGui::ImageButton
+		(
+			ImTextureID(TileImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
+			Config::Current->Tile ? ColourPressedBG : ColourBG, tileAvail ? ColourEnabledTint : ColourDisabledTint) && tileAvail
+		)
+		{
+			Config::Current->Tile = !Config::Current->Tile;
+			if (!Config::Current->Tile)
+				ResetPan();
+		}
+		ShowToolTip("Show Images Tiled");
+
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical, 3.0f);
 
 		bool transAvail = CurrImage ? !CurrImage->IsAltPictureEnabled() : false;
@@ -1703,47 +1716,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			CropMode ? ColourPressedBG : ColourBG, cropAvail ? ColourEnabledTint : ColourDisabledTint) && cropAvail
 		)	CropMode = !CropMode;
 		ShowToolTip("Crop");
-
-		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical, 3.0f);
-
-		bool altMipmapsPicAvail = CurrImage ? CurrImage->IsAltMipmapsPictureAvail() && !CropMode : false;
-		bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
-		if (ImGui::ImageButton
-		(
-			ImTextureID(MipmapsImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
-			altMipmapsPicEnabl ? ColourPressedBG : ColourBG, altMipmapsPicAvail ? ColourEnabledTint : ColourDisabledTint) && altMipmapsPicAvail
-		)
-		{
-			CurrImage->EnableAltPicture(!altMipmapsPicEnabl);
-			CurrImage->Bind();
-		}
-		ShowToolTip("Display Mipmaps\nDDS files may include mipmaps.");
-
-		bool altCubemapPicAvail = CurrImage ? CurrImage->IsAltCubemapPictureAvail() && !CropMode : false;
-		bool altCubemapPicEnabl = altCubemapPicAvail && CurrImage->IsAltPictureEnabled();
-		if (ImGui::ImageButton
-		(
-			ImTextureID(CubemapImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
-			altCubemapPicEnabl ? ColourPressedBG : ColourBG, altCubemapPicAvail ? ColourEnabledTint : ColourDisabledTint) && altCubemapPicAvail
-		)
-		{
-			CurrImage->EnableAltPicture(!altCubemapPicEnabl);
-			CurrImage->Bind();
-		}
-		ShowToolTip("Display Cubemap\nDDS files may be cubemaps.");
-
-		bool tileAvail = CurrImage ? !CropMode : false;
-		if (ImGui::ImageButton
-		(
-			ImTextureID(TileImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
-			Config::Current->Tile ? ColourPressedBG : ColourBG, tileAvail ? ColourEnabledTint : ColourDisabledTint) && tileAvail
-		)
-		{
-			Config::Current->Tile = !Config::Current->Tile;
-			if (!Config::Current->Tile)
-				ResetPan();
-		}
-		ShowToolTip("Show Images Tiled");
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical, 3.0f);
 
@@ -2511,8 +2483,6 @@ void Viewer::LoadAppImages(const tString& dataDir)
 	WindowedImage			.Load(dataDir + "Windowed.png");
 	SkipBeginImage			.Load(dataDir + "SkipBegin.png");
 	SkipEndImage			.Load(dataDir + "SkipEnd.png");
-	MipmapsImage			.Load(dataDir + "Mipmaps.png");
-	CubemapImage			.Load(dataDir + "Cubemap.png");
 	RefreshImage			.Load(dataDir + "Refresh.png");
 	RecycleImage			.Load(dataDir + "Recycle.png");
 	PropEditImage			.Load(dataDir + "PropEdit.png");
@@ -2526,7 +2496,7 @@ void Viewer::LoadAppImages(const tString& dataDir)
 	PlayRevImage			.Load(dataDir + "PlayRev.png");
 	PlayLoopImage			.Load(dataDir + "PlayLoop.png");
 	PlayOnceImage			.Load(dataDir + "PlayOnce.png");
-	ContentViewImage		.Load(dataDir + "ContentView.png");
+	ContentViewImage		.Load(dataDir + "ContView.png");
 	UpFolderImage			.Load(dataDir + "UpFolder.png");
 	CropImage				.Load(dataDir + "Crop.png");
 	DefaultThumbnailImage	.Load(dataDir + "DefaultThumbnail.png");

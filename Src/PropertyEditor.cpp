@@ -45,6 +45,79 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 	bool fileTypeSectionDisplayed = false;
 	switch (CurrImage->Filetype)
 	{
+		case tSystem::tFileType::DDS:
+		{
+			// DDS files get their own property editor.
+			int numTextures = CurrImage->GetNumFrames();
+			if (numTextures < 1)
+			{
+				ImGui::Text("No Editable Image Properties Available");
+				ImGui::End();
+				return;
+			}
+
+			bool altMipmapsPicAvail = CurrImage->IsAltMipmapsPictureAvail() && !CropMode;
+			bool altCubemapPicAvail = CurrImage->IsAltCubemapPictureAvail() && !CropMode;
+
+			if (numTextures > 1)
+			{
+				tString texName = "Texture";
+				if (altMipmapsPicAvail)
+					texName = "Mipmap";
+				else if (altCubemapPicAvail)
+					texName = "Cubemap Side";
+
+				ImGui::Text("%ss (%d)", texName.Chars(), numTextures);
+				ImGui::PushItemWidth(110);
+
+				int oneBasedTextureNum = CurrImage->FrameNum + 1;
+				if (ImGui::InputInt(texName.Chars(), &oneBasedTextureNum))
+				{
+					CurrImage->FrameNum = oneBasedTextureNum - 1;
+					tMath::tiClamp(CurrImage->FrameNum, 0, numTextures-1);
+				}
+				ImGui::SameLine(); ShowHelpMark("Which mipmap or cubemap side to display.\nCubemap sides left-handed +X,-X,+Y,-Y,+Z,-Z");
+				ImGui::Checkbox("Scrubber", &Config::Current->ShowFrameScrubber);
+
+				ImGui::PopItemWidth();
+			}
+
+			if (altMipmapsPicAvail || altCubemapPicAvail)
+			{
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+				ImGui::Separator();
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+			}
+
+			bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
+			if (altMipmapsPicAvail)
+			{
+				if (ImGui::Checkbox("Display Mipmaps", &altMipmapsPicEnabl))
+				{
+					CurrImage->EnableAltPicture(altMipmapsPicEnabl);
+					CurrImage->Bind();
+				}
+				ShowToolTip("Display All Mipmaps");
+			}
+
+			bool altCubemapPicEnabl = altCubemapPicAvail && CurrImage->IsAltPictureEnabled();
+			if (altCubemapPicAvail)
+			{
+				if (ImGui::Checkbox("Display Cubemap", &altCubemapPicEnabl))
+				{
+					CurrImage->EnableAltPicture(altCubemapPicEnabl);
+					CurrImage->Bind();
+				}
+				ShowToolTip("Display As Cubemap");
+			}
+
+			if (!altMipmapsPicAvail && !altCubemapPicAvail && (numTextures <= 1))
+				ImGui::Text("No Editable Image Properties Available");
+
+			ImGui::End();
+			return;
+		}
+
 		case tSystem::tFileType::HDR:
 		{
 			ImGui::Text("Radiance HDR");
