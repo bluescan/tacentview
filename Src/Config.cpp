@@ -196,6 +196,7 @@ void Config::Settings::Reset(Config::Profile profile, Config::Category category)
 		ResampleFilterRotateUp		= int(tImage::tResampleFilter::Bilinear);
 		ResampleFilterRotateDown	= int(tImage::tResampleFilter::None);
 		RotateMode					= int(RotMode::Fill);
+
 		SlideshowLooping			= (profile == Profile::Basic) ? true : false;
 		SaveSubFolder				.Clear();
 		SaveFileType				= 0;
@@ -253,6 +254,7 @@ void Config::Settings::Reset(Config::Profile profile, Config::Category category)
 		AutoPropertyWindow			= (profile == Profile::Basic) ? false : true;
 		AutoPlayAnimatedImages		= true;
 		EscCanQuit					= true;
+		DefaultZoomMode				= int(ZoomMode::DownscaleOnly);
 	}
 }
 
@@ -286,6 +288,7 @@ void Config::Settings::Load(tExpression expr)
 			ReadItem(ResampleFilterRotateUp);
 			ReadItem(ResampleFilterRotateDown);
 			ReadItem(RotateMode);
+			ReadItem(DefaultZoomMode);
 			ReadItem(ConfirmDeletes);
 			ReadItem(ConfirmFileOverwrites);
 			ReadItem(SlideshowLooping);
@@ -341,6 +344,7 @@ void Config::Settings::Load(tExpression expr)
 	tiClamp		(ResampleFilterRotateUp, 0, int(tImage::tResampleFilter::NumFilters));	// None allowed.
 	tiClamp		(ResampleFilterRotateDown, 0, int(tImage::tResampleFilter::NumFilters));// None allowed.
 	tiClamp		(RotateMode, 0, int(RotMode::NumModes)-1);
+	tiClamp		(DefaultZoomMode, 0, int(ZoomMode::NumModes)-1);
 	tiClampMin	(SlideshowPeriod, 1.0/60.0);
 	tiClamp		(BackgroundStyle, 0, 4);
 	tiClamp		(WindowW, 640, screenW);
@@ -407,6 +411,7 @@ bool Config::Settings::Save(tScriptWriter& writer)
 	WriteItem(ResampleFilterRotateUp);
 	WriteItem(ResampleFilterRotateDown);
 	WriteItem(RotateMode);
+	WriteItem(DefaultZoomMode);
 	WriteItem(ConfirmDeletes);
 	WriteItem(ConfirmFileOverwrites);
 	WriteItem(SlideshowLooping);

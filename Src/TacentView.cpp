@@ -144,15 +144,7 @@ namespace Viewer
 	int CursorY									= 0;
 	float RotateAnglePreview					= 0.0f;
 
-	enum class ZoomMode
-	{
-		User,
-		Fit,
-		DownscaleOnly,
-		OneToOne
-	};
-	ZoomMode CurrZoomMode						= ZoomMode::DownscaleOnly;
-
+	Config::Settings::ZoomMode CurrZoomMode		= Config::Settings::ZoomMode::DownscaleOnly;
 	float ZoomPercent							= 100.0f;
 
 	int Dispw									= 1;
@@ -434,7 +426,7 @@ void Viewer::SetCurrentImage(const tString& currFilename)
 
 	if (CurrImage)
 	{
-		CurrZoomMode = ZoomMode::DownscaleOnly;
+		CurrZoomMode = Config::Settings::ZoomMode::DownscaleOnly;
 		LoadCurrImage();
 	}
 }
@@ -456,6 +448,14 @@ void Viewer::LoadCurrImage()
 	bool imgJustLoaded = false;
 	if (!CurrImage->IsLoaded())
 		imgJustLoaded = CurrImage->Load();
+
+	if (Config::Current->DefaultZoomMode != int(Config::Settings::ZoomMode::User))
+	{
+		CurrZoomMode = Config::Settings::ZoomMode(Config::Current->DefaultZoomMode);
+
+		if (CurrZoomMode == Config::Settings::ZoomMode::OneToOne)
+			ZoomPercent = 100.0f;
+	}
 
 	AutoPropertyWindow();
 	if
@@ -956,13 +956,13 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		bottom	= tMath::tRound(vmargin);
 		top		= tMath::tRound(vmargin+drawh);
 
-		if (CurrZoomMode == ZoomMode::DownscaleOnly)
+		if (CurrZoomMode == Config::Settings::ZoomMode::DownscaleOnly)
 		{
 			ZoomPercent = 100.0f;
 			if (draww < iw)
 				ZoomPercent = 100.0f * draww / iw;
 		}
-		else if (CurrZoomMode == ZoomMode::Fit)
+		else if (CurrZoomMode == Config::Settings::ZoomMode::Fit)
 		{
 			ZoomPercent = 100.0f * draww / iw;
 		}
@@ -1552,33 +1552,33 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			ImGui::Separator();
 
-			bool userMode = CurrZoomMode == ZoomMode::User;
+			bool userMode = CurrZoomMode == Config::Settings::ZoomMode::User;
 			if (ImGui::MenuItem("Zoom User", "", &userMode))
 			{
 				ResetPan();
-				CurrZoomMode = ZoomMode::User;
+				CurrZoomMode = Config::Settings::ZoomMode::User;
 			}
 
-			bool fitMode = CurrZoomMode == ZoomMode::Fit;
+			bool fitMode = CurrZoomMode == Config::Settings::ZoomMode::Fit;
 			if (ImGui::MenuItem("Zoom Fit", "F", &fitMode))
 			{
 				ResetPan();
-				CurrZoomMode = ZoomMode::Fit;
+				CurrZoomMode = Config::Settings::ZoomMode::Fit;
 			}
 
-			bool downscale = CurrZoomMode == ZoomMode::DownscaleOnly;
+			bool downscale = CurrZoomMode == Config::Settings::ZoomMode::DownscaleOnly;
 			if (ImGui::MenuItem("Zoom Downscale", "D", &downscale))
 			{
 				ResetPan();
-				CurrZoomMode = ZoomMode::DownscaleOnly;
+				CurrZoomMode = Config::Settings::ZoomMode::DownscaleOnly;
 			}
 
-			bool oneToOne = CurrZoomMode == ZoomMode::OneToOne;
+			bool oneToOne = CurrZoomMode == Config::Settings::ZoomMode::OneToOne;
 			if (ImGui::MenuItem("Zoom 1:1", "Z", &oneToOne))
 			{
 				ZoomPercent = 100.0f;
 				ResetPan();
-				CurrZoomMode = ZoomMode::OneToOne;
+				CurrZoomMode = Config::Settings::ZoomMode::OneToOne;
 			}
 
 			ImGui::PushItemWidth(60);
@@ -1616,7 +1616,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		//
 		tColourf floatCol(PixelColour);
 		tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6.0f);			
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6.0f);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, tVector2(26,26)))
 			ImGui::OpenPopup("CopyColourAs");
@@ -1941,7 +1941,7 @@ bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 
 void Viewer::ApplyZoomDelta(float zoomDelta)
 {
-	CurrZoomMode = ZoomMode::User;
+	CurrZoomMode = Config::Settings::ZoomMode::User;
 	float zoomOrig = ZoomPercent;
 	ZoomPercent += zoomDelta;
 	if (((zoomOrig < 100.0f) && (ZoomPercent > 100.0f)) || ((zoomOrig > 100.0f) && (ZoomPercent < 100.0f)))
@@ -1985,14 +1985,14 @@ void Viewer::ChangeProfile(Config::Profile profile)
 void Viewer::ZoomFit()
 {
 	ResetPan();
-	CurrZoomMode = ZoomMode::Fit;
+	CurrZoomMode = Config::Settings::ZoomMode::Fit;
 }
 
 
 void Viewer::ZoomDownscaleOnly()
 {
 	ResetPan();
-	CurrZoomMode = ZoomMode::DownscaleOnly;
+	CurrZoomMode = Config::Settings::ZoomMode::DownscaleOnly;
 }
 
 
@@ -2237,12 +2237,12 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case GLFW_KEY_F:
 			ResetPan();
-			CurrZoomMode = ZoomMode::Fit;
+			CurrZoomMode = Config::Settings::ZoomMode::Fit;
 			break;
 
 		case GLFW_KEY_D:
 			ResetPan();
-			CurrZoomMode = ZoomMode::DownscaleOnly;
+			CurrZoomMode = Config::Settings::ZoomMode::DownscaleOnly;
 			break;
 
 		case GLFW_KEY_Y:		// Redo.
@@ -2263,7 +2263,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			{
 				ZoomPercent = 100.0f;
 				ResetPan();
-				CurrZoomMode = ZoomMode::OneToOne;
+				CurrZoomMode = Config::Settings::ZoomMode::OneToOne;
 			}
 			break;
 
@@ -2385,7 +2385,7 @@ void Viewer::ScrollWheelCallback(GLFWwindow* window, double x, double y)
 
 	DisappearCountdown = DisappearDuration;
 
-	CurrZoomMode = ZoomMode::User;
+	CurrZoomMode = Config::Settings::ZoomMode::User;
 	float percentChange = (y > 0.0) ? 0.1f : 1.0f-0.909090909f;
 	float zoomDelta = ZoomPercent * percentChange * float(y);
 	ApplyZoomDelta(zoomDelta);

@@ -200,6 +200,20 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::Checkbox("Auto Propery Window", &Config::Current->AutoPropertyWindow);
 			ImGui::Checkbox("Auto Play Anims", &Config::Current->AutoPlayAnimatedImages);
 			ImGui::Checkbox("Esc Key Can Quit", &Config::Current->EscCanQuit);
+
+			const char* zoomModes[] = { "Keep", "Fit", "Downscale", "OneToOne" };
+			ImGui::PushItemWidth(86);
+			ImGui::Combo("Default Zoom Mode", &Config::Current->DefaultZoomMode, zoomModes, tNumElements(zoomModes));
+			ImGui::PopItemWidth();
+			ImGui::SameLine();
+			ShowHelpMark
+			(
+				"Controls what zoom mode to use when displaying a new image.\n"
+				"Keep: No change to zoom mode when switching images.\n"
+				"Fit: Image is zoomed to fit display area no matter its size.\n"
+				"Downscale: Shows it at 100% zoom unless image is too big and needs downscaling.\n"
+				"OneToOne: One image pixel takes up one screen pixel."
+			);
 			
 			ImGui::EndTabItem();
 		}

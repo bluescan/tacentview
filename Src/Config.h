@@ -97,6 +97,17 @@ struct Settings
 		NumModes
 	};
 	int RotateMode;
+
+	enum class ZoomMode
+	{
+		User,
+		Fit,
+		DownscaleOnly,
+		OneToOne,
+		NumModes
+	};
+	int DefaultZoomMode;				// Zoom mode to use when opening a new image. User means don't change modes.
+
 	bool ConfirmDeletes;
 	bool ConfirmFileOverwrites;
 	bool SlideshowLooping;
