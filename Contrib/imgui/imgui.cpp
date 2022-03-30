@@ -1011,7 +1011,7 @@ ImGuiStyle::ImGuiStyle()
     FramePadding            = ImVec2(6,3);      // Padding within a framed rectangle (used by most widgets)
     FrameRounding           = 3.0f;             // Radius of frame corners rounding. Set to 0.0f to have rectangular frames (used by most widgets).
     FrameBorderSize         = 1.0f;             // Thickness of border around frames. Generally set to 0.0f or 1.0f. Other values not well tested.
-    ItemSpacing             = ImVec2(10,2);     // Horizontal and vertical spacing between widgets/lines
+    ItemSpacing             = ImVec2(8,2);      // Horizontal and vertical spacing between widgets/lines
     ItemInnerSpacing        = ImVec2(4,4);      // Horizontal and vertical spacing between within elements of a composed widget (e.g. a slider and its label)
     CellPadding             = ImVec2(4,2);      // Padding within a table cell
     TouchExtraPadding       = ImVec2(0,0);      // Expand reactive bounding box for touch-based system where touch position is not accurate enough. Unfortunately we don't sort widgets so priority on overlap will always be given to the first widget. So don't grow this too much!

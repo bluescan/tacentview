@@ -1,8 +1,8 @@
-// PropertyEditor.h
+// Properties.h
 //
-// Image property editor window.
+// Image properties display and editor window.
 //
-// Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
+// Copyright (c) 2019, 2020, 2021, 2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -17,5 +17,5 @@
 
 namespace Viewer
 {
-	void ShowPropertyEditorWindow(bool* popen);
+	void ShowPropertiesWindow(bool* popen);
 }

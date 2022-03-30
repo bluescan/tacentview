@@ -1,6 +1,6 @@
-// PropertyEditor.cpp
+// Properties.cpp
 //
-// Image property editor window.
+// Image properties display and editor window.
 //
 // Copyright (c) 2019, 2020, 2021, 2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
@@ -13,14 +13,14 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #include "imgui.h"
-#include "PropertyEditor.h"
+#include "Properties.h"
 #include "Config.h"
 #include "Image.h"
 #include "TacentView.h"
 using namespace tMath;
 
 
-void Viewer::ShowPropertyEditorWindow(bool* popen)
+void Viewer::ShowPropertiesWindow(bool* popen)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize; // | ImGuiWindowFlags_NoFocusOnAppearing;
 
@@ -28,8 +28,9 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 	// do it to make the Demo applications a little more welcoming.
 	tVector2 windowPos = GetDialogOrigin(1);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(tVector2(238.0f, -1.0f), ImGuiCond_Always);
 
-	if (!ImGui::Begin("Property Editor", popen, windowFlags))
+	if (!ImGui::Begin("Properties", popen, windowFlags))
 	{
 		ImGui::End();
 		return;
@@ -47,7 +48,7 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 	{
 		case tSystem::tFileType::DDS:
 		{
-			// DDS files get their own property editor.
+			// DDS files get their own properties UI.
 			int numTextures = CurrImage->GetNumFrames();
 			if (numTextures < 1)
 			{
@@ -58,7 +59,6 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 
 			bool altMipmapsPicAvail = CurrImage->IsAltMipmapsPictureAvail() && !CropMode;
 			bool altCubemapPicAvail = CurrImage->IsAltCubemapPictureAvail() && !CropMode;
-
 			if (numTextures > 1)
 			{
 				tString texName = "Texture";
@@ -68,25 +68,16 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 					texName = "Cubemap Side";
 
 				ImGui::Text("%ss (%d)", texName.Chars(), numTextures);
-				ImGui::PushItemWidth(110);
 
 				int oneBasedTextureNum = CurrImage->FrameNum + 1;
+				ImGui::PushItemWidth(110);
 				if (ImGui::InputInt(texName.Chars(), &oneBasedTextureNum))
 				{
 					CurrImage->FrameNum = oneBasedTextureNum - 1;
 					tMath::tiClamp(CurrImage->FrameNum, 0, numTextures-1);
 				}
-				ImGui::SameLine(); ShowHelpMark("Which mipmap or cubemap side to display.\nCubemap sides left-handed +X,-X,+Y,-Y,+Z,-Z");
-				ImGui::Checkbox("Scrubber", &Config::Current->ShowFrameScrubber);
-
 				ImGui::PopItemWidth();
-			}
-
-			if (altMipmapsPicAvail || altCubemapPicAvail)
-			{
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-				ImGui::Separator();
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+				ImGui::SameLine(); ShowHelpMark("Which mipmap or cubemap side to display.\nCubemap sides left-handed +X,-X,+Y,-Y,+Z,-Z");
 			}
 
 			bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
@@ -97,22 +88,25 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 					CurrImage->EnableAltPicture(altMipmapsPicEnabl);
 					CurrImage->Bind();
 				}
-				ShowToolTip("Display All Mipmaps");
+				ShowToolTip("Display all mipmaps.");
 			}
 
 			bool altCubemapPicEnabl = altCubemapPicAvail && CurrImage->IsAltPictureEnabled();
 			if (altCubemapPicAvail)
 			{
-				if (ImGui::Checkbox("Display Cubemap", &altCubemapPicEnabl))
+				if (ImGui::Checkbox("Display As Cubemap", &altCubemapPicEnabl))
 				{
 					CurrImage->EnableAltPicture(altCubemapPicEnabl);
 					CurrImage->Bind();
 				}
-				ShowToolTip("Display As Cubemap");
+				ShowToolTip("Display all cubemap sides in a T-layout.");
 			}
 
 			if (!altMipmapsPicAvail && !altCubemapPicAvail && (numTextures <= 1))
 				ImGui::Text("No Editable Image Properties Available");
+
+			if (numTextures > 1)
+				ImGui::Checkbox("Scrubber", &Config::Current->ShowFrameScrubber);
 
 			ImGui::End();
 			return;
@@ -121,31 +115,31 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 		case tSystem::tFileType::HDR:
 		{
 			ImGui::Text("Radiance HDR");
-			ImGui::PushItemWidth(110);
+			bool reloadChanges = false;
 
-			ImGui::InputFloat("Gamma", &CurrImage->LoadParams.GammaValue, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
-			ShowHelpMark("Gamma to use [0.6, 3.0] if you reload this Radiance hdr file. Open preferences to edit default gamma value.");
+			ImGui::PushItemWidth(110);
+			if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams.GammaValue, 0.01f, 0.1f, "%.3f"))
+				reloadChanges = true;
+			ImGui::PopItemWidth();
+			ImGui::SameLine();
+			ShowHelpMark("Gamma to use [0.6, 3.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
 			tMath::tiClamp(CurrImage->LoadParams.GammaValue, 0.6f, 3.0f);
 
-			ImGui::InputInt("Exposure", &CurrImage->LoadParams.HDR_Exposure); ImGui::SameLine();
-			ShowHelpMark("Exposure adjustment [-10, 10] if you reload this Radiance hdr file.");
-			tMath::tiClamp(CurrImage->LoadParams.HDR_Exposure, -10, 10);
+			ImGui::PushItemWidth(110);
+			if (ImGui::InputInt("Exposure", &CurrImage->LoadParams.HDR_Exposure))
+				reloadChanges = true;
 			ImGui::PopItemWidth();
+			ImGui::SameLine();
+			ShowHelpMark("Exposure adjustment [-10, 10]. Hold Ctrl to speedup.");
+			tMath::tiClamp(CurrImage->LoadParams.HDR_Exposure, -10, 10);
 
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-			ImGui::Separator();
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-
-			if (ImGui::Button("Reset", tVector2(100, 0)))
+			if (ImGui::Button("Reset", tVector2(110, 0)))
 			{
 				CurrImage->ResetLoadParams();
-				CurrImage->Unload();
-				CurrImage->Load();
+				reloadChanges = true;
 			}
-			ImGui::SameLine();
 
-			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-			if (ImGui::Button("Reload", tVector2(100, 0)))
+			if (reloadChanges)
 			{
 				CurrImage->Unload();
 				CurrImage->Load();
@@ -158,43 +152,55 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 		case tSystem::tFileType::EXR:
 		{
 			ImGui::Text("Open EXR");
-			ImGui::PushItemWidth(110);
+			bool reloadChanges = false;
 
-			ImGui::InputFloat("Gamma", &CurrImage->LoadParams.GammaValue, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
-			ShowHelpMark("Gamma to use [0.6, 3.0] if you reload this exr file. Open preferences to edit default gamma value.");
+			ImGui::PushItemWidth(110);
+			if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams.GammaValue, 0.01f, 0.1f, "%.3f"))
+				reloadChanges = true;
+			ImGui::PopItemWidth();
+			ImGui::SameLine();
+			ShowHelpMark("Gamma to use [0.6, 3.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
 			tMath::tiClamp(CurrImage->LoadParams.GammaValue, 0.6f, 3.0f);
 
-			ImGui::InputFloat("Exposure", &CurrImage->LoadParams.EXR_Exposure, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
-			ShowHelpMark("Exposure adjustment [-10.0, 10.0] if you reload this exr file.");
+			ImGui::PushItemWidth(110);
+			if (ImGui::InputFloat("Exposure", &CurrImage->LoadParams.EXR_Exposure, 0.01f, 0.1f, "%.3f"))
+				reloadChanges = true;
+			ImGui::PopItemWidth();
+			ImGui::SameLine();
+			ShowHelpMark("Exposure adjustment [-10.0, 10.0]. Hold Ctrl to speedup.");
 			tMath::tiClamp(CurrImage->LoadParams.EXR_Exposure, -10.0f, 10.0f);
 
-			ImGui::InputFloat("Defog", &CurrImage->LoadParams.EXR_Defog, 0.001f, 0.01f, "%.3f"); ImGui::SameLine();
-			ShowHelpMark("Remove fog strength [0.0, 0.1] if you reload this exr file. Try to keep under 0.01");
+			ImGui::PushItemWidth(110);
+			if (ImGui::InputFloat("Defog", &CurrImage->LoadParams.EXR_Defog, 0.001f, 0.01f, "%.3f"))
+				reloadChanges = true;
+			ImGui::PopItemWidth();
+			ImGui::SameLine();
+			ShowHelpMark("Remove fog strength [0.0, 0.1]. Hold Ctrl to speedup. Try to keep under 0.01");
 			tMath::tiClamp(CurrImage->LoadParams.EXR_Defog, 0.0f, 0.1f);
 
-			ImGui::InputFloat("Knee Low", &CurrImage->LoadParams.EXR_KneeLow, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
-			ShowHelpMark("Lower bound knee taper [-3.0, 3.0] if you reload this exr file.");
+			ImGui::PushItemWidth(110);
+			if (ImGui::InputFloat("Knee Low", &CurrImage->LoadParams.EXR_KneeLow, 0.01f, 0.1f, "%.3f"))
+				reloadChanges = true;
+			ImGui::PopItemWidth();
+			ImGui::SameLine();
+			ShowHelpMark("Lower bound knee taper [-3.0, 3.0]. Hold Ctrl to speedup.");
 			tMath::tiClamp(CurrImage->LoadParams.EXR_KneeLow, -3.0f, 3.0f);
 
-			ImGui::InputFloat("Knee High", &CurrImage->LoadParams.EXR_KneeHigh, 0.01f, 0.1f, "%.3f"); ImGui::SameLine();
-			ShowHelpMark("Upper bound knee taper [3.5, 7.5] if you reload this exr file.");
-			tMath::tiClamp(CurrImage->LoadParams.EXR_KneeHigh, 3.5f, 7.5f);
+			ImGui::PushItemWidth(110);
+			if (ImGui::InputFloat("Knee High", &CurrImage->LoadParams.EXR_KneeHigh, 0.01f, 0.1f, "%.3f"))
+				reloadChanges = true;
 			ImGui::PopItemWidth();
+			ImGui::SameLine();
+			ShowHelpMark("Upper bound knee taper [3.5, 7.5]. Hold Ctrl to speedup.");
+			tMath::tiClamp(CurrImage->LoadParams.EXR_KneeHigh, 3.5f, 7.5f);
 
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-			ImGui::Separator();
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-
-			if (ImGui::Button("Reset", tVector2(100, 0)))
+			if (ImGui::Button("Reset", tVector2(110, 0)))
 			{
 				CurrImage->ResetLoadParams();
-				CurrImage->Unload();
-				CurrImage->Load();
+				reloadChanges = true;
 			}
-			ImGui::SameLine();
 
-			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-			if (ImGui::Button("Reload", tVector2(100, 0)))
+			if (reloadChanges)
 			{
 				CurrImage->Unload();
 				CurrImage->Load();
@@ -215,19 +221,23 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 			ImGui::Separator();
 
 		ImGui::Text("Frames (%d)", CurrImage->GetNumFrames());
-		ImGui::PushItemWidth(110);
 
 		int oneBasedFrameNum = CurrImage->FrameNum + 1;
+		ImGui::PushItemWidth(110);
 		if (ImGui::InputInt("Frame", &oneBasedFrameNum))
 		{
 			CurrImage->FrameNum = oneBasedFrameNum - 1;
 			tMath::tiClamp(CurrImage->FrameNum, 0, CurrImage->GetNumFrames()-1);
 		}
+		ImGui::PopItemWidth();
 		ImGui::SameLine(); ShowHelpMark("Which image in a multiframe file to display.");
 
 		if (CurrImage->FrameDurationPreviewEnabled)
 		{
-			ImGui::InputFloat("Seconds", &CurrImage->FrameDurationPreview, 0.01f, 0.1f, "%.4f");
+			ImGui::PushItemWidth(110);
+			ImGui::InputFloat("Period", &CurrImage->FrameDurationPreview, 0.01f, 0.1f, "%.4f");
+			ImGui::PopItemWidth();
+
 			tMath::tiClamp(CurrImage->FrameDurationPreview, 0.0f, 60.0f);
 			ImGui::SameLine();
 			if (ImGui::Button("Set All"))
@@ -236,44 +246,45 @@ void Viewer::ShowPropertyEditorWindow(bool* popen)
 				SetWindowTitle();
 				CurrImage->FrameDurationPreviewEnabled = false;
 			}
-			ImGui::SameLine(); ShowHelpMark("Sets every frame duration to the preview duration.");
+			ImGui::SameLine(); ShowHelpMark("Sets every frame period to the preview period in seconds.");
 
-			if (ImGui::Button("1.0s"))  CurrImage->FrameDurationPreview = 1.0f; ImGui::SameLine();
-			if (ImGui::Button("0.5s"))  CurrImage->FrameDurationPreview = 0.5f; ImGui::SameLine();
-			if (ImGui::Button("0.1s"))  CurrImage->FrameDurationPreview = 0.1f; ImGui::SameLine();
-			if (ImGui::Button("30fps")) CurrImage->FrameDurationPreview = 1.0f/30.0f; ImGui::SameLine();
-			if (ImGui::Button("60fps")) CurrImage->FrameDurationPreview = 1.0f/60.0f; ImGui::SameLine();
-			ShowHelpMark("Predefined frame duration buttons.");
+			if (ImGui::Button("1.0s"))	CurrImage->FrameDurationPreview = 1.0f;			ImGui::SameLine();
+			if (ImGui::Button("0.5s"))	CurrImage->FrameDurationPreview = 0.5f;			ImGui::SameLine();
+			if (ImGui::Button("0.1s"))	CurrImage->FrameDurationPreview = 0.1f;			ImGui::SameLine();
+			if (ImGui::Button("30Hz"))	CurrImage->FrameDurationPreview = 1.0f/30.0f;	ImGui::SameLine();
+			if (ImGui::Button("60Hz"))	CurrImage->FrameDurationPreview = 1.0f/60.0f;	ImGui::SameLine();
+			ShowHelpMark("Predefined frame period buttons.");
 		}
 		else
 		{
 			tImage::tPicture* currFramePic = CurrImage->GetCurrentPic();
 			float duration = currFramePic->Duration;
 			char frameDurText[64];
-			if (ImGui::InputFloat("Seconds", &duration, 0.01f, 0.1f, "%.4f", ImGuiInputTextFlags_EnterReturnsTrue))
+			ImGui::PushItemWidth(110);
+			if (ImGui::InputFloat("Period", &duration, 0.01f, 0.1f, "%.4f", ImGuiInputTextFlags_EnterReturnsTrue))
 			{
 				tMath::tiClamp(duration, 0.0f, 60.0f);
 				CurrImage->SetFrameDuration(duration);
 				SetWindowTitle();
 			}
+			ImGui::PopItemWidth();
+			ImGui::SameLine(); ShowHelpMark("This frame's period in seconds.");
 
 			if (ImGui::Button("1.0s"))	{ CurrImage->SetFrameDuration(1.0f); SetWindowTitle(); }		ImGui::SameLine();
 			if (ImGui::Button("0.5s"))	{ CurrImage->SetFrameDuration(0.5f); SetWindowTitle(); }		ImGui::SameLine();
 			if (ImGui::Button("0.1s"))	{ CurrImage->SetFrameDuration(0.1f); SetWindowTitle(); }		ImGui::SameLine();
-			if (ImGui::Button("30fps"))	{ CurrImage->SetFrameDuration(1.0f/30.0f); SetWindowTitle(); }	ImGui::SameLine();
-			if (ImGui::Button("60fps"))	{ CurrImage->SetFrameDuration(1.0f/60.0f); SetWindowTitle(); }	ImGui::SameLine();
-			ShowHelpMark("Predefined frame duration buttons.");
+			if (ImGui::Button("30Hz"))	{ CurrImage->SetFrameDuration(1.0f/30.0f); SetWindowTitle(); }	ImGui::SameLine();
+			if (ImGui::Button("60Hz"))	{ CurrImage->SetFrameDuration(1.0f/60.0f); SetWindowTitle(); }	ImGui::SameLine();
+			ShowHelpMark("Predefined frame period buttons.");
 		}
-		ImGui::Checkbox("Preview Duration", &CurrImage->FrameDurationPreviewEnabled);
-		ImGui::SameLine(); ShowHelpMark("If enabled this number of seconds is used for all frame durations while playing.");
+		ImGui::Checkbox("Preview Period", &CurrImage->FrameDurationPreviewEnabled);
+		ImGui::SameLine(); ShowHelpMark("If enabled this number of seconds is used for all frame periods while playing.");
 		ImGui::Checkbox("Scrubber", &Config::Current->ShowFrameScrubber);
-
-		ImGui::PopItemWidth();
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 		ImGui::Separator();
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 11);
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
 
 		uint64 loopImageID = CurrImage->FramePlayLooping ? PlayOnceImage.Bind() : PlayLoopImage.Bind();
 		if (ImGui::ImageButton(ImTextureID(loopImageID), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2, ColourBG, ColourEnabledTint))

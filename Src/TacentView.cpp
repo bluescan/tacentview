@@ -41,7 +41,7 @@
 #include "Image.h"
 #include "Dialogs.h"
 #include "Preferences.h"
-#include "PropertyEditor.h"
+#include "Properties.h"
 #include "ContactSheet.h"
 #include "MultiFrame.h"
 #include "ContentView.h"
@@ -132,7 +132,7 @@ namespace Viewer
 	bool Request_SnapMessage_NoFrameTrans		= false;
 	bool Request_Quit							= false;
 	bool PrefsWindow							= false;
-	bool PropEditorWindow						= false;
+	bool PropsWindow							= false;
 	bool CropMode								= false;
 	bool LMBDown								= false;
 	bool RMBDown								= false;
@@ -435,10 +435,10 @@ void Viewer::SetCurrentImage(const tString& currFilename)
 void Viewer::AutoPropertyWindow()
 {
 	if (Config::Current->AutoPropertyWindow)
-		PropEditorWindow = (CurrImage->TypeSupportsProperties() || (CurrImage->GetNumFrames() > 1));
+		PropsWindow = (CurrImage->TypeSupportsProperties() || (CurrImage->GetNumFrames() > 1));
 
 	if (SlideshowPlaying)
-		PropEditorWindow = false;
+		PropsWindow = false;
 }
 
 
@@ -1192,7 +1192,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	
 	// Show the big demo window. You can browse its code to learn more about Dear ImGui.
 	static bool showDemoWindow = false;
-	// static bool showDemoWindow = true;
+	// showDemoWindow = true;
 	if (showDemoWindow)
 		ImGui::ShowDemoWindow(&showDemoWindow);
 
@@ -1256,7 +1256,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	// Scrubber
 	if
 	(
-		!CropMode && PropEditorWindow &&
+		!CropMode && PropsWindow &&
 		Config::Current->ShowFrameScrubber && CurrImage && (CurrImage->GetNumFrames() > 1) && !CurrImage->IsAltPictureEnabled()
 	)
 	{
@@ -1510,7 +1510,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 				rotateImagePressed = true;
 
 			ImGui::MenuItem("Edit Pixel", "A", &Config::Current->ShowPixelEditor);
-			ImGui::MenuItem("Property Editor...", "E", &PropEditorWindow);
+			ImGui::MenuItem("Image Properties...", "E", &PropsWindow);
 
 			ImGui::Separator();
 
@@ -1722,9 +1722,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton
 		(
 			ImTextureID(PropEditImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
-			PropEditorWindow ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	PropEditorWindow = !PropEditorWindow;
-		ShowToolTip("Image Property Editor");
+			PropsWindow ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	PropsWindow = !PropsWindow;
+		ShowToolTip("Image Properties");
 
 		if (ImGui::ImageButton
 		(
@@ -1781,8 +1781,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (PrefsWindow)
 		ShowPreferencesWindow(&PrefsWindow);
 
-	if (PropEditorWindow)
-		ShowPropertyEditorWindow(&PropEditorWindow);
+	if (PropsWindow)
+		ShowPropertiesWindow(&PropsWindow);
 
 	ImGui::PopStyleVar();
 
@@ -1973,7 +1973,7 @@ void Viewer::ChangeProfile(Config::Profile profile)
 	if (profile == Config::Profile::Basic)
 	{
 		// These ones are runtime only.
-		PropEditorWindow						= false;
+		PropsWindow								= false;
 		ShowCheatSheet							= false;
 		ShowAbout								= false;
 	}
@@ -2310,7 +2310,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case GLFW_KEY_E:
-			PropEditorWindow = !PropEditorWindow;
+			PropsWindow = !PropsWindow;
 			break;
 	}
 }
