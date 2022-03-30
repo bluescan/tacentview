@@ -3,7 +3,7 @@
 # tacent view
 An image and texture viewer for tga, png, apng, exr, dds, gif, hdr, jpg, tiff, ico, webp, and bmp files. Uses Dear ImGui and the Tacent library. This viewer is targeted to game devs -- It displays alpha channels correctly and can inspect/edit the colour of individual pixels. There is basic editing functionality, batch resizing, rotations/flips, and the ability to generate contact sheets for FX. Tacent View can save tga, png, bmp, jpg, (animated) webp, (animated) gif, (animated) apng, and (animated) tiff files.
 
-Tacent View runs on Windows 10 and Ubuntu Linux. Browse the releases to grab a zip (Windows) or deb (Linux) package -- or install from the [Snap Store](https://snapcraft.io/tacentview).
+Tacent View runs on Windows (10 or 11) and Linux (Kubuntu etc). Browse the releases to grab a zip (Windows) or deb (Linux) package -- or install from the [Snap Store](https://snapcraft.io/tacentview).
 
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_CopyColourAs.png)
 
