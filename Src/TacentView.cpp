@@ -169,7 +169,7 @@ namespace Viewer
 	uint64 FrameNumber							= 0;
 	tVector2 ToolImageSize						(24.0f, 24.0f);
 
-	void DrawBackground(float bgX, float bgY, float bgW, float bgH);
+	void DrawBackground(float l, float r, float b, float t);
 	void DrawNavBar(float x, float y, float w, float h);
 	int GetNavBarHeight();
 	void PrintRedirectCallback(const char* text, int numChars);
@@ -247,6 +247,9 @@ void Viewer::PrintRedirectCallback(const char* text, int numChars)
 
 tVector2 Viewer::GetDialogOrigin(float index)
 {
+	if (index == 2)
+		return tVector2(DialogOrigin + DialogDelta, DialogOrigin + TopUIHeight + 275.0f);
+
 	return tVector2(DialogOrigin + DialogDelta*float(index), DialogOrigin + TopUIHeight + DialogDelta*float(index));
 }
 
@@ -676,7 +679,7 @@ void Viewer::ResetPan(bool resetX, bool resetY)
 }
 
 
-void Viewer::DrawBackground(float bgX, float bgY, float bgW, float bgH)
+void Viewer::DrawBackground(float l, float r, float b, float t)
 {
 	if (Config::Current->TransparentWorkArea)
 		return;
@@ -693,6 +696,8 @@ void Viewer::DrawBackground(float bgX, float bgY, float bgW, float bgH)
 			int y = 0;
 			bool lineStartToggle = false;
 			float checkSize = 16.0f;
+			float bgH = t - b;
+			float bgW = r - l;
 			while (y*checkSize < bgH)
 			{
 				bool colourToggle = lineStartToggle;
@@ -714,16 +719,16 @@ void Viewer::DrawBackground(float bgX, float bgY, float bgW, float bgH)
 					if ((y+1)*checkSize > bgH)
 						ch -= (y+1)*checkSize - bgH;
 
-					float l = tMath::tRound(bgX+x*checkSize);
-					float r = tMath::tRound(bgX+x*checkSize+cw);
-					float b = tMath::tRound(bgY+y*checkSize);
-					float t = tMath::tRound(bgY+y*checkSize+ch);
+					float lc = (l+x*checkSize);
+					float rc = (l+x*checkSize+cw);
+					float bc = (b+y*checkSize);
+					float tc = (b+y*checkSize+ch);
 
 					glBegin(GL_QUADS);
-					glVertex2f(l, b);
-					glVertex2f(l, t);
-					glVertex2f(r, t);
-					glVertex2f(r, b);
+					glVertex2f(lc, bc);
+					glVertex2f(lc, tc);
+					glVertex2f(rc, tc);
+					glVertex2f(rc, bc);
 					glEnd();
 
 					x++;
@@ -745,10 +750,6 @@ void Viewer::DrawBackground(float bgX, float bgY, float bgW, float bgH)
 				case int(Config::Settings::BGStyle::Grey):	glColor4f(0.25f, 0.25f, 0.3f, 1.0f);	break;
 				case int(Config::Settings::BGStyle::White):	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);		break;
 			}
-			float l = tMath::tRound(bgX);
-			float r = tMath::tRound(bgX+bgW);
-			float b = tMath::tRound(bgY);
-			float t = tMath::tRound(bgY+bgH);
 
 			glBegin(GL_QUADS);
 			glVertex2f(l, b);
@@ -935,18 +936,28 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		float picAspect = iw/ih;
 
 		float cropExtraMargin = CropMode ? 5.0f : 0.0f;
-		if (workAreaAspect > picAspect)
+		if (Config::Current->FixedAspectWorkArea)
 		{
-			drawh = float(workAreaH) - cropExtraMargin*2.0f;
-			draww = picAspect * drawh;
-			hmargin = (workAreaW - draww) * 0.5f;
-			vmargin = cropExtraMargin;
+			if (workAreaAspect > picAspect)
+			{
+				drawh = float(workAreaH) - cropExtraMargin*2.0f;
+				draww = picAspect * drawh;
+				hmargin = (workAreaW - draww) * 0.5f;
+				vmargin = cropExtraMargin;
+			}
+			else
+			{
+				draww = float(workAreaW) - cropExtraMargin*2.0f;
+				drawh = draww / picAspect;
+				vmargin = (workAreaH - drawh) * 0.5f;
+				hmargin = cropExtraMargin;
+			}
 		}
 		else
 		{
 			draww = float(workAreaW) - cropExtraMargin*2.0f;
-			drawh = draww / picAspect;
-			vmargin = (workAreaH - drawh) * 0.5f;
+			drawh = float(workAreaH) - cropExtraMargin*2.0f;
+			vmargin = cropExtraMargin;
 			hmargin = cropExtraMargin;
 		}
 
@@ -958,28 +969,62 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		if (CurrZoomMode == Config::Settings::ZoomMode::DownscaleOnly)
 		{
-			ZoomPercent = 100.0f;
-			if (draww < iw)
-				ZoomPercent = 100.0f * draww / iw;
+			if (Config::Current->FixedAspectWorkArea)
+			{
+				ZoomPercent = 100.0f;
+				if (draww < iw)
+					ZoomPercent = 100.0f * draww / iw;
+			}
+			else
+			{
+				ZoomPercent = 100.0f;
+				float zoomh = draww / iw;
+				float zoomv = drawh / ih;
+				if ((iw > draww) || (ih > drawh))
+					ZoomPercent = 100.0f * tMath::tMin(zoomh, zoomv);
+			}
 		}
 		else if (CurrZoomMode == Config::Settings::ZoomMode::Fit)
 		{
-			ZoomPercent = 100.0f * draww / iw;
+			if (Config::Current->FixedAspectWorkArea)
+			{
+				ZoomPercent = 100.0f * draww / iw;
+			}
+			else
+			{
+				float zoomh = draww / iw;
+				float zoomv = drawh / ih;
+				ZoomPercent = 100.0f * tMath::tMin(zoomh, zoomv);
+			}
 		}
 
 		float w = iw * ZoomPercent/100.0f;
 		float h = ih * ZoomPercent/100.0f;
 
+		// Compute extents.
+		float offsetW = tMath::tRound((draww - w) / 2.0f);
+		left	+= offsetW;
+		right	= left + w;		// Fix by Oddwarg. I had "right -= offsetW".
+
+		float offsetH = tMath::tRound((drawh - h) / 2.0f);
+		bottom	+= offsetH;
+		top		= bottom + h;	// Fix by Oddwarg. I had "top -= offsetH".
+
 		// If the image is smaller than the drawable area we draw a quad of the correct size with full 0..1 range in the uvs.
-		if (w < draww)
+		#if 0
+		// The truth is I have no idea any more what I was thinking when I wrote the if below and the comment above, or why
+		// the uv margin variables are needed. In any case, it feels wrong (asymmetrical only checking w) so I have disabled
+		// it -- so far it seems to work just fine using (only) the 'Compute extents' code block above. I've ifdeffed it out
+		// for now.
+		if ((w < draww) || !Config::Current->FixedAspectWorkArea)
 		{
 			float offsetW = tMath::tRound((draww - w) / 2.0f);
 			left	+= offsetW;
-			right	= left+w;		// Fix by Oddwarg. I had "right -= offsetW".
+			right	= left + w;		// Fix by Oddwarg. I had "right -= offsetW".
 
 			float offsetH = tMath::tRound((drawh - h) / 2.0f);
 			bottom	+= offsetH;
-			top		= bottom+h;		// Fix by Oddwarg. I had "top -= offsetH".
+			top		= bottom + h;	// Fix by Oddwarg. I had "top -= offsetH".
 		}
 		else
 		{
@@ -988,6 +1033,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			float proph = drawh / h;
 			vmarg = (1.0f - proph)/2.0f;
 		}
+		#endif
 
 		// Modify the UVs here to magnify.
 		if ((draww < w) || Config::Current->Tile)
@@ -1020,9 +1066,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		// Draw background.
 		glDisable(GL_TEXTURE_2D);
 		if ((Config::Current->BackgroundExtend || Config::Current->Tile) && !CropMode)
-			DrawBackground(hmargin, vmargin, draww, drawh);
+			DrawBackground(hmargin, hmargin+draww, vmargin, vmargin+drawh);
 		else
-			DrawBackground(left, bottom, right-left, top-bottom);
+			DrawBackground(left, right, bottom, top);
 
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		CurrImage->Bind();

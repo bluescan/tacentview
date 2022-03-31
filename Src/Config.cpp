@@ -222,11 +222,12 @@ void Config::Settings::Reset(Config::Profile profile, Config::Category category)
 		ResizeAspectMode			= 0;
 	}
 
-	if ((category == Category::Everything) || (category == Category::Background))
+	if ((category == Category::Everything) || (category == Category::Display))
 	{
 		BackgroundStyle				= (profile == Profile::Basic) ? int(BGStyle::None) : int(BGStyle::Checkerboard);
 		BackgroundExtend			= false;
 		TransparentWorkArea			= false;
+		FixedAspectWorkArea			= false;
 	}
 
 	if ((category == Category::Everything) || (category == Category::Slideshow))
@@ -283,6 +284,7 @@ void Config::Settings::Load(tExpression expr)
 			ReadItem(BackgroundStyle);
 			ReadItem(BackgroundExtend);
 			ReadItem(TransparentWorkArea);
+			ReadItem(FixedAspectWorkArea);
 			ReadItem(ResampleFilter);
 			ReadItem(ResampleEdgeMode);
 			ReadItem(ResampleFilterRotateUp);
@@ -406,6 +408,7 @@ bool Config::Settings::Save(tScriptWriter& writer)
 	WriteItem(BackgroundStyle);
 	WriteItem(BackgroundExtend);
 	WriteItem(TransparentWorkArea);
+	WriteItem(FixedAspectWorkArea);
 	WriteItem(ResampleFilter);
 	WriteItem(ResampleEdgeMode);
 	WriteItem(ResampleFilterRotateUp);

@@ -44,10 +44,10 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	Config::Category category = Config::Category::Everything;
 	if (ImGui::BeginTabBar("PreferencesTabBar", ImGuiTabBarFlags_None))
 	{
-		tab = ImGui::BeginTabItem("Background", nullptr, ImGuiTabItemFlags_NoTooltip);
+		tab = ImGui::BeginTabItem("Display", nullptr, ImGuiTabItemFlags_NoTooltip);
 		if (tab)
 		{
-			category = Config::Category::Background;
+			category = Config::Category::Display;
 			ImGui::NewLine();
 			ImGui::Checkbox("Transparent Work Area", &PendingTransparentWorkArea);
 			#ifndef PACKAGE_SNAP
@@ -64,12 +64,14 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			}
 			#endif
 
-			ImGui::Checkbox("Extend", &Config::Current->BackgroundExtend);
+			ImGui::Checkbox("Fixed Aspect Work Area", &Config::Current->FixedAspectWorkArea);
+
+			ImGui::Checkbox("Background Extend", &Config::Current->BackgroundExtend);
 			if (!Config::Current->TransparentWorkArea)
 			{
 				const char* backgroundItems[] = { "None", "Checkerboard", "Black", "Grey", "White" };
 				ImGui::PushItemWidth(110);
-				ImGui::Combo("Style", &Config::Current->BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
+				ImGui::Combo("Background Style", &Config::Current->BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
 				ImGui::PopItemWidth();
 			}
 			ImGui::EndTabItem();

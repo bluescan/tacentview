@@ -31,7 +31,7 @@ enum class Profile
 enum class Category
 {
 	Everything,		// Special case that includes things not in a category.
-	Background,
+	Display,		// Includes background and aspect settings.
 	Slideshow,
 	System,
 	Interface
@@ -83,6 +83,7 @@ struct Settings
 	int BackgroundStyle;
 	bool BackgroundExtend;				// Extend background past image bounds.
 	bool TransparentWorkArea;
+	bool FixedAspectWorkArea;
 
 	int ResampleFilter;					// Matches tImage::tResampleFilter.
 	int ResampleEdgeMode;				// Matches tImage::tResampleEdgeMode.
