@@ -247,10 +247,11 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	if (ImGui::Button("Reset All", tVector2(100, 0)))
 	{
 		Config::ResetAll();
+		Config::SetProfile(Config::Profile::Main);
 		PendingTransparentWorkArea = false;
 		ChangeScreenMode(false, true);
 	}
-	ShowToolTip("Resets all profiles to their default settings.");
+	ShowToolTip("Resets all profiles to their default settings\nand switches to the main profile.");
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
