@@ -1001,23 +1001,18 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		float w = iw * ZoomPercent/100.0f;
 		float h = ih * ZoomPercent/100.0f;
 
-		// Compute extents.
-		float offsetW = tMath::tRound((draww - w) / 2.0f);
-		left	+= offsetW;
-		right	= left + w;		// Fix by Oddwarg. I had "right -= offsetW".
-
-		float offsetH = tMath::tRound((drawh - h) / 2.0f);
-		bottom	+= offsetH;
-		top		= bottom + h;	// Fix by Oddwarg. I had "top -= offsetH".
-
 		// If the image is smaller than the drawable area we draw a quad of the correct size with full 0..1 range in the uvs.
-		#if 0
-		// The truth is I have no idea any more what I was thinking when I wrote the if below and the comment above, or why
-		// the uv margin variables are needed. In any case, it feels wrong (asymmetrical only checking w) so I have disabled
-		// it -- so far it seems to work just fine using (only) the 'Compute extents' code block above. I've ifdeffed it out
-		// for now.
-		if ((w < draww) || !Config::Current->FixedAspectWorkArea)
+		// Setting the UV margins is then what allows the fixed-aspect work area to work properly.
+		if (Config::Current->FixedAspectWorkArea && (w > draww))
 		{
+			float propw = draww / w;
+			umarg = (1.0f - propw)/2.0f;
+			float proph = drawh / h;
+			vmarg = (1.0f - proph)/2.0f;
+		}
+		else
+		{
+			// Compute extents.
 			float offsetW = tMath::tRound((draww - w) / 2.0f);
 			left	+= offsetW;
 			right	= left + w;		// Fix by Oddwarg. I had "right -= offsetW".
@@ -1026,14 +1021,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			bottom	+= offsetH;
 			top		= bottom + h;	// Fix by Oddwarg. I had "top -= offsetH".
 		}
-		else
-		{
-			float propw = draww / w;
-			umarg = (1.0f - propw)/2.0f;
-			float proph = drawh / h;
-			vmarg = (1.0f - proph)/2.0f;
-		}
-		#endif
 
 		// Modify the UVs here to magnify.
 		if ((draww < w) || Config::Current->Tile)
