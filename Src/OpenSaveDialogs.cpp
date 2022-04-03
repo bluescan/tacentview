@@ -112,33 +112,32 @@ tString Viewer::DoSaveFiletype()
 	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "webp", "gif", "apng", "tiff" };
 	ImGui::Combo("File Type", &Config::Current->SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
 	ImGui::SameLine();
-	ShowHelpMark("Output image format.\nAlpha supported by tga, png, apng, bmp, tiff, and webp.\nAnimation supported by webp, gif, tiff, and apng.");
+	ShowHelpMark("Output image format.\nFull (non-binary) alpha supported by tga, png, apng, bmp, tiff, and webp.\nAnimation supported by webp, gif, tiff, and apng.");
 
+	// There are different options depending on what type you are saving as.
 	tString extension = ".tga";
 	switch (Config::Current->SaveFileType)
 	{
-		case 0: extension = ".tga";  break;
-		case 1: extension = ".png";  break;
-		case 2: extension = ".bmp";  break;
-		case 3: extension = ".jpg";  break;
-		case 4: extension = ".webp"; break;
-		case 5: extension = ".gif";  break;
-		case 6: extension = ".apng"; break;
-		case 7: extension = ".tiff"; break;
-	}
-
-	// There are different options depending on what type you are saving as.
-	switch (Config::Current->SaveFileType)
-	{
 		case 0:
+			extension = ".tga";
 			ImGui::Checkbox("RLE Compression", &Config::Current->SaveFileTargaRLE);
 			break;
 
+		case 1:
+			extension = ".png";
+			break;
+
+		case 2:
+			extension = ".bmp";
+			break;
+
 		case 3:
+			extension = ".jpg";
 			ImGui::SliderInt("Quality", &Config::Current->SaveFileJpegQuality, 1, 100, "%d");
 			break;
 
 		case 4:
+			extension = ".webp";
 			ImGui::Checkbox("Lossy", &Config::Current->SaveFileWebpLossy);
 			ImGui::SliderFloat("Quality / Compression", &Config::Current->SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
 			ImGui::SameLine(); ShowToolTip("Image quality percent if lossy. Image compression strength if not lossy"); ImGui::NewLine();
@@ -151,6 +150,7 @@ tString Viewer::DoSaveFiletype()
 			break;
 
 		case 5:
+			extension = ".gif";
 			ImGui::SliderInt("Duration Override", &Config::Current->SaveFileGifDurOverride, -1, 1000, "%d");
 			ImGui::SameLine(); ShowToolTip("In 1/100 seconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
 			if (ImGui::Button("1.0s"))  Config::Current->SaveFileGifDurOverride = 100; ImGui::SameLine();
@@ -160,6 +160,7 @@ tString Viewer::DoSaveFiletype()
 			break;
 
 		case 6:
+			extension = ".apng";
 			ImGui::SliderInt("Duration Override", &Config::Current->SaveFileApngDurOverride, -1, 10000, "%d");
 			ImGui::SameLine(); ShowToolTip("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
 			if (ImGui::Button("1.0s"))  Config::Current->SaveFileApngDurOverride = 1000; ImGui::SameLine();
@@ -169,6 +170,7 @@ tString Viewer::DoSaveFiletype()
 			break;
 
 		case 7:
+			extension = ".tiff";
 			ImGui::SliderInt("Duration Override", &Config::Current->SaveFileTiffDurOverride, -1, 10000, "%d");
 			ImGui::SameLine(); ShowToolTip("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
 			if (ImGui::Button("1.0s"))  Config::Current->SaveFileTiffDurOverride = 1000; ImGui::SameLine();

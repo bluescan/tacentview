@@ -138,6 +138,10 @@ namespace Viewer
 	bool RMBDown								= false;
 	bool DeleteAllCacheFilesOnExit				= false;
 	bool PendingTransparentWorkArea				= false;
+	bool DrawChannel_R							= true;
+	bool DrawChannel_G							= true;
+	bool DrawChannel_B							= true;
+	bool DrawChannel_A							= true;
 	int DragAnchorX								= 0;
 	int DragAnchorY								= 0;
 	int CursorX									= 0;
@@ -1064,6 +1068,25 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			glMultMatrixf(rotMat.E);
 		}
 
+		// Decide which colour channels to draw. OpenGL handles all this with swizzling.
+		int swizzle[] =
+		{
+			DrawChannel_R ? GL_RED : GL_ZERO,
+			DrawChannel_G ? GL_GREEN : GL_ZERO,
+			DrawChannel_B ? GL_BLUE : GL_ZERO,
+			DrawChannel_A ? GL_ALPHA : GL_ONE
+		};
+
+		// Special case. If only drawing the alphs channel, display an intensity image only of the alpha component.
+		if (!DrawChannel_R && !DrawChannel_G && !DrawChannel_B && DrawChannel_A)
+		{
+			swizzle[0] = GL_ALPHA; swizzle[1] = GL_ALPHA; swizzle[2] = GL_ALPHA; swizzle[3] =  GL_ONE;
+		}
+
+		bool modifiedSwizzle = !DrawChannel_R || !DrawChannel_G || !DrawChannel_B || !DrawChannel_A;
+		if (modifiedSwizzle)
+			glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
+	
 		glBegin(GL_QUADS);
 		if (!Config::Current->Tile)
 		{
@@ -1082,6 +1105,13 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			glTexCoord2f(offU + repU - umarg + uoff,	offV + 0.0f + vmarg + voff);	glVertex2f(hmargin+draww,	vmargin);
 		}
 		glEnd();
+
+		// Restore swizzle to normal if it was modified.
+		if (modifiedSwizzle)
+		{
+			int defaultSwizzle[] = { GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA };
+			glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, defaultSwizzle);
+		}
 
 		if (RotateAnglePreview != 0.0f)
 	 		glPopMatrix();
@@ -2335,6 +2365,22 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case GLFW_KEY_E:
 			PropsWindow = !PropsWindow;
+			break;
+
+		case GLFW_KEY_1:
+			DrawChannel_R = !DrawChannel_R;
+			break;
+
+		case GLFW_KEY_2:
+			DrawChannel_G = !DrawChannel_G;
+			break;
+
+		case GLFW_KEY_3:
+			DrawChannel_B = !DrawChannel_B;
+			break;
+
+		case GLFW_KEY_4:
+			DrawChannel_A = !DrawChannel_A;
 			break;
 	}
 }
