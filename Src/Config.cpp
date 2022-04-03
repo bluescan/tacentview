@@ -225,6 +225,7 @@ void Config::Settings::Reset(Config::Profile profile, Config::Category category)
 	if ((category == Category::Everything) || (category == Category::Display))
 	{
 		BackgroundStyle				= (profile == Profile::Basic) ? int(BGStyle::None) : int(BGStyle::Checkerboard);
+		BackgroundColour			= tColouri::black;
 		BackgroundExtend			= false;
 		TransparentWorkArea			= false;
 		FixedAspectWorkArea			= false;
@@ -282,6 +283,7 @@ void Config::Settings::Load(tExpression expr)
 			ReadItem(OverlayCorner);
 			ReadItem(Tile);
 			ReadItem(BackgroundStyle);
+			ReadItem(BackgroundColour);
 			ReadItem(BackgroundExtend);
 			ReadItem(TransparentWorkArea);
 			ReadItem(FixedAspectWorkArea);
@@ -348,7 +350,7 @@ void Config::Settings::Load(tExpression expr)
 	tiClamp		(RotateMode, 0, int(RotMode::NumModes)-1);
 	tiClamp		(DefaultZoomMode, 0, int(ZoomMode::NumModes)-1);
 	tiClampMin	(SlideshowPeriod, 1.0/60.0);
-	tiClamp		(BackgroundStyle, 0, 4);
+	tiClamp		(BackgroundStyle, 0, int(BGStyle::NumStyles)-1);
 	tiClamp		(WindowW, 640, screenW);
 	tiClamp		(WindowH, 360, screenH);
 	tiClamp		(WindowX, 0, screenW - WindowW);
@@ -406,6 +408,7 @@ bool Config::Settings::Save(tScriptWriter& writer)
 	WriteItem(OverlayCorner);
 	WriteItem(Tile);
 	WriteItem(BackgroundStyle);
+	WriteItem(BackgroundColour);
 	WriteItem(BackgroundExtend);
 	WriteItem(TransparentWorkArea);
 	WriteItem(FixedAspectWorkArea);

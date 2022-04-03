@@ -76,11 +76,11 @@ struct Settings
 	{
 		None,
 		Checkerboard,
-		Black,
-		Grey,
-		White
+		SolidColour,
+		NumStyles
 	};
 	int BackgroundStyle;
+	tColouri BackgroundColour;			// Only used if BGStyle is SolidColour.
 	bool BackgroundExtend;				// Extend background past image bounds.
 	bool TransparentWorkArea;
 	bool FixedAspectWorkArea;

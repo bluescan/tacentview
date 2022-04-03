@@ -69,10 +69,41 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::Checkbox("Background Extend", &Config::Current->BackgroundExtend);
 			if (!Config::Current->TransparentWorkArea)
 			{
-				const char* backgroundItems[] = { "None", "Checkerboard", "Black", "Grey", "White" };
+				const char* backgroundItems[] = { "None", "Checker", "Solid" };
 				ImGui::PushItemWidth(110);
 				ImGui::Combo("Background Style", &Config::Current->BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
 				ImGui::PopItemWidth();
+
+				if (Config::Current->BackgroundStyle == int(Config::Settings::BGStyle::SolidColour))
+				{
+					tColourf floatCol(Config::Current->BackgroundColour);
+					ImGui::ColorEdit3("Choose Colour", floatCol.E,
+					ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar);
+					Config::Current->BackgroundColour.Set(floatCol);
+					Config::Current->BackgroundColour.A = 0xFF;
+
+					int preset = 0;
+					if (Config::Current->BackgroundColour == tColouri::black)
+						preset = 1;
+					else if (Config::Current->BackgroundColour == tColouri::lightgrey)
+						preset = 2;
+					else if (Config::Current->BackgroundColour == tColouri::white)
+						preset = 3;
+
+					ImGui::SameLine();
+					const char* presetColours[] = { "Custom", "Black", "Grey", "White" };
+					ImGui::PushItemWidth(68);
+					if (ImGui::Combo("Preset", &preset, presetColours, tNumElements(presetColours)))
+					{
+						switch (preset)
+						{
+							case 1:		Config::Current->BackgroundColour = tColouri::black;		break;
+							case 2:		Config::Current->BackgroundColour = tColouri::lightgrey;	break;
+							case 3:		Config::Current->BackgroundColour = tColouri::white;		break;
+						}
+					}
+					ImGui::PopItemWidth();
+				}
 			}
 			ImGui::EndTabItem();
 		}

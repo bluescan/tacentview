@@ -740,24 +740,15 @@ void Viewer::DrawBackground(float l, float r, float b, float t)
 			break;
 		}
 
-		case int(Config::Settings::BGStyle::Black):
-		case int(Config::Settings::BGStyle::Grey):
-		case int(Config::Settings::BGStyle::White):
+		case int(Config::Settings::BGStyle::SolidColour):
 		{
-			switch (Config::Current->BackgroundStyle)
-			{
-				case int(Config::Settings::BGStyle::Black):	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);		break;
-				case int(Config::Settings::BGStyle::Grey):	glColor4f(0.25f, 0.25f, 0.3f, 1.0f);	break;
-				case int(Config::Settings::BGStyle::White):	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);		break;
-			}
-
+			glColor4ubv(Config::Current->BackgroundColour.E);
 			glBegin(GL_QUADS);
 			glVertex2f(l, b);
 			glVertex2f(l, t);
 			glVertex2f(r, t);
 			glVertex2f(r, b);
 			glEnd();
-
 			break;
 		}
 	}
