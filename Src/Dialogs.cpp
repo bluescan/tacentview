@@ -260,19 +260,47 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			ImGui::Checkbox("Alpha", &Viewer::DrawChannel_A);
 		}
 
-		/* WIP
 		ImGui::Separator();
 
-		if (ImGui::Button("Background To RGB"))
+		tColourf floatCol(Config::Current->BackgroundColour);
+		if (ImGui::ColorEdit3("Background Colour", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))
 		{
+			Config::Current->BackgroundColour.Set(floatCol);
+			Config::Current->BackgroundColour.A = 0xFF;
 		}
-		if (ImGui::Button("Set Alphas"))
+
+		if (ImGui::Button("Blend In Background"))
 		{
+			CurrImage->Unbind();
+			CurrImage->AlphaBlendColour(Config::Current->BackgroundColour, true);
+			CurrImage->Bind();
+			Viewer::SetWindowTitle();
 		}
-		if (ImGui::Button("Clear Alphas"))
+		ImGui::SameLine();
+		ShowHelpMark("Blend background colour into RGB of image based on alpha. Sets alpha to full when done.");	
+
+		uint32 channels = (Viewer::DrawChannel_R ? ColourChannel_R : 0) | (Viewer::DrawChannel_G ? ColourChannel_G : 0) | (Viewer::DrawChannel_B ? ColourChannel_B : 0) | (Viewer::DrawChannel_A ? ColourChannel_A : 0);
+		if (ImGui::Button("Set Selected Channels"))
 		{
+			CurrImage->Unbind();
+			tColouri full(255, 255, 255, 255);
+			CurrImage->SetAllPixels(full, channels);
+			CurrImage->Bind();
+			Viewer::SetWindowTitle();
 		}
-		*/
+		ImGui::SameLine();
+		ShowHelpMark("Sets selected channels (all pixels) to have maximum value (255).");
+
+		if (ImGui::Button("Clear Selected Channels"))
+		{
+			CurrImage->Unbind();
+			tColouri zero(0, 0, 0, 0);
+			CurrImage->SetAllPixels(zero, channels);
+			CurrImage->Bind();
+			Viewer::SetWindowTitle();
+		}
+		ImGui::SameLine();
+		ShowHelpMark("Sets selected channels (all pixels) to have a value of zero.");
 	}
 
 	ImGui::End();

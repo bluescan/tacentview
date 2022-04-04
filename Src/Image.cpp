@@ -786,6 +786,30 @@ void Image::SetPixelColour(int x, int y, const tColouri& colour, bool pushUndo, 
 }
 
 
+void Image::SetAllPixels(const tColouri& colour, uint32 channels)
+{
+	tString desc; tsPrintf(desc, "Set Pixels (%d,%d,%d,%d)", colour.R, colour.G, colour.B, colour.A);
+	PushUndo(desc);
+
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->SetAll(colour, channels);
+
+	Dirty = true;
+}
+
+
+void Image::AlphaBlendColour(const tColouri& colour, bool resetAlpha)
+{
+	tString desc; tsPrintf(desc, "Blend (%d,%d,%d,%d)", colour.R, colour.G, colour.B, colour.A);
+	PushUndo(desc);
+
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->AlphaBlendColour(colour, resetAlpha);
+
+	Dirty = true;
+}
+
+
 void Image::SetFrameDuration(float duration, bool allFrames)
 {
 	tString desc; tsPrintf(desc, "Frame Dur %.3f", duration);

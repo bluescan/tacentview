@@ -77,10 +77,11 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				if (Config::Current->BackgroundStyle == int(Config::Settings::BGStyle::SolidColour))
 				{
 					tColourf floatCol(Config::Current->BackgroundColour);
-					ImGui::ColorEdit3("Choose Colour", floatCol.E,
-					ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar);
-					Config::Current->BackgroundColour.Set(floatCol);
-					Config::Current->BackgroundColour.A = 0xFF;
+					if (ImGui::ColorEdit3("Choose Colour", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))
+					{
+						Config::Current->BackgroundColour.Set(floatCol);
+						Config::Current->BackgroundColour.A = 0xFF;
+					}
 
 					int preset = 0;
 					if (Config::Current->BackgroundColour == tColouri::black)

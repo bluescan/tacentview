@@ -1686,17 +1686,17 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		if (ImGui::ImageButton
 		(
-			ImTextureID(ContentViewImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
-			Config::Current->ContentViewShow ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	Config::Current->ContentViewShow = !Config::Current->ContentViewShow;
-		ShowToolTip("Content Thumbnail View");
-
-		if (ImGui::ImageButton
-		(
 			ImTextureID(ChannelFilterImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
 			Config::Current->ShowChannelFilter ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	Config::Current->ShowChannelFilter = !Config::Current->ShowChannelFilter;
 		ShowToolTip("Colour Channel Filter");
+
+		if (ImGui::ImageButton
+		(
+			ImTextureID(ContentViewImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
+			Config::Current->ContentViewShow ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	Config::Current->ContentViewShow = !Config::Current->ContentViewShow;
+		ShowToolTip("Content Thumbnail View");
 
 		bool tileAvail = CurrImage ? !CropMode : false;
 		if (ImGui::ImageButton
