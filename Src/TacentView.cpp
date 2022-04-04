@@ -83,8 +83,6 @@ namespace Viewer
 	Image WindowedImage;
 	Image SkipBeginImage;
 	Image SkipEndImage;
-	Image MipmapsImage;
-	Image CubemapImage;
 	Image RefreshImage;
 	Image RecycleImage;
 	Image PropEditImage;
@@ -98,6 +96,7 @@ namespace Viewer
 	Image PlayRevImage;
 	Image PlayLoopImage;
 	Image PlayOnceImage;
+	Image ChannelFilterImage;
 	Image ContentViewImage;
 	Image UpFolderImage;
 	Image CropImage;
@@ -138,6 +137,7 @@ namespace Viewer
 	bool RMBDown								= false;
 	bool DeleteAllCacheFilesOnExit				= false;
 	bool PendingTransparentWorkArea				= false;
+	bool DrawChannel_AsIntensity				= false;
 	bool DrawChannel_R							= true;
 	bool DrawChannel_G							= true;
 	bool DrawChannel_B							= true;
@@ -253,6 +253,9 @@ tVector2 Viewer::GetDialogOrigin(float index)
 {
 	if (index == 2)
 		return tVector2(DialogOrigin + DialogDelta, DialogOrigin + TopUIHeight + 275.0f);
+
+	else if (index == 6)
+		return tVector2(DialogOrigin + 300.0f, DialogOrigin + TopUIHeight + DialogDelta*1.0f);
 
 	return tVector2(DialogOrigin + DialogDelta*float(index), DialogOrigin + TopUIHeight + DialogDelta*float(index));
 }
@@ -1069,7 +1072,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 
 		// Decide which colour channels to draw. OpenGL handles all this with swizzling.
-		int swizzle[] =
+
+		int swizzle[4] =
 		{
 			DrawChannel_R ? GL_RED : GL_ZERO,
 			DrawChannel_G ? GL_GREEN : GL_ZERO,
@@ -1077,10 +1081,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			DrawChannel_A ? GL_ALPHA : GL_ONE
 		};
 
-		// Special case. If only drawing the alphs channel, display an intensity image only of the alpha component.
-		if (!DrawChannel_R && !DrawChannel_G && !DrawChannel_B && DrawChannel_A)
+		if (DrawChannel_AsIntensity)
 		{
-			swizzle[0] = GL_ALPHA; swizzle[1] = GL_ALPHA; swizzle[2] = GL_ALPHA; swizzle[3] =  GL_ONE;
+			if (DrawChannel_R) { swizzle[0] = GL_RED;	swizzle[1] = GL_RED;	swizzle[2] = GL_RED;	swizzle[3] = GL_ONE; }
+			if (DrawChannel_G) { swizzle[0] = GL_GREEN;	swizzle[1] = GL_GREEN;	swizzle[2] = GL_GREEN;	swizzle[3] = GL_ONE; }
+			if (DrawChannel_B) { swizzle[0] = GL_BLUE;	swizzle[1] = GL_BLUE;	swizzle[2] = GL_BLUE;	swizzle[3] = GL_ONE; }
+			if (DrawChannel_A) { swizzle[0] = GL_ALPHA;	swizzle[1] = GL_ALPHA;	swizzle[2] = GL_ALPHA;	swizzle[3] = GL_ONE; }
 		}
 
 		bool modifiedSwizzle = !DrawChannel_R || !DrawChannel_G || !DrawChannel_B || !DrawChannel_A;
@@ -1685,6 +1691,13 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		)	Config::Current->ContentViewShow = !Config::Current->ContentViewShow;
 		ShowToolTip("Content Thumbnail View");
 
+		if (ImGui::ImageButton
+		(
+			ImTextureID(ChannelFilterImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
+			Config::Current->ShowChannelFilter ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	Config::Current->ShowChannelFilter = !Config::Current->ShowChannelFilter;
+		ShowToolTip("Colour Channel Filter");
+
 		bool tileAvail = CurrImage ? !CropMode : false;
 		if (ImGui::ImageButton
 		(
@@ -1849,6 +1862,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	if (Config::Current->ShowPixelEditor)
 		ShowPixelEditorOverlay(&Config::Current->ShowPixelEditor);
+
+	if (Config::Current->ShowChannelFilter)
+		ShowChannelFilterOverlay(&Config::Current->ShowChannelFilter);
 
 	if (Config::Current->ContentViewShow)
 		ShowContentViewDialog(&Config::Current->ContentViewShow);
@@ -2367,20 +2383,49 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			PropsWindow = !PropsWindow;
 			break;
 
+		case GLFW_KEY_GRAVE_ACCENT:
+			Config::Current->ShowChannelFilter = !Config::Current->ShowChannelFilter;
+			break;
+
 		case GLFW_KEY_1:
-			DrawChannel_R = !DrawChannel_R;
+			if (DrawChannel_AsIntensity)
+				{ DrawChannel_R = true; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = false; }
+			else
+				DrawChannel_R = !DrawChannel_R;
+			Config::Current->ShowChannelFilter = true;	
 			break;
 
 		case GLFW_KEY_2:
-			DrawChannel_G = !DrawChannel_G;
+			if (DrawChannel_AsIntensity)
+				{ DrawChannel_R = false; DrawChannel_G = true; DrawChannel_B = false; DrawChannel_A = false; }
+			else
+				DrawChannel_G = !DrawChannel_G;
+			Config::Current->ShowChannelFilter = true;	
 			break;
 
 		case GLFW_KEY_3:
-			DrawChannel_B = !DrawChannel_B;
+			if (DrawChannel_AsIntensity)
+				{ DrawChannel_R = false; DrawChannel_G = false; DrawChannel_B = true; DrawChannel_A = false; }
+			else
+				DrawChannel_B = !DrawChannel_B;
+			Config::Current->ShowChannelFilter = true;	
 			break;
 
 		case GLFW_KEY_4:
-			DrawChannel_A = !DrawChannel_A;
+			if (DrawChannel_AsIntensity)
+				{ DrawChannel_R = false; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = true; }
+			else
+				DrawChannel_A = !DrawChannel_A;
+			Config::Current->ShowChannelFilter = true;	
+			break;
+
+		case GLFW_KEY_5:
+			DrawChannel_AsIntensity = !DrawChannel_AsIntensity;
+			if (DrawChannel_AsIntensity)
+				{ DrawChannel_R = true; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = false; }
+			else
+				{ DrawChannel_R = true; DrawChannel_G = true; DrawChannel_B = true; DrawChannel_A = true; }
+			Config::Current->ShowChannelFilter = true;	
 			break;
 	}
 }
@@ -2566,7 +2611,8 @@ void Viewer::LoadAppImages(const tString& dataDir)
 	PlayRevImage			.Load(dataDir + "PlayRev.png");
 	PlayLoopImage			.Load(dataDir + "PlayLoop.png");
 	PlayOnceImage			.Load(dataDir + "PlayOnce.png");
-	ContentViewImage		.Load(dataDir + "ContView.png");
+	ChannelFilterImage		.Load(dataDir + "ChannelFilter.png");
+	ContentViewImage		.Load(dataDir + "ContentView.png");
 	UpFolderImage			.Load(dataDir + "UpFolder.png");
 	CropImage				.Load(dataDir + "Crop.png");
 	DefaultThumbnailImage	.Load(dataDir + "DefaultThumbnail.png");
@@ -2589,8 +2635,6 @@ void Viewer::UnloadAppImages()
 	WindowedImage			.Unload();
 	SkipBeginImage			.Unload();
 	SkipEndImage			.Unload();
-	MipmapsImage			.Unload();
-	CubemapImage			.Unload();
 	RefreshImage			.Unload();
 	RecycleImage			.Unload();
 	PropEditImage			.Unload();
@@ -2604,6 +2648,7 @@ void Viewer::UnloadAppImages()
 	PlayRevImage			.Unload();
 	PlayLoopImage			.Unload();
 	PlayOnceImage			.Unload();
+	ChannelFilterImage		.Unload();
 	ContentViewImage		.Unload();
 	UpFolderImage			.Unload();
 	CropImage				.Unload();

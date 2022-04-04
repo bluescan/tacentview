@@ -193,6 +193,92 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 }
 
 
+void Viewer::ShowChannelFilterOverlay(bool* popen)
+{
+	tVector2 windowPos = GetDialogOrigin(6);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+	ImGuiWindowFlags flags =
+		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
+		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoFocusOnAppearing	|
+		ImGuiWindowFlags_NoNav;
+
+	if (ImGui::Begin("Channel Filter", popen, flags))
+	{
+		if (ImGui::Checkbox("Channel As Intensity", &Viewer::DrawChannel_AsIntensity))
+		{
+			if (Viewer::DrawChannel_AsIntensity)
+			{
+				Viewer::DrawChannel_R = true;
+				Viewer::DrawChannel_G = false;
+				Viewer::DrawChannel_B = false;
+				Viewer::DrawChannel_A = false;
+			}
+			else
+			{
+				Viewer::DrawChannel_R = true;
+				Viewer::DrawChannel_G = true;
+				Viewer::DrawChannel_B = true;
+				Viewer::DrawChannel_A = true;
+			}
+		}
+		if (Viewer::DrawChannel_AsIntensity)
+		{
+			if (ImGui::RadioButton("Red", Viewer::DrawChannel_R))
+			{
+				Viewer::DrawChannel_R = true;
+				Viewer::DrawChannel_G = false;
+				Viewer::DrawChannel_B = false;
+				Viewer::DrawChannel_A = false;
+			}
+			if (ImGui::RadioButton("Green", Viewer::DrawChannel_G))
+			{
+				Viewer::DrawChannel_R = false;
+				Viewer::DrawChannel_G = true;
+				Viewer::DrawChannel_B = false;
+				Viewer::DrawChannel_A = false;
+			}
+			if (ImGui::RadioButton("Blue", Viewer::DrawChannel_B))
+			{
+				Viewer::DrawChannel_R = false;
+				Viewer::DrawChannel_G = false;
+				Viewer::DrawChannel_B = true;
+				Viewer::DrawChannel_A = false;
+			}
+			if (ImGui::RadioButton("Alpha", Viewer::DrawChannel_A))
+			{
+				Viewer::DrawChannel_R = false;
+				Viewer::DrawChannel_G = false;
+				Viewer::DrawChannel_B = false;
+				Viewer::DrawChannel_A = true;
+			}
+		}
+		else
+		{
+			ImGui::Checkbox("Red", &Viewer::DrawChannel_R);
+			ImGui::Checkbox("Green", &Viewer::DrawChannel_G);
+			ImGui::Checkbox("Blue", &Viewer::DrawChannel_B);
+			ImGui::Checkbox("Alpha", &Viewer::DrawChannel_A);
+		}
+
+		/* WIP
+		ImGui::Separator();
+
+		if (ImGui::Button("Background To RGB"))
+		{
+		}
+		if (ImGui::Button("Set Alphas"))
+		{
+		}
+		if (ImGui::Button("Clear Alphas"))
+		{
+		}
+		*/
+	}
+
+	ImGui::End();
+}
+
+
 void Viewer::ShowCheatSheetPopup(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(5);
@@ -267,6 +353,13 @@ void Viewer::ShowCheatSheetPopup(bool* popen)
 		ImGui::Text("C");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Contact Sheet...");
 		ImGui::Text("P");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Preferences...");
 		ImGui::Text("V");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Content Thumbnail View...");
+
+		ImGui::Text("~");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Channel Filter");
+		ImGui::Text("1");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Red Channel");
+		ImGui::Text("2");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Green Channel");
+		ImGui::Text("3");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Blue Channel");
+		ImGui::Text("4");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Alpha Channel");
+		ImGui::Text("5");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Channel As Intensity");
 	}
 	ImGui::End();
 }

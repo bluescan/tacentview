@@ -2,7 +2,7 @@
 //
 // Various dialogs and helpers including a log window, info overlay, cheatsheet, help window, and about window.
 //
-// Copyright (c) 2019, 2020, 2021 Tristan Grimmer.
+// Copyright (c) 2019, 2020, 2021, 2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -19,6 +19,7 @@ namespace Viewer
 {
 	void ShowImageDetailsOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY, float zoom);
 	void ShowPixelEditorOverlay(bool* popen);
+	void ShowChannelFilterOverlay(bool* popen);
 	void ShowCheatSheetPopup(bool* popen);
 	void ShowAboutPopup(bool* popen);
 	void ColourCopyAs();

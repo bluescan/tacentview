@@ -45,6 +45,11 @@ namespace Viewer
 	extern bool CropMode;
 	extern bool DeleteAllCacheFilesOnExit;
 	extern bool PendingTransparentWorkArea;
+	extern bool DrawChannel_AsIntensity;
+	extern bool DrawChannel_R;
+	extern bool DrawChannel_G;
+	extern bool DrawChannel_B;
+	extern bool DrawChannel_A;
 	extern double SlideshowCountdown;
 	extern int CursorX;
 	extern int CursorY;

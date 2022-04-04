@@ -53,6 +53,7 @@ struct Settings
 	bool ShowNavBar;
 	bool ShowImageDetails;
 	bool ShowPixelEditor;
+	bool ShowChannelFilter;
 	bool ShowFrameScrubber;
 	bool ContentViewShow;
 	float ThumbnailWidth;

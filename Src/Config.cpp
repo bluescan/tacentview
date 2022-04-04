@@ -184,6 +184,7 @@ void Config::Settings::Reset(Config::Profile profile, Config::Category category)
 		ShowNavBar					= (profile == Profile::Basic) ? false : true;
 		ShowImageDetails			= (profile == Profile::Basic) ? false : true;
 		ShowPixelEditor				= false;
+		ShowChannelFilter			= false;
 		ShowFrameScrubber			= (profile == Profile::Basic) ? false : true;
 		ContentViewShow				= false;
 		ThumbnailWidth				= 128.0f;
@@ -275,6 +276,7 @@ void Config::Settings::Load(tExpression expr)
 			ReadItem(ShowNavBar);
 			ReadItem(ShowImageDetails);
 			ReadItem(ShowPixelEditor);
+			ReadItem(ShowChannelFilter);
 			ReadItem(ShowFrameScrubber);
 			ReadItem(ContentViewShow);
 			ReadItem(ThumbnailWidth);
@@ -400,6 +402,7 @@ bool Config::Settings::Save(tScriptWriter& writer)
 	WriteItem(ShowNavBar);
 	WriteItem(ShowImageDetails);
 	WriteItem(ShowPixelEditor);
+	WriteItem(ShowChannelFilter);
 	WriteItem(ShowFrameScrubber);
 	WriteItem(ContentViewShow);
 	WriteItem(ThumbnailWidth);
