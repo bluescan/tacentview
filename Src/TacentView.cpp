@@ -1570,6 +1570,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 				rotateImagePressed = true;
 
 			ImGui::MenuItem("Edit Pixel", "A", &Config::Current->ShowPixelEditor);
+			ImGui::MenuItem("Channel Filter...", "~", &Config::Current->ShowChannelFilter);
 			ImGui::MenuItem("Image Properties...", "E", &PropsWindow);
 
 			ImGui::Separator();
