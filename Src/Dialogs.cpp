@@ -204,7 +204,8 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 
 	if (ImGui::Begin("Channel Filter", popen, flags))
 	{
-		if (ImGui::Checkbox("Channel As Intensity", &Viewer::DrawChannel_AsIntensity))
+		ImGui::Text("Display");
+		if (ImGui::Checkbox("Channel Intensity", &Viewer::DrawChannel_AsIntensity))
 		{
 			if (Viewer::DrawChannel_AsIntensity)
 			{
@@ -258,9 +259,14 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			ImGui::Checkbox("Green", &Viewer::DrawChannel_G);
 			ImGui::Checkbox("Blue", &Viewer::DrawChannel_B);
 			ImGui::Checkbox("Alpha", &Viewer::DrawChannel_A);
+			ImGui::SameLine(); ShowHelpMark("When false a full alpha value is used since it is interpreted as opacity.");
 		}
 
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 		ImGui::Separator();
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+
+		ImGui::Text("Modify");
 
 		tColourf floatCol(Config::Current->BackgroundColour);
 		if (ImGui::ColorEdit3("Background Colour", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))
@@ -269,7 +275,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			Config::Current->BackgroundColour.A = 0xFF;
 		}
 
-		if (ImGui::Button("Blend In Background"))
+		if (ImGui::Button("Blend Background"))
 		{
 			CurrImage->Unbind();
 			CurrImage->AlphaBlendColour(Config::Current->BackgroundColour, true);
@@ -277,10 +283,10 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			Viewer::SetWindowTitle();
 		}
 		ImGui::SameLine();
-		ShowHelpMark("Blend background colour into RGB of image based on alpha. Sets alpha to full when done.");	
+		ShowHelpMark("Blend background colour into RGB of image based on alpha. Sets alphas to full when done.");
 
 		uint32 channels = (Viewer::DrawChannel_R ? ColourChannel_R : 0) | (Viewer::DrawChannel_G ? ColourChannel_G : 0) | (Viewer::DrawChannel_B ? ColourChannel_B : 0) | (Viewer::DrawChannel_A ? ColourChannel_A : 0);
-		if (ImGui::Button("Set Selected Channels"))
+		if (ImGui::Button("Max Selected"))
 		{
 			CurrImage->Unbind();
 			tColouri full(255, 255, 255, 255);
@@ -289,9 +295,9 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			Viewer::SetWindowTitle();
 		}
 		ImGui::SameLine();
-		ShowHelpMark("Sets selected channels (all pixels) to have maximum value (255).");
+		ShowHelpMark("Sets selected channel(s) to their maximum value (255).");
 
-		if (ImGui::Button("Clear Selected Channels"))
+		if (ImGui::Button("Zero Selected"))
 		{
 			CurrImage->Unbind();
 			tColouri zero(0, 0, 0, 0);
@@ -300,7 +306,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			Viewer::SetWindowTitle();
 		}
 		ImGui::SameLine();
-		ShowHelpMark("Sets selected channels (all pixels) to have a value of zero.");
+		ShowHelpMark("Sets selected channel(s) to zero.");
 	}
 
 	ImGui::End();

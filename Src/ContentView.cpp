@@ -76,6 +76,7 @@ void Viewer::ShowContentViewDialog(bool* popen)
 			i->RequestThumbnail();
 			if (!thumbnailTexID)
 				thumbnailTexID = DefaultThumbnailImage.Bind();
+			ImGui::PushStyleColor(ImGuiCol_Button, ColourClear);
 			if
 			(
 				thumbnailTexID &&
@@ -86,6 +87,7 @@ void Viewer::ShowContentViewDialog(bool* popen)
 				CurrImage = i;
 				LoadCurrImage();
 			}
+			ImGui::PopStyleColor();
 
 			tString filename = tSystem::tGetFileName(i->Filename);
 			ImGui::Text(filename.Chars());
