@@ -176,7 +176,7 @@ void Config::Settings::Reset(Config::Profile profile, Config::Category category)
 		int screenW					= mode ? mode->width  : 1280;
 		int screenH					= mode ? mode->height : 720;
 		WindowW						= 1280;
-		WindowH						= 720;
+		WindowH						= 720;						//	Sub 37 if want 720 inc title bar;
 		WindowX						= (screenW - WindowW) >> 1;
 		WindowY						= (screenH - WindowH) >> 1;
 
