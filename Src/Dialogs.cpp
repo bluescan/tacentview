@@ -317,8 +317,8 @@ void Viewer::ShowCheatSheetPopup(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(5);
 	ImGui::SetNextWindowBgAlpha(0.80f);
-	ImGui::SetNextWindowSize(tVector2(310.0f, 400.0f));
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(tVector2(310.0f, 400.0f), ImGuiCond_Appearing);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Appearing);
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
 
 	if (ImGui::Begin("Cheat Sheet", popen, flags))

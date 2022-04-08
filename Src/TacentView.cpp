@@ -1495,7 +1495,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		DoOpenFileModal(openFilePressed);
 		DoOpenDirModal(openDirPressed);
 		#endif
-		
+
 		DoSaveAsModal(saveAsPressed);
 		DoSaveAllModal(saveAllPressed);
 		DoContactSheetModal(saveContactSheetPressed);
