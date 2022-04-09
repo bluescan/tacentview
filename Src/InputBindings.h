@@ -16,7 +16,7 @@
 #include <Foundation/tString.h>
 #include <GLFW/glfw3.h>
 namespace Viewer {
-namespace Bind {
+namespace Bindings {
 
 
 enum class Operation
@@ -42,6 +42,9 @@ enum Modifier
 };
 const char* GetModifiersText(uint32 modifiers);
 
+// Converts from GLFW modifiers to viewer modifiers.
+uint32 TranslateModifiers(int glfwModifiers);
+
 
 // Given a glfw key as input, returns the full name of the key. This is useful if you want to display help text that
 // describes what a particulr key does. Returns nullptr if the GLFW key define is not supported. Examples:
@@ -51,9 +54,6 @@ const char* GetModifiersText(uint32 modifiers);
 // GLFW_KEY_F11				->		"F11"
 // GLFW_KEY_Q				->		"Q"
 const char* GetKeyName(int glfwkey);
-
-
-// WIP Need a key desc function that also returns the single character.
 
 
 // Specifies, for a single key, what operations it performs. The same key can map to multiple operations if modifier
@@ -89,6 +89,8 @@ private:
 };
 
 
+extern InputMap DefaultInputMap;
+
 
 // Returns the operation currently bound to the 
 //int GetOperation(
@@ -99,7 +101,7 @@ private:
 //		[ Keybinding Operation 
 
 
-void ShowKeybindingWindow(bool* popen);
+void ShowWindow(bool* popen);
 
 
 // Implementaion only below this line.

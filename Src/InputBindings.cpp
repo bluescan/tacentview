@@ -15,25 +15,28 @@
 #include <Math/tVector2.h>
 #include <System/tPrint.h>
 #include "imgui.h"
-#include "InputBindings.h"
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL declarations.
+#include "InputBindings.h"
+#include "TacentView.h"
 using namespace tStd;
 using namespace tMath;
 namespace Viewer
 {
 
 
-namespace Bind
+namespace Bindings
 {
 	void InitKeyNameTable();
 
 	bool KeyNameTableInitialized = false;
 	const int MaxKeyNameLength = 16;
 	char KeyNameTable[GLFW_KEY_LAST][MaxKeyNameLength];
+
+	InputMap DefaultInputMap;
 }
 
 
-void Bind::InitKeyNameTable()
+void Bindings::InitKeyNameTable()
 {
 	tMemset(KeyNameTable, 0, tNumElements(KeyNameTable));
 
@@ -94,7 +97,7 @@ void Bind::InitKeyNameTable()
 }
 
 
-const char* Bind::GetOperationDesc(Operation op)
+const char* Bindings::GetOperationDesc(Operation op)
 {
 	const char* descriptions[] =
 	{
@@ -106,7 +109,7 @@ const char* Bind::GetOperationDesc(Operation op)
 }
 
 
-const char* Bind::GetModifiersText(uint32 modifiers)
+const char* Bindings::GetModifiersText(uint32 modifiers)
 {
 	// Order is ctrl-alt-shift. MSB to LSB.
 	const char* dispstr[] =
@@ -125,7 +128,17 @@ const char* Bind::GetModifiersText(uint32 modifiers)
 }
 
 
-const char* Bind::GetKeyName(int key)
+uint32 Bindings::TranslateModifiers(int glfwModifiers)
+{
+	uint32 modifiers = 0x00000000;
+	modifiers |= (glfwModifiers & GLFW_MOD_CONTROL)	? Modifier_Ctrl		: 0;
+	modifiers |= (glfwModifiers & GLFW_MOD_ALT)		? Modifier_Alt		: 0;
+	modifiers |= (glfwModifiers & GLFW_MOD_SHIFT)	? Modifier_Shift	: 0;
+	return modifiers;
+}
+
+
+const char* Bindings::GetKeyName(int key)
 {
 	if (!KeyNameTableInitialized)
 		InitKeyNameTable();
@@ -134,7 +147,7 @@ const char* Bind::GetKeyName(int key)
 }
 
 
-bool Bind::InputMap::AssignKey(int key, uint32 modifiers, Operation operation)
+bool Bindings::InputMap::AssignKey(int key, uint32 modifiers, Operation operation)
 {
 	// If key already assigned to requested operation we're done.
 	if (KeyTable[key].Operations[modifiers] == operation)
@@ -149,10 +162,32 @@ bool Bind::InputMap::AssignKey(int key, uint32 modifiers, Operation operation)
 }
 
 
-void Bind::InputMap::Reset()
+void Bindings::InputMap::Reset()
 {
 	Clear();
 	AssignKey(GLFW_KEY_LEFT, Modifier_None, Operation::PreviousImage);
+	AssignKey(GLFW_KEY_RIGHT, Modifier_None, Operation::NextImage);
+
+	// TESTING
+	//	AssignKey(GLFW_KEY_COMMA, Modifier_None, Operation::PreviousImage);
+	//	AssignKey(GLFW_KEY_PERIOD, Modifier_None, Operation::NextImage);
+}
+
+
+void Bindings::ShowWindow(bool* popen)
+{
+	tVector2 windowPos = GetDialogOrigin(6);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+	ImGuiWindowFlags flags =
+		// ImGuiWindowFlags_AlwaysAutoResize	|
+		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoNav;
+
+	if (ImGui::Begin("Keyboard Bindings", popen, flags))
+	{
+		ImGui::Text("Profile Main Basic or BOTH");
+	}
+
+	ImGui::End();
 }
 
 

@@ -133,6 +133,7 @@ namespace Viewer
 	bool Request_Quit							= false;
 	bool PrefsWindow							= false;
 	bool PropsWindow							= false;
+	bool BindingsWindow							= false;
 	bool CropMode								= false;
 	bool LMBDown								= false;
 	bool RMBDown								= false;
@@ -1668,6 +1669,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 			ImGui::MenuItem("Cheat Sheet", "F1", &ShowCheatSheet);
+			ImGui::MenuItem("Key Bindings...", "K", &BindingsWindow);
 			ImGui::MenuItem("About", "", &ShowAbout);
 			ImGui::PopStyleVar();
 			ImGui::EndMenu();
@@ -1852,6 +1854,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	if (PropsWindow)
 		ShowPropertiesWindow(&PropsWindow);
+
+	if (BindingsWindow)
+		Bindings::ShowWindow(&BindingsWindow);
 
 	ImGui::PopStyleVar();
 
@@ -2046,6 +2051,7 @@ void Viewer::ChangeProfile(Config::Profile profile)
 	{
 		// These ones are runtime only.
 		PropsWindow								= false;
+		BindingsWindow							= false;
 		ShowCheatSheet							= false;
 		ShowAbout								= false;
 	}
@@ -2112,6 +2118,21 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 	if (keyName && *keyName)
 		key = tStd::tChrupr(keyName[0]);
 
+	// Now we need to query the key-binding system to find out what operation is
+	// associated with the received key.
+	uint32 viewerModifiers = Bindings::TranslateModifiers(modifiers);
+	Bindings::Operation operation = Bindings::DefaultInputMap.GetOperation(key, viewerModifiers);
+	switch (operation)
+	{
+		case Bindings::Operation::PreviousImage:
+			OnPrevious();		// Already checks CurrImage.
+			break;
+
+		case Bindings::Operation::NextImage:
+			OnNext();			// Already checks CurrImage.
+			break;
+	}
+
 	switch (key)
 	{
 		case GLFW_KEY_LEFT:
@@ -2123,8 +2144,6 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				OnPrevImageFrame();
 			else if (modifiers == GLFW_MOD_SHIFT)
 				RequestCursorMove = CursorMove_Left;
-			else
-				OnPrevious();
 			break;
 
 		case GLFW_KEY_RIGHT:
@@ -2136,8 +2155,6 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				OnNextImageFrame();
 			else if (modifiers == GLFW_MOD_SHIFT)
 				RequestCursorMove = CursorMove_Right;
-			else
-				OnNext();
 			break;
 
 		case GLFW_KEY_UP:
@@ -2383,6 +2400,10 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case GLFW_KEY_E:
 			PropsWindow = !PropsWindow;
+			break;
+
+		case GLFW_KEY_K:
+			BindingsWindow = !BindingsWindow;
 			break;
 
 		case GLFW_KEY_GRAVE_ACCENT:

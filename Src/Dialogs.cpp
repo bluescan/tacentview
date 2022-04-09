@@ -199,8 +199,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
-		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoFocusOnAppearing	|
-		ImGuiWindowFlags_NoNav;
+		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoNav;
 
 	if (ImGui::Begin("Channel Filter", popen, flags))
 	{
