@@ -70,8 +70,8 @@ add_executable(
 	Src/FileDialog.h
 	Src/Image.cpp
 	Src/Image.h
-	Src/Input.cpp
-	Src/Input.h
+	Src/InputBindings.cpp
+	Src/InputBindings.h
 	Src/MultiFrame.cpp
 	Src/MultiFrame.h
 	Src/OpenSaveDialogs.cpp

@@ -50,6 +50,7 @@
 #include "Rotate.h"
 #include "OpenSaveDialogs.h"
 #include "Config.h"
+#include "InputBindings.h"
 #include "Version.cmake.h"
 using namespace tStd;
 using namespace tSystem;

@@ -1,6 +1,6 @@
-// Input.h
+// InputBindings.h
 //
-// Allows you to set keybindings for all TacentView operations.
+// Allows you to set key bindings for all TacentView operations.
 //
 // Copyright (c) 2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
@@ -16,7 +16,7 @@
 #include <Foundation/tString.h>
 #include <GLFW/glfw3.h>
 namespace Viewer {
-namespace Input {
+namespace Bind {
 
 
 enum class Operation
@@ -29,27 +29,38 @@ enum class Operation
 
 	NumOperations
 };
-const char* GetOperationDescription(Operation);
+const char* GetOperationDesc(Operation);
 
 
 enum Modifier
 {
 	Modifier_None,
 	Modifier_Shift				= 1 << 0,
-	Modifier_Ctrl				= 1 << 1,
-	Modifier_Alt				= 1 << 2,
+	Modifier_Alt				= 1 << 1,
+	Modifier_Ctrl				= 1 << 2,
 	Modifier_NumCombinations	= 1 << 3
 };
-const char* GetModifiersDisplayString(uint32 modifiers);
+const char* GetModifiersText(uint32 modifiers);
+
+
+// Given a glfw key as input, returns the full name of the key. This is useful if you want to display help text that
+// describes what a particulr key does. Returns nullptr if the GLFW key define is not supported. Examples:
+// GLFW_KEY_SPACE			->		"Space"
+// GLFW_KEY_GRAVE_ACCENT	->		"~"
+// GLFW_KEY_ECAPE			->		"Esc"
+// GLFW_KEY_F11				->		"F11"
+// GLFW_KEY_Q				->		"Q"
+const char* GetKeyName(int glfwkey);
 
 
 // WIP Need a key desc function that also returns the single character.
 
 
-// Maps a key to its operations. The same key can map to multiple operations if modifier keys are used.
-struct KeyMap
+// Specifies, for a single key, what operations it performs. The same key can map to multiple operations if modifier
+// keys are used.
+struct KeyOps
 {
-	KeyMap()																											{ Clear(); }
+	KeyOps()																											{ Clear(); }
 	void Clear()																										{ for (int e = 0; e < Modifier_NumCombinations; e++) Operations[e] = Operation::None; }
 	Operation Operations[Modifier_NumCombinations];
 };
@@ -65,16 +76,16 @@ public:
 
 	// Returns the operation assigned to a particular key. This can also be used before an assign call to see what a
 	// current key is bound to so an already-assigned message can be dislayed if needed.
-	Operation GetOperation(int key, uint32 modifiers);
+	Operation GetOperation(int glfwkey, uint32 modifiers);
 
 	// Assigns the operation to the key and modifiers specified. Returns false if the key is already assigned to
 	// something else.
-	bool AssignKey(int key, uint32 modifiers, Operation);
-	void ClearKey(int key, uint32 modifiers);
+	bool AssignKey(int glfwkey, uint32 modifiers, Operation);
+	void ClearKey(int glfwkey, uint32 modifiers);
 
 
 private:
-	KeyMap KeyTable[GLFW_KEY_LAST+1];
+	KeyOps KeyTable[GLFW_KEY_LAST+1];
 };
 
 
@@ -94,20 +105,20 @@ void ShowKeybindingWindow(bool* popen);
 // Implementaion only below this line.
 
 
-void InputMap::Clear()
+inline void InputMap::Clear()
 {
 	for (int k = 0; k <= GLFW_KEY_LAST; k++)
 		KeyTable->Clear();
 }
 
 
-Operation InputMap::GetOperation(int key, uint32 modifiers)
+inline Operation InputMap::GetOperation(int key, uint32 modifiers)
 {
 	return KeyTable[key].Operations[modifiers];
 }
 
 
-void InputMap::ClearKey(int key, uint32 modifiers)
+inline void InputMap::ClearKey(int key, uint32 modifiers)
 {
 	KeyTable[key].Operations[modifiers] = Operation::None;
 }
