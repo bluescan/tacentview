@@ -259,6 +259,9 @@ tVector2 Viewer::GetDialogOrigin(float index)
 	else if (index == 6)
 		return tVector2(DialogOrigin + 300.0f, DialogOrigin + TopUIHeight + DialogDelta*1.0f);
 
+	else if (index == 7)
+		return tVector2(DialogOrigin + 397.0f, DialogOrigin + TopUIHeight + 5.0f);
+
 	return tVector2(DialogOrigin + DialogDelta*float(index), DialogOrigin + TopUIHeight + DialogDelta*float(index));
 }
 
@@ -1254,7 +1257,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	
 	// Show the big demo window. You can browse its code to learn more about Dear ImGui.
 	static bool showDemoWindow = false;
-	// showDemoWindow = true;
+	//showDemoWindow = true;
 	if (showDemoWindow)
 		ImGui::ShowDemoWindow(&showDemoWindow);
 
@@ -2124,7 +2127,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 	Bindings::Operation operation = Bindings::DefaultInputMap.GetOperation(key, viewerModifiers);
 	switch (operation)
 	{
-		case Bindings::Operation::PreviousImage:
+		case Bindings::Operation::PrevImage:
 			OnPrevious();		// Already checks CurrImage.
 			break;
 
@@ -2197,7 +2200,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				ChangeScreenMode(false);
 			else if (Config::GetProfile() == Config::Profile::Basic)
 				ChangeProfile(Config::Profile::Main);
-			else if (Config::Current->EscCanQuit)
+			else // if (Config::Current->EscCanQuit)
 				Viewer::Request_Quit = true;				
 			break;
 

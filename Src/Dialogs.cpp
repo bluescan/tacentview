@@ -341,10 +341,7 @@ void Viewer::ShowCheatSheetPopup(bool* popen)
 		ImGui::Text("F5");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Refresh/Reload Image");
 		ImGui::Text("F11");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Fullscreen");
 		ImGui::Text("Alt-Enter");   ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Fullscreen");
-		if (Config::Current->EscCanQuit)
-			{ ImGui::Text("Esc");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Quit / Exit Fullscreen or Basic"); }
-		else
-			{ ImGui::Text("Esc");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Exit Fullscreen / Exit Basic"); }
+		ImGui::Text("Esc");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Quit / Exit Fullscreen or Basic");
 		#ifdef PACKAGE_SNAP
 		ImGui::Text("Tab");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Open File Browser (No Snap Support)");
 		#else

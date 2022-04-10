@@ -102,9 +102,71 @@ const char* Bindings::GetOperationDesc(Operation op)
 	const char* descriptions[] =
 	{
 		"None",
-		"Previous Image"
+		"Previous Image",
+		"Next Image",
+		"Skip To First Image",
+		"Skip To Last Image",
+		"Previous Image Frame",
+		"Next Image Frame",
+		"One Pixel Left",
+		"One Pixel Right",
+		"One Pixel Up",
+		"One Pixel Down",
+
+		"Zoom In",
+		"Zoom Out",
+		"Toggle Cheat Sheet",
+		"Rename File",
+		"Refresh / Reload Image",
+		"Toggle Fullscreen",
+
+		"Exit-Fullscreen | Exit-Basic-Profile",
+		"Quit | Exit-Fullscreen | Exit-Basic-Profile",
+		#ifdef PACKAGE_SNAP
+		"Open File Browser (No Snap Support)",
+		#else
+		"Open File Browser",
+		#endif
+		"Delete Current Image",
+		"Delete Current Image Permanently",
+		"Quit",
+
+		"Flip Image Vertically",
+		"Flip Image Horizontally",
+		"Rotate 90 Anticlockwise",
+		"Rotate 90 Clockwise",
+		"Crop",
+		"Adjust Pixel Colour",
+		"Resize Image",
+		"Resize Canvas",
+		"Rotate Image",
+
+		"Toggle Image Details",
+		"Toggle Tile",
+		"Toggle Menu Bar",
+		"Save Multi-Frame Image",
+		"Toggle Navigation Bar",
+		"Toggle Slideshow Countdown",
+		"Save As...",
+		"Save All...",
+		"Toggle Basic Mode",
+
+		"Zoom Fit",
+		"Show Debug Log",
+		"Zoom Downscale Only",
+		"Zoom 1:1 Pixels",
+		"Contact Sheet...",
+		"Preferences...",
+		"Content Thumbnail View...",
+
+		"Toggle Channel Filter",
+		"Toggle Red Channel",
+		"Toggle Green Channel",
+		"Toggle Blue Channel",
+		"Toggle Alpha Channel",
+		"Toggle Channel As Intensity"
 	};
-	tAssert(sizeof(descriptions)/sizeof(*descriptions) == int(Operation::NumOperations));
+	tStaticAssert(tNumElements(descriptions) == int(Operation::NumOperations));
 	return descriptions[int(op)];
 }
 
@@ -165,7 +227,7 @@ bool Bindings::InputMap::AssignKey(int key, uint32 modifiers, Operation operatio
 void Bindings::InputMap::Reset()
 {
 	Clear();
-	AssignKey(GLFW_KEY_LEFT, Modifier_None, Operation::PreviousImage);
+	AssignKey(GLFW_KEY_LEFT, Modifier_None, Operation::PrevImage);
 	AssignKey(GLFW_KEY_RIGHT, Modifier_None, Operation::NextImage);
 
 	// TESTING
@@ -176,15 +238,95 @@ void Bindings::InputMap::Reset()
 
 void Bindings::ShowWindow(bool* popen)
 {
-	tVector2 windowPos = GetDialogOrigin(6);
+	tVector2 windowPos = GetDialogOrigin(7);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	ImGuiWindowFlags flags =
-		// ImGuiWindowFlags_AlwaysAutoResize	|
-		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoNav;
+	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoNav;
 
 	if (ImGui::Begin("Keyboard Bindings", popen, flags))
 	{
-		ImGui::Text("Profile Main Basic or BOTH");
+		const char* profiles[] = { "Main", "Basic" };
+		static int profile = 0;
+		ImGui::PushItemWidth(80);
+		ImGui::Combo("Profile", &profile, profiles, tNumElements(profiles));
+		ImGui::PopItemWidth();
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+
+		
+		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInnerH;
+		const int rowHeight = 24;
+		const int firstRowHeight = 24;
+		const int numRowsToDiaply = 20;
+		tVector2 outerSize = ImVec2(0.0f, firstRowHeight + rowHeight * numRowsToDiaply);
+		if (ImGui::BeginTable("KeyBindingTable", 5, tableFlags, outerSize))
+		{
+			ImGui::TableSetupScrollFreeze(0, 1); // Top row fixed.
+			ImGui::TableSetupColumn("Operation", ImGuiTableFlags_SizingFixedFit);
+			ImGui::TableSetupColumn("Ctrl", ImGuiTableFlags_SizingFixedFit);
+			ImGui::TableSetupColumn("Alt", ImGuiTableFlags_SizingFixedFit);
+			ImGui::TableSetupColumn("Shift", ImGuiTableFlags_SizingFixedFit);
+			ImGui::TableSetupColumn("Key", ImGuiTableFlags_SizingFixedFit);
+			ImGui::TableHeadersRow();
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2);
+
+			ImGuiListClipper clipper;
+			clipper.Begin(int(Operation::NumOperations)-1);
+			while (clipper.Step())
+			{
+				for (int op = int(Operation::First); op < int(Operation::NumOperations); op++)
+				{
+					ImGui::TableNextRow();
+
+					ImGui::TableSetColumnIndex(0);
+					ImGui::Text("%s", GetOperationDesc(Operation(op)));
+
+					uint32 modifiers = 0;
+					ImGui::TableSetColumnIndex(1);
+					ImGui::CheckboxFlags("##lable", &modifiers, 1<<2);
+
+					ImGui::TableSetColumnIndex(2);
+					ImGui::CheckboxFlags("##lable", &modifiers, 1<<2);
+
+					ImGui::PushItemWidth(50);
+					ImGui::TableSetColumnIndex(3);
+					ImGui::CheckboxFlags("##lable", &modifiers, 1<<2);
+					ImGui::PopItemWidth();
+
+					ImGui::TableSetColumnIndex(4);
+					const char* keys[] = { "F1", "Enter", "Space", "F6" };
+					static int key = 0;
+					ImGui::PushItemWidth(70);
+					char clabel[16]; tsPrintf(clabel, "       ##Keys%d", op);
+					ImGui::Combo(clabel, &key, keys, tNumElements(keys));
+					ImGui::PopItemWidth();
+				}
+			}
+			ImGui::EndTable();
+		}
+
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+
+		if (ImGui::Button("Reset", tVector2(100, 0)))
+		{
+			//Config::ResetAll();
+		}
+		ShowToolTip("Resets the key bindings to default for the chosen profile.");
+		ImGui::SameLine();
+
+		if (ImGui::Button("Set All Profiles", tVector2(100, 0)))
+		{
+			//Config::ResetAll();
+		}
+		ShowToolTip("Copies the keybindings to all profiles. Useful if you want them all the same.");
+		ImGui::SameLine();
+
+
+		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+		if (ImGui::Button("Close", tVector2(100, 0)))
+		{
+			if (popen)
+				*popen = false;
+		}
+
 	}
 
 	ImGui::End();

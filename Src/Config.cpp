@@ -256,7 +256,6 @@ void Config::Settings::Reset(Config::Profile profile, Config::Category category)
 		ConfirmFileOverwrites		= true;
 		AutoPropertyWindow			= (profile == Profile::Basic) ? false : true;
 		AutoPlayAnimatedImages		= true;
-		EscCanQuit					= true;
 		DefaultZoomMode				= int(ZoomMode::DownscaleOnly);
 	}
 }
@@ -336,7 +335,6 @@ void Config::Settings::Load(tExpression expr)
 			ReadItem(AutoPropertyWindow);
 			ReadItem(AutoPlayAnimatedImages);
 			ReadItem(MonitorGamma);
-			ReadItem(EscCanQuit);
 		}
 	}
 
@@ -462,7 +460,6 @@ bool Config::Settings::Save(tScriptWriter& writer)
 	WriteItem(AutoPropertyWindow);
 	WriteItem(AutoPlayAnimatedImages);
 	WriteItem(MonitorGamma);
-	WriteLast(EscCanQuit);
 
 	writer.Dedent();
 	writer.CR();

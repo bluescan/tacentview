@@ -233,7 +233,6 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::Checkbox("Confirm File Overwrites", &Config::Current->ConfirmFileOverwrites);
 			ImGui::Checkbox("Auto Propery Window", &Config::Current->AutoPropertyWindow);
 			ImGui::Checkbox("Auto Play Anims", &Config::Current->AutoPlayAnimatedImages);
-			ImGui::Checkbox("Esc Key Can Quit", &Config::Current->EscCanQuit);
 
 			const char* zoomModes[] = { "Keep", "Fit", "Downscale", "OneToOne" };
 			ImGui::PushItemWidth(86);

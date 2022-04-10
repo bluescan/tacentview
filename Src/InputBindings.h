@@ -15,6 +15,7 @@
 #pragma once
 #include <Foundation/tString.h>
 #include <GLFW/glfw3.h>
+#include "Config.h"
 namespace Viewer {
 namespace Bindings {
 
@@ -22,14 +23,145 @@ namespace Bindings {
 enum class Operation
 {
 	None,
-	PreviousImage,
+	PrevImage,			First = PrevImage,
 	NextImage,
 	SkipToFirstImage,
-	// WIP
+	SkipToLastImage,
+	PrevImageFrame,
+	NextImageFrame,
+	OnePixelLeft,
+	OnePixelRight,
+	OnePixelUp,
+	OnePixelDown,
+
+	ZoomIn,
+	ZoomOut,
+	ToggleCheatSheet,
+	RenameFile,
+	RefreshReloadImage,
+	ToggleFullscreen,
+
+	Escape,
+	EscapeSupportingQuit,
+	OpenFileBrowser,
+	Delete,
+	DeletePermanent,
+	Quit,
+
+	FlipVertically,
+	FlipHorizontally,
+	Rotate90Anticlockwise,
+	Rotate90Clockwise,
+	Crop,
+	AdjustPixelColour,
+	ResizeImage,
+	ResizeCanvas,
+	RotateImage,
+
+	ToggleImageDetails,
+	ToggleTile,
+	ToggleMenuBar,
+	SaveMultiFrameImage,
+	ToggleNavBar,
+	ToggleSlideshowCountdown,
+	SaveAs,
+	SaveAll,
+	ToggleBasicMode,
+
+	ZoomFit,
+	ShowDebugLog,
+	ZoomDownscaleOnly,
+	ZoomOneToOne,
+	ContactSheet,
+	Preferences,
+	ContentThumbnailView,
+
+	ToggleChannelFilter,
+	ToggleRedChannel,
+	ToggleGreenChannel,
+	ToggleBlueChannel,
+	ToggleAlphaChannel,
+	ToggleChannelAsIntensity,
 
 	NumOperations
 };
+// Some descriptions may change based on the current config, for example, what the esc key does
 const char* GetOperationDesc(Operation);
+
+#if 0
+		ImGui::Text("Left Arrow");	D("Previous Image");
+		ImGui::Text("Right Arrow");	D("Next Image");
+		ImGui::Text("Ctrl-Left");	D("Skip to First Image");
+		ImGui::Text("Ctrl-Right");	D("Skip to Last Image");
+		ImGui::Text("Alt-Left");	D("Previous Image Frame");
+		ImGui::Text("Alt-Right");	D("Next Image Frame");
+		ImGui::Text("Shift-Left");	D("One Pixel Left");
+		ImGui::Text("Shift-Right");	D("One Pixel Right");
+		ImGui::Text("Shift-Up");	D("One Pixel Up");
+		ImGui::Text("Shift-Down");	D("One Pixel Down");
+		ImGui::Text("Space");		R("Next Image");
+
+		ImGui::Text("Ctrl +");		D("Zoom In");
+		ImGui::Text("Ctrl -");		D("Zoom Out");
+		ImGui::Text("F1");			D("Toggle Cheat Sheet");
+		ImGui::Text("F2");			D("Rename File");
+		ImGui::Text("F5");			D("Refresh/Reload Image");
+		ImGui::Text("F11");			D("Toggle Fullscreen");
+		ImGui::Text("Alt-Enter");   R("Toggle Fullscreen");
+
+		ImGui::Text("Esc");			D("Exit Fullscreen / Exit Basic"); }
+		ImGui::Text("Esc");			D("Quit / Exit Fullscreen or Basic");
+
+		#ifdef PACKAGE_SNAP
+		ImGui::Text("Tab");			D("Open File Browser (No Snap Support)");
+		#else
+		ImGui::Text("Tab");			D("Open File Browser");
+		#endif
+		ImGui::Text("Delete");		D("Delete Current Image");
+		ImGui::Text("Shift-Delete");D("Delete Current Image Permanently");
+		ImGui::Text("LMB-Click");	SKIPPED("Set Colour Reticle Pos");
+		ImGui::Text("RMB-Drag");	SKIPPED("Pan Image");
+		ImGui::Text("Alt-F4");		D Sep Operation("Quit");
+		ImGui::Text("Ctrl <");		D("Flip Vertically");
+		ImGui::Text("Ctrl >");		D("Flip Horizontally");
+		ImGui::Text("<");			D("Rotate Anti-Clockwise");
+		ImGui::Text(">");			D("Rotate Clockwise");
+		ImGui::Text("/");			D("Crop");
+		ImGui::Text("A");			D("Adjust Pixel Colour");
+		ImGui::Text("Alt-R");		D("Resize Image");
+		ImGui::Text("Ctrl-R");		D("Resize Canvas");
+		ImGui::Text("R");			D("Rotate Image");
+		ImGui::Text("I");			D("Toggle Image Details");
+		ImGui::Text("T");			D("Toggle Tile");
+		ImGui::Text("M");			D("Toggle Menu Bar");
+		ImGui::Text("Ctrl-M");		D("Save Multi-Frame Image");
+		ImGui::Text("N");			D("Toggle Nav Bar");
+		ImGui::Text("S");			D("Toggle Slideshow Counddown");
+
+		#ifdef ENABLE_FILE_DIALOG_SUPPORT
+		ImGui::Text("Ctrl-O");		SKIPPED("Open File...");
+		ImGui::Text("Alt-O");		SKIPPED("Open Dir...");
+		#endif	
+		ImGui::Text("Ctrl-S");		D("Save As...");
+		ImGui::Text("Alt-S");		D("Save All...");
+		ImGui::Text("B");			D("Toggle Basic Mode");
+
+		ImGui::Text("F");			D("Zoom Fit");
+		ImGui::Text("L");			D("Show Debug Log");
+		ImGui::Text("D");			D("Zoom Downscale Only");
+		ImGui::Text("Z");			D("Zoom 1:1 Pixels");
+		ImGui::Text("C");			D("Contact Sheet...");
+		ImGui::Text("P");			D("Preferences...");
+		ImGui::Text("V");			D("Content Thumbnail View...");
+
+		ImGui::Text("~");			D("Toggle Channel Filter");
+		ImGui::Text("1");			D("Toggle Red Channel");
+		ImGui::Text("2");			D("Toggle Green Channel");
+		ImGui::Text("3");			D("Toggle Blue Channel");
+		ImGui::Text("4");			D("Toggle Alpha Channel");
+		ImGui::Text("5");			D("Toggle Channel As Intensity");
+#endif
+
 
 
 enum Modifier
@@ -127,79 +259,6 @@ inline void InputMap::ClearKey(int key, uint32 modifiers)
 
 
 }
-
-
-#if 0
-		ImGui::Text("Right Arrow");	"Next Image");
-		ImGui::Text("Ctrl-Left");	"Skip to First Image");`
-		ImGui::Text("Ctrl-Right");	"Skip to Last Image");
-		ImGui::Text("Alt-Left");	"Previous Image Frame");
-		ImGui::Text("Alt-Right");	"Next Image Frame");
-		ImGui::Text("Shift-Left");	"One Pixel Left");
-		ImGui::Text("Shift-Right");	"One Pixel Right");
-		ImGui::Text("Shift-Up");	"One Pixel Up");
-		ImGui::Text("Shift-Down");	"One Pixel Down");
-		ImGui::Text("Space");		"Next Image");
-		ImGui::Text("Ctrl +");		"Zoom In");
-		ImGui::Text("Ctrl -");		"Zoom Out");
-		ImGui::Text("F1");			"Toggle Cheat Sheet");
-		ImGui::Text("F2");			"Rename File");
-		ImGui::Text("F5");			"Refresh/Reload Image");
-		ImGui::Text("F11");			"Toggle Fullscreen");
-		ImGui::Text("Alt-Enter");   "Toggle Fullscreen");
-		if (Config::Current->EscCanQuit)
-			{ ImGui::Text("Esc");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Quit / Exit Fullscreen or Basic"); }
-		else
-			{ ImGui::Text("Esc");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Exit Fullscreen / Exit Basic"); }
-		#ifdef PACKAGE_SNAP
-		ImGui::Text("Tab");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Open File Browser (No Snap Support)");
-		#else
-		ImGui::Text("Tab");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Open File Browser");
-		#endif
-		ImGui::Text("Delete");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Delete Current Image");
-		ImGui::Text("Shift-Delete");ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Delete Current Image Permanently");
-		ImGui::Text("LMB-Click");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Set Colour Reticle Pos");
-		ImGui::Text("RMB-Drag");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Pan Image");
-		ImGui::Text("Alt-F4");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Quit");
-		ImGui::Text("Ctrl <");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Flip Vertically");
-		ImGui::Text("Ctrl >");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Flip Horizontally");
-		ImGui::Text("<");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Rotate Anti-Clockwise");
-		ImGui::Text(">");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Rotate Clockwise");
-		ImGui::Text("/");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Crop");
-		ImGui::Text("A");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Adjust Pixel Colour");
-		ImGui::Text("Alt-R");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Resize Image");
-		ImGui::Text("Ctrl-R");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Resize Canvas");
-		ImGui::Text("R");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Rotate Image");
-		ImGui::Text("I");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Image Details");
-		ImGui::Text("T");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Tile");
-		ImGui::Text("M");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Menu Bar");
-		ImGui::Text("Ctrl-M");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Save Multi-Frame Image");
-		ImGui::Text("N");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Nav Bar");
-		ImGui::Text("S");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Slideshow Counddown");
-
-		#ifdef ENABLE_FILE_DIALOG_SUPPORT
-		ImGui::Text("Ctrl-O");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Open File...");
-		ImGui::Text("Alt-O");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Open Dir...");
-		#endif
-	
-		ImGui::Text("Ctrl-S");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Save As...");
-		ImGui::Text("Alt-S");		ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Save All...");
-		ImGui::Text("B");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Basic Mode");
-		ImGui::Text("F");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom Fit");
-		ImGui::Text("L");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Show Debug Log");
-		ImGui::Text("D");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom Downscale Only");
-		ImGui::Text("Z");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Zoom 1:1 Pixels");
-		ImGui::Text("C");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Contact Sheet...");
-		ImGui::Text("P");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Preferences...");
-		ImGui::Text("V");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Content Thumbnail View...");
-
-		ImGui::Text("~");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Channel Filter");
-		ImGui::Text("1");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Red Channel");
-		ImGui::Text("2");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Green Channel");
-		ImGui::Text("3");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Blue Channel");
-		ImGui::Text("4");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Alpha Channel");
-		ImGui::Text("5");			ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("Toggle Channel As Intensity");
-#endif
 
 
 }
