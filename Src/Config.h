@@ -16,6 +16,7 @@
 #include <Foundation/tString.h>
 #include <Math/tColour.h>
 #include <System/tScript.h>
+#include "InputBindings.h"
 
 
 namespace Viewer { namespace Config {
@@ -43,7 +44,7 @@ enum class Category
 // two profiles: normal and basic.
 struct Settings
 {
-	Settings()							: Profile() { Reset(Profile::Main); }
+	Settings()									: Profile(), KeyInputMap() { Reset(Profile::Main); }
 	tString Profile;
 	int WindowX;
 	int WindowY;
@@ -67,8 +68,8 @@ struct Settings
 		ImageWidth,
 		ImageHeight
 	};
-	int SortKey;						// Matches SortKeyEnum values.
-	bool SortAscending;					// Sort direction.
+	int SortKey;								// Matches SortKeyEnum values.
+	bool SortAscending;							// Sort direction.
 
 	int OverlayCorner;
 	bool Tile;
@@ -81,15 +82,15 @@ struct Settings
 		NumStyles
 	};
 	int BackgroundStyle;
-	tColouri BackgroundColour;			// Only used if BGStyle is SolidColour.
-	bool BackgroundExtend;				// Extend background past image bounds.
+	tColouri BackgroundColour;					// Only used if BGStyle is SolidColour.
+	bool BackgroundExtend;						// Extend background past image bounds.
 	bool TransparentWorkArea;
 	bool FixedAspectWorkArea;
 
-	int ResampleFilter;					// Matches tImage::tResampleFilter.
-	int ResampleEdgeMode;				// Matches tImage::tResampleEdgeMode.
-	int ResampleFilterRotateUp;			// Matches tImage::tResampleFilter.
-	int ResampleFilterRotateDown;		// Matches tImage::tResampleFilter.
+	int ResampleFilter;							// Matches tImage::tResampleFilter.
+	int ResampleEdgeMode;						// Matches tImage::tResampleEdgeMode.
+	int ResampleFilterRotateUp;					// Matches tImage::tResampleFilter.
+	int ResampleFilterRotateDown;				// Matches tImage::tResampleFilter.
 
 	enum class RotMode
 	{
@@ -108,7 +109,7 @@ struct Settings
 		OneToOne,
 		NumModes
 	};
-	int DefaultZoomMode;				// Zoom mode to use when opening a new image. User means don't change modes.
+	int DefaultZoomMode;						// Zoom mode to use when opening a new image. User means don't change modes.
 
 	bool ConfirmDeletes;
 	bool ConfirmFileOverwrites;
@@ -120,20 +121,20 @@ struct Settings
 	int		SaveFileType;
 	int		SaveFileTypeMultiFrame;
 	bool	SaveFileTargaRLE;
-	int		SaveFileJpegQuality;		// E [1, 100]
+	int		SaveFileJpegQuality;				// E [1, 100]
 	bool	SaveFileWebpLossy;
-	float	SaveFileWebpQualComp;		// E [0.0, 100.0]
+	float	SaveFileWebpQualComp;				// E [0.0, 100.0]
 	bool	SaveFileTiffZLibDeflate;
 
-	int SaveFileWebpDurOverride;		// E [-1, inf]. In ms.
-	int SaveFileGifDurOverride;			// E [-1, inf]. In 1/100 seconds.
-	int SaveFileApngDurOverride;		// E [-1, 65535]. In ms.
-	int SaveFileTiffDurOverride;		// E [-1, inf]. In ms.
+	int SaveFileWebpDurOverride;				// E [-1, inf]. In ms.
+	int SaveFileGifDurOverride;					// E [-1, inf]. In 1/100 seconds.
+	int SaveFileApngDurOverride;				// E [-1, 65535]. In ms.
+	int SaveFileTiffDurOverride;				// E [-1, inf]. In ms.
 
-	int SaveFileWebpDurMultiFrame;		// E [0, inf]. In ms.
-	int SaveFileGifDurMultiFrame;		// E [0, inf]. In 1/100 seconds.
-	int SaveFileApngDurMultiFrame;		// E [0, 65536]. In ms.
-	int SaveFileTiffDurMultiFrame;		// E [0, inf]. In ms.
+	int SaveFileWebpDurMultiFrame;				// E [0, inf]. In ms.
+	int SaveFileGifDurMultiFrame;				// E [0, inf]. In 1/100 seconds.
+	int SaveFileApngDurMultiFrame;				// E [0, 65536]. In ms.
+	int SaveFileTiffDurMultiFrame;				// E [0, inf]. In ms.
 	enum class SizeMode
 	{
 		Percent,
@@ -142,21 +143,22 @@ struct Settings
 		SetHeightRetainAspect
 	};
 	int SaveAllSizeMode;
-	int CropAnchor;						// E [-1, 9] with 4 being the default (middle), 0 being top-left, and -1 being 'cursor position'.
+	int CropAnchor;								// E [-1, 9] with 4 being the default (middle), 0 being top-left, and -1 being 'cursor position'.
 	tColouri FillColour;
 	int ResizeAspectNum;
 	int ResizeAspectDen;
-	int ResizeAspectMode;				// 0 = Crop Mode. 1 = Letterbox Mode.
-	int MaxImageMemMB;					// Max image mem before unloading images.
-	int MaxCacheFiles;					// Max number of cache files before removing oldest.
+	int ResizeAspectMode;						// 0 = Crop Mode. 1 = Letterbox Mode.
+	int MaxImageMemMB;							// Max image mem before unloading images.
+	int MaxCacheFiles;							// Max number of cache files before removing oldest.
 	int MaxUndoSteps;
-	bool StrictLoading;					// No attempt to display ill-formed images.
-	bool DetectAPNGInsidePNG;			// Look for APNG data (animated) hidden inside a regular PNG file.
-	int MipmapFilter;					// Matches tImage::tResampleFilter. Use None for no mipmaps.
-	bool MipmapChaining;				// True for faster mipmap generation. False for a lot slower and slightly better results.
-	bool AutoPropertyWindow;			// Auto display property editor window for supported file types.
-	bool AutoPlayAnimatedImages;		// Automatically play animated gifs, apngs, and WebPs.
-	float MonitorGamma;					// Used when displaying HDR formats to do gamma correction.
+	bool StrictLoading;							// No attempt to display ill-formed images.
+	bool DetectAPNGInsidePNG;					// Look for APNG data (animated) hidden inside a regular PNG file.
+	int MipmapFilter;							// Matches tImage::tResampleFilter. Use None for no mipmaps.
+	bool MipmapChaining;						// True for faster mipmap generation. False for a lot slower and slightly better results.
+	bool AutoPropertyWindow;					// Auto display property editor window for supported file types.
+	bool AutoPlayAnimatedImages;				// Automatically play animated gifs, apngs, and WebPs.
+	float MonitorGamma;							// Used when displaying HDR formats to do gamma correction.
+	Viewer::Bindings::InputMap KeyInputMap;		// Each Settings struct (profile) gets its own copy of the InputMap (key bindings).
 
 	void Load(tExpression);
 	bool Save(tScriptWriter&);

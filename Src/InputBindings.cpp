@@ -97,6 +97,15 @@ void Bindings::InitKeyNameTable()
 }
 
 
+const char* Bindings::GetKeyName(int key)
+{
+	if (!KeyNameTableInitialized)
+		InitKeyNameTable();
+
+	return KeyNameTable[key];	
+}
+
+
 const char* Bindings::GetOperationDesc(Operation op)
 {
 	const char* descriptions[] =
@@ -200,15 +209,6 @@ uint32 Bindings::TranslateModifiers(int glfwModifiers)
 }
 
 
-const char* Bindings::GetKeyName(int key)
-{
-	if (!KeyNameTableInitialized)
-		InitKeyNameTable();
-
-	return KeyNameTable[key];	
-}
-
-
 bool Bindings::InputMap::AssignKey(int key, uint32 modifiers, Operation operation)
 {
 	// If key already assigned to requested operation we're done.
@@ -236,6 +236,49 @@ void Bindings::InputMap::Reset()
 }
 
 
+void Bindings::InputMap::Read(tExpression expr)
+{
+	tString estr = expr.GetExpressionString();
+	//tPrintf("EXPR string is: %s\n", estr.Text());
+}
+
+
+void Bindings::InputMap::Write(tScriptWriter& writer)
+{
+	writer.Begin();
+	writer.Indent();
+	writer.CR();
+	writer.WriteAtom("KeyBindings");
+	writer.CR();
+
+	for (int key = 0; key <= GLFW_KEY_LAST; key++)
+	{
+		if (!KeyTable[key].IsAnythingAssigned())
+			continue;
+
+		for (uint32 mods = Modifier_None; mods < Modifier_NumCombinations; mods++)
+		{
+			Operation op = KeyTable[key].Operations[mods];
+			if (op == Operation::None)
+				continue;
+
+			writer.Begin();	
+			writer.WriteAtom("KeyModOp");
+			writer.WriteAtom(key);
+			writer.WriteAtom(mods);
+			writer.WriteAtom(int(op));
+			writer.End();
+			writer.WriteComment(GetOperationDesc(op));
+		}
+	}
+
+	writer.Dedent();
+	writer.WriteComment("End of KeyBindings.");
+	writer.End();
+	writer.CR();
+}
+
+
 void Bindings::ShowWindow(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(7);
@@ -250,7 +293,6 @@ void Bindings::ShowWindow(bool* popen)
 		ImGui::Combo("Profile", &profile, profiles, tNumElements(profiles));
 		ImGui::PopItemWidth();
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-
 		
 		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInnerH;
 		const int rowHeight = 24;

@@ -221,6 +221,7 @@ void Config::Settings::Reset(Config::Profile profile, Config::Category category)
 		ResizeAspectNum				= 16;
 		ResizeAspectDen				= 9;
 		ResizeAspectMode			= 0;
+		KeyInputMap					.Reset();
 	}
 
 	if ((category == Category::Everything) || (category == Category::Display))
@@ -318,8 +319,12 @@ void Config::Settings::Load(tExpression expr)
 			ReadItem(SaveFileGifDurMultiFrame);
 			ReadItem(SaveFileApngDurMultiFrame);
 			ReadItem(SaveFileTiffDurMultiFrame);
-
 			ReadItem(SaveAllSizeMode);
+
+			case tHash::tHashCT("KeyBindings"):
+				KeyInputMap.Read(e);
+				break;
+
 			ReadItem(CropAnchor);
 			ReadItem(FillColour);
 			ReadItem(ResizeAspectNum);
@@ -443,8 +448,10 @@ bool Config::Settings::Save(tScriptWriter& writer)
 	WriteItem(SaveFileGifDurMultiFrame);
 	WriteItem(SaveFileApngDurMultiFrame);
 	WriteItem(SaveFileTiffDurMultiFrame);
-
 	WriteItem(SaveAllSizeMode);
+
+	KeyInputMap.Write(writer);
+
 	WriteItem(CropAnchor);
 	WriteItem(FillColour);
 	WriteItem(ResizeAspectNum);

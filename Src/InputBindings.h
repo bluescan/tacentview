@@ -14,12 +14,15 @@
 
 #pragma once
 #include <Foundation/tString.h>
+#include <System/tScript.h>
+#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
-#include "Config.h"
 namespace Viewer {
 namespace Bindings {
 
 
+// Add new operations to the bottom of this enum. If you add in the middle or reorder,
+// it will invalidate the key bindings in previous version's config save files.
 enum class Operation
 {
 	None,
@@ -83,8 +86,12 @@ enum class Operation
 	ToggleAlphaChannel,
 	ToggleChannelAsIntensity,
 
+	// Add new operations here. Adding above will invalidate save file keybindings.
+
 	NumOperations
 };
+
+
 // Some descriptions may change based on the current config, for example, what the esc key does
 const char* GetOperationDesc(Operation);
 
@@ -194,6 +201,7 @@ struct KeyOps
 {
 	KeyOps()																											{ Clear(); }
 	void Clear()																										{ for (int e = 0; e < Modifier_NumCombinations; e++) Operations[e] = Operation::None; }
+	bool IsAnythingAssigned() const																						{ for (int m = 0; m < Modifier_NumCombinations; m++) if (Operations[m] != Operation::None) return true; return false; }
 	Operation Operations[Modifier_NumCombinations];
 };
 
@@ -201,7 +209,7 @@ struct KeyOps
 class InputMap
 {
 public:
-	InputMap()																											{ Reset(); }
+	InputMap()																											{ Clear(); }
 
 	void Clear();				// Unassigns all keys.
 	void Reset();				// Sets all keys to their default operations.
@@ -215,6 +223,8 @@ public:
 	bool AssignKey(int glfwkey, uint32 modifiers, Operation);
 	void ClearKey(int glfwkey, uint32 modifiers);
 
+	void Read(tExpression);
+	void Write(tScriptWriter&);
 
 private:
 	KeyOps KeyTable[GLFW_KEY_LAST+1];
@@ -224,16 +234,8 @@ private:
 extern InputMap DefaultInputMap;
 
 
-// Returns the operation currently bound to the 
-//int GetOperation(
-
-// Config should look like
-//	[
-//		Keybindings
-//		[ Keybinding Operation 
-
-
 void ShowWindow(bool* popen);
+// WIP Move cheat sheet over to here.
 
 
 // Implementaion only below this line.
@@ -258,7 +260,4 @@ inline void InputMap::ClearKey(int key, uint32 modifiers)
 }
 
 
-}
-
-
-}
+} }
