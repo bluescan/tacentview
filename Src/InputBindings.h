@@ -209,7 +209,8 @@ struct KeyOps
 class InputMap
 {
 public:
-	InputMap()																											{ Clear(); }
+	InputMap()																											{ Reset(); }
+	// WIP InputMap()																											{ Clear(); }
 
 	void Clear();				// Unassigns all keys.
 	void Reset();				// Sets all keys to their default operations.

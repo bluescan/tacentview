@@ -102,7 +102,7 @@ const char* Bindings::GetKeyName(int key)
 	if (!KeyNameTableInitialized)
 		InitKeyNameTable();
 
-	return KeyNameTable[key];	
+	return KeyNameTable[key];
 }
 
 
