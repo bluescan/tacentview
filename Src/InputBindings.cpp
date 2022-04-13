@@ -31,8 +31,6 @@ namespace Bindings
 	bool KeyNameTableInitialized = false;
 	const int MaxKeyNameLength = 16;
 	char KeyNameTable[GLFW_KEY_LAST][MaxKeyNameLength];
-
-	InputMap DefaultInputMap;
 }
 
 
@@ -182,6 +180,9 @@ const char* Bindings::GetOperationDesc(Operation op)
 
 const char* Bindings::GetModifiersText(uint32 modifiers)
 {
+	if (!modifiers)
+		return nullptr;
+
 	// Order is ctrl-alt-shift. MSB to LSB.
 	const char* dispstr[] =
 	{
@@ -227,19 +228,40 @@ bool Bindings::InputMap::AssignKey(int key, uint32 modifiers, Operation operatio
 void Bindings::InputMap::Reset()
 {
 	Clear();
-	AssignKey(GLFW_KEY_LEFT, Modifier_None, Operation::PrevImage);
-	AssignKey(GLFW_KEY_RIGHT, Modifier_None, Operation::NextImage);
-
-	// TESTING
-	//	AssignKey(GLFW_KEY_COMMA, Modifier_None, Operation::PreviousImage);
-	//	AssignKey(GLFW_KEY_PERIOD, Modifier_None, Operation::NextImage);
+	AssignKey(GLFW_KEY_LEFT,	Modifier_None,		Operation::PrevImage);
+	AssignKey(GLFW_KEY_RIGHT,	Modifier_None,		Operation::NextImage);
+	AssignKey(GLFW_KEY_LEFT,	Modifier_Ctrl,		Operation::SkipToFirstImage);
+	AssignKey(GLFW_KEY_RIGHT,	Modifier_Ctrl,		Operation::SkipToLastImage);
+	AssignKey(GLFW_KEY_LEFT,	Modifier_Alt,		Operation::PrevImageFrame);
+	AssignKey(GLFW_KEY_RIGHT,	Modifier_Alt,		Operation::NextImageFrame);
+	AssignKey(GLFW_KEY_LEFT,	Modifier_Shift,		Operation::OnePixelLeft);
+	AssignKey(GLFW_KEY_RIGHT,	Modifier_Shift,		Operation::OnePixelRight);
+	AssignKey(GLFW_KEY_UP,		Modifier_Shift,		Operation::OnePixelUp);
+	AssignKey(GLFW_KEY_DOWN,	Modifier_Shift,		Operation::OnePixelDown);
+	AssignKey(GLFW_KEY_SPACE,	Modifier_None,		Operation::NextImage);
 }
 
 
 void Bindings::InputMap::Read(tExpression expr)
 {
-	tString estr = expr.GetExpressionString();
-	//tPrintf("EXPR string is: %s\n", estr.Text());
+	tExpr command = expr.Command();
+	if (command != tString("KeyBindings"))
+		return;
+
+	Clear();
+	for (tExpr binding = expr.Item1(); binding.IsValid(); binding = binding.Next())
+	{
+		if (binding.Command() == tString("KeyModOp"))
+		{
+			int key			= binding.Item1();
+			uint32 mods		= binding.Item2();
+			int op			= binding.Item3();
+			tiClamp(key,	0, GLFW_KEY_LAST - 1);
+			tiClamp(mods,	0u, uint32(Modifier_NumCombinations) - 1);
+			tiClamp(op,		0, int(Operation::NumOperations) - 1);
+			KeyTable[key].Operations[mods] = Operation(op);
+		}
+	}
 }
 
 
@@ -283,7 +305,10 @@ void Bindings::ShowWindow(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(7);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoNav;
+	ImGui::SetNextWindowSize(tVector2(422.0f, 600.0f), ImGuiCond_FirstUseEver);
+	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize |
+	ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoNav
+	| ImGuiWindowFlags_NoResize;
 
 	if (ImGui::Begin("Keyboard Bindings", popen, flags))
 	{
@@ -292,28 +317,76 @@ void Bindings::ShowWindow(bool* popen)
 		ImGui::PushItemWidth(80);
 		ImGui::Combo("Profile", &profile, profiles, tNumElements(profiles));
 		ImGui::PopItemWidth();
+		Config::Settings& settings = (profile == 0) ? Config::MainSettings : Config::BasicSettings;
+
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 		
-		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInnerH;
+		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInnerH
+		| ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_Resizable;
 		const int rowHeight = 24;
 		const int firstRowHeight = 24;
-		const int numRowsToDiaply = 20;
-		tVector2 outerSize = ImVec2(0.0f, firstRowHeight + rowHeight * numRowsToDiaply);
-		if (ImGui::BeginTable("KeyBindingTable", 5, tableFlags, outerSize))
+		int totalAssigned = settings.InputBindings.GetTotalAssigned();
+		const int numRowsToDisplay = tMin(20, totalAssigned);
+		tVector2 outerSize = ImVec2(0.0f, float(firstRowHeight + rowHeight * numRowsToDisplay));
+		if (ImGui::BeginTable("KeyBindingTable", 3, tableFlags, outerSize))
 		{
 			ImGui::TableSetupScrollFreeze(0, 1); // Top row fixed.
-			ImGui::TableSetupColumn("Operation", ImGuiTableFlags_SizingFixedFit);
-			ImGui::TableSetupColumn("Ctrl", ImGuiTableFlags_SizingFixedFit);
-			ImGui::TableSetupColumn("Alt", ImGuiTableFlags_SizingFixedFit);
-			ImGui::TableSetupColumn("Shift", ImGuiTableFlags_SizingFixedFit);
-			ImGui::TableSetupColumn("Key", ImGuiTableFlags_SizingFixedFit);
+			ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("Operation", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("##Remove", ImGuiTableColumnFlags_WidthFixed, 20.0f);
 			ImGui::TableHeadersRow();
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2);
 
 			ImGuiListClipper clipper;
-			clipper.Begin(int(Operation::NumOperations)-1);
+
+			clipper.Begin(totalAssigned-1);
 			while (clipper.Step())
 			{
+				// Multiple keys can be bound to the same operation (ex space and right-arrow for next image)
+				// Multiple operations can NOT be bound to the same key, cuz that would be stupid -- well I guess
+				// that's what a macro is -- but anyway, that would be a different system,
+				//
+				// This loop displays the currently bound keys (and modifiers) and what operation they are bound to.
+				//
+				// Key				Operation
+				// Ctrl-Shift-R 	Next Image[combo]		[-]
+				// Space		 	Rotate Image[combo]		[-]
+				// --------------------------------------------
+				// Operation[combo]	Key[combo] Mods 		[+] (brings up replace popup if necessary)
+
+				for (int k = 0; k <= GLFW_KEY_LAST; k++)
+				{
+					KeyOps& keyops = settings.InputBindings.GetOperations(k);
+					if (!keyops.IsAnythingAssigned())
+						continue;
+
+					for (int m = 0; m < Modifier_NumCombinations; m++)
+					{
+						Operation op = keyops.Operations[m];
+						if (op == Operation::None)
+							continue;
+
+						ImGui::TableNextRow();
+
+						// Key/mods column.
+						ImGui::TableSetColumnIndex(0);
+						const char* modText = GetModifiersText(m);
+						const char* keyName = GetKeyName(k);
+						if (modText)
+							ImGui::Text("%s %s", modText, keyName);
+						else
+							ImGui::Text("%s", keyName);
+
+						// Operation.
+						ImGui::TableSetColumnIndex(1);
+						ImGui::Text("%s", GetOperationDesc(Operation(op)));
+
+						// Remove button.	
+						ImGui::TableSetColumnIndex(2);
+						ImGui::Button(" - ");
+					}
+				}
+#if 0
 				for (int op = int(Operation::First); op < int(Operation::NumOperations); op++)
 				{
 					ImGui::TableNextRow();
@@ -334,13 +407,18 @@ void Bindings::ShowWindow(bool* popen)
 					ImGui::PopItemWidth();
 
 					ImGui::TableSetColumnIndex(4);
+
+//						char KeyNameTable[GLFW_KEY_LAST][MaxKeyNameLength];
+
 					const char* keys[] = { "F1", "Enter", "Space", "F6" };
 					static int key = 0;
 					ImGui::PushItemWidth(70);
 					char clabel[16]; tsPrintf(clabel, "       ##Keys%d", op);
-					ImGui::Combo(clabel, &key, keys, tNumElements(keys));
+			//		ImGui::Combo(clabel, &key, keys, tNumElements(keys));
+					ImGui::Combo(clabel, &key, KeyNameTable, tNumElements(KeyNameTable));
 					ImGui::PopItemWidth();
 				}
+#endif
 			}
 			ImGui::EndTable();
 		}

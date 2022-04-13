@@ -96,17 +96,17 @@ enum class Operation
 const char* GetOperationDesc(Operation);
 
 #if 0
-		ImGui::Text("Left Arrow");	D("Previous Image");
-		ImGui::Text("Right Arrow");	D("Next Image");
-		ImGui::Text("Ctrl-Left");	D("Skip to First Image");
-		ImGui::Text("Ctrl-Right");	D("Skip to Last Image");
-		ImGui::Text("Alt-Left");	D("Previous Image Frame");
-		ImGui::Text("Alt-Right");	D("Next Image Frame");
-		ImGui::Text("Shift-Left");	D("One Pixel Left");
-		ImGui::Text("Shift-Right");	D("One Pixel Right");
-		ImGui::Text("Shift-Up");	D("One Pixel Up");
-		ImGui::Text("Shift-Down");	D("One Pixel Down");
-		ImGui::Text("Space");		R("Next Image");
+	A	ImGui::Text("Left Arrow");	D("Previous Image");
+	A	ImGui::Text("Right Arrow");	D("Next Image");
+	A	ImGui::Text("Ctrl-Left");	D("Skip to First Image");
+	A	ImGui::Text("Ctrl-Right");	D("Skip to Last Image");
+	A	ImGui::Text("Alt-Left");	D("Previous Image Frame");
+	A	ImGui::Text("Alt-Right");	D("Next Image Frame");
+	A	ImGui::Text("Shift-Left");	D("One Pixel Left");
+	A	ImGui::Text("Shift-Right");	D("One Pixel Right");
+	A	ImGui::Text("Shift-Up");	D("One Pixel Up");
+	A	ImGui::Text("Shift-Down");	D("One Pixel Down");
+	A	ImGui::Text("Space");		R("Next Image");
 
 		ImGui::Text("Ctrl +");		D("Zoom In");
 		ImGui::Text("Ctrl -");		D("Zoom Out");
@@ -202,6 +202,7 @@ struct KeyOps
 	KeyOps()																											{ Clear(); }
 	void Clear()																										{ for (int e = 0; e < Modifier_NumCombinations; e++) Operations[e] = Operation::None; }
 	bool IsAnythingAssigned() const																						{ for (int m = 0; m < Modifier_NumCombinations; m++) if (Operations[m] != Operation::None) return true; return false; }
+	int GetAssignedCount() const																						{ int count = 0; for (int m = 0; m < Modifier_NumCombinations; m++) if (Operations[m] != Operation::None) count++; return count; }
 	Operation Operations[Modifier_NumCombinations];
 };
 
@@ -209,20 +210,22 @@ struct KeyOps
 class InputMap
 {
 public:
-	InputMap()																											{ Reset(); }
-	// WIP InputMap()																											{ Clear(); }
+	InputMap()																											{ Clear(); }
 
 	void Clear();				// Unassigns all keys.
 	void Reset();				// Sets all keys to their default operations.
 
-	// Returns the operation assigned to a particular key. This can also be used before an assign call to see what a
-	// current key is bound to so an already-assigned message can be dislayed if needed.
-	Operation GetOperation(int glfwkey, uint32 modifiers);
+	// Returns the operation assigned to a particular key and set of modifiers. This can also be used before an assign
+	// call to see what a current key is bound to so an already-assigned message can be dislayed if needed.
+	Operation GetOperation(int glfwKey, uint32 modifiers);
+	KeyOps& GetOperations(int glfwKey)																					{ return KeyTable[glfwKey]; }
 
 	// Assigns the operation to the key and modifiers specified. Returns false if the key is already assigned to
 	// something else.
 	bool AssignKey(int glfwkey, uint32 modifiers, Operation);
 	void ClearKey(int glfwkey, uint32 modifiers);
+	int GetTotalAssigned()																		
+					{ int count = 0; for (int k = 0; k <= GLFW_KEY_LAST; k++) count += GetOperations(k).GetAssignedCount(); return count; }
 
 	void Read(tExpression);
 	void Write(tScriptWriter&);
@@ -230,9 +233,6 @@ public:
 private:
 	KeyOps KeyTable[GLFW_KEY_LAST+1];
 };
-
-
-extern InputMap DefaultInputMap;
 
 
 void ShowWindow(bool* popen);

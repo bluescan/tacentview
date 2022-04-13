@@ -2121,10 +2121,10 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 	if (keyName && *keyName)
 		key = tStd::tChrupr(keyName[0]);
 
-	// Now we need to query the key-binding system to find out what operation is
-	// associated with the received key.
+	// Now we need to query the key-binding system to find out what operation is associated
+	// with the received key. The current bindings are stored in the current config.
 	uint32 viewerModifiers = Bindings::TranslateModifiers(modifiers);
-	Bindings::Operation operation = Bindings::DefaultInputMap.GetOperation(key, viewerModifiers);
+	Bindings::Operation operation = Config::Current->InputBindings.GetOperation(key, viewerModifiers);
 	switch (operation)
 	{
 		case Bindings::Operation::PrevImage:

@@ -44,7 +44,7 @@ enum class Category
 // two profiles: normal and basic.
 struct Settings
 {
-	Settings()									: Profile(), KeyInputMap() { Reset(Profile::Main); }
+	Settings()									: Profile(), InputBindings() { Reset(Profile::Main); }
 	tString Profile;
 	int WindowX;
 	int WindowY;
@@ -158,7 +158,7 @@ struct Settings
 	bool AutoPropertyWindow;					// Auto display property editor window for supported file types.
 	bool AutoPlayAnimatedImages;				// Automatically play animated gifs, apngs, and WebPs.
 	float MonitorGamma;							// Used when displaying HDR formats to do gamma correction.
-	Viewer::Bindings::InputMap KeyInputMap;		// Each Settings struct (profile) gets its own copy of the InputMap (key bindings).
+	Viewer::Bindings::InputMap InputBindings;	// Each Settings struct (profile) gets its own copy of the InputMap (key bindings).
 
 	void Load(tExpression);
 	bool Save(tScriptWriter&);
@@ -196,5 +196,8 @@ void ResetProfile(Category = Category::Everything);
 void ResetAll();
 
 extern Settings* Current;
+extern Settings MainSettings;
+extern Settings BasicSettings;
+
 
 } }

@@ -221,7 +221,7 @@ void Config::Settings::Reset(Config::Profile profile, Config::Category category)
 		ResizeAspectNum				= 16;
 		ResizeAspectDen				= 9;
 		ResizeAspectMode			= 0;
-		KeyInputMap					.Reset();
+		InputBindings				.Reset();
 	}
 
 	if ((category == Category::Everything) || (category == Category::Display))
@@ -322,7 +322,7 @@ void Config::Settings::Load(tExpression expr)
 			ReadItem(SaveAllSizeMode);
 
 			case tHash::tHashCT("KeyBindings"):
-				KeyInputMap.Read(e);
+				InputBindings.Read(e);
 				break;
 
 			ReadItem(CropAnchor);
@@ -450,7 +450,7 @@ bool Config::Settings::Save(tScriptWriter& writer)
 	WriteItem(SaveFileTiffDurMultiFrame);
 	WriteItem(SaveAllSizeMode);
 
-	KeyInputMap.Write(writer);
+	InputBindings.Write(writer);
 
 	WriteItem(CropAnchor);
 	WriteItem(FillColour);
