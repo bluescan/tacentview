@@ -108,26 +108,27 @@ const char* GetOperationDesc(Operation);
 	A	ImGui::Text("Shift-Down");	D("One Pixel Down");
 	A	ImGui::Text("Space");		R("Next Image");
 
-		ImGui::Text("Ctrl +");		D("Zoom In");
-		ImGui::Text("Ctrl -");		D("Zoom Out");
-		ImGui::Text("F1");			D("Toggle Cheat Sheet");
-		ImGui::Text("F2");			D("Rename File");
-		ImGui::Text("F5");			D("Refresh/Reload Image");
-		ImGui::Text("F11");			D("Toggle Fullscreen");
-		ImGui::Text("Alt-Enter");   R("Toggle Fullscreen");
+	A	ImGui::Text("Ctrl +");		D("Zoom In");
+	A	ImGui::Text("Ctrl -");		D("Zoom Out");
+	A	ImGui::Text("F1");			D("Toggle Cheat Sheet");
+	A	ImGui::Text("F2");			D("Rename File");
+	A	ImGui::Text("F5");			D("Refresh/Reload Image");
+	A	ImGui::Text("F11");			D("Toggle Fullscreen");
+	A	ImGui::Text("Alt-Enter");   R("Toggle Fullscreen");
 
-		ImGui::Text("Esc");			D("Exit Fullscreen / Exit Basic"); }
-		ImGui::Text("Esc");			D("Quit / Exit Fullscreen or Basic");
+	A	ImGui::Text("Esc");			D("Exit Fullscreen / Exit Basic"); }
+	A	ImGui::Text("Esc");			D("Quit / Exit Fullscreen or Basic");
 
-		#ifdef PACKAGE_SNAP
-		ImGui::Text("Tab");			D("Open File Browser (No Snap Support)");
-		#else
-		ImGui::Text("Tab");			D("Open File Browser");
-		#endif
-		ImGui::Text("Delete");		D("Delete Current Image");
-		ImGui::Text("Shift-Delete");D("Delete Current Image Permanently");
+	A	#ifdef PACKAGE_SNAP
+	A	ImGui::Text("Tab");			D("Open File Browser (No Snap Support)");
+	A	#else
+	A	ImGui::Text("Tab");			D("Open File Browser");
+	A	#endif
+	A	ImGui::Text("Delete");		D("Delete Current Image");
+	A	ImGui::Text("Shift-Delete");D("Delete Current Image Permanently");
 		ImGui::Text("LMB-Click");	SKIPPED("Set Colour Reticle Pos");
 		ImGui::Text("RMB-Drag");	SKIPPED("Pan Image");
+
 		ImGui::Text("Alt-F4");		D Sep Operation("Quit");
 		ImGui::Text("Ctrl <");		D("Flip Vertically");
 		ImGui::Text("Ctrl >");		D("Flip Horizontally");
@@ -220,12 +221,11 @@ public:
 	Operation GetOperation(int glfwKey, uint32 modifiers);
 	KeyOps& GetOperations(int glfwKey)																					{ return KeyTable[glfwKey]; }
 
-	// Assigns the operation to the key and modifiers specified. Returns false if the key is already assigned to
-	// something else.
+	// Assigns the operation to the key and modifiers specified. Returns true is there was a previous assignment that
+	// needed to be replaced.
 	bool AssignKey(int glfwkey, uint32 modifiers, Operation);
 	void ClearKey(int glfwkey, uint32 modifiers);
-	int GetTotalAssigned()																		
-					{ int count = 0; for (int k = 0; k <= GLFW_KEY_LAST; k++) count += GetOperations(k).GetAssignedCount(); return count; }
+	int GetTotalAssigned() const																						{ int count = 0; for (int k = 0; k <= GLFW_KEY_LAST; k++) count += KeyTable[k].GetAssignedCount(); return count; }
 
 	void Read(tExpression);
 	void Write(tScriptWriter&);

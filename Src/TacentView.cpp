@@ -2174,9 +2174,9 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				RequestCursorMove = CursorMove_Down;
 			break;
 
-		case GLFW_KEY_SPACE:
-			OnNext();
-			break;
+//		case GLFW_KEY_SPACE:
+//			OnNext();
+//			break;
 
 		case GLFW_KEY_EQUAL:
 			// Ctrl +

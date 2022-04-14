@@ -31,7 +31,78 @@ namespace Bindings
 	bool KeyNameTableInitialized = false;
 	const int MaxKeyNameLength = 16;
 	char KeyNameTable[GLFW_KEY_LAST][MaxKeyNameLength];
+	extern const char* OperationDescriptions[Operation::NumOperations];
 }
+
+
+const char* Bindings::OperationDescriptions[Operation::NumOperations] =
+{
+	"None",
+	"Previous Image",
+	"Next Image",
+	"Skip To First Image",
+	"Skip To Last Image",
+	"Previous Image Frame",
+	"Next Image Frame",
+	"One Pixel Left",
+	"One Pixel Right",
+	"One Pixel Up",
+	"One Pixel Down",
+
+	"Zoom In",
+	"Zoom Out",
+	"Toggle Cheat Sheet",
+	"Rename File",
+	"Refresh / Reload Image",
+	"Toggle Fullscreen",
+
+	"Exit-Fullscreen | Exit-Basic-Profile",
+	"Quit | Exit-Fullscreen | Exit-Basic-Profile",
+	#ifdef PACKAGE_SNAP
+	"Open File Browser (No Snap Support)",
+	#else
+	"Open File Browser",
+	#endif
+	"Delete Current Image",
+	"Delete Current Image Permanently",
+	"Quit",
+
+	"Flip Image Vertically",
+	"Flip Image Horizontally",
+	"Rotate 90 Anticlockwise",
+	"Rotate 90 Clockwise",
+	"Crop",
+	"Adjust Pixel Colour",
+	"Resize Image",
+	"Resize Canvas",
+	"Rotate Image",
+
+	"Toggle Image Details",
+	"Toggle Tile",
+	"Toggle Menu Bar",
+	"Save Multi-Frame Image",
+	"Toggle Navigation Bar",
+	"Toggle Slideshow Countdown",
+	"Save As...",
+	"Save All...",
+	"Toggle Basic Mode",
+
+	"Zoom Fit",
+	"Show Debug Log",
+	"Zoom Downscale Only",
+	"Zoom 1:1 Pixels",
+	"Contact Sheet...",
+	"Preferences...",
+	"Content Thumbnail View...",
+
+	"Toggle Channel Filter",
+	"Toggle Red Channel",
+	"Toggle Green Channel",
+	"Toggle Blue Channel",
+	"Toggle Alpha Channel",
+	"Toggle Channel As Intensity"
+};
+
 
 
 void Bindings::InitKeyNameTable()
@@ -106,75 +177,8 @@ const char* Bindings::GetKeyName(int key)
 
 const char* Bindings::GetOperationDesc(Operation op)
 {
-	const char* descriptions[] =
-	{
-		"None",
-		"Previous Image",
-		"Next Image",
-		"Skip To First Image",
-		"Skip To Last Image",
-		"Previous Image Frame",
-		"Next Image Frame",
-		"One Pixel Left",
-		"One Pixel Right",
-		"One Pixel Up",
-		"One Pixel Down",
-
-		"Zoom In",
-		"Zoom Out",
-		"Toggle Cheat Sheet",
-		"Rename File",
-		"Refresh / Reload Image",
-		"Toggle Fullscreen",
-
-		"Exit-Fullscreen | Exit-Basic-Profile",
-		"Quit | Exit-Fullscreen | Exit-Basic-Profile",
-		#ifdef PACKAGE_SNAP
-		"Open File Browser (No Snap Support)",
-		#else
-		"Open File Browser",
-		#endif
-		"Delete Current Image",
-		"Delete Current Image Permanently",
-		"Quit",
-
-		"Flip Image Vertically",
-		"Flip Image Horizontally",
-		"Rotate 90 Anticlockwise",
-		"Rotate 90 Clockwise",
-		"Crop",
-		"Adjust Pixel Colour",
-		"Resize Image",
-		"Resize Canvas",
-		"Rotate Image",
-
-		"Toggle Image Details",
-		"Toggle Tile",
-		"Toggle Menu Bar",
-		"Save Multi-Frame Image",
-		"Toggle Navigation Bar",
-		"Toggle Slideshow Countdown",
-		"Save As...",
-		"Save All...",
-		"Toggle Basic Mode",
-
-		"Zoom Fit",
-		"Show Debug Log",
-		"Zoom Downscale Only",
-		"Zoom 1:1 Pixels",
-		"Contact Sheet...",
-		"Preferences...",
-		"Content Thumbnail View...",
-
-		"Toggle Channel Filter",
-		"Toggle Red Channel",
-		"Toggle Green Channel",
-		"Toggle Blue Channel",
-		"Toggle Alpha Channel",
-		"Toggle Channel As Intensity"
-	};
-	tStaticAssert(tNumElements(descriptions) == int(Operation::NumOperations));
-	return descriptions[int(op)];
+//	tStaticAssert(tNumElements(descriptions) == int(Operation::NumOperations));
+	return OperationDescriptions[int(op)];
 }
 
 
@@ -214,10 +218,6 @@ bool Bindings::InputMap::AssignKey(int key, uint32 modifiers, Operation operatio
 {
 	// If key already assigned to requested operation we're done.
 	if (KeyTable[key].Operations[modifiers] == operation)
-		return true;
-
-	// If key already assigned to somethng else we fail.
-	if (KeyTable[key].Operations[modifiers] != Operation::None)
 		return false;
 
 	KeyTable[key].Operations[modifiers] = operation;
@@ -239,6 +239,20 @@ void Bindings::InputMap::Reset()
 	AssignKey(GLFW_KEY_UP,		Modifier_Shift,		Operation::OnePixelUp);
 	AssignKey(GLFW_KEY_DOWN,	Modifier_Shift,		Operation::OnePixelDown);
 	AssignKey(GLFW_KEY_SPACE,	Modifier_None,		Operation::NextImage);
+
+	AssignKey(GLFW_KEY_EQUAL,	Modifier_Ctrl,		Operation::ZoomIn);
+	AssignKey(GLFW_KEY_MINUS,	Modifier_Ctrl,		Operation::ZoomOut);
+	AssignKey(GLFW_KEY_F1,		Modifier_None,		Operation::ToggleCheatSheet);
+	AssignKey(GLFW_KEY_F2,		Modifier_None,		Operation::RenameFile);
+	AssignKey(GLFW_KEY_F5,		Modifier_None,		Operation::RefreshReloadImage);
+	AssignKey(GLFW_KEY_F11,		Modifier_None,		Operation::ToggleFullscreen);
+	AssignKey(GLFW_KEY_ENTER,	Modifier_Alt,		Operation::ToggleFullscreen);
+
+	AssignKey(GLFW_KEY_ESCAPE,	Modifier_None,		Operation::EscapeSupportingQuit);
+	AssignKey(GLFW_KEY_TAB,		Modifier_None,		Operation::OpenFileBrowser);
+	AssignKey(GLFW_KEY_DELETE,	Modifier_None,		Operation::Delete);
+	AssignKey(GLFW_KEY_DELETE,	Modifier_Shift,		Operation::DeletePermanent);
+
 }
 
 
@@ -315,23 +329,24 @@ void Bindings::ShowWindow(bool* popen)
 		const char* profiles[] = { "Main", "Basic" };
 		static int profile = 0;
 		ImGui::PushItemWidth(80);
-		ImGui::Combo("Profile", &profile, profiles, tNumElements(profiles));
+		ImGui::Combo("Profile##ToEdit", &profile, profiles, tNumElements(profiles));
 		ImGui::PopItemWidth();
 		Config::Settings& settings = (profile == 0) ? Config::MainSettings : Config::BasicSettings;
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 		
 		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInnerH
-		| ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_Resizable;
+		| ImGuiTableFlags_SizingStretchProp;// | ImGuiTableFlags_Resizable;
 		const int rowHeight = 24;
 		const int firstRowHeight = 24;
+		const int maxRowsToDisplay = 16;
 		int totalAssigned = settings.InputBindings.GetTotalAssigned();
-		const int numRowsToDisplay = tMin(20, totalAssigned);
+		const int numRowsToDisplay = tMin(maxRowsToDisplay, totalAssigned);
 		tVector2 outerSize = ImVec2(0.0f, float(firstRowHeight + rowHeight * numRowsToDisplay));
 		if (ImGui::BeginTable("KeyBindingTable", 3, tableFlags, outerSize))
 		{
 			ImGui::TableSetupScrollFreeze(0, 1); // Top row fixed.
-			ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed, 100);//ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableSetupColumn("Operation", ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableSetupColumn("##Remove", ImGuiTableColumnFlags_WidthFixed, 20.0f);
 			ImGui::TableHeadersRow();
@@ -353,6 +368,9 @@ void Bindings::ShowWindow(bool* popen)
 				// Space		 	Rotate Image[combo]		[-]
 				// --------------------------------------------
 				// Operation[combo]	Key[combo] Mods 		[+] (brings up replace popup if necessary)
+
+				// Don't ask me why, but the first combo box is messed up in the first row, so we insert an empty row here.
+				ImGui::TableNextRow();
 
 				for (int k = 0; k <= GLFW_KEY_LAST; k++)
 				{
@@ -379,56 +397,42 @@ void Bindings::ShowWindow(bool* popen)
 
 						// Operation.
 						ImGui::TableSetColumnIndex(1);
-						ImGui::Text("%s", GetOperationDesc(Operation(op)));
+						ImGui::SetNextItemWidth(260);						
+						int opCurr = int(op);
+						char oplabel[64]; tsPrintf(oplabel, "##op%d_%d", k, m);
+						if (ImGui::Combo(oplabel, &opCurr, OperationDescriptions, tNumElements(OperationDescriptions)))
+							if (opCurr && (keyops.Operations[m] != Operation(opCurr)))
+								keyops.Operations[m] = Operation(opCurr);
 
-						// Remove button.	
+						// Remove button.
 						ImGui::TableSetColumnIndex(2);
-						ImGui::Button(" - ");
+						char blabel[64]; tsPrintf(blabel, " - ##b%d_%d", k, m);
+						if (ImGui::Button(blabel))
+							keyops.Operations[m] = Operation::None;
 					}
 				}
-#if 0
-				for (int op = int(Operation::First); op < int(Operation::NumOperations); op++)
-				{
-					ImGui::TableNextRow();
-
-					ImGui::TableSetColumnIndex(0);
-					ImGui::Text("%s", GetOperationDesc(Operation(op)));
-
-					uint32 modifiers = 0;
-					ImGui::TableSetColumnIndex(1);
-					ImGui::CheckboxFlags("##lable", &modifiers, 1<<2);
-
-					ImGui::TableSetColumnIndex(2);
-					ImGui::CheckboxFlags("##lable", &modifiers, 1<<2);
-
-					ImGui::PushItemWidth(50);
-					ImGui::TableSetColumnIndex(3);
-					ImGui::CheckboxFlags("##lable", &modifiers, 1<<2);
-					ImGui::PopItemWidth();
-
-					ImGui::TableSetColumnIndex(4);
-
-//						char KeyNameTable[GLFW_KEY_LAST][MaxKeyNameLength];
-
-					const char* keys[] = { "F1", "Enter", "Space", "F6" };
-					static int key = 0;
-					ImGui::PushItemWidth(70);
-					char clabel[16]; tsPrintf(clabel, "       ##Keys%d", op);
-			//		ImGui::Combo(clabel, &key, keys, tNumElements(keys));
-					ImGui::Combo(clabel, &key, KeyNameTable, tNumElements(KeyNameTable));
-					ImGui::PopItemWidth();
-				}
-#endif
 			}
 			ImGui::EndTable();
+		}
+
+		static int addOp	= 0;
+		ImGui::Combo("Operation", &addOp, OperationDescriptions, tNumElements(OperationDescriptions));
+
+		// WIP Support key list array and a combo for the supported keys.
+		static uint32 modifiers	= 0;
+		ImGui::CheckboxFlags("CTRL", &modifiers, Modifier_Ctrl);	ImGui::SameLine();
+		ImGui::CheckboxFlags("ALT", &modifiers, Modifier_Alt);		ImGui::SameLine();
+		ImGui::CheckboxFlags("SHIFT", &modifiers, Modifier_Shift);	ImGui::SameLine();
+		if (ImGui::Button("Add Binding"))
+		{
+			//settings.InputBindings.AssignKey(
 		}
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 
 		if (ImGui::Button("Reset", tVector2(100, 0)))
-		{
-			//Config::ResetAll();
-		}
+			settings.InputBindings.Reset();
+
 		ShowToolTip("Resets the key bindings to default for the chosen profile.");
 		ImGui::SameLine();
 
@@ -438,7 +442,6 @@ void Bindings::ShowWindow(bool* popen)
 		}
 		ShowToolTip("Copies the keybindings to all profiles. Useful if you want them all the same.");
 		ImGui::SameLine();
-
 
 		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 		if (ImGui::Button("Close", tVector2(100, 0)))
