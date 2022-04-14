@@ -31,11 +31,11 @@ namespace Bindings
 	bool KeyNameTableInitialized = false;
 	const int MaxKeyNameLength = 16;
 	char KeyNameTable[GLFW_KEY_LAST][MaxKeyNameLength];
-	extern const char* OperationDescriptions[Operation::NumOperations];
+	extern const char* OperationDescriptions[int(Operation::NumOperations)];
 }
 
 
-const char* Bindings::OperationDescriptions[Operation::NumOperations] =
+const char* Bindings::OperationDescriptions[int(Operation::NumOperations)] =
 {
 	"None",
 	"Previous Image",
