@@ -15,7 +15,6 @@
 #pragma once
 #include <Foundation/tString.h>
 #include <System/tScript.h>
-#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 namespace Viewer {
 namespace Bindings {
