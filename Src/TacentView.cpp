@@ -134,6 +134,7 @@ namespace Viewer
 	bool PrefsWindow							= false;
 	bool PropsWindow							= false;
 	bool BindingsWindow							= false;
+	bool BindingsWindowJustOpened				= false;
 	bool CropMode								= false;
 	bool LMBDown								= false;
 	bool RMBDown								= false;
@@ -260,7 +261,7 @@ tVector2 Viewer::GetDialogOrigin(float index)
 		return tVector2(DialogOrigin + 300.0f, DialogOrigin + TopUIHeight + DialogDelta*1.0f);
 
 	else if (index == 7)
-		return tVector2(DialogOrigin + 397.0f, DialogOrigin + TopUIHeight + 5.0f);
+		return tVector2(DialogOrigin + 388.0f, TopUIHeight + 12.0f);
 
 	return tVector2(DialogOrigin + DialogDelta*float(index), DialogOrigin + TopUIHeight + DialogDelta*float(index));
 }
@@ -1672,7 +1673,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 			ImGui::MenuItem("Cheat Sheet", "F1", &ShowCheatSheet);
-			ImGui::MenuItem("Key Bindings...", "K", &BindingsWindow);
+			if (ImGui::MenuItem("Key Bindings...", "K", &BindingsWindow))
+				if (BindingsWindow)
+					BindingsWindowJustOpened = true;
 			ImGui::MenuItem("About", "", &ShowAbout);
 			ImGui::PopStyleVar();
 			ImGui::EndMenu();
@@ -1859,7 +1862,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ShowPropertiesWindow(&PropsWindow);
 
 	if (BindingsWindow)
-		Bindings::ShowWindow(&BindingsWindow);
+	{
+		Bindings::ShowWindow(&BindingsWindow, BindingsWindowJustOpened);
+		BindingsWindowJustOpened = false;
+	}
 
 	ImGui::PopStyleVar();
 
@@ -2407,6 +2413,8 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case GLFW_KEY_K:
 			BindingsWindow = !BindingsWindow;
+			if (BindingsWindow)
+				BindingsWindowJustOpened = true;
 			break;
 
 		case GLFW_KEY_GRAVE_ACCENT:

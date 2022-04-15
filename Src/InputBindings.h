@@ -234,8 +234,9 @@ private:
 };
 
 
-void ShowWindow(bool* popen);
+void ShowWindow(bool* popen, bool justOpened);
 // WIP Move cheat sheet over to here.
+// WIP Need to make sure always can bring up bindings window.. even if menu not visible.
 
 
 // Implementaion only below this line.
@@ -244,7 +245,7 @@ void ShowWindow(bool* popen);
 inline void InputMap::Clear()
 {
 	for (int k = 0; k <= GLFW_KEY_LAST; k++)
-		KeyTable->Clear();
+		KeyTable[k].Clear();
 }
 
 

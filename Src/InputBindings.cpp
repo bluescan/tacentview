@@ -26,12 +26,73 @@ namespace Viewer
 
 namespace Bindings
 {
-	void InitKeyNameTable();
+	void ShowAddBindingSection(Config::Settings& settings);
+	void InitKeyNameTables();
 
-	bool KeyNameTableInitialized = false;
 	const int MaxKeyNameLength = 16;
-	char KeyNameTable[GLFW_KEY_LAST][MaxKeyNameLength];
+	char KeyNameTable[GLFW_KEY_LAST+1][MaxKeyNameLength];
+	struct TableInitializer { TableInitializer() { InitKeyNameTables(); } }; TableInitializer Initializer;
+
 	extern const char* OperationDescriptions[int(Operation::NumOperations)];
+}
+
+
+void Bindings::InitKeyNameTables()
+{
+	tMemset(KeyNameTable, 0, tNumElements(KeyNameTable));
+
+	tsPrintf(KeyNameTable[GLFW_KEY_SPACE],			"Space");
+	KeyNameTable[GLFW_KEY_APOSTROPHE][0]			= GLFW_KEY_APOSTROPHE;
+	KeyNameTable[GLFW_KEY_COMMA][0]					= GLFW_KEY_COMMA;
+	KeyNameTable[GLFW_KEY_MINUS][0]					= GLFW_KEY_MINUS;
+	KeyNameTable[GLFW_KEY_PERIOD][0]				= GLFW_KEY_PERIOD;
+	KeyNameTable[GLFW_KEY_SLASH][0]					= GLFW_KEY_SLASH;
+
+	// We do blocks of consecutive values when we can. Most of the glfw keys map to ascii.
+	for (int key = GLFW_KEY_0; key <= GLFW_KEY_9; key++)
+		KeyNameTable[key][0] = key;
+
+	KeyNameTable[GLFW_KEY_SEMICOLON][0]				= GLFW_KEY_SEMICOLON;
+	KeyNameTable[GLFW_KEY_EQUAL][0]					= GLFW_KEY_EQUAL;
+
+	for (int key = GLFW_KEY_A; key <= GLFW_KEY_Z; key++)
+		KeyNameTable[key][0] = key;
+
+	KeyNameTable[GLFW_KEY_LEFT_BRACKET][0]			= GLFW_KEY_LEFT_BRACKET;
+	KeyNameTable[GLFW_KEY_BACKSLASH][0]				= GLFW_KEY_BACKSLASH;
+	KeyNameTable[GLFW_KEY_RIGHT_BRACKET][0]			= GLFW_KEY_RIGHT_BRACKET;
+	KeyNameTable[GLFW_KEY_GRAVE_ACCENT][0]			= '~';
+
+	tsPrintf(KeyNameTable[GLFW_KEY_ESCAPE],			"Esc");
+	tsPrintf(KeyNameTable[GLFW_KEY_ENTER],			"Enter");
+	tsPrintf(KeyNameTable[GLFW_KEY_TAB],			"Tab");
+	tsPrintf(KeyNameTable[GLFW_KEY_BACKSPACE],		"Back");
+	tsPrintf(KeyNameTable[GLFW_KEY_INSERT],			"Ins");
+	tsPrintf(KeyNameTable[GLFW_KEY_DELETE],			"Del");
+
+	tsPrintf(KeyNameTable[GLFW_KEY_RIGHT],			"Right");
+	tsPrintf(KeyNameTable[GLFW_KEY_LEFT],			"Left");
+	tsPrintf(KeyNameTable[GLFW_KEY_DOWN],			"Down");
+	tsPrintf(KeyNameTable[GLFW_KEY_UP],				"Up");
+
+	tsPrintf(KeyNameTable[GLFW_KEY_PAGE_UP],		"PgUp");
+	tsPrintf(KeyNameTable[GLFW_KEY_PAGE_DOWN],		"PgDn");
+	tsPrintf(KeyNameTable[GLFW_KEY_HOME],			"Home");
+	tsPrintf(KeyNameTable[GLFW_KEY_END],			"End");
+
+	for (int idx = 0; idx <= GLFW_KEY_F25-GLFW_KEY_F1; idx++)
+		tsPrintf(KeyNameTable[GLFW_KEY_F1+idx], "F%d", idx+1);
+
+	for (int idx = 0; idx <= GLFW_KEY_KP_9-GLFW_KEY_KP_0; idx++)
+		tsPrintf(KeyNameTable[GLFW_KEY_KP_0+idx], "KP%d", idx);
+
+	tsPrintf(KeyNameTable[GLFW_KEY_KP_DECIMAL],		"KP.");
+	tsPrintf(KeyNameTable[GLFW_KEY_KP_DIVIDE],		"KP/");
+	tsPrintf(KeyNameTable[GLFW_KEY_KP_MULTIPLY],	"KP*");
+	tsPrintf(KeyNameTable[GLFW_KEY_KP_SUBTRACT],	"KP-");
+	tsPrintf(KeyNameTable[GLFW_KEY_KP_ADD],			"KP+");
+	tsPrintf(KeyNameTable[GLFW_KEY_KP_ENTER],		"KP-Ent");
+	tsPrintf(KeyNameTable[GLFW_KEY_KP_EQUAL],		"KP=");
 }
 
 
@@ -104,72 +165,10 @@ const char* Bindings::OperationDescriptions[int(Operation::NumOperations)] =
 };
 
 
-
-void Bindings::InitKeyNameTable()
-{
-	tMemset(KeyNameTable, 0, tNumElements(KeyNameTable));
-
-	tsPrintf(KeyNameTable[GLFW_KEY_SPACE],			"Space");
-	KeyNameTable[GLFW_KEY_APOSTROPHE][0]			= GLFW_KEY_APOSTROPHE;
-	KeyNameTable[GLFW_KEY_COMMA][0]					= GLFW_KEY_COMMA;
-	KeyNameTable[GLFW_KEY_MINUS][0]					= GLFW_KEY_MINUS;
-	KeyNameTable[GLFW_KEY_PERIOD][0]				= GLFW_KEY_PERIOD;
-	KeyNameTable[GLFW_KEY_SLASH][0]					= GLFW_KEY_SLASH;
-
-	// We do blocks of consecutive values when we can. Most of the glfw keys map to ascii.
-	for (int key = GLFW_KEY_0; key <= GLFW_KEY_9; key++)
-		KeyNameTable[key][0] = key;
-
-	KeyNameTable[GLFW_KEY_SEMICOLON][0]				= GLFW_KEY_SEMICOLON;
-	KeyNameTable[GLFW_KEY_EQUAL][0]					= GLFW_KEY_EQUAL;
-
-	for (int key = GLFW_KEY_A; key <= GLFW_KEY_Z; key++)
-		KeyNameTable[key][0] = key;
-
-	KeyNameTable[GLFW_KEY_LEFT_BRACKET][0]			= GLFW_KEY_LEFT_BRACKET;
-	KeyNameTable[GLFW_KEY_BACKSLASH][0]				= GLFW_KEY_BACKSLASH;
-	KeyNameTable[GLFW_KEY_RIGHT_BRACKET][0]			= GLFW_KEY_RIGHT_BRACKET;
-	KeyNameTable[GLFW_KEY_GRAVE_ACCENT][0]			= '~';
-
-	tsPrintf(KeyNameTable[GLFW_KEY_ESCAPE],			"Esc");
-	tsPrintf(KeyNameTable[GLFW_KEY_ENTER],			"Enter");
-	tsPrintf(KeyNameTable[GLFW_KEY_TAB],			"Tab");
-	tsPrintf(KeyNameTable[GLFW_KEY_BACKSPACE],		"Back");
-	tsPrintf(KeyNameTable[GLFW_KEY_INSERT],			"Ins");
-	tsPrintf(KeyNameTable[GLFW_KEY_DELETE],			"Del");
-
-	tsPrintf(KeyNameTable[GLFW_KEY_RIGHT],			"Right");
-	tsPrintf(KeyNameTable[GLFW_KEY_LEFT],			"Left");
-	tsPrintf(KeyNameTable[GLFW_KEY_DOWN],			"Down");
-	tsPrintf(KeyNameTable[GLFW_KEY_UP],				"Up");
-
-	tsPrintf(KeyNameTable[GLFW_KEY_PAGE_UP],		"PgUp");
-	tsPrintf(KeyNameTable[GLFW_KEY_PAGE_DOWN],		"PgDn");
-	tsPrintf(KeyNameTable[GLFW_KEY_HOME],			"Home");
-	tsPrintf(KeyNameTable[GLFW_KEY_END],			"End");
-
-	for (int idx = 0; idx <= GLFW_KEY_F25-GLFW_KEY_F1; idx++)
-		tsPrintf(KeyNameTable[GLFW_KEY_F1+idx], "F%d", idx+1);
-
-	for (int idx = 0; idx <= GLFW_KEY_KP_9-GLFW_KEY_KP_0; idx++)
-		tsPrintf(KeyNameTable[GLFW_KEY_KP_0+idx], "KP%d", idx);
-
-	tsPrintf(KeyNameTable[GLFW_KEY_KP_DECIMAL],		"KP.");
-	tsPrintf(KeyNameTable[GLFW_KEY_KP_DIVIDE],		"KP/");
-	tsPrintf(KeyNameTable[GLFW_KEY_KP_MULTIPLY],	"KP*");
-	tsPrintf(KeyNameTable[GLFW_KEY_KP_SUBTRACT],	"KP-");
-	tsPrintf(KeyNameTable[GLFW_KEY_KP_ADD],			"KP+");
-	tsPrintf(KeyNameTable[GLFW_KEY_KP_ENTER],		"KP-Ent");
-	tsPrintf(KeyNameTable[GLFW_KEY_KP_EQUAL],		"KP=");
-
-	KeyNameTableInitialized	= true;
-}
-
-
 const char* Bindings::GetKeyName(int key)
 {
-	if (!KeyNameTableInitialized)
-		InitKeyNameTable();
+	if (KeyNameTable[key][0] == '\0')
+		return nullptr;
 
 	return KeyNameTable[key];
 }
@@ -177,7 +176,6 @@ const char* Bindings::GetKeyName(int key)
 
 const char* Bindings::GetOperationDesc(Operation op)
 {
-//	tStaticAssert(tNumElements(descriptions) == int(Operation::NumOperations));
 	return OperationDescriptions[int(op)];
 }
 
@@ -315,46 +313,65 @@ void Bindings::InputMap::Write(tScriptWriter& writer)
 }
 
 
-void Bindings::ShowWindow(bool* popen)
+void Bindings::ShowWindow(bool* popen, bool justOpened)
 {
 	tVector2 windowPos = GetDialogOrigin(7);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(tVector2(422.0f, 600.0f), ImGuiCond_FirstUseEver);
-	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize |
-	ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoNav
-	| ImGuiWindowFlags_NoResize;
+	ImGui::SetNextWindowSize(tVector2(440.0f, 600.0f), ImGuiCond_FirstUseEver);
+	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize;
 
 	if (ImGui::Begin("Keyboard Bindings", popen, flags))
 	{
-		const char* profiles[] = { "Main", "Basic" };
+		const char* profiles[] = { "Main Profile", "Basic Profile" };
 		static int profile = 0;
-		ImGui::PushItemWidth(80);
-		ImGui::Combo("Profile##ToEdit", &profile, profiles, tNumElements(profiles));
+		if (justOpened)
+			profile = int(Config::GetProfile());
+
+		ImGui::PushItemWidth(100);
+		ImGui::Combo("##ProfileToEdit", &profile, profiles, tNumElements(profiles));
 		ImGui::PopItemWidth();
 		Config::Settings& settings = (profile == 0) ? Config::MainSettings : Config::BasicSettings;
 
+		ImGui::SameLine();
+		if (ImGui::Button("Reset Profile", tVector2(100, 0)))
+			settings.InputBindings.Reset();
+		ShowToolTip("Resets the key bindings to default for the chosen profile.");
+
+		ImGui::SameLine();
+		if (ImGui::Button("Set All Profiles", tVector2(100, 0)))
+		{
+			// WIP Config::ResetAll();
+		}
+		ShowToolTip("Copies the keybindings to all profiles. Useful if you want them all the same.");
+
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+		if (ImGui::Button("Close", tVector2(100, 0)))
+		{
+			if (popen)
+				*popen = false;
+		}
+
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 		
-		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInnerH
-		| ImGuiTableFlags_SizingStretchProp;// | ImGuiTableFlags_Resizable;
-		const int rowHeight = 24;
-		const int firstRowHeight = 24;
+		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
+		const float rowHeight = 25.0f;
 		const int maxRowsToDisplay = 16;
 		int totalAssigned = settings.InputBindings.GetTotalAssigned();
 		const int numRowsToDisplay = tMin(maxRowsToDisplay, totalAssigned);
-		tVector2 outerSize = ImVec2(0.0f, float(firstRowHeight + rowHeight * numRowsToDisplay));
+		tVector2 outerSize = ImVec2(0.0f, rowHeight + rowHeight * float(numRowsToDisplay));
 		if (ImGui::BeginTable("KeyBindingTable", 3, tableFlags, outerSize))
 		{
 			ImGui::TableSetupScrollFreeze(0, 1); // Top row fixed.
-			ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed, 100);//ImGuiTableColumnFlags_WidthStretch);
-			ImGui::TableSetupColumn("Operation", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed, 120);//ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("Operation", ImGuiTableColumnFlags_WidthFixed, 240);
 			ImGui::TableSetupColumn("##Remove", ImGuiTableColumnFlags_WidthFixed, 20.0f);
 			ImGui::TableHeadersRow();
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3);
 
 			ImGuiListClipper clipper;
 
-			clipper.Begin(totalAssigned-1);
+			clipper.Begin(totalAssigned + 0);
 			while (clipper.Step())
 			{
 				// Multiple keys can be bound to the same operation (ex space and right-arrow for next image)
@@ -369,19 +386,19 @@ void Bindings::ShowWindow(bool* popen)
 				// --------------------------------------------
 				// Operation[combo]	Key[combo] Mods 		[+] (brings up replace popup if necessary)
 
-				// Don't ask me why, but the first combo box is messed up in the first row, so we insert an empty row here.
 				ImGui::TableNextRow();
 
 				for (int k = 0; k <= GLFW_KEY_LAST; k++)
 				{
 					KeyOps& keyops = settings.InputBindings.GetOperations(k);
-					if (!keyops.IsAnythingAssigned())
+					const char* keyName = GetKeyName(k);
+					if (!keyops.IsAnythingAssigned() || !keyName)
 						continue;
 
 					for (int m = 0; m < Modifier_NumCombinations; m++)
 					{
-						Operation op = keyops.Operations[m];
-						if (op == Operation::None)
+						Operation opCurr = keyops.Operations[m];
+						if (opCurr == Operation::None)
 							continue;
 
 						ImGui::TableNextRow();
@@ -389,25 +406,44 @@ void Bindings::ShowWindow(bool* popen)
 						// Key/mods column.
 						ImGui::TableSetColumnIndex(0);
 						const char* modText = GetModifiersText(m);
-						const char* keyName = GetKeyName(k);
 						if (modText)
 							ImGui::Text("%s %s", modText, keyName);
 						else
 							ImGui::Text("%s", keyName);
 
-						// Operation.
+						// The operation column.
 						ImGui::TableSetColumnIndex(1);
-						ImGui::SetNextItemWidth(260);						
-						int opCurr = int(op);
 						char oplabel[64]; tsPrintf(oplabel, "##op%d_%d", k, m);
-						if (ImGui::Combo(oplabel, &opCurr, OperationDescriptions, tNumElements(OperationDescriptions)))
-							if (opCurr && (keyops.Operations[m] != Operation(opCurr)))
+						const char* opCurrDesc = GetOperationDesc(opCurr);
+						tAssert(opCurrDesc);
+						ImGui::SetNextItemWidth(240);
+						if (ImGui::BeginCombo("oplabel", opCurrDesc, ImGuiComboFlags_NoArrowButton))
+						{
+							for (int oper = int(Operation::First); oper < int(Operation::NumOperations); oper++)
+							{
+								Operation op = Operation(oper);
+								const char* opDesc = GetOperationDesc(op);
+
+								bool isSelected = (op == opCurr);
+								// Selectable just displays the item as highlighted or not.
+								if (ImGui::Selectable(opDesc, isSelected))
+									opCurr = op;
+
+								// Set the initial focus when opening the combo (scrolling + keyboard navigation focus).
+								if (isSelected)
+									ImGui::SetItemDefaultFocus();
+							}
+
+							if ((opCurr != Operation::None) && (keyops.Operations[m] != Operation(opCurr)))
 								keyops.Operations[m] = Operation(opCurr);
 
-						// Remove button.
+							ImGui::EndCombo();
+						}
+						
+						// The remove button column.
 						ImGui::TableSetColumnIndex(2);
 						char blabel[64]; tsPrintf(blabel, " - ##b%d_%d", k, m);
-						if (ImGui::Button(blabel))
+						if (ImGui::Button(blabel, tVector2(21.0f, 21.0f)))
 							keyops.Operations[m] = Operation::None;
 					}
 				}
@@ -415,44 +451,110 @@ void Bindings::ShowWindow(bool* popen)
 			ImGui::EndTable();
 		}
 
-		static int addOp	= 0;
-		ImGui::Combo("Operation", &addOp, OperationDescriptions, tNumElements(OperationDescriptions));
-
-		// WIP Support key list array and a combo for the supported keys.
-		static uint32 modifiers	= 0;
-		ImGui::CheckboxFlags("CTRL", &modifiers, Modifier_Ctrl);	ImGui::SameLine();
-		ImGui::CheckboxFlags("ALT", &modifiers, Modifier_Alt);		ImGui::SameLine();
-		ImGui::CheckboxFlags("SHIFT", &modifiers, Modifier_Shift);	ImGui::SameLine();
-		if (ImGui::Button("Add Binding"))
-		{
-			//settings.InputBindings.AssignKey(
-		}
-
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-
-		if (ImGui::Button("Reset", tVector2(100, 0)))
-			settings.InputBindings.Reset();
-
-		ShowToolTip("Resets the key bindings to default for the chosen profile.");
-		ImGui::SameLine();
-
-		if (ImGui::Button("Set All Profiles", tVector2(100, 0)))
-		{
-			//Config::ResetAll();
-		}
-		ShowToolTip("Copies the keybindings to all profiles. Useful if you want them all the same.");
-		ImGui::SameLine();
-
-		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-		if (ImGui::Button("Close", tVector2(100, 0)))
-		{
-			if (popen)
-				*popen = false;
-		}
-
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
+		ShowAddBindingSection(settings);
 	}
 
 	ImGui::End();
+}
+
+
+void Bindings::ShowAddBindingSection(Config::Settings& settings)
+{
+	uint32 tableFlags = ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
+	const float rowHeight = 25.0f;
+	tVector2 outerSize = ImVec2(0.0f, rowHeight);
+	if (ImGui::BeginTable("KeyAssignTable", 3, tableFlags, outerSize))
+	{
+		ImGui::TableSetupColumn("##AssignKey", ImGuiTableColumnFlags_WidthFixed, 120);
+		ImGui::TableSetupColumn("##AssignOperation", ImGuiTableColumnFlags_WidthFixed, 240);
+		ImGui::TableSetupColumn("##Assign", ImGuiTableColumnFlags_WidthFixed, 20.0f);
+
+		ImGui::TableNextRow();
+		ImGui::TableSetColumnIndex(0);
+		int comboFlags = ImGuiComboFlags_NoArrowButton;
+		static uint32 addMods = 0;
+		const char* addModsName = GetModifiersText(addMods);
+		if (!addModsName)
+			addModsName = "No Mods";
+		ImGui::SetNextItemWidth(71);
+		if (ImGui::BeginCombo("##Modifiers", addModsName, comboFlags))
+		{
+			for (uint32 mods = 0; mods < Modifier_NumCombinations; mods++)
+			{
+				const char* modsName = GetModifiersText(mods);
+				if (!modsName)
+					modsName = "No Mods";
+
+				bool isSelected = (mods == addMods);
+				if (ImGui::Selectable(modsName, isSelected))
+					addMods = mods;
+
+				if (isSelected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::SameLine();
+
+		// The key choosing combo. We use the more powerful BeginCombo call to hide the arrow button (no room)
+		// as well as deal with the 'holes' in the key-name array (not all keys supported).
+		static int addKey = GLFW_KEY_SPACE;
+		const char* addKeyName = GetKeyName(addKey);
+		tAssert(addKeyName);
+		ImGui::SetNextItemWidth(41);
+		if (ImGui::BeginCombo("##AddKey", addKeyName, comboFlags))
+		{
+			for (int key = 0; key <= GLFW_KEY_LAST; key++)
+			{
+				const char* keyName = GetKeyName(key);
+				if (!keyName)
+					continue;
+
+				bool isSelected = (key == addKey);
+				if (ImGui::Selectable(keyName, isSelected))
+					addKey = key;
+
+				if (isSelected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
+		}
+
+		ImGui::TableSetColumnIndex(1);	
+		static Operation addOp = Operation::NextImage;
+		const char* addOpDesc = GetOperationDesc(addOp);
+		tAssert(addOpDesc);
+		ImGui::SetNextItemWidth(240);
+		if (ImGui::BeginCombo("##AddOperation", addOpDesc, comboFlags))
+		{
+			for (int oper = int(Operation::First); oper < int(Operation::NumOperations); oper++)
+			{
+				Operation op = Operation(oper);
+				const char* opDesc = GetOperationDesc(op);
+
+				bool isSelected = (op == addOp);
+				if (ImGui::Selectable(opDesc, isSelected))
+					addOp = op;
+
+				if (isSelected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
+		}
+
+		ImGui::TableSetColumnIndex(2);
+		if (ImGui::Button(" + ##AddBinding", tVector2(21.0f, 21.0f)))
+		{
+			if (addOp != Operation::None)
+			{
+				settings.InputBindings.AssignKey(addKey, addMods, Operation(addOp));
+			}
+		}
+		ShowToolTip("Adds the new keybinding. Warns if already assigned to something else.");
+
+		ImGui::EndTable();
+	}
 }
 
 

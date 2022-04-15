@@ -263,7 +263,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		PendingTransparentWorkArea = false;
 		ChangeScreenMode(false, true);
 	}
-	ShowToolTip("Resets the current profile to defaults.");
+	ShowToolTip("Resets the current profile (including key bindings) to defaults.");
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
@@ -282,7 +282,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		PendingTransparentWorkArea = false;
 		ChangeScreenMode(false, true);
 	}
-	ShowToolTip("Resets all profiles to their default settings\nand switches to the main profile.");
+	ShowToolTip("Resets all profiles (including key bindings) to their default settings\nand switches to the main profile.");
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
