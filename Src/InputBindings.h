@@ -25,16 +25,16 @@ namespace Bindings {
 enum class Operation
 {
 	None,
-	PrevImage,			First = PrevImage,
-	NextImage,
-	SkipToFirstImage,
+	NextImage,						First = NextImage,
+	PrevImage,
 	SkipToLastImage,
-	PrevImageFrame,
+	SkipToFirstImage,
 	NextImageFrame,
-	OnePixelLeft,
+	PrevImageFrame,
 	OnePixelRight,
-	OnePixelUp,
+	OnePixelLeft,
 	OnePixelDown,
+	OnePixelUp,
 
 	ZoomIn,
 	ZoomOut,
@@ -71,12 +71,13 @@ enum class Operation
 	ToggleBasicMode,
 
 	ZoomFit,
-	ShowDebugLog,
+	ToggleDebugLog,
 	ZoomDownscaleOnly,
 	ZoomOneToOne,
 	ContactSheet,
 	Preferences,
 	ContentThumbnailView,
+	ToggleKeyBindings,
 
 	ToggleChannelFilter,
 	ToggleRedChannel,
@@ -119,56 +120,57 @@ const char* GetOperationDesc(Operation);
 	A	ImGui::Text("Esc");			D("Quit / Exit Fullscreen or Basic");
 
 	A	#ifdef PACKAGE_SNAP
-	A	ImGui::Text("Tab");			D("Open File Browser (No Snap Support)");
+	A	ImGui::Text("Enter");			D("Open File Browser (No Snap Support)");
 	A	#else
-	A	ImGui::Text("Tab");			D("Open File Browser");
+	A	ImGui::Text("Enter");			D("Open File Browser");
 	A	#endif
 	A	ImGui::Text("Delete");		D("Delete Current Image");
 	A	ImGui::Text("Shift-Delete");D("Delete Current Image Permanently");
 		ImGui::Text("LMB-Click");	SKIPPED("Set Colour Reticle Pos");
 		ImGui::Text("RMB-Drag");	SKIPPED("Pan Image");
 
-		ImGui::Text("Alt-F4");		D Sep Operation("Quit");
-		ImGui::Text("Ctrl <");		D("Flip Vertically");
-		ImGui::Text("Ctrl >");		D("Flip Horizontally");
-		ImGui::Text("<");			D("Rotate Anti-Clockwise");
-		ImGui::Text(">");			D("Rotate Clockwise");
-		ImGui::Text("/");			D("Crop");
-		ImGui::Text("A");			D("Adjust Pixel Colour");
-		ImGui::Text("Alt-R");		D("Resize Image");
-		ImGui::Text("Ctrl-R");		D("Resize Canvas");
-		ImGui::Text("R");			D("Rotate Image");
-		ImGui::Text("I");			D("Toggle Image Details");
-		ImGui::Text("T");			D("Toggle Tile");
-		ImGui::Text("M");			D("Toggle Menu Bar");
-		ImGui::Text("Ctrl-M");		D("Save Multi-Frame Image");
-		ImGui::Text("N");			D("Toggle Nav Bar");
-		ImGui::Text("S");			D("Toggle Slideshow Counddown");
+	A	NEED TO KEEp AS OPERATION. DEFAULT BINDING to Alt-F4 (in case system alt-f4 disabled). ImGui::Text("Alt-F4");		D Sep Operation("Quit");
+	A	ImGui::Text("Ctrl <");		D("Flip Vertically");
+	A	ImGui::Text("Ctrl >");		D("Flip Horizontally");
+	A	ImGui::Text("<");			D("Rotate Anti-Clockwise");
+	A	ImGui::Text(">");			D("Rotate Clockwise");
+	A	ImGui::Text("/");			D("Crop");
+	A	ImGui::Text("A");			D("Adjust Pixel Colour");
+	A	ImGui::Text("Alt-R");		D("Resize Image");
+	A	ImGui::Text("Ctrl-R");		D("Resize Canvas");
+	A	ImGui::Text("R");			D("Rotate Image");
+
+	A	ImGui::Text("I");			D("Toggle Image Details");
+	A	ImGui::Text("T");			D("Toggle Tile");
+	A	ImGui::Text("M");			D("Toggle Menu Bar");
+	A	ImGui::Text("Ctrl-M");		D("Save Multi-Frame Image");
+	A	ImGui::Text("N");			D("Toggle Nav Bar");
+	A	ImGui::Text("S");			D("Toggle Slideshow Counddown");
 
 		#ifdef ENABLE_FILE_DIALOG_SUPPORT
-		ImGui::Text("Ctrl-O");		SKIPPED("Open File...");
-		ImGui::Text("Alt-O");		SKIPPED("Open Dir...");
+	A	ImGui::Text("Ctrl-O");		SKIPPED("Open File...");
+	A	ImGui::Text("Alt-O");		SKIPPED("Open Dir...");
 		#endif	
-		ImGui::Text("Ctrl-S");		D("Save As...");
-		ImGui::Text("Alt-S");		D("Save All...");
-		ImGui::Text("B");			D("Toggle Basic Mode");
+	A	ImGui::Text("Ctrl-S");		D("Save As...");
+	A	ImGui::Text("Alt-S");		D("Save All...");
+	A	ImGui::Text("B");			D("Toggle Basic Mode");
 
-		ImGui::Text("F");			D("Zoom Fit");
-		ImGui::Text("L");			D("Show Debug Log");
-		ImGui::Text("D");			D("Zoom Downscale Only");
-		ImGui::Text("Z");			D("Zoom 1:1 Pixels");
-		ImGui::Text("C");			D("Contact Sheet...");
-		ImGui::Text("P");			D("Preferences...");
-		ImGui::Text("V");			D("Content Thumbnail View...");
+	A	ImGui::Text("F");			D("Zoom Fit");
+	A	ImGui::Text("L");			D("Show Debug Log");
+	A	ImGui::Text("D");			D("Zoom Downscale Only");
+	A	ImGui::Text("Z");			D("Zoom 1:1 Pixels");
+	A	ImGui::Text("C");			D("Contact Sheet...");
+	A	ImGui::Text("P");			D("Preferences...");
+	A	ImGui::Text("V");			D("Content Thumbnail View...");
+	A	ImGui::Text("K");			D("Keybindings");
 
-		ImGui::Text("~");			D("Toggle Channel Filter");
-		ImGui::Text("1");			D("Toggle Red Channel");
-		ImGui::Text("2");			D("Toggle Green Channel");
-		ImGui::Text("3");			D("Toggle Blue Channel");
-		ImGui::Text("4");			D("Toggle Alpha Channel");
-		ImGui::Text("5");			D("Toggle Channel As Intensity");
+	A	ImGui::Text("~");			D("Toggle Channel Filter");
+	A	ImGui::Text("1");			D("Toggle Red Channel");
+	A	ImGui::Text("2");			D("Toggle Green Channel");
+	A	ImGui::Text("3");			D("Toggle Blue Channel");
+	A	ImGui::Text("4");			D("Toggle Alpha Channel");
+	A	ImGui::Text("5");			D("Toggle Channel As Intensity");
 #endif
-
 
 
 enum Modifier

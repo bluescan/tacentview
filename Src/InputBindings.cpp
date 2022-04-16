@@ -43,9 +43,9 @@ void Bindings::InitKeyNameTables()
 
 	tsPrintf(KeyNameTable[GLFW_KEY_SPACE],			"Space");
 	KeyNameTable[GLFW_KEY_APOSTROPHE][0]			= GLFW_KEY_APOSTROPHE;
-	KeyNameTable[GLFW_KEY_COMMA][0]					= GLFW_KEY_COMMA;
+	KeyNameTable[GLFW_KEY_COMMA][0]					= '<';
 	KeyNameTable[GLFW_KEY_MINUS][0]					= GLFW_KEY_MINUS;
-	KeyNameTable[GLFW_KEY_PERIOD][0]				= GLFW_KEY_PERIOD;
+	KeyNameTable[GLFW_KEY_PERIOD][0]				= '>';
 	KeyNameTable[GLFW_KEY_SLASH][0]					= GLFW_KEY_SLASH;
 
 	// We do blocks of consecutive values when we can. Most of the glfw keys map to ascii.
@@ -99,16 +99,16 @@ void Bindings::InitKeyNameTables()
 const char* Bindings::OperationDescriptions[int(Operation::NumOperations)] =
 {
 	"None",
-	"Previous Image",
 	"Next Image",
-	"Skip To First Image",
+	"Previous Image",
 	"Skip To Last Image",
-	"Previous Image Frame",
+	"Skip To First Image",
 	"Next Image Frame",
-	"One Pixel Left",
+	"Previous Image Frame",
 	"One Pixel Right",
-	"One Pixel Up",
+	"One Pixel Left",
 	"One Pixel Down",
+	"One Pixel Up",
 
 	"Zoom In",
 	"Zoom Out",
@@ -149,12 +149,13 @@ const char* Bindings::OperationDescriptions[int(Operation::NumOperations)] =
 	"Toggle Basic Mode",
 
 	"Zoom Fit",
-	"Show Debug Log",
+	"Toggle Debug Log",
 	"Zoom Downscale Only",
 	"Zoom 1:1 Pixels",
 	"Contact Sheet...",
 	"Preferences...",
 	"Content Thumbnail View...",
+	"Toggle Key Bindings...",
 
 	"Toggle Channel Filter",
 	"Toggle Red Channel",
@@ -226,31 +227,73 @@ bool Bindings::InputMap::AssignKey(int key, uint32 modifiers, Operation operatio
 void Bindings::InputMap::Reset()
 {
 	Clear();
-	AssignKey(GLFW_KEY_LEFT,	Modifier_None,		Operation::PrevImage);
-	AssignKey(GLFW_KEY_RIGHT,	Modifier_None,		Operation::NextImage);
-	AssignKey(GLFW_KEY_LEFT,	Modifier_Ctrl,		Operation::SkipToFirstImage);
-	AssignKey(GLFW_KEY_RIGHT,	Modifier_Ctrl,		Operation::SkipToLastImage);
-	AssignKey(GLFW_KEY_LEFT,	Modifier_Alt,		Operation::PrevImageFrame);
-	AssignKey(GLFW_KEY_RIGHT,	Modifier_Alt,		Operation::NextImageFrame);
-	AssignKey(GLFW_KEY_LEFT,	Modifier_Shift,		Operation::OnePixelLeft);
-	AssignKey(GLFW_KEY_RIGHT,	Modifier_Shift,		Operation::OnePixelRight);
-	AssignKey(GLFW_KEY_UP,		Modifier_Shift,		Operation::OnePixelUp);
-	AssignKey(GLFW_KEY_DOWN,	Modifier_Shift,		Operation::OnePixelDown);
-	AssignKey(GLFW_KEY_SPACE,	Modifier_None,		Operation::NextImage);
+	AssignKey(GLFW_KEY_RIGHT,		Modifier_None,		Operation::NextImage);
+	AssignKey(GLFW_KEY_LEFT,		Modifier_None,		Operation::PrevImage);
+	AssignKey(GLFW_KEY_RIGHT,		Modifier_Ctrl,		Operation::SkipToLastImage);
+	AssignKey(GLFW_KEY_LEFT,		Modifier_Ctrl,		Operation::SkipToFirstImage);
+	AssignKey(GLFW_KEY_RIGHT,		Modifier_Alt,		Operation::NextImageFrame);
+	AssignKey(GLFW_KEY_LEFT,		Modifier_Alt,		Operation::PrevImageFrame);
+	AssignKey(GLFW_KEY_RIGHT,		Modifier_Shift,		Operation::OnePixelRight);
+	AssignKey(GLFW_KEY_LEFT,		Modifier_Shift,		Operation::OnePixelLeft);
+	AssignKey(GLFW_KEY_UP,			Modifier_Shift,		Operation::OnePixelUp);
+	AssignKey(GLFW_KEY_DOWN,		Modifier_Shift,		Operation::OnePixelDown);
+	AssignKey(GLFW_KEY_SPACE,		Modifier_None,		Operation::NextImage);
 
-	AssignKey(GLFW_KEY_EQUAL,	Modifier_Ctrl,		Operation::ZoomIn);
-	AssignKey(GLFW_KEY_MINUS,	Modifier_Ctrl,		Operation::ZoomOut);
-	AssignKey(GLFW_KEY_F1,		Modifier_None,		Operation::ToggleCheatSheet);
-	AssignKey(GLFW_KEY_F2,		Modifier_None,		Operation::RenameFile);
-	AssignKey(GLFW_KEY_F5,		Modifier_None,		Operation::RefreshReloadImage);
-	AssignKey(GLFW_KEY_F11,		Modifier_None,		Operation::ToggleFullscreen);
-	AssignKey(GLFW_KEY_ENTER,	Modifier_Alt,		Operation::ToggleFullscreen);
+	AssignKey(GLFW_KEY_EQUAL,		Modifier_Ctrl,		Operation::ZoomIn);
+	AssignKey(GLFW_KEY_MINUS,		Modifier_Ctrl,		Operation::ZoomOut);
+	AssignKey(GLFW_KEY_F1,			Modifier_None,		Operation::ToggleCheatSheet);
+	AssignKey(GLFW_KEY_F2,			Modifier_None,		Operation::RenameFile);
+	AssignKey(GLFW_KEY_F5,			Modifier_None,		Operation::RefreshReloadImage);
+	AssignKey(GLFW_KEY_F11,			Modifier_None,		Operation::ToggleFullscreen);
+	AssignKey(GLFW_KEY_ENTER,		Modifier_Alt,		Operation::ToggleFullscreen);
 
-	AssignKey(GLFW_KEY_ESCAPE,	Modifier_None,		Operation::EscapeSupportingQuit);
-	AssignKey(GLFW_KEY_TAB,		Modifier_None,		Operation::OpenFileBrowser);
-	AssignKey(GLFW_KEY_DELETE,	Modifier_None,		Operation::Delete);
-	AssignKey(GLFW_KEY_DELETE,	Modifier_Shift,		Operation::DeletePermanent);
+	AssignKey(GLFW_KEY_ESCAPE,		Modifier_None,		Operation::EscapeSupportingQuit);
+	AssignKey(GLFW_KEY_ENTER,		Modifier_None,		Operation::OpenFileBrowser);
+	AssignKey(GLFW_KEY_DELETE,		Modifier_None,		Operation::Delete);
+	AssignKey(GLFW_KEY_DELETE,		Modifier_Shift,		Operation::DeletePermanent);
+	AssignKey(GLFW_KEY_F4,			Modifier_Alt,		Operation::Quit);
 
+	AssignKey(GLFW_KEY_F4,			Modifier_Alt,		Operation::Quit);
+	AssignKey(GLFW_KEY_COMMA,		Modifier_Ctrl,		Operation::FlipVertically);
+	AssignKey(GLFW_KEY_PERIOD,		Modifier_Ctrl,		Operation::FlipHorizontally);
+	AssignKey(GLFW_KEY_COMMA,		Modifier_None,		Operation::Rotate90Anticlockwise);
+	AssignKey(GLFW_KEY_PERIOD,		Modifier_None,		Operation::Rotate90Clockwise);
+	AssignKey(GLFW_KEY_SLASH,		Modifier_None,		Operation::Crop);
+	AssignKey(GLFW_KEY_A,			Modifier_None,		Operation::AdjustPixelColour);
+	AssignKey(GLFW_KEY_R,			Modifier_Alt,		Operation::ResizeImage);
+	AssignKey(GLFW_KEY_R,			Modifier_Ctrl,		Operation::ResizeCanvas);
+	AssignKey(GLFW_KEY_R,			Modifier_None,		Operation::RotateImage);
+
+	AssignKey(GLFW_KEY_I,			Modifier_None,		Operation::ToggleImageDetails);
+	AssignKey(GLFW_KEY_T,			Modifier_None,		Operation::ToggleTile);
+	AssignKey(GLFW_KEY_M,			Modifier_None,		Operation::ToggleMenuBar);
+	AssignKey(GLFW_KEY_M,			Modifier_Ctrl,		Operation::SaveMultiFrameImage);
+	AssignKey(GLFW_KEY_N,			Modifier_None,		Operation::ToggleNavBar);
+	AssignKey(GLFW_KEY_S,			Modifier_None,		Operation::ToggleSlideshowCountdown);
+
+	#ifdef ENABLE_FILE_DIALOG_SUPPORT
+	AssignKey(GLFW_KEY_O,			Modifier_Ctrl,		Operation::OpenFile);
+	AssignKey(GLFW_KEY_O,			Modifier_Alt,		Operation::OpenDir);
+	#endif
+	AssignKey(GLFW_KEY_S,			Modifier_Ctrl,		Operation::SaveAs);
+	AssignKey(GLFW_KEY_S,			Modifier_Alt,		Operation::SaveAll);
+	AssignKey(GLFW_KEY_B,			Modifier_None,		Operation::ToggleBasicMode);
+
+	AssignKey(GLFW_KEY_F,			Modifier_None,		Operation::ZoomFit);
+	AssignKey(GLFW_KEY_L,			Modifier_None,		Operation::ToggleDebugLog);
+	AssignKey(GLFW_KEY_D,			Modifier_None,		Operation::ZoomDownscaleOnly);
+	AssignKey(GLFW_KEY_Z,			Modifier_None,		Operation::ZoomOneToOne);
+	AssignKey(GLFW_KEY_C,			Modifier_None,		Operation::ContactSheet);
+	AssignKey(GLFW_KEY_P,			Modifier_None,		Operation::Preferences);
+	AssignKey(GLFW_KEY_V,			Modifier_None,		Operation::ContentThumbnailView);
+	AssignKey(GLFW_KEY_TAB,			Modifier_None,		Operation::ToggleKeyBindings);
+
+	AssignKey(GLFW_KEY_GRAVE_ACCENT,Modifier_None,		Operation::ToggleChannelFilter);
+	AssignKey(GLFW_KEY_1,			Modifier_None,		Operation::ToggleRedChannel);
+	AssignKey(GLFW_KEY_2,			Modifier_None,		Operation::ToggleGreenChannel);
+	AssignKey(GLFW_KEY_3,			Modifier_None,		Operation::ToggleBlueChannel);
+	AssignKey(GLFW_KEY_4,			Modifier_None,		Operation::ToggleAlphaChannel);
+	AssignKey(GLFW_KEY_5,			Modifier_None,		Operation::ToggleChannelAsIntensity);
 }
 
 
@@ -417,7 +460,7 @@ void Bindings::ShowWindow(bool* popen, bool justOpened)
 						const char* opCurrDesc = GetOperationDesc(opCurr);
 						tAssert(opCurrDesc);
 						ImGui::SetNextItemWidth(240);
-						if (ImGui::BeginCombo("oplabel", opCurrDesc, ImGuiComboFlags_NoArrowButton))
+						if (ImGui::BeginCombo(oplabel, opCurrDesc, ImGuiComboFlags_NoArrowButton))
 						{
 							for (int oper = int(Operation::First); oper < int(Operation::NumOperations); oper++)
 							{

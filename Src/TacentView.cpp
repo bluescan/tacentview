@@ -2133,12 +2133,12 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 	Bindings::Operation operation = Config::Current->InputBindings.GetOperation(key, viewerModifiers);
 	switch (operation)
 	{
-		case Bindings::Operation::PrevImage:
-			OnPrevious();		// Already checks CurrImage.
+		case Bindings::Operation::NextImage:
+			OnNext();
 			break;
 
-		case Bindings::Operation::NextImage:
-			OnNext();			// Already checks CurrImage.
+		case Bindings::Operation::PrevImage:
+			OnPrevious();
 			break;
 	}
 
