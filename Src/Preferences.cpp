@@ -33,7 +33,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	tString title;
-	tsPrintf(title, "Preferences (%s Profile)", (Config::GetProfile() == Config::Profile::Basic) ? "Basic" : "Main");
+	tsPrintf(title, "Preferences (%s Profile)", Config::GetProfileName());
 	if (!ImGui::Begin(title.Chars(), popen, windowFlags))
 	{
 		ImGui::End();

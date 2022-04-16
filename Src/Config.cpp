@@ -15,15 +15,12 @@
 #ifdef PLATFORM_WINDOWS
 #include <dwmapi.h>
 #endif
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL declarations.
-
 #ifdef PLATFORM_WINDOWS
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #endif
-
 #include <Foundation/tFundamentals.h>
 #include <System/tFile.h>
 #include <System/tScript.h>
@@ -48,6 +45,20 @@ namespace Config
 }
 
 
+const char* Config::ProfileNames[int(Profile::NumProfiles)] =
+{
+	"Main",
+	"Basic"
+};
+
+
+const char* Config::ProfileNamesLong[int(Profile::NumProfiles)] =
+{
+	"Main Profile",
+	"Basic Profile"
+};
+
+
 void Config::SetProfile(Profile profile)
 {
 	if (profile == Profile(Global.CurrentProfile))
@@ -63,6 +74,7 @@ void Config::SetProfile(Profile profile)
 
 
 Config::Profile Config::GetProfile()			{ return Profile(Global.CurrentProfile); }
+const char* Config::GetProfileName()			{ return ProfileNames[int(GetProfile())]; }
 void Config::ResetProfile(Category category)	{ Current->Reset(Profile(Global.CurrentProfile), category); }
 void Config::ResetAll()							{ MainSettings.Reset(Profile::Main); BasicSettings.Reset(Profile::Basic); }
 

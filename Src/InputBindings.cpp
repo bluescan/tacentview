@@ -382,14 +382,12 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 
 	if (ImGui::Begin("Keyboard Bindings", popen, flags))
 	{
-		const char* profiles[] = { "Main Profile", "Basic Profile" };
 		static int profile = 0;
 		if (justOpened)
 			profile = int(Config::GetProfile());
 
-		ImGui::PushItemWidth(100);
-		ImGui::Combo("##ProfileToEdit", &profile, profiles, tNumElements(profiles));
-		ImGui::PopItemWidth();
+		ImGui::SetNextItemWidth(100);
+		ImGui::Combo("##ProfileToEdit", &profile, Config::ProfileNamesLong, int(Config::Profile::NumProfiles));
 		Config::Settings& settings = (profile == 0) ? Config::MainSettings : Config::BasicSettings;
 
 		ImGui::SameLine();
@@ -400,7 +398,9 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		ImGui::SameLine();
 		if (ImGui::Button("Set All Profiles", tVector2(100, 0)))
 		{
-			// WIP Config::ResetAll();
+			// Operator= deals with the object being the same one, so just copy them both over indescriminately.
+			Config::MainSettings.InputBindings = settings.InputBindings;
+			Config::BasicSettings.InputBindings = settings.InputBindings;
 		}
 		ShowToolTip("Copies the keybindings to all profiles. Useful if you want them all the same.");
 

@@ -113,31 +113,38 @@ namespace Bindings
 	// keys are used.
 	struct KeyOps
 	{
-		KeyOps()																											{ Clear(); }
-		void Clear()																										{ for (int e = 0; e < Modifier_NumCombinations; e++) Operations[e] = Operation::None; }
-		bool IsAnythingAssigned() const																						{ for (int m = 0; m < Modifier_NumCombinations; m++) if (Operations[m] != Operation::None) return true; return false; }
-		int GetAssignedCount() const																						{ int count = 0; for (int m = 0; m < Modifier_NumCombinations; m++) if (Operations[m] != Operation::None) count++; return count; }
+		KeyOps()																										{ Clear(); }
+		KeyOps(const KeyOps& src)																						{ Set(src); }
+		void Set(const KeyOps& src)																						{ if (&src == this) return; for (int m = 0; m < Modifier_NumCombinations; m++) Operations[m] = src.Operations[m]; }
+
+		void Clear()																									{ for (int m = 0; m < Modifier_NumCombinations; m++) Operations[m] = Operation::None; }
+		bool IsAnythingAssigned() const																					{ for (int m = 0; m < Modifier_NumCombinations; m++) if (Operations[m] != Operation::None) return true; return false; }
+		int GetAssignedCount() const																					{ int count = 0; for (int m = 0; m < Modifier_NumCombinations; m++) if (Operations[m] != Operation::None) count++; return count; }
+		KeyOps& operator=(const KeyOps& src)																			{ Set(src); return *this; }
+
 		Operation Operations[Modifier_NumCombinations];
 	};
 
 	class InputMap
 	{
 	public:
-		InputMap()																											{ Clear(); }
-
-		void Clear();				// Unassigns all keys.
+		InputMap()																										{ Clear(); }
+		InputMap(const InputMap& src)																					{ Set(src); }
+		void Set(const InputMap& src)																					{ if (&src == this) return; for (int k = 0; k <= GLFW_KEY_LAST; k++) KeyTable[k] = src.KeyTable[k]; }
+		void Clear()				/* Unassigns all keys. */															{ for (int k = 0; k <= GLFW_KEY_LAST; k++) KeyTable[k].Clear(); }
 		void Reset();				// Sets all keys to their default operations.
 
-		// Returns the operation assigned to a particular key and set of modifiers. This can also be used before an assign
-		// call to see what a current key is bound to so an already-assigned message can be dislayed if needed.
-		Operation GetOperation(int glfwKey, uint32 modifiers);
-		KeyOps& GetOperations(int glfwKey)																					{ return KeyTable[glfwKey]; }
+		// Returns the operation assigned to a particular key and set of modifiers. This can also be used before an
+		// assign call to see what a current key is bound to so an already-assigned message can be dislayed if needed.
+		Operation GetOperation(int glfwKey, uint32 modifiers)															{ return KeyTable[glfwKey].Operations[modifiers]; }
+		KeyOps& GetOperations(int glfwKey)																				{ return KeyTable[glfwKey]; }
 
-		// Assigns the operation to the key and modifiers specified. Returns true is there was a previous assignment that
-		// needed to be replaced.
+		// Assigns the operation to the key and modifiers specified. Returns true is there was a previous assignment
+		// that needed to be replaced.
 		bool AssignKey(int glfwkey, uint32 modifiers, Operation);
-		void ClearKey(int glfwkey, uint32 modifiers);
-		int GetTotalAssigned() const																						{ int count = 0; for (int k = 0; k <= GLFW_KEY_LAST; k++) count += KeyTable[k].GetAssignedCount(); return count; }
+		void ClearKey(int glfwkey, uint32 modifiers)																	{ KeyTable[glfwkey].Operations[modifiers] = Operation::None; }
+		int GetTotalAssigned() const																					{ int count = 0; for (int k = 0; k <= GLFW_KEY_LAST; k++) count += KeyTable[k].GetAssignedCount(); return count; }
+		InputMap& operator=(const InputMap& src)																		{ Set(src); return *this; }
 
 		void Read(tExpression);
 		void Write(tScriptWriter&);
@@ -154,26 +161,7 @@ namespace Bindings
 
 	void ShowBindingsWindow(bool* popen, bool justOpened);
 	void ShowCheatSheetWindow(bool* popen);
-	// WIP Move cheat sheet over to here.
 	// WIP Need to make sure always can bring up bindings window.. even if menu not visible.
+}
 
-
-	// Implementaion only below this line.
-
-
-	inline void InputMap::Clear()
-	{
-		for (int k = 0; k <= GLFW_KEY_LAST; k++)
-			KeyTable[k].Clear();
-	}
-
-	inline Operation InputMap::GetOperation(int key, uint32 modifiers)
-	{
-		return KeyTable[key].Operations[modifiers];
-	}
-
-	inline void InputMap::ClearKey(int key, uint32 modifiers)
-	{
-		KeyTable[key].Operations[modifiers] = Operation::None;
-	}
-} }
+}

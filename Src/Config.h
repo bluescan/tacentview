@@ -25,8 +25,11 @@ namespace Viewer { namespace Config {
 enum class Profile
 {
 	Main,
-	Basic
+	Basic,
+	NumProfiles
 };
+extern const char* ProfileNames[int(Profile::NumProfiles)];
+extern const char* ProfileNamesLong[int(Profile::NumProfiles)];
 
 
 enum class Category
@@ -180,14 +183,17 @@ struct GlobalSettings
 	void Reset();
 };
 
+
 // Loads the global settings and all profile settings from a single file.
 void Load(const tString& filename);
 
 // Saves the global settings and all profile settings in a single file.
 void Save(const tString& filename);
 
+// These apply to the current profile.
 void SetProfile(Profile);
 Profile GetProfile();
+const char* GetProfileName();
 
 // Current profile reset. If category is 'Everything' it resets all categories plus stuff not in a category.
 void ResetProfile(Category = Category::Everything);
