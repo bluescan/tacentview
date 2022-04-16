@@ -147,9 +147,9 @@ const char* Bindings::OperationDescriptions[int(Operation::NumOperations)] =
 	"Save As...",
 	"Save All...",
 	"Toggle Basic Mode",
+	"Toggle Debug Log",
 
 	"Zoom Fit",
-	"Toggle Debug Log",
 	"Zoom Downscale Only",
 	"Zoom 1:1 Pixels",
 	"Contact Sheet...",
@@ -278,9 +278,9 @@ void Bindings::InputMap::Reset()
 	AssignKey(GLFW_KEY_S,			Modifier_Ctrl,		Operation::SaveAs);
 	AssignKey(GLFW_KEY_S,			Modifier_Alt,		Operation::SaveAll);
 	AssignKey(GLFW_KEY_B,			Modifier_None,		Operation::ToggleBasicMode);
+	AssignKey(GLFW_KEY_L,			Modifier_None,		Operation::ToggleDebugLog);
 
 	AssignKey(GLFW_KEY_F,			Modifier_None,		Operation::ZoomFit);
-	AssignKey(GLFW_KEY_L,			Modifier_None,		Operation::ToggleDebugLog);
 	AssignKey(GLFW_KEY_D,			Modifier_None,		Operation::ZoomDownscaleOnly);
 	AssignKey(GLFW_KEY_Z,			Modifier_None,		Operation::ZoomOneToOne);
 	AssignKey(GLFW_KEY_C,			Modifier_None,		Operation::ContactSheet);

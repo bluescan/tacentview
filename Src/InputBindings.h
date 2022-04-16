@@ -69,9 +69,9 @@ enum class Operation
 	SaveAs,
 	SaveAll,
 	ToggleBasicMode,
+	ToggleDebugLog,
 
 	ZoomFit,
-	ToggleDebugLog,
 	ZoomDownscaleOnly,
 	ZoomOneToOne,
 	ContactSheet,
@@ -182,6 +182,7 @@ enum Modifier
 	Modifier_NumCombinations	= 1 << 3
 };
 const char* GetModifiersText(uint32 modifiers);
+
 
 // Converts from GLFW modifiers to viewer modifiers.
 uint32 TranslateModifiers(int glfwModifiers);

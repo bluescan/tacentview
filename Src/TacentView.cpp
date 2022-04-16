@@ -2140,207 +2140,279 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case Bindings::Operation::PrevImage:
 			OnPrevious();
 			break;
-	}
 
-	switch (key)
-	{
-		case GLFW_KEY_LEFT:
-			if (!CurrImage)
-				break;
-			if (modifiers == GLFW_MOD_CONTROL)
-				OnSkipBegin();
-			else if (modifiers == GLFW_MOD_ALT)
-				OnPrevImageFrame();
-			else if (modifiers == GLFW_MOD_SHIFT)
-				RequestCursorMove = CursorMove_Left;
+		case Bindings::Operation::SkipToLastImage:
+			OnSkipEnd();
 			break;
 
-		case GLFW_KEY_RIGHT:
-			if (!CurrImage)
-				break;
-			if (modifiers == GLFW_MOD_CONTROL)
-				OnSkipEnd();
-			else if (modifiers == GLFW_MOD_ALT)
-				OnNextImageFrame();
-			else if (modifiers == GLFW_MOD_SHIFT)
-				RequestCursorMove = CursorMove_Right;
+		case Bindings::Operation::SkipToFirstImage:
+			OnSkipBegin();
 			break;
 
-		case GLFW_KEY_UP:
-			if (!CurrImage)
-				break;
-			if (modifiers == GLFW_MOD_SHIFT)
-				RequestCursorMove = CursorMove_Up;
+		case Bindings::Operation::NextImageFrame:
+			OnNextImageFrame();
 			break;
 
-		case GLFW_KEY_DOWN:
-			if (!CurrImage)
-				break;
-			if (modifiers == GLFW_MOD_SHIFT)
-				RequestCursorMove = CursorMove_Down;
+		case Bindings::Operation::PrevImageFrame:
+			OnPrevImageFrame();
 			break;
 
-//		case GLFW_KEY_SPACE:
-//			OnNext();
-//			break;
-
-		case GLFW_KEY_EQUAL:
-			// Ctrl +
-			if (modifiers == GLFW_MOD_CONTROL)
-				ApplyZoomDelta(tMath::tRound(ZoomPercent*0.1f));
+		case Bindings::Operation::OnePixelRight:
+			if (CurrImage) RequestCursorMove = CursorMove_Right;
 			break;
 
-		case GLFW_KEY_MINUS:
-			// Ctrl -
-			if (modifiers == GLFW_MOD_CONTROL)
-				ApplyZoomDelta(tMath::tRound(ZoomPercent*(0.909090909f - 1.0f)));
+		case Bindings::Operation::OnePixelLeft:
+			if (CurrImage) RequestCursorMove = CursorMove_Left;
 			break;
 
-		case GLFW_KEY_ENTER:
-			if (modifiers == GLFW_MOD_ALT)
-				ChangeScreenMode(!FullscreenMode);
+		case Bindings::Operation::OnePixelDown:
+			if (CurrImage) RequestCursorMove = CursorMove_Down;
 			break;
 
-		case GLFW_KEY_ESCAPE:
+		case Bindings::Operation::OnePixelUp:
+			if (CurrImage) RequestCursorMove = CursorMove_Up;
+			break;
+
+		case Bindings::Operation::ZoomIn:
+			ApplyZoomDelta(tMath::tRound(ZoomPercent*0.1f));
+			break;
+
+		case Bindings::Operation::ZoomOut:
+			ApplyZoomDelta(tMath::tRound(ZoomPercent*(0.909090909f - 1.0f)));
+			break;
+
+		case Bindings::Operation::ToggleCheatSheet:
+			ShowCheatSheet = !ShowCheatSheet;
+			break;
+
+		case Bindings::Operation::RenameFile:
+			if (CurrImage) Request_RenameModal = true;
+			break;
+
+		case Bindings::Operation::RefreshReloadImage:
+			if (CurrImage)
+			{
+				CurrImage->Unbind();
+				CurrImage->Unload(true);
+				CurrImage->Load();
+				CurrImage->Bind();
+				SetWindowTitle();
+			}
+			break;
+
+		case Bindings::Operation::ToggleFullscreen:
+			ChangeScreenMode(!FullscreenMode);
+			break;
+
+		case Bindings::Operation::Escape:
 			if (FullscreenMode)
 				ChangeScreenMode(false);
 			else if (Config::GetProfile() == Config::Profile::Basic)
 				ChangeProfile(Config::Profile::Main);
-			else // if (Config::Current->EscCanQuit)
+			break;
+
+		case Bindings::Operation::EscapeSupportingQuit:
+			if (FullscreenMode)
+				ChangeScreenMode(false);
+			else if (Config::GetProfile() == Config::Profile::Basic)
+				ChangeProfile(Config::Profile::Main);
+			else
 				Viewer::Request_Quit = true;				
 			break;
 
-		case GLFW_KEY_DELETE:
-			if (!CurrImage)
-				break;
-			if (modifiers == GLFW_MOD_SHIFT)
-				Request_DeleteFileNoRecycleModal = true;
-			else
-				Request_DeleteFileModal = true;
-			break;
-
-		case GLFW_KEY_TAB:
+		case Bindings::Operation::OpenFileBrowser:
 		{
 			#ifdef PACKAGE_SNAP
 			static int messageCount = 2;
 			if (messageCount-- > 0)
 				Request_SnapMessage_NoFileBrowse = true;
 			#else
-			if (CurrImage)
-				tSystem::tOpenSystemFileExplorer(CurrImage->Filename);
+			if (CurrImage) tSystem::tOpenSystemFileExplorer(CurrImage->Filename);
 			#endif
 			break;
 		}
 
-		case GLFW_KEY_COMMA:
+		case Bindings::Operation::Delete:
+			if (CurrImage) Request_DeleteFileModal = true;
+			break;
+
+		case Bindings::Operation::DeletePermanent:
+			if (CurrImage) Request_DeleteFileNoRecycleModal = true;
+			break;
+
+		case Bindings::Operation::Quit:
+			Viewer::Request_Quit = true;				
+			break;
+
+		case Bindings::Operation::FlipVertically:
+		case Bindings::Operation::FlipHorizontally:
 			if (CurrImage && !CurrImage->IsAltPictureEnabled())
 			{
 				CurrImage->Unbind();
-				if (modifiers == GLFW_MOD_CONTROL)
-					CurrImage->Flip(false);
-				else
-					CurrImage->Rotate90(true);
+				CurrImage->Flip(operation == Bindings::Operation::FlipHorizontally);
 				CurrImage->Bind();
 				SetWindowTitle();
 			}
 			break;
 
-		case GLFW_KEY_PERIOD:
+		case Bindings::Operation::Rotate90Anticlockwise:
+		case Bindings::Operation::Rotate90Clockwise:
 			if (CurrImage && !CurrImage->IsAltPictureEnabled())
 			{
 				CurrImage->Unbind();
-				if (modifiers == GLFW_MOD_CONTROL)
-					CurrImage->Flip(true);
-				else
-					CurrImage->Rotate90(false);
+				CurrImage->Rotate90(operation == Bindings::Operation::Rotate90Anticlockwise);
 				CurrImage->Bind();
 				SetWindowTitle();
 			}
 			break;
 
-		case GLFW_KEY_SLASH:
+		case Bindings::Operation::Crop:
 			CropMode = !CropMode;
 			break;
 
-		case GLFW_KEY_F1:
-			ShowCheatSheet = !ShowCheatSheet;
+		case Bindings::Operation::AdjustPixelColour:
+			Viewer::Config::Current->ShowPixelEditor = !Viewer::Config::Current->ShowPixelEditor;
 			break;
 
-		case GLFW_KEY_F2:
-			if (!CurrImage)
-				break;
-			Request_RenameModal = true;
+		case Bindings::Operation::ResizeImage:
+			if (CurrImage) Request_ResizeImageModal = true;
 			break;
 
-		case GLFW_KEY_F11:
-			ChangeScreenMode(!FullscreenMode);
+		case Bindings::Operation::ResizeCanvas:
+			if (CurrImage) Request_ResizeCanvasModal = true;
 			break;
 
-		case GLFW_KEY_F5:
-			if (!CurrImage)
-				break;
-			CurrImage->Unbind();
-			CurrImage->Unload(true);
-			CurrImage->Load();
-			CurrImage->Bind();
-			SetWindowTitle();
+		case Bindings::Operation::RotateImage:
+			if (CurrImage) Request_RotateImageModal = true;
 			break;
 
-		case GLFW_KEY_T:
+		case Bindings::Operation::ToggleImageDetails:
+			Viewer::Config::Current->ShowImageDetails = !Viewer::Config::Current->ShowImageDetails;
+			break;
+
+		case Bindings::Operation::ToggleTile:
 			Config::Current->Tile = !Config::Current->Tile;
 			if (!Config::Current->Tile)
 				ResetPan();
 			break;
 
-		case GLFW_KEY_B:
-			if (CropMode)
-				break;
-			ChangeProfile((Config::GetProfile() == Config::Profile::Basic) ? Config::Profile::Main : Config::Profile::Basic);
+		case Bindings::Operation::ToggleMenuBar:
+			if (!CropMode) Config::Current->ShowMenuBar = !Config::Current->ShowMenuBar;
 			break;
 
-		case GLFW_KEY_M:
-			if (modifiers == GLFW_MOD_CONTROL)
-			{
-				if (Images.GetNumItems() > 1)
-					Request_MultiFrameModal = true;
-			}
-			else if (!CropMode)
-			{
-				Config::Current->ShowMenuBar = !Config::Current->ShowMenuBar;
-			}
+		case Bindings::Operation::SaveMultiFrameImage:
+			if (Images.GetNumItems() > 1) Request_MultiFrameModal = true;
 			break;
 
-		case GLFW_KEY_N:
-			if (!CropMode)
-				Config::Current->ShowNavBar = !Config::Current->ShowNavBar;
+		case Bindings::Operation::ToggleNavBar:
+			if (!CropMode) Config::Current->ShowNavBar = !Config::Current->ShowNavBar;
 			break;
 
-		case GLFW_KEY_I:
-			Viewer::Config::Current->ShowImageDetails = !Viewer::Config::Current->ShowImageDetails;
+		case Bindings::Operation::ToggleSlideshowCountdown:
+			Config::Current->SlideshowProgressArc = !Config::Current->SlideshowProgressArc;
 			break;
 
-		case GLFW_KEY_A:
-			Viewer::Config::Current->ShowPixelEditor = !Viewer::Config::Current->ShowPixelEditor;
+		case Bindings::Operation::SaveAs:
+			if (CurrImage) Request_SaveAsModal = true;
 			break;
 
-		case GLFW_KEY_V:
-			Viewer::Config::Current->ContentViewShow = !Viewer::Config::Current->ContentViewShow;
+		case Bindings::Operation::SaveAll:
+			if (CurrImage) Request_SaveAllModal = true;
 			break;
 
-		case GLFW_KEY_L:
+		case Bindings::Operation::ToggleBasicMode:
+			if (!CropMode) ChangeProfile((Config::GetProfile() == Config::Profile::Basic) ? Config::Profile::Main : Config::Profile::Basic);
+			break;
+
+		case Bindings::Operation::ToggleDebugLog:
 			NavBar.SetShowLog( !NavBar.GetShowLog() );
 			if (NavBar.GetShowLog() && !Config::Current->ShowNavBar)
 				Config::Current->ShowNavBar = true;
 			break;
 
-		case GLFW_KEY_F:
+		case Bindings::Operation::ZoomFit:
 			ResetPan();
 			CurrZoomMode = Config::Settings::ZoomMode::Fit;
 			break;
 
-		case GLFW_KEY_D:
+		case Bindings::Operation::ZoomDownscaleOnly:
 			ResetPan();
 			CurrZoomMode = Config::Settings::ZoomMode::DownscaleOnly;
+			break;
+
+		case Bindings::Operation::ZoomOneToOne:
+			ZoomPercent = 100.0f;
+			ResetPan();
+			CurrZoomMode = Config::Settings::ZoomMode::OneToOne;
+			break;
+
+		case Bindings::Operation::ContactSheet:
+			if (Images.GetNumItems() > 1) Request_ContactSheetModal = true;
+			break;
+
+		case Bindings::Operation::Preferences:
+			PrefsWindow = !PrefsWindow;
+			break;
+
+		case Bindings::Operation::ContentThumbnailView:
+			Viewer::Config::Current->ContentViewShow = !Viewer::Config::Current->ContentViewShow;
+			break;
+
+		case Bindings::Operation::ToggleKeyBindings:
+			BindingsWindow = !BindingsWindow;
+			if (BindingsWindow) BindingsWindowJustOpened = true;
+			break;
+
+		case Bindings::Operation::ToggleChannelFilter:
+			Config::Current->ShowChannelFilter = !Config::Current->ShowChannelFilter;
+			break;
+
+		case Bindings::Operation::ToggleRedChannel:
+			if (DrawChannel_AsIntensity)
+				{ DrawChannel_R = true; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = false; }
+			else
+				DrawChannel_R = !DrawChannel_R;
+			Config::Current->ShowChannelFilter = true;	
+			break;
+
+		case Bindings::Operation::ToggleGreenChannel:
+			if (DrawChannel_AsIntensity)
+				{ DrawChannel_R = false; DrawChannel_G = true; DrawChannel_B = false; DrawChannel_A = false; }
+			else
+				DrawChannel_G = !DrawChannel_G;
+			Config::Current->ShowChannelFilter = true;	
+			break;
+
+		case Bindings::Operation::ToggleBlueChannel:
+			if (DrawChannel_AsIntensity)
+				{ DrawChannel_R = false; DrawChannel_G = false; DrawChannel_B = true; DrawChannel_A = false; }
+			else
+				DrawChannel_B = !DrawChannel_B;
+			Config::Current->ShowChannelFilter = true;	
+			break;
+
+		case Bindings::Operation::ToggleAlphaChannel:
+			if (DrawChannel_AsIntensity)
+				{ DrawChannel_R = false; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = true; }
+			else
+				DrawChannel_A = !DrawChannel_A;
+			Config::Current->ShowChannelFilter = true;	
+			break;
+
+		case Bindings::Operation::ToggleChannelAsIntensity:
+			DrawChannel_AsIntensity = !DrawChannel_AsIntensity;
+			if (DrawChannel_AsIntensity)
+				{ DrawChannel_R = true; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = false; }
+			else
+				{ DrawChannel_R = true; DrawChannel_G = true; DrawChannel_B = true; DrawChannel_A = true; }
+			Config::Current->ShowChannelFilter = true;	
+			break;
+	}
+
+	switch (key)
+	{
+		case GLFW_KEY_F11:
+			ChangeScreenMode(!FullscreenMode);
 			break;
 
 		case GLFW_KEY_Y:		// Redo.
@@ -2357,23 +2429,6 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				if (CurrImage && CurrImage->IsUndoAvailable())
 					Undo();
 			}
-			else
-			{
-				ZoomPercent = 100.0f;
-				ResetPan();
-				CurrZoomMode = Config::Settings::ZoomMode::OneToOne;
-			}
-			break;
-
-		case GLFW_KEY_R:			// Resize Image.
-			if (!CurrImage)
-				break;
-			if (modifiers == GLFW_MOD_ALT)
-				Request_ResizeImageModal = true;
-			else if (modifiers == GLFW_MOD_CONTROL)
-				Request_ResizeCanvasModal = true;
-			else
-				Request_RotateImageModal = true;
 			break;
 
 		#ifdef ENABLE_FILE_DIALOG_SUPPORT
@@ -2385,81 +2440,8 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 		#endif
 
-		case GLFW_KEY_S:			// SaveAs and SaveAll.
-			if (!modifiers)
-				Config::Current->SlideshowProgressArc = !Config::Current->SlideshowProgressArc;
-
-			if (!CurrImage)
-				break;
-
-			if (modifiers == GLFW_MOD_CONTROL)
-				Request_SaveAsModal = true;
-			else if (modifiers == GLFW_MOD_ALT)
-				Request_SaveAllModal = true;
-			break;
-
-		case GLFW_KEY_C:
-			if (Images.GetNumItems() > 1)
-				Request_ContactSheetModal = true;
-			break;
-
-		case GLFW_KEY_P:
-			PrefsWindow = !PrefsWindow;
-			break;
-
 		case GLFW_KEY_E:
 			PropsWindow = !PropsWindow;
-			break;
-
-		case GLFW_KEY_K:
-			BindingsWindow = !BindingsWindow;
-			if (BindingsWindow)
-				BindingsWindowJustOpened = true;
-			break;
-
-		case GLFW_KEY_GRAVE_ACCENT:
-			Config::Current->ShowChannelFilter = !Config::Current->ShowChannelFilter;
-			break;
-
-		case GLFW_KEY_1:
-			if (DrawChannel_AsIntensity)
-				{ DrawChannel_R = true; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = false; }
-			else
-				DrawChannel_R = !DrawChannel_R;
-			Config::Current->ShowChannelFilter = true;	
-			break;
-
-		case GLFW_KEY_2:
-			if (DrawChannel_AsIntensity)
-				{ DrawChannel_R = false; DrawChannel_G = true; DrawChannel_B = false; DrawChannel_A = false; }
-			else
-				DrawChannel_G = !DrawChannel_G;
-			Config::Current->ShowChannelFilter = true;	
-			break;
-
-		case GLFW_KEY_3:
-			if (DrawChannel_AsIntensity)
-				{ DrawChannel_R = false; DrawChannel_G = false; DrawChannel_B = true; DrawChannel_A = false; }
-			else
-				DrawChannel_B = !DrawChannel_B;
-			Config::Current->ShowChannelFilter = true;	
-			break;
-
-		case GLFW_KEY_4:
-			if (DrawChannel_AsIntensity)
-				{ DrawChannel_R = false; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = true; }
-			else
-				DrawChannel_A = !DrawChannel_A;
-			Config::Current->ShowChannelFilter = true;	
-			break;
-
-		case GLFW_KEY_5:
-			DrawChannel_AsIntensity = !DrawChannel_AsIntensity;
-			if (DrawChannel_AsIntensity)
-				{ DrawChannel_R = true; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = false; }
-			else
-				{ DrawChannel_R = true; DrawChannel_G = true; DrawChannel_B = true; DrawChannel_A = true; }
-			Config::Current->ShowChannelFilter = true;	
 			break;
 	}
 }
