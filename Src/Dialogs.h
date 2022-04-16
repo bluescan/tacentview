@@ -20,7 +20,6 @@ namespace Viewer
 	void ShowImageDetailsOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY, float zoom);
 	void ShowPixelEditorOverlay(bool* popen);
 	void ShowChannelFilterOverlay(bool* popen);
-	void ShowCheatSheetPopup(bool* popen);
 	void ShowAboutPopup(bool* popen);
 	void ColourCopyAs();
 	void DoDeleteFileModal();

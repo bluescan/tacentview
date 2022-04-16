@@ -34,6 +34,15 @@ namespace Bindings
 	struct TableInitializer { TableInitializer() { InitKeyNameTables(); } }; TableInitializer Initializer;
 
 	extern const char* OperationDescriptions[int(Operation::NumOperations)];
+
+	// Given a glfw key as input, returns the full name of the key. This is useful if you want to display help text that
+	// describes what a particulr key does. Returns nullptr if the GLFW key define is not supported. Examples:
+	// GLFW_KEY_SPACE			->		"Space"
+	// GLFW_KEY_GRAVE_ACCENT	->		"~"
+	// GLFW_KEY_ECAPE			->		"Esc"
+	// GLFW_KEY_F11				->		"F11"
+	// GLFW_KEY_Q				->		"Q"
+	const char* GetKeyName(int glfwkey);
 }
 
 
@@ -364,11 +373,11 @@ void Bindings::InputMap::Write(tScriptWriter& writer)
 }
 
 
-void Bindings::ShowWindow(bool* popen, bool justOpened)
+void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 {
 	tVector2 windowPos = GetDialogOrigin(7);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(tVector2(440.0f, 600.0f), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Appearing);
+	ImGui::SetNextWindowSize(tVector2(440.0f, 600.0f), ImGuiCond_Appearing);
 	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize;
 
 	if (ImGui::Begin("Keyboard Bindings", popen, flags))
@@ -422,7 +431,7 @@ void Bindings::ShowWindow(bool* popen, bool justOpened)
 
 			ImGuiListClipper clipper;
 
-			clipper.Begin(totalAssigned + 0);
+			clipper.Begin(totalAssigned);
 			while (clipper.Step())
 			{
 				// Multiple keys can be bound to the same operation (ex space and right-arrow for next image)
@@ -435,10 +444,7 @@ void Bindings::ShowWindow(bool* popen, bool justOpened)
 				// Ctrl-Shift-R 	Next Image[combo]		[-]
 				// Space		 	Rotate Image[combo]		[-]
 				// --------------------------------------------
-				// Operation[combo]	Key[combo] Mods 		[+] (brings up replace popup if necessary)
-
-				ImGui::TableNextRow();
-
+				// Key[combo] Mods	Operation[combo]	 	[+] (brings up replace popup if necessary)
 				for (int k = 0; k <= GLFW_KEY_LAST; k++)
 				{
 					KeyOps& keyops = settings.InputBindings.GetOperations(k);
@@ -606,6 +612,95 @@ void Bindings::ShowAddBindingSection(Config::Settings& settings)
 
 		ImGui::EndTable();
 	}
+}
+
+
+void Bindings::ShowCheatSheetWindow(bool* popen)
+{
+	tVector2 windowPos = GetDialogOrigin(5);
+	ImGui::SetNextWindowBgAlpha(0.75f);
+	ImGui::SetNextWindowSize(tVector2(350.0f, 600.0f), ImGuiCond_Appearing);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Appearing);
+	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+
+	if (ImGui::Begin("Cheat Sheet", popen, flags))
+	{
+		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
+		const float rowHeight = 25.0f;
+		const int maxRowsToDisplay = 18;
+		int totalAssigned = Config::Current->InputBindings.GetTotalAssigned();
+		const int numRowsToDisplay = tMin(maxRowsToDisplay, totalAssigned);
+		tVector2 outerSize = ImVec2(0.0f, rowHeight + rowHeight * float(numRowsToDisplay));
+		if (ImGui::BeginTable("CheatSheetTable", 2, tableFlags, outerSize))
+		{
+			ImGui::TableSetupScrollFreeze(0, 1); // Top row fixed.
+			ImGui::TableSetupColumn("Action", ImGuiTableColumnFlags_WidthFixed, 110);
+			ImGui::TableSetupColumn("Operation", ImGuiTableColumnFlags_WidthFixed, 240);
+			ImGui::TableHeadersRow();
+
+			ImGuiListClipper clipper;
+			clipper.Begin(totalAssigned);
+			while (clipper.Step())
+			{
+				ImGui::TableNextRow();
+				ImGui::TableSetColumnIndex(0);
+				ImGui::Text("Mouse Left-Click");
+				ImGui::TableSetColumnIndex(1);
+				ImGui::Text("Set Reticle Pos");
+
+				ImGui::TableNextRow();
+				ImGui::TableSetColumnIndex(0);
+				ImGui::Text("Mouse Right-Hold");
+				ImGui::TableSetColumnIndex(1);
+				ImGui::Text("Pan Image");
+
+				for (int k = 0; k <= GLFW_KEY_LAST; k++)
+				{
+					KeyOps& keyops = Config::Current->InputBindings.GetOperations(k);
+					const char* keyName = GetKeyName(k);
+					if (!keyops.IsAnythingAssigned() || !keyName)
+						continue;
+
+					for (int m = 0; m < Modifier_NumCombinations; m++)
+					{
+						Operation opCurr = keyops.Operations[m];
+						if (opCurr == Operation::None)
+							continue;
+
+						ImGui::TableNextRow();
+
+						// Action column.
+						ImGui::TableSetColumnIndex(0);
+						const char* modText = GetModifiersText(m);
+						if (modText)
+							ImGui::Text("%s %s", modText, keyName);
+						else
+							ImGui::Text("%s", keyName);
+
+						// Operation column.
+						ImGui::TableSetColumnIndex(1);
+						const char* opCurrDesc = GetOperationDesc(opCurr);
+						tAssert(opCurrDesc);
+						ImGui::Text(opCurrDesc);
+					}
+				}
+			}
+			ImGui::EndTable();
+		}
+
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2);
+		ImGui::Text("Current Profile: %s", (Config::GetProfile() == Config::Profile::Main) ? "Main" : "Basic");
+
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+		if (ImGui::Button("Close", tVector2(100, 0)))
+		{
+			if (popen)
+				*popen = false;
+		}
+	}
+
+	ImGui::End();
 }
 
 

@@ -257,6 +257,9 @@ tVector2 Viewer::GetDialogOrigin(float index)
 	if (index == 2)
 		return tVector2(DialogOrigin + DialogDelta, DialogOrigin + TopUIHeight + 275.0f);
 
+	else if (index == 5)
+		return tVector2(DialogOrigin + 416.0f, DialogOrigin + TopUIHeight + DialogDelta*1.0f);
+
 	else if (index == 6)
 		return tVector2(DialogOrigin + 300.0f, DialogOrigin + TopUIHeight + DialogDelta*1.0f);
 
@@ -1863,7 +1866,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	if (BindingsWindow)
 	{
-		Bindings::ShowWindow(&BindingsWindow, BindingsWindowJustOpened);
+		Bindings::ShowBindingsWindow(&BindingsWindow, BindingsWindowJustOpened);
 		BindingsWindowJustOpened = false;
 	}
 
@@ -1886,7 +1889,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ShowContentViewDialog(&Config::Current->ContentViewShow);
 
 	if (ShowCheatSheet)
-		ShowCheatSheetPopup(&ShowCheatSheet);
+		Bindings::ShowCheatSheetWindow(&ShowCheatSheet);
 
 	if (ShowAbout)
 		ShowAboutPopup(&ShowAbout);
