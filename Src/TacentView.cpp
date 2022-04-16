@@ -2270,6 +2270,10 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			CropMode = !CropMode;
 			break;
 
+		case Bindings::Operation::PropertyEditor:
+			PropsWindow = !PropsWindow;
+			break;
+
 		case Bindings::Operation::AdjustPixelColour:
 			Viewer::Config::Current->ShowPixelEditor = !Viewer::Config::Current->ShowPixelEditor;
 			break;
@@ -2407,42 +2411,24 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				{ DrawChannel_R = true; DrawChannel_G = true; DrawChannel_B = true; DrawChannel_A = true; }
 			Config::Current->ShowChannelFilter = true;	
 			break;
-	}
 
-	switch (key)
-	{
-		case GLFW_KEY_F11:
-			ChangeScreenMode(!FullscreenMode);
+		case Bindings::Operation::Undo:
+			if (CurrImage && CurrImage->IsUndoAvailable()) Undo();
 			break;
 
-		case GLFW_KEY_Y:		// Redo.
-			if (modifiers == GLFW_MOD_CONTROL)
-			{
-				if (CurrImage && CurrImage->IsRedoAvailable())
-					Redo();
-			}
-			break;
-
-		case GLFW_KEY_Z:
-			if (modifiers == GLFW_MOD_CONTROL)
-			{
-				if (CurrImage && CurrImage->IsUndoAvailable())
-					Undo();
-			}
+		case Bindings::Operation::Redo:
+			if (CurrImage && CurrImage->IsRedoAvailable()) Redo();
 			break;
 
 		#ifdef ENABLE_FILE_DIALOG_SUPPORT
-		case GLFW_KEY_O:
-			if (modifiers == GLFW_MOD_ALT)
-				Request_OpenDirModal = true;
-			else if (modifiers == GLFW_MOD_CONTROL)
-				Request_OpenFileModal = true;
+		case Bindings::Operation::OpenFile:
+			Request_OpenFileModal = true;
+			break;
+
+		case Bindings::Operation::OpenDir:
+			Request_OpenDirModal = true;
 			break;
 		#endif
-
-		case GLFW_KEY_E:
-			PropsWindow = !PropsWindow;
-			break;
 	}
 }
 

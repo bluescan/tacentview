@@ -55,6 +55,7 @@ enum class Operation
 	Rotate90Anticlockwise,
 	Rotate90Clockwise,
 	Crop,
+	PropertyEditor,
 	AdjustPixelColour,
 	ResizeImage,
 	ResizeCanvas,
@@ -86,8 +87,16 @@ enum class Operation
 	ToggleAlphaChannel,
 	ToggleChannelAsIntensity,
 
+	Undo,
+	Redo,
+
 	// Add new operations here. Adding above will invalidate save file keybindings.
 
+	#ifdef ENABLE_FILE_DIALOG_SUPPORT
+	OpenFile,
+	OpenDir,
+	#endif
+	
 	NumOperations
 };
 

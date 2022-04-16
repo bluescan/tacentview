@@ -133,6 +133,7 @@ const char* Bindings::OperationDescriptions[int(Operation::NumOperations)] =
 	"Rotate 90 Anticlockwise",
 	"Rotate 90 Clockwise",
 	"Crop",
+	"Property Editor",
 	"Adjust Pixel Colour",
 	"Resize Image",
 	"Resize Canvas",
@@ -162,7 +163,10 @@ const char* Bindings::OperationDescriptions[int(Operation::NumOperations)] =
 	"Toggle Green Channel",
 	"Toggle Blue Channel",
 	"Toggle Alpha Channel",
-	"Toggle Channel As Intensity"
+	"Toggle Channel As Intensity",
+
+	"Undo",
+	"Redo"
 };
 
 
@@ -253,12 +257,12 @@ void Bindings::InputMap::Reset()
 	AssignKey(GLFW_KEY_DELETE,		Modifier_Shift,		Operation::DeletePermanent);
 	AssignKey(GLFW_KEY_F4,			Modifier_Alt,		Operation::Quit);
 
-	AssignKey(GLFW_KEY_F4,			Modifier_Alt,		Operation::Quit);
 	AssignKey(GLFW_KEY_COMMA,		Modifier_Ctrl,		Operation::FlipVertically);
 	AssignKey(GLFW_KEY_PERIOD,		Modifier_Ctrl,		Operation::FlipHorizontally);
 	AssignKey(GLFW_KEY_COMMA,		Modifier_None,		Operation::Rotate90Anticlockwise);
 	AssignKey(GLFW_KEY_PERIOD,		Modifier_None,		Operation::Rotate90Clockwise);
 	AssignKey(GLFW_KEY_SLASH,		Modifier_None,		Operation::Crop);
+	AssignKey(GLFW_KEY_E,			Modifier_None,		Operation::PropertyEditor);
 	AssignKey(GLFW_KEY_A,			Modifier_None,		Operation::AdjustPixelColour);
 	AssignKey(GLFW_KEY_R,			Modifier_Alt,		Operation::ResizeImage);
 	AssignKey(GLFW_KEY_R,			Modifier_Ctrl,		Operation::ResizeCanvas);
@@ -271,10 +275,6 @@ void Bindings::InputMap::Reset()
 	AssignKey(GLFW_KEY_N,			Modifier_None,		Operation::ToggleNavBar);
 	AssignKey(GLFW_KEY_S,			Modifier_None,		Operation::ToggleSlideshowCountdown);
 
-	#ifdef ENABLE_FILE_DIALOG_SUPPORT
-	AssignKey(GLFW_KEY_O,			Modifier_Ctrl,		Operation::OpenFile);
-	AssignKey(GLFW_KEY_O,			Modifier_Alt,		Operation::OpenDir);
-	#endif
 	AssignKey(GLFW_KEY_S,			Modifier_Ctrl,		Operation::SaveAs);
 	AssignKey(GLFW_KEY_S,			Modifier_Alt,		Operation::SaveAll);
 	AssignKey(GLFW_KEY_B,			Modifier_None,		Operation::ToggleBasicMode);
@@ -294,6 +294,14 @@ void Bindings::InputMap::Reset()
 	AssignKey(GLFW_KEY_3,			Modifier_None,		Operation::ToggleBlueChannel);
 	AssignKey(GLFW_KEY_4,			Modifier_None,		Operation::ToggleAlphaChannel);
 	AssignKey(GLFW_KEY_5,			Modifier_None,		Operation::ToggleChannelAsIntensity);
+
+	AssignKey(GLFW_KEY_Z,			Modifier_Ctrl,		Operation::Undo);
+	AssignKey(GLFW_KEY_Y,			Modifier_Ctrl,		Operation::Redo);
+
+	#ifdef ENABLE_FILE_DIALOG_SUPPORT
+	AssignKey(GLFW_KEY_O,			Modifier_Ctrl,		Operation::OpenFile);
+	AssignKey(GLFW_KEY_O,			Modifier_Alt,		Operation::OpenDir);
+	#endif
 }
 
 
