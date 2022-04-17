@@ -43,6 +43,8 @@ namespace Bindings
 	// GLFW_KEY_F11				->		"F11"
 	// GLFW_KEY_Q				->		"Q"
 	const char* GetKeyName(int glfwkey);
+	bool IsKeySupported(int glfwkay);
+	bool IsPermanentBinding(int glfwkey, uint32 modifiers);
 }
 
 
@@ -188,6 +190,24 @@ const char* Bindings::GetKeyName(int key)
 }
 
 
+bool Bindings::IsKeySupported(int key)
+{
+	return (KeyNameTable[key][0] != '\0');
+}
+
+
+bool Bindings::IsPermanentBinding(int key, uint32 modifiers)
+{
+	// These bindings are not changeable or deletable. Currently the only one is the ToggleKeybindings
+	// key: Ctrl-Shift Tab. This is needed so that the user can't get 'stuck' if they hide the menu-bar
+	// and remove the keybindings.
+	if ((key == GLFW_KEY_TAB) && (modifiers == (Modifier_Ctrl | Modifier_Shift)))
+		return true;
+
+	return false;
+}
+
+
 const char* Bindings::GetOperationDesc(Operation op)
 {
 	return OperationDescriptions[int(op)];
@@ -216,6 +236,23 @@ const char* Bindings::GetModifiersText(uint32 modifiers)
 }
 
 
+tString Bindings::GetModKeyText(int key, uint32 modifiers)
+{
+	tString result;
+	const char* keyName = GetKeyName(key);
+	if (!keyName)
+		return result;
+
+	const char* modText = GetModifiersText(modifiers);
+	if (modText)
+		tsPrintf(result, "%s %s", modText, keyName);
+	else
+		tsPrintf(result, "%s", keyName);
+
+	return result;
+}
+
+
 uint32 Bindings::TranslateModifiers(int glfwModifiers)
 {
 	uint32 modifiers = 0x00000000;
@@ -240,76 +277,81 @@ bool Bindings::InputMap::AssignKey(int key, uint32 modifiers, Operation operatio
 void Bindings::InputMap::Reset()
 {
 	Clear();
-	AssignKey(GLFW_KEY_RIGHT,		Modifier_None,		Operation::NextImage);
-	AssignKey(GLFW_KEY_LEFT,		Modifier_None,		Operation::PrevImage);
-	AssignKey(GLFW_KEY_RIGHT,		Modifier_Ctrl,		Operation::SkipToLastImage);
-	AssignKey(GLFW_KEY_LEFT,		Modifier_Ctrl,		Operation::SkipToFirstImage);
-	AssignKey(GLFW_KEY_RIGHT,		Modifier_Alt,		Operation::NextImageFrame);
-	AssignKey(GLFW_KEY_LEFT,		Modifier_Alt,		Operation::PrevImageFrame);
-	AssignKey(GLFW_KEY_RIGHT,		Modifier_Shift,		Operation::OnePixelRight);
-	AssignKey(GLFW_KEY_LEFT,		Modifier_Shift,		Operation::OnePixelLeft);
-	AssignKey(GLFW_KEY_UP,			Modifier_Shift,		Operation::OnePixelUp);
-	AssignKey(GLFW_KEY_DOWN,		Modifier_Shift,		Operation::OnePixelDown);
-	AssignKey(GLFW_KEY_SPACE,		Modifier_None,		Operation::NextImage);
+	AssignKey(GLFW_KEY_RIGHT,		Modifier_None,					Operation::NextImage);
+	AssignKey(GLFW_KEY_LEFT,		Modifier_None,					Operation::PrevImage);
+	AssignKey(GLFW_KEY_RIGHT,		Modifier_Ctrl,					Operation::SkipToLastImage);
+	AssignKey(GLFW_KEY_LEFT,		Modifier_Ctrl,					Operation::SkipToFirstImage);
+	AssignKey(GLFW_KEY_RIGHT,		Modifier_Alt,					Operation::NextImageFrame);
+	AssignKey(GLFW_KEY_LEFT,		Modifier_Alt,					Operation::PrevImageFrame);
+	AssignKey(GLFW_KEY_RIGHT,		Modifier_Shift,					Operation::OnePixelRight);
+	AssignKey(GLFW_KEY_LEFT,		Modifier_Shift,					Operation::OnePixelLeft);
+	AssignKey(GLFW_KEY_UP,			Modifier_Shift,					Operation::OnePixelUp);
+	AssignKey(GLFW_KEY_DOWN,		Modifier_Shift,					Operation::OnePixelDown);
+	AssignKey(GLFW_KEY_SPACE,		Modifier_None,					Operation::NextImage);
 
-	AssignKey(GLFW_KEY_EQUAL,		Modifier_Ctrl,		Operation::ZoomIn);
-	AssignKey(GLFW_KEY_MINUS,		Modifier_Ctrl,		Operation::ZoomOut);
-	AssignKey(GLFW_KEY_F1,			Modifier_None,		Operation::ToggleCheatSheet);
-	AssignKey(GLFW_KEY_F2,			Modifier_None,		Operation::RenameFile);
-	AssignKey(GLFW_KEY_F5,			Modifier_None,		Operation::RefreshReloadImage);
-	AssignKey(GLFW_KEY_F11,			Modifier_None,		Operation::ToggleFullscreen);
-	AssignKey(GLFW_KEY_ENTER,		Modifier_Alt,		Operation::ToggleFullscreen);
+	AssignKey(GLFW_KEY_EQUAL,		Modifier_Ctrl,					Operation::ZoomIn);
+	AssignKey(GLFW_KEY_MINUS,		Modifier_Ctrl,					Operation::ZoomOut);
+	AssignKey(GLFW_KEY_F1,			Modifier_None,					Operation::ToggleCheatSheet);
+	AssignKey(GLFW_KEY_F2,			Modifier_None,					Operation::RenameFile);
+	AssignKey(GLFW_KEY_F5,			Modifier_None,					Operation::RefreshReloadImage);
+	AssignKey(GLFW_KEY_F11,			Modifier_None,					Operation::ToggleFullscreen);
+	AssignKey(GLFW_KEY_ENTER,		Modifier_Alt,					Operation::ToggleFullscreen);
 
-	AssignKey(GLFW_KEY_ESCAPE,		Modifier_None,		Operation::EscapeSupportingQuit);
-	AssignKey(GLFW_KEY_ENTER,		Modifier_None,		Operation::OpenFileBrowser);
-	AssignKey(GLFW_KEY_DELETE,		Modifier_None,		Operation::Delete);
-	AssignKey(GLFW_KEY_DELETE,		Modifier_Shift,		Operation::DeletePermanent);
-	AssignKey(GLFW_KEY_F4,			Modifier_Alt,		Operation::Quit);
+	AssignKey(GLFW_KEY_ESCAPE,		Modifier_None,					Operation::EscapeSupportingQuit);
+	AssignKey(GLFW_KEY_ENTER,		Modifier_None,					Operation::OpenFileBrowser);
+	AssignKey(GLFW_KEY_DELETE,		Modifier_None,					Operation::Delete);
+	AssignKey(GLFW_KEY_DELETE,		Modifier_Shift,					Operation::DeletePermanent);
+	AssignKey(GLFW_KEY_F4,			Modifier_Alt,					Operation::Quit);
 
-	AssignKey(GLFW_KEY_COMMA,		Modifier_Ctrl,		Operation::FlipVertically);
-	AssignKey(GLFW_KEY_PERIOD,		Modifier_Ctrl,		Operation::FlipHorizontally);
-	AssignKey(GLFW_KEY_COMMA,		Modifier_None,		Operation::Rotate90Anticlockwise);
-	AssignKey(GLFW_KEY_PERIOD,		Modifier_None,		Operation::Rotate90Clockwise);
-	AssignKey(GLFW_KEY_SLASH,		Modifier_None,		Operation::Crop);
-	AssignKey(GLFW_KEY_E,			Modifier_None,		Operation::PropertyEditor);
-	AssignKey(GLFW_KEY_A,			Modifier_None,		Operation::AdjustPixelColour);
-	AssignKey(GLFW_KEY_R,			Modifier_Alt,		Operation::ResizeImage);
-	AssignKey(GLFW_KEY_R,			Modifier_Ctrl,		Operation::ResizeCanvas);
-	AssignKey(GLFW_KEY_R,			Modifier_None,		Operation::RotateImage);
+	AssignKey(GLFW_KEY_COMMA,		Modifier_Ctrl,					Operation::FlipVertically);
+	AssignKey(GLFW_KEY_PERIOD,		Modifier_Ctrl,					Operation::FlipHorizontally);
+	AssignKey(GLFW_KEY_COMMA,		Modifier_None,					Operation::Rotate90Anticlockwise);
+	AssignKey(GLFW_KEY_PERIOD,		Modifier_None,					Operation::Rotate90Clockwise);
+	AssignKey(GLFW_KEY_SLASH,		Modifier_None,					Operation::Crop);
+	AssignKey(GLFW_KEY_E,			Modifier_None,					Operation::PropertyEditor);
+	AssignKey(GLFW_KEY_A,			Modifier_None,					Operation::AdjustPixelColour);
+	AssignKey(GLFW_KEY_R,			Modifier_Alt,					Operation::ResizeImage);
+	AssignKey(GLFW_KEY_R,			Modifier_Ctrl,					Operation::ResizeCanvas);
+	AssignKey(GLFW_KEY_R,			Modifier_None,					Operation::RotateImage);
 
-	AssignKey(GLFW_KEY_I,			Modifier_None,		Operation::ToggleImageDetails);
-	AssignKey(GLFW_KEY_T,			Modifier_None,		Operation::ToggleTile);
-	AssignKey(GLFW_KEY_M,			Modifier_None,		Operation::ToggleMenuBar);
-	AssignKey(GLFW_KEY_M,			Modifier_Ctrl,		Operation::SaveMultiFrameImage);
-	AssignKey(GLFW_KEY_N,			Modifier_None,		Operation::ToggleNavBar);
-	AssignKey(GLFW_KEY_S,			Modifier_None,		Operation::ToggleSlideshowCountdown);
+	AssignKey(GLFW_KEY_I,			Modifier_None,					Operation::ToggleImageDetails);
+	AssignKey(GLFW_KEY_T,			Modifier_None,					Operation::ToggleTile);
+	AssignKey(GLFW_KEY_M,			Modifier_None,					Operation::ToggleMenuBar);
+	AssignKey(GLFW_KEY_M,			Modifier_Ctrl,					Operation::SaveMultiFrameImage);
+	AssignKey(GLFW_KEY_N,			Modifier_None,					Operation::ToggleNavBar);
+	AssignKey(GLFW_KEY_S,			Modifier_None,					Operation::ToggleSlideshowCountdown);
 
-	AssignKey(GLFW_KEY_S,			Modifier_Ctrl,		Operation::SaveAs);
-	AssignKey(GLFW_KEY_S,			Modifier_Alt,		Operation::SaveAll);
-	AssignKey(GLFW_KEY_B,			Modifier_None,		Operation::ToggleBasicMode);
-	AssignKey(GLFW_KEY_L,			Modifier_None,		Operation::ToggleDebugLog);
+	AssignKey(GLFW_KEY_S,			Modifier_Ctrl,					Operation::SaveAs);
+	AssignKey(GLFW_KEY_S,			Modifier_Alt,					Operation::SaveAll);
+	AssignKey(GLFW_KEY_B,			Modifier_None,					Operation::ToggleBasicMode);
+	AssignKey(GLFW_KEY_L,			Modifier_None,					Operation::ToggleDebugLog);
 
-	AssignKey(GLFW_KEY_F,			Modifier_None,		Operation::ZoomFit);
-	AssignKey(GLFW_KEY_D,			Modifier_None,		Operation::ZoomDownscaleOnly);
-	AssignKey(GLFW_KEY_Z,			Modifier_None,		Operation::ZoomOneToOne);
-	AssignKey(GLFW_KEY_C,			Modifier_None,		Operation::ContactSheet);
-	AssignKey(GLFW_KEY_P,			Modifier_None,		Operation::Preferences);
-	AssignKey(GLFW_KEY_V,			Modifier_None,		Operation::ContentThumbnailView);
-	AssignKey(GLFW_KEY_TAB,			Modifier_None,		Operation::ToggleKeyBindings);
+	AssignKey(GLFW_KEY_F,			Modifier_None,					Operation::ZoomFit);
+	AssignKey(GLFW_KEY_D,			Modifier_None,					Operation::ZoomDownscaleOnly);
+	AssignKey(GLFW_KEY_Z,			Modifier_None,					Operation::ZoomOneToOne);
+	AssignKey(GLFW_KEY_C,			Modifier_None,					Operation::ContactSheet);
+	AssignKey(GLFW_KEY_P,			Modifier_None,					Operation::Preferences);
+	AssignKey(GLFW_KEY_V,			Modifier_None,					Operation::ContentThumbnailView);
+	AssignKey(GLFW_KEY_TAB,			Modifier_None,					Operation::ToggleKeyBindings);
 
-	AssignKey(GLFW_KEY_GRAVE_ACCENT,Modifier_None,		Operation::ToggleChannelFilter);
-	AssignKey(GLFW_KEY_1,			Modifier_None,		Operation::ToggleRedChannel);
-	AssignKey(GLFW_KEY_2,			Modifier_None,		Operation::ToggleGreenChannel);
-	AssignKey(GLFW_KEY_3,			Modifier_None,		Operation::ToggleBlueChannel);
-	AssignKey(GLFW_KEY_4,			Modifier_None,		Operation::ToggleAlphaChannel);
-	AssignKey(GLFW_KEY_5,			Modifier_None,		Operation::ToggleChannelAsIntensity);
+	// This one is special and can't be reassigned or removed. This is because the user _could_ turn off the menu,
+	// and remove all bindings to ToggleKeyBindings. The user would have to way of getting back to the bindings screen.
+	// Having a guaranteed key combo for it solves these issues.
+	AssignKey(GLFW_KEY_TAB,			Modifier_Ctrl | Modifier_Shift,	Operation::ToggleKeyBindings);
 
-	AssignKey(GLFW_KEY_Z,			Modifier_Ctrl,		Operation::Undo);
-	AssignKey(GLFW_KEY_Y,			Modifier_Ctrl,		Operation::Redo);
+	AssignKey(GLFW_KEY_GRAVE_ACCENT,Modifier_None,					Operation::ToggleChannelFilter);
+	AssignKey(GLFW_KEY_1,			Modifier_None,					Operation::ToggleRedChannel);
+	AssignKey(GLFW_KEY_2,			Modifier_None,					Operation::ToggleGreenChannel);
+	AssignKey(GLFW_KEY_3,			Modifier_None,					Operation::ToggleBlueChannel);
+	AssignKey(GLFW_KEY_4,			Modifier_None,					Operation::ToggleAlphaChannel);
+	AssignKey(GLFW_KEY_5,			Modifier_None,					Operation::ToggleChannelAsIntensity);
+
+	AssignKey(GLFW_KEY_Z,			Modifier_Ctrl,					Operation::Undo);
+	AssignKey(GLFW_KEY_Y,			Modifier_Ctrl,					Operation::Redo);
 
 	#ifdef ENABLE_FILE_DIALOG_SUPPORT
-	AssignKey(GLFW_KEY_O,			Modifier_Ctrl,		Operation::OpenFile);
-	AssignKey(GLFW_KEY_O,			Modifier_Alt,		Operation::OpenDir);
+	AssignKey(GLFW_KEY_O,			Modifier_Ctrl,					Operation::OpenFile);
+	AssignKey(GLFW_KEY_O,			Modifier_Alt,					Operation::OpenDir);
 	#endif
 }
 
@@ -430,7 +472,6 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3);
 
 			ImGuiListClipper clipper;
-
 			clipper.Begin(totalAssigned);
 			while (clipper.Step())
 			{
@@ -447,9 +488,10 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 				// Key[combo] Mods	Operation[combo]	 	[+] (brings up replace popup if necessary)
 				for (int k = 0; k <= GLFW_KEY_LAST; k++)
 				{
-					KeyOps& keyops = settings.InputBindings.GetOperations(k);
-					const char* keyName = GetKeyName(k);
-					if (!keyops.IsAnythingAssigned() || !keyName)
+					KeyOps& keyops = settings.InputBindings.GetKeyOps(k);
+
+					// Skip unsupported keys and don't display keys with nothing assigned.
+					if (!keyops.IsAnythingAssigned() || !IsKeySupported(k))
 						continue;
 
 					for (int m = 0; m < Modifier_NumCombinations; m++)
@@ -462,11 +504,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 
 						// Key/mods column.
 						ImGui::TableSetColumnIndex(0);
-						const char* modText = GetModifiersText(m);
-						if (modText)
-							ImGui::Text("%s %s", modText, keyName);
-						else
-							ImGui::Text("%s", keyName);
+						ImGui::Text( GetModKeyText(k, m).Text() );
 
 						// The operation column.
 						ImGui::TableSetColumnIndex(1);
@@ -474,44 +512,60 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 						const char* opCurrDesc = GetOperationDesc(opCurr);
 						tAssert(opCurrDesc);
 						ImGui::SetNextItemWidth(240);
-						if (ImGui::BeginCombo(oplabel, opCurrDesc, ImGuiComboFlags_NoArrowButton))
+
+						bool permanent = IsPermanentBinding(k, m);
+						if (!permanent)
 						{
-							for (int oper = int(Operation::First); oper < int(Operation::NumOperations); oper++)
+							if (ImGui::BeginCombo(oplabel, opCurrDesc, ImGuiComboFlags_NoArrowButton))
 							{
-								Operation op = Operation(oper);
-								const char* opDesc = GetOperationDesc(op);
+								for (int oper = int(Operation::First); oper < int(Operation::NumOperations); oper++)
+								{
+									Operation op = Operation(oper);
+									const char* opDesc = GetOperationDesc(op);
 
-								bool isSelected = (op == opCurr);
-								// Selectable just displays the item as highlighted or not.
-								if (ImGui::Selectable(opDesc, isSelected))
-									opCurr = op;
+									bool isSelected = (op == opCurr);
 
-								// Set the initial focus when opening the combo (scrolling + keyboard navigation focus).
-								if (isSelected)
-									ImGui::SetItemDefaultFocus();
+									// Selectable just displays the item as highlighted or not.
+									if (ImGui::Selectable(opDesc, isSelected))
+										opCurr = op;
+
+									// Set the initial focus when opening the combo (scrolling + keyboard navigation focus).
+									if (isSelected)
+										ImGui::SetItemDefaultFocus();
+								}
+
+								if ((opCurr != Operation::None) && (keyops.Operations[m] != Operation(opCurr)))
+									keyops.Operations[m] = Operation(opCurr);
+
+								ImGui::EndCombo();
 							}
-
-							if ((opCurr != Operation::None) && (keyops.Operations[m] != Operation(opCurr)))
-								keyops.Operations[m] = Operation(opCurr);
-
-							ImGui::EndCombo();
+						}
+						else
+						{
+							const char* opDesc = GetOperationDesc(Operation::ToggleKeyBindings);
+							tString opText;
+							tsPrintf(opText, " %s (Permanent Binding)", opDesc);
+							ImGui::Text(opText.Chars());
 						}
 						
 						// The remove button column.
 						ImGui::TableSetColumnIndex(2);
-						char blabel[64]; tsPrintf(blabel, " - ##b%d_%d", k, m);
-						if (ImGui::Button(blabel, tVector2(21.0f, 21.0f)))
-							keyops.Operations[m] = Operation::None;
+						if (!permanent)
+						{
+							char blabel[64];
+							tsPrintf(blabel, " - ##b%d_%d", k, m);
+							if (ImGui::Button(blabel, tVector2(21.0f, 21.0f)))
+								keyops.Operations[m] = Operation::None;
+						}
 					}
 				}
 			}
-			ImGui::EndTable();
+			ImGui::EndTable();		
 		}
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
 		ShowAddBindingSection(settings);
 	}
-
 	ImGui::End();
 }
 
@@ -601,14 +655,69 @@ void Bindings::ShowAddBindingSection(Config::Settings& settings)
 		}
 
 		ImGui::TableSetColumnIndex(2);
+		static Operation currentlyAssignedOp = Operation::None;
+
+		// This binding is considered permanent/unchangeable.
+		bool permanent = IsPermanentBinding(addKey, addMods);
 		if (ImGui::Button(" + ##AddBinding", tVector2(21.0f, 21.0f)))
 		{
 			if (addOp != Operation::None)
 			{
-				settings.InputBindings.AssignKey(addKey, addMods, Operation(addOp));
+				currentlyAssignedOp = settings.InputBindings.GetOperation(addKey, addMods);
+
+				// If current is assigned to something and that something is not the same as what's being assigned,
+				// then bring up the warning popup.
+				if ((currentlyAssignedOp != Operation::None) && (currentlyAssignedOp != Operation(addOp)))
+					ImGui::OpenPopup("Key Assignment Warning");
+				else
+					settings.InputBindings.AssignKey(addKey, addMods, Operation(addOp));
 			}
 		}
 		ShowToolTip("Adds the new keybinding. Warns if already assigned to something else.");
+
+		bool isOpen = true;
+		if (ImGui::BeginPopupModal("Key Assignment Warning", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			tString msg;
+			if (permanent)
+			{
+				tsPrintf
+				(
+					msg,
+					"Warning, '%s' is a permanent binding that cannot be changed.",
+					GetModKeyText(addKey, addMods).Text()
+				);
+			}
+			else
+			{
+				tsPrintf
+				(
+					msg,
+					"Warning, '%s' is currently assigned to '%s'.\n"
+					"Would you like to replace the current binding or cancel?",
+					GetModKeyText(addKey, addMods).Text(), GetOperationDesc(currentlyAssignedOp)
+				);
+			}
+			ImGui::NewLine();
+			ImGui::Text(msg.Text());
+			ImGui::NewLine();
+
+			if (ImGui::Button("Cancel##AssignWarn", tVector2(100, 0)))
+				ImGui::CloseCurrentPopup();
+
+			if (!permanent)
+			{
+				ImGui::SameLine();
+				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+				if (ImGui::Button("Replace##AssignWarn", tVector2(100, 0)))
+				{
+					settings.InputBindings.AssignKey(addKey, addMods, Operation(addOp));
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
+			ImGui::EndPopup();
+		}
 
 		ImGui::EndTable();
 	}
@@ -656,9 +765,8 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 
 				for (int k = 0; k <= GLFW_KEY_LAST; k++)
 				{
-					KeyOps& keyops = Config::Current->InputBindings.GetOperations(k);
-					const char* keyName = GetKeyName(k);
-					if (!keyops.IsAnythingAssigned() || !keyName)
+					KeyOps& keyops = Config::Current->InputBindings.GetKeyOps(k);
+					if (!keyops.IsAnythingAssigned() || !IsKeySupported(k))
 						continue;
 
 					for (int m = 0; m < Modifier_NumCombinations; m++)
@@ -671,11 +779,7 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 
 						// Action column.
 						ImGui::TableSetColumnIndex(0);
-						const char* modText = GetModifiersText(m);
-						if (modText)
-							ImGui::Text("%s %s", modText, keyName);
-						else
-							ImGui::Text("%s", keyName);
+						ImGui::Text( GetModKeyText(k, m).Text() );
 
 						// Operation column.
 						ImGui::TableSetColumnIndex(1);

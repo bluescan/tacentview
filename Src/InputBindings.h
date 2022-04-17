@@ -109,6 +109,10 @@ namespace Bindings
 	};
 	const char* GetModifiersText(uint32 modifiers);
 
+	// Gets the combined (modifiers plus key) text. ex. "Ctrl-Alt-Shift Space" or "Ctrl A" or "A".
+	// Returns empty string if the key is not supported.
+	tString GetModKeyText(int glfwkey, uint32 modifiers);
+
 	// Specifies, for a single key, what operations it performs. The same key can map to multiple operations if modifier
 	// keys are used.
 	struct KeyOps
@@ -137,7 +141,7 @@ namespace Bindings
 		// Returns the operation assigned to a particular key and set of modifiers. This can also be used before an
 		// assign call to see what a current key is bound to so an already-assigned message can be dislayed if needed.
 		Operation GetOperation(int glfwKey, uint32 modifiers)															{ return KeyTable[glfwKey].Operations[modifiers]; }
-		KeyOps& GetOperations(int glfwKey)																				{ return KeyTable[glfwKey]; }
+		KeyOps& GetKeyOps(int glfwKey)																					{ return KeyTable[glfwKey]; }
 
 		// Assigns the operation to the key and modifiers specified. Returns true is there was a previous assignment
 		// that needed to be replaced.
