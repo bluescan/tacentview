@@ -75,8 +75,25 @@ void Config::SetProfile(Profile profile)
 
 Config::Profile Config::GetProfile()			{ return Profile(Global.CurrentProfile); }
 const char* Config::GetProfileName()			{ return ProfileNames[int(GetProfile())]; }
-void Config::ResetProfile(Category category)	{ Current->Reset(Profile(Global.CurrentProfile), category); }
-void Config::ResetAll()							{ MainSettings.Reset(Profile::Main); BasicSettings.Reset(Profile::Basic); }
+
+
+void Config::ResetProfile(uint32 categories)
+{
+	Current->Reset(Profile(Global.CurrentProfile), categories);
+}
+
+
+void Config::ResetAllProfiles(uint32 categories)
+{
+	MainSettings.Reset(Profile::Main, categories);
+	BasicSettings.Reset(Profile::Basic, categories);
+}
+
+
+void Config::ResetAll()
+{
+	ResetAllProfiles(Category_All);
+}
 
 
 void Config::Load(const tString& filename)
@@ -84,8 +101,7 @@ void Config::Load(const tString& filename)
 	if (!tSystem::tFileExists(filename))
 	{
 		Global.Reset();
-		MainSettings.Reset(Profile::Main, Category::Everything);
-		BasicSettings.Reset(Profile::Basic, Category::Everything);
+		ResetAll();
 		Current = &MainSettings;
 		Global.CurrentProfile = int(Profile::Main);
 		return;
@@ -179,9 +195,9 @@ void Config::GlobalSettings::Reset()
 }
 
 
-void Config::Settings::Reset(Config::Profile profile, Config::Category category)
+void Config::Settings::Reset(Config::Profile profile, uint32 categories)
 {
-	if (category == Category::Everything)
+	if (categories & Category_Unspecified)
 	{
 		GLFWmonitor* monitor		= glfwGetPrimaryMonitor();
 		const GLFWvidmode* mode		= monitor ? glfwGetVideoMode(monitor) : nullptr;
@@ -233,10 +249,9 @@ void Config::Settings::Reset(Config::Profile profile, Config::Category category)
 		ResizeAspectNum				= 16;
 		ResizeAspectDen				= 9;
 		ResizeAspectMode			= 0;
-		InputBindings				.Reset();
 	}
 
-	if ((category == Category::Everything) || (category == Category::Display))
+	if (categories & Category_Display)
 	{
 		BackgroundStyle				= (profile == Profile::Basic) ? int(BGStyle::None) : int(BGStyle::Checkerboard);
 		BackgroundColour			= tColouri::black;
@@ -245,13 +260,13 @@ void Config::Settings::Reset(Config::Profile profile, Config::Category category)
 		FixedAspectWorkArea			= false;
 	}
 
-	if ((category == Category::Everything) || (category == Category::Slideshow))
+	if (categories & Category_Slideshow)
 	{
 		SlideshowProgressArc		= true;
 		SlideshowPeriod				= (profile == Profile::Basic) ? 8.0 : 4.0;			// Values as small as 1.0/60.0 also work.
 	}
 
-	if ((category == Category::Everything) || (category == Category::System))
+	if (categories & Category_System)
 	{
 		MaxImageMemMB				= 2048;
 		MaxCacheFiles				= 8192;
@@ -263,13 +278,18 @@ void Config::Settings::Reset(Config::Profile profile, Config::Category category)
 		MonitorGamma				= tMath::DefaultGamma;
 	}
 
-	if ((category == Category::Everything) || (category == Category::Interface))
+	if (categories & Category_Interface)
 	{
 		ConfirmDeletes				= true;
 		ConfirmFileOverwrites		= true;
 		AutoPropertyWindow			= (profile == Profile::Basic) ? false : true;
 		AutoPlayAnimatedImages		= true;
 		DefaultZoomMode				= int(ZoomMode::DownscaleOnly);
+	}
+
+	if (categories & Category_Bindings)
+	{
+		InputBindings				.Reset();
 	}
 }
 

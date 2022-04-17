@@ -32,13 +32,19 @@ extern const char* ProfileNames[int(Profile::NumProfiles)];
 extern const char* ProfileNamesLong[int(Profile::NumProfiles)];
 
 
-enum class Category
+enum Category
 {
-	Everything,		// Special case that includes things not in a category.
-	Display,		// Includes background and aspect settings.
-	Slideshow,
-	System,
-	Interface
+	Category_None,
+
+	Category_Unspecified			= 1 << 0,		// Everything that's not in a category below.
+	Category_Display				= 1 << 1,		// Includes background and aspect settings.
+	Category_Slideshow				= 1 << 2,
+	Category_System					= 1 << 3,
+	Category_Interface				= 1 << 4,
+	Category_Bindings				= 1 << 5,		// Key bindings.
+
+	Category_All					= 0xFFFFFFFF,
+	Category_AllNoBindings			= Category_All & ~Category_Bindings
 };
 
 
@@ -47,7 +53,7 @@ enum class Category
 // two profiles: normal and basic.
 struct Settings
 {
-	Settings()									: Profile(), InputBindings() { Reset(Profile::Main); }
+	Settings()									: Profile(), InputBindings() { Reset(Profile::Main, Category_All); }
 	tString Profile;
 	int WindowX;
 	int WindowY;
@@ -168,7 +174,7 @@ struct Settings
 
 	// Yes, this struct only represents a single profile, but the defaults are different
 	// depending on which profile is chosen, so we need to pass it in.
-	void Reset(Config::Profile, Config::Category = Category::Everything);
+	void Reset(Config::Profile, uint32 categories);
 };
 
 
@@ -195,10 +201,13 @@ void SetProfile(Profile);
 Profile GetProfile();
 const char* GetProfileName();
 
-// Current profile reset. If category is 'Everything' it resets all categories plus stuff not in a category.
-void ResetProfile(Category = Category::Everything);
+// Current profile reset. If category is 'All' it resets all categories plus stuff not in a category.
+void ResetProfile(uint32 categories);
 
-// All profiles reset. Resets everything.
+// Resets all profiles, but only the categories specified.
+void ResetAllProfiles(uint32 categories);
+
+// All profiles reset. Resets everything. Calls ResetAllProfiles with All as the category.
 void ResetAll();
 
 extern Settings* Current;

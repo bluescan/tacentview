@@ -41,13 +41,13 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	}
 
 	bool tab = false;
-	Config::Category category = Config::Category::Everything;
+	uint32 category = Config::Category_None;
 	if (ImGui::BeginTabBar("PreferencesTabBar", ImGuiTabBarFlags_None))
 	{
 		tab = ImGui::BeginTabItem("Display", nullptr, ImGuiTabItemFlags_NoTooltip);
 		if (tab)
 		{
-			category = Config::Category::Display;
+			category = Config::Category_Display;
 			ImGui::NewLine();
 			ImGui::Checkbox("Transparent Work Area", &PendingTransparentWorkArea);
 			#ifndef PACKAGE_SNAP
@@ -112,7 +112,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		tab = ImGui::BeginTabItem("Slideshow", nullptr, ImGuiTabItemFlags_NoTooltip);
 		if (tab)
 		{
-			category = Config::Category::Slideshow;
+			category = Config::Category_Slideshow;
 			ImGui::NewLine();
 			ImGui::PushItemWidth(110);
 			if (ImGui::InputDouble("Period (s)", &Config::Current->SlideshowPeriod, 0.001f, 1.0f, "%.3f"))
@@ -169,7 +169,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		tab = ImGui::BeginTabItem("System", nullptr, ImGuiTabItemFlags_NoTooltip);
 		if (tab)
 		{
-			category = Config::Category::System;
+			category = Config::Category_System;
 			ImGui::NewLine();
 			ImGui::PushItemWidth(110);
 			ImGui::InputInt("Max Mem (MB)", &Config::Current->MaxImageMemMB); ImGui::SameLine();
@@ -227,7 +227,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		tab = ImGui::BeginTabItem("Interface", nullptr, ImGuiTabItemFlags_NoTooltip);
 		if (tab)
 		{
-			category = Config::Category::Interface;
+			category = Config::Category_Interface;
 			ImGui::NewLine();
 			ImGui::Checkbox("Confirm Deletes", &Config::Current->ConfirmDeletes);
 			ImGui::Checkbox("Confirm File Overwrites", &Config::Current->ConfirmFileOverwrites);
@@ -259,11 +259,15 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 	if (ImGui::Button("Reset Profile", tVector2(100, 0)))
 	{
-		Config::ResetProfile();
+		Config::ResetProfile(Config::Category_AllNoBindings);
 		PendingTransparentWorkArea = false;
 		ChangeScreenMode(false, true);
 	}
-	ShowToolTip("Resets the current profile (including key bindings) to defaults.");
+	ShowToolTip
+	(
+		"Resets the current profile (excluding key bindings) to defaults.\n"
+		"Keybindings may be reset from the Key Bindings window."
+	);
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
@@ -273,16 +277,19 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		PendingTransparentWorkArea = false;
 		ChangeScreenMode(false, true);
 	}
-	ShowToolTip("Resets the current category/tab for the current profile.");
+	ShowToolTip("Resets the current category/tab for the current profile (what you see above).");
 
 	if (ImGui::Button("Reset All", tVector2(100, 0)))
 	{
-		Config::ResetAll();
+		Config::ResetAllProfiles(Config::Category_AllNoBindings);
 		Config::SetProfile(Config::Profile::Main);
 		PendingTransparentWorkArea = false;
 		ChangeScreenMode(false, true);
 	}
-	ShowToolTip("Resets all profiles (including key bindings) to their default settings\nand switches to the main profile.");
+	ShowToolTip
+	(
+		"Resets all profiles (excluding key bindings) to their default settings and switches\n"
+		"to the main profile. Keybindings may be reset from the Key Bindings window.");
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
