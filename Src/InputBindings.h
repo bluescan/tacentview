@@ -102,9 +102,9 @@ namespace Bindings
 	enum Modifier
 	{
 		Modifier_None,
-		Modifier_Shift				= 1 << 0,
+		Modifier_Ctrl				= 1 << 0,
 		Modifier_Alt				= 1 << 1,
-		Modifier_Ctrl				= 1 << 2,
+		Modifier_Shift				= 1 << 2,
 		Modifier_NumCombinations	= 1 << 3
 	};
 	const char* GetModifiersText(uint32 modifiers);
@@ -124,6 +124,11 @@ namespace Bindings
 		void Clear()																									{ for (int m = 0; m < Modifier_NumCombinations; m++) Operations[m] = Operation::None; }
 		bool IsAnythingAssigned() const																					{ for (int m = 0; m < Modifier_NumCombinations; m++) if (Operations[m] != Operation::None) return true; return false; }
 		int GetAssignedCount() const																					{ int count = 0; for (int m = 0; m < Modifier_NumCombinations; m++) if (Operations[m] != Operation::None) count++; return count; }
+
+		// Finds the mods for the first (there may be more than one) operation matching the search operation.
+		// Returns false if no such operation was found.
+		bool FindOperationMods(uint32& mods, Operation searchOp) const													{ for (uint32 m = 0; m < Modifier_NumCombinations; m++) { if (Operations[m] == searchOp) { mods = m; return true; } } return false; }
+
 		KeyOps& operator=(const KeyOps& src)																			{ Set(src); return *this; }
 
 		Operation Operations[Modifier_NumCombinations];
@@ -148,10 +153,20 @@ namespace Bindings
 		bool AssignKey(int glfwkey, uint32 modifiers, Operation);
 		void ClearKey(int glfwkey, uint32 modifiers)																	{ KeyTable[glfwkey].Operations[modifiers] = Operation::None; }
 		int GetTotalAssigned() const																					{ int count = 0; for (int k = 0; k <= GLFW_KEY_LAST; k++) count += KeyTable[k].GetAssignedCount(); return count; }
-		InputMap& operator=(const InputMap& src)																		{ Set(src); return *this; }
+
+		// Searches for the first occurrence of the supplied operation and returns the key and modifiers that are bound
+		// to it. Note that since there may be more than one key bound to the same operation, this function returns the
+		// first one found. Returns true if something found.
+		bool FindModKey(int& key, uint32& mods, Operation);
+
+		// Convenience. Basically calls FindModKey on the supplied operation and then calls GetModKeyText on the result.
+		// The returned string will be empty if nothing is bound to the operation.
+		tString FindModKeyText(Operation op)																			{ int key = 0; uint32 mods = 0; if (FindModKey(key, mods, op)) return GetModKeyText(key, mods); else return tString(); }
 
 		void Read(tExpression);
 		void Write(tScriptWriter&);
+
+		InputMap& operator=(const InputMap& src)																		{ Set(src); return *this; }
 
 	private:
 		KeyOps KeyTable[GLFW_KEY_LAST+1];

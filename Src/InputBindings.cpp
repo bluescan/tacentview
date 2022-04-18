@@ -219,16 +219,16 @@ const char* Bindings::GetModifiersText(uint32 modifiers)
 	if (!modifiers)
 		return nullptr;
 
-	// Order is ctrl-alt-shift. MSB to LSB.
+	// Order is ctrl-alt-shift.
 	const char* dispstr[] =
 	{
 		"",
-		"Shift",
-		"Alt",
-		"Alt-Shift",
 		"Ctrl",
-		"Ctrl-Shift",
+		"Alt",
 		"Ctrl-Alt",
+		"Shift",
+		"Ctrl-Shift",
+		"Alt-Shift",
 		"Ctrl-Alt-Shift"
 	};
 	tStaticAssert(tNumElements(dispstr) == Modifier_NumCombinations);
@@ -353,6 +353,23 @@ void Bindings::InputMap::Reset()
 	AssignKey(GLFW_KEY_O,			Modifier_Ctrl,					Operation::OpenFile);
 	AssignKey(GLFW_KEY_O,			Modifier_Alt,					Operation::OpenDir);
 	#endif
+}
+
+
+bool Bindings::InputMap::FindModKey(int& key, uint32& mods, Operation op)
+{
+	for (int k = 0; k <= GLFW_KEY_LAST; k++)
+	{
+		uint32 m;
+		if (KeyTable[k].FindOperationMods(m, op))
+		{
+			key = k;
+			mods = m;
+			return true;
+		}
+	}
+
+	return false;
 }
 
 

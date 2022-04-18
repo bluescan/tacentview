@@ -1471,27 +1471,34 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 
 			#ifdef ENABLE_FILE_DIALOG_SUPPORT
-			if (ImGui::MenuItem("Open File...", "Ctrl-O"))
+			tString openFileKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::OpenFile);
+			if (ImGui::MenuItem("Open File...", openFileKey.Charz()))
 				openFilePressed = true;
 
-			if (ImGui::MenuItem("Open Dir...", "Alt-O"))
+			tString openDirKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::OpenDir);
+			if (ImGui::MenuItem("Open Dir...", openDirKey.Charz()))
 				openDirPressed = true;
 			#endif
 
-			if (ImGui::MenuItem("Save As...", "Ctrl-S") && CurrImage)
+			tString saveAsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SaveAs);
+			if (ImGui::MenuItem("Save As...", saveAsKey.Charz()) && CurrImage)
 				saveAsPressed = true;
 
-			if (ImGui::MenuItem("Save All...", "Alt-S") && CurrImage)
+			tString saveAllKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SaveAll);
+			if (ImGui::MenuItem("Save All...", saveAllKey.Charz()) && CurrImage)
 				saveAllPressed = true;
 
-			if (ImGui::MenuItem("Save Contact Sheet...", "C") && (Images.GetNumItems() > 1))
+			tString saveCSKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ContactSheet);
+			if (ImGui::MenuItem("Save Contact Sheet...", saveCSKey.Charz()) && (Images.GetNumItems() > 1))
 				saveContactSheetPressed = true;
 
-			if (ImGui::MenuItem("Save Multi-Frame...", "Ctrl-M") && (Images.GetNumItems() > 1))
+			tString saveMultiKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SaveMultiFrameImage);
+			if (ImGui::MenuItem("Save Multi-Frame...", saveMultiKey.Charz()) && (Images.GetNumItems() > 1))
 				saveMultiFramePressed = true;
 
 			ImGui::Separator();
-			if (ImGui::MenuItem("Quit", "Alt-F4"))
+			tString quitKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Quit);
+			if (ImGui::MenuItem("Quit", quitKey.Charz()))
 				glfwSetWindowShouldClose(Window, 1);
 
 			ImGui::PopStyleVar();
@@ -1526,16 +1533,19 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			bool undoEnabled = CurrImage && CurrImage->IsUndoAvailable();
 			tString undoDesc = undoEnabled ? CurrImage->GetUndoDesc() : tString();
 			tString undoStr; tsPrintf(undoStr, "Undo %s", undoDesc.Chars());
-			if (ImGui::MenuItem(undoStr, "Ctrl-Z", false, undoEnabled))
+			tString undoKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Undo);
+			if (ImGui::MenuItem(undoStr, undoKey.Charz(), false, undoEnabled))
 				Undo();
 
 			bool redoEnabled = CurrImage && CurrImage->IsRedoAvailable();
 			tString redoDesc = redoEnabled ? CurrImage->GetRedoDesc() : tString();
 			tString redoStr; tsPrintf(redoStr, "Redo %s", redoDesc.Chars());
-			if (ImGui::MenuItem(redoStr, "Ctrl-Y", false, redoEnabled))
+			tString redoKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Redo);
+			if (ImGui::MenuItem(redoStr, redoKey.Charz(), false, redoEnabled))
 				Redo();
 
-			if (ImGui::MenuItem("Flip Vertically", "Ctrl <", false, CurrImage && !CurrImage->IsAltPictureEnabled()))
+			tString flipVKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::FlipVertically);
+			if (ImGui::MenuItem("Flip Vertically", flipVKey.Charz(), false, CurrImage && !CurrImage->IsAltPictureEnabled()))
 			{
 				CurrImage->Unbind();
 				CurrImage->Flip(false);
@@ -1543,7 +1553,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 				SetWindowTitle();
 			}
 
-			if (ImGui::MenuItem("Flip Horizontally", "Ctrl >", false, CurrImage && !CurrImage->IsAltPictureEnabled()))
+			tString flipHKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::FlipHorizontally);
+			if (ImGui::MenuItem("Flip Horizontally", flipHKey.Charz(), false, CurrImage && !CurrImage->IsAltPictureEnabled()))
 			{
 				CurrImage->Unbind();
 				CurrImage->Flip(true);
@@ -1551,7 +1562,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 				SetWindowTitle();
 			}
 
-			if (ImGui::MenuItem("Rotate Anti-Clockwise", "<", false, CurrImage && !CurrImage->IsAltPictureEnabled()))
+			tString rotACWKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Rotate90Anticlockwise);
+			if (ImGui::MenuItem("Rotate Anti-Clockwise", rotACWKey.Charz(), false, CurrImage && !CurrImage->IsAltPictureEnabled()))
 			{
 				CurrImage->Unbind();
 				CurrImage->Rotate90(true);
@@ -1559,7 +1571,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 				SetWindowTitle();
 			}
 
-			if (ImGui::MenuItem("Rotate Clockwise", ">", false, CurrImage && !CurrImage->IsAltPictureEnabled()))
+			tString rotCWKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Rotate90Clockwise);
+			if (ImGui::MenuItem("Rotate Clockwise", rotCWKey.Charz(), false, CurrImage && !CurrImage->IsAltPictureEnabled()))
 			{
 				CurrImage->Unbind();
 				CurrImage->Rotate90(false);
@@ -1567,32 +1580,44 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 				SetWindowTitle();
 			}
 
-			ImGui::MenuItem("Crop...", "/", &CropMode);
+			tString cropKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Crop);
+			ImGui::MenuItem("Crop...", cropKey.Charz(), &CropMode);
 
-			if (ImGui::MenuItem("Resize Image...", "Alt-R") && CurrImage)
+			tString resizeImgKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ResizeImage);
+			if (ImGui::MenuItem("Resize Image...", resizeImgKey.Charz()) && CurrImage)
 				resizeImagePressed = true;
 
-			if (ImGui::MenuItem("Resize Canvas...", "Ctrl-R") && CurrImage)
+			tString resizeCanvasKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ResizeCanvas);
+			if (ImGui::MenuItem("Resize Canvas...", resizeCanvasKey.Charz()) && CurrImage)
 				resizeCanvasPressed = true;
 
-			if (ImGui::MenuItem("Rotate Image...", "R") && CurrImage)
+			tString rotateImgKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::RotateImage);
+			if (ImGui::MenuItem("Rotate Image...", rotateImgKey.Charz()) && CurrImage)
 				rotateImagePressed = true;
 
-			ImGui::MenuItem("Edit Pixel", "A", &Config::Current->ShowPixelEditor);
-			ImGui::MenuItem("Channel Filter...", "~", &Config::Current->ShowChannelFilter);
-			ImGui::MenuItem("Image Properties...", "E", &PropsWindow);
+			tString editPixelKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::AdjustPixelColour);
+			ImGui::MenuItem("Edit Pixel", editPixelKey.Charz(), &Config::Current->ShowPixelEditor);
+
+			tString chanFiltKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ToggleChannelFilter);
+			ImGui::MenuItem("Channel Filter...", chanFiltKey.Charz(), &Config::Current->ShowChannelFilter);
+
+			tString propsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::PropertyEditor);
+			ImGui::MenuItem("Image Properties...", propsKey.Charz(), &PropsWindow);
 
 			ImGui::Separator();
 
 			bool mainProfile = Config::GetProfile() == Config::Profile::Main;
-			if (ImGui::MenuItem("Main Profile", mainProfile ? nullptr : "B", &mainProfile))
+			tString mainProfKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ToggleBasicMode);
+			if (ImGui::MenuItem("Main Profile", mainProfile ? nullptr : mainProfKey.Charz(), &mainProfile))
 				ChangeProfile(mainProfile ? Config::Profile::Main : Config::Profile::Basic);
 
 			bool basicProfile = Config::GetProfile() == Config::Profile::Basic;
-			if (ImGui::MenuItem("Basic Profile", basicProfile ? nullptr : "B", &basicProfile))
+			tString basicProfKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ToggleBasicMode);
+			if (ImGui::MenuItem("Basic Profile", basicProfile ? nullptr : basicProfKey.Charz(), &basicProfile))
 				ChangeProfile(basicProfile ? Config::Profile::Basic : Config::Profile::Main);
 
-			ImGui::MenuItem("Preferences...", "P", &PrefsWindow);
+			tString prefsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Preferences);
+			ImGui::MenuItem("Preferences...", prefsKey.Charz(), &PrefsWindow);
 
 			ImGui::PopStyleVar();
 			ImGui::EndMenu();
@@ -1610,41 +1635,55 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::BeginMenu("View"))
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
-			ImGui::MenuItem("Menu Bar", "M", &Config::Current->ShowMenuBar, !CropMode);
-			ImGui::MenuItem("Nav Bar", "N", &Config::Current->ShowNavBar, !CropMode);
-			ImGui::MenuItem("Slideshow Progress", "S", &Config::Current->SlideshowProgressArc, !CropMode);
+
+			tString menuBarKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ToggleMenuBar);
+			ImGui::MenuItem("Menu Bar", menuBarKey.Charz(), &Config::Current->ShowMenuBar, !CropMode);
+
+			tString navBarKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ToggleNavBar);
+			ImGui::MenuItem("Nav Bar", navBarKey.Charz(), &Config::Current->ShowNavBar, !CropMode);
+
+			tString slideKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ToggleSlideshowCountdown);
+			ImGui::MenuItem("Slideshow Progress", slideKey.Charz(), &Config::Current->SlideshowProgressArc, !CropMode);
+
 			bool basicSettings = (Config::GetProfile() == Config::Profile::Basic);
-			if (ImGui::MenuItem("Basic View Mode", "B", &basicSettings, !CropMode))
+			tString modeKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ToggleBasicMode);
+			if (ImGui::MenuItem("Basic View Mode", modeKey.Charz(), &basicSettings, !CropMode))
 				ChangeProfile(basicSettings ? Config::Profile::Basic : Config::Profile::Main);
 
-			ImGui::MenuItem("Image Details", "I", &Config::Current->ShowImageDetails);
-			ImGui::MenuItem("Content View", "V", &Config::Current->ContentViewShow);
+			tString detailsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ToggleImageDetails);
+			ImGui::MenuItem("Image Details", detailsKey.Charz(), &Config::Current->ShowImageDetails);
+
+			tString contentKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ContentThumbnailView);
+			ImGui::MenuItem("Content View", contentKey.Charz(), &Config::Current->ContentViewShow);
 
 			ImGui::Separator();
 
 			bool userMode = CurrZoomMode == Config::Settings::ZoomMode::User;
-			if (ImGui::MenuItem("Zoom User", "", &userMode))
+			if (ImGui::MenuItem("Zoom User", nullptr, &userMode))
 			{
 				ResetPan();
 				CurrZoomMode = Config::Settings::ZoomMode::User;
 			}
 
 			bool fitMode = CurrZoomMode == Config::Settings::ZoomMode::Fit;
-			if (ImGui::MenuItem("Zoom Fit", "F", &fitMode))
+			tString zoomFitKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ZoomFit);
+			if (ImGui::MenuItem("Zoom Fit", zoomFitKey.Charz(), &fitMode))
 			{
 				ResetPan();
 				CurrZoomMode = Config::Settings::ZoomMode::Fit;
 			}
 
 			bool downscale = CurrZoomMode == Config::Settings::ZoomMode::DownscaleOnly;
-			if (ImGui::MenuItem("Zoom Downscale", "D", &downscale))
+			tString zoomDSKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ZoomDownscaleOnly);
+			if (ImGui::MenuItem("Zoom Downscale", zoomDSKey.Charz(), &downscale))
 			{
 				ResetPan();
 				CurrZoomMode = Config::Settings::ZoomMode::DownscaleOnly;
 			}
 
 			bool oneToOne = CurrZoomMode == Config::Settings::ZoomMode::OneToOne;
-			if (ImGui::MenuItem("Zoom 1:1", "Z", &oneToOne))
+			tString zoomOneKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ZoomOneToOne);
+			if (ImGui::MenuItem("Zoom 1:1", zoomOneKey.Charz(), &oneToOne))
 			{
 				ZoomPercent = 100.0f;
 				ResetPan();
@@ -1675,11 +1714,16 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::BeginMenu("Help"))
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
-			ImGui::MenuItem("Cheat Sheet", "F1", &ShowCheatSheet);
-			if (ImGui::MenuItem("Key Bindings...", "K", &BindingsWindow))
+
+			tString cheatKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ToggleCheatSheet);
+			ImGui::MenuItem("Cheat Sheet", cheatKey.Charz(), &ShowCheatSheet);
+
+			tString bindingsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ToggleKeyBindings);
+			if (ImGui::MenuItem("Key Bindings...", bindingsKey.Charz(), &BindingsWindow))
 				if (BindingsWindow)
 					BindingsWindowJustOpened = true;
-			ImGui::MenuItem("About", "", &ShowAbout);
+
+			ImGui::MenuItem("About", nullptr, &ShowAbout);
 			ImGui::PopStyleVar();
 			ImGui::EndMenu();
 		}

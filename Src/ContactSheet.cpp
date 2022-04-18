@@ -75,21 +75,22 @@ void Viewer::DoContactSheetModal(bool saveContactSheetPressed)
 
 	static char lo[32];
 	static char hi[32];
+	tVector2 bsize(50.0f, 0.0f);
 
 	ImGui::InputInt("Frame Width", &frameWidth);
 	tiClampMin(frameWidth, 4);
-	int loP2W = tNextLowerPower2(frameWidth);	tiClampMin(loP2W, 4);	tsPrintf(lo, "fw%d", loP2W);
-	ImGui::SameLine(); if (ImGui::Button(lo)) frameWidth = loP2W;
-	int hiP2W = tNextHigherPower2(frameWidth);							tsPrintf(hi, "fw%d", hiP2W);
-	ImGui::SameLine(); if (ImGui::Button(hi)) frameWidth = hiP2W;
+	int loP2W = tNextLowerPower2(frameWidth);	tiClampMin(loP2W, 4);	tsPrintf(lo, "%d##framewidth", loP2W);
+	ImGui::SameLine(); if (ImGui::Button(lo, bsize)) frameWidth = loP2W;
+	int hiP2W = tNextHigherPower2(frameWidth);							tsPrintf(hi, "%d##framewidth", hiP2W);
+	ImGui::SameLine(); if (ImGui::Button(hi, bsize)) frameWidth = hiP2W;
 	ImGui::SameLine(); ShowHelpMark("Single frame width in pixels.");
 
 	ImGui::InputInt("Frame Height", &frameHeight);
 	tiClampMin(frameHeight, 4);
-	int loP2H = tNextLowerPower2(frameHeight);	tiClampMin(loP2H, 4);	tsPrintf(lo, "fh%d", loP2H);
-	ImGui::SameLine(); if (ImGui::Button(lo)) frameHeight = loP2H;
-	int hiP2H = tNextHigherPower2(frameHeight);							tsPrintf(hi, "fh%d", hiP2H);
-	ImGui::SameLine(); if (ImGui::Button(hi)) frameHeight = hiP2H;
+	int loP2H = tNextLowerPower2(frameHeight);	tiClampMin(loP2H, 4);	tsPrintf(lo, "%d##frameheight", loP2H);
+	ImGui::SameLine(); if (ImGui::Button(lo, bsize)) frameHeight = loP2H;
+	int hiP2H = tNextHigherPower2(frameHeight);							tsPrintf(hi, "%d##frameheight", hiP2H);
+	ImGui::SameLine(); if (ImGui::Button(hi, bsize)) frameHeight = hiP2H;
 	ImGui::SameLine(); ShowHelpMark("Single frame height in pixels.");
 
 	ImGui::InputInt("Columns", &numCols);
@@ -111,18 +112,18 @@ void Viewer::DoContactSheetModal(bool saveContactSheetPressed)
 
 	ImGui::InputInt("Final Width", &finalWidth);
 	tiClampMin(finalWidth, 4);
-	loP2W = tNextLowerPower2(finalWidth);	tiClampMin(loP2W, 4);	tsPrintf(lo, "w%d", loP2W);
-	ImGui::SameLine(); if (ImGui::Button(lo)) finalWidth = loP2W;
-	hiP2W = tNextHigherPower2(finalWidth);							tsPrintf(hi, "w%d", hiP2W);
-	ImGui::SameLine(); if (ImGui::Button(hi)) finalWidth = hiP2W;
+	loP2W = tNextLowerPower2(finalWidth);	tiClampMin(loP2W, 4);	tsPrintf(lo, "%d##width", loP2W);
+	ImGui::SameLine(); if (ImGui::Button(lo, bsize)) finalWidth = loP2W;
+	hiP2W = tNextHigherPower2(finalWidth);							tsPrintf(hi, "%d##width", hiP2W);
+	ImGui::SameLine(); if (ImGui::Button(hi, bsize)) finalWidth = hiP2W;
 	ImGui::SameLine(); ShowHelpMark("Final scaled output sheet width in pixels.");
 
 	ImGui::InputInt("Final Height", &finalHeight);
 	tiClampMin(finalHeight, 4);
-	loP2H = tNextLowerPower2(finalHeight);	tiClampMin(loP2H, 4);	tsPrintf(lo, "h%d", loP2H);
-	ImGui::SameLine(); if (ImGui::Button(lo)) finalHeight = loP2H;
-	hiP2H = tNextHigherPower2(finalHeight);							tsPrintf(hi, "h%d", hiP2H);
-	ImGui::SameLine(); if (ImGui::Button(hi)) finalHeight = hiP2H;
+	loP2H = tNextLowerPower2(finalHeight);	tiClampMin(loP2H, 4);	tsPrintf(lo, "%d##height", loP2H);
+	ImGui::SameLine(); if (ImGui::Button(lo, bsize)) finalHeight = loP2H;
+	hiP2H = tNextHigherPower2(finalHeight);							tsPrintf(hi, "%d##height", hiP2H);
+	ImGui::SameLine(); if (ImGui::Button(hi, bsize)) finalHeight = hiP2H;
 	ImGui::SameLine(); ShowHelpMark("Final scaled output sheet height in pixels.");
 
 	if (ImGui::Button("Reset"))
