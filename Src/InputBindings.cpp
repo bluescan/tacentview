@@ -472,7 +472,11 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3);
 
 			ImGuiListClipper clipper;
-			clipper.Begin(totalAssigned);
+
+			// Honestly not sure why I need +2. I am drawing an extra row so the clipper works properly, but
+			// that 'should' make it be a +1. Maybe it's the header row that counts as one. In any case, with
+			// the +2 and the dummy row at end, it all looks and works properly.
+			clipper.Begin(totalAssigned+2);
 			while (clipper.Step())
 			{
 				// Multiple keys can be bound to the same operation (ex space and right-arrow for next image)
@@ -559,6 +563,16 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 						}
 					}
 				}
+
+				// The final row is just a dummy row that makes the clipper work properly. Without this you see part of an
+				// extra row that shouldn't be visible.
+				ImGui::TableNextRow();
+				ImGui::TableSetColumnIndex(0);
+				ImGui::Button("##LastRowCol0");
+				ImGui::TableSetColumnIndex(1);
+				ImGui::Button("##LastRowCol1");
+				ImGui::TableSetColumnIndex(2);
+				ImGui::Button("##LastRowCol2");
 			}
 			ImGui::EndTable();		
 		}
