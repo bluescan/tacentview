@@ -117,10 +117,11 @@ const char* Bindings::OperationDescriptions[int(Operation::NumOperations)] =
 	"Skip To First Image",
 	"Next Image Frame",
 	"Previous Image Frame",
-	"One Pixel Right",
-	"One Pixel Left",
-	"One Pixel Down",
-	"One Pixel Up",
+
+	"Pixel Right",
+	"Pixel Left",
+	"Pixel Down",
+	"Pixel Up",
 
 	"Zoom In",
 	"Zoom Out",
@@ -129,48 +130,16 @@ const char* Bindings::OperationDescriptions[int(Operation::NumOperations)] =
 	"Zoom 1:1 Pixels",
 	"Reset Pan",
 
-	"Cheat Sheet",
-	"Rename File",
-	"Refresh / Reload Image",
-	"Fullscreen",
-
-	"Exit-Fullscreen | Exit-Basic-Profile",
-	"Quit | Exit-Fullscreen | Exit-Basic-Profile",
-	#ifdef PACKAGE_SNAP
-	"Open File Browser (No Snap Support)",
-	#else
-	"Open File Browser",
-	#endif
-	"Delete Current Image",
-	"Delete Current Image Permanently",
-	"Quit",
-
-	"Flip Image Vertically",
-	"Flip Image Horizontally",
+	"Flip Vertically",
+	"Flip Horizontally",
 	"Rotate 90 Anticlockwise",
 	"Rotate 90 Clockwise",
+	"Rotate Image",
 	"Crop",
-	"Property Editor",
-	"Adjust Pixel Colour",
 	"Resize Image",
 	"Resize Canvas",
-	"Rotate Image",
-
-	"Details",
-	"Tile",
-	"Menu Bar",
-	"Save Multi-Frame Image",
-	"Navigation Bar",
-	"Slideshow Countdown",
-	"Save As...",
-	"Save All...",
-	"Basic Mode",
-	"Debug Log",
-
-	"Contact Sheet...",
-	"Preferences...",
-	"Content Thumbnail View...",
-	"Key Bindings...",
+	"Pixel Edit",
+	"Property Edit",
 
 	"Channel Filter",
 	"Red Channel",
@@ -179,8 +148,46 @@ const char* Bindings::OperationDescriptions[int(Operation::NumOperations)] =
 	"Alpha Channel",
 	"Channel As Intensity",
 
+	"Details",
+	"Tile",
 	"Undo",
-	"Redo"
+	"Redo",
+
+	"Refresh / Reload Image",
+	"Rename File",
+	"Delete Image",
+	"Delete Image Permanently",
+
+	"Save As...",
+	"Save All...",
+	"Save Multi-Frame Image",
+	"Save Contact Sheet...",
+
+	"Menu Bar",
+	"Navigation Bar",
+	"Thumbnails...",
+	#ifdef PACKAGE_SNAP
+	"Open File Browser (No Snap Support)",
+	#else
+	"Open File Browser",
+	#endif
+	"Slideshow Timer",
+	"Cheat Sheet",
+	"Debug Log",
+
+	"Profile Change",
+	"Preferences...",
+	"Key Bindings...",
+
+	"Fullscreen",
+	"Exit-Fullscreen | Exit-Basic-Profile",
+	"Quit | Exit-Fullscreen | Exit-Basic-Profile",
+	"Quit",
+
+	#ifdef ENABLE_FILE_DIALOG_SUPPORT
+	"Open File",
+	"Open Dir",
+	#endif
 };
 
 
@@ -280,17 +287,22 @@ bool Bindings::InputMap::AssignKey(int key, uint32 modifiers, Operation operatio
 void Bindings::InputMap::Reset()
 {
 	Clear();
+
+	// Order is unimportant, but for consistency it's in same order as the Operation enum, It won't
+	// match exactly because a) Sometimes more than one key that maps to the same operation and b)
+	// some operations are not bound by default. In any case, order still matches.
+	AssignKey(GLFW_KEY_SPACE,		Modifier_None,					Operation::NextImage);
 	AssignKey(GLFW_KEY_RIGHT,		Modifier_None,					Operation::NextImage);
 	AssignKey(GLFW_KEY_LEFT,		Modifier_None,					Operation::PrevImage);
 	AssignKey(GLFW_KEY_RIGHT,		Modifier_Ctrl,					Operation::SkipToLastImage);
 	AssignKey(GLFW_KEY_LEFT,		Modifier_Ctrl,					Operation::SkipToFirstImage);
 	AssignKey(GLFW_KEY_RIGHT,		Modifier_Alt,					Operation::NextImageFrame);
 	AssignKey(GLFW_KEY_LEFT,		Modifier_Alt,					Operation::PrevImageFrame);
-	AssignKey(GLFW_KEY_RIGHT,		Modifier_Shift,					Operation::OnePixelRight);
-	AssignKey(GLFW_KEY_LEFT,		Modifier_Shift,					Operation::OnePixelLeft);
-	AssignKey(GLFW_KEY_UP,			Modifier_Shift,					Operation::OnePixelUp);
-	AssignKey(GLFW_KEY_DOWN,		Modifier_Shift,					Operation::OnePixelDown);
-	AssignKey(GLFW_KEY_SPACE,		Modifier_None,					Operation::NextImage);
+
+	AssignKey(GLFW_KEY_RIGHT,		Modifier_Shift,					Operation::PixelRight);
+	AssignKey(GLFW_KEY_LEFT,		Modifier_Shift,					Operation::PixelLeft);
+	AssignKey(GLFW_KEY_DOWN,		Modifier_Shift,					Operation::PixelDown);
+	AssignKey(GLFW_KEY_UP,			Modifier_Shift,					Operation::PixelUp);
 
 	AssignKey(GLFW_KEY_EQUAL,		Modifier_Ctrl,					Operation::ZoomIn);
 	AssignKey(GLFW_KEY_MINUS,		Modifier_Ctrl,					Operation::ZoomOut);
@@ -299,50 +311,16 @@ void Bindings::InputMap::Reset()
 	AssignKey(GLFW_KEY_Z,			Modifier_None,					Operation::ZoomOneToOne);
 	AssignKey(GLFW_KEY_P,			Modifier_Ctrl,					Operation::ResetPan);
 
-	AssignKey(GLFW_KEY_F1,			Modifier_None,					Operation::CheatSheet);
-	AssignKey(GLFW_KEY_F2,			Modifier_None,					Operation::RenameFile);
-	AssignKey(GLFW_KEY_F5,			Modifier_None,					Operation::RefreshReloadImage);
-	AssignKey(GLFW_KEY_F11,			Modifier_None,					Operation::Fullscreen);
-	AssignKey(GLFW_KEY_ENTER,		Modifier_Alt,					Operation::Fullscreen);
-
-	AssignKey(GLFW_KEY_ESCAPE,		Modifier_None,					Operation::EscapeSupportingQuit);
-	AssignKey(GLFW_KEY_ENTER,		Modifier_None,					Operation::OpenFileBrowser);
-	AssignKey(GLFW_KEY_DELETE,		Modifier_None,					Operation::Delete);
-	AssignKey(GLFW_KEY_DELETE,		Modifier_Shift,					Operation::DeletePermanent);
-	AssignKey(GLFW_KEY_F4,			Modifier_Alt,					Operation::Quit);
-
 	AssignKey(GLFW_KEY_COMMA,		Modifier_Ctrl,					Operation::FlipVertically);
 	AssignKey(GLFW_KEY_PERIOD,		Modifier_Ctrl,					Operation::FlipHorizontally);
 	AssignKey(GLFW_KEY_COMMA,		Modifier_None,					Operation::Rotate90Anticlockwise);
 	AssignKey(GLFW_KEY_PERIOD,		Modifier_None,					Operation::Rotate90Clockwise);
+	AssignKey(GLFW_KEY_R,			Modifier_None,					Operation::RotateImage);
 	AssignKey(GLFW_KEY_SLASH,		Modifier_None,					Operation::Crop);
-	AssignKey(GLFW_KEY_E,			Modifier_None,					Operation::PropertyEditor);
-	AssignKey(GLFW_KEY_A,			Modifier_None,					Operation::AdjustPixelColour);
 	AssignKey(GLFW_KEY_R,			Modifier_Alt,					Operation::ResizeImage);
 	AssignKey(GLFW_KEY_R,			Modifier_Ctrl,					Operation::ResizeCanvas);
-	AssignKey(GLFW_KEY_R,			Modifier_None,					Operation::RotateImage);
-
-	AssignKey(GLFW_KEY_I,			Modifier_None,					Operation::Details);
-	AssignKey(GLFW_KEY_T,			Modifier_None,					Operation::Tile);
-	AssignKey(GLFW_KEY_M,			Modifier_None,					Operation::MenuBar);
-	AssignKey(GLFW_KEY_M,			Modifier_Ctrl,					Operation::SaveMultiFrameImage);
-	AssignKey(GLFW_KEY_N,			Modifier_None,					Operation::NavBar);
-	AssignKey(GLFW_KEY_S,			Modifier_None,					Operation::SlideshowCountdown);
-
-	AssignKey(GLFW_KEY_S,			Modifier_Ctrl,					Operation::SaveAs);
-	AssignKey(GLFW_KEY_S,			Modifier_Alt,					Operation::SaveAll);
-	AssignKey(GLFW_KEY_B,			Modifier_None,					Operation::BasicMode);
-	AssignKey(GLFW_KEY_L,			Modifier_None,					Operation::DebugLog);
-
-	AssignKey(GLFW_KEY_C,			Modifier_None,					Operation::ContactSheet);
-	AssignKey(GLFW_KEY_P,			Modifier_None,					Operation::Preferences);
-	AssignKey(GLFW_KEY_V,			Modifier_None,					Operation::ContentThumbnailView);
-	AssignKey(GLFW_KEY_TAB,			Modifier_None,					Operation::KeyBindings);
-
-	// This one is special and can't be reassigned or removed. This is because the user _could_ turn off the menu,
-	// and remove all bindings to ToggleKeyBindings. The user would have to way of getting back to the bindings screen.
-	// Having a guaranteed key combo for it solves these issues.
-	AssignKey(GLFW_KEY_TAB,			Modifier_Ctrl | Modifier_Shift,	Operation::KeyBindings);
+	AssignKey(GLFW_KEY_A,			Modifier_None,					Operation::PixelEdit);
+	AssignKey(GLFW_KEY_E,			Modifier_None,					Operation::PropertyEdit);
 
 	AssignKey(GLFW_KEY_GRAVE_ACCENT,Modifier_None,					Operation::ChannelFilter);
 	AssignKey(GLFW_KEY_1,			Modifier_None,					Operation::RedChannel);
@@ -351,8 +329,41 @@ void Bindings::InputMap::Reset()
 	AssignKey(GLFW_KEY_4,			Modifier_None,					Operation::AlphaChannel);
 	AssignKey(GLFW_KEY_5,			Modifier_None,					Operation::ChannelAsIntensity);
 
+	AssignKey(GLFW_KEY_I,			Modifier_None,					Operation::Details);
+	AssignKey(GLFW_KEY_T,			Modifier_None,					Operation::Tile);
 	AssignKey(GLFW_KEY_Z,			Modifier_Ctrl,					Operation::Undo);
 	AssignKey(GLFW_KEY_Y,			Modifier_Ctrl,					Operation::Redo);
+
+	AssignKey(GLFW_KEY_F5,			Modifier_None,					Operation::Refresh);
+	AssignKey(GLFW_KEY_F2,			Modifier_None,					Operation::Rename);
+	AssignKey(GLFW_KEY_DELETE,		Modifier_None,					Operation::Delete);
+	AssignKey(GLFW_KEY_DELETE,		Modifier_Shift,					Operation::DeletePermanent);
+
+	AssignKey(GLFW_KEY_S,			Modifier_Ctrl,					Operation::SaveAs);
+	AssignKey(GLFW_KEY_S,			Modifier_Alt,					Operation::SaveAll);
+	AssignKey(GLFW_KEY_M,			Modifier_Ctrl,					Operation::SaveMultiFrameImage);
+	AssignKey(GLFW_KEY_C,			Modifier_None,					Operation::SaveContactSheet);
+
+	AssignKey(GLFW_KEY_M,			Modifier_None,					Operation::MenuBar);
+	AssignKey(GLFW_KEY_N,			Modifier_None,					Operation::NavBar);
+	AssignKey(GLFW_KEY_V,			Modifier_None,					Operation::Thumbnails);
+	AssignKey(GLFW_KEY_ENTER,		Modifier_None,					Operation::FileBrowser);
+	AssignKey(GLFW_KEY_S,			Modifier_None,					Operation::SlideshowTimer);
+	AssignKey(GLFW_KEY_F1,			Modifier_None,					Operation::CheatSheet);
+	AssignKey(GLFW_KEY_L,			Modifier_None,					Operation::DebugLog);
+
+	AssignKey(GLFW_KEY_B,			Modifier_None,					Operation::Profile);
+	AssignKey(GLFW_KEY_P,			Modifier_None,					Operation::Preferences);
+	// This one is special and can't be reassigned or removed. This is because the user _could_ turn off the menu,
+	// and remove all bindings to ToggleKeyBindings. The user would have to way of getting back to the bindings screen.
+	// Having a guaranteed key combo for it solves these issues.
+	AssignKey(GLFW_KEY_TAB,			Modifier_Ctrl | Modifier_Shift,	Operation::KeyBindings);
+	AssignKey(GLFW_KEY_TAB,			Modifier_None,					Operation::KeyBindings);
+
+	AssignKey(GLFW_KEY_F11,			Modifier_None,					Operation::Fullscreen);
+	AssignKey(GLFW_KEY_ENTER,		Modifier_Alt,					Operation::Fullscreen);
+	AssignKey(GLFW_KEY_ESCAPE,		Modifier_None,					Operation::EscapeSupportingQuit);
+	AssignKey(GLFW_KEY_F4,			Modifier_Alt,					Operation::Quit);
 
 	#ifdef ENABLE_FILE_DIALOG_SUPPORT
 	AssignKey(GLFW_KEY_O,			Modifier_Ctrl,					Operation::OpenFile);

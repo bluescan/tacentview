@@ -36,7 +36,7 @@ namespace Viewer {
 
 namespace Config
 {
-	const int ConfigFileVersion = 2;
+	const int ConfigFileVersion = 3;
 
 	GlobalSettings Global;
 	Settings MainSettings;
@@ -103,7 +103,6 @@ void Config::Load(const tString& filename)
 		Global.Reset();
 		ResetAll();
 		Current = &MainSettings;
-		Global.CurrentProfile = int(Profile::Main);
 		return;
 	}
 
@@ -126,6 +125,13 @@ void Config::Load(const tString& filename)
 		}
 	}
 
+	// Add stuff here if you care about what version you loaded from.
+	if (Global.ConfigVersion <= 2)
+	{
+		Global.Reset();
+		ResetAll();
+	}
+
 	// I think it makes sense to restore the currently selected profile when the config file is loaded.
 	// This means if you were in Basic profile when you close, you will be in basic when you start the app again.
 	switch (Profile(Global.CurrentProfile))
@@ -142,6 +148,7 @@ void Config::Save(const tString& filename)
 	writer.Rem("Tacent View Configuration File");
 	writer.CR();
 
+	// We always save in most recent / current version.
 	Global.ConfigVersion = ConfigFileVersion;
 	Global.Save(writer);
 	writer.CR();

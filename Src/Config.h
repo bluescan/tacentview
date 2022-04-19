@@ -180,13 +180,14 @@ struct Settings
 
 struct GlobalSettings
 {
-	GlobalSettings()					{ Reset(); }
+	GlobalSettings()					{ Clear(); }
 	int ConfigVersion;
 	int CurrentProfile;
 
 	void Save(tScriptWriter&);
 	void Load(tExpression);
 	void Reset();
+	void Clear()						{ ConfigVersion = -1; CurrentProfile = int(Profile::Main); }
 };
 
 

@@ -1488,7 +1488,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::MenuItem("Save All...", saveAllKey.Charz()) && CurrImage)
 				saveAllPressed = true;
 
-			tString saveCSKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ContactSheet);
+			tString saveCSKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SaveContactSheet);
 			if (ImGui::MenuItem("Save Contact Sheet...", saveCSKey.Charz()) && (Images.GetNumItems() > 1))
 				saveContactSheetPressed = true;
 
@@ -1499,12 +1499,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::Separator();
 
 			bool mainProfile = Config::GetProfile() == Config::Profile::Main;
-			tString mainProfKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::BasicMode);
+			tString mainProfKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Profile);
 			if (ImGui::MenuItem("Main Profile", mainProfile ? nullptr : mainProfKey.Charz(), &mainProfile))
 				ChangeProfile(mainProfile ? Config::Profile::Main : Config::Profile::Basic);
 
 			bool basicProfile = Config::GetProfile() == Config::Profile::Basic;
-			tString basicProfKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::BasicMode);
+			tString basicProfKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Profile);
 			if (ImGui::MenuItem("Basic Profile", basicProfile ? nullptr : basicProfKey.Charz(), &basicProfile))
 				ChangeProfile(basicProfile ? Config::Profile::Basic : Config::Profile::Main);
 
@@ -1622,13 +1622,13 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			ImGui::Separator();
 
-			tString editPixelKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::AdjustPixelColour);
+			tString editPixelKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::PixelEdit);
 			ImGui::MenuItem("Edit Pixel", editPixelKey.Charz(), &Config::Current->ShowPixelEditor);
 
 			tString chanFiltKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ChannelFilter);
 			ImGui::MenuItem("Channel Filter...", chanFiltKey.Charz(), &Config::Current->ShowChannelFilter);
 
-			tString propsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::PropertyEditor);
+			tString propsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::PropertyEdit);
 			ImGui::MenuItem("Image Properties...", propsKey.Charz(), &PropsWindow);
 
 			ImGui::PopStyleVar();
@@ -1654,19 +1654,19 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			tString navBarKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::NavBar);
 			ImGui::MenuItem("Nav Bar", navBarKey.Charz(), &Config::Current->ShowNavBar, !CropMode);
 
-			tString slideKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SlideshowCountdown);
+			tString slideKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SlideshowTimer);
 			ImGui::MenuItem("Slideshow Progress", slideKey.Charz(), &Config::Current->SlideshowProgressArc, !CropMode);
 
 			bool basicSettings = (Config::GetProfile() == Config::Profile::Basic);
-			tString modeKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::BasicMode);
-			if (ImGui::MenuItem("Basic View Mode", modeKey.Charz(), &basicSettings, !CropMode))
+			tString modeKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Profile);
+			if (ImGui::MenuItem("Basic Profile", modeKey.Charz(), &basicSettings, !CropMode))
 				ChangeProfile(basicSettings ? Config::Profile::Basic : Config::Profile::Main);
 
 			tString detailsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Details);
 			ImGui::MenuItem("Image Details", detailsKey.Charz(), &Config::Current->ShowImageDetails);
 
-			tString contentKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ContentThumbnailView);
-			ImGui::MenuItem("Content View", contentKey.Charz(), &Config::Current->ContentViewShow);
+			tString thumbKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Thumbnails);
+			ImGui::MenuItem("Thumbnail View", thumbKey.Charz(), &Config::Current->ContentViewShow);
 
 			ImGui::Separator();
 
@@ -2211,19 +2211,19 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			OnPrevImageFrame();
 			break;
 
-		case Bindings::Operation::OnePixelRight:
+		case Bindings::Operation::PixelRight:
 			if (CurrImage) RequestCursorMove = CursorMove_Right;
 			break;
 
-		case Bindings::Operation::OnePixelLeft:
+		case Bindings::Operation::PixelLeft:
 			if (CurrImage) RequestCursorMove = CursorMove_Left;
 			break;
 
-		case Bindings::Operation::OnePixelDown:
+		case Bindings::Operation::PixelDown:
 			if (CurrImage) RequestCursorMove = CursorMove_Down;
 			break;
 
-		case Bindings::Operation::OnePixelUp:
+		case Bindings::Operation::PixelUp:
 			if (CurrImage) RequestCursorMove = CursorMove_Up;
 			break;
 
@@ -2255,69 +2255,6 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			ResetPan();
 			break;
 
-		case Bindings::Operation::CheatSheet:
-			ShowCheatSheet = !ShowCheatSheet;
-			break;
-
-		case Bindings::Operation::RenameFile:
-			if (CurrImage) Request_RenameModal = true;
-			break;
-
-		case Bindings::Operation::RefreshReloadImage:
-			if (CurrImage)
-			{
-				CurrImage->Unbind();
-				CurrImage->Unload(true);
-				CurrImage->Load();
-				CurrImage->Bind();
-				SetWindowTitle();
-			}
-			break;
-
-		case Bindings::Operation::Fullscreen:
-			ChangeScreenMode(!FullscreenMode);
-			break;
-
-		case Bindings::Operation::Escape:
-			if (FullscreenMode)
-				ChangeScreenMode(false);
-			else if (Config::GetProfile() == Config::Profile::Basic)
-				ChangeProfile(Config::Profile::Main);
-			break;
-
-		case Bindings::Operation::EscapeSupportingQuit:
-			if (FullscreenMode)
-				ChangeScreenMode(false);
-			else if (Config::GetProfile() == Config::Profile::Basic)
-				ChangeProfile(Config::Profile::Main);
-			else
-				Viewer::Request_Quit = true;				
-			break;
-
-		case Bindings::Operation::OpenFileBrowser:
-		{
-			#ifdef PACKAGE_SNAP
-			static int messageCount = 2;
-			if (messageCount-- > 0)
-				Request_SnapMessage_NoFileBrowse = true;
-			#else
-			if (CurrImage) tSystem::tOpenSystemFileExplorer(CurrImage->Filename);
-			#endif
-			break;
-		}
-
-		case Bindings::Operation::Delete:
-			if (CurrImage) Request_DeleteFileModal = true;
-			break;
-
-		case Bindings::Operation::DeletePermanent:
-			if (CurrImage) Request_DeleteFileNoRecycleModal = true;
-			break;
-
-		case Bindings::Operation::Quit:
-			Viewer::Request_Quit = true;				
-			break;
-
 		case Bindings::Operation::FlipVertically:
 		case Bindings::Operation::FlipHorizontally:
 			if (CurrImage && !CurrImage->IsAltPictureEnabled())
@@ -2340,16 +2277,12 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			}
 			break;
 
+		case Bindings::Operation::RotateImage:
+			if (CurrImage) Request_RotateImageModal = true;
+			break;
+
 		case Bindings::Operation::Crop:
 			CropMode = !CropMode;
-			break;
-
-		case Bindings::Operation::PropertyEditor:
-			PropsWindow = !PropsWindow;
-			break;
-
-		case Bindings::Operation::AdjustPixelColour:
-			Viewer::Config::Current->ShowPixelEditor = !Viewer::Config::Current->ShowPixelEditor;
 			break;
 
 		case Bindings::Operation::ResizeImage:
@@ -2360,69 +2293,12 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			if (CurrImage) Request_ResizeCanvasModal = true;
 			break;
 
-		case Bindings::Operation::RotateImage:
-			if (CurrImage) Request_RotateImageModal = true;
+		case Bindings::Operation::PixelEdit:
+			Viewer::Config::Current->ShowPixelEditor = !Viewer::Config::Current->ShowPixelEditor;
 			break;
 
-		case Bindings::Operation::Details:
-			Viewer::Config::Current->ShowImageDetails = !Viewer::Config::Current->ShowImageDetails;
-			break;
-
-		case Bindings::Operation::Tile:
-			Config::Current->Tile = !Config::Current->Tile;
-			if (!Config::Current->Tile)
-				ResetPan();
-			break;
-
-		case Bindings::Operation::MenuBar:
-			if (!CropMode) Config::Current->ShowMenuBar = !Config::Current->ShowMenuBar;
-			break;
-
-		case Bindings::Operation::SaveMultiFrameImage:
-			if (Images.GetNumItems() > 1) Request_MultiFrameModal = true;
-			break;
-
-		case Bindings::Operation::NavBar:
-			if (!CropMode) Config::Current->ShowNavBar = !Config::Current->ShowNavBar;
-			break;
-
-		case Bindings::Operation::SlideshowCountdown:
-			Config::Current->SlideshowProgressArc = !Config::Current->SlideshowProgressArc;
-			break;
-
-		case Bindings::Operation::SaveAs:
-			if (CurrImage) Request_SaveAsModal = true;
-			break;
-
-		case Bindings::Operation::SaveAll:
-			if (CurrImage) Request_SaveAllModal = true;
-			break;
-
-		case Bindings::Operation::BasicMode:
-			if (!CropMode) ChangeProfile((Config::GetProfile() == Config::Profile::Basic) ? Config::Profile::Main : Config::Profile::Basic);
-			break;
-
-		case Bindings::Operation::DebugLog:
-			NavBar.SetShowLog( !NavBar.GetShowLog() );
-			if (NavBar.GetShowLog() && !Config::Current->ShowNavBar)
-				Config::Current->ShowNavBar = true;
-			break;
-
-		case Bindings::Operation::ContactSheet:
-			if (Images.GetNumItems() > 1) Request_ContactSheetModal = true;
-			break;
-
-		case Bindings::Operation::Preferences:
-			PrefsWindow = !PrefsWindow;
-			break;
-
-		case Bindings::Operation::ContentThumbnailView:
-			Viewer::Config::Current->ContentViewShow = !Viewer::Config::Current->ContentViewShow;
-			break;
-
-		case Bindings::Operation::KeyBindings:
-			BindingsWindow = !BindingsWindow;
-			if (BindingsWindow) BindingsWindowJustOpened = true;
+		case Bindings::Operation::PropertyEdit:
+			PropsWindow = !PropsWindow;
 			break;
 
 		case Bindings::Operation::ChannelFilter:
@@ -2470,12 +2346,136 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			Config::Current->ShowChannelFilter = true;	
 			break;
 
+		case Bindings::Operation::Details:
+			Viewer::Config::Current->ShowImageDetails = !Viewer::Config::Current->ShowImageDetails;
+			break;
+
+		case Bindings::Operation::Tile:
+			Config::Current->Tile = !Config::Current->Tile;
+			if (!Config::Current->Tile)
+				ResetPan();
+			break;
+
 		case Bindings::Operation::Undo:
 			if (CurrImage && CurrImage->IsUndoAvailable()) Undo();
 			break;
 
 		case Bindings::Operation::Redo:
 			if (CurrImage && CurrImage->IsRedoAvailable()) Redo();
+			break;
+
+		case Bindings::Operation::Refresh:
+			if (CurrImage)
+			{
+				CurrImage->Unbind();
+				CurrImage->Unload(true);
+				CurrImage->Load();
+				CurrImage->Bind();
+				SetWindowTitle();
+			}
+			break;
+
+		case Bindings::Operation::Rename:
+			if (CurrImage) Request_RenameModal = true;
+			break;
+
+		case Bindings::Operation::Delete:
+			if (CurrImage) Request_DeleteFileModal = true;
+			break;
+
+		case Bindings::Operation::DeletePermanent:
+			if (CurrImage) Request_DeleteFileNoRecycleModal = true;
+			break;
+
+		case Bindings::Operation::SaveAs:
+			if (CurrImage) Request_SaveAsModal = true;
+			break;
+
+		case Bindings::Operation::SaveAll:
+			if (CurrImage) Request_SaveAllModal = true;
+			break;
+
+		case Bindings::Operation::SaveMultiFrameImage:
+			if (Images.GetNumItems() > 1) Request_MultiFrameModal = true;
+			break;
+
+		case Bindings::Operation::SaveContactSheet:
+			if (Images.GetNumItems() > 1) Request_ContactSheetModal = true;
+			break;
+
+		case Bindings::Operation::MenuBar:
+			if (!CropMode) Config::Current->ShowMenuBar = !Config::Current->ShowMenuBar;
+			break;
+
+		case Bindings::Operation::NavBar:
+			if (!CropMode) Config::Current->ShowNavBar = !Config::Current->ShowNavBar;
+			break;
+
+		case Bindings::Operation::Thumbnails:
+			Viewer::Config::Current->ContentViewShow = !Viewer::Config::Current->ContentViewShow;
+			break;
+
+		case Bindings::Operation::FileBrowser:
+		{
+			#ifdef PACKAGE_SNAP
+			static int messageCount = 2;
+			if (messageCount-- > 0)
+				Request_SnapMessage_NoFileBrowse = true;
+			#else
+			if (CurrImage) tSystem::tOpenSystemFileExplorer(CurrImage->Filename);
+			#endif
+			break;
+		}
+
+		case Bindings::Operation::SlideshowTimer:
+			Config::Current->SlideshowProgressArc = !Config::Current->SlideshowProgressArc;
+			break;
+
+		case Bindings::Operation::CheatSheet:
+			ShowCheatSheet = !ShowCheatSheet;
+			break;
+
+		case Bindings::Operation::DebugLog:
+			NavBar.SetShowLog( !NavBar.GetShowLog() );
+			if (NavBar.GetShowLog() && !Config::Current->ShowNavBar)
+				Config::Current->ShowNavBar = true;
+			break;
+
+		case Bindings::Operation::Profile:
+			if (!CropMode) ChangeProfile((Config::GetProfile() == Config::Profile::Basic) ? Config::Profile::Main : Config::Profile::Basic);
+			break;
+
+		case Bindings::Operation::Preferences:
+			PrefsWindow = !PrefsWindow;
+			break;
+
+		case Bindings::Operation::KeyBindings:
+			BindingsWindow = !BindingsWindow;
+			if (BindingsWindow) BindingsWindowJustOpened = true;
+			break;
+
+		case Bindings::Operation::Fullscreen:
+			ChangeScreenMode(!FullscreenMode);
+			break;
+
+		case Bindings::Operation::Escape:
+			if (FullscreenMode)
+				ChangeScreenMode(false);
+			else if (Config::GetProfile() == Config::Profile::Basic)
+				ChangeProfile(Config::Profile::Main);
+			break;
+
+		case Bindings::Operation::EscapeSupportingQuit:
+			if (FullscreenMode)
+				ChangeScreenMode(false);
+			else if (Config::GetProfile() == Config::Profile::Basic)
+				ChangeProfile(Config::Profile::Main);
+			else
+				Viewer::Request_Quit = true;				
+			break;
+
+		case Bindings::Operation::Quit:
+			Viewer::Request_Quit = true;				
 			break;
 
 		#ifdef ENABLE_FILE_DIALOG_SUPPORT
