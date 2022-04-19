@@ -2235,6 +2235,26 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			ApplyZoomDelta(tMath::tRound(ZoomPercent*(0.909090909f - 1.0f)));
 			break;
 
+		case Bindings::Operation::ZoomFit:
+			ResetPan();
+			CurrZoomMode = Config::Settings::ZoomMode::Fit;
+			break;
+
+		case Bindings::Operation::ZoomDownscaleOnly:
+			ResetPan();
+			CurrZoomMode = Config::Settings::ZoomMode::DownscaleOnly;
+			break;
+
+		case Bindings::Operation::ZoomOneToOne:
+			ZoomPercent = 100.0f;
+			ResetPan();
+			CurrZoomMode = Config::Settings::ZoomMode::OneToOne;
+			break;
+
+		case Bindings::Operation::ResetPan:
+			ResetPan();
+			break;
+
 		case Bindings::Operation::CheatSheet:
 			ShowCheatSheet = !ShowCheatSheet;
 			break;
@@ -2386,26 +2406,6 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			NavBar.SetShowLog( !NavBar.GetShowLog() );
 			if (NavBar.GetShowLog() && !Config::Current->ShowNavBar)
 				Config::Current->ShowNavBar = true;
-			break;
-
-		case Bindings::Operation::ZoomFit:
-			ResetPan();
-			CurrZoomMode = Config::Settings::ZoomMode::Fit;
-			break;
-
-		case Bindings::Operation::ZoomDownscaleOnly:
-			ResetPan();
-			CurrZoomMode = Config::Settings::ZoomMode::DownscaleOnly;
-			break;
-
-		case Bindings::Operation::ZoomOneToOne:
-			ZoomPercent = 100.0f;
-			ResetPan();
-			CurrZoomMode = Config::Settings::ZoomMode::OneToOne;
-			break;
-
-		case Bindings::Operation::ResetPan:
-			ResetPan();
 			break;
 
 		case Bindings::Operation::ContactSheet:

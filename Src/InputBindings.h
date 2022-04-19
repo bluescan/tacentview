@@ -39,6 +39,11 @@ namespace Bindings
 
 		ZoomIn,
 		ZoomOut,
+		ZoomFit,
+		ZoomDownscaleOnly,
+		ZoomOneToOne,
+		ResetPan,
+
 		CheatSheet,
 		RenameFile,
 		RefreshReloadImage,
@@ -73,10 +78,6 @@ namespace Bindings
 		BasicMode,
 		DebugLog,
 
-		ZoomFit,
-		ZoomDownscaleOnly,
-		ZoomOneToOne,
-		ResetPan,
 		ContactSheet,
 		Preferences,
 		ContentThumbnailView,

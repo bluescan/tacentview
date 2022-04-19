@@ -124,10 +124,15 @@ const char* Bindings::OperationDescriptions[int(Operation::NumOperations)] =
 
 	"Zoom In",
 	"Zoom Out",
-	"Toggle Cheat Sheet",
+	"Zoom Fit",
+	"Zoom Downscale Only",
+	"Zoom 1:1 Pixels",
+	"Reset Pan",
+
+	"Cheat Sheet",
 	"Rename File",
 	"Refresh / Reload Image",
-	"Toggle Fullscreen",
+	"Fullscreen",
 
 	"Exit-Fullscreen | Exit-Basic-Profile",
 	"Quit | Exit-Fullscreen | Exit-Basic-Profile",
@@ -151,32 +156,28 @@ const char* Bindings::OperationDescriptions[int(Operation::NumOperations)] =
 	"Resize Canvas",
 	"Rotate Image",
 
-	"Toggle Image Details",
-	"Toggle Tile",
-	"Toggle Menu Bar",
+	"Details",
+	"Tile",
+	"Menu Bar",
 	"Save Multi-Frame Image",
-	"Toggle Navigation Bar",
-	"Toggle Slideshow Countdown",
+	"Navigation Bar",
+	"Slideshow Countdown",
 	"Save As...",
 	"Save All...",
-	"Toggle Basic Mode",
-	"Toggle Debug Log",
+	"Basic Mode",
+	"Debug Log",
 
-	"Zoom Fit",
-	"Zoom Downscale Only",
-	"Zoom 1:1 Pixels",
-	"Reset Pan",
 	"Contact Sheet...",
 	"Preferences...",
 	"Content Thumbnail View...",
-	"Toggle Key Bindings...",
+	"Key Bindings...",
 
-	"Toggle Channel Filter",
-	"Toggle Red Channel",
-	"Toggle Green Channel",
-	"Toggle Blue Channel",
-	"Toggle Alpha Channel",
-	"Toggle Channel As Intensity",
+	"Channel Filter",
+	"Red Channel",
+	"Green Channel",
+	"Blue Channel",
+	"Alpha Channel",
+	"Channel As Intensity",
 
 	"Undo",
 	"Redo"
@@ -293,6 +294,11 @@ void Bindings::InputMap::Reset()
 
 	AssignKey(GLFW_KEY_EQUAL,		Modifier_Ctrl,					Operation::ZoomIn);
 	AssignKey(GLFW_KEY_MINUS,		Modifier_Ctrl,					Operation::ZoomOut);
+	AssignKey(GLFW_KEY_F,			Modifier_None,					Operation::ZoomFit);
+	AssignKey(GLFW_KEY_D,			Modifier_None,					Operation::ZoomDownscaleOnly);
+	AssignKey(GLFW_KEY_Z,			Modifier_None,					Operation::ZoomOneToOne);
+	AssignKey(GLFW_KEY_P,			Modifier_Ctrl,					Operation::ResetPan);
+
 	AssignKey(GLFW_KEY_F1,			Modifier_None,					Operation::CheatSheet);
 	AssignKey(GLFW_KEY_F2,			Modifier_None,					Operation::RenameFile);
 	AssignKey(GLFW_KEY_F5,			Modifier_None,					Operation::RefreshReloadImage);
@@ -328,10 +334,6 @@ void Bindings::InputMap::Reset()
 	AssignKey(GLFW_KEY_B,			Modifier_None,					Operation::BasicMode);
 	AssignKey(GLFW_KEY_L,			Modifier_None,					Operation::DebugLog);
 
-	AssignKey(GLFW_KEY_F,			Modifier_None,					Operation::ZoomFit);
-	AssignKey(GLFW_KEY_D,			Modifier_None,					Operation::ZoomDownscaleOnly);
-	AssignKey(GLFW_KEY_Z,			Modifier_None,					Operation::ZoomOneToOne);
-	AssignKey(GLFW_KEY_P,			Modifier_Ctrl,					Operation::ResetPan);
 	AssignKey(GLFW_KEY_C,			Modifier_None,					Operation::ContactSheet);
 	AssignKey(GLFW_KEY_P,			Modifier_None,					Operation::Preferences);
 	AssignKey(GLFW_KEY_V,			Modifier_None,					Operation::ContentThumbnailView);
