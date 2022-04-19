@@ -1497,6 +1497,27 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 				saveMultiFramePressed = true;
 
 			ImGui::Separator();
+
+			bool mainProfile = Config::GetProfile() == Config::Profile::Main;
+			tString mainProfKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::BasicMode);
+			if (ImGui::MenuItem("Main Profile", mainProfile ? nullptr : mainProfKey.Charz(), &mainProfile))
+				ChangeProfile(mainProfile ? Config::Profile::Main : Config::Profile::Basic);
+
+			bool basicProfile = Config::GetProfile() == Config::Profile::Basic;
+			tString basicProfKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::BasicMode);
+			if (ImGui::MenuItem("Basic Profile", basicProfile ? nullptr : basicProfKey.Charz(), &basicProfile))
+				ChangeProfile(basicProfile ? Config::Profile::Basic : Config::Profile::Main);
+
+			ImGui::Separator();
+
+			tString bindingsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::KeyBindings);
+			if (ImGui::MenuItem("Key Bindings...", bindingsKey.Charz(), &BindingsWindow))
+				if (BindingsWindow)
+					BindingsWindowJustOpened = true;
+
+			tString prefsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Preferences);
+			ImGui::MenuItem("Preferences...", prefsKey.Charz(), &PrefsWindow);
+
 			tString quitKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Quit);
 			if (ImGui::MenuItem("Quit", quitKey.Charz()))
 				glfwSetWindowShouldClose(Window, 1);
@@ -1544,6 +1565,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::MenuItem(redoStr, redoKey.Charz(), false, redoEnabled))
 				Redo();
 
+			ImGui::Separator();
+
 			tString flipVKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::FlipVertically);
 			if (ImGui::MenuItem("Flip Vertically", flipVKey.Charz(), false, CurrImage && !CurrImage->IsAltPictureEnabled()))
 			{
@@ -1580,6 +1603,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 				SetWindowTitle();
 			}
 
+			tString rotateImgKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::RotateImage);
+			if (ImGui::MenuItem("Rotate Image...", rotateImgKey.Charz()) && CurrImage)
+				rotateImagePressed = true;
+
+			ImGui::Separator();
+
 			tString cropKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Crop);
 			ImGui::MenuItem("Crop...", cropKey.Charz(), &CropMode);
 
@@ -1591,33 +1620,16 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::MenuItem("Resize Canvas...", resizeCanvasKey.Charz()) && CurrImage)
 				resizeCanvasPressed = true;
 
-			tString rotateImgKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::RotateImage);
-			if (ImGui::MenuItem("Rotate Image...", rotateImgKey.Charz()) && CurrImage)
-				rotateImagePressed = true;
+			ImGui::Separator();
 
 			tString editPixelKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::AdjustPixelColour);
 			ImGui::MenuItem("Edit Pixel", editPixelKey.Charz(), &Config::Current->ShowPixelEditor);
 
-			tString chanFiltKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ToggleChannelFilter);
+			tString chanFiltKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ChannelFilter);
 			ImGui::MenuItem("Channel Filter...", chanFiltKey.Charz(), &Config::Current->ShowChannelFilter);
 
 			tString propsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::PropertyEditor);
 			ImGui::MenuItem("Image Properties...", propsKey.Charz(), &PropsWindow);
-
-			ImGui::Separator();
-
-			bool mainProfile = Config::GetProfile() == Config::Profile::Main;
-			tString mainProfKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ToggleBasicMode);
-			if (ImGui::MenuItem("Main Profile", mainProfile ? nullptr : mainProfKey.Charz(), &mainProfile))
-				ChangeProfile(mainProfile ? Config::Profile::Main : Config::Profile::Basic);
-
-			bool basicProfile = Config::GetProfile() == Config::Profile::Basic;
-			tString basicProfKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ToggleBasicMode);
-			if (ImGui::MenuItem("Basic Profile", basicProfile ? nullptr : basicProfKey.Charz(), &basicProfile))
-				ChangeProfile(basicProfile ? Config::Profile::Basic : Config::Profile::Main);
-
-			tString prefsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Preferences);
-			ImGui::MenuItem("Preferences...", prefsKey.Charz(), &PrefsWindow);
 
 			ImGui::PopStyleVar();
 			ImGui::EndMenu();
@@ -1636,21 +1648,21 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 
-			tString menuBarKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ToggleMenuBar);
+			tString menuBarKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::MenuBar);
 			ImGui::MenuItem("Menu Bar", menuBarKey.Charz(), &Config::Current->ShowMenuBar, !CropMode);
 
-			tString navBarKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ToggleNavBar);
+			tString navBarKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::NavBar);
 			ImGui::MenuItem("Nav Bar", navBarKey.Charz(), &Config::Current->ShowNavBar, !CropMode);
 
-			tString slideKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ToggleSlideshowCountdown);
+			tString slideKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SlideshowCountdown);
 			ImGui::MenuItem("Slideshow Progress", slideKey.Charz(), &Config::Current->SlideshowProgressArc, !CropMode);
 
 			bool basicSettings = (Config::GetProfile() == Config::Profile::Basic);
-			tString modeKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ToggleBasicMode);
+			tString modeKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::BasicMode);
 			if (ImGui::MenuItem("Basic View Mode", modeKey.Charz(), &basicSettings, !CropMode))
 				ChangeProfile(basicSettings ? Config::Profile::Basic : Config::Profile::Main);
 
-			tString detailsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ToggleImageDetails);
+			tString detailsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Details);
 			ImGui::MenuItem("Image Details", detailsKey.Charz(), &Config::Current->ShowImageDetails);
 
 			tString contentKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ContentThumbnailView);
@@ -1700,8 +1712,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 				ApplyZoomDelta(zoomVals[zoomIdx]-ZoomPercent);
 			ImGui::PopItemWidth();
 
-			ImGui::Separator();
-			if (ImGui::Button("Reset Pan"))
+			tString panKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ResetPan);
+			if (ImGui::MenuItem("Reset Pan", panKey.Charz()))
 				ResetPan();
 
 			ImGui::PopStyleVar();
@@ -1715,13 +1727,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 
-			tString cheatKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ToggleCheatSheet);
+			tString cheatKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::CheatSheet);
 			ImGui::MenuItem("Cheat Sheet", cheatKey.Charz(), &ShowCheatSheet);
-
-			tString bindingsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ToggleKeyBindings);
-			if (ImGui::MenuItem("Key Bindings...", bindingsKey.Charz(), &BindingsWindow))
-				if (BindingsWindow)
-					BindingsWindowJustOpened = true;
 
 			ImGui::MenuItem("About", nullptr, &ShowAbout);
 			ImGui::PopStyleVar();
@@ -2228,7 +2235,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			ApplyZoomDelta(tMath::tRound(ZoomPercent*(0.909090909f - 1.0f)));
 			break;
 
-		case Bindings::Operation::ToggleCheatSheet:
+		case Bindings::Operation::CheatSheet:
 			ShowCheatSheet = !ShowCheatSheet;
 			break;
 
@@ -2247,7 +2254,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			}
 			break;
 
-		case Bindings::Operation::ToggleFullscreen:
+		case Bindings::Operation::Fullscreen:
 			ChangeScreenMode(!FullscreenMode);
 			break;
 
@@ -2337,17 +2344,17 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			if (CurrImage) Request_RotateImageModal = true;
 			break;
 
-		case Bindings::Operation::ToggleImageDetails:
+		case Bindings::Operation::Details:
 			Viewer::Config::Current->ShowImageDetails = !Viewer::Config::Current->ShowImageDetails;
 			break;
 
-		case Bindings::Operation::ToggleTile:
+		case Bindings::Operation::Tile:
 			Config::Current->Tile = !Config::Current->Tile;
 			if (!Config::Current->Tile)
 				ResetPan();
 			break;
 
-		case Bindings::Operation::ToggleMenuBar:
+		case Bindings::Operation::MenuBar:
 			if (!CropMode) Config::Current->ShowMenuBar = !Config::Current->ShowMenuBar;
 			break;
 
@@ -2355,11 +2362,11 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			if (Images.GetNumItems() > 1) Request_MultiFrameModal = true;
 			break;
 
-		case Bindings::Operation::ToggleNavBar:
+		case Bindings::Operation::NavBar:
 			if (!CropMode) Config::Current->ShowNavBar = !Config::Current->ShowNavBar;
 			break;
 
-		case Bindings::Operation::ToggleSlideshowCountdown:
+		case Bindings::Operation::SlideshowCountdown:
 			Config::Current->SlideshowProgressArc = !Config::Current->SlideshowProgressArc;
 			break;
 
@@ -2371,11 +2378,11 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			if (CurrImage) Request_SaveAllModal = true;
 			break;
 
-		case Bindings::Operation::ToggleBasicMode:
+		case Bindings::Operation::BasicMode:
 			if (!CropMode) ChangeProfile((Config::GetProfile() == Config::Profile::Basic) ? Config::Profile::Main : Config::Profile::Basic);
 			break;
 
-		case Bindings::Operation::ToggleDebugLog:
+		case Bindings::Operation::DebugLog:
 			NavBar.SetShowLog( !NavBar.GetShowLog() );
 			if (NavBar.GetShowLog() && !Config::Current->ShowNavBar)
 				Config::Current->ShowNavBar = true;
@@ -2397,6 +2404,10 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			CurrZoomMode = Config::Settings::ZoomMode::OneToOne;
 			break;
 
+		case Bindings::Operation::ResetPan:
+			ResetPan();
+			break;
+
 		case Bindings::Operation::ContactSheet:
 			if (Images.GetNumItems() > 1) Request_ContactSheetModal = true;
 			break;
@@ -2409,16 +2420,16 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			Viewer::Config::Current->ContentViewShow = !Viewer::Config::Current->ContentViewShow;
 			break;
 
-		case Bindings::Operation::ToggleKeyBindings:
+		case Bindings::Operation::KeyBindings:
 			BindingsWindow = !BindingsWindow;
 			if (BindingsWindow) BindingsWindowJustOpened = true;
 			break;
 
-		case Bindings::Operation::ToggleChannelFilter:
+		case Bindings::Operation::ChannelFilter:
 			Config::Current->ShowChannelFilter = !Config::Current->ShowChannelFilter;
 			break;
 
-		case Bindings::Operation::ToggleRedChannel:
+		case Bindings::Operation::RedChannel:
 			if (DrawChannel_AsIntensity)
 				{ DrawChannel_R = true; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = false; }
 			else
@@ -2426,7 +2437,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			Config::Current->ShowChannelFilter = true;	
 			break;
 
-		case Bindings::Operation::ToggleGreenChannel:
+		case Bindings::Operation::GreenChannel:
 			if (DrawChannel_AsIntensity)
 				{ DrawChannel_R = false; DrawChannel_G = true; DrawChannel_B = false; DrawChannel_A = false; }
 			else
@@ -2434,7 +2445,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			Config::Current->ShowChannelFilter = true;	
 			break;
 
-		case Bindings::Operation::ToggleBlueChannel:
+		case Bindings::Operation::BlueChannel:
 			if (DrawChannel_AsIntensity)
 				{ DrawChannel_R = false; DrawChannel_G = false; DrawChannel_B = true; DrawChannel_A = false; }
 			else
@@ -2442,7 +2453,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			Config::Current->ShowChannelFilter = true;	
 			break;
 
-		case Bindings::Operation::ToggleAlphaChannel:
+		case Bindings::Operation::AlphaChannel:
 			if (DrawChannel_AsIntensity)
 				{ DrawChannel_R = false; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = true; }
 			else
@@ -2450,7 +2461,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			Config::Current->ShowChannelFilter = true;	
 			break;
 
-		case Bindings::Operation::ToggleChannelAsIntensity:
+		case Bindings::Operation::ChannelAsIntensity:
 			DrawChannel_AsIntensity = !DrawChannel_AsIntensity;
 			if (DrawChannel_AsIntensity)
 				{ DrawChannel_R = true; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = false; }

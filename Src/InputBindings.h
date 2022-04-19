@@ -39,10 +39,10 @@ namespace Bindings
 
 		ZoomIn,
 		ZoomOut,
-		ToggleCheatSheet,
+		CheatSheet,
 		RenameFile,
 		RefreshReloadImage,
-		ToggleFullscreen,
+		Fullscreen,
 
 		Escape,
 		EscapeSupportingQuit,
@@ -62,31 +62,32 @@ namespace Bindings
 		ResizeCanvas,
 		RotateImage,
 
-		ToggleImageDetails,
-		ToggleTile,
-		ToggleMenuBar,
+		Details,
+		Tile,
+		MenuBar,
 		SaveMultiFrameImage,
-		ToggleNavBar,
-		ToggleSlideshowCountdown,
+		NavBar,
+		SlideshowCountdown,
 		SaveAs,
 		SaveAll,
-		ToggleBasicMode,
-		ToggleDebugLog,
+		BasicMode,
+		DebugLog,
 
 		ZoomFit,
 		ZoomDownscaleOnly,
 		ZoomOneToOne,
+		ResetPan,
 		ContactSheet,
 		Preferences,
 		ContentThumbnailView,
-		ToggleKeyBindings,
+		KeyBindings,
 
-		ToggleChannelFilter,
-		ToggleRedChannel,
-		ToggleGreenChannel,
-		ToggleBlueChannel,
-		ToggleAlphaChannel,
-		ToggleChannelAsIntensity,
+		ChannelFilter,
+		RedChannel,
+		GreenChannel,
+		BlueChannel,
+		AlphaChannel,
+		ChannelAsIntensity,
 
 		Undo,
 		Redo,
@@ -128,7 +129,6 @@ namespace Bindings
 		// Finds the mods for the first (there may be more than one) operation matching the search operation.
 		// Returns false if no such operation was found.
 		bool FindOperationMods(uint32& mods, Operation searchOp) const													{ for (uint32 m = 0; m < Modifier_NumCombinations; m++) { if (Operations[m] == searchOp) { mods = m; return true; } } return false; }
-
 		KeyOps& operator=(const KeyOps& src)																			{ Set(src); return *this; }
 
 		Operation Operations[Modifier_NumCombinations];
@@ -180,7 +180,6 @@ namespace Bindings
 
 	void ShowBindingsWindow(bool* popen, bool justOpened);
 	void ShowCheatSheetWindow(bool* popen);
-	// WIP Need to make sure always can bring up bindings window.. even if menu not visible.
 }
 
 }

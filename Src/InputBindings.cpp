@@ -91,7 +91,8 @@ void Bindings::InitKeyNameTables()
 	tsPrintf(KeyNameTable[GLFW_KEY_HOME],			"Home");
 	tsPrintf(KeyNameTable[GLFW_KEY_END],			"End");
 
-	for (int idx = 0; idx <= GLFW_KEY_F25-GLFW_KEY_F1; idx++)
+	// We're going to skip F13 to F25 here. No normal keyboard has them.
+	for (int idx = 0; idx <= GLFW_KEY_F12-GLFW_KEY_F1; idx++)
 		tsPrintf(KeyNameTable[GLFW_KEY_F1+idx], "F%d", idx+1);
 
 	for (int idx = 0; idx <= GLFW_KEY_KP_9-GLFW_KEY_KP_0; idx++)
@@ -164,6 +165,7 @@ const char* Bindings::OperationDescriptions[int(Operation::NumOperations)] =
 	"Zoom Fit",
 	"Zoom Downscale Only",
 	"Zoom 1:1 Pixels",
+	"Reset Pan",
 	"Contact Sheet...",
 	"Preferences...",
 	"Content Thumbnail View...",
@@ -291,11 +293,11 @@ void Bindings::InputMap::Reset()
 
 	AssignKey(GLFW_KEY_EQUAL,		Modifier_Ctrl,					Operation::ZoomIn);
 	AssignKey(GLFW_KEY_MINUS,		Modifier_Ctrl,					Operation::ZoomOut);
-	AssignKey(GLFW_KEY_F1,			Modifier_None,					Operation::ToggleCheatSheet);
+	AssignKey(GLFW_KEY_F1,			Modifier_None,					Operation::CheatSheet);
 	AssignKey(GLFW_KEY_F2,			Modifier_None,					Operation::RenameFile);
 	AssignKey(GLFW_KEY_F5,			Modifier_None,					Operation::RefreshReloadImage);
-	AssignKey(GLFW_KEY_F11,			Modifier_None,					Operation::ToggleFullscreen);
-	AssignKey(GLFW_KEY_ENTER,		Modifier_Alt,					Operation::ToggleFullscreen);
+	AssignKey(GLFW_KEY_F11,			Modifier_None,					Operation::Fullscreen);
+	AssignKey(GLFW_KEY_ENTER,		Modifier_Alt,					Operation::Fullscreen);
 
 	AssignKey(GLFW_KEY_ESCAPE,		Modifier_None,					Operation::EscapeSupportingQuit);
 	AssignKey(GLFW_KEY_ENTER,		Modifier_None,					Operation::OpenFileBrowser);
@@ -314,37 +316,38 @@ void Bindings::InputMap::Reset()
 	AssignKey(GLFW_KEY_R,			Modifier_Ctrl,					Operation::ResizeCanvas);
 	AssignKey(GLFW_KEY_R,			Modifier_None,					Operation::RotateImage);
 
-	AssignKey(GLFW_KEY_I,			Modifier_None,					Operation::ToggleImageDetails);
-	AssignKey(GLFW_KEY_T,			Modifier_None,					Operation::ToggleTile);
-	AssignKey(GLFW_KEY_M,			Modifier_None,					Operation::ToggleMenuBar);
+	AssignKey(GLFW_KEY_I,			Modifier_None,					Operation::Details);
+	AssignKey(GLFW_KEY_T,			Modifier_None,					Operation::Tile);
+	AssignKey(GLFW_KEY_M,			Modifier_None,					Operation::MenuBar);
 	AssignKey(GLFW_KEY_M,			Modifier_Ctrl,					Operation::SaveMultiFrameImage);
-	AssignKey(GLFW_KEY_N,			Modifier_None,					Operation::ToggleNavBar);
-	AssignKey(GLFW_KEY_S,			Modifier_None,					Operation::ToggleSlideshowCountdown);
+	AssignKey(GLFW_KEY_N,			Modifier_None,					Operation::NavBar);
+	AssignKey(GLFW_KEY_S,			Modifier_None,					Operation::SlideshowCountdown);
 
 	AssignKey(GLFW_KEY_S,			Modifier_Ctrl,					Operation::SaveAs);
 	AssignKey(GLFW_KEY_S,			Modifier_Alt,					Operation::SaveAll);
-	AssignKey(GLFW_KEY_B,			Modifier_None,					Operation::ToggleBasicMode);
-	AssignKey(GLFW_KEY_L,			Modifier_None,					Operation::ToggleDebugLog);
+	AssignKey(GLFW_KEY_B,			Modifier_None,					Operation::BasicMode);
+	AssignKey(GLFW_KEY_L,			Modifier_None,					Operation::DebugLog);
 
 	AssignKey(GLFW_KEY_F,			Modifier_None,					Operation::ZoomFit);
 	AssignKey(GLFW_KEY_D,			Modifier_None,					Operation::ZoomDownscaleOnly);
 	AssignKey(GLFW_KEY_Z,			Modifier_None,					Operation::ZoomOneToOne);
+	AssignKey(GLFW_KEY_P,			Modifier_Ctrl,					Operation::ResetPan);
 	AssignKey(GLFW_KEY_C,			Modifier_None,					Operation::ContactSheet);
 	AssignKey(GLFW_KEY_P,			Modifier_None,					Operation::Preferences);
 	AssignKey(GLFW_KEY_V,			Modifier_None,					Operation::ContentThumbnailView);
-	AssignKey(GLFW_KEY_TAB,			Modifier_None,					Operation::ToggleKeyBindings);
+	AssignKey(GLFW_KEY_TAB,			Modifier_None,					Operation::KeyBindings);
 
 	// This one is special and can't be reassigned or removed. This is because the user _could_ turn off the menu,
 	// and remove all bindings to ToggleKeyBindings. The user would have to way of getting back to the bindings screen.
 	// Having a guaranteed key combo for it solves these issues.
-	AssignKey(GLFW_KEY_TAB,			Modifier_Ctrl | Modifier_Shift,	Operation::ToggleKeyBindings);
+	AssignKey(GLFW_KEY_TAB,			Modifier_Ctrl | Modifier_Shift,	Operation::KeyBindings);
 
-	AssignKey(GLFW_KEY_GRAVE_ACCENT,Modifier_None,					Operation::ToggleChannelFilter);
-	AssignKey(GLFW_KEY_1,			Modifier_None,					Operation::ToggleRedChannel);
-	AssignKey(GLFW_KEY_2,			Modifier_None,					Operation::ToggleGreenChannel);
-	AssignKey(GLFW_KEY_3,			Modifier_None,					Operation::ToggleBlueChannel);
-	AssignKey(GLFW_KEY_4,			Modifier_None,					Operation::ToggleAlphaChannel);
-	AssignKey(GLFW_KEY_5,			Modifier_None,					Operation::ToggleChannelAsIntensity);
+	AssignKey(GLFW_KEY_GRAVE_ACCENT,Modifier_None,					Operation::ChannelFilter);
+	AssignKey(GLFW_KEY_1,			Modifier_None,					Operation::RedChannel);
+	AssignKey(GLFW_KEY_2,			Modifier_None,					Operation::GreenChannel);
+	AssignKey(GLFW_KEY_3,			Modifier_None,					Operation::BlueChannel);
+	AssignKey(GLFW_KEY_4,			Modifier_None,					Operation::AlphaChannel);
+	AssignKey(GLFW_KEY_5,			Modifier_None,					Operation::ChannelAsIntensity);
 
 	AssignKey(GLFW_KEY_Z,			Modifier_Ctrl,					Operation::Undo);
 	AssignKey(GLFW_KEY_Y,			Modifier_Ctrl,					Operation::Redo);
@@ -563,7 +566,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 						}
 						else
 						{
-							const char* opDesc = GetOperationDesc(Operation::ToggleKeyBindings);
+							const char* opDesc = GetOperationDesc(Operation::KeyBindings);
 							tString opText;
 							tsPrintf(opText, " %s (Permanent Binding)", opDesc);
 							ImGui::Text(opText.Chars());
