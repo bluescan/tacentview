@@ -199,17 +199,17 @@ void Viewer::DoResizeImageModal(bool resizeImagePressed)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	if (ImGui::Button("Reset", tVector2(100, 0)))
+	if (ImGui::Button("Reset", tVector2(100.0f, 0.0f)))
 	{
 		dstW = srcW;
 		dstH = srcH;
 	}
-	if (ImGui::Button("Cancel", tVector2(100, 0)))
+	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("Resize", tVector2(100, 0)))
+	if (ImGui::Button("Resize", tVector2(100.0f, 0.0f)))
 	{
 		if ((dstW != srcW) || (dstH != srcH))
 		{
@@ -307,7 +307,7 @@ void Viewer::DoResizeCanvasAnchorTab(bool justOpened)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	if (ImGui::Button("Reset", tVector2(100, 0)))
+	if (ImGui::Button("Reset", tVector2(100.0f, 0.0f)))
 	{
 		Config::Current->CropAnchor		= 4;
 		Config::Current->FillColour		= tColouri::black;
@@ -315,12 +315,12 @@ void Viewer::DoResizeCanvasAnchorTab(bool justOpened)
 		dstH							= srcH;
 	}
 
-	if (ImGui::Button("Cancel", tVector2(100, 0)))
+	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("Resize", tVector2(100, 0)))
+	if (ImGui::Button("Resize", tVector2(100.0f, 0.0f)))
 	{
 		DoResizeCrop(srcW, srcH, dstW, dstH);
 		ImGui::CloseCurrentPopup();
@@ -358,7 +358,7 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool justOpened)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	if (ImGui::Button("Reset", tVector2(100, 0)))
+	if (ImGui::Button("Reset", tVector2(100.0f, 0.0f)))
 	{
 		Config::Current->FillColour.Set(Viewer::PixelColour);
 		channelR = true;
@@ -367,12 +367,12 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool justOpened)
 		channelA = true;
 	}
 
-	if (ImGui::Button("Cancel", tVector2(100, 0)))
+	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("Crop Borders", tVector2(100, 0)))
+	if (ImGui::Button("Crop Borders", tVector2(100.0f, 0.0f)))
 	{
 		uint32 channels =
 			(channelR ? tMath::ColourChannel_R : 0) |
@@ -451,7 +451,7 @@ void Viewer::DoResizeCanvasAspectTab(bool justOpened)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	if (ImGui::Button("Reset", tVector2(100, 0)))
+	if (ImGui::Button("Reset", tVector2(100.0f, 0.0f)))
 	{
 		Config::Current->CropAnchor		= 4;
 		Config::Current->FillColour		= tColouri::black;
@@ -460,12 +460,12 @@ void Viewer::DoResizeCanvasAspectTab(bool justOpened)
 		Config::Current->ResizeAspectMode	= 0;
 	}
 
-	if (ImGui::Button("Cancel", tVector2(100, 0)))
+	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("Resize", tVector2(100, 0)))
+	if (ImGui::Button("Resize", tVector2(100.0f, 0.0f)))
 	{
 		int dstH = srcH;
 		int dstW = srcW;

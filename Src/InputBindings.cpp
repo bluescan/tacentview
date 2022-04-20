@@ -480,12 +480,12 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		Config::Settings& settings = (profile == 0) ? Config::MainSettings : Config::BasicSettings;
 
 		ImGui::SameLine();
-		if (ImGui::Button("Reset Profile", tVector2(100, 0)))
+		if (ImGui::Button("Reset Profile", tVector2(100.0f, 0.0f)))
 			settings.InputBindings.Reset();
 		ShowToolTip("Resets the key bindings to default for the chosen profile.");
 
 		ImGui::SameLine();
-		if (ImGui::Button("Set All Profiles", tVector2(100, 0)))
+		if (ImGui::Button("Set All Profiles", tVector2(100.0f, 0.0f)))
 		{
 			// Operator= deals with the object being the same one, so just copy them both over indescriminately.
 			Config::MainSettings.InputBindings = settings.InputBindings;
@@ -495,7 +495,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-		if (ImGui::Button("Close", tVector2(100, 0)))
+		if (ImGui::Button("Close", tVector2(100.0f, 0.0f)))
 		{
 			if (popen)
 				*popen = false;
@@ -763,14 +763,14 @@ void Bindings::ShowAddBindingSection(Config::Settings& settings)
 			ImGui::Text(msg.Text());
 			ImGui::NewLine();
 
-			if (ImGui::Button("Cancel##AssignWarn", tVector2(100, 0)))
+			if (ImGui::Button("Cancel##AssignWarn", tVector2(100.0f, 0.0f)))
 				ImGui::CloseCurrentPopup();
 
 			if (!permanent)
 			{
 				ImGui::SameLine();
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-				if (ImGui::Button("Replace##AssignWarn", tVector2(100, 0)))
+				if (ImGui::Button("Replace##AssignWarn", tVector2(100.0f, 0.0f)))
 				{
 					settings.InputBindings.AssignKey(addKey, addMods, Operation(addOp));
 					ImGui::CloseCurrentPopup();
@@ -858,7 +858,7 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-		if (ImGui::Button("Close", tVector2(100, 0)))
+		if (ImGui::Button("Close", tVector2(100.0f, 0.0f)))
 		{
 			if (popen)
 				*popen = false;

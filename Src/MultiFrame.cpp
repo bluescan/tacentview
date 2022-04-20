@@ -144,14 +144,14 @@ void Viewer::DoMultiFrameModal(bool saveMultiFramePressed)
 	ImGui::Text(genMsg.Chars());
 
 	ImGui::NewLine();
-	if (ImGui::Button("Cancel", tVector2(100, 0)))
+	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 	ImGui::SameLine();
 
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 	tString outFile = destDir + tString(filename) + extension;
 	bool closeThisModal = false;
-	if (ImGui::Button("Generate", tVector2(100, 0)) && (numImg >= 2))
+	if (ImGui::Button("Generate", tVector2(100.0f, 0.0f)) && (numImg >= 2))
 	{
 		bool dirExists = tDirExists(destDir);
 		if (!dirExists)

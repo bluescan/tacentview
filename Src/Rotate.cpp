@@ -84,10 +84,10 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	if (ImGui::Button("Reset", tVector2(100, 0)))
+	if (ImGui::Button("Reset", tVector2(100.0f, 0.0f)))
 		RotateAnglePreview = 0.0f;
 
-	if (ImGui::Button("Cancel", tVector2(100, 0)))
+	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
 	{
 		RotateAnglePreview = 0.0f;
 		ImGui::CloseCurrentPopup();
@@ -95,7 +95,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("Rotate", tVector2(100, 0)))
+	if (ImGui::Button("Rotate", tVector2(100.0f, 0.0f)))
 	{
 		tPicture* picture = CurrImage->GetCurrentPic(); tAssert(picture);
 		int origW = picture->GetWidth();

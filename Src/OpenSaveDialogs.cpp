@@ -474,7 +474,7 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
 
 	ImGui::NewLine();
-	if (ImGui::Button("Cancel", tVector2(100, 0)))
+	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 	ImGui::SameLine();
 	
@@ -482,7 +482,7 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 
 	tString outFile = destDir + tString(filename) + extension;
 	bool closeThisModal = false;
-	if (ImGui::Button("Save", tVector2(100, 0)))
+	if (ImGui::Button("Save", tVector2(100.0f, 0.0f)))
 	{
 		bool dirExists = tDirExists(destDir);
 		if (!dirExists)
@@ -636,7 +636,7 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 	tString destDir = DoSubFolder();
 
 	ImGui::NewLine();
-	if (ImGui::Button("Cancel", tVector2(100, 0)))
+	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
@@ -645,7 +645,7 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 	// This needs to be static since DoSaveModal is called for every frame the modal is open.
 	static tList<tStringItem> overwriteFiles(tListMode::Static);
 	bool closeThisModal = false;
-	if (ImGui::Button("Save All", tVector2(100, 0)))
+	if (ImGui::Button("Save All", tVector2(100.0f, 0.0f)))
 	{
 		bool dirExists = tDirExists(destDir);
 		if (!dirExists)
@@ -734,7 +734,7 @@ void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFi
 	ImGui::Checkbox("Confirm file overwrites in the future?", &Config::Current->ConfirmFileOverwrites);
 	ImGui::NewLine();
 
-	if (ImGui::Button("Cancel", tVector2(100, 0)))
+	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
 	{
 		pressedCancel = true;
 		ImGui::CloseCurrentPopup();
@@ -742,7 +742,7 @@ void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFi
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("Overwrite", tVector2(100, 0)))
+	if (ImGui::Button("Overwrite", tVector2(100.0f, 0.0f)))
 	{
 		pressedOK = true;
 		ImGui::CloseCurrentPopup();
@@ -819,7 +819,7 @@ void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool&
 	ImGui::Checkbox("Confirm file overwrites in the future?", &Config::Current->ConfirmFileOverwrites);
 	ImGui::NewLine();
 
-	if (ImGui::Button("Cancel", tVector2(100, 0)))
+	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
 	{
 		pressedCancel = true;
 		ImGui::CloseCurrentPopup();
@@ -827,7 +827,7 @@ void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool&
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("OK", tVector2(100, 0)))
+	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
 	{
 		pressedOK = true;
 		ImGui::CloseCurrentPopup();

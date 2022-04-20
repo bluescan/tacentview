@@ -257,7 +257,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	if (ImGui::Button("Reset Profile", tVector2(100, 0)))
+	if (ImGui::Button("Reset Profile", tVector2(100.0f, 0.0f)))
 	{
 		Config::ResetProfile(Config::Category_AllNoBindings);
 		PendingTransparentWorkArea = false;
@@ -271,7 +271,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("Reset Cat", tVector2(100, 0)))
+	if (ImGui::Button("Reset Cat", tVector2(100.0f, 0.0f)))
 	{
 		Config::ResetProfile(category);
 		PendingTransparentWorkArea = false;
@@ -279,7 +279,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	}
 	ShowToolTip("Resets the current category/tab for the current profile (what you see above).");
 
-	if (ImGui::Button("Reset All", tVector2(100, 0)))
+	if (ImGui::Button("Reset All", tVector2(100.0f, 0.0f)))
 	{
 		Config::ResetAllProfiles(Config::Category_AllNoBindings);
 		Config::SetProfile(Config::Profile::Main);
@@ -294,7 +294,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 
-	if (ImGui::Button("Close", tVector2(100, 0)))
+	if (ImGui::Button("Close", tVector2(100.0f, 0.0f)))
 	{
 		if (popen)
 			*popen = false;

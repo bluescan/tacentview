@@ -147,7 +147,7 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 		tVector4 resetVecCol(floatColReset.E);
 		bool resetPressed2 = ImGui::ColorButton("Reset Colour", resetVecCol, 0);
 		ImGui::SameLine();
-		bool resetPressed = ImGui::Button("Reset", tVector2(100, 0));
+		bool resetPressed = ImGui::Button("Reset", tVector2(100.0f, 0.0f));
 		ImGui::SameLine();
 		if (resetPressed || resetPressed2)
 		{
@@ -167,7 +167,7 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 		ImGui::SameLine();
 		ImGui::Checkbox("Live", &live);
 		ImGui::SameLine();
-		if (!live && ImGui::Button("Apply", tVector2(100, 0)))
+		if (!live && ImGui::Button("Apply", tVector2(100.0f, 0.0f)))
 		{
 			CurrImage->Unbind();
 			tColouri col; col.Set(floatCol);
@@ -258,7 +258,11 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			ImGui::Checkbox("Green", &Viewer::DrawChannel_G);
 			ImGui::Checkbox("Blue", &Viewer::DrawChannel_B);
 			ImGui::Checkbox("Alpha", &Viewer::DrawChannel_A);
-			ImGui::SameLine(); ShowHelpMark("When false a full alpha value is used since it is interpreted as opacity.");
+			ImGui::SameLine(); ShowHelpMark
+			(
+				"Alpha is interprested as blending opacity. When this channel is set to false full alpha is used and"
+				"image is drawn opaque. When true it blends whatever colour channels are selected with the current background."
+			);
 		}
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
@@ -268,13 +272,20 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 		ImGui::Text("Modify");
 
 		tColourf floatCol(Config::Current->BackgroundColour);
-		if (ImGui::ColorEdit3("Background Colour", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))
+		if (ImGui::ColorEdit3("##Background", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))
 		{
 			Config::Current->BackgroundColour.Set(floatCol);
 			Config::Current->BackgroundColour.A = 0xFF;
 		}
+		ImGui::SameLine();
+		const char* backgroundItems[] = { "None", "Checker", "Solid" };
+		ImGui::PushItemWidth(83);
+		ImGui::Combo("##Background Style", &Config::Current->BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ShowHelpMark("Background colour and style.\nThe blend-background button uses the colour regardless of style.");
 
-		if (ImGui::Button("Blend Background"))
+		if (ImGui::Button("Blend Background", tVector2(112.0f, 0.0f)))
 		{
 			CurrImage->Unbind();
 			CurrImage->AlphaBlendColour(Config::Current->BackgroundColour, true);
@@ -285,7 +296,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 		ShowHelpMark("Blend background colour into RGB of image based on alpha. Sets alphas to full when done.");
 
 		uint32 channels = (Viewer::DrawChannel_R ? ColourChannel_R : 0) | (Viewer::DrawChannel_G ? ColourChannel_G : 0) | (Viewer::DrawChannel_B ? ColourChannel_B : 0) | (Viewer::DrawChannel_A ? ColourChannel_A : 0);
-		if (ImGui::Button("Max Selected"))
+		if (ImGui::Button("Max Selected", tVector2(112.0f, 0.0f)))
 		{
 			CurrImage->Unbind();
 			tColouri full(255, 255, 255, 255);
@@ -296,7 +307,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 		ImGui::SameLine();
 		ShowHelpMark("Sets selected channel(s) to their maximum value (255).");
 
-		if (ImGui::Button("Zero Selected"))
+		if (ImGui::Button("Zero Selected", tVector2(112.0f, 0.0f)))
 		{
 			CurrImage->Unbind();
 			tColouri zero(0, 0, 0, 0);
@@ -440,13 +451,13 @@ void Viewer::DoDeleteFileModal()
 	ImGui::Checkbox("Confirm file deletions in the future?", &Config::Current->ConfirmDeletes);
 	ImGui::NewLine();
 
-	if (ImGui::Button("Cancel", tVector2(100, 0)))
+	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 
-	if (ImGui::Button("OK", tVector2(100, 0)))
+	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
 	{
 		DeleteImageFile(fullname, true);
 		ImGui::CloseCurrentPopup();
@@ -472,14 +483,14 @@ void Viewer::DoDeleteFileNoRecycleModal()
 	ImGui::Text("This operation cannot be undone. The file\nwill be deleted permanently.");
 	ImGui::NewLine();
 
-	if (ImGui::Button("Cancel", tVector2(100, 0)))
+	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SetItemDefaultFocus();
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 
-	if (ImGui::Button("OK", tVector2(100, 0)))
+	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
 	{
 		DeleteImageFile(fullname, false);
 		ImGui::CloseCurrentPopup();
@@ -503,14 +514,14 @@ void Viewer::DoRenameModal(bool justOpened)
 		nameChanged = true;
 	ImGui::NewLine();
 
-	if (ImGui::Button("Cancel", tVector2(100, 0)))
+	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SetItemDefaultFocus();
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 
-	if (ImGui::Button("OK", tVector2(100, 0)) || nameChanged)
+	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)) || nameChanged)
 	{
 		if (origname != newname)
 		{
@@ -558,7 +569,7 @@ void Viewer::DoSnapMessageNoFileBrowseModal(bool justPressed)
 	);
 	ImGui::NewLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("OK", tVector2(100, 0)))
+	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::EndPopup();
@@ -593,7 +604,7 @@ void Viewer::DoSnapMessageNoFrameTransModal(bool justPressed)
 	);
 	ImGui::NewLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("OK", tVector2(100, 0)))
+	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::EndPopup();
