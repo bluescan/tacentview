@@ -2176,10 +2176,15 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		lastRepeatFrameNum = FrameNumber;
 	}
 
-	// Convert key codes to support non-US keyboards.
-	const char* keyName = glfwGetKeyName(key, 0);
-	if (keyName && *keyName)
-		key = tStd::tChrupr(keyName[0]);
+	// Convert key codes to support non-US keyboards. Since the glfwGetKeyName function works on
+	// printable characters, it ends up converting the numpad keys KP_* to their printable counterparts.
+	// ex. KEY_KP_9 -> KEY_9. This is why we skip the translation for these keys.
+	if (!((key >= GLFW_KEY_KP_0) && (key <= GLFW_KEY_KP_EQUAL)))
+	{
+		const char* keyName = glfwGetKeyName(key, 0);
+		if (keyName && *keyName)
+			key = tStd::tChrupr(keyName[0]);
+	}
 
 	// Now we need to query the key-binding system to find out what operation is associated
 	// with the received key. The current bindings are stored in the current config.

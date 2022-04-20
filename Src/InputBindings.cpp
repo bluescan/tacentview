@@ -288,6 +288,20 @@ void Bindings::InputMap::Reset()
 {
 	Clear();
 
+	// Testing. Assign all keys to NextImage so we can test them all individually.
+	// #define TEST_ALL_GLFW_KEY_ASSIGNMENTS
+	#ifdef TEST_ALL_GLFW_KEY_ASSIGNMENTS
+	for (int k = 0; k <= GLFW_KEY_LAST; k++)
+	{
+		if ((k >= GLFW_KEY_KP_0) && (k <= GLFW_KEY_KP_EQUAL))
+			AssignKey(k, Modifier_None, Operation::PrevImage);
+
+		else if (IsKeySupported(k))
+			AssignKey(k, Modifier_None, Operation::NextImage);
+	}
+	return;
+	#endif
+
 	// Order is unimportant, but for consistency it's in same order as the Operation enum, It won't
 	// match exactly because a) Sometimes more than one key that maps to the same operation and b)
 	// some operations are not bound by default. In any case, order still matches.
