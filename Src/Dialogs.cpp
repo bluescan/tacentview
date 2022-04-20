@@ -265,18 +265,13 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			);
 		}
 
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-		ImGui::Separator();
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-
-		ImGui::Text("Modify");
-
 		tColourf floatCol(Config::Current->BackgroundColour);
 		if (ImGui::ColorEdit3("##Background", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))
 		{
 			Config::Current->BackgroundColour.Set(floatCol);
 			Config::Current->BackgroundColour.A = 0xFF;
 		}
+
 		ImGui::SameLine();
 		const char* backgroundItems[] = { "None", "Checker", "Solid" };
 		ImGui::PushItemWidth(83);
@@ -284,6 +279,12 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 		ShowHelpMark("Background colour and style.\nThe blend-background button uses the colour regardless of style.");
+
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+		ImGui::Separator();
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+
+		ImGui::Text("Modify");
 
 		if (ImGui::Button("Blend Background", tVector2(112.0f, 0.0f)))
 		{
