@@ -157,12 +157,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				Viewer::SlideshowCountdown = Config::Current->SlideshowPeriod;
 			}
 			ImGui::Checkbox("Countdown Indicator", &Config::Current->SlideshowProgressArc);
-			if (ImGui::Button("Reset"))
-			{
-				Config::Current->SlideshowPeriod = 8.0;
-				Viewer::SlideshowCountdown = Config::Current->SlideshowPeriod;
-				Config::Current->SlideshowProgressArc = true;
-			}
+
 			ImGui::EndTabItem();
 		}
 
@@ -192,12 +187,12 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 			ImGui::PushItemWidth(110);
 			ImGui::InputInt("Max Undo Steps", &Config::Current->MaxUndoSteps); ImGui::SameLine();
-			ShowHelpMark("Maximum number of Ctrl-Z undo steps.");
+			ShowHelpMark("Maximum number of undo steps.");
 			tMath::tiClamp(Config::Current->MaxUndoSteps, 1, 32);
 
-			ImGui::NewLine();
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 			ImGui::Separator();
-			ImGui::NewLine();
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 
 			ImGui::Checkbox("Strict Loading", &Config::Current->StrictLoading); ImGui::SameLine();
 			ShowHelpMark("Some image files are ill-formed. If strict is true no attempt to display them is made.");
@@ -212,13 +207,14 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::SameLine();
 			ShowHelpMark("Filtering method to use when generating minification mipmaps.\nUse None for no mipmapping.");
 
-			ImGui::NewLine();
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 			ImGui::Separator();
-			ImGui::NewLine();
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 
-			ImGui::InputFloat("Monitor Gamma", &Config::Current->MonitorGamma, 0.01f, 0.1f, "%.3f");
+			ImGui::InputFloat("Gamma##Monitor", &Config::Current->MonitorGamma, 0.01f, 0.1f, "%.3f");
 			ImGui::PopItemWidth();
-			if (ImGui::Button("Reset Gamma"))
+			ImGui::SameLine();
+			if (ImGui::Button("Reset##Gamma"))
 				Config::Current->MonitorGamma = tMath::DefaultGamma;
 	
 			ImGui::EndTabItem();
@@ -253,14 +249,17 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		ImGui::EndTabBar();
 	}
 
-	ImGui::NewLine();
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 	ImGui::Separator();
-	ImGui::NewLine();
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 
 	if (ImGui::Button("Reset Profile", tVector2(100.0f, 0.0f)))
 	{
 		Config::ResetProfile(Config::Category_AllNoBindings);
+
+		// Since the reset always turns transparent work area off, we can always safely clear the pending.
 		PendingTransparentWorkArea = false;
+		SlideshowCountdown = Config::Current->SlideshowPeriod;
 		ChangeScreenMode(false, true);
 	}
 	ShowToolTip
@@ -271,25 +270,27 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("Reset Cat", tVector2(100.0f, 0.0f)))
+	if (ImGui::Button("Reset Tab", tVector2(100.0f, 0.0f)))
 	{
 		Config::ResetProfile(category);
 		PendingTransparentWorkArea = false;
-		ChangeScreenMode(false, true);
+		SlideshowCountdown = Config::Current->SlideshowPeriod;
 	}
-	ShowToolTip("Resets the current category/tab for the current profile (what you see above).");
+	ShowToolTip("Resets the current tab/category for the current profile (what you see above).");
 
 	if (ImGui::Button("Reset All", tVector2(100.0f, 0.0f)))
 	{
 		Config::ResetAllProfiles(Config::Category_AllNoBindings);
 		Config::SetProfile(Config::Profile::Main);
 		PendingTransparentWorkArea = false;
+		SlideshowCountdown = Config::Current->SlideshowPeriod;
 		ChangeScreenMode(false, true);
 	}
 	ShowToolTip
 	(
 		"Resets all profiles (excluding key bindings) to their default settings and switches\n"
-		"to the main profile. Keybindings may be reset from the Key Bindings window.");
+		"to the main profile. Keybindings may be reset from the Key Bindings window."
+	);
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);

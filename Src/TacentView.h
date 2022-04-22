@@ -62,7 +62,7 @@ namespace Viewer
 	extern const tMath::tVector4 ColourClear;
 
 	const int TopUIHeight			= 26;
-	const float DialogOrigin		= 32.0f;
+	const float DialogOrigin		= 12.0f;
 	const float DialogDelta			= 19.0f;
 	const double DisappearDuration	= 4.0;
 

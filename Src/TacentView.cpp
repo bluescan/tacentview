@@ -255,7 +255,7 @@ void Viewer::PrintRedirectCallback(const char* text, int numChars)
 tVector2 Viewer::GetDialogOrigin(float index)
 {
 	if (index == 2)
-		return tVector2(DialogOrigin + DialogDelta, DialogOrigin + TopUIHeight + 275.0f);
+		return tVector2(DialogOrigin + DialogDelta, DialogOrigin + TopUIHeight + 250.0f);
 
 	else if (index == 5)
 		return tVector2(DialogOrigin + 416.0f, DialogOrigin + TopUIHeight + DialogDelta*1.0f);
@@ -272,7 +272,7 @@ tVector2 Viewer::GetDialogOrigin(float index)
 
 int Viewer::GetNavBarHeight()
 {
-	if (FullscreenMode || !Config::Current->ShowNavBar)
+	if (!Config::Current->ShowNavBar)
 		return 0;
 
 	return NavBar.GetShowLog() ? 150 : 24;
@@ -885,7 +885,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		glClearColor(ColourClear.x, ColourClear.y, ColourClear.z, ColourClear.w);
 	glClear(GL_COLOR_BUFFER_BIT);
 	int bottomUIHeight	= GetNavBarHeight();
-	int topUIHeight		= (FullscreenMode || !Config::Current->ShowMenuBar) ? 0 : MenuBarHeight;
+	int topUIHeight		= !Config::Current->ShowMenuBar ? 0 : MenuBarHeight;
 
 	ImGui_ImplOpenGL2_NewFrame();		
 	ImGui_ImplGlfw_NewFrame();
@@ -1173,7 +1173,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			!CropMode &&
 
 			// Must have a colour inspector visible (menu bar and details both have one).
-			((Config::Current->ShowMenuBar && !FullscreenMode) || Config::Current->ShowImageDetails) &&
+			(
+				Config::Current->ShowMenuBar ||
+				Config::Current->ShowImageDetails
+			) &&
 
 			// And any of the following: a) details is on, b) disappear countdown not finished, or c) mouse is close.
 			(
@@ -1446,7 +1449,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	ImGui::SetNextWindowPos(tVector2(0, 0));
 
-	if (!FullscreenMode && Config::Current->ShowMenuBar)
+	if (Config::Current->ShowMenuBar)
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,8));
 		ImGui::BeginMainMenuBar();
@@ -1923,7 +1926,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	ImGui::PopStyleVar();
 
-	if (!FullscreenMode && Config::Current->ShowNavBar)
+	if (Config::Current->ShowNavBar)
 		DrawNavBar(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
 
 	// We allow the overlay and cheatsheet in fullscreen.
