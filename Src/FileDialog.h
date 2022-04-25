@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Foundation/tString.h>
+#include <System/tFile.h>
 
 
 // This seems like a reasonable namespace for all generic ImGui widgets and dialogs that may eventually find a home
@@ -80,14 +81,24 @@ public:
 private:
 	void PopulateFavourites();
 	void PopulateLocal();
+	#ifdef PLATFORM_WINDOWSs
 	void PopulateNetwork();
+	#endif
 
 	void FavouritesTreeNodeFlat(TreeNode*);
 	void LocalTreeNodeRecursive(TreeNode*);
+	#ifdef PLATFORM_WINDOWSs
 	void NetworkTreeNodeRecursive(TreeNode*);
+	#endif
 
 	DialogMode Mode;
 	tString Result;
+
+	#ifdef PLATFORM_WINDOWSs
+	// Network locations.
+	void RequestNetworkSharesThread();
+	tSystem::tNetworkShareResult NetworkShareResults;
+	#endif
 
 	tString GetSelectedDir()
 	{

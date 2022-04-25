@@ -29,10 +29,15 @@ FileDialog::FileDialog(DialogMode mode) :
 {
 	FavouritesTreeNode = new TreeNode("Favourites", this);
 	LocalTreeNode = new TreeNode("Local", this);
+	#ifdef PLATFORM_WINDOWSs
 	NetworkTreeNode = new TreeNode("Network", this);
+	#endif
+
 	PopulateFavourites();
 	PopulateLocal();
+	#ifdef PLATFORM_WINDOWSs
 	PopulateNetwork();
+	#endif
 }
 
 
@@ -78,11 +83,50 @@ void FileDialog::PopulateLocal()
 }
 
 
+#ifdef PLATFORM_WINDOWSs
+void FileDialog::RequestNetworkSharesThread()
+{
+	tSystem::tGetNetworkShares(NetworkShareResults);
+}
+
+
 void FileDialog::PopulateNetwork()
 {
-	TreeNode* networkA = new TreeNode("NetworkA", this, NetworkTreeNode);
-	NetworkTreeNode->AppendChild(networkA);
+	// Start the request on a different thread.
+	std::thread threadGetShares(&FileDialog::RequestNetworkSharesThread, this);
+	threadGetShares.detach();
 }
+
+
+void FileDialog::NetworkTreeNodeRecursive(TreeNode* node)
+{
+	// Most of time this will be empty since we remove the items when they are available, just like a message queue.
+	tStringItem* share = NetworkShareResults.ShareNames.Remove();
+	if (share)
+	{
+		TreeNode* network = new TreeNode(share->Text(), this, NetworkTreeNode);
+		NetworkTreeNode->AppendChild(network);
+		delete share;
+	}
+
+	int flags = (node->Children.GetNumItems() == 0) ? ImGuiTreeNodeFlags_Leaf : 0;
+	if (SelectedNode == node)
+		flags |= ImGuiTreeNodeFlags_Selected;
+	flags |= ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+
+	bool isOpen = ImGui::TreeNodeEx(node->Name, flags);
+	bool isClicked = ImGui::IsItemClicked();
+
+	if (isOpen)
+	{
+		// Recurse children.
+		for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
+			NetworkTreeNodeRecursive(child.GetObject());
+
+		ImGui::TreePop();
+	}
+}
+#endif
 
 
 void FileDialog::FavouritesTreeNodeFlat(TreeNode* node)
@@ -151,28 +195,6 @@ void FileDialog::LocalTreeNodeRecursive(TreeNode* node)
 }
 
 
-void FileDialog::NetworkTreeNodeRecursive(TreeNode* node)
-{
-	int flags = (node->Children.GetNumItems() == 0) ? ImGuiTreeNodeFlags_Leaf : 0;
-	if (SelectedNode == node)
-		flags |= ImGuiTreeNodeFlags_Selected;
-	flags |= ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-
-	bool isOpen = ImGui::TreeNodeEx(node->Name, flags);
-	bool isClicked = ImGui::IsItemClicked();
-
-	if (isOpen)
-	{
-		// Recurse children.
-		for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
-			NetworkTreeNodeRecursive(child.GetObject());
-
-		ImGui::TreePop();
-	}
-}
-
-
-
 FileDialog::DialogResult FileDialog::DoPopup()
 {
 	// The unused isOpen bool is just so we get a close button in ImGui. 
@@ -194,7 +216,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 	float bottomBarHeight = 20.0f;
 	if (ImGui::BeginTable("FileDialogTable", 2, ImGuiTableFlags_Resizable, tVector2(0.0f, -bottomBarHeight)))
 	{
-		ImGui::TableSetupColumn("LeftTreeColumn", ImGuiTableColumnFlags_WidthFixed, 125.0f);
+		ImGui::TableSetupColumn("LeftTreeColumn", ImGuiTableColumnFlags_WidthFixed, 185.0f);
 		ImGui::TableSetupColumn("RightContentColumn", ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableNextRow();
 
@@ -206,7 +228,9 @@ FileDialog::DialogResult FileDialog::DoPopup()
 
 		FavouritesTreeNodeFlat(FavouritesTreeNode);
 		LocalTreeNodeRecursive(LocalTreeNode);
+		#ifdef PLATFORM_WINDOWSs
 		NetworkTreeNodeRecursive(NetworkTreeNode);
+		#endif
 
 		ImGui::PopStyleVar();
 

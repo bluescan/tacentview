@@ -42,7 +42,7 @@ FetchContent_Declare(
 	tacent
 	GIT_REPOSITORY https://github.com/bluescan/tacent.git
 	# GIT_TAG v0.8.12
-	GIT_TAG 8aec5acf1c99d7b5778adc717ebc1b2bc9f1f882
+	# GIT_TAG 8aec5acf1c99d7b5778adc717ebc1b2bc9f1f882
 )
 FetchContent_MakeAvailable(tacent)
 
@@ -118,6 +118,7 @@ target_compile_definitions(
 	PRIVATE
 		ARCHITECTURE_X64
 		GLFW_INCLUDE_NONE
+		ENABLE_FILE_DIALOG_SUPPORT		
 		$<$<CONFIG:Debug>:CONFIG_DEBUG>
 		$<$<CONFIG:Release>:CONFIG_RELEASE>
 		$<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_DEPRECATE>
