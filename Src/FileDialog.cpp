@@ -29,13 +29,13 @@ FileDialog::FileDialog(DialogMode mode) :
 {
 	FavouritesTreeNode = new TreeNode("Favourites", this);
 	LocalTreeNode = new TreeNode("Local", this);
-	#ifdef PLATFORM_WINDOWSs
+	#ifdef PLATFORM_WINDOWS
 	NetworkTreeNode = new TreeNode("Network", this);
 	#endif
 
 	PopulateFavourites();
 	PopulateLocal();
-	#ifdef PLATFORM_WINDOWSs
+	#ifdef PLATFORM_WINDOWS
 	PopulateNetwork();
 	#endif
 }
@@ -83,7 +83,7 @@ void FileDialog::PopulateLocal()
 }
 
 
-#ifdef PLATFORM_WINDOWSs
+#ifdef PLATFORM_WINDOWS
 void FileDialog::RequestNetworkSharesThread()
 {
 	tSystem::tGetNetworkShares(NetworkShareResults);
@@ -104,8 +104,24 @@ void FileDialog::NetworkTreeNodeRecursive(TreeNode* node)
 	tStringItem* share = NetworkShareResults.ShareNames.Remove();
 	if (share)
 	{
-		TreeNode* network = new TreeNode(share->Text(), this, NetworkTreeNode);
-		NetworkTreeNode->AppendChild(network);
+		tList<tStringItem> exploded;
+		tExplodeShareName(exploded, *share);
+		tStringItem* machName = exploded.First();
+		if (!NetworkTreeNode->Contains(*machName))
+		{
+			TreeNode* machine = new TreeNode(machName->Text(), this, NetworkTreeNode);
+			NetworkTreeNode->AppendChild(machine);
+		}
+
+		TreeNode* machNode = NetworkTreeNode->Find(*machName);
+		tAssert(machNode);
+		tStringItem* shareName = exploded.Last();
+
+		if (!machNode->Contains(*shareName))
+		{
+			TreeNode* shareNode = new TreeNode(shareName->Text(), this, machNode);
+			machNode->AppendChild(shareNode);
+		}
 		delete share;
 	}
 
@@ -228,7 +244,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 
 		FavouritesTreeNodeFlat(FavouritesTreeNode);
 		LocalTreeNodeRecursive(LocalTreeNode);
-		#ifdef PLATFORM_WINDOWSs
+		#ifdef PLATFORM_WINDOWS
 		NetworkTreeNodeRecursive(NetworkTreeNode);
 		#endif
 

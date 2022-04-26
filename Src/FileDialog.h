@@ -37,9 +37,24 @@ public:
 		Name(name), Dialog(dialog), Parent(parent) { }
 
 	// void AppendChild(const tString& name)								{ Children.Append(new TreeNode(name, this)); }
-	void AppendChild(TreeNode* treeNode)
+	void AppendChild(TreeNode* treeNode)									{ Children.Append(treeNode); }
+	bool Contains(const tString& name)
 	{
-		Children.Append(treeNode);
+		for (tItList<TreeNode>::Iter child = Children.First(); child; child++)
+		{
+			if (child->Name == name)
+				return true;
+		}
+		return false;
+	}
+	TreeNode* Find(const tString& name)
+	{
+		for (tItList<TreeNode>::Iter child = Children.First(); child; child++)
+		{
+			if (child->Name == name)
+				return child;
+		}
+		return nullptr;
 	}
 
 	tString Name;
@@ -81,20 +96,20 @@ public:
 private:
 	void PopulateFavourites();
 	void PopulateLocal();
-	#ifdef PLATFORM_WINDOWSs
+	#ifdef PLATFORM_WINDOWS
 	void PopulateNetwork();
 	#endif
 
 	void FavouritesTreeNodeFlat(TreeNode*);
 	void LocalTreeNodeRecursive(TreeNode*);
-	#ifdef PLATFORM_WINDOWSs
+	#ifdef PLATFORM_WINDOWS
 	void NetworkTreeNodeRecursive(TreeNode*);
 	#endif
 
 	DialogMode Mode;
 	tString Result;
 
-	#ifdef PLATFORM_WINDOWSs
+	#ifdef PLATFORM_WINDOWS
 	// Network locations.
 	void RequestNetworkSharesThread();
 	tSystem::tNetworkShareResult NetworkShareResults;
