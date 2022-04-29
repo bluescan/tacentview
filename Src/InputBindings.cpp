@@ -184,10 +184,10 @@ const char* Bindings::OperationDescriptions[int(Operation::NumOperations)] =
 	"Quit | Exit-Fullscreen | Exit-Basic-Profile",
 	"Quit",
 
-	#ifdef ENABLE_FILE_DIALOG_SUPPORT
 	"Open File",
-	"Open Dir",
-	#endif
+	"Open Dir"
+	
+	// Add new entries here.
 };
 
 
@@ -273,20 +273,23 @@ uint32 Bindings::TranslateModifiers(int glfwModifiers)
 }
 
 
-bool Bindings::InputMap::AssignKey(int key, uint32 modifiers, Operation operation)
+bool Bindings::InputMap::AssignKey(int key, uint32 modifiers, Operation operation, bool onlyIfUnassigned)
 {
 	// If key already assigned to requested operation we're done.
 	if (KeyTable[key].Operations[modifiers] == operation)
 		return false;
 
-	KeyTable[key].Operations[modifiers] = operation;
+	if (!onlyIfUnassigned || KeyTable[key].Operations[modifiers] == Operation::None)
+		KeyTable[key].Operations[modifiers] = operation;
+
 	return true;
 }
 
 
-void Bindings::InputMap::Reset()
+void Bindings::InputMap::Reset(bool onlyIfUnassigned)
 {
-	Clear();
+	if (!onlyIfUnassigned)
+		Clear();
 
 	// Testing. Assign all keys to NextImage so we can test them all individually.
 	// #define TEST_ALL_GLFW_KEY_ASSIGNMENTS
@@ -305,84 +308,82 @@ void Bindings::InputMap::Reset()
 	// Order is unimportant, but for consistency it's in same order as the Operation enum, It won't
 	// match exactly because a) Sometimes more than one key that maps to the same operation and b)
 	// some operations are not bound by default. In any case, order still matches.
-	AssignKey(GLFW_KEY_SPACE,		Modifier_None,					Operation::NextImage);
-	AssignKey(GLFW_KEY_RIGHT,		Modifier_None,					Operation::NextImage);
-	AssignKey(GLFW_KEY_LEFT,		Modifier_None,					Operation::PrevImage);
-	AssignKey(GLFW_KEY_RIGHT,		Modifier_Ctrl,					Operation::SkipToLastImage);
-	AssignKey(GLFW_KEY_LEFT,		Modifier_Ctrl,					Operation::SkipToFirstImage);
-	AssignKey(GLFW_KEY_RIGHT,		Modifier_Alt,					Operation::NextImageFrame);
-	AssignKey(GLFW_KEY_LEFT,		Modifier_Alt,					Operation::PrevImageFrame);
+	AssignKey(GLFW_KEY_SPACE,		Modifier_None,					Operation::NextImage,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_RIGHT,		Modifier_None,					Operation::NextImage,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_LEFT,		Modifier_None,					Operation::PrevImage,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_RIGHT,		Modifier_Ctrl,					Operation::SkipToLastImage,			onlyIfUnassigned);
+	AssignKey(GLFW_KEY_LEFT,		Modifier_Ctrl,					Operation::SkipToFirstImage,		onlyIfUnassigned);
+	AssignKey(GLFW_KEY_RIGHT,		Modifier_Alt,					Operation::NextImageFrame,			onlyIfUnassigned);
+	AssignKey(GLFW_KEY_LEFT,		Modifier_Alt,					Operation::PrevImageFrame,			onlyIfUnassigned);
 
-	AssignKey(GLFW_KEY_RIGHT,		Modifier_Shift,					Operation::PixelRight);
-	AssignKey(GLFW_KEY_LEFT,		Modifier_Shift,					Operation::PixelLeft);
-	AssignKey(GLFW_KEY_DOWN,		Modifier_Shift,					Operation::PixelDown);
-	AssignKey(GLFW_KEY_UP,			Modifier_Shift,					Operation::PixelUp);
+	AssignKey(GLFW_KEY_RIGHT,		Modifier_Shift,					Operation::PixelRight,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_LEFT,		Modifier_Shift,					Operation::PixelLeft,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_DOWN,		Modifier_Shift,					Operation::PixelDown,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_UP,			Modifier_Shift,					Operation::PixelUp,					onlyIfUnassigned);
 
-	AssignKey(GLFW_KEY_EQUAL,		Modifier_Ctrl,					Operation::ZoomIn);
-	AssignKey(GLFW_KEY_MINUS,		Modifier_Ctrl,					Operation::ZoomOut);
-	AssignKey(GLFW_KEY_F,			Modifier_None,					Operation::ZoomFit);
-	AssignKey(GLFW_KEY_D,			Modifier_None,					Operation::ZoomDownscaleOnly);
-	AssignKey(GLFW_KEY_Z,			Modifier_None,					Operation::ZoomOneToOne);
-	AssignKey(GLFW_KEY_P,			Modifier_Ctrl,					Operation::ResetPan);
+	AssignKey(GLFW_KEY_EQUAL,		Modifier_Ctrl,					Operation::ZoomIn,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_MINUS,		Modifier_Ctrl,					Operation::ZoomOut,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_F,			Modifier_None,					Operation::ZoomFit,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_D,			Modifier_None,					Operation::ZoomDownscaleOnly,		onlyIfUnassigned);
+	AssignKey(GLFW_KEY_Z,			Modifier_None,					Operation::ZoomOneToOne,			onlyIfUnassigned);
+	AssignKey(GLFW_KEY_P,			Modifier_Ctrl,					Operation::ResetPan,				onlyIfUnassigned);
 
-	AssignKey(GLFW_KEY_COMMA,		Modifier_Ctrl,					Operation::FlipVertically);
-	AssignKey(GLFW_KEY_PERIOD,		Modifier_Ctrl,					Operation::FlipHorizontally);
-	AssignKey(GLFW_KEY_COMMA,		Modifier_None,					Operation::Rotate90Anticlockwise);
-	AssignKey(GLFW_KEY_PERIOD,		Modifier_None,					Operation::Rotate90Clockwise);
-	AssignKey(GLFW_KEY_R,			Modifier_None,					Operation::RotateImage);
-	AssignKey(GLFW_KEY_SLASH,		Modifier_None,					Operation::Crop);
-	AssignKey(GLFW_KEY_R,			Modifier_Alt,					Operation::ResizeImage);
-	AssignKey(GLFW_KEY_R,			Modifier_Ctrl,					Operation::ResizeCanvas);
-	AssignKey(GLFW_KEY_A,			Modifier_None,					Operation::PixelEdit);
-	AssignKey(GLFW_KEY_E,			Modifier_None,					Operation::PropertyEdit);
+	AssignKey(GLFW_KEY_COMMA,		Modifier_Ctrl,					Operation::FlipVertically,			onlyIfUnassigned);
+	AssignKey(GLFW_KEY_PERIOD,		Modifier_Ctrl,					Operation::FlipHorizontally,		onlyIfUnassigned);
+	AssignKey(GLFW_KEY_COMMA,		Modifier_None,					Operation::Rotate90Anticlockwise,	onlyIfUnassigned);
+	AssignKey(GLFW_KEY_PERIOD,		Modifier_None,					Operation::Rotate90Clockwise,		onlyIfUnassigned);
+	AssignKey(GLFW_KEY_R,			Modifier_None,					Operation::RotateImage,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_SLASH,		Modifier_None,					Operation::Crop,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_R,			Modifier_Alt,					Operation::ResizeImage,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_R,			Modifier_Ctrl,					Operation::ResizeCanvas,			onlyIfUnassigned);
+	AssignKey(GLFW_KEY_A,			Modifier_None,					Operation::PixelEdit,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_E,			Modifier_None,					Operation::PropertyEdit,			onlyIfUnassigned);
 
-	AssignKey(GLFW_KEY_GRAVE_ACCENT,Modifier_None,					Operation::ChannelFilter);
-	AssignKey(GLFW_KEY_1,			Modifier_None,					Operation::RedChannel);
-	AssignKey(GLFW_KEY_2,			Modifier_None,					Operation::GreenChannel);
-	AssignKey(GLFW_KEY_3,			Modifier_None,					Operation::BlueChannel);
-	AssignKey(GLFW_KEY_4,			Modifier_None,					Operation::AlphaChannel);
-	AssignKey(GLFW_KEY_5,			Modifier_None,					Operation::ChannelAsIntensity);
+	AssignKey(GLFW_KEY_GRAVE_ACCENT,Modifier_None,					Operation::ChannelFilter,			onlyIfUnassigned);
+	AssignKey(GLFW_KEY_1,			Modifier_None,					Operation::RedChannel,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_2,			Modifier_None,					Operation::GreenChannel,			onlyIfUnassigned);
+	AssignKey(GLFW_KEY_3,			Modifier_None,					Operation::BlueChannel,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_4,			Modifier_None,					Operation::AlphaChannel,			onlyIfUnassigned);
+	AssignKey(GLFW_KEY_5,			Modifier_None,					Operation::ChannelAsIntensity,		onlyIfUnassigned);
 
-	AssignKey(GLFW_KEY_I,			Modifier_None,					Operation::Details);
-	AssignKey(GLFW_KEY_T,			Modifier_None,					Operation::Tile);
-	AssignKey(GLFW_KEY_Z,			Modifier_Ctrl,					Operation::Undo);
-	AssignKey(GLFW_KEY_Y,			Modifier_Ctrl,					Operation::Redo);
+	AssignKey(GLFW_KEY_I,			Modifier_None,					Operation::Details,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_T,			Modifier_None,					Operation::Tile,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_Z,			Modifier_Ctrl,					Operation::Undo,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_Y,			Modifier_Ctrl,					Operation::Redo,					onlyIfUnassigned);
 
-	AssignKey(GLFW_KEY_F5,			Modifier_None,					Operation::Refresh);
-	AssignKey(GLFW_KEY_F2,			Modifier_None,					Operation::Rename);
-	AssignKey(GLFW_KEY_DELETE,		Modifier_None,					Operation::Delete);
-	AssignKey(GLFW_KEY_DELETE,		Modifier_Shift,					Operation::DeletePermanent);
+	AssignKey(GLFW_KEY_F5,			Modifier_None,					Operation::Refresh,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_F2,			Modifier_None,					Operation::Rename,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_DELETE,		Modifier_None,					Operation::Delete,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_DELETE,		Modifier_Shift,					Operation::DeletePermanent,			onlyIfUnassigned);
 
-	AssignKey(GLFW_KEY_S,			Modifier_Ctrl,					Operation::SaveAs);
-	AssignKey(GLFW_KEY_S,			Modifier_Alt,					Operation::SaveAll);
-	AssignKey(GLFW_KEY_M,			Modifier_Ctrl,					Operation::SaveMultiFrameImage);
-	AssignKey(GLFW_KEY_C,			Modifier_None,					Operation::SaveContactSheet);
+	AssignKey(GLFW_KEY_S,			Modifier_Ctrl,					Operation::SaveAs,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_S,			Modifier_Alt,					Operation::SaveAll,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_M,			Modifier_Ctrl,					Operation::SaveMultiFrameImage,		onlyIfUnassigned);
+	AssignKey(GLFW_KEY_C,			Modifier_None,					Operation::SaveContactSheet,		onlyIfUnassigned);
 
-	AssignKey(GLFW_KEY_M,			Modifier_None,					Operation::MenuBar);
-	AssignKey(GLFW_KEY_N,			Modifier_None,					Operation::NavBar);
-	AssignKey(GLFW_KEY_V,			Modifier_None,					Operation::Thumbnails);
-	AssignKey(GLFW_KEY_ENTER,		Modifier_None,					Operation::FileBrowser);
-	AssignKey(GLFW_KEY_S,			Modifier_None,					Operation::SlideshowTimer);
-	AssignKey(GLFW_KEY_F1,			Modifier_None,					Operation::CheatSheet);
-	AssignKey(GLFW_KEY_L,			Modifier_None,					Operation::DebugLog);
+	AssignKey(GLFW_KEY_M,			Modifier_None,					Operation::MenuBar,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_N,			Modifier_None,					Operation::NavBar,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_V,			Modifier_None,					Operation::Thumbnails,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_ENTER,		Modifier_None,					Operation::FileBrowser,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_S,			Modifier_None,					Operation::SlideshowTimer,			onlyIfUnassigned);
+	AssignKey(GLFW_KEY_F1,			Modifier_None,					Operation::CheatSheet,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_L,			Modifier_None,					Operation::DebugLog,				onlyIfUnassigned);
 
-	AssignKey(GLFW_KEY_B,			Modifier_None,					Operation::Profile);
-	AssignKey(GLFW_KEY_P,			Modifier_None,					Operation::Preferences);
+	AssignKey(GLFW_KEY_B,			Modifier_None,					Operation::Profile,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_P,			Modifier_None,					Operation::Preferences,				onlyIfUnassigned);
 	// This one is special and can't be reassigned or removed. This is because the user _could_ turn off the menu,
 	// and remove all bindings to ToggleKeyBindings. The user would have to way of getting back to the bindings screen.
 	// Having a guaranteed key combo for it solves these issues.
-	AssignKey(GLFW_KEY_TAB,			Modifier_Ctrl | Modifier_Shift,	Operation::KeyBindings);
-	AssignKey(GLFW_KEY_TAB,			Modifier_None,					Operation::KeyBindings);
+	AssignKey(GLFW_KEY_TAB,			Modifier_Ctrl | Modifier_Shift,	Operation::KeyBindings,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_TAB,			Modifier_None,					Operation::KeyBindings,				onlyIfUnassigned);
 
-	AssignKey(GLFW_KEY_F11,			Modifier_None,					Operation::Fullscreen);
-	AssignKey(GLFW_KEY_ENTER,		Modifier_Alt,					Operation::Fullscreen);
-	AssignKey(GLFW_KEY_ESCAPE,		Modifier_None,					Operation::EscapeSupportingQuit);
-	AssignKey(GLFW_KEY_F4,			Modifier_Alt,					Operation::Quit);
+	AssignKey(GLFW_KEY_F11,			Modifier_None,					Operation::Fullscreen,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_ENTER,		Modifier_Alt,					Operation::Fullscreen,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_ESCAPE,		Modifier_None,					Operation::EscapeSupportingQuit,	onlyIfUnassigned);
+	AssignKey(GLFW_KEY_F4,			Modifier_Alt,					Operation::Quit,					onlyIfUnassigned);
 
-	#ifdef ENABLE_FILE_DIALOG_SUPPORT
-	AssignKey(GLFW_KEY_O,			Modifier_Ctrl,					Operation::OpenFile);
-	AssignKey(GLFW_KEY_O,			Modifier_Alt,					Operation::OpenDir);
-	#endif
+	AssignKey(GLFW_KEY_O,			Modifier_Ctrl,					Operation::OpenFile,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_O,			Modifier_Alt,					Operation::OpenDir,					onlyIfUnassigned);
 }
 
 

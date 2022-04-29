@@ -95,10 +95,8 @@ namespace Bindings
 		EscapeSupportingQuit,
 		Quit,
 
-		#ifdef ENABLE_FILE_DIALOG_SUPPORT
 		OpenFile,
 		OpenDir,
-		#endif
 
 		// Add new operations here. Adding above will invalidate save file keybindings.
 		NumOperations
@@ -144,8 +142,8 @@ namespace Bindings
 		InputMap()																										{ Clear(); }
 		InputMap(const InputMap& src)																					{ Set(src); }
 		void Set(const InputMap& src)																					{ if (&src == this) return; for (int k = 0; k <= GLFW_KEY_LAST; k++) KeyTable[k] = src.KeyTable[k]; }
-		void Clear()				/* Unassigns all keys. */															{ for (int k = 0; k <= GLFW_KEY_LAST; k++) KeyTable[k].Clear(); }
-		void Reset();				// Sets all keys to their default operations.
+		void Clear()								/* Unassigns all keys. */											{ for (int k = 0; k <= GLFW_KEY_LAST; k++) KeyTable[k].Clear(); }
+		void Reset(bool onlyIfUnassigned = false);	// Sets all keys to their default operations.
 
 		// Returns the operation assigned to a particular key and set of modifiers. This can also be used before an
 		// assign call to see what a current key is bound to so an already-assigned message can be dislayed if needed.
@@ -153,8 +151,9 @@ namespace Bindings
 		KeyOps& GetKeyOps(int glfwKey)																					{ return KeyTable[glfwKey]; }
 
 		// Assigns the operation to the key and modifiers specified. Returns true is there was a previous assignment
-		// that needed to be replaced.
-		bool AssignKey(int glfwkey, uint32 modifiers, Operation);
+		// that needed to be replaced. Pass in onlyIfUnassigned if you only want assignment to happen if the key is
+		// currently unassigned.
+		bool AssignKey(int glfwkey, uint32 modifiers, Operation, bool onlyIfUnassigned = false);
 		void ClearKey(int glfwkey, uint32 modifiers)																	{ KeyTable[glfwkey].Operations[modifiers] = Operation::None; }
 		int GetTotalAssigned() const																					{ int count = 0; for (int k = 0; k <= GLFW_KEY_LAST; k++) count += KeyTable[k].GetAssignedCount(); return count; }
 

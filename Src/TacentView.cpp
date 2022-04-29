@@ -112,12 +112,9 @@ namespace Viewer
 	bool WindowIconified						= false;
 	bool ShowCheatSheet							= false;
 	bool ShowAbout								= false;
-	
-	#ifdef ENABLE_FILE_DIALOG_SUPPORT
+
 	bool Request_OpenFileModal					= false;
 	bool Request_OpenDirModal					= false;
-	#endif
-
 	bool Request_SaveAsModal					= false;
 	bool Request_SaveAllModal					= false;
 	bool Request_ResizeImageModal				= false;
@@ -1457,11 +1454,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		//
 		// File Menu.
 		//
-		#ifdef ENABLE_FILE_DIALOG_SUPPORT
 		bool openFilePressed			= Request_OpenFileModal;			Request_OpenFileModal				= false;
 		bool openDirPressed				= Request_OpenDirModal;				Request_OpenDirModal				= false;
-		#endif
-
 		bool saveAsPressed				= Request_SaveAsModal;				Request_SaveAsModal					= false;
 		bool saveAllPressed				= Request_SaveAllModal;				Request_SaveAllModal				= false;
 		bool saveContactSheetPressed	= Request_ContactSheetModal;		Request_ContactSheetModal			= false;
@@ -1473,7 +1467,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			// Show file menu items...
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 
-			#ifdef ENABLE_FILE_DIALOG_SUPPORT
 			tString openFileKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::OpenFile);
 			if (ImGui::MenuItem("Open File...", openFileKey.Charz()))
 				openFilePressed = true;
@@ -1481,7 +1474,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			tString openDirKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::OpenDir);
 			if (ImGui::MenuItem("Open Dir...", openDirKey.Charz()))
 				openDirPressed = true;
-			#endif
 
 			tString saveAsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SaveAs);
 			if (ImGui::MenuItem("Save As...", saveAsKey.Charz()) && CurrImage)
@@ -1531,10 +1523,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 
-		#ifdef ENABLE_FILE_DIALOG_SUPPORT
 		DoOpenFileModal(openFilePressed);
 		DoOpenDirModal(openDirPressed);
-		#endif
 
 		DoSaveAsModal(saveAsPressed);
 		DoSaveAllModal(saveAllPressed);
@@ -2486,7 +2476,6 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			Viewer::Request_Quit = true;				
 			break;
 
-		#ifdef ENABLE_FILE_DIALOG_SUPPORT
 		case Bindings::Operation::OpenFile:
 			Request_OpenFileModal = true;
 			break;
@@ -2494,7 +2483,6 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case Bindings::Operation::OpenDir:
 			Request_OpenDirModal = true;
 			break;
-		#endif
 	}
 }
 

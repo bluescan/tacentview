@@ -21,9 +21,7 @@ using namespace tStd;
 using namespace tSystem;
 using namespace tMath;
 using namespace tImage;
-#ifdef ENABLE_FILE_DIALOG_SUPPORT
 using namespace tInterface;
-#endif
 
 
 namespace Viewer
@@ -38,9 +36,6 @@ namespace Viewer
 }
 
 
-// Once we have the file dialog working, use ENABLE_FILE_DIALOG_SUPPORT to enable it.
-// We will want to have the following types supported:
-#ifdef ENABLE_FILE_DIALOG_SUPPORT
 FileDialog OpenFileDialog(FileDialog::DialogMode::OpenFile);
 FileDialog OpenDirDialog(FileDialog::DialogMode::OpenDir);
 FileDialog SaveFileDialog(FileDialog::DialogMode::SaveFile);
@@ -80,7 +75,6 @@ void Viewer::DoOpenDirModal(bool openDirPressed)
 		SetWindowTitle();
 	}
 }
-#endif // ENABLE_FILE_DIALOG_SUPPORT
 
 
 tString Viewer::DoSubFolder()

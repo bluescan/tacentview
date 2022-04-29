@@ -125,6 +125,15 @@ void Config::Load(const tString& filename)
 		}
 	}
 
+	// At this point the cfg file exists and has been loaded. However, even without a version number increase we want
+	// to be able to support new operations than may have been added and have the key-bindings assigned. This is
+	// possible in a generic way if the new operations bindings do not conflict with user-specified bindings. That is,
+	// if the new operations default bindings do not have the key already reassigned to something else, we should
+	// assign them here.
+	bool onlyIfUnassigned = true;
+	MainSettings.InputBindings.Reset(onlyIfUnassigned);
+	BasicSettings.InputBindings.Reset(onlyIfUnassigned);
+
 	// Add stuff here if you care about what version you loaded from.
 	if (Global.ConfigVersion <= 2)
 	{
