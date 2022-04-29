@@ -2,7 +2,7 @@
 //
 // Dialog that allows selection of a file or directory. May be used for opening a file/directory or saving to a file.
 //
-// Copyright (c) 2021 Tristan Grimmer.
+// Copyright (c) 2021, 2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -22,6 +22,44 @@ using namespace tMath;
 using namespace tSystem;
 using namespace tImage;
 using namespace tInterface;
+
+
+TreeNode* TreeNode::Find(const tString& name) const
+{
+	for (tItList<TreeNode>::Iter child = Children.First(); child; child++)
+	{
+		#ifdef PLATFORM_WINDOWS
+		if (child->Name.IsEqualCI(name))
+		#else
+		if (child->Name == name)
+		#endif
+			return child;
+	}
+	return nullptr;
+}
+
+
+int TreeNode::Depth() const
+{
+	int depth = 0;
+	TreeNode* parent = Parent;
+	while (parent)
+	{
+		depth++;
+		parent = parent->Parent;
+	}
+	return depth;
+}
+
+
+TreeNode::ContentItem* TreeNode::FindSelectedItem() const
+{
+	for (ContentItem* item = Contents.First(); item; item = item->Next())
+		if (item->Selected)
+			return item;
+
+	return nullptr;
+}
 
 
 FileDialog::FileDialog(DialogMode mode) :
@@ -106,14 +144,14 @@ void FileDialog::NetworkTreeNodeRecursive(TreeNode* node)
 	{
 		tList<tStringItem> exploded;
 		tExplodeShareName(exploded, *share);
-		tStringItem* machName = exploded.First();
-		if (!NetworkTreeNode->Contains(*machName))
+		tString machName = *exploded.First();
+		if (!NetworkTreeNode->Contains(machName))
 		{
-			TreeNode* machine = new TreeNode(machName->Text(), this, NetworkTreeNode);
+			TreeNode* machine = new TreeNode(machName.Text(), this, NetworkTreeNode);
 			NetworkTreeNode->AppendChild(machine);
 		}
 
-		TreeNode* machNode = NetworkTreeNode->Find(*machName);
+		TreeNode* machNode = NetworkTreeNode->Find(machName);
 		tAssert(machNode);
 		tStringItem* shareName = exploded.Last();
 
@@ -140,6 +178,29 @@ void FileDialog::NetworkTreeNodeRecursive(TreeNode* node)
 			NetworkTreeNodeRecursive(child.GetObject());
 
 		ImGui::TreePop();
+	}
+
+	if (isClicked)
+	{
+		SelectedNode = node;
+		int depth = node->Depth();
+		if (!node->ChildrenPopulated && (depth >= 2))
+		{
+			tString currDir = GetSelectedDir();
+			tList<tStringItem> foundDirs;
+			tSystem::tFindDirs(foundDirs, currDir);
+			for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
+			{
+				tString relDir = tSystem::tGetRelativePath(currDir, *dir);
+				relDir.ExtractLeft("./");
+				relDir.ExtractRight("/");
+
+				TreeNode* child = new TreeNode(relDir, this, node);
+				node->AppendChild(child);
+
+			}
+			node->ChildrenPopulated = true;
+		}
 	}
 }
 #endif
@@ -191,7 +252,6 @@ void FileDialog::LocalTreeNodeRecursive(TreeNode* node)
 		if (!node->ChildrenPopulated)
 		{
 			tString currDir = GetSelectedDir();
-			//tPrintf("SelectedDir: %s\n", currDir.Chars());
 			tList<tStringItem> foundDirs;
 			tSystem::tFindDirs(foundDirs, currDir);
 			for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
@@ -200,10 +260,8 @@ void FileDialog::LocalTreeNodeRecursive(TreeNode* node)
 				relDir.ExtractLeft("./");
 				relDir.ExtractRight("/");
 
-				tPrintf("ChildDir: %s\n", relDir.Chars());
 				TreeNode* child = new TreeNode(relDir, this, node);
 				node->AppendChild(child);
-
 			}
 			node->ChildrenPopulated = true;
 		}
@@ -261,54 +319,41 @@ FileDialog::DialogResult FileDialog::DoPopup()
 			if (!SelectedNode->ContentsPopulated)
 			{
 				tString selDir = GetSelectedDir();
-				tPrintf("Selected Dir: %s\n", selDir.Chars());
 
-				// if (Mode == DialogMode::OpenDir)
+				// Directories.
+				tList<tStringItem> foundDirs;
+				tSystem::tFindDirs(foundDirs, selDir);
+				for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
 				{
-					tList<tStringItem> foundDirs;
-					tSystem::tFindDirs(foundDirs, selDir);
-					for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
-					{
-						(*dir)[dir->Length()-1] = '\0';				// Remove slash.
-						tStringItem* dirName = new tStringItem(tSystem::tGetFileName(*dir) + "/");
-						SelectedNode->Contents.Append(dirName);
-					}
+					(*dir)[dir->Length()-1] = '\0';				// Remove slash.
+					TreeNode::ContentItem* contentItem = new TreeNode::ContentItem(tSystem::tGetFileName(*dir) + "/");
+					SelectedNode->Contents.Append(contentItem);
 				}
-				// else if (Mode == DialogMode::OpenFile)
+
+				// Files.
+				tList<tStringItem> foundFiles;
+				tSystem::tFindFilesFast(foundFiles, selDir);
+				for (tStringItem* file = foundFiles.First(); file; file = file->Next())
 				{
-					tList<tStringItem> foundFiles;
-					tSystem::tFindFilesFast(foundFiles, selDir);
-					for (tStringItem* file = foundFiles.First(); file; file = file->Next())
-					{
-						//(*dir)[dir->Length()-1] = '\0';				// Remove slash.
-						tStringItem* fileName = new tStringItem(tSystem::tGetFileName(*file));
-						SelectedNode->Contents.Append(fileName);
-					}
+					TreeNode::ContentItem* contentItem = new TreeNode::ContentItem(tSystem::tGetFileName(*file));
+					SelectedNode->Contents.Append(contentItem);
 				}
 
 				SelectedNode->ContentsPopulated = true;
 			}
 
-            if (ImGui::BeginTable("split2", 3, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings))
+			if (ImGui::BeginTable("ContentItems", 3, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings))
 			{
-				int itemNum = 0;
-				for (tStringItem* item = SelectedNode->Contents.First(); item; item = item->Next(), itemNum++)
+				for (TreeNode::ContentItem* item = SelectedNode->Contents.First(); item; item = item->Next())//, itemNum++)
 				{
 					ImGui::TableNextRow();
-					bool selected = (itemNum == 4) ? true : false;
 					ImGui::TableNextColumn();
-					ImGui::Selectable(item->Chars(), &selected);// ImGui::SameLine(300); ImGui::Text(" 2,345 bytes");
+					ImGui::Selectable(item->Name.Chars(), &item->Selected);// ImGui::SameLine(300); ImGui::Text(" 2,345 bytes");
 
 					ImGui::TableNextColumn();
-                    ImGui::Selectable("2022-11-23 2:45am", &selected);
-                    // ImGui::Text("2022-11-23 2:45am");
+                    ImGui::Selectable("2022-11-23 2:45am", &item->Selected);
                     ImGui::TableNextColumn();
-					ImGui::Selectable("123456 Bytes", &selected);
-    				//	ImGui::Text("123456 Bytes");
-					//	if (ImGui::Selectable(item->Chars(), false))
-					//	{
-					//		Select it.
-					//	}
+					ImGui::Selectable("123456 Bytes", &item->Selected);
 				}
 				ImGui::EndTable();
 			}
@@ -318,17 +363,20 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		ImGui::EndTable();
 	}
 
-	if (ImGui::Button("OK"))
+	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
+		result = DialogResult::Cancel;
+
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+
+	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
 	{
-		if (Mode == DialogMode::OpenFile)
-			Result = "C:/testfile.txt";
-		else if (Mode == DialogMode::OpenDir)
-			Result = "C:/";
+		TreeNode::ContentItem* selItem = SelectedNode->FindSelectedItem();
+		Result = GetSelectedDir();
+		if ((Mode == DialogMode::OpenFile) && selItem)
+			Result += selItem->Name;
 		result = DialogResult::OK;
 	}
-	ImGui::SameLine();
-	if (ImGui::Button("Cancel"))
-		result = DialogResult::Cancel;
 
 	if (result != DialogResult::Open)
 		ImGui::CloseCurrentPopup();
@@ -341,4 +389,37 @@ FileDialog::DialogResult FileDialog::DoPopup()
 tString FileDialog::GetResult()
 {
 	return Result;
+}
+
+
+tString FileDialog::GetSelectedDir()
+{
+	if (!SelectedNode)
+		return tString();
+	bool isNetworkLoc = false;
+	tString dir;
+	TreeNode* curr = SelectedNode;
+	while (curr)
+	{
+		if ((curr->Depth() == 0) && (curr->Name == "Network"))
+			isNetworkLoc = true;
+		curr = curr->Parent;
+	}
+
+	curr = SelectedNode;
+	while (curr)
+	{
+		if (!curr->Name.IsEmpty() && (curr->Depth() > 0))
+		{
+			if (isNetworkLoc && (curr->Depth() == 1))
+				dir = curr->Name + "\\" + dir;
+			else
+				dir = curr->Name + "/" + dir;
+		}
+		curr = curr->Parent;
+	}
+	if (isNetworkLoc)
+		dir = tString("\\\\") + dir;
+
+	return dir;
 }

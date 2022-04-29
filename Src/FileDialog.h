@@ -2,7 +2,7 @@
 //
 // Dialog that allows selection of a file or directory. May be used for opening a file/directory or saving to a file.
 //
-// Copyright (c) 2021 Tristan Grimmer.
+// Copyright (c) 2021, 2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -31,31 +31,24 @@ class FileDialog;
 class TreeNode
 {
 public:
-	TreeNode() :
-		Name(), Parent(nullptr) { }
-	TreeNode(const tString& name, FileDialog* dialog, TreeNode* parent = nullptr) :
-		Name(name), Dialog(dialog), Parent(parent) { }
+	TreeNode()																											: Name(), Parent(nullptr) { }
+	TreeNode(const tString& name, FileDialog* dialog, TreeNode* parent = nullptr)										: Name(name), Dialog(dialog), Parent(parent) { }
 
-	// void AppendChild(const tString& name)								{ Children.Append(new TreeNode(name, this)); }
-	void AppendChild(TreeNode* treeNode)									{ Children.Append(treeNode); }
-	bool Contains(const tString& name)
+	void AppendChild(TreeNode* treeNode)																				{ Children.Append(treeNode); }
+
+	// For windows these do a case-insensitive compare. For case sensitive filesystems like Linux uses
+	// these to a case-sensitive compare.
+	TreeNode* Find(const tString& name) const;
+	bool Contains(const tString& name) const																			{ return Find(name) ? true : false; }
+	int Depth() const;
+
+	struct ContentItem : tLink<ContentItem>
 	{
-		for (tItList<TreeNode>::Iter child = Children.First(); child; child++)
-		{
-			if (child->Name == name)
-				return true;
-		}
-		return false;
-	}
-	TreeNode* Find(const tString& name)
-	{
-		for (tItList<TreeNode>::Iter child = Children.First(); child; child++)
-		{
-			if (child->Name == name)
-				return child;
-		}
-		return nullptr;
-	}
+		ContentItem(const tString& name)																				: Name(name), Selected(false) { }
+		tString Name;
+		bool Selected;
+	};
+	ContentItem* FindSelectedItem() const;
 
 	tString Name;
 	FileDialog* Dialog;
@@ -65,7 +58,7 @@ public:
 
 	// Contents
 	bool ContentsPopulated = false;
-	tList<tStringItem> Contents;
+	tList<ContentItem> Contents;
 };
 
 
@@ -115,22 +108,8 @@ private:
 	tSystem::tNetworkShareResult NetworkShareResults;
 	#endif
 
-	tString GetSelectedDir()
-	{
-		if (!SelectedNode)
-			return tString();
-		tString dir;
-		TreeNode* curr = SelectedNode;
-		while (curr)
-		{
-			if (!curr->Name.IsEmpty() && (curr->Name != "Local"))
-				dir = curr->Name + "/" + dir;
-			//dir += curr->Name;
-			curr = curr->Parent;
-		}
-		//ir.ExtractLeft('/');
-		return dir;
-	}
+	tString GetSelectedDir();
+
 	TreeNode* FavouritesTreeNode;
 	TreeNode* LocalTreeNode;
 	TreeNode* NetworkTreeNode;
