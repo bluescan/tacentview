@@ -153,9 +153,9 @@ void FileDialog::NetworkTreeNodeRecursive(TreeNode* node)
 
 		TreeNode* machNode = NetworkTreeNode->Find(machName);
 		tAssert(machNode);
-		tStringItem* shareName = exploded.Last();
+		tStringItem* shareName = (exploded.GetNumItems() == 2) ? exploded.Last() : nullptr;
 
-		if (!machNode->Contains(*shareName))
+		if (shareName && !machNode->Contains(*shareName))
 		{
 			TreeNode* shareNode = new TreeNode(shareName->Text(), this, machNode);
 			machNode->AppendChild(shareNode);
