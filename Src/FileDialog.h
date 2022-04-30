@@ -69,6 +69,7 @@ public:
 	enum class DialogMode
 	{
 		OpenFile,
+		OpenFiles,
 		OpenDir,
 		SaveFile
 	};
@@ -87,28 +88,23 @@ public:
 	tString GetResult();
 
 private:
+	tString GetSelectedDir();
+	void DoSelectable(const char* label, TreeNode::ContentItem*);
+
 	void PopulateFavourites();
 	void PopulateLocal();
-	#ifdef PLATFORM_WINDOWS
-	void PopulateNetwork();
-	#endif
-
 	void FavouritesTreeNodeFlat(TreeNode*);
 	void LocalTreeNodeRecursive(TreeNode*);
+
 	#ifdef PLATFORM_WINDOWS
+	void PopulateNetwork();
 	void NetworkTreeNodeRecursive(TreeNode*);
-	#endif
-
-	DialogMode Mode;
-	tString Result;
-
-	#ifdef PLATFORM_WINDOWS
-	// Network locations.
 	void RequestNetworkSharesThread();
 	tSystem::tNetworkShareResult NetworkShareResults;
 	#endif
 
-	tString GetSelectedDir();
+	DialogMode Mode;
+	tString Result;
 
 	TreeNode* FavouritesTreeNode;
 	TreeNode* LocalTreeNode;

@@ -188,7 +188,8 @@ void FileDialog::NetworkTreeNodeRecursive(TreeNode* node)
 		{
 			tString currDir = GetSelectedDir();
 			tList<tStringItem> foundDirs;
-			tSystem::tFindDirs(foundDirs, currDir);
+			if (!currDir.IsEmpty())
+				tSystem::tFindDirs(foundDirs, currDir);
 			for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
 			{
 				tString relDir = tSystem::tGetRelativePath(currDir, *dir);
@@ -251,9 +252,11 @@ void FileDialog::LocalTreeNodeRecursive(TreeNode* node)
 		SelectedNode = node;
 		if (!node->ChildrenPopulated)
 		{
+			// Need to be careful here. tFindDirs would (reasonably?) uses the current working dir if we passed in an empty string.
 			tString currDir = GetSelectedDir();
 			tList<tStringItem> foundDirs;
-			tSystem::tFindDirs(foundDirs, currDir);
+			if (!currDir.IsEmpty())
+				tSystem::tFindDirs(foundDirs, currDir);
 			for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
 			{
 				tString relDir = tSystem::tGetRelativePath(currDir, *dir);
@@ -269,6 +272,25 @@ void FileDialog::LocalTreeNodeRecursive(TreeNode* node)
 }
 
 
+void FileDialog::DoSelectable(const char* label, TreeNode::ContentItem* currItem)
+{
+	if (ImGui::Selectable(label, &currItem->Selected))
+	{
+		if (currItem->Selected && (Mode != DialogMode::OpenFiles))
+		{
+			// Only allowed one selected max. Clear the others.
+			for (TreeNode::ContentItem* item = SelectedNode->Contents.First(); item; item = item->Next())
+			{
+				if (item == currItem)
+					continue;
+
+				item->Selected = false;
+			}
+		}
+	}
+}
+
+
 FileDialog::DialogResult FileDialog::DoPopup()
 {
 	// The unused isOpen bool is just so we get a close button in ImGui. 
@@ -276,9 +298,10 @@ FileDialog::DialogResult FileDialog::DoPopup()
 	const char* label = nullptr;
 	switch (Mode)
 	{
-		case DialogMode::OpenDir:		label = "Open Dir";		break;
 		case DialogMode::OpenFile:		label = "Open File";	break;
-		case DialogMode::SaveFile:		label = "Open File";	break;
+		case DialogMode::OpenFiles:		label = "Open Files";	break;
+		case DialogMode::OpenDir:		label = "Open Dir";		break;
+		case DialogMode::SaveFile:		label = "Save File";	break;
 	}
 	if (!ImGui::BeginPopupModal(label, &isOpen, ImGuiWindowFlags_NoScrollbar /*ImGuiWindowFlags_AlwaysAutoResize*/))
 		return DialogResult::Closed;
@@ -298,7 +321,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		ImGui::TableSetColumnIndex(0);
 		ImGui::BeginChild("LeftTreePanel", tVector2(0.0f, -bottomBarHeight));
 
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(0,3));
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(0.0f, 3.0f));
 
 		FavouritesTreeNodeFlat(FavouritesTreeNode);
 		LocalTreeNodeRecursive(LocalTreeNode);
@@ -322,7 +345,8 @@ FileDialog::DialogResult FileDialog::DoPopup()
 
 				// Directories.
 				tList<tStringItem> foundDirs;
-				tSystem::tFindDirs(foundDirs, selDir);
+				if (!selDir.IsEmpty())
+					tSystem::tFindDirs(foundDirs, selDir);
 				for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
 				{
 					(*dir)[dir->Length()-1] = '\0';				// Remove slash.
@@ -332,7 +356,8 @@ FileDialog::DialogResult FileDialog::DoPopup()
 
 				// Files.
 				tList<tStringItem> foundFiles;
-				tSystem::tFindFilesFast(foundFiles, selDir);
+				if (!selDir.IsEmpty())
+					tSystem::tFindFilesFast(foundFiles, selDir);
 				for (tStringItem* file = foundFiles.First(); file; file = file->Next())
 				{
 					TreeNode::ContentItem* contentItem = new TreeNode::ContentItem(tSystem::tGetFileName(*file));
@@ -344,16 +369,20 @@ FileDialog::DialogResult FileDialog::DoPopup()
 
 			if (ImGui::BeginTable("ContentItems", 3, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings))
 			{
-				for (TreeNode::ContentItem* item = SelectedNode->Contents.First(); item; item = item->Next())//, itemNum++)
+				for (TreeNode::ContentItem* item = SelectedNode->Contents.First(); item; item = item->Next())
 				{
 					ImGui::TableNextRow();
-					ImGui::TableNextColumn();
-					ImGui::Selectable(item->Name.Chars(), &item->Selected);// ImGui::SameLine(300); ImGui::Text(" 2,345 bytes");
 
 					ImGui::TableNextColumn();
-                    ImGui::Selectable("2022-11-23 2:45am", &item->Selected);
-                    ImGui::TableNextColumn();
-					ImGui::Selectable("123456 Bytes", &item->Selected);
+					DoSelectable(item->Name.Chars(), item);
+
+					ImGui::TableNextColumn();
+					tString modTime; tsPrintf(modTime, "%s##%s", "2022-11-23 2:45am", item->Name.Text());
+					DoSelectable(modTime, item);
+
+					ImGui::TableNextColumn();
+					tString numBytes; tsPrintf(numBytes, "%s##%s", "123,456 Bytes", item->Name.Text());
+					DoSelectable(numBytes, item);
 				}
 				ImGui::EndTable();
 			}
