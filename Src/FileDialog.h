@@ -44,9 +44,10 @@ public:
 
 	struct ContentItem : tLink<ContentItem>
 	{
-		ContentItem(const tString& name)																				: Name(name), Selected(false) { }
+		ContentItem(const tString& name, bool isDir)																	: Name(name), Selected(false), IsDir(isDir) { }
 		tString Name;
 		bool Selected;
+		bool IsDir;
 	};
 	ContentItem* FindSelectedItem() const;
 
@@ -56,7 +57,7 @@ public:
 	TreeNode* Parent;
 	tItList<TreeNode> Children;
 
-	// Contents
+	bool NextOpen = false;
 	bool ContentsPopulated = false;
 	tList<ContentItem> Contents;
 };
@@ -94,15 +95,17 @@ private:
 	void PopulateFavourites();
 	void PopulateLocal();
 	void FavouritesTreeNodeFlat(TreeNode*);
-	void LocalTreeNodeRecursive(TreeNode*);
+	void TreeNodeRecursive(TreeNode*);
 
 	#ifdef PLATFORM_WINDOWS
 	void PopulateNetwork();
 	void NetworkTreeNodeRecursive(TreeNode*);
 	void RequestNetworkSharesThread();
+	void ProcessShareResults();
 	tSystem::tNetworkShareResult NetworkShareResults;
 	#endif
 
+	bool ProcessingNetworkPath = false;
 	DialogMode Mode;
 	tString Result;
 

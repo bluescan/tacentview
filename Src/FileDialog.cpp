@@ -136,7 +136,7 @@ void FileDialog::PopulateNetwork()
 }
 
 
-void FileDialog::NetworkTreeNodeRecursive(TreeNode* node)
+void FileDialog::ProcessShareResults()
 {
 	// Most of time this will be empty since we remove the items when they are available, just like a message queue.
 	tStringItem* share = NetworkShareResults.ShareNames.Remove();
@@ -162,49 +162,110 @@ void FileDialog::NetworkTreeNodeRecursive(TreeNode* node)
 		}
 		delete share;
 	}
+}
+#endif
 
-	int flags = (node->Children.GetNumItems() == 0) ? ImGuiTreeNodeFlags_Leaf : 0;
-	if (SelectedNode == node)
-		flags |= ImGuiTreeNodeFlags_Selected;
-	flags |= ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+
+void FileDialog::TreeNodeRecursive(TreeNode* node)
+{
+	int flags =
+		ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_DefaultOpen |
+		((node->Children.GetNumItems() == 0) ? ImGuiTreeNodeFlags_Leaf : 0) |
+		((SelectedNode == node) ? ImGuiTreeNodeFlags_Selected : 0);
+
+	bool populate = false;
+
+	// This is the magic that's needed if you select from the right-hand panel.
+	if (node->NextOpen)
+	{
+		ImGui::SetNextTreeNodeOpen(true);
+		node->NextOpen = false;
+		populate = true;
+	}
 
 	bool isOpen = ImGui::TreeNodeEx(node->Name, flags);
 	bool isClicked = ImGui::IsItemClicked();
+	if (isClicked)
+	{
+		SelectedNode = node;
+		populate = true;
+	}
+
+	// We only bother populating children if we need to.
+	if (populate)
+	{
+		if (!node->ChildrenPopulated)
+		{
+			if (!ProcessingNetworkPath || (node->Depth() >= 2))
+			{
+				// Need to be careful here. tFindDirs would (reasonably?) use the current working dir if we passed in an empty string.
+				tString currDir = GetSelectedDir();
+				tList<tStringItem> foundDirs;
+				if (!currDir.IsEmpty())
+					tSystem::tFindDirs(foundDirs, currDir);
+				for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
+				{
+					tString relDir = tSystem::tGetRelativePath(currDir, *dir);
+					relDir.ExtractLeft("./");
+					relDir.ExtractRight("/");
+
+					TreeNode* child = new TreeNode(relDir, this, node);
+					node->AppendChild(child);
+				}
+				node->ChildrenPopulated = true;
+			}
+		}
+	}
 
 	if (isOpen)
 	{
 		// Recurse children.
 		for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
-			NetworkTreeNodeRecursive(child.GetObject());
+			TreeNodeRecursive(child.GetObject());
 
 		ImGui::TreePop();
 	}
+}
 
-	if (isClicked)
+
+void FileDialog::DoSelectable(const char* label, TreeNode::ContentItem* item)
+{
+	if (ImGui::Selectable(label, &item->Selected))
 	{
-		SelectedNode = node;
-		int depth = node->Depth();
-		if (!node->ChildrenPopulated && (depth >= 2))
+		// This block enforces single selection.
+		if (Mode != DialogMode::OpenFiles)
 		{
-			tString currDir = GetSelectedDir();
-			tList<tStringItem> foundDirs;
-			if (!currDir.IsEmpty())
-				tSystem::tFindDirs(foundDirs, currDir);
-			for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
+			if (item->Selected)
 			{
-				tString relDir = tSystem::tGetRelativePath(currDir, *dir);
-				relDir.ExtractLeft("./");
-				relDir.ExtractRight("/");
-
-				TreeNode* child = new TreeNode(relDir, this, node);
-				node->AppendChild(child);
-
+				// Only allowed one selected max. Clear the others.
+				for (TreeNode::ContentItem* i = SelectedNode->Contents.First(); i; i = i->Next())
+				{
+					if (i == item)
+						continue;
+					i->Selected = false;
+				}
 			}
-			node->ChildrenPopulated = true;
+
+			// Do not allow deselection of the single item.
+			item->Selected = true;
+		}
+
+		// If a directory is selected in the right panel, we support updating the current selected TreeNode.
+		if (item->IsDir)
+		{
+			SelectedNode->NextOpen = true;
+			TreeNode* node = SelectedNode->Find(item->Name);
+			if (!node)
+			{
+				// Need to create a new one and connect it up.
+				node = new TreeNode(item->Name, this, SelectedNode);
+				SelectedNode->AppendChild(node);
+				tAssert(SelectedNode->ChildrenPopulated == false);
+			}
+			SelectedNode = node;
 		}
 	}
 }
-#endif
 
 
 void FileDialog::FavouritesTreeNodeFlat(TreeNode* node)
@@ -224,69 +285,6 @@ void FileDialog::FavouritesTreeNodeFlat(TreeNode* node)
 			FavouritesTreeNodeFlat(child.GetObject());
 
 		ImGui::TreePop();
-	}
-}
-
-
-void FileDialog::LocalTreeNodeRecursive(TreeNode* node)
-{
-	int flags = (node->Children.GetNumItems() == 0) ? ImGuiTreeNodeFlags_Leaf : 0;
-	if (SelectedNode == node)
-		flags |= ImGuiTreeNodeFlags_Selected;
-	flags |= ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-
-	bool isOpen = ImGui::TreeNodeEx(node->Name, flags);
-	bool isClicked = ImGui::IsItemClicked();
-
-	if (isOpen)
-	{
-		// Recurse children.
-		for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
-			LocalTreeNodeRecursive(child.GetObject());
-
-		ImGui::TreePop();
-	}
-
-	if (isClicked)
-	{
-		SelectedNode = node;
-		if (!node->ChildrenPopulated)
-		{
-			// Need to be careful here. tFindDirs would (reasonably?) uses the current working dir if we passed in an empty string.
-			tString currDir = GetSelectedDir();
-			tList<tStringItem> foundDirs;
-			if (!currDir.IsEmpty())
-				tSystem::tFindDirs(foundDirs, currDir);
-			for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
-			{
-				tString relDir = tSystem::tGetRelativePath(currDir, *dir);
-				relDir.ExtractLeft("./");
-				relDir.ExtractRight("/");
-
-				TreeNode* child = new TreeNode(relDir, this, node);
-				node->AppendChild(child);
-			}
-			node->ChildrenPopulated = true;
-		}
-	}
-}
-
-
-void FileDialog::DoSelectable(const char* label, TreeNode::ContentItem* currItem)
-{
-	if (ImGui::Selectable(label, &currItem->Selected))
-	{
-		if (currItem->Selected && (Mode != DialogMode::OpenFiles))
-		{
-			// Only allowed one selected max. Clear the others.
-			for (TreeNode::ContentItem* item = SelectedNode->Contents.First(); item; item = item->Next())
-			{
-				if (item == currItem)
-					continue;
-
-				item->Selected = false;
-			}
-		}
 	}
 }
 
@@ -320,17 +318,19 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		// Left tree panel.
 		ImGui::TableSetColumnIndex(0);
 		ImGui::BeginChild("LeftTreePanel", tVector2(0.0f, -bottomBarHeight));
-
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(0.0f, 3.0f));
 
+		// This block is the workhorse of the dialog.
 		FavouritesTreeNodeFlat(FavouritesTreeNode);
-		LocalTreeNodeRecursive(LocalTreeNode);
+		TreeNodeRecursive(LocalTreeNode);
 		#ifdef PLATFORM_WINDOWS
-		NetworkTreeNodeRecursive(NetworkTreeNode);
+		ProcessShareResults();
+		ProcessingNetworkPath = true;
+		TreeNodeRecursive(NetworkTreeNode);
+		ProcessingNetworkPath = false;
 		#endif
 
 		ImGui::PopStyleVar();
-
 		ImGui::EndChild();
 		
 		// Right content panel.
@@ -350,7 +350,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
 				{
 					(*dir)[dir->Length()-1] = '\0';				// Remove slash.
-					TreeNode::ContentItem* contentItem = new TreeNode::ContentItem(tSystem::tGetFileName(*dir) + "/");
+					TreeNode::ContentItem* contentItem = new TreeNode::ContentItem(tSystem::tGetFileName(*dir), true);
 					SelectedNode->Contents.Append(contentItem);
 				}
 
@@ -360,7 +360,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 					tSystem::tFindFilesFast(foundFiles, selDir);
 				for (tStringItem* file = foundFiles.First(); file; file = file->Next())
 				{
-					TreeNode::ContentItem* contentItem = new TreeNode::ContentItem(tSystem::tGetFileName(*file));
+					TreeNode::ContentItem* contentItem = new TreeNode::ContentItem(tSystem::tGetFileName(*file), false);
 					SelectedNode->Contents.Append(contentItem);
 				}
 
@@ -398,13 +398,25 @@ FileDialog::DialogResult FileDialog::DoPopup()
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 
-	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
+	TreeNode::ContentItem* selItem = SelectedNode ? SelectedNode->FindSelectedItem() : nullptr;
+	bool showOK =
+		selItem &&
+		(
+			((Mode == DialogMode::OpenFile) && !selItem->IsDir) ||
+			((Mode == DialogMode::SaveFile) && !selItem->IsDir) ||
+			((Mode == DialogMode::OpenDir) && selItem->IsDir)
+			// @todo multiple files.
+		);
+
+	if (showOK)
 	{
-		TreeNode::ContentItem* selItem = SelectedNode->FindSelectedItem();
-		Result = GetSelectedDir();
-		if ((Mode == DialogMode::OpenFile) && selItem)
-			Result += selItem->Name;
-		result = DialogResult::OK;
+		if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
+		{
+			Result = GetSelectedDir();
+			if ((Mode == DialogMode::OpenFile) && selItem)
+				Result += selItem->Name;
+			result = DialogResult::OK;
+		}
 	}
 
 	if (result != DialogResult::Open)
