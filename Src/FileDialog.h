@@ -42,13 +42,19 @@ public:
 	bool Contains(const tString& name) const																			{ return Find(name) ? true : false; }
 	int Depth() const;
 	bool IsNetworkLocation() const;
-	
+
 	struct ContentItem : tLink<ContentItem>
 	{
 		ContentItem(const tString& name, bool isDir)																	: Name(name), Selected(false), IsDir(isDir) { }
+		ContentItem(const tSystem::tFileInfo& fileInfo);
+
 		tString Name;
 		bool Selected;
 		bool IsDir;
+
+		// These are not valid for directories.
+		tString FileSizeString;
+		tString ModTimeString;
 	};
 	ContentItem* FindSelectedItem() const;
 

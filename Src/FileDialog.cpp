@@ -13,6 +13,7 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #include <Math/tVector2.h>
+#include <System/tTime.h>
 #include "imgui.h"
 #include "FileDialog.h"
 #include "TacentView.h"
@@ -76,6 +77,17 @@ bool TreeNode::IsNetworkLocation() const
 }
 
 
+TreeNode::ContentItem::ContentItem(const tSystem::tFileInfo& fileInfo) :
+	Selected(false)
+{
+	Name = tSystem::tGetFileName(fileInfo.FileName);
+	IsDir = fileInfo.Directory;
+
+	tsPrintf(FileSizeString, "%'d Bytes", fileInfo.FileSize);
+	tsPrintf(ModTimeString, "%s", tSystem::tConvertTimeToString(tSystem::tConvertTimeToLocal(fileInfo.ModificationTime)).Chars());
+}
+
+
 FileDialog::FileDialog(DialogMode mode) :
 	Mode(mode)
 {
@@ -99,7 +111,7 @@ void FileDialog::OpenPopup()
 	switch (Mode)
 	{
 		case DialogMode::OpenDir:
-			ImGui::OpenPopup("Open Dir");
+			ImGui::OpenPopup("Open Directory");
 			break;
 
 		case DialogMode::OpenFile:
@@ -274,7 +286,7 @@ void FileDialog::DoSelectable(const char* label, TreeNode::ContentItem* item)
 				// Need to create a new one and connect it up.
 				node = new TreeNode(item->Name, this, SelectedNode);
 				SelectedNode->AppendChild(node);
-				tAssert(SelectedNode->ChildrenPopulated == false);
+				tAssert(node->ChildrenPopulated == false);
 			}
 			SelectedNode = node;
 		}
@@ -310,10 +322,10 @@ FileDialog::DialogResult FileDialog::DoPopup()
 	const char* label = nullptr;
 	switch (Mode)
 	{
-		case DialogMode::OpenFile:		label = "Open File";	break;
-		case DialogMode::OpenFiles:		label = "Open Files";	break;
-		case DialogMode::OpenDir:		label = "Open Dir";		break;
-		case DialogMode::SaveFile:		label = "Save File";	break;
+		case DialogMode::OpenFile:		label = "Open File";		break;
+		case DialogMode::OpenFiles:		label = "Open Files";		break;
+		case DialogMode::OpenDir:		label = "Open Directory";	break;
+		case DialogMode::SaveFile:		label = "Save File";		break;
 	}
 	if (!ImGui::BeginPopupModal(label, &isOpen, ImGuiWindowFlags_NoScrollbar /*ImGuiWindowFlags_AlwaysAutoResize*/))
 		return DialogResult::Closed;
@@ -369,12 +381,12 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				}
 
 				// Files.
-				tList<tStringItem> foundFiles;
+				tList<tFileInfo> foundFiles;
 				if (!selDir.IsEmpty())
 					tSystem::tFindFilesFast(foundFiles, selDir);
-				for (tStringItem* file = foundFiles.First(); file; file = file->Next())
+				for (tFileInfo* fileInfo = foundFiles.First(); fileInfo; fileInfo = fileInfo->Next())
 				{
-					TreeNode::ContentItem* contentItem = new TreeNode::ContentItem(tSystem::tGetFileName(*file), false);
+					TreeNode::ContentItem* contentItem = new TreeNode::ContentItem(*fileInfo);
 					SelectedNode->Contents.Append(contentItem);
 				}
 
@@ -391,11 +403,15 @@ FileDialog::DialogResult FileDialog::DoPopup()
 					DoSelectable(item->Name.Chars(), item);
 
 					ImGui::TableNextColumn();
-					tString modTime; tsPrintf(modTime, "%s##%s", "2022-11-23 2:45am", item->Name.Text());
+					tString modTime("<DIR>");
+					if (!item->IsDir)
+						tsPrintf(modTime, "%s##%s", item->ModTimeString.Text(), item->Name.Text());
 					DoSelectable(modTime, item);
 
 					ImGui::TableNextColumn();
-					tString numBytes; tsPrintf(numBytes, "%s##%s", "123,456 Bytes", item->Name.Text());
+					tString numBytes;
+					if (!item->IsDir)
+						tsPrintf(numBytes, "%s##%s", item->FileSizeString.Text(), item->Name.Text());
 					DoSelectable(numBytes, item);
 				}
 				ImGui::EndTable();
