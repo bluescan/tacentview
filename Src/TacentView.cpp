@@ -75,6 +75,8 @@ namespace Viewer
 	Image NextImage;
 	Image PrevArrowImage;
 	Image NextArrowImage;
+	Image FileImage;
+	Image FolderImage;
 	Image FlipHImage;
 	Image FlipVImage;
 	Image RotateACWImage;
@@ -2645,6 +2647,8 @@ void Viewer::LoadAppImages(const tString& dataDir)
 	NextImage				.Load(dataDir + "Next.png");
 	PrevArrowImage			.Load(dataDir + "PrevArrow.png");
 	NextArrowImage			.Load(dataDir + "NextArrow.png");
+	FileImage				.Load(dataDir + "File.png");
+	FolderImage				.Load(dataDir + "Folder.png");
 	FlipHImage				.Load(dataDir + "FlipH.png");
 	FlipVImage				.Load(dataDir + "FlipV.png");
 	RotateACWImage			.Load(dataDir + "RotACW.png");

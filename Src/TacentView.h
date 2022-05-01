@@ -31,6 +31,8 @@ namespace Viewer
 	extern tCmdLine::tParam ImageFileParam;
 	extern tColouri PixelColour;
 	extern Viewer::Image DefaultThumbnailImage;
+	extern Viewer::Image FileImage;
+	extern Viewer::Image FolderImage;
 	extern Viewer::Image UpFolderImage;
 	extern Viewer::Image PlayImage;
 	extern Viewer::Image PlayRevImage;

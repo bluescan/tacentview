@@ -393,17 +393,23 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				SelectedNode->ContentsPopulated = true;
 			}
 
-			if (ImGui::BeginTable("ContentItems", 3, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings))
+			if (ImGui::BeginTable("ContentItems", 4, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings))
 			{
+				ImGui::TableSetupColumn("##FileDialogIcon", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 18.0f);
+
 				for (TreeNode::ContentItem* item = SelectedNode->Contents.First(); item; item = item->Next())
 				{
 					ImGui::TableNextRow();
 
 					ImGui::TableNextColumn();
+					uint64 imgID = item->IsDir ? Viewer::FolderImage.Bind() : Viewer::FileImage.Bind();
+					ImGui::Image(ImTextureID(imgID), tVector2(16, 16), tVector2(0, 1), tVector2(1, 0), Viewer::ColourEnabledTint);
+
+					ImGui::TableNextColumn();
 					DoSelectable(item->Name.Chars(), item);
 
 					ImGui::TableNextColumn();
-					tString modTime("<DIR>");
+					tString modTime;
 					if (!item->IsDir)
 						tsPrintf(modTime, "%s##%s", item->ModTimeString.Text(), item->Name.Text());
 					DoSelectable(modTime, item);
