@@ -41,7 +41,8 @@ public:
 	TreeNode* Find(const tString& name) const;
 	bool Contains(const tString& name) const																			{ return Find(name) ? true : false; }
 	int Depth() const;
-
+	bool IsNetworkLocation() const;
+	
 	struct ContentItem : tLink<ContentItem>
 	{
 		ContentItem(const tString& name, bool isDir)																	: Name(name), Selected(false), IsDir(isDir) { }

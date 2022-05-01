@@ -62,6 +62,20 @@ TreeNode::ContentItem* TreeNode::FindSelectedItem() const
 }
 
 
+bool TreeNode::IsNetworkLocation() const
+{
+	bool isNet = false;
+	const TreeNode* curr = this;
+	while (curr)
+	{
+		if ((curr->Depth() == 0) && (curr->Name == "Network"))
+			isNet = true;
+		curr = curr->Parent;
+	}
+	return isNet;
+}
+
+
 FileDialog::FileDialog(DialogMode mode) :
 	Mode(mode)
 {
@@ -399,14 +413,28 @@ FileDialog::DialogResult FileDialog::DoPopup()
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 
 	TreeNode::ContentItem* selItem = SelectedNode ? SelectedNode->FindSelectedItem() : nullptr;
-	bool showOK =
-		selItem &&
+	bool showOK = false;
+	if (selItem)
+	{
+		showOK =
 		(
 			((Mode == DialogMode::OpenFile) && !selItem->IsDir) ||
 			((Mode == DialogMode::SaveFile) && !selItem->IsDir) ||
 			((Mode == DialogMode::OpenDir) && selItem->IsDir)
 			// @todo multiple files.
 		);
+	}
+
+	if (!showOK && (Mode == DialogMode::OpenDir) && SelectedNode)
+	{
+		// OK to select dir in left-hand pane.
+		int depth = SelectedNode->Depth();
+		showOK =
+		(
+			(depth > 1) ||
+			(!SelectedNode->IsNetworkLocation() && (depth > 0))
+		);		
+	}
 
 	if (showOK)
 	{
@@ -437,17 +465,16 @@ tString FileDialog::GetSelectedDir()
 {
 	if (!SelectedNode)
 		return tString();
-	bool isNetworkLoc = false;
 	tString dir;
+//	TreeNode* curr = SelectedNode;
+//	while (curr)
+//	{
+//		if ((curr->Depth() == 0) && (curr->Name == "Network"))
+//			isNetworkLoc = true;
+//		curr = curr->Parent;
+//	}
+	bool isNetworkLoc = SelectedNode->IsNetworkLocation();
 	TreeNode* curr = SelectedNode;
-	while (curr)
-	{
-		if ((curr->Depth() == 0) && (curr->Name == "Network"))
-			isNetworkLoc = true;
-		curr = curr->Parent;
-	}
-
-	curr = SelectedNode;
 	while (curr)
 	{
 		if (!curr->Name.IsEmpty() && (curr->Depth() > 0))
