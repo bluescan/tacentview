@@ -127,6 +127,8 @@ bool Image::Load(const tString& filename)
 
 void Image::GetCanLoad(tSystem::tExtensions& extensions)
 {
+	// @todo This will be cleaned up and end up using the tFileTypes structure. The actual extensions will
+	// fall out from that.
 	extensions.Clear();
 	extensions.
 		Add(tSystem::tFileType::APNG).
