@@ -2616,7 +2616,7 @@ void Viewer::IconifyCallback(GLFWwindow* window, int iconified)
 int Viewer::RemoveOldCacheFiles(const tString& cacheDir)
 {
 	tList<tSystem::tFileInfo> cacheFiles;
-	tSystem::tFindFilesFast(cacheFiles, cacheDir, "bin");
+	tSystem::tFindFilesFast(cacheFiles, cacheDir, tString("bin"));
 	int numFiles = cacheFiles.NumItems();
 	if (numFiles <= Config::Current->MaxCacheFiles)
 		return 0;

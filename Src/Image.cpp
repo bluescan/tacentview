@@ -128,18 +128,19 @@ bool Image::Load(const tString& filename)
 void Image::GetCanLoad(tSystem::tExtensions& extensions)
 {
 	extensions.Clear();
-	tGetExtensions(extensions, tSystem::tFileType::APNG);
-	tGetExtensions(extensions, tSystem::tFileType::BMP);
-	tGetExtensions(extensions, tSystem::tFileType::DDS);
-	tGetExtensions(extensions, tSystem::tFileType::EXR);
-	tGetExtensions(extensions, tSystem::tFileType::GIF);
-	tGetExtensions(extensions, tSystem::tFileType::HDR);
-	tGetExtensions(extensions, tSystem::tFileType::ICO);
-	tGetExtensions(extensions, tSystem::tFileType::JPG);
-	tGetExtensions(extensions, tSystem::tFileType::PNG);
-	tGetExtensions(extensions, tSystem::tFileType::TGA);
-	tGetExtensions(extensions, tSystem::tFileType::TIFF);
-	tGetExtensions(extensions, tSystem::tFileType::WEBP);
+	extensions.
+		Add(tSystem::tFileType::APNG).
+		Add(tSystem::tFileType::BMP).
+		Add(tSystem::tFileType::DDS).
+		Add(tSystem::tFileType::EXR).
+		Add(tSystem::tFileType::GIF).
+		Add(tSystem::tFileType::HDR).
+		Add(tSystem::tFileType::ICO).
+		Add(tSystem::tFileType::JPG).
+		Add(tSystem::tFileType::PNG).
+		Add(tSystem::tFileType::TGA).
+		Add(tSystem::tFileType::TIFF).
+		Add(tSystem::tFileType::WEBP);
 }
 
 
