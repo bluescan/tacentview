@@ -2,7 +2,7 @@
 //
 // A texture viewer for various formats.
 //
-// Copyright (c) 2018, 2019, 2020, 2021, 2022 Tristan Grimmer.
+// Copyright (c) 2018-2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -60,6 +60,27 @@ using namespace tMath;
 namespace Viewer
 {
 	tCmdLine::tParam ImageFileParam(1, "ImageFile", "File to open.");
+
+	tSystem::tFileTypes FileTypes_Load
+	(
+		tSystem::tFileType::APNG,
+		tSystem::tFileType::BMP,
+		tSystem::tFileType::DDS,
+		tSystem::tFileType::EXR,
+		tSystem::tFileType::GIF,
+		tSystem::tFileType::HDR,
+		tSystem::tFileType::ICO,
+		tSystem::tFileType::JPG,
+		tSystem::tFileType::PNG,
+		tSystem::tFileType::TGA,
+		tSystem::tFileType::TIFF,
+		tSystem::tFileType::WEBP,
+		tSystem::tFileType::EndOfList
+	);
+
+	tSystem::tFileTypes FileTypes_Save;
+	tSystem::tFileTypes FileTypes_SaveMultiFrame;
+
 	NavLogBar NavBar;
 	tString ImagesDir;
 	tList<tStringItem> ImagesSubDirs;
@@ -303,8 +324,7 @@ tString Viewer::FindImageFilesInCurrentFolder(tList<tSystem::tFileInfo>& foundFi
 		imagesDir = tSystem::tGetDir(ImageFileParam.Get());
 
 	tPrintf("Finding image files in %s\n", imagesDir.Chars());
-	tSystem::tExtensions extensions;
-	Image::GetCanLoad(extensions);
+	tSystem::tExtensions extensions(FileTypes_Load);
 	tSystem::tFindFilesFast(foundFiles, imagesDir, extensions);
 
 	return imagesDir;
@@ -2616,7 +2636,7 @@ void Viewer::IconifyCallback(GLFWwindow* window, int iconified)
 int Viewer::RemoveOldCacheFiles(const tString& cacheDir)
 {
 	tList<tSystem::tFileInfo> cacheFiles;
-	tSystem::tFindFilesFast(cacheFiles, cacheDir, tString("bin"));
+	tSystem::tFindFilesFast(cacheFiles, cacheDir, "bin");
 	int numFiles = cacheFiles.NumItems();
 	if (numFiles <= Config::Current->MaxCacheFiles)
 		return 0;

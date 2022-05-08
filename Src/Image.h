@@ -2,7 +2,7 @@
 //
 // An image class that can load a file from disk into main memory and to VRAM.
 //
-// Copyright (c) 2019, 2020, 2021, 2022 Tristan Grimmer.
+// Copyright (c) 2019-2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -55,7 +55,6 @@ public:
 	bool FramePlayLooping				= true;
 	int FrameNum						= 0;
 
-	static void GetCanLoad(tSystem::tExtensions&);					// Clears the extensions ref before populating.
 	bool Load(const tString& filename);
 	bool Load();													// Load into main memory.
 	bool IsLoaded() const																								{ return (Pictures.Count() > 0); }
@@ -109,11 +108,11 @@ public:
 
 	struct ImgInfo
 	{
-		bool IsValid() const				{ return (SrcPixelFormat != tImage::tPixelFormat::Invalid); }
-		tImage::tPixelFormat SrcPixelFormat	= tImage::tPixelFormat::Invalid;
-		bool Opaque							= false;
-		int FileSizeBytes					= 0;
-		int MemSizeBytes					= 0;
+		bool IsValid() const							{ return (SrcPixelFormat != tImage::tPixelFormat::Invalid); }
+		tImage::tPixelFormat SrcPixelFormat				= tImage::tPixelFormat::Invalid;
+		bool Opaque										= false;
+		int FileSizeBytes								= 0;
+		int MemSizeBytes								= 0;
 	};
 
 	bool IsAltMipmapsPictureAvail() const																				{ return DDSTexture2D.IsValid() && AltPicture.IsValid(); }
@@ -137,19 +136,19 @@ public:
 	uint64 BindThumbnail();
 	inline static int GetThumbnailNumThreadsRunning()																	{ return ThumbnailNumThreadsRunning; }
 
-	ImgInfo Info;						// Info is only valid AFTER loading.
-	tString Filename;					// Valid before load.
-	tSystem::tFileType Filetype;		// Valid before load. Based on extension.
-	std::time_t FileModTime;			// Valid before load.
-	uint64 FileSizeB;					// Valid before load.
-	int CachePrimaryWidth	= 0;		// Valid once thumbnail loaded. Used for sorting without having to do full load.
+	ImgInfo Info;										// Info is only valid AFTER loading.
+	tString Filename;									// Valid before load.
+	tSystem::tFileType Filetype;						// Valid before load. Based on extension.
+	std::time_t FileModTime;							// Valid before load.
+	uint64 FileSizeB;									// Valid before load.
+	int CachePrimaryWidth	= 0;						// Valid once thumbnail loaded. Used for sorting without having to do full load.
 	int CachePrimaryHeight	= 0;
 	int CachePrimaryArea	= 0;
 
 	const static uint32 ThumbChunkInfoID;
-	const static int ThumbWidth;		// = 256;
-	const static int ThumbHeight;		// = 144;
-	const static int ThumbMinDispWidth;	// = 64;
+	const static int ThumbWidth;						// = 256;
+	const static int ThumbHeight;						// = 144;
+	const static int ThumbMinDispWidth;					// = 64;
 	static tString ThumbCacheDir;
 
 	bool TypeSupportsProperties() const;
@@ -171,10 +170,10 @@ private:
 	bool AltPictureEnabled = false;
 	tImage::tPicture AltPicture;
 
-	bool ThumbnailRequested = false;			// True if ever requested.
+	bool ThumbnailRequested = false;					// True if ever requested.
 	bool ThumbnailInvalidateRequested = false;
-	bool ThumbnailThreadRunning = false;		// Only true while worker thread going.
-	static int ThumbnailNumThreadsRunning;		// How many worker threads active.
+	bool ThumbnailThreadRunning = false;				// Only true while worker thread going.
+	static int ThumbnailNumThreadsRunning;				// How many worker threads active.
 	std::thread ThumbnailThread;
 	std::atomic_flag ThumbnailThreadFlag = ATOMIC_FLAG_INIT;
 	tImage::tPicture ThumbnailPicture;

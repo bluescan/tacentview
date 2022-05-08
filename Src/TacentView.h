@@ -23,6 +23,10 @@ class tColouri;
 
 namespace Viewer
 {
+	extern tSystem::tFileTypes FileTypes_Load;
+	extern tSystem::tFileTypes FileTypes_Save;
+	extern tSystem::tFileTypes FileTypes_SaveMultiFrame;
+
 	extern Image* CurrImage;
 	extern tString ImagesDir;
 	extern tList<tStringItem> ImagesSubDirs;

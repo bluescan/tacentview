@@ -2,7 +2,7 @@
 //
 // An image class that can load a file from disk into main memory and to VRAM.
 //
-// Copyright (c) 2019, 2020, 2021, 2022 Tristan Grimmer.
+// Copyright (c) 2019-2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -122,27 +122,6 @@ bool Image::Load(const tString& filename)
 	}
 
 	return Load();
-}
-
-
-void Image::GetCanLoad(tSystem::tExtensions& extensions)
-{
-	// @todo This will be cleaned up and end up using the tFileTypes structure. The actual extensions will
-	// fall out from that.
-	extensions.Clear();
-	extensions.
-		Add(tSystem::tFileType::APNG).
-		Add(tSystem::tFileType::BMP).
-		Add(tSystem::tFileType::DDS).
-		Add(tSystem::tFileType::EXR).
-		Add(tSystem::tFileType::GIF).
-		Add(tSystem::tFileType::HDR).
-		Add(tSystem::tFileType::ICO).
-		Add(tSystem::tFileType::JPG).
-		Add(tSystem::tFileType::PNG).
-		Add(tSystem::tFileType::TGA).
-		Add(tSystem::tFileType::TIFF).
-		Add(tSystem::tFileType::WEBP);
 }
 
 
