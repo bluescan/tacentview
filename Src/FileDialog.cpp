@@ -221,7 +221,9 @@ void FileDialog::TreeNodeRecursive(TreeNode* node)
 	// We only bother populating children if we need to.
 	if (populate && !node->ChildrenPopulated)
 	{
+		#ifdef PLATFORM_WINDOWS
 		if (!ProcessingNetworkPath || (node->Depth() >= 2))
+		#endif
 		{
 			// Need to be careful here. tFindDirs would (reasonably?) use the current working dir if we passed in an empty string.
 			tString currDir = GetSelectedDir();
