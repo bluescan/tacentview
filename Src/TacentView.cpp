@@ -61,30 +61,30 @@ namespace Viewer
 {
 	tCmdLine::tParam ImageFileParam(1, "ImageFile", "File to open.");
 
-	tSystem::tFileTypes FileTypes_Load
+	tFileTypes FileTypes_Load
 	(
-		tSystem::tFileType::APNG,
-		tSystem::tFileType::BMP,
-		tSystem::tFileType::DDS,
-		tSystem::tFileType::EXR,
-		tSystem::tFileType::GIF,
-		tSystem::tFileType::HDR,
-		tSystem::tFileType::ICO,
-		tSystem::tFileType::JPG,
-		tSystem::tFileType::PNG,
-		tSystem::tFileType::TGA,
-		tSystem::tFileType::TIFF,
-		tSystem::tFileType::WEBP,
-		tSystem::tFileType::EndOfList
+		tFileType::APNG,
+		tFileType::BMP,
+		tFileType::DDS,
+		tFileType::EXR,
+		tFileType::GIF,
+		tFileType::HDR,
+		tFileType::ICO,
+		tFileType::JPG,
+		tFileType::PNG,
+		tFileType::TGA,
+		tFileType::TIFF,
+		tFileType::WEBP,
+		tFileType::EndOfList
 	);
 
-	tSystem::tFileTypes FileTypes_Save;
-	tSystem::tFileTypes FileTypes_SaveMultiFrame;
+	tFileTypes FileTypes_Save;
+	tFileTypes FileTypes_SaveMultiFrame;
 
-	// @todo Don't use same filetypes for all of these. Make empty filetypes do all types.
+	// @todo Don't use same filetypes for all of these.
 	tInterface::FileDialog OpenFileDialog(tInterface::FileDialog::DialogMode::OpenFile, Viewer::FileTypes_Load);
-	tInterface::FileDialog OpenDirDialog(tInterface::FileDialog::DialogMode::OpenDir, Viewer::FileTypes_Load);
-	tInterface::FileDialog SaveFileDialog(tInterface::FileDialog::DialogMode::SaveFile, Viewer::FileTypes_Load);
+	tInterface::FileDialog OpenDirDialog(tInterface::FileDialog::DialogMode::OpenDir);
+	tInterface::FileDialog SaveFileDialog(tInterface::FileDialog::DialogMode::SaveFile, Viewer::FileTypes_Save);
 
 	NavLogBar NavBar;
 	tString ImagesDir;

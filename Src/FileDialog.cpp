@@ -25,6 +25,53 @@ using namespace tImage;
 using namespace tInterface;
 
 
+namespace tInterface
+{
+	void FileTypes_ClearSelected(tFileTypes&);
+	bool FileTypes_AnySelected(tFileTypes&);
+	tString FileTypes_GetSelectedString(tFileTypes&);
+	void FileTypes_PopulateSelected(tFileTypes& dest, const tFileTypes& src);
+}
+
+
+void tInterface::FileTypes_ClearSelected(tFileTypes& fileTypes)
+{
+	for (tFileTypes::tFileTypeItem* typeItem = fileTypes.First(); typeItem; typeItem = typeItem->Next())
+		typeItem->Selected = false;
+}
+
+
+bool tInterface::FileTypes_AnySelected(tFileTypes& fileTypes)
+{
+	for (tFileTypes::tFileTypeItem* typeItem = fileTypes.First(); typeItem; typeItem = typeItem->Next())
+		if (typeItem->Selected)
+			return true;
+
+	return false;
+}
+
+
+tString tInterface::FileTypes_GetSelectedString(tFileTypes& fileTypes)
+{
+	tString str;
+	for (tFileTypes::tFileTypeItem* typeItem = fileTypes.First(); typeItem; typeItem = typeItem->Next())
+	{
+		if (typeItem->Selected)
+			str += tString(tSystem::tGetFileTypeName(typeItem->FileType)) + " ";
+	}
+
+	return str;
+}
+
+
+void tInterface::FileTypes_PopulateSelected(tFileTypes& dest, const tFileTypes& src)
+{
+	for (tFileTypes::tFileTypeItem* typeItem = src.First(); typeItem; typeItem = typeItem->Next())
+		if (typeItem->Selected)
+			dest.Add(typeItem->FileType);
+}
+
+
 TreeNode* TreeNode::Find(const tString& name) const
 {
 	for (tItList<TreeNode>::Iter child = Children.First(); child; child++)
@@ -98,7 +145,8 @@ FileDialog::FileDialog(DialogMode mode, const tSystem::tFileTypes& fileTypes) :
 	NetworkTreeNode = new TreeNode("Network", this);
 	#endif
 
-	PopulateFavourites();
+	// @wip Favourites is disabled until I implement it fully.
+	// PopulateFavourites();
 	PopulateLocal();
 	#ifdef PLATFORM_WINDOWS
 	PopulateNetwork();
@@ -335,7 +383,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 	Result.Clear();
 
 	// The left and right panels are cells in a 1 row, 2 column table.
-	float bottomBarHeight = 20.0f;
+	float bottomBarHeight = 20.0f + 28.0f;
 	if (ImGui::BeginTable("FileDialogTable", 2, ImGuiTableFlags_Resizable, tVector2(0.0f, -bottomBarHeight)))
 	{
 		ImGui::TableSetupColumn("LeftTreeColumn", ImGuiTableColumnFlags_WidthFixed, 185.0f);
@@ -348,7 +396,8 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(0.0f, 3.0f));
 
 		// This block is the workhorse of the dialog.
-		FavouritesTreeNodeFlat(FavouritesTreeNode);
+		// @wip Favourited is disabled until its implemented fully.
+		// FavouritesTreeNodeFlat(FavouritesTreeNode);		
 		TreeNodeRecursive(LocalTreeNode);
 		#ifdef PLATFORM_WINDOWS
 		ProcessShareResults();
@@ -385,7 +434,9 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				tList<tFileInfo> foundFiles;
 				if (!selDir.IsEmpty())
 				{
-					tSystem::tExtensions extensions(FileTypes);
+					tSystem::tFileTypes selectedTypes;
+					FileTypes_PopulateSelected(selectedTypes, FileTypes);
+					tSystem::tExtensions extensions(selectedTypes);
 					tSystem::tFindFilesFast(foundFiles, selDir, extensions);
 				}
 				for (tFileInfo* fileInfo = foundFiles.First(); fileInfo; fileInfo = fileInfo->Next())
@@ -432,17 +483,11 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		ImGui::EndTable();
 	}
 
-	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
-		result = DialogResult::Cancel;
-
-	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-
 	TreeNode::ContentItem* selItem = SelectedNode ? SelectedNode->FindSelectedItem() : nullptr;
-	bool showOK = false;
+	bool resultAvail = false;
 	if (selItem)
 	{
-		showOK =
+		resultAvail =
 		(
 			((Mode == DialogMode::OpenFile) && !selItem->IsDir) ||
 			((Mode == DialogMode::SaveFile) && !selItem->IsDir) ||
@@ -451,27 +496,90 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		);
 	}
 
-	if (!showOK && (Mode == DialogMode::OpenDir) && SelectedNode)
+	if (!resultAvail && (Mode == DialogMode::OpenDir) && SelectedNode)
 	{
 		// OK to select dir in left-hand pane.
 		int depth = SelectedNode->Depth();
-		showOK =
+		resultAvail =
 		(
 			(depth > 1) ||
 			(!SelectedNode->IsNetworkLocation() && (depth > 0))
-		);		
+		);
 	}
 
-	if (showOK)
+	// For file modes, display the filename and types combo.
+	if (Mode != DialogMode::OpenDir)
 	{
-		if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
+		int flags = ImGuiInputTextFlags_ReadOnly;
+		ImGui::SetNextItemWidth( ImGui::GetWindowContentRegionMax().x / 2.0f );
+
+		if (!resultAvail)
+			ImGui::PushStyleColor(ImGuiCol_Text, tVector4(0.5f, 0.5f, 0.52f, 1.0f) );
+		char* fname = resultAvail ? selItem->Name.Text() : "File Name";
+		ImGui::InputText("##File Name", fname, tStd::tStrlen(fname)+1, flags);
+		if (!resultAvail)
+			ImGui::PopStyleColor();
+
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(140);
+		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
+
+		// Nothing selected means all types used.
+		bool allTypes = !FileTypes_AnySelected(FileTypes);
+		tString currChosen = allTypes ? "All Image Types" : FileTypes_GetSelectedString(FileTypes);
+		if (ImGui::BeginCombo("##TypeFilter", currChosen.Chars(), ImGuiComboFlags_NoArrowButton))
+		{
+			if (ImGui::Selectable("All Image Types", allTypes))
+			{
+				FileTypes_ClearSelected(FileTypes);
+				SelectedNode->ContentsPopulated = false;
+				SelectedNode->Contents.Empty();
+			}
+
+			for (tFileTypes::tFileTypeItem* typeItem = FileTypes.First(); typeItem; typeItem = typeItem->Next())
+			{
+				tFileType fileType = typeItem->FileType;
+				const char* fileTypeName = tSystem::tGetFileTypeName(fileType);
+				if (!fileTypeName)
+					continue;
+
+				if (ImGui::Selectable(fileTypeName, typeItem->Selected))
+				{
+					typeItem->Selected = !typeItem->Selected;
+					if (SelectedNode)
+					{
+						SelectedNode->ContentsPopulated = false;
+						SelectedNode->Contents.Empty();
+					}
+				}
+
+				if (typeItem->Selected)
+					ImGui::SetItemDefaultFocus();
+			}
+
+			// Update the filters.
+			ImGui::EndCombo();
+		}
+	}
+
+	// Cancel and OK buttons.
+	ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - 20.0f);
+	if (resultAvail)
+	{
+		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
+		if (ImGui::Button("Open", tVector2(70.0f, 0.0f)))
 		{
 			Result = GetSelectedDir();
 			if ((Mode == DialogMode::OpenFile) && selItem)
 				Result += selItem->Name;
 			result = DialogResult::OK;
 		}
+		ImGui::SameLine();
 	}
+
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 70.0f);
+	if (ImGui::Button("Cancel", tVector2(70.0f, 0.0f)))
+		result = DialogResult::Cancel;
 
 	if (result != DialogResult::Open)
 		ImGui::CloseCurrentPopup();
@@ -491,15 +599,10 @@ tString FileDialog::GetSelectedDir()
 {
 	if (!SelectedNode)
 		return tString();
-	tString dir;
-//	TreeNode* curr = SelectedNode;
-//	while (curr)
-//	{
-//		if ((curr->Depth() == 0) && (curr->Name == "Network"))
-//			isNetworkLoc = true;
-//		curr = curr->Parent;
-//	}
+
 	bool isNetworkLoc = SelectedNode->IsNetworkLocation();
+
+	tString dir;
 	TreeNode* curr = SelectedNode;
 	while (curr)
 	{

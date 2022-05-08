@@ -82,8 +82,11 @@ public:
 		SaveFile
 	};
 
-	FileDialog(DialogMode, const tSystem::tFileTypes&);
-	void OpenPopup();						// Call when you want the modal dialog to open.
+	// In OpenDir dialog mode the file-types are ignored. If file-types is empty (default) then all types are used.
+	FileDialog(DialogMode, const tSystem::tFileTypes& = tSystem::tFileTypes());
+
+	// Call when you want the modal dialog to open.	
+	void OpenPopup();
 
 	enum class DialogResult
 	{
