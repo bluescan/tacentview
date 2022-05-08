@@ -88,8 +88,9 @@ TreeNode::ContentItem::ContentItem(const tSystem::tFileInfo& fileInfo) :
 }
 
 
-FileDialog::FileDialog(DialogMode mode) :
-	Mode(mode)
+FileDialog::FileDialog(DialogMode mode, const tSystem::tFileTypes& fileTypes) :
+	Mode(mode),
+	FileTypes(fileTypes)
 {
 	FavouritesTreeNode = new TreeNode("Favourites", this);
 	LocalTreeNode = new TreeNode("Local", this);
@@ -218,28 +219,26 @@ void FileDialog::TreeNodeRecursive(TreeNode* node)
 	}
 
 	// We only bother populating children if we need to.
-	if (populate)
+	if (populate && !node->ChildrenPopulated)
 	{
-		if (!node->ChildrenPopulated)
+		if (!ProcessingNetworkPath || (node->Depth() >= 2))
 		{
-			if (!ProcessingNetworkPath || (node->Depth() >= 2))
-			{
-				// Need to be careful here. tFindDirs would (reasonably?) use the current working dir if we passed in an empty string.
-				tString currDir = GetSelectedDir();
-				tList<tStringItem> foundDirs;
-				if (!currDir.IsEmpty())
-					tSystem::tFindDirs(foundDirs, currDir);
-				for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
-				{
-					tString relDir = tSystem::tGetRelativePath(currDir, *dir);
-					relDir.ExtractLeft("./");
-					relDir.ExtractRight("/");
+			// Need to be careful here. tFindDirs would (reasonably?) use the current working dir if we passed in an empty string.
+			tString currDir = GetSelectedDir();
+			tList<tStringItem> foundDirs;
+			if (!currDir.IsEmpty())
+				tSystem::tFindDirs(foundDirs, currDir);
 
-					TreeNode* child = new TreeNode(relDir, this, node);
-					node->AppendChild(child);
-				}
-				node->ChildrenPopulated = true;
+			for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
+			{
+				tString relDir = tSystem::tGetRelativePath(currDir, *dir);
+				relDir.ExtractLeft("./");
+				relDir.ExtractRight("/");
+
+				TreeNode* child = new TreeNode(relDir, this, node);
+				node->AppendChild(child);
 			}
+			node->ChildrenPopulated = true;
 		}
 	}
 
@@ -383,7 +382,10 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				// Files.
 				tList<tFileInfo> foundFiles;
 				if (!selDir.IsEmpty())
-					tSystem::tFindFilesFast(foundFiles, selDir);
+				{
+					tSystem::tExtensions extensions(FileTypes);
+					tSystem::tFindFilesFast(foundFiles, selDir, extensions);
+				}
 				for (tFileInfo* fileInfo = foundFiles.First(); fileInfo; fileInfo = fileInfo->Next())
 				{
 					TreeNode::ContentItem* contentItem = new TreeNode::ContentItem(*fileInfo);

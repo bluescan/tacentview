@@ -17,6 +17,7 @@
 #include <Math/tVector4.h>
 #include <System/tCmdLine.h>
 #include "Config.h"
+#include "FileDialog.h"
 namespace Viewer { class Image; }
 class tColouri;
 
@@ -26,6 +27,9 @@ namespace Viewer
 	extern tSystem::tFileTypes FileTypes_Load;
 	extern tSystem::tFileTypes FileTypes_Save;
 	extern tSystem::tFileTypes FileTypes_SaveMultiFrame;
+	extern tInterface::FileDialog OpenFileDialog;
+	extern tInterface::FileDialog OpenDirDialog;
+	extern tInterface::FileDialog SaveFileDialog;
 
 	extern Image* CurrImage;
 	extern tString ImagesDir;

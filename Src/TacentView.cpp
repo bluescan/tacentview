@@ -81,6 +81,11 @@ namespace Viewer
 	tSystem::tFileTypes FileTypes_Save;
 	tSystem::tFileTypes FileTypes_SaveMultiFrame;
 
+	// @todo Don't use same filetypes for all of these. Make empty filetypes do all types.
+	tInterface::FileDialog OpenFileDialog(tInterface::FileDialog::DialogMode::OpenFile, Viewer::FileTypes_Load);
+	tInterface::FileDialog OpenDirDialog(tInterface::FileDialog::DialogMode::OpenDir, Viewer::FileTypes_Load);
+	tInterface::FileDialog SaveFileDialog(tInterface::FileDialog::DialogMode::SaveFile, Viewer::FileTypes_Load);
+
 	NavLogBar NavBar;
 	tString ImagesDir;
 	tList<tStringItem> ImagesSubDirs;

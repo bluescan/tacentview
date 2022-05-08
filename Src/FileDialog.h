@@ -82,7 +82,7 @@ public:
 		SaveFile
 	};
 
-	FileDialog(DialogMode);
+	FileDialog(DialogMode, const tSystem::tFileTypes&);
 	void OpenPopup();						// Call when you want the modal dialog to open.
 
 	enum class DialogResult
@@ -110,15 +110,18 @@ private:
 	void RequestNetworkSharesThread();
 	void ProcessShareResults();
 	tSystem::tNetworkShareResult NetworkShareResults;
+	bool ProcessingNetworkPath = false;
 	#endif
 
-	bool ProcessingNetworkPath = false;
 	DialogMode Mode;
+	tSystem::tFileTypes FileTypes;
 	tString Result;
 
 	TreeNode* FavouritesTreeNode;
 	TreeNode* LocalTreeNode;
+	#ifdef PLATFORM_WINDOWS
 	TreeNode* NetworkTreeNode;
+	#endif
 	TreeNode* SelectedNode = nullptr;
 };
 

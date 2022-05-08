@@ -36,11 +36,6 @@ namespace Viewer
 }
 
 
-FileDialog OpenFileDialog(FileDialog::DialogMode::OpenFile);
-FileDialog OpenDirDialog(FileDialog::DialogMode::OpenDir);
-FileDialog SaveFileDialog(FileDialog::DialogMode::SaveFile);
-
-
 void Viewer::DoOpenFileModal(bool openFilePressed)
 {
 	if (openFilePressed)
