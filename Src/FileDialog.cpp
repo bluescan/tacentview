@@ -192,6 +192,11 @@ void FileDialog::PopulateLocal()
 		TreeNode* driveNode = new TreeNode(*drive, this, LocalTreeNode);
 		LocalTreeNode->AppendChild(driveNode);	
 	}
+
+	#elif defined(PLATFORM_LINUX)
+	TreeNode* rootNode = new TreeNode("/", this, LocalTreeNode);
+	LocalTreeNode->AppendChild(rootNode);	
+
 	#endif
 }
 
