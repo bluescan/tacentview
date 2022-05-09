@@ -534,8 +534,8 @@ FileDialog::DialogResult FileDialog::DoPopup()
 
 		if (!resultAvail)
 			ImGui::PushStyleColor(ImGuiCol_Text, tVector4(0.5f, 0.5f, 0.52f, 1.0f) );
-		char* fname = resultAvail ? selItem->Name.Text() : "File Name";
-		ImGui::InputText("##File Name", fname, tStd::tStrlen(fname)+1, flags);
+		tString fname = resultAvail ? selItem->Name : "File Name";
+		ImGui::InputText("##File Name", fname.Text(), fname.Length()+1, flags);
 		if (!resultAvail)
 			ImGui::PopStyleColor();
 
