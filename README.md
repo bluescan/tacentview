@@ -77,12 +77,12 @@ For convenience pre-built binaries are available for Windows and Ubuntu/Debian i
 
 ## windows
 
-Building on Windows is tested with the Visual Studio 2019 MSVC compiler (choose the C++ workflow when installing). You will need to install git. Optionally you may want to use VSCode with the CMake Tools extension to build. To build from the Visual Studio x64 Command Prompt:
+Building on Windows is tested with the Visual Studio 2022 MSVC compiler (choose the C++ workflow when installing). You will need to install git. Optionally you may want to use VSCode with the CMake Tools extension to build. To build from the Visual Studio x64 Command Prompt:
 
 ```
 mkdir build
 cd build
-cmake .. -G"Visual Studio 16 2019" -Ax64
+cmake .. -G"Visual Studio 17 2022" -Ax64
 cmake --build . --config Release --target install
 ```
 
@@ -90,7 +90,7 @@ The install target will also package a zip file with all required content. This 
 
 ## ubuntu
 
-Building for Ubuntu is tested with Clang (9 or 10) and GCC 9.3. CMake and Git are required. Ninja is suggested but optional. The 'Software and Updates' app allows you to manage (add and remove) repositories or use the command line:
+Building for Ubuntu is tested with Clang 13 and GCC 11.2. CMake and Git are required. Ninja is suggested but optional. The 'Software and Updates' app allows you to manage (add and remove) repositories or use the command line:
 ```
 sudo apt-get install gdebi               # Installs gdebi to allow command-line deb file installation. Optional.
 sudo apt-get install git                 # Install git or download the source as a zip.
