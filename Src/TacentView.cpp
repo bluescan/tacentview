@@ -2711,6 +2711,8 @@ void Viewer::UnloadAppImages()
 	NextImage				.Unload();
 	PrevArrowImage			.Unload();
 	NextArrowImage			.Unload();
+	FileImage				.Unload();
+	FolderImage				.Unload();
 	FlipHImage				.Unload();
 	FlipVImage				.Unload();
 	RotateACWImage			.Unload();
@@ -2723,9 +2725,9 @@ void Viewer::UnloadAppImages()
 	RefreshImage			.Unload();
 	RecycleImage			.Unload();
 	PropEditImage			.Unload();
-	PrefsImage				.Unload();
-	HelpImage				.Unload();
 	InfoOverlayImage		.Unload();
+	HelpImage				.Unload();
+	PrefsImage				.Unload();
 	TileImage				.Unload();
 	StopImage				.Unload();
 	StopRevImage			.Unload();
