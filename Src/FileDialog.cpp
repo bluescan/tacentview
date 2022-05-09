@@ -303,6 +303,25 @@ void FileDialog::TreeNodeRecursive(TreeNode* node)
 }
 
 
+void FileDialog::InvalidateAllNodeContent()
+{
+	#ifdef PLATFORM_WINDOWS
+	InvalidateAllNodeContentRecursive(NetworkTreeNode);
+	#endif
+	InvalidateAllNodeContentRecursive(LocalTreeNode);
+}
+
+
+void FileDialog::InvalidateAllNodeContentRecursive(TreeNode* node)
+{
+	node->Contents.Empty();
+	node->ContentsPopulated = false;
+
+	for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
+		InvalidateAllNodeContentRecursive(child.GetObject());
+}
+
+
 void FileDialog::DoSelectable(const char* label, TreeNode::ContentItem* item)
 {
 	if (ImGui::Selectable(label, &item->Selected))
@@ -527,13 +546,12 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		// Nothing selected means all types used.
 		bool allTypes = !FileTypes_AnySelected(FileTypes);
 		tString currChosen = allTypes ? "All Image Types" : FileTypes_GetSelectedString(FileTypes);
-		if (ImGui::BeginCombo("##TypeFilter", currChosen.Chars(), ImGuiComboFlags_NoArrowButton))
+		if (ImGui::BeginCombo("##TypeFilter", currChosen.Chars())) //, ImGuiComboFlags_NoArrowButton))
 		{
 			if (ImGui::Selectable("All Image Types", allTypes))
 			{
 				FileTypes_ClearSelected(FileTypes);
-				SelectedNode->ContentsPopulated = false;
-				SelectedNode->Contents.Empty();
+				InvalidateAllNodeContent();
 			}
 
 			for (tFileTypes::tFileTypeItem* typeItem = FileTypes.First(); typeItem; typeItem = typeItem->Next())
@@ -546,11 +564,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				if (ImGui::Selectable(fileTypeName, typeItem->Selected))
 				{
 					typeItem->Selected = !typeItem->Selected;
-					if (SelectedNode)
-					{
-						SelectedNode->ContentsPopulated = false;
-						SelectedNode->Contents.Empty();
-					}
+					InvalidateAllNodeContent();
 				}
 
 				if (typeItem->Selected)

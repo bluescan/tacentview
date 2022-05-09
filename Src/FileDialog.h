@@ -107,6 +107,10 @@ private:
 	void FavouritesTreeNodeFlat(TreeNode*);
 	void TreeNodeRecursive(TreeNode*);
 
+	// Needed in cases where we need a reload of content. For example, when changing filetype filters.
+	void InvalidateAllNodeContent();
+	void InvalidateAllNodeContentRecursive(TreeNode*);
+
 	#ifdef PLATFORM_WINDOWS
 	void PopulateNetwork();
 	void NetworkTreeNodeRecursive(TreeNode*);
