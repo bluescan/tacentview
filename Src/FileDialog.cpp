@@ -329,7 +329,7 @@ void FileDialog::InvalidateAllNodeContentRecursive(TreeNode* node)
 
 void FileDialog::DoSelectable(const char* label, TreeNode::ContentItem* item)
 {
-	if (ImGui::Selectable(label, &item->Selected))
+	if (ImGui::Selectable(label, &item->Selected, ImGuiSelectableFlags_SpanAllColumns))
 	{
 		// This block enforces single selection.
 		if (Mode != DialogMode::OpenFiles)
@@ -484,20 +484,21 @@ FileDialog::DialogResult FileDialog::DoPopup()
 					uint64 imgID = item->IsDir ? Viewer::FolderImage.Bind() : Viewer::FileImage.Bind();
 					ImGui::Image(ImTextureID(imgID), tVector2(16, 16), tVector2(0, 1), tVector2(1, 0), Viewer::ColourEnabledTint);
 
+					// The name column selectable spans all columns.
 					ImGui::TableNextColumn();
 					DoSelectable(item->Name.Chars(), item);
 
 					ImGui::TableNextColumn();
 					tString modTime;
 					if (!item->IsDir)
-						tsPrintf(modTime, "%s##%s", item->ModTimeString.Text(), item->Name.Text());
-					DoSelectable(modTime, item);
+						tsPrintf(modTime, "%s", item->ModTimeString.Text());
+					ImGui::Text(modTime.Chars());
 
 					ImGui::TableNextColumn();
 					tString numBytes;
 					if (!item->IsDir)
-						tsPrintf(numBytes, "%s##%s", item->FileSizeString.Text(), item->Name.Text());
-					DoSelectable(numBytes, item);
+						tsPrintf(numBytes, "%s", item->FileSizeString.Text());
+					ImGui::Text(numBytes.Chars());
 				}
 				ImGui::EndTable();
 			}
