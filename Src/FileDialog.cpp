@@ -132,6 +132,9 @@ TreeNode::ContentItem::ContentItem(const tSystem::tFileInfo& fileInfo) :
 
 	tsPrintf(FileSizeString, "%'d Bytes", fileInfo.FileSize);
 	tsPrintf(ModTimeString, "%s", tSystem::tConvertTimeToString(tSystem::tConvertTimeToLocal(fileInfo.ModificationTime)).Chars());
+
+	tSystem::tFileType type = tSystem::tGetFileType(Name);
+	FileTypeString.Set(tSystem::tGetFileTypeName(type));
 }
 
 
@@ -472,7 +475,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				SelectedNode->ContentsPopulated = true;
 			}
 
-			if (ImGui::BeginTable("ContentItems", 4, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings))
+			if (ImGui::BeginTable("ContentItems", 5, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings))
 			{
 				ImGui::TableSetupColumn("##FileDialogIcon", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 18.0f);
 
@@ -489,16 +492,16 @@ FileDialog::DialogResult FileDialog::DoPopup()
 					DoSelectable(item->Name.Chars(), item);
 
 					ImGui::TableNextColumn();
-					tString modTime;
 					if (!item->IsDir)
-						tsPrintf(modTime, "%s", item->ModTimeString.Text());
-					ImGui::Text(modTime.Chars());
+						ImGui::Text("%s", item->ModTimeString.Text());
 
 					ImGui::TableNextColumn();
-					tString numBytes;
 					if (!item->IsDir)
-						tsPrintf(numBytes, "%s", item->FileSizeString.Text());
-					ImGui::Text(numBytes.Chars());
+						ImGui::Text("%s", item->FileTypeString.Text());
+
+					ImGui::TableNextColumn();
+					if (!item->IsDir)
+						ImGui::Text("%s", item->FileSizeString.Text());
 				}
 				ImGui::EndTable();
 			}

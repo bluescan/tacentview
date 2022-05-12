@@ -55,6 +55,7 @@ public:
 		// These are not valid for directories.
 		tString FileSizeString;
 		tString ModTimeString;
+		tString FileTypeString;
 	};
 	ContentItem* FindSelectedItem() const;
 
