@@ -26,6 +26,50 @@ namespace tInterface
 class FileDialog;
 
 
+// Content items are containers used to store information about a piece of information in a file dialog. It stores
+// the stuff you see in the right-hand panel. Namely the information displayed in a table row about a file or
+// directory, as well as if it is selected or not.
+struct ContentItem : tLink<ContentItem>
+{
+	ContentItem(const tString& name, bool isDir)																		: Name(name), Selected(false), IsDir(isDir) { }
+	ContentItem(const tSystem::tFileInfo& fileInfo);
+	bool Selected;
+
+	// Each field (column) gets its own ID. This is needed so when sorting, we know what information to use in the
+	// sorting function. We tell ImGui about the ID, and it passes that along when it tells us to sort.
+	enum class FieldID
+	{
+		Invalid = -1,
+		Name,
+		ModTime,
+		FileType,
+		FileSize
+	};
+
+	// Name field.
+	tString Name;
+	bool IsDir;
+
+	// These are not valid for directories. Note that we store field data redundantly in some cases since we need to be
+	// able to sort based on a key decoupled from the display string. For example, sorting by date should be done with
+	// an integer, not the string representation. Same with filesizes, we may want them displayed in KB or MB is they
+	// get large, but want to sort on num-bytes. We store the string reps because it's more efficient to cache them
+	// rather than regenerate them every time.
+
+	// Modification time (last) field.
+	int64 ModTime;							// In posix epoch.
+	tString ModTimeString;
+
+	// File type field.
+	tSystem::tFileType FileType;
+	tString FileTypeString;
+
+	// File size field.
+	uint64 FileSize;
+	tString FileSizeString;
+};
+
+
 // Tree nodes are in the left panel. Used for directories and containers with special names
 // like favourites, local, and network. A TreeNode has children TreeNodes.
 class TreeNode
@@ -43,20 +87,6 @@ public:
 	int Depth() const;
 	bool IsNetworkLocation() const;
 
-	struct ContentItem : tLink<ContentItem>
-	{
-		ContentItem(const tString& name, bool isDir)																	: Name(name), Selected(false), IsDir(isDir) { }
-		ContentItem(const tSystem::tFileInfo& fileInfo);
-
-		tString Name;
-		bool Selected;
-		bool IsDir;
-
-		// These are not valid for directories.
-		tString FileSizeString;
-		tString ModTimeString;
-		tString FileTypeString;
-	};
 	ContentItem* FindSelectedItem() const;
 
 	tString Name;
@@ -66,7 +96,7 @@ public:
 	tItList<TreeNode> Children;
 
 	bool NextOpen = false;
-	bool ContentsPopulated = false;
+	bool ContentsPopulated = false;		// Is the Contents list below populated and valid.
 	tList<ContentItem> Contents;
 };
 
@@ -101,7 +131,7 @@ public:
 
 private:
 	tString GetSelectedDir();
-	void DoSelectable(const char* label, TreeNode::ContentItem*);
+	void DoSelectable(const char* label, ContentItem*);
 
 	void PopulateFavourites();
 	void PopulateLocal();

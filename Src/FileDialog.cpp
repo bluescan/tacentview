@@ -72,6 +72,33 @@ void tInterface::FileTypes_PopulateSelected(tFileTypes& dest, const tFileTypes& 
 }
 
 
+ContentItem::ContentItem(const tSystem::tFileInfo& fileInfo) :
+	Selected(false)
+{
+	// Name field.
+	Name = tSystem::tGetFileName(fileInfo.FileName);
+	IsDir = fileInfo.Directory;
+
+	// Modification time field. Choose greater of mod and creation time.
+	ModTime = tMath::tMax(fileInfo.ModificationTime, fileInfo.CreationTime);
+	tsPrintf(ModTimeString, "%s", tSystem::tConvertTimeToString(tSystem::tConvertTimeToLocal(ModTime)).Chars());
+
+	// File type field.
+	FileType = tSystem::tGetFileType(Name);
+	FileTypeString.Set(tSystem::tGetFileTypeName(FileType));
+
+	// File size field.
+	FileSize =  fileInfo.FileSize;
+	tsPrintf(FileSizeString, "%'d Bytes", FileSize);
+}
+
+
+bool ContentItemCompare(const ContentItem& a, const ContentItem& b)
+{
+	return (tStd::tStricmp(a.Name.Chars(), b.Name.Chars()) < 0);
+}
+
+
 TreeNode* TreeNode::Find(const tString& name) const
 {
 	for (tItList<TreeNode>::Iter child = Children.First(); child; child++)
@@ -100,7 +127,7 @@ int TreeNode::Depth() const
 }
 
 
-TreeNode::ContentItem* TreeNode::FindSelectedItem() const
+ContentItem* TreeNode::FindSelectedItem() const
 {
 	for (ContentItem* item = Contents.First(); item; item = item->Next())
 		if (item->Selected)
@@ -121,20 +148,6 @@ bool TreeNode::IsNetworkLocation() const
 		curr = curr->Parent;
 	}
 	return isNet;
-}
-
-
-TreeNode::ContentItem::ContentItem(const tSystem::tFileInfo& fileInfo) :
-	Selected(false)
-{
-	Name = tSystem::tGetFileName(fileInfo.FileName);
-	IsDir = fileInfo.Directory;
-
-	tsPrintf(FileSizeString, "%'d Bytes", fileInfo.FileSize);
-	tsPrintf(ModTimeString, "%s", tSystem::tConvertTimeToString(tSystem::tConvertTimeToLocal(fileInfo.ModificationTime)).Chars());
-
-	tSystem::tFileType type = tSystem::tGetFileType(Name);
-	FileTypeString.Set(tSystem::tGetFileTypeName(type));
 }
 
 
@@ -198,7 +211,7 @@ void FileDialog::PopulateLocal()
 
 	#elif defined(PLATFORM_LINUX)
 	TreeNode* rootNode = new TreeNode("/", this, LocalTreeNode);
-	LocalTreeNode->AppendChild(rootNode);	
+	LocalTreeNode->AppendChild(rootNode);
 
 	#endif
 }
@@ -330,7 +343,7 @@ void FileDialog::InvalidateAllNodeContentRecursive(TreeNode* node)
 }
 
 
-void FileDialog::DoSelectable(const char* label, TreeNode::ContentItem* item)
+void FileDialog::DoSelectable(const char* label, ContentItem* item)
 {
 	if (ImGui::Selectable(label, &item->Selected, ImGuiSelectableFlags_SpanAllColumns))
 	{
@@ -340,7 +353,7 @@ void FileDialog::DoSelectable(const char* label, TreeNode::ContentItem* item)
 			if (item->Selected)
 			{
 				// Only allowed one selected max. Clear the others.
-				for (TreeNode::ContentItem* i = SelectedNode->Contents.First(); i; i = i->Next())
+				for (ContentItem* i = SelectedNode->Contents.First(); i; i = i->Next())
 				{
 					if (i == item)
 						continue;
@@ -423,7 +436,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(0.0f, 3.0f));
 
 		// This block is the workhorse of the dialog.
-		// @wip Favourited is disabled until its implemented fully.
+		// @wip Favourites are disabled until implemented fully.
 		// FavouritesTreeNodeFlat(FavouritesTreeNode);		
 		TreeNodeRecursive(LocalTreeNode);
 		#ifdef PLATFORM_WINDOWS
@@ -453,7 +466,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
 				{
 					(*dir)[dir->Length()-1] = '\0';				// Remove slash.
-					TreeNode::ContentItem* contentItem = new TreeNode::ContentItem(tSystem::tGetFileName(*dir), true);
+					ContentItem* contentItem = new ContentItem(tSystem::tGetFileName(*dir), true);
 					SelectedNode->Contents.Append(contentItem);
 				}
 
@@ -468,18 +481,48 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				}
 				for (tFileInfo* fileInfo = foundFiles.First(); fileInfo; fileInfo = fileInfo->Next())
 				{
-					TreeNode::ContentItem* contentItem = new TreeNode::ContentItem(*fileInfo);
+					ContentItem* contentItem = new ContentItem(*fileInfo);
 					SelectedNode->Contents.Append(contentItem);
 				}
 
 				SelectedNode->ContentsPopulated = true;
 			}
 
-			if (ImGui::BeginTable("ContentItems", 5, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings))
-			{
-				ImGui::TableSetupColumn("##FileDialogIcon", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, 18.0f);
+			int tableFlags =
+				ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings |
+				ImGuiTableFlags_Reorderable |	// Drag columns to an order you like.
+				ImGuiTableFlags_Hideable |		// Hide individual columns.
+				ImGuiTableFlags_Sortable |		// Sort by column.
+				ImGuiTableFlags_SortMulti;		// Allow sorting multiple columns by shift-selecting them. May get > 1 sort specs.
+				// ImGuiTableFlags_SortTristate	// Ascending, Descending, None. May get 0 sort specs.
 
-				for (TreeNode::ContentItem* item = SelectedNode->Contents.First(); item; item = item->Next())
+			if (ImGui::BeginTable("ContentItems", 5, tableFlags))
+			{
+				// The columns. Each one gets it's own unique ID. We don't use index as we support turning columns on/off.
+				ImGui::TableSetupColumn("Icon",		ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_NoSort	,18.0f,	uint32(ContentItem::FieldID::Invalid));
+				ImGui::TableSetupColumn("Name",		ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_PreferSortAscending | ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_PreferSortAscending | ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_NoReorder,	0.0f,	uint32(ContentItem::FieldID::Name)		);
+				ImGui::TableSetupColumn("Modified",	ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_PreferSortAscending,	0.0f,	uint32(ContentItem::FieldID::ModTime)	);
+				ImGui::TableSetupColumn("Type",		ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_PreferSortAscending,	0.0f,	uint32(ContentItem::FieldID::FileType)	);
+				ImGui::TableSetupColumn("Size",		ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_PreferSortAscending,	0.0f,	uint32(ContentItem::FieldID::FileSize))	;
+				ImGui::TableSetupScrollFreeze(0, 1); // Make this row always visible.
+				ImGui::TableHeadersRow();
+
+				ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs();
+				if (sortSpecs && (sortSpecs->SpecsDirty))
+				{
+					SelectedNode->Contents.Sort(ContentItemCompare);
+				}
+/*
+				// Sort our data if sort specs have been changed!
+					{
+						MyItem::s_current_sort_specs = sorts_specs; // Store in variable accessible by the sort function.
+						if (items.Size > 1)
+							qsort(&items[0], (size_t)items.Size, sizeof(items[0]), MyItem::CompareWithSortSpecs);
+						MyItem::s_current_sort_specs = NULL;
+						sorts_specs->SpecsDirty = false;
+					}
+*/
+				for (ContentItem* item = SelectedNode->Contents.First(); item; item = item->Next())
 				{
 					ImGui::TableNextRow();
 
@@ -511,7 +554,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		ImGui::EndTable();
 	}
 
-	TreeNode::ContentItem* selItem = SelectedNode ? SelectedNode->FindSelectedItem() : nullptr;
+	ContentItem* selItem = SelectedNode ? SelectedNode->FindSelectedItem() : nullptr;
 	bool resultAvail = false;
 	if (selItem)
 	{
