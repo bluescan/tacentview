@@ -31,6 +31,87 @@ namespace tInterface
 	bool FileTypes_AnySelected(tFileTypes&);
 	tString FileTypes_GetSelectedString(tFileTypes&);
 	void FileTypes_PopulateSelected(tFileTypes& dest, const tFileTypes& src);
+
+	// Content items are containers used to store information about a piece of information in a file dialog. It stores
+	// the stuff you see in the right-hand panel. Namely the information displayed in a table row about a file or
+	// directory, as well as if it is selected or not.
+	struct ContentItem : tLink<ContentItem>
+	{
+		ContentItem(const tString& name, bool isDir)																		: Name(name), Selected(false), IsDir(isDir) { }
+		ContentItem(const tSystem::tFileInfo& fileInfo);
+		bool Selected;
+
+		// Each field (column) gets its own ID. This is needed so when sorting, we know what information to use in the
+		// sorting function. We tell ImGui about the ID, and it passes that along when it tells us to sort.
+		enum class FieldID
+		{
+			Invalid = -1,
+			Name,
+			ModTime,
+			FileType,
+			FileSize
+		};
+
+		struct CompareFunctionObject
+		{
+			int Ascending = true;
+			FieldID Field;
+			bool operator() (const ContentItem& a, const ContentItem& b) const;
+			// { return (tStd::tStricmp(a.Name.Chars(), b.Name.Chars()) < 0); }
+		};
+
+		// Name field.
+		tString Name;
+		bool IsDir;
+
+		// These are not valid for directories. Note that we store field data redundantly in some cases since we need to be
+		// able to sort based on a key decoupled from the display string. For example, sorting by date should be done with
+		// an integer, not the string representation. Same with filesizes, we may want them displayed in KB or MB is they
+		// get large, but want to sort on num-bytes. We store the string reps because it's more efficient to cache them
+		// rather than regenerate them every time.
+
+		// Modification time (last) field.
+		int64 ModTime;							// In posix epoch.
+		tString ModTimeString;
+
+		// File type field.
+		tSystem::tFileType FileType;
+		tString FileTypeString;
+
+		// File size field.
+		uint64 FileSize;
+		tString FileSizeString;
+	};
+
+	// Tree nodes are in the left panel. Used for directories and containers with special names
+	// like favourites, local, and network. A TreeNode has children TreeNodes.
+	class TreeNode
+	{
+	public:
+		TreeNode()																											: Name(), Parent(nullptr) { }
+		TreeNode(const tString& name, FileDialog* dialog, TreeNode* parent = nullptr)										: Name(name), Dialog(dialog), Parent(parent) { }
+
+		void AppendChild(TreeNode* treeNode)																				{ Children.Append(treeNode); }
+
+		// For windows these do a case-insensitive compare. For case sensitive filesystems like Linux uses
+		// these to a case-sensitive compare.
+		TreeNode* Find(const tString& name) const;
+		bool Contains(const tString& name) const																			{ return Find(name) ? true : false; }
+		int Depth() const;
+		bool IsNetworkLocation() const;
+
+		ContentItem* FindSelectedItem() const;
+
+		tString Name;
+		FileDialog* Dialog;
+		bool ChildrenPopulated = false;
+		TreeNode* Parent;
+		tItList<TreeNode> Children;
+
+		bool NextOpen = false;
+		bool ContentsPopulated = false;		// Is the Contents list below populated and valid.
+		tList<ContentItem> Contents;
+	};
 }
 
 
@@ -93,9 +174,12 @@ ContentItem::ContentItem(const tSystem::tFileInfo& fileInfo) :
 }
 
 
-bool ContentItemCompare(const ContentItem& a, const ContentItem& b)
+bool ContentItem::CompareFunctionObject::operator() (const ContentItem& a, const ContentItem& b) const
 {
-	return (tStd::tStricmp(a.Name.Chars(), b.Name.Chars()) < 0);
+	if (Ascending)
+		return (tStd::tStricmp(a.Name.Chars(), b.Name.Chars()) < 0);
+	else
+		return (tStd::tStricmp(a.Name.Chars(), b.Name.Chars()) > 0);
 }
 
 
@@ -508,20 +592,16 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				ImGui::TableHeadersRow();
 
 				ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs();
-				if (sortSpecs && (sortSpecs->SpecsDirty))
+				if (sortSpecs && (sortSpecs->SpecsDirty) && (sortSpecs->SpecsCount > 0))
 				{
-					SelectedNode->Contents.Sort(ContentItemCompare);
+	 	    		const ImGuiTableColumnSortSpecs* sortSpec = &sortSpecs->Specs[0];
+
+					ContentItem::CompareFunctionObject compare;
+					compare.Ascending = (sortSpec->SortDirection == ImGuiSortDirection_Ascending);
+					SelectedNode->Contents.Sort(compare);
+					sortSpecs->SpecsDirty = false;
 				}
-/*
-				// Sort our data if sort specs have been changed!
-					{
-						MyItem::s_current_sort_specs = sorts_specs; // Store in variable accessible by the sort function.
-						if (items.Size > 1)
-							qsort(&items[0], (size_t)items.Size, sizeof(items[0]), MyItem::CompareWithSortSpecs);
-						MyItem::s_current_sort_specs = NULL;
-						sorts_specs->SpecsDirty = false;
-					}
-*/
+
 				for (ContentItem* item = SelectedNode->Contents.First(); item; item = item->Next())
 				{
 					ImGui::TableNextRow();
