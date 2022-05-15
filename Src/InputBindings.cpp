@@ -512,115 +512,99 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		tVector2 outerSize = ImVec2(0.0f, rowHeight + rowHeight * float(numRowsToDisplay));
 		if (ImGui::BeginTable("KeyBindingTable", 3, tableFlags, outerSize))
 		{
-			ImGui::TableSetupScrollFreeze(0, 1); // Top row fixed.
 			ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed, 120);//ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableSetupColumn("Operation", ImGuiTableColumnFlags_WidthFixed, 240);
 			ImGui::TableSetupColumn("##Remove", ImGuiTableColumnFlags_WidthFixed, 20.0f);
+			ImGui::TableSetupScrollFreeze(0, 1); // Top row fixed.
 			ImGui::TableHeadersRow();
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3);
 
-			ImGuiListClipper clipper;
+			// The data is not easily randomly accessible which makes the ImGuiListClipper difficult to use.
+			// If we were to implement a clipper, it would go here.
 
-			// Honestly not sure why I need +2. I am drawing an extra row so the clipper works properly, but
-			// that 'should' make it be a +1. Maybe it's the header row that counts as one. In any case, with
-			// the +2 and the dummy row at end, it all looks and works properly.
-			clipper.Begin(totalAssigned+2);
-			while (clipper.Step())
+			// Multiple keys can be bound to the same operation (ex space and right-arrow for next image)
+			// Multiple operations can NOT be bound to the same key, cuz that would be stupid -- well I guess
+			// that's what a macro is -- but anyway, that would be a different system,
+			//
+			// This loop displays the currently bound keys (and modifiers) and what operation they are bound to.
+			//
+			// Key				Operation
+			// Ctrl-Shift-R 	Next Image[combo]		[-]
+			// Space		 	Rotate Image[combo]		[-]
+			// --------------------------------------------
+			// Key[combo] Mods	Operation[combo]	 	[+] (brings up replace popup if necessary)
+			for (int k = 0; k <= GLFW_KEY_LAST; k++)
 			{
-				// Multiple keys can be bound to the same operation (ex space and right-arrow for next image)
-				// Multiple operations can NOT be bound to the same key, cuz that would be stupid -- well I guess
-				// that's what a macro is -- but anyway, that would be a different system,
-				//
-				// This loop displays the currently bound keys (and modifiers) and what operation they are bound to.
-				//
-				// Key				Operation
-				// Ctrl-Shift-R 	Next Image[combo]		[-]
-				// Space		 	Rotate Image[combo]		[-]
-				// --------------------------------------------
-				// Key[combo] Mods	Operation[combo]	 	[+] (brings up replace popup if necessary)
-				for (int k = 0; k <= GLFW_KEY_LAST; k++)
-				{
-					KeyOps& keyops = settings.InputBindings.GetKeyOps(k);
+				KeyOps& keyops = settings.InputBindings.GetKeyOps(k);
 
-					// Skip unsupported keys and don't display keys with nothing assigned.
-					if (!keyops.IsAnythingAssigned() || !IsKeySupported(k))
+				// Skip unsupported keys and don't display keys with nothing assigned.
+				if (!keyops.IsAnythingAssigned() || !IsKeySupported(k))
+					continue;
+
+				for (int m = 0; m < Modifier_NumCombinations; m++)
+				{
+					Operation opCurr = keyops.Operations[m];
+					if (opCurr == Operation::None)
 						continue;
 
-					for (int m = 0; m < Modifier_NumCombinations; m++)
+					ImGui::TableNextRow();
+
+					// Key/mods column.
+					ImGui::TableSetColumnIndex(0);
+					ImGui::Text( GetModKeyText(k, m).Text() );
+
+					// The operation column.
+					ImGui::TableSetColumnIndex(1);
+					char oplabel[64]; tsPrintf(oplabel, "##op%d_%d", k, m);
+					const char* opCurrDesc = GetOperationDesc(opCurr);
+					tAssert(opCurrDesc);
+					ImGui::SetNextItemWidth(240);
+
+					bool permanent = IsPermanentBinding(k, m);
+					if (!permanent)
 					{
-						Operation opCurr = keyops.Operations[m];
-						if (opCurr == Operation::None)
-							continue;
-
-						ImGui::TableNextRow();
-
-						// Key/mods column.
-						ImGui::TableSetColumnIndex(0);
-						ImGui::Text( GetModKeyText(k, m).Text() );
-
-						// The operation column.
-						ImGui::TableSetColumnIndex(1);
-						char oplabel[64]; tsPrintf(oplabel, "##op%d_%d", k, m);
-						const char* opCurrDesc = GetOperationDesc(opCurr);
-						tAssert(opCurrDesc);
-						ImGui::SetNextItemWidth(240);
-
-						bool permanent = IsPermanentBinding(k, m);
-						if (!permanent)
+						if (ImGui::BeginCombo(oplabel, opCurrDesc, ImGuiComboFlags_NoArrowButton))
 						{
-							if (ImGui::BeginCombo(oplabel, opCurrDesc, ImGuiComboFlags_NoArrowButton))
+							for (int oper = int(Operation::First); oper < int(Operation::NumOperations); oper++)
 							{
-								for (int oper = int(Operation::First); oper < int(Operation::NumOperations); oper++)
-								{
-									Operation op = Operation(oper);
-									const char* opDesc = GetOperationDesc(op);
+								Operation op = Operation(oper);
+								const char* opDesc = GetOperationDesc(op);
 
-									bool isSelected = (op == opCurr);
+								bool isSelected = (op == opCurr);
 
-									// Selectable just displays the item as highlighted or not.
-									if (ImGui::Selectable(opDesc, isSelected))
-										opCurr = op;
+								// Selectable just displays the item as highlighted or not.
+								if (ImGui::Selectable(opDesc, isSelected))
+									opCurr = op;
 
-									// Set the initial focus when opening the combo (scrolling + keyboard navigation focus).
-									if (isSelected)
-										ImGui::SetItemDefaultFocus();
-								}
-
-								if ((opCurr != Operation::None) && (keyops.Operations[m] != Operation(opCurr)))
-									keyops.Operations[m] = Operation(opCurr);
-
-								ImGui::EndCombo();
+								// Set the initial focus when opening the combo (scrolling + keyboard navigation focus).
+								if (isSelected)
+									ImGui::SetItemDefaultFocus();
 							}
-						}
-						else
-						{
-							const char* opDesc = GetOperationDesc(Operation::KeyBindings);
-							tString opText;
-							tsPrintf(opText, " %s (Permanent Binding)", opDesc);
-							ImGui::Text(opText.Chars());
-						}
-						
-						// The remove button column.
-						ImGui::TableSetColumnIndex(2);
-						if (!permanent)
-						{
-							char blabel[64];
-							tsPrintf(blabel, " - ##b%d_%d", k, m);
-							if (ImGui::Button(blabel, tVector2(21.0f, 21.0f)))
-								keyops.Operations[m] = Operation::None;
+
+							if ((opCurr != Operation::None) && (keyops.Operations[m] != Operation(opCurr)))
+								keyops.Operations[m] = Operation(opCurr);
+
+							ImGui::EndCombo();
 						}
 					}
+					else
+					{
+						const char* opDesc = GetOperationDesc(Operation::KeyBindings);
+						tString opText;
+						tsPrintf(opText, " %s (Permanent Binding)", opDesc);
+						ImGui::Text(opText.Chars());
+					}
+					
+					// The remove button column.
+					ImGui::TableSetColumnIndex(2);
+					if (!permanent)
+					{
+						char blabel[64];
+						tsPrintf(blabel, " - ##b%d_%d", k, m);
+						if (ImGui::Button(blabel, tVector2(21.0f, 21.0f)))
+							keyops.Operations[m] = Operation::None;
+					}
 				}
-
-				// The final row is just a dummy row that makes the clipper work properly. Without this you see part of an
-				// extra row that shouldn't be visible.
-				ImGui::TableNextRow();
-				ImGui::TableSetColumnIndex(0);
-				ImGui::Button("##LastRowCol0");
-				ImGui::TableSetColumnIndex(1);
-				ImGui::Button("##LastRowCol1");
-				ImGui::TableSetColumnIndex(2);
-				ImGui::Button("##LastRowCol2");
 			}
 			ImGui::EndTable();		
 		}
@@ -804,51 +788,48 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 		tVector2 outerSize = ImVec2(0.0f, rowHeight + rowHeight * float(numRowsToDisplay));
 		if (ImGui::BeginTable("CheatSheetTable", 2, tableFlags, outerSize))
 		{
-			ImGui::TableSetupScrollFreeze(0, 1); // Top row fixed.
 			ImGui::TableSetupColumn("Action", ImGuiTableColumnFlags_WidthFixed, 110);
 			ImGui::TableSetupColumn("Operation", ImGuiTableColumnFlags_WidthFixed, 240);
+			ImGui::TableSetupScrollFreeze(0, 1); // Top row fixed.
 			ImGui::TableHeadersRow();
 
-			ImGuiListClipper clipper;
-			clipper.Begin(totalAssigned);
-			while (clipper.Step())
+			// The data is not easily randomly accessible which makes the ImGuiListClipper difficult to use.
+			// If we were to implement a clipper, it would go here.
+			ImGui::TableNextRow();
+			ImGui::TableSetColumnIndex(0);
+			ImGui::Text("Mouse Left-Click");
+			ImGui::TableSetColumnIndex(1);
+			ImGui::Text("Set Reticle Pos");
+
+			ImGui::TableNextRow();
+			ImGui::TableSetColumnIndex(0);
+			ImGui::Text("Mouse Right-Hold");
+			ImGui::TableSetColumnIndex(1);
+			ImGui::Text("Pan Image");
+
+			for (int k = 0; k <= GLFW_KEY_LAST; k++)
 			{
-				ImGui::TableNextRow();
-				ImGui::TableSetColumnIndex(0);
-				ImGui::Text("Mouse Left-Click");
-				ImGui::TableSetColumnIndex(1);
-				ImGui::Text("Set Reticle Pos");
+				KeyOps& keyops = Config::Current->InputBindings.GetKeyOps(k);
+				if (!keyops.IsAnythingAssigned() || !IsKeySupported(k))
+					continue;
 
-				ImGui::TableNextRow();
-				ImGui::TableSetColumnIndex(0);
-				ImGui::Text("Mouse Right-Hold");
-				ImGui::TableSetColumnIndex(1);
-				ImGui::Text("Pan Image");
-
-				for (int k = 0; k <= GLFW_KEY_LAST; k++)
+				for (int m = 0; m < Modifier_NumCombinations; m++)
 				{
-					KeyOps& keyops = Config::Current->InputBindings.GetKeyOps(k);
-					if (!keyops.IsAnythingAssigned() || !IsKeySupported(k))
+					Operation opCurr = keyops.Operations[m];
+					if (opCurr == Operation::None)
 						continue;
 
-					for (int m = 0; m < Modifier_NumCombinations; m++)
-					{
-						Operation opCurr = keyops.Operations[m];
-						if (opCurr == Operation::None)
-							continue;
+					ImGui::TableNextRow();
 
-						ImGui::TableNextRow();
+					// Action column.
+					ImGui::TableSetColumnIndex(0);
+					ImGui::Text( GetModKeyText(k, m).Text() );
 
-						// Action column.
-						ImGui::TableSetColumnIndex(0);
-						ImGui::Text( GetModKeyText(k, m).Text() );
-
-						// Operation column.
-						ImGui::TableSetColumnIndex(1);
-						const char* opCurrDesc = GetOperationDesc(opCurr);
-						tAssert(opCurrDesc);
-						ImGui::Text(opCurrDesc);
-					}
+					// Operation column.
+					ImGui::TableSetColumnIndex(1);
+					const char* opCurrDesc = GetOperationDesc(opCurr);
+					tAssert(opCurrDesc);
+					ImGui::Text(opCurrDesc);
 				}
 			}
 			ImGui::EndTable();

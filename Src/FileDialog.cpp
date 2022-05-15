@@ -505,7 +505,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 	float bottomBarHeight = 20.0f + 28.0f;
 	if (ImGui::BeginTable("FileDialogTable", 2, ImGuiTableFlags_Resizable, tVector2(0.0f, -bottomBarHeight)))
 	{
-		ImGui::TableSetupColumn("LeftTreeColumn", ImGuiTableColumnFlags_WidthFixed, 185.0f);
+		ImGui::TableSetupColumn("LeftTreeColumn", ImGuiTableColumnFlags_WidthFixed, 160.0f);
 		ImGui::TableSetupColumn("RightContentColumn", ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableNextRow();
 
@@ -572,20 +572,29 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				ImGuiTableFlags_Reorderable |	// Drag columns to an order you like.
 				ImGuiTableFlags_Hideable |		// Hide individual columns.
 				ImGuiTableFlags_Sortable |		// Sort by column.
-				ImGuiTableFlags_SortMulti;		// Allow sorting multiple columns by shift-selecting them. May get > 1 sort specs.
 				// ImGuiTableFlags_SortTristate	// Ascending, Descending, None. May get 0 sort specs.
+				ImGuiTableFlags_SortMulti |		// Allow sorting multiple columns by shift-selecting them. May get > 1 sort specs.
+				ImGuiTableFlags_SizingFixedFit |
+				ImGuiTableFlags_ScrollY;		// This is needed so the table itself has a scroll bar that respects the top-row freeze.
+
 
 			if (ImGui::BeginTable("ContentItems", 5, tableFlags))
 			{
-				// The columns. Each one gets it's own unique ID. We don't use index as we support turning columns on/off.
-				ImGui::TableSetupColumn("##Icon",		ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_NoSort	,18.0f,	uint32(ContentItem::FieldID::Invalid));
-				ImGui::TableSetupColumn("Name",		ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_PreferSortAscending | ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_PreferSortAscending | ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_NoReorder,	0.0f,	uint32(ContentItem::FieldID::Name)		);
-				ImGui::TableSetupColumn("Modified",	ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_PreferSortAscending,	0.0f,	uint32(ContentItem::FieldID::ModTime)	);
-				ImGui::TableSetupColumn("Type",		ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_PreferSortAscending,	0.0f,	uint32(ContentItem::FieldID::FileType)	);
-				ImGui::TableSetupColumn("Size",		ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_PreferSortAscending,	0.0f,	uint32(ContentItem::FieldID::FileSize))	;
+				// ImGui::TableSetupScrollFreeze(0, 1); // Top row fixed.
+				// The columns. Each one gets its own unique ID.
+				int iconFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_NoSort;
+				int nameFlags = ImGuiTableColumnFlags_WidthFixed | 
+				ImGuiTableColumnFlags_PreferSortAscending | ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_PreferSortAscending | ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_NoReorder;
+				int propFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_PreferSortAscending;
+				ImGui::TableSetupColumn("Icon",		iconFlags,	20.0f,	uint32(ContentItem::FieldID::Invalid)	);
+				ImGui::TableSetupColumn("Name",		nameFlags,	0.0f,	uint32(ContentItem::FieldID::Name)		);
+				ImGui::TableSetupColumn("Modified",	propFlags,	0.0f,	uint32(ContentItem::FieldID::ModTime)	);
+				ImGui::TableSetupColumn("Type",		propFlags,	0.0f,	uint32(ContentItem::FieldID::FileType)	);
+				ImGui::TableSetupColumn("Size",		propFlags,	0.0f,	uint32(ContentItem::FieldID::FileSize)	);
 				ImGui::TableSetupScrollFreeze(0, 1); // Make this row always visible.
 				ImGui::TableHeadersRow();
 
+				// Sort the rows.
 				ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs();
 				if (sortSpecs && (sortSpecs->SpecsDirty) && (sortSpecs->SpecsCount > 0))
 				{
@@ -594,6 +603,9 @@ FileDialog::DialogResult FileDialog::DoPopup()
 					sortSpecs->SpecsDirty = false;
 				}
 
+				// Do the content rows. We could use ImGuiListClipper here but so far, even with thousands of files in
+				// the Contents list, it is very responsive. Also, since it's a list rather than an array, we'd still
+				// need a 'Next' loop to get to the right clipper starting point (clipper.DisplayStart).
 				for (ContentItem* item = SelectedNode->Contents.First(); item; item = item->Next())
 				{
 					ImGui::TableNextRow();
