@@ -27,11 +27,6 @@ using namespace tInterface;
 
 namespace tInterface
 {
-	void FileTypes_ClearSelected(tFileTypes&);
-	bool FileTypes_AnySelected(tFileTypes&);
-	tString FileTypes_GetSelectedString(tFileTypes&);
-	void FileTypes_PopulateSelected(tFileTypes& dest, const tFileTypes& src);
-
 	// Content items are containers used to store information about a piece of information in a file dialog. It stores
 	// the stuff you see in the right-hand panel. Namely the information displayed in a table row about a file or
 	// directory, as well as if it is selected or not.
@@ -54,10 +49,9 @@ namespace tInterface
 
 		struct CompareFunctionObject
 		{
-			int Ascending = true;
-			FieldID Field;
+			CompareFunctionObject(ImGuiTableSortSpecs* specs) : SortSpecs(specs) { }
+			ImGuiTableSortSpecs* SortSpecs;
 			bool operator() (const ContentItem& a, const ContentItem& b) const;
-			// { return (tStd::tStricmp(a.Name.Chars(), b.Name.Chars()) < 0); }
 		};
 
 		// Name field.
@@ -79,7 +73,7 @@ namespace tInterface
 		tString FileTypeString;
 
 		// File size field.
-		uint64 FileSize;
+		int64 FileSize;
 		tString FileSizeString;
 	};
 
@@ -115,44 +109,6 @@ namespace tInterface
 }
 
 
-void tInterface::FileTypes_ClearSelected(tFileTypes& fileTypes)
-{
-	for (tFileTypes::tFileTypeItem* typeItem = fileTypes.First(); typeItem; typeItem = typeItem->Next())
-		typeItem->Selected = false;
-}
-
-
-bool tInterface::FileTypes_AnySelected(tFileTypes& fileTypes)
-{
-	for (tFileTypes::tFileTypeItem* typeItem = fileTypes.First(); typeItem; typeItem = typeItem->Next())
-		if (typeItem->Selected)
-			return true;
-
-	return false;
-}
-
-
-tString tInterface::FileTypes_GetSelectedString(tFileTypes& fileTypes)
-{
-	tString str;
-	for (tFileTypes::tFileTypeItem* typeItem = fileTypes.First(); typeItem; typeItem = typeItem->Next())
-	{
-		if (typeItem->Selected)
-			str += tString(tSystem::tGetFileTypeName(typeItem->FileType)) + " ";
-	}
-
-	return str;
-}
-
-
-void tInterface::FileTypes_PopulateSelected(tFileTypes& dest, const tFileTypes& src)
-{
-	for (tFileTypes::tFileTypeItem* typeItem = src.First(); typeItem; typeItem = typeItem->Next())
-		if (typeItem->Selected)
-			dest.Add(typeItem->FileType);
-}
-
-
 ContentItem::ContentItem(const tSystem::tFileInfo& fileInfo) :
 	Selected(false)
 {
@@ -176,10 +132,49 @@ ContentItem::ContentItem(const tSystem::tFileInfo& fileInfo) :
 
 bool ContentItem::CompareFunctionObject::operator() (const ContentItem& a, const ContentItem& b) const
 {
-	if (Ascending)
-		return (tStd::tStricmp(a.Name.Chars(), b.Name.Chars()) < 0);
-	else
-		return (tStd::tStricmp(a.Name.Chars(), b.Name.Chars()) > 0);
+	tAssert(SortSpecs);
+
+	// We always put directories at the top regardless of field contents and sorting order.
+	if (a.IsDir && !b.IsDir)
+		return true;
+
+	// This makes both the directories (that come first) as well as the files (that come after) sort correctly.
+	// That is, do the sorting if we're comparing file-to-file or dir-to-dir.
+	if (a.IsDir == b.IsDir)
+	{
+		// NumSpecs will be > 1 if more than one column is selected for sorting. The order is important.
+		int numSpecs = SortSpecs->SpecsCount;
+		for (int s = 0; s < numSpecs; s++)
+		{
+			const ImGuiTableColumnSortSpecs& colSortSpec = SortSpecs->Specs[s];
+			FieldID field = FieldID(colSortSpec.ColumnUserID);
+			int64 delta = 0;
+			switch (field)
+			{
+				case FieldID::Name:
+					delta = tStd::tStricmp(a.Name.Chars(), b.Name.Chars());
+					break;
+
+				case FieldID::ModTime:
+					delta = a.ModTime - b.ModTime;
+					break;
+
+				case FieldID::FileType:
+					delta = tStd::tStricmp(a.FileTypeString.Chars(), b.FileTypeString.Chars());
+					break;
+
+				case FieldID::FileSize:
+					delta = a.FileSize - b.FileSize;
+					break;
+			}
+			if ((delta < 0) && (colSortSpec.SortDirection == ImGuiSortDirection_Ascending))
+				return true;
+			else if ((delta > 0) && (colSortSpec.SortDirection == ImGuiSortDirection_Descending))
+				return true;
+		}
+	}
+
+	return false;
 }
 
 
@@ -559,7 +554,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				if (!selDir.IsEmpty())
 				{
 					tSystem::tFileTypes selectedTypes;
-					FileTypes_PopulateSelected(selectedTypes, FileTypes);
+					selectedTypes.AddSelected(FileTypes, true);
 					tSystem::tExtensions extensions(selectedTypes);
 					tSystem::tFindFilesFast(foundFiles, selDir, extensions);
 				}
@@ -583,7 +578,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 			if (ImGui::BeginTable("ContentItems", 5, tableFlags))
 			{
 				// The columns. Each one gets it's own unique ID. We don't use index as we support turning columns on/off.
-				ImGui::TableSetupColumn("Icon",		ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_NoSort	,18.0f,	uint32(ContentItem::FieldID::Invalid));
+				ImGui::TableSetupColumn("##Icon",		ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_NoSort	,18.0f,	uint32(ContentItem::FieldID::Invalid));
 				ImGui::TableSetupColumn("Name",		ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_PreferSortAscending | ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_PreferSortAscending | ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_NoReorder,	0.0f,	uint32(ContentItem::FieldID::Name)		);
 				ImGui::TableSetupColumn("Modified",	ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_PreferSortAscending,	0.0f,	uint32(ContentItem::FieldID::ModTime)	);
 				ImGui::TableSetupColumn("Type",		ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_PreferSortAscending,	0.0f,	uint32(ContentItem::FieldID::FileType)	);
@@ -594,10 +589,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs();
 				if (sortSpecs && (sortSpecs->SpecsDirty) && (sortSpecs->SpecsCount > 0))
 				{
-	 	    		const ImGuiTableColumnSortSpecs* sortSpec = &sortSpecs->Specs[0];
-
-					ContentItem::CompareFunctionObject compare;
-					compare.Ascending = (sortSpec->SortDirection == ImGuiSortDirection_Ascending);
+					ContentItem::CompareFunctionObject compare(sortSpecs);
 					SelectedNode->Contents.Sort(compare);
 					sortSpecs->SpecsDirty = false;
 				}
@@ -676,13 +668,13 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
 
 		// Nothing selected means all types used.
-		bool allTypes = !FileTypes_AnySelected(FileTypes);
-		tString currChosen = allTypes ? "All Image Types" : FileTypes_GetSelectedString(FileTypes);
+		bool allTypes = !FileTypes.AnySelected();
+		tString currChosen = allTypes ? "All Image Types" : FileTypes.GetSelectedString(tSystem::tFileTypes::Separator::CommaSpace, 4);
 		if (ImGui::BeginCombo("##TypeFilter", currChosen.Chars())) //, ImGuiComboFlags_NoArrowButton))
 		{
 			if (ImGui::Selectable("All Image Types", allTypes))
 			{
-				FileTypes_ClearSelected(FileTypes);
+				FileTypes.ClearSelected();
 				InvalidateAllNodeContent();
 			}
 
