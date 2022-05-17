@@ -57,7 +57,7 @@ public:
 
 private:
 	tString GetSelectedDir();
-	void DoSelectable(const char* label, ContentItem*);
+	void DoSelectable(ContentItem*);
 
 	void PopulateFavourites();
 	void PopulateLocal();

@@ -32,7 +32,7 @@ namespace tInterface
 	// directory, as well as if it is selected or not.
 	struct ContentItem : tLink<ContentItem>
 	{
-		ContentItem(const tString& name, bool isDir)																		: Name(name), Selected(false), IsDir(isDir) { }
+		ContentItem(const tString& dirName);
 		ContentItem(const tSystem::tFileInfo& fileInfo);
 		bool Selected;
 
@@ -56,6 +56,7 @@ namespace tInterface
 
 		// Name field.
 		tString Name;
+		tString NameString;						// Displayed.
 		bool IsDir;
 
 		// These are not valid for directories. Note that we store field data redundantly in some cases since we need to be
@@ -66,15 +67,15 @@ namespace tInterface
 
 		// Modification time (last) field.
 		int64 ModTime;							// In posix epoch.
-		tString ModTimeString;
+		tString ModTimeString;					// Displayed.
 
 		// File type field.
 		tSystem::tFileType FileType;
-		tString FileTypeString;
+		tString FileTypeString;					// Displayed.
 
 		// File size field.
 		int64 FileSize;
-		tString FileSizeString;
+		tString FileSizeString;					// Displayed.
 	};
 
 	// Tree nodes are in the left panel. Used for directories and containers with special names
@@ -109,11 +110,33 @@ namespace tInterface
 }
 
 
+ContentItem::ContentItem(const tString& dirName) :
+	Selected(false),
+	IsDir(true)
+{
+	Name = dirName;
+	if (Name.Length() > 32)
+		NameString = Name.Left(32-3) + "...";
+	else
+		NameString = Name;
+
+	ModTime = 0;
+	ModTimeString.Clear();
+	FileType = tSystem::tFileType::Invalid;
+	FileSize = 0;
+	FileSizeString.Clear();
+}
+
+
 ContentItem::ContentItem(const tSystem::tFileInfo& fileInfo) :
 	Selected(false)
 {
 	// Name field.
 	Name = tSystem::tGetFileName(fileInfo.FileName);
+	if (Name.Length() > 32)
+		NameString = Name.Left(32-3) + "...";
+	else
+		NameString = Name;
 	IsDir = fileInfo.Directory;
 
 	// Modification time field. Choose greater of mod and creation time.
@@ -125,8 +148,15 @@ ContentItem::ContentItem(const tSystem::tFileInfo& fileInfo) :
 	FileTypeString.Set(tSystem::tGetFileTypeName(FileType));
 
 	// File size field.
-	FileSize =  fileInfo.FileSize;
-	tsPrintf(FileSizeString, "%'d Bytes", FileSize);
+	FileSize = fileInfo.FileSize;
+	if (FileSize < 100000)
+		tsPrintf(FileSizeString, "%'d B", FileSize);
+	else if (FileSize < 100000000)
+		tsPrintf(FileSizeString, "%'d KB", FileSize/1024);
+	else if (FileSize < 100000000000)
+		tsPrintf(FileSizeString, "%'d MB", FileSize/(1024*1024));
+	else
+		tsPrintf(FileSizeString, "%'d GB", FileSize/(1024*1024*1024));
 }
 
 
@@ -251,7 +281,7 @@ FileDialog::FileDialog(DialogMode mode, const tSystem::tFileTypes& fileTypes) :
 
 void FileDialog::OpenPopup()
 {
-	ImGui::SetNextWindowSize(tVector2(600.0f, 400.0f), ImGuiCond_FirstUseEver);
+	//ImGui::SetNextWindowSize(tVector2(640.0f, 400.0f), ImGuiCond_FirstUseEver);
 	switch (Mode)
 	{
 		case DialogMode::OpenDir:
@@ -422,8 +452,9 @@ void FileDialog::InvalidateAllNodeContentRecursive(TreeNode* node)
 }
 
 
-void FileDialog::DoSelectable(const char* label, ContentItem* item)
+void FileDialog::DoSelectable(ContentItem* item)
 {
+	tString label = item->NameString + "##" + item->Name;
 	if (ImGui::Selectable(label, &item->Selected, ImGuiSelectableFlags_SpanAllColumns))
 	{
 		// This block enforces single selection.
@@ -495,7 +526,8 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		case DialogMode::OpenDir:		label = "Open Directory";	break;
 		case DialogMode::SaveFile:		label = "Save File";		break;
 	}
-	if (!ImGui::BeginPopupModal(label, &isOpen, ImGuiWindowFlags_NoScrollbar /*ImGuiWindowFlags_AlwaysAutoResize*/))
+	ImGui::SetNextWindowSize(tVector2(660.0f, 400.0f), ImGuiCond_Appearing);
+	if (!ImGui::BeginPopupModal(label, &isOpen, 0))
 		return DialogResult::Closed;
 
 	DialogResult result = DialogResult::Open;
@@ -545,7 +577,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
 				{
 					(*dir)[dir->Length()-1] = '\0';				// Remove slash.
-					ContentItem* contentItem = new ContentItem(tSystem::tGetFileName(*dir), true);
+					ContentItem* contentItem = new ContentItem(tSystem::tGetFileName(*dir));
 					SelectedNode->Contents.Append(contentItem);
 				}
 
@@ -568,7 +600,8 @@ FileDialog::DialogResult FileDialog::DoPopup()
 			}
 
 			int tableFlags =
-				ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings |
+				//ImGuiTableFlags_Resizable | 
+				ImGuiTableFlags_NoSavedSettings |
 				ImGuiTableFlags_Reorderable |	// Drag columns to an order you like.
 				ImGuiTableFlags_Hideable |		// Hide individual columns.
 				ImGuiTableFlags_Sortable |		// Sort by column.
@@ -580,16 +613,14 @@ FileDialog::DialogResult FileDialog::DoPopup()
 
 			if (ImGui::BeginTable("ContentItems", 5, tableFlags))
 			{
-				// ImGui::TableSetupScrollFreeze(0, 1); // Top row fixed.
 				// The columns. Each one gets its own unique ID.
 				int iconFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_NoSort;
-				int nameFlags = ImGuiTableColumnFlags_WidthFixed | 
-				ImGuiTableColumnFlags_PreferSortAscending | ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_PreferSortAscending | ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_NoReorder;
+				int nameFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_PreferSortAscending | ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_PreferSortAscending | ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_NoReorder;
 				int propFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_PreferSortAscending;
 				ImGui::TableSetupColumn("Icon",		iconFlags,	20.0f,	uint32(ContentItem::FieldID::Invalid)	);
 				ImGui::TableSetupColumn("Name",		nameFlags,	0.0f,	uint32(ContentItem::FieldID::Name)		);
 				ImGui::TableSetupColumn("Modified",	propFlags,	0.0f,	uint32(ContentItem::FieldID::ModTime)	);
-				ImGui::TableSetupColumn("Type",		propFlags,	0.0f,	uint32(ContentItem::FieldID::FileType)	);
+				ImGui::TableSetupColumn("Type",		propFlags,	36.0f,	uint32(ContentItem::FieldID::FileType)	);
 				ImGui::TableSetupColumn("Size",		propFlags,	0.0f,	uint32(ContentItem::FieldID::FileSize)	);
 				ImGui::TableSetupScrollFreeze(0, 1); // Make this row always visible.
 				ImGui::TableHeadersRow();
@@ -616,7 +647,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 
 					// The name column selectable spans all columns.
 					ImGui::TableNextColumn();
-					DoSelectable(item->Name.Chars(), item);
+					DoSelectable(item);
 
 					ImGui::TableNextColumn();
 					if (!item->IsDir)
