@@ -56,7 +56,6 @@ namespace tInterface
 
 		// Name field.
 		tString Name;
-		tString NameString;						// Displayed.
 		bool IsDir;
 
 		// These are not valid for directories. Note that we store field data redundantly in some cases since we need to be
@@ -115,11 +114,6 @@ ContentItem::ContentItem(const tString& dirName) :
 	IsDir(true)
 {
 	Name = dirName;
-	if (Name.Length() > 32)
-		NameString = Name.Left(32-3) + "...";
-	else
-		NameString = Name;
-
 	ModTime = 0;
 	ModTimeString.Clear();
 	FileType = tSystem::tFileType::Invalid;
@@ -133,10 +127,6 @@ ContentItem::ContentItem(const tSystem::tFileInfo& fileInfo) :
 {
 	// Name field.
 	Name = tSystem::tGetFileName(fileInfo.FileName);
-	if (Name.Length() > 32)
-		NameString = Name.Left(32-3) + "...";
-	else
-		NameString = Name;
 	IsDir = fileInfo.Directory;
 
 	// Modification time field. Choose greater of mod and creation time.
@@ -454,7 +444,7 @@ void FileDialog::InvalidateAllNodeContentRecursive(TreeNode* node)
 
 void FileDialog::DoSelectable(ContentItem* item)
 {
-	tString label = item->NameString + "##" + item->Name;
+	tString label = item->Name;
 	if (ImGui::Selectable(label, &item->Selected, ImGuiSelectableFlags_SpanAllColumns))
 	{
 		// This block enforces single selection.
@@ -543,7 +533,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 
 		// Left tree panel.
 		ImGui::TableSetColumnIndex(0);
-		ImGui::BeginChild("LeftTreePanel", tVector2(0.0f, -bottomBarHeight));
+		ImGui::BeginChild("LeftTreePanel", tVector2(0.0f, -bottomBarHeight), false, ImGuiWindowFlags_HorizontalScrollbar);
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(0.0f, 3.0f));
 
 		// This block is the workhorse of the dialog.
@@ -600,26 +590,25 @@ FileDialog::DialogResult FileDialog::DoPopup()
 			}
 
 			int tableFlags =
-				//ImGuiTableFlags_Resizable | 
+				ImGuiTableFlags_Resizable | 
 				ImGuiTableFlags_NoSavedSettings |
 				ImGuiTableFlags_Reorderable |	// Drag columns to an order you like.
 				ImGuiTableFlags_Hideable |		// Hide individual columns.
 				ImGuiTableFlags_Sortable |		// Sort by column.
 				// ImGuiTableFlags_SortTristate	// Ascending, Descending, None. May get 0 sort specs.
 				ImGuiTableFlags_SortMulti |		// Allow sorting multiple columns by shift-selecting them. May get > 1 sort specs.
-				ImGuiTableFlags_SizingFixedFit |
+				//ImGuiTableFlags_SizingFixedFit |
 				ImGuiTableFlags_ScrollY;		// This is needed so the table itself has a scroll bar that respects the top-row freeze.
-
 
 			if (ImGui::BeginTable("ContentItems", 5, tableFlags))
 			{
 				// The columns. Each one gets its own unique ID.
 				int iconFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_NoSort;
 				int nameFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_PreferSortAscending | ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_PreferSortAscending | ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_NoReorder;
-				int propFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_PreferSortAscending;
+				int propFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_PreferSortAscending;
 				ImGui::TableSetupColumn("Icon",		iconFlags,	20.0f,	uint32(ContentItem::FieldID::Invalid)	);
-				ImGui::TableSetupColumn("Name",		nameFlags,	0.0f,	uint32(ContentItem::FieldID::Name)		);
-				ImGui::TableSetupColumn("Modified",	propFlags,	0.0f,	uint32(ContentItem::FieldID::ModTime)	);
+				ImGui::TableSetupColumn("Name",		nameFlags,	190.0f,	uint32(ContentItem::FieldID::Name)		);
+				ImGui::TableSetupColumn("Modified",	propFlags,	120.0f,	uint32(ContentItem::FieldID::ModTime)	);
 				ImGui::TableSetupColumn("Type",		propFlags,	36.0f,	uint32(ContentItem::FieldID::FileType)	);
 				ImGui::TableSetupColumn("Size",		propFlags,	0.0f,	uint32(ContentItem::FieldID::FileSize)	);
 				ImGui::TableSetupScrollFreeze(0, 1); // Make this row always visible.
@@ -664,7 +653,6 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				ImGui::EndTable();
 			}
 		}
-
 		ImGui::EndChild();
 		ImGui::EndTable();
 	}
