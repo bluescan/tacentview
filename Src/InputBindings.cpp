@@ -503,7 +503,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		}
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-		
+
 		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
 		const float rowHeight = 25.0f;
 		const int maxRowsToDisplay = 16;

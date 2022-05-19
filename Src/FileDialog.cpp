@@ -139,11 +139,11 @@ ContentItem::ContentItem(const tSystem::tFileInfo& fileInfo) :
 
 	// File size field.
 	FileSize = fileInfo.FileSize;
-	if (FileSize < 100000)
+	if (FileSize < 10000)
 		tsPrintf(FileSizeString, "%'d B", FileSize);
-	else if (FileSize < 100000000)
+	else if (FileSize < 10000000)
 		tsPrintf(FileSizeString, "%'d KB", FileSize/1024);
-	else if (FileSize < 100000000000)
+	else if (FileSize < 10000000000)
 		tsPrintf(FileSizeString, "%'d MB", FileSize/(1024*1024));
 	else
 		tsPrintf(FileSizeString, "%'d GB", FileSize/(1024*1024*1024));
@@ -525,8 +525,10 @@ FileDialog::DialogResult FileDialog::DoPopup()
 
 	// The left and right panels are cells in a 1 row, 2 column table.
 	float bottomBarHeight = 20.0f + 28.0f;
+	ImGui::PushStyleColor(ImGuiCol_TableBorderLight, tVector4(0.50f, 0.50f, 0.54f, 1.00f));
 	if (ImGui::BeginTable("FileDialogTable", 2, ImGuiTableFlags_Resizable, tVector2(0.0f, -bottomBarHeight)))
 	{
+
 		ImGui::TableSetupColumn("LeftTreeColumn", ImGuiTableColumnFlags_WidthFixed, 160.0f);
 		ImGui::TableSetupColumn("RightContentColumn", ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableNextRow();
@@ -600,13 +602,14 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				//ImGuiTableFlags_SizingFixedFit |
 				ImGuiTableFlags_ScrollY;		// This is needed so the table itself has a scroll bar that respects the top-row freeze.
 
+			ImGui::PushStyleColor(ImGuiCol_TableBorderLight, tVector4(0.25f, 0.25f, 0.28f, 1.00f));
 			if (ImGui::BeginTable("ContentItems", 5, tableFlags))
 			{
 				// The columns. Each one gets its own unique ID.
 				int iconFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_NoSort;
 				int nameFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_PreferSortAscending | ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_PreferSortAscending | ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_NoReorder;
 				int propFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_PreferSortAscending;
-				ImGui::TableSetupColumn("Icon",		iconFlags,	20.0f,	uint32(ContentItem::FieldID::Invalid)	);
+				ImGui::TableSetupColumn("Icon",		iconFlags,	24.0f,	uint32(ContentItem::FieldID::Invalid)	);
 				ImGui::TableSetupColumn("Name",		nameFlags,	190.0f,	uint32(ContentItem::FieldID::Name)		);
 				ImGui::TableSetupColumn("Modified",	propFlags,	120.0f,	uint32(ContentItem::FieldID::ModTime)	);
 				ImGui::TableSetupColumn("Type",		propFlags,	36.0f,	uint32(ContentItem::FieldID::FileType)	);
@@ -632,6 +635,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 
 					ImGui::TableNextColumn();
 					uint64 imgID = item->IsDir ? Viewer::FolderImage.Bind() : Viewer::FileImage.Bind();
+					ImGui::SetCursorPosX(ImGui::GetCursorPosX()+4.0f);
 					ImGui::Image(ImTextureID(imgID), tVector2(16, 16), tVector2(0, 1), tVector2(1, 0), Viewer::ColourEnabledTint);
 
 					// The name column selectable spans all columns.
@@ -652,10 +656,12 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				}
 				ImGui::EndTable();
 			}
+			ImGui::PopStyleColor();
 		}
 		ImGui::EndChild();
 		ImGui::EndTable();
 	}
+	ImGui::PopStyleColor();
 
 	ContentItem* selItem = SelectedNode ? SelectedNode->FindSelectedItem() : nullptr;
 	bool resultAvail = false;
