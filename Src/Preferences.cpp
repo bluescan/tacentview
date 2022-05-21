@@ -281,7 +281,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	if (ImGui::Button("Reset All", tVector2(100.0f, 0.0f)))
 	{
 		Config::ResetAllProfiles(Config::Category_AllNoBindings);
-		Config::SetProfile(Config::Profile::Main);
+		Config::SetProfile(Profile::Main);
 		PendingTransparentWorkArea = false;
 		SlideshowCountdown = Config::Current->SlideshowPeriod;
 		ChangeScreenMode(false, true);

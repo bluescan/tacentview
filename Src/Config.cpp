@@ -45,20 +45,6 @@ namespace Config
 }
 
 
-const char* Config::ProfileNames[int(Profile::NumProfiles)] =
-{
-	"Main",
-	"Basic"
-};
-
-
-const char* Config::ProfileNamesLong[int(Profile::NumProfiles)] =
-{
-	"Main Profile",
-	"Basic Profile"
-};
-
-
 void Config::SetProfile(Profile profile)
 {
 	if (profile == Profile(Global.CurrentProfile))
@@ -73,8 +59,8 @@ void Config::SetProfile(Profile profile)
 }
 
 
-Config::Profile Config::GetProfile()			{ return Profile(Global.CurrentProfile); }
-const char* Config::GetProfileName()			{ return ProfileNames[int(GetProfile())]; }
+Viewer::Profile Config::GetProfile()					{ return Profile(Global.CurrentProfile); }
+const char* Config::GetProfileName()					{ return GetProfileName(GetProfile()); }
 
 
 void Config::ResetProfile(uint32 categories)
@@ -131,8 +117,8 @@ void Config::Load(const tString& filename)
 	// if the new operations default bindings do not have the key already reassigned to something else, we should
 	// assign them here.
 	bool onlyIfUnassigned = true;
-	MainSettings.InputBindings.Reset(onlyIfUnassigned);
-	BasicSettings.InputBindings.Reset(onlyIfUnassigned);
+	MainSettings.InputBindings.Reset(Viewer::Profile::Main, onlyIfUnassigned);
+	BasicSettings.InputBindings.Reset(Viewer::Profile::Basic, onlyIfUnassigned);
 
 	// Add stuff here if you care about what version you loaded from.
 	if (Global.ConfigVersion <= 2)
@@ -211,7 +197,7 @@ void Config::GlobalSettings::Reset()
 }
 
 
-void Config::Settings::Reset(Config::Profile profile, uint32 categories)
+void Config::Settings::Reset(Viewer::Profile profile, uint32 categories)
 {
 	if (categories & Category_Unspecified)
 	{
@@ -305,7 +291,7 @@ void Config::Settings::Reset(Config::Profile profile, uint32 categories)
 
 	if (categories & Category_Bindings)
 	{
-		InputBindings				.Reset();
+		InputBindings				.Reset(profile);
 	}
 }
 

@@ -262,7 +262,7 @@ namespace Viewer
 	void IconifyCallback(GLFWwindow*, int iconified);
 	void ProgressArc(float radius, float percent, const ImVec4& colour, const ImVec4& colourbg, float thickness = 4.0f, int segments = 32);
 
-	void ChangeProfile(Config::Profile);
+	void ChangeProfile(Viewer::Profile);
 }
 
 
@@ -1460,13 +1460,13 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::End();
 
 		// Exit basic profile.
-		if (Config::GetProfile() == Config::Profile::Basic)
+		if (Config::GetProfile() == Profile::Basic)
 		{
 			ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+160.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 			ImGui::SetNextWindowSize(tVector2(120, 40), ImGuiCond_Always);
 			ImGui::Begin("ExitBasic", nullptr, flagsImgButton);
 			if (ImGui::Button("ESC", tVector2(50,28)))
-				ChangeProfile(Config::Profile::Main);
+				ChangeProfile(Profile::Main);
 			ImGui::End();
 		}
 	}
@@ -1520,15 +1520,15 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			ImGui::Separator();
 
-			bool mainProfile = Config::GetProfile() == Config::Profile::Main;
+			bool mainProfile = Config::GetProfile() == Profile::Main;
 			tString mainProfKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Profile);
 			if (ImGui::MenuItem("Main Profile", mainProfile ? nullptr : mainProfKey.Charz(), &mainProfile))
-				ChangeProfile(mainProfile ? Config::Profile::Main : Config::Profile::Basic);
+				ChangeProfile(mainProfile ? Profile::Main : Profile::Basic);
 
-			bool basicProfile = Config::GetProfile() == Config::Profile::Basic;
+			bool basicProfile = Config::GetProfile() == Profile::Basic;
 			tString basicProfKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Profile);
 			if (ImGui::MenuItem("Basic Profile", basicProfile ? nullptr : basicProfKey.Charz(), &basicProfile))
-				ChangeProfile(basicProfile ? Config::Profile::Basic : Config::Profile::Main);
+				ChangeProfile(basicProfile ? Profile::Basic : Profile::Main);
 
 			ImGui::Separator();
 
@@ -1677,10 +1677,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			tString slideKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SlideshowTimer);
 			ImGui::MenuItem("Slideshow Progress", slideKey.Charz(), &Config::Current->SlideshowProgressArc, !CropMode);
 
-			bool basicSettings = (Config::GetProfile() == Config::Profile::Basic);
+			bool basicSettings = (Config::GetProfile() == Profile::Basic);
 			tString modeKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Profile);
 			if (ImGui::MenuItem("Basic Profile", modeKey.Charz(), &basicSettings, !CropMode))
-				ChangeProfile(basicSettings ? Config::Profile::Basic : Config::Profile::Main);
+				ChangeProfile(basicSettings ? Profile::Basic : Profile::Main);
 
 			tString detailsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Details);
 			ImGui::MenuItem("Image Details", detailsKey.Charz(), &Config::Current->ShowImageDetails);
@@ -2116,7 +2116,7 @@ void Viewer::ApplyZoomDelta(float zoomDelta)
 }
 
 
-void Viewer::ChangeProfile(Config::Profile profile)
+void Viewer::ChangeProfile(Profile profile)
 {
 	if (Config::GetProfile() == profile)
 		return;
@@ -2130,7 +2130,7 @@ void Viewer::ChangeProfile(Config::Profile profile)
 	// Note that the settings mentioned above are for the _default_ settings of the basic profile. There is nothing
 	// stopping the user from customizing the profile however they want. It is essentially a complete set of alternate
 	// settings, the only difference is the default values are different than the main profile.
-	if (profile == Config::Profile::Basic)
+	if (profile == Profile::Basic)
 	{
 		// These ones are runtime only.
 		PropsWindow								= false;
@@ -2467,7 +2467,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::Profile:
-			if (!CropMode) ChangeProfile((Config::GetProfile() == Config::Profile::Basic) ? Config::Profile::Main : Config::Profile::Basic);
+			if (!CropMode) ChangeProfile((Config::GetProfile() == Profile::Basic) ? Profile::Main : Profile::Basic);
 			break;
 
 		case Bindings::Operation::Preferences:
@@ -2486,15 +2486,15 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case Bindings::Operation::Escape:
 			if (FullscreenMode)
 				ChangeScreenMode(false);
-			else if (Config::GetProfile() == Config::Profile::Basic)
-				ChangeProfile(Config::Profile::Main);
+			else if (Config::GetProfile() == Profile::Basic)
+				ChangeProfile(Profile::Main);
 			break;
 
 		case Bindings::Operation::EscapeSupportingQuit:
 			if (FullscreenMode)
 				ChangeScreenMode(false);
-			else if (Config::GetProfile() == Config::Profile::Basic)
-				ChangeProfile(Config::Profile::Main);
+			else if (Config::GetProfile() == Profile::Basic)
+				ChangeProfile(Profile::Main);
 			else
 				Viewer::Request_Quit = true;				
 			break;

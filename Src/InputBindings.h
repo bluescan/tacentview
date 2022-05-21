@@ -16,6 +16,7 @@
 #include <Foundation/tString.h>
 #include <System/tScript.h>
 #include <GLFW/glfw3.h>
+#include "Profile.h"
 namespace Viewer {
 
 
@@ -91,8 +92,9 @@ namespace Bindings
 		KeyBindings,
 
 		Fullscreen,
-		Escape,
-		EscapeSupportingQuit,
+
+		Escape,					// Exit-Fullscreen | Exit-Basic-Profile.
+		EscapeSupportingQuit,	// Exit-Fullscreen | Exit-Basic-Profile | Quit.
 		Quit,
 
 		OpenFile,
@@ -143,7 +145,11 @@ namespace Bindings
 		InputMap(const InputMap& src)																					{ Set(src); }
 		void Set(const InputMap& src)																					{ if (&src == this) return; for (int k = 0; k <= GLFW_KEY_LAST; k++) KeyTable[k] = src.KeyTable[k]; }
 		void Clear()								/* Unassigns all keys. */											{ for (int k = 0; k <= GLFW_KEY_LAST; k++) KeyTable[k].Clear(); }
-		void Reset(bool onlyIfUnassigned = false);	// Sets all keys to their default operations.
+
+		// Sets all keys to their default operations. Some keys have different operations depending on the profile so we
+		// need to pass that in. If onlyIfUnassigned is true, the reset will only apply to keys that are not already
+		// bound to something. A 'key' here refers to the actual key plus any modifiers (ctrl, alt, shift).
+		void Reset(Viewer::Profile, bool onlyIfUnassigned = false);
 
 		// Returns the operation assigned to a particular key and set of modifiers. This can also be used before an
 		// assign call to see what a current key is bound to so an already-assigned message can be dislayed if needed.

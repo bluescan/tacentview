@@ -59,18 +59,19 @@ private:
 	tString GetSelectedDir();
 	void DoSelectable(ContentItem*);
 
-	void PopulateFavourites();
+	void PopulateBookmarks();
 	void PopulateLocal();
-	void FavouritesTreeNodeFlat(TreeNode*);
-	void TreeNodeRecursive(TreeNode*);
+	#ifdef PLATFORM_WINDOWS
+	void PopulateNetwork();
+	#endif
 
 	// Needed in cases where we need a reload of content. For example, when changing filetype filters.
 	void InvalidateAllNodeContent();
 	void InvalidateAllNodeContentRecursive(TreeNode*);
+	void TreeNodeRecursive(TreeNode*);
+	void TreeNodeFlat(TreeNode*);
 
 	#ifdef PLATFORM_WINDOWS
-	void PopulateNetwork();
-	void NetworkTreeNodeRecursive(TreeNode*);
 	void RequestNetworkSharesThread();
 	void ProcessShareResults();
 	tSystem::tNetworkShareResult NetworkShareResults;
@@ -81,7 +82,7 @@ private:
 	tSystem::tFileTypes FileTypes;
 	tString Result;
 
-	TreeNode* FavouritesTreeNode;
+	TreeNode* BookmarkTreeNode;
 	TreeNode* LocalTreeNode;
 	#ifdef PLATFORM_WINDOWS
 	TreeNode* NetworkTreeNode;

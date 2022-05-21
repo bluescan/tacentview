@@ -78,6 +78,8 @@ add_executable(
 	Src/OpenSaveDialogs.h
 	Src/Preferences.cpp
 	Src/Preferences.h
+	Src/Profile.cpp
+	Src/Profile.h
 	Src/Properties.cpp
 	Src/Properties.h
 	Src/Resize.cpp

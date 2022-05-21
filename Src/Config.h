@@ -22,16 +22,6 @@
 namespace Viewer { namespace Config {
 
 
-enum class Profile
-{
-	Main,
-	Basic,
-	NumProfiles
-};
-extern const char* ProfileNames[int(Profile::NumProfiles)];
-extern const char* ProfileNamesLong[int(Profile::NumProfiles)];
-
-
 enum Category
 {
 	Category_None,
@@ -174,7 +164,7 @@ struct Settings
 
 	// Yes, this struct only represents a single profile, but the defaults are different
 	// depending on which profile is chosen, so we need to pass it in.
-	void Reset(Config::Profile, uint32 categories);
+	void Reset(Viewer::Profile, uint32 categories);
 };
 
 

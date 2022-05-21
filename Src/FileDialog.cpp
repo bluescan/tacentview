@@ -77,8 +77,8 @@ namespace tInterface
 		tString FileSizeString;					// Displayed.
 	};
 
-	// Tree nodes are in the left panel. Used for directories and containers with special names
-	// like favourites, local, and network. A TreeNode has children TreeNodes.
+	// Tree nodes are displayed directly in the left panel and their contained Contents list in the right. TreeNodes
+	// represent directories and other containers like favourites and network shares. A TreeNode has children TreeNodes.
 	class TreeNode
 	{
 	public:
@@ -103,7 +103,10 @@ namespace tInterface
 		tItList<TreeNode> Children;
 
 		bool NextOpen = false;
-		bool ContentsPopulated = false;		// Is the Contents list below populated and valid.
+
+		// Is the Contents list below populated and valid. It is slightly different than having an empty Contents list
+		// because a leaf empty directory may have no contents, but it HAS read the filesystem so is populated.
+		bool ContentsPopulated = false;
 		tList<ContentItem> Contents;
 	};
 }
@@ -254,14 +257,14 @@ FileDialog::FileDialog(DialogMode mode, const tSystem::tFileTypes& fileTypes) :
 	Mode(mode),
 	FileTypes(fileTypes)
 {
-	FavouritesTreeNode = new TreeNode("Favourites", this);
+	BookmarkTreeNode = new TreeNode("Bookmarks", this);
 	LocalTreeNode = new TreeNode("Local", this);
 	#ifdef PLATFORM_WINDOWS
 	NetworkTreeNode = new TreeNode("Network", this);
 	#endif
 
-	// @wip Favourites is disabled until I implement it fully.
-	// PopulateFavourites();
+	// @wip Bookmarks is disabled until I implement it fully.
+	PopulateBookmarks();
 	PopulateLocal();
 	#ifdef PLATFORM_WINDOWS
 	PopulateNetwork();
@@ -289,10 +292,17 @@ void FileDialog::OpenPopup()
 }
 
 
-void FileDialog::PopulateFavourites()
+void FileDialog::PopulateBookmarks()
 {
-	TreeNode* favouriteA = new TreeNode("FavouriteA", this, FavouritesTreeNode);
-	FavouritesTreeNode->AppendChild(favouriteA);
+	#if defined(PLATFORM_LINUX)
+	// All linux platforms get a 'home' bookmark.
+	#endif
+
+	#if defined(PLATFORM_WINDOWS)
+	// All windows platforms get a 'user' bookmark.
+	TreeNode* user = new TreeNode("User", this, BookmarkTreeNode);
+	BookmarkTreeNode->AppendChild(user);
+	#endif
 }
 
 
@@ -483,7 +493,7 @@ void FileDialog::DoSelectable(ContentItem* item)
 }
 
 
-void FileDialog::FavouritesTreeNodeFlat(TreeNode* node)
+void FileDialog::TreeNodeFlat(TreeNode* node)
 {
 	int flags = (node->Children.GetNumItems() == 0) ? ImGuiTreeNodeFlags_Leaf : 0;
 	if (SelectedNode == node)
@@ -496,9 +506,8 @@ void FileDialog::FavouritesTreeNodeFlat(TreeNode* node)
 	if (isOpen)
 	{
 		// Recurse children.
-		for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
-			FavouritesTreeNodeFlat(child.GetObject());
-
+//		for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
+//			FavouritesTreeNodeFlat(child.GetObject());
 		ImGui::TreePop();
 	}
 }
@@ -539,8 +548,8 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(0.0f, 3.0f));
 
 		// This block is the workhorse of the dialog.
-		// @wip Favourites are disabled until implemented fully.
-		// FavouritesTreeNodeFlat(FavouritesTreeNode);		
+		// @wip Bookmarks are disabled until implemented fully.
+		TreeNodeFlat(BookmarkTreeNode);
 		TreeNodeRecursive(LocalTreeNode);
 		#ifdef PLATFORM_WINDOWS
 		ProcessShareResults();

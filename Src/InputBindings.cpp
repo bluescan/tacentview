@@ -181,7 +181,7 @@ const char* Bindings::OperationDescriptions[int(Operation::NumOperations)] =
 
 	"Fullscreen",
 	"Exit-Fullscreen | Exit-Basic-Profile",
-	"Quit | Exit-Fullscreen | Exit-Basic-Profile",
+	"Exit-Fullscreen | Exit-Basic-Profile | Quit",
 	"Quit",
 
 	"Open File",
@@ -286,7 +286,7 @@ bool Bindings::InputMap::AssignKey(int key, uint32 modifiers, Operation operatio
 }
 
 
-void Bindings::InputMap::Reset(bool onlyIfUnassigned)
+void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 {
 	if (!onlyIfUnassigned)
 		Clear();
@@ -305,9 +305,8 @@ void Bindings::InputMap::Reset(bool onlyIfUnassigned)
 	return;
 	#endif
 
-	// Order is unimportant, but for consistency it's in same order as the Operation enum, It won't
-	// match exactly because a) Sometimes more than one key that maps to the same operation and b)
-	// some operations are not bound by default. In any case, order still matches.
+	// Order is unimportant, but for consistency it's in same order as the Operation enum. Sometimes more than one key
+	// maps to the same operation and some operations are not bound by default, so the number of lines != num_ops.
 	AssignKey(GLFW_KEY_SPACE,		Modifier_None,					Operation::NextImage,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_RIGHT,		Modifier_None,					Operation::NextImage,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_LEFT,		Modifier_None,					Operation::PrevImage,				onlyIfUnassigned);
@@ -379,7 +378,10 @@ void Bindings::InputMap::Reset(bool onlyIfUnassigned)
 
 	AssignKey(GLFW_KEY_F11,			Modifier_None,					Operation::Fullscreen,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_ENTER,		Modifier_Alt,					Operation::Fullscreen,				onlyIfUnassigned);
-	AssignKey(GLFW_KEY_ESCAPE,		Modifier_None,					Operation::EscapeSupportingQuit,	onlyIfUnassigned);
+	if (profile == Profile::Basic)
+		AssignKey(GLFW_KEY_ESCAPE,	Modifier_None,					Operation::Quit,					onlyIfUnassigned);
+	else
+		AssignKey(GLFW_KEY_ESCAPE,	Modifier_None,					Operation::Escape,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_F4,			Modifier_Alt,					Operation::Quit,					onlyIfUnassigned);
 
 	AssignKey(GLFW_KEY_O,			Modifier_Ctrl,					Operation::OpenFile,				onlyIfUnassigned);
@@ -476,17 +478,25 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		if (justOpened)
 			profile = int(Config::GetProfile());
 
-		ImGui::SetNextItemWidth(100);
-		ImGui::Combo("##ProfileToEdit", &profile, Config::ProfileNamesLong, int(Config::Profile::NumProfiles));
+		ImGui::SetNextItemWidth(104);
+		ImGui::Combo("##ProfileToEdit", &profile, ProfileNamesLong, int(Profile::NumProfiles));
 		Config::Settings& settings = (profile == 0) ? Config::MainSettings : Config::BasicSettings;
 
 		ImGui::SameLine();
-		if (ImGui::Button("Reset Profile", tVector2(100.0f, 0.0f)))
-			settings.InputBindings.Reset();
+		if (ImGui::Button("Reset", tVector2(72.0f, 0.0f)))
+			settings.InputBindings.Reset(Viewer::Profile(profile));
 		ShowToolTip("Resets the key bindings to default for the chosen profile.");
 
 		ImGui::SameLine();
-		if (ImGui::Button("Set All Profiles", tVector2(100.0f, 0.0f)))
+		if (ImGui::Button("Reset All", tVector2(72.0f, 0.0f)))
+		{
+			Config::MainSettings.InputBindings.Reset(Profile::Main);
+			Config::BasicSettings.InputBindings.Reset(Profile::Basic);
+		}
+		ShowToolTip("Resets the key bindings to default for all profiles.");
+
+		ImGui::SameLine();
+		if (ImGui::Button("Set All", tVector2(72.0f, 0.0f)))
 		{
 			// Operator= deals with the object being the same one, so just copy them both over indescriminately.
 			Config::MainSettings.InputBindings = settings.InputBindings;
@@ -495,8 +505,8 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		ShowToolTip("Copies the keybindings to all profiles. Useful if you want them all the same.");
 
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-		if (ImGui::Button("Close", tVector2(100.0f, 0.0f)))
+		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 72.0f);
+		if (ImGui::Button("Close", tVector2(72.0f, 0.0f)))
 		{
 			if (popen)
 				*popen = false;
@@ -592,7 +602,13 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 						const char* opDesc = GetOperationDesc(Operation::KeyBindings);
 						tString opText;
 						tsPrintf(opText, " %s (Permanent Binding)", opDesc);
-						ImGui::Text(opText.Chars());
+
+						if (ImGui::BeginCombo(oplabel, opText.Chars(), ImGuiComboFlags_NoArrowButton))
+						{
+							bool sel = false;
+							ImGui::Selectable("Rebinding Disabled", &sel);
+							ImGui::EndCombo();
+						}
 					}
 					
 					// The remove button column.
@@ -836,7 +852,7 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 		}
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2);
-		ImGui::Text("Current Profile: %s", (Config::GetProfile() == Config::Profile::Main) ? "Main" : "Basic");
+		ImGui::Text("Current Profile: %s", Config::GetProfileName());
 
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
