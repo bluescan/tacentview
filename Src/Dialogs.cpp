@@ -380,6 +380,8 @@ void Viewer::ShowAboutPopup(bool* popen)
 		ImGui::Text("LibPNG V %s", tImage::Version_LibPNG);
 		ImGui::Text("APNGDis V %s", tImage::Version_ApngDis);
 		ImGui::Text("APNGAsm V %s", tImage::Version_ApngAsm);
+		ImGui::Text("TinyXML2 V %d.%d.%d", tImage::Version_TinyXML2_Major, tImage::Version_TinyXML2_Minor, tImage::Version_TinyXML2_Patch);
+		ImGui::Text("TinyEXIF V %d.%d.%d", tImage::Version_TinyEXIF_Major, tImage::Version_TinyEXIF_Minor, tImage::Version_TinyEXIF_Patch);
 	}
 	ImGui::End();
 }
