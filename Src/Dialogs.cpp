@@ -362,7 +362,7 @@ void Viewer::ShowAboutPopup(bool* popen)
 
 		// This way of getting the version is 'dynamic'. It will, for example, print mesa compatibility mode if it's being used.
 		ImGui::Text("GLAD V %s", glad_glGetString(GL_VERSION));
-		// This is the more 'static' way.
+		// This is the more 'static' way. Currently unused.
 		// ImGui::Text("GLAD V %d.%d", GLVersion.major, GLVersion.minor);
 
 		ImGui::Text("GLFW V %d.%d.%d", glfwMajor, glfwMinor, glfwRev);
