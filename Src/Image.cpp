@@ -150,6 +150,9 @@ bool Image::Load()
 
 	Info.SrcPixelFormat = tPixelFormat::Invalid;
 	bool success = false;
+
+	// @todo We 'probably' no longer need this try as the default behaviour for the image loaders
+	// is now to return invalid objects instead of throwing.
 	try
 	{
 		switch (loadingFiletype)

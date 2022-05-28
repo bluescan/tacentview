@@ -1,0 +1,69 @@
+EXIF Orientation-flag example images
+====================================
+
+Example images using each of the EXIF orientation flags (0-to-8), in both landscape and portrait orientations.
+[See here](http://www.daveperrett.com/articles/2012/07/28/exif-orientation-handling-is-a-ghetto/) for more information.
+
+
+Credits
+-------
+
+* The sample landscape image is by [Pierre Bouillot](https://unsplash.com/photos/v15iOM6pWgI).
+* The sample portrait image is by [John Salvino](https://unsplash.com/photos/1PPpwrTNkJI).
+
+
+The Unsplash Licence
+---------------------
+License
+Unsplash photos are made to be used freely. Our license reflects that.
+
+All photos can be downloaded and used for free
+Commercial and non-commercial purposes
+No permission needed (though attribution is appreciated!)
+
+What is not permitted 👎
+Photos cannot be sold without significant modification.
+Compiling photos from Unsplash to replicate a similar or competing service.
+
+Longform
+Unsplash grants you an irrevocable, nonexclusive, worldwide copyright license to download, copy, modify, distribute, perform, and use photos from Unsplash for free, including for commercial purposes, without permission from or attributing the photographer or Unsplash. This license does not include the right to compile photos from Unsplash to replicate a similar or competing service.
+
+
+Change history
+--------------
+
+* **Version 2.0.0 (2017-08-05)** : Add a script to generate example images from the command line.
+* **Version 1.0.2 (2017-03-06)** : Remove Apple Copyrighted ICC profile from orientations 2-8 (thanks @mans0954!).
+* **Version 1.0.1 (2013-03-10)** : Add MIT license and some contact details.
+* **Version 1.0.0 (2012-07-28)** : 1.0 release.
+
+
+Author
+------
+Dave Perrett :: hello@daveperrett.com :: [@daveperrett](http://twitter.com/daveperrett)
+
+
+Copyright
+---------
+These images are licensed under the [MIT License](http://opensource.org/licenses/MIT).
+
+Copyright (c) 2010 Dave Perrett, http://recursive-design.com/
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
