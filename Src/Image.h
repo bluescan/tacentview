@@ -145,6 +145,9 @@ public:
 	int CachePrimaryHeight	= 0;
 	int CachePrimaryArea	= 0;
 
+	// @todo Image meta-data should be stored similarly to Cache* data so we can sort by it.
+	// tMetaData MetaData;
+
 	const static uint32 ThumbChunkInfoID;
 	const static int ThumbWidth;						// = 256;
 	const static int ThumbHeight;						// = 144;

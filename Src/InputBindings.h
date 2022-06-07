@@ -96,9 +96,10 @@ namespace Bindings
 		Escape,					// Exit-Fullscreen | Exit-Basic-Profile.
 		EscapeSupportingQuit,	// Exit-Fullscreen | Exit-Basic-Profile | Quit.
 		Quit,
-
 		OpenFile,
 		OpenDir,
+
+		MetaData,
 
 		// Add new operations here. Adding above will invalidate save file keybindings.
 		NumOperations

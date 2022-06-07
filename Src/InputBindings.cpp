@@ -108,6 +108,7 @@ void Bindings::InitKeyNameTables()
 }
 
 
+tStaticAssert(sizeof(Bindings::OperationDescriptions)/sizeof(*Bindings::OperationDescriptions) == int(Bindings::Operation::NumOperations));
 const char* Bindings::OperationDescriptions[int(Operation::NumOperations)] =
 {
 	"None",
@@ -185,9 +186,11 @@ const char* Bindings::OperationDescriptions[int(Operation::NumOperations)] =
 	"Quit",
 
 	"Open File",
-	"Open Dir"
+	"Open Dir",
+	"Meta Data",
 	
 	// Add new entries here.
+	// "One Too Many"
 };
 
 
@@ -383,9 +386,9 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 	else
 		AssignKey(GLFW_KEY_ESCAPE,	Modifier_None,					Operation::Escape,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_F4,			Modifier_Alt,					Operation::Quit,					onlyIfUnassigned);
-
 	AssignKey(GLFW_KEY_O,			Modifier_Ctrl,					Operation::OpenFile,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_O,			Modifier_Alt,					Operation::OpenDir,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_X,			Modifier_None,					Operation::MetaData,				onlyIfUnassigned);
 }
 
 

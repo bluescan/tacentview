@@ -1,0 +1,171 @@
+// Details.cpp
+//
+// Image details overlay and a meta-data inspector.
+//
+// Copyright (c) 2022 Tristan Grimmer.
+// Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
+// granted, provided that the above copyright notice and this permission notice appear in all copies.
+//
+// THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+// INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+// AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+// PERFORMANCE OF THIS SOFTWARE.
+
+#include <Math/tVector2.h>
+#include "imgui.h"
+#include "Details.h"
+#include "Config.h"
+#include "Image.h"
+#include "TacentView.h"
+using namespace tMath;
+
+
+void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY, float zoom)
+{
+	// This overlay function is pretty much taken from the DearImGui demo code.
+	const float margin = 6.0f;
+
+	tVector2 windowPos = tVector2
+	(
+		x + ((Config::Current->OverlayCorner & 1) ? w - margin : margin),
+		y + ((Config::Current->OverlayCorner & 2) ? h - margin : margin)
+	);
+	tVector2 windowPivot = tVector2
+	(
+		(Config::Current->OverlayCorner & 1) ? 1.0f : 0.0f,
+		(Config::Current->OverlayCorner & 2) ? 1.0f : 0.0f
+	);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, windowPivot);
+	ImGui::SetNextWindowBgAlpha(0.6f);
+	ImGuiWindowFlags flags =
+		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
+		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollbar;
+
+	if (ImGui::Begin("ImageDetails", popen, flags))
+	{
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX()+30);
+		ImGui::Text("Image   Details         ");
+
+		ShowToolTip("Right-Click to Change Anchor");
+		ImGui::Separator();
+
+		if (CurrImage)
+		{
+			tColourf floatCol(PixelColour);
+			tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
+			if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, tVector2(15,15)))
+				ImGui::OpenPopup("CopyColourOverlayAs");
+
+			if (ImGui::BeginPopup("CopyColourOverlayAs"))
+				ColourCopyAs();
+
+			ImGui::SameLine(); ImGui::Text("(%d, %d, %d, %d)", PixelColour.R, PixelColour.G, PixelColour.B, PixelColour.A);
+
+			Image::ImgInfo& info = CurrImage->Info;
+			int bpp = tImage::tGetBitsPerPixel(info.SrcPixelFormat);
+			if (info.IsValid())
+			{
+				ImGui::Text("Size: %dx%d", CurrImage->GetWidth(), CurrImage->GetHeight());
+				ImGui::Text("Format: %s", tImage::tGetPixelFormatName(info.SrcPixelFormat));
+				if (bpp > 0)
+					ImGui::Text("Bits Per Pixel: %d", bpp);
+				else
+					ImGui::Text("Bits Per Pixel: --");
+				ImGui::Text("Opaque: %s", info.Opaque ? "true" : "false");
+				ImGui::Text("Frames: %d", CurrImage->GetNumFrames());
+				tString sizeStr; tsPrintf(sizeStr, "File Size: %'d", info.FileSizeBytes);
+				ImGui::Text(sizeStr.Chars());
+				ImGui::Text("Cursor: (%d, %d)", cursorX, cursorY);
+				ImGui::Text("Zoom: %.0f%%", zoom);
+			}
+		}
+		ImGui::Text("Images In Folder: %d", Images.GetNumItems());
+
+		if (ImGui::BeginPopupContextWindow())
+		{
+			if (ImGui::MenuItem("Top-left",		nullptr, Config::Current->OverlayCorner == 0)) Config::Current->OverlayCorner = 0;
+			if (ImGui::MenuItem("Top-right",	nullptr, Config::Current->OverlayCorner == 1)) Config::Current->OverlayCorner = 1;
+			if (ImGui::MenuItem("Bottom-left",  nullptr, Config::Current->OverlayCorner == 2)) Config::Current->OverlayCorner = 2;
+			if (ImGui::MenuItem("Bottom-right", nullptr, Config::Current->OverlayCorner == 3)) Config::Current->OverlayCorner = 3;
+			if (popen && ImGui::MenuItem("Close")) *popen = false;
+			ImGui::EndPopup();
+		}
+	}
+	ImGui::End();
+}
+
+
+void Viewer::ColourCopyAs()
+{
+	tColourf floatCol(PixelColour);
+	ImGui::Text("Copy As...");
+	int ri = PixelColour.R; int gi = PixelColour.G; int bi = PixelColour.B; int ai = PixelColour.A;
+	float rf = floatCol.R; float gf = floatCol.G; float bf = floatCol.B; float af = floatCol.A;
+	tString cpyTxt;
+
+	tsPrintf(cpyTxt, "%d %d %d %d", ri, gi, bi, ai);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "%d %d %d", ri, gi, bi);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "(%d, %d, %d, %d)", ri, gi, bi, ai);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "(%d, %d, %d)", ri, gi, bi);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "%02X%02X%02X%02X", ri, gi, bi, ai);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "%02X%02X%02X", ri, gi, bi);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "#%02X%02X%02X%02X", ri, gi, bi, ai);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "#%02X%02X%02X", ri, gi, bi);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "0x%02X%02X%02X%02X", ri, gi, bi, ai);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "%.3f, %.3f, %.3f, %.3f", rf, gf, bf, af);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "%.3ff, %.3ff, %.3ff, %.3ff", rf, gf, bf, af);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "(%.3f, %.3f, %.3f, %.3f)", rf, gf, bf, af);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	tsPrintf(cpyTxt, "(%.3ff, %.3ff, %.3ff, %.3ff)", rf, gf, bf, af);
+	if (ImGui::Selectable(cpyTxt.Chars()))
+		ImGui::SetClipboardText(cpyTxt.Chars());
+	ImGui::EndPopup();
+}
+
+
+void Viewer::ShowImageMetaDataOverlay(bool* popen)
+{
+	tVector2 windowPos = GetDialogOrigin(6);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+	ImGuiWindowFlags flags =
+		/* ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	| */
+		ImGuiWindowFlags_NoSavedSettings	|
+		ImGuiWindowFlags_NoNav;
+
+	if (ImGui::Begin("Meta Data", popen, flags))
+	{
+		// Get meta data from current image.
+		//CurrImage
+
+		ImGui::Text("MD 1");
+		ImGui::Text("MD 2");
+		ImGui::Text("MD 3");
+	}
+
+	ImGui::End();
+}

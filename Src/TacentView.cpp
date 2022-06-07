@@ -40,6 +40,7 @@
 #include "TacentView.h"
 #include "Image.h"
 #include "Dialogs.h"
+#include "Details.h"
 #include "Preferences.h"
 #include "Properties.h"
 #include "ContactSheet.h"
@@ -116,6 +117,7 @@ namespace Viewer
 	Image RecycleImage;
 	Image PropEditImage;
 	Image InfoOverlayImage;
+	Image MetaDataImage;
 	Image HelpImage;
 	Image PrefsImage;
 	Image TileImage;
@@ -1685,6 +1687,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			tString detailsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Details);
 			ImGui::MenuItem("Image Details", detailsKey.Charz(), &Config::Current->ShowImageDetails);
 
+			tString metaDataKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::MetaData);
+			ImGui::MenuItem("Image Meta Data", metaDataKey.Charz(), &Config::Current->ShowImageMetaData);
+
 			tString thumbKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Thumbnails);
 			ImGui::MenuItem("Thumbnail View", thumbKey.Charz(), &Config::Current->ContentViewShow);
 
@@ -1882,7 +1887,14 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImTextureID(InfoOverlayImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
 			Config::Current->ShowImageDetails ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	Config::Current->ShowImageDetails = !Config::Current->ShowImageDetails;
-		ShowToolTip("Information Overlay");
+		ShowToolTip("Image Details Overlay");
+
+		if (ImGui::ImageButton
+		(
+			ImTextureID(MetaDataImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
+			Config::Current->ShowImageMetaData ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	Config::Current->ShowImageMetaData = !Config::Current->ShowImageMetaData;
+		ShowToolTip("Image Meta-Data Overlay");
 
 		bool refreshAvail = CurrImage ? true : false;
 		if (ImGui::ImageButton
@@ -1946,9 +1958,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (Config::Current->ShowNavBar)
 		DrawNavBar(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
 
-	// We allow the overlay and cheatsheet in fullscreen.
 	if (Config::Current->ShowImageDetails)
 		ShowImageDetailsOverlay(&Config::Current->ShowImageDetails, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), CursorX, CursorY, ZoomPercent);
+
+	if (Config::Current->ShowImageMetaData)
+		ShowImageMetaDataOverlay(&Config::Current->ShowImageMetaData);
 
 	if (Config::Current->ShowPixelEditor)
 		ShowPixelEditorOverlay(&Config::Current->ShowPixelEditor);
@@ -2510,6 +2524,10 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case Bindings::Operation::OpenDir:
 			Request_OpenDirModal = true;
 			break;
+
+		case Bindings::Operation::MetaData:
+			Viewer::Config::Current->ShowImageMetaData = !Viewer::Config::Current->ShowImageMetaData;
+			break;
 	}
 }
 
@@ -2687,6 +2705,7 @@ void Viewer::LoadAppImages(const tString& dataDir)
 	RecycleImage			.Load(dataDir + "Recycle.png");
 	PropEditImage			.Load(dataDir + "PropEdit.png");
 	InfoOverlayImage		.Load(dataDir + "InfoOverlay.png");
+	MetaDataImage			.Load(dataDir + "MetaData.png");
 	HelpImage				.Load(dataDir + "Help.png");
 	PrefsImage				.Load(dataDir + "Settings.png");
 	TileImage				.Load(dataDir + "Tile.png");
@@ -2726,6 +2745,7 @@ void Viewer::UnloadAppImages()
 	RecycleImage			.Unload();
 	PropEditImage			.Unload();
 	InfoOverlayImage		.Unload();
+	MetaDataImage			.Unload();
 	HelpImage				.Unload();
 	PrefsImage				.Unload();
 	TileImage				.Unload();

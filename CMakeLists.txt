@@ -64,6 +64,8 @@ add_executable(
 	Src/ContentView.h
 	Src/Crop.cpp
 	Src/Crop.h
+	Src/Details.cpp
+	Src/Details.h
 	Src/Dialogs.cpp
 	Src/Dialogs.h
 	Src/FileDialog.cpp

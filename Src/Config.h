@@ -52,6 +52,7 @@ struct Settings
 	bool ShowMenuBar;
 	bool ShowNavBar;
 	bool ShowImageDetails;
+	bool ShowImageMetaData;
 	bool ShowPixelEditor;
 	bool ShowChannelFilter;
 	bool ShowFrameScrubber;

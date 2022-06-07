@@ -1197,13 +1197,13 @@ void Image::GenerateThumbnail()
 	if (!srcPic)
 		return;
 
-	// We make the thumbnail keep its aspect ratio.
 	int srcW = srcPic->GetWidth();
 	int srcH = srcPic->GetHeight();
 	CachePrimaryWidth = srcW;
 	CachePrimaryHeight = srcH;
 	CachePrimaryArea = srcW * srcH;
 
+	// We make the thumbnail keep its aspect ratio.
 	float scaleX = float(ThumbWidth)  / float(srcW);
 	float scaleY = float(ThumbHeight) / float(srcH);
 	int iw, ih;
