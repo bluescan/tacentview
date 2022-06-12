@@ -34,7 +34,10 @@ int Image::ThumbnailNumThreadsRunning = 0;
 tString Image::ThumbCacheDir;
 
 
-const uint32 Image::ThumbChunkInfoID	= 0x0B000000;
+const uint32 Image::ThumbChunkInfoID		= 0x0B000000;
+const uint32 Image::ThumbChunkMetaDataID	= 0x8B000010;
+const uint32 Image::ThumbChunkMetaDatumID	= 0x0B000020;
+
 const int Image::ThumbWidth				= 256;
 const int Image::ThumbHeight			= 144;
 const int Image::ThumbMinDispWidth		= 64;
@@ -343,6 +346,8 @@ bool Image::Load()
 				Info.SrcPixelFormat = jpg.SrcPixelFormat;
 				tPicture* picture = new tPicture(width, height, pixels, false);
 				Pictures.Append(picture);
+
+				Cached_MetaData = jpg.MetaData;
 				success = true;
 				break;
 			}
@@ -1147,9 +1152,23 @@ void Image::GenerateThumbnail()
 			switch (ch.ID())
 			{
 				case ThumbChunkInfoID:
-					ch.GetItem(CachePrimaryWidth);
-					ch.GetItem(CachePrimaryHeight);
-					ch.GetItem(CachePrimaryArea);
+					ch.GetItem(Cached_PrimaryWidth);
+					ch.GetItem(Cached_PrimaryHeight);
+					ch.GetItem(Cached_PrimaryArea);
+					break;
+
+				case ThumbChunkMetaDataID:
+					Cached_MetaData.Clear();
+					for (tChunk datum = ch.First(); datum.IsValid(); datum = datum.Next())
+					{
+						switch (datum.ID())
+						{
+							case ThumbChunkMetaDatumID:
+								// @wip Read tag, type, value etc.
+								// @todo Move all metadata load/save over to tacent tMetaData class.
+								break;
+						}
+					}
 					break;
 
 				case tChunkID::Image_Picture:
@@ -1199,9 +1218,9 @@ void Image::GenerateThumbnail()
 
 	int srcW = srcPic->GetWidth();
 	int srcH = srcPic->GetHeight();
-	CachePrimaryWidth = srcW;
-	CachePrimaryHeight = srcH;
-	CachePrimaryArea = srcW * srcH;
+	Cached_PrimaryWidth		= srcW;
+	Cached_PrimaryHeight	= srcH;
+	Cached_PrimaryArea		= srcW * srcH;
 
 	// We make the thumbnail keep its aspect ratio.
 	float scaleX = float(ThumbWidth)  / float(srcW);
@@ -1230,9 +1249,9 @@ void Image::GenerateThumbnail()
 	// Write to cache file.
 	tChunkWriter writer(hashFile);
 	writer.Begin(ThumbChunkInfoID);
-	writer.Write(CachePrimaryWidth);
-	writer.Write(CachePrimaryHeight);
-	writer.Write(CachePrimaryArea);
+	writer.Write(Cached_PrimaryWidth);
+	writer.Write(Cached_PrimaryHeight);
+	writer.Write(Cached_PrimaryArea);
 	writer.Write(0x00000000);
 	writer.End();
 	ThumbnailPicture.Save(writer);

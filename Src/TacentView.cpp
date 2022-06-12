@@ -222,12 +222,13 @@ namespace Viewer
 	bool Compare_ImageModTimeDescending	(const Image& a, const Image& b)												{ return a.FileModTime > b.FileModTime; }
 	bool Compare_ImageFileSizeAscending	(const Image& a, const Image& b)												{ return a.FileSizeB < b.FileSizeB; }
 	bool Compare_ImageFileSizeDescending(const Image& a, const Image& b)												{ return a.FileSizeB > b.FileSizeB; }
-	bool Compare_ImageAreaAscending		(const Image& a, const Image& b)												{ return a.CachePrimaryArea < b.CachePrimaryArea; }
-	bool Compare_ImageAreaDescending	(const Image& a, const Image& b)												{ return a.CachePrimaryArea > b.CachePrimaryArea; }
-	bool Compare_ImageWidthAscending	(const Image& a, const Image& b)												{ return a.CachePrimaryWidth < b.CachePrimaryWidth; }
-	bool Compare_ImageWidthDescending	(const Image& a, const Image& b)												{ return a.CachePrimaryWidth > b.CachePrimaryWidth; }
-	bool Compare_ImageHeightAscending	(const Image& a, const Image& b)												{ return a.CachePrimaryHeight < b.CachePrimaryHeight; }
-	bool Compare_ImageHeightDescending	(const Image& a, const Image& b)												{ return a.CachePrimaryHeight > b.CachePrimaryHeight; }
+
+	bool Compare_ImageAreaAscending		(const Image& a, const Image& b)												{ return a.Cached_PrimaryArea < b.Cached_PrimaryArea; }
+	bool Compare_ImageAreaDescending	(const Image& a, const Image& b)												{ return a.Cached_PrimaryArea > b.Cached_PrimaryArea; }
+	bool Compare_ImageWidthAscending	(const Image& a, const Image& b)												{ return a.Cached_PrimaryWidth < b.Cached_PrimaryWidth; }
+	bool Compare_ImageWidthDescending	(const Image& a, const Image& b)												{ return a.Cached_PrimaryWidth > b.Cached_PrimaryWidth; }
+	bool Compare_ImageHeightAscending	(const Image& a, const Image& b)												{ return a.Cached_PrimaryHeight < b.Cached_PrimaryHeight; }
+	bool Compare_ImageHeightDescending	(const Image& a, const Image& b)												{ return a.Cached_PrimaryHeight > b.Cached_PrimaryHeight; }
 	typedef bool ImageCompareFn			(const Image&, const Image&);
 
 	bool OnPrevious();

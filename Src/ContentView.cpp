@@ -21,6 +21,43 @@
 using namespace tMath;
 
 
+namespace Viewer
+{
+	tString MakeImageTooltipString(Image*, const tString& filename);
+}
+
+
+tString Viewer::MakeImageTooltipString(Viewer::Image* image, const tString& filename)
+{
+	tString tooltip;
+	if (!image)
+		return tooltip;
+
+	if (image->Cached_PrimaryWidth && image->Cached_PrimaryHeight)
+		tsPrintf
+		(
+			tooltip, "%s\n%s\n%'d Bytes\nW:%'d\nH:%'d\nArea:%'d",
+			filename.Chars(),
+			tSystem::tConvertTimeToString(tSystem::tConvertTimeToLocal(image->FileModTime)).Chars(),
+			image->FileSizeB,
+			image->Cached_PrimaryWidth,
+			image->Cached_PrimaryHeight,
+			image->Cached_PrimaryArea
+		);
+	else
+		tsPrintf
+		(
+			tooltip, "%s\n%s\n%'d Bytes",
+			filename.Chars(),
+			tSystem::tConvertTimeToString(tSystem::tConvertTimeToLocal(image->FileModTime)).Chars(),
+			image->FileSizeB
+		);
+
+
+	return tooltip;
+}
+
+
 void Viewer::ShowContentViewDialog(bool* popen)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar;
@@ -91,28 +128,8 @@ void Viewer::ShowContentViewDialog(bool* popen)
 
 			tString filename = tSystem::tGetFileName(i->Filename);
 			ImGui::Text(filename.Chars());
-
-			tString ttStr;
-			if (i->CachePrimaryWidth && i->CachePrimaryHeight)
-				tsPrintf
-				(
-					ttStr, "%s\n%s\n%'d Bytes\nW:%'d\nH:%'d\nArea:%'d",
-					filename.Chars(),
-					tSystem::tConvertTimeToString(tSystem::tConvertTimeToLocal(i->FileModTime)).Chars(),
-					i->FileSizeB,
-					i->CachePrimaryWidth,
-					i->CachePrimaryHeight,
-					i->CachePrimaryArea
-				);
-			else
-				tsPrintf
-				(
-					ttStr, "%s\n%s\n%'d Bytes",
-					filename.Chars(),
-					tSystem::tConvertTimeToString(tSystem::tConvertTimeToLocal(i->FileModTime)).Chars(),
-					i->FileSizeB
-				);
-
+			
+			tString ttStr = Viewer::MakeImageTooltipString(i, filename);
 			ShowToolTip(ttStr.Chars());
 
 			// We use a separator to indicate the current item.

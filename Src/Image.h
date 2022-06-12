@@ -23,6 +23,7 @@
 #include <Image/tTexture.h>
 #include <Image/tCubemap.h>
 #include <Image/tImageHDR.h>
+#include <Image/tMetaData.h>
 #include "Config.h"
 #include "Undo.h"
 namespace Viewer
@@ -141,14 +142,18 @@ public:
 	tSystem::tFileType Filetype;						// Valid before load. Based on extension.
 	std::time_t FileModTime;							// Valid before load.
 	uint64 FileSizeB;									// Valid before load.
-	int CachePrimaryWidth	= 0;						// Valid once thumbnail loaded. Used for sorting without having to do full load.
-	int CachePrimaryHeight	= 0;
-	int CachePrimaryArea	= 0;
 
-	// @todo Image meta-data should be stored similarly to Cache* data so we can sort by it.
-	// tMetaData MetaData;
+	// Members starting with "Cached" are stored in the cache/thumbnail file and are valid
+	// once the thumbnail is loaded. Used for sorting without having to do a full load.
+	int Cached_PrimaryWidth		= 0;						
+	int Cached_PrimaryHeight	= 0;
+	int Cached_PrimaryArea		= 0;
+	tImage::tMetaData Cached_MetaData;
 
 	const static uint32 ThumbChunkInfoID;
+	const static uint32 ThumbChunkMetaDataID;
+	const static uint32 ThumbChunkMetaDatumID;
+
 	const static int ThumbWidth;						// = 256;
 	const static int ThumbHeight;						// = 144;
 	const static int ThumbMinDispWidth;					// = 64;

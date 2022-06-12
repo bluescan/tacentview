@@ -19,6 +19,7 @@
 #include "Image.h"
 #include "TacentView.h"
 using namespace tMath;
+using namespace tImage;
 
 
 void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY, float zoom)
@@ -154,17 +155,40 @@ void Viewer::ShowImageMetaDataOverlay(bool* popen)
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGuiWindowFlags flags =
 		/* ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	| */
+		ImGuiWindowFlags_AlwaysAutoResize |
 		ImGuiWindowFlags_NoSavedSettings	|
 		ImGuiWindowFlags_NoNav;
 
 	if (ImGui::Begin("Meta Data", popen, flags))
 	{
-		// Get meta data from current image.
-		//CurrImage
+		if (!CurrImage)
+		{
+			ImGui::Text("-- No Current Image --");
+			ImGui::End();
+			return;
+		}
 
-		ImGui::Text("MD 1");
-		ImGui::Text("MD 2");
-		ImGui::Text("MD 3");
+		// Get meta data from current image.
+		tMetaData& metaData = CurrImage->Cached_MetaData;
+		if (!metaData.IsValid())
+		{
+			ImGui::Text("-- No Metadata In Image --");
+			ImGui::End();
+			return;
+		}
+
+		for (int tagIndex = 0; tagIndex < int(tMetaTag::NumTags); tagIndex++)
+		{
+			tMetaTag tag = tMetaTag(tagIndex);
+
+			tString tagName = tGetMetaTagName(tag);
+			tString tagDesc = tGetMetaTagDesc(tag);
+
+			const tMetaDatum& datum = metaData[tag];
+			tString value = metaData.GetPrettyValue(tag);
+			if (value.IsValid())
+				ImGui::Text("%s: %s", tagName.Chars(), value.Chars());
+		}
 	}
 
 	ImGui::End();
