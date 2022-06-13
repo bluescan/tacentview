@@ -792,7 +792,7 @@ void Bindings::ShowAddBindingSection(Config::Settings& settings)
 void Bindings::ShowCheatSheetWindow(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(5);
-	ImGui::SetNextWindowBgAlpha(0.75f);
+	ImGui::SetNextWindowBgAlpha(0.80f);
 	ImGui::SetNextWindowSize(tVector2(350.0f, 600.0f), ImGuiCond_Appearing);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Appearing);
 	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
@@ -800,7 +800,7 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 	if (ImGui::Begin("Cheat Sheet", popen, flags))
 	{
 		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
-		const float rowHeight = 25.0f;
+		const float rowHeight = 18.0f;
 		const int maxRowsToDisplay = 18;
 		int totalAssigned = Config::Current->InputBindings.GetTotalAssigned();
 		const int numRowsToDisplay = tMin(maxRowsToDisplay, totalAssigned);

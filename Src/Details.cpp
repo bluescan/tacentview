@@ -152,44 +152,73 @@ void Viewer::ColourCopyAs()
 void Viewer::ShowImageMetaDataOverlay(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(6);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	ImGuiWindowFlags flags =
-		/* ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	| */
-		ImGuiWindowFlags_AlwaysAutoResize |
-		ImGuiWindowFlags_NoSavedSettings	|
-		ImGuiWindowFlags_NoNav;
+	ImGui::SetNextWindowBgAlpha(0.90f);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Appearing);
+	ImGuiWindowFlags flags = 
+		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
+		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
 
 	if (ImGui::Begin("Meta Data", popen, flags))
 	{
-		if (!CurrImage)
-		{
-			ImGui::Text("-- No Current Image --");
-			ImGui::End();
-			return;
-		}
-
 		// Get meta data from current image.
-		tMetaData& metaData = CurrImage->Cached_MetaData;
-		if (!metaData.IsValid())
+		const tMetaData* metaData = CurrImage ? &CurrImage->Cached_MetaData : nullptr;
+		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
+		const float rowHeight = 18.0f;
+		const int maxRowsToDisplay = 28;
+		int numDataRows = 1;
+		if (metaData && metaData->IsValid())
+			numDataRows = metaData->GetNumValidTags();
+		const int numRowsToDisplay = tMin(maxRowsToDisplay, numDataRows);
+		tVector2 outerSize = ImVec2(0.0f, rowHeight + rowHeight * float(numRowsToDisplay));
+		if (ImGui::BeginTable("MetaDataTable", 2, tableFlags, outerSize))
 		{
-			ImGui::Text("-- No Metadata In Image --");
-			ImGui::End();
-			return;
-		}
+			ImGui::TableSetupColumn("Tag", ImGuiTableColumnFlags_WidthFixed, 120);
+			ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthFixed, 200);
+			ImGui::TableSetupScrollFreeze(0, 1); // Top row fixed.
+			ImGui::TableHeadersRow();
 
-		for (int tagIndex = 0; tagIndex < int(tMetaTag::NumTags); tagIndex++)
-		{
-			tMetaTag tag = tMetaTag(tagIndex);
+			if (!metaData)
+			{
+				ImGui::TableNextRow();
+				ImGui::TableSetColumnIndex(0);
+				ImGui::Text("No Image");
+				ImGui::TableSetColumnIndex(1);
+				ImGui::Text(" ");
+			}
+			else if (!metaData->IsValid())
+			{
+				ImGui::TableNextRow();
+				ImGui::TableSetColumnIndex(0);
+				ImGui::Text("No Metadata In Image");
+				ImGui::TableSetColumnIndex(1);
+				ImGui::Text(" ");
+			}
+			else
+			{
+				for (int tagIndex = 0; tagIndex < int(tMetaTag::NumTags); tagIndex++)
+				{
+					tMetaTag tag = tMetaTag(tagIndex);
+					tString value = metaData->GetPrettyValue(tag);
+					if (value.IsValid())
+					{
+						tString tagName = tGetMetaTagName(tag);
+						tString tagDesc = tGetMetaTagDesc(tag);
+						ImGui::TableNextRow();
+						ImGui::TableSetColumnIndex(0);
+						ImGui::Text(tagName.Chars());
+						ShowToolTip(tagDesc.Chars());
 
-			tString tagName = tGetMetaTagName(tag);
-			tString tagDesc = tGetMetaTagDesc(tag);
+						ImGui::TableSetColumnIndex(1);
+						ImGui::Text(value.Chars());
+						tVector2 rect = ImGui::GetItemRectSize();
+						if (rect.x > 188)
+							ShowToolTip(value.Chars());
+					}
+				}
+			}
 
-			const tMetaDatum& datum = metaData[tag];
-			tString value = metaData.GetPrettyValue(tag);
-			if (value.IsValid())
-				ImGui::Text("%s: %s", tagName.Chars(), value.Chars());
+			ImGui::EndTable();
 		}
 	}
-
 	ImGui::End();
 }
