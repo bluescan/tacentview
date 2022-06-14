@@ -63,7 +63,6 @@ void Viewer::DoOpenDirModal(bool openDirPressed)
 	if (result == FileDialog::DialogResult::OK)
 	{
 		tString chosenDir = OpenDirDialog.GetResult();
-		tPrintf("Opening dir: %s\n", chosenDir.Chars());
 		ImageFileParam.Param = chosenDir + "dummyfile.txt";
 		PopulateImages();
 		SetCurrentImage();

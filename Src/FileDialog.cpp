@@ -257,14 +257,20 @@ FileDialog::FileDialog(DialogMode mode, const tSystem::tFileTypes& fileTypes) :
 	Mode(mode),
 	FileTypes(fileTypes)
 {
+	#ifdef TACENTVIEW_BOOKMARKS
 	BookmarkTreeNode = new TreeNode("Bookmarks", this);
+	#endif
+	
 	LocalTreeNode = new TreeNode("Local", this);
 	#ifdef PLATFORM_WINDOWS
 	NetworkTreeNode = new TreeNode("Network", this);
 	#endif
 
+	#ifdef TACENTVIEW_BOOKMARKS
 	// @wip Bookmarks is disabled until I implement it fully.
 	PopulateBookmarks();
+	#endif
+
 	PopulateLocal();
 	#ifdef PLATFORM_WINDOWS
 	PopulateNetwork();
@@ -292,6 +298,7 @@ void FileDialog::OpenPopup()
 }
 
 
+#ifdef TACENTVIEW_BOOKMARKS
 void FileDialog::PopulateBookmarks()
 {
 	#if defined(PLATFORM_LINUX)
@@ -304,6 +311,7 @@ void FileDialog::PopulateBookmarks()
 	BookmarkTreeNode->AppendChild(user);
 	#endif
 }
+#endif
 
 
 void FileDialog::PopulateLocal()
@@ -506,8 +514,8 @@ void FileDialog::TreeNodeFlat(TreeNode* node)
 	if (isOpen)
 	{
 		// Recurse children.
-//		for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
-//			FavouritesTreeNodeFlat(child.GetObject());
+		// for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
+		//	FavouritesTreeNodeFlat(child.GetObject());
 		ImGui::TreePop();
 	}
 }
@@ -537,7 +545,6 @@ FileDialog::DialogResult FileDialog::DoPopup()
 	ImGui::PushStyleColor(ImGuiCol_TableBorderLight, tVector4(0.50f, 0.50f, 0.54f, 1.00f));
 	if (ImGui::BeginTable("FileDialogTable", 2, ImGuiTableFlags_Resizable, tVector2(0.0f, -bottomBarHeight)))
 	{
-
 		ImGui::TableSetupColumn("LeftTreeColumn", ImGuiTableColumnFlags_WidthFixed, 160.0f);
 		ImGui::TableSetupColumn("RightContentColumn", ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableNextRow();
@@ -548,8 +555,11 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(0.0f, 3.0f));
 
 		// This block is the workhorse of the dialog.
+
+		#ifdef TACENTVIEW_BOOKMARKS
 		// @wip Bookmarks are disabled until implemented fully.
 		TreeNodeFlat(BookmarkTreeNode);
+		#endif
 		TreeNodeRecursive(LocalTreeNode);
 		#ifdef PLATFORM_WINDOWS
 		ProcessShareResults();
@@ -583,18 +593,21 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				}
 
 				// Files.
-				tList<tFileInfo> foundFiles;
-				if (!selDir.IsEmpty())
+				if (Mode != DialogMode::OpenDir)
 				{
-					tSystem::tFileTypes selectedTypes;
-					selectedTypes.AddSelected(FileTypes, true);
-					tSystem::tExtensions extensions(selectedTypes);
-					tSystem::tFindFilesFast(foundFiles, selDir, extensions);
-				}
-				for (tFileInfo* fileInfo = foundFiles.First(); fileInfo; fileInfo = fileInfo->Next())
-				{
-					ContentItem* contentItem = new ContentItem(*fileInfo);
-					SelectedNode->Contents.Append(contentItem);
+					tList<tFileInfo> foundFiles;
+					if (!selDir.IsEmpty())
+					{
+						tSystem::tFileTypes selectedTypes;
+						selectedTypes.AddSelected(FileTypes, true);
+						tSystem::tExtensions extensions(selectedTypes);
+						tSystem::tFindFilesFast(foundFiles, selDir, extensions);
+					}
+					for (tFileInfo* fileInfo = foundFiles.First(); fileInfo; fileInfo = fileInfo->Next())
+					{
+						ContentItem* contentItem = new ContentItem(*fileInfo);
+						SelectedNode->Contents.Append(contentItem);
+					}
 				}
 
 				SelectedNode->ContentsPopulated = true;

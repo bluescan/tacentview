@@ -59,7 +59,9 @@ private:
 	tString GetSelectedDir();
 	void DoSelectable(ContentItem*);
 
+	#ifdef TACENTVIEW_BOOKMARKS
 	void PopulateBookmarks();
+	#endif
 	void PopulateLocal();
 	#ifdef PLATFORM_WINDOWS
 	void PopulateNetwork();
@@ -82,7 +84,10 @@ private:
 	tSystem::tFileTypes FileTypes;
 	tString Result;
 
+	#ifdef TACENTVIEW_BOOKMARKS
 	TreeNode* BookmarkTreeNode;
+	#endif
+
 	TreeNode* LocalTreeNode;
 	#ifdef PLATFORM_WINDOWS
 	TreeNode* NetworkTreeNode;
