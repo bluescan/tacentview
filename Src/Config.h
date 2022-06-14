@@ -152,6 +152,7 @@ struct Settings
 	int MaxCacheFiles;							// Max number of cache files before removing oldest.
 	int MaxUndoSteps;
 	bool StrictLoading;							// No attempt to display ill-formed images.
+	bool ExifOrientLoading;						// Reorient images on load if Exif meta-data contains camera orientation information.
 	bool DetectAPNGInsidePNG;					// Look for APNG data (animated) hidden inside a regular PNG file.
 	int MipmapFilter;							// Matches tImage::tResampleFilter. Use None for no mipmaps.
 	bool MipmapChaining;						// True for faster mipmap generation. False for a lot slower and slightly better results.

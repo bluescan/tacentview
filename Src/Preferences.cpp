@@ -197,6 +197,19 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::Checkbox("Strict Loading", &Config::Current->StrictLoading); ImGui::SameLine();
 			ShowHelpMark("Some image files are ill-formed. If strict is true no attempt to display them is made.");
 
+			// If the orient loading value changes we need to reload any images that have the Orientation tag set in their meta-data.
+			// If the current image ends up not being unloaded, the 'Load' call exits immediately, so it's fast (i.e. it knows).
+			if (ImGui::Checkbox("Exif Orient Loading", &Config::Current->ExifOrientLoading))
+			{
+				for (Image* i = Images.First(); i; i = i->Next())
+					if (i->Cached_MetaData.IsValid() && i->Cached_MetaData[tImage::tMetaTag::Orientation].IsSet())
+						i->Unload(true);
+
+				CurrImage->Load();
+			}
+			ImGui::SameLine();
+			ShowHelpMark("If Exif meta-data contains camera orientation information this will take it into account\nwhen loading and display the image the correctly oriented/flipped. Mostly affects jpg files.");
+
 			ImGui::Checkbox("Detect APNG Inside PNG", &Config::Current->DetectAPNGInsidePNG); ImGui::SameLine();
 			ShowHelpMark("Some png image files are really apng files. If detecton is true these png files will be displayed animated.");
 
