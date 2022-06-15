@@ -432,7 +432,7 @@ void Bindings::InputMap::Read(tExpression expr)
 }
 
 
-void Bindings::InputMap::Write(tScriptWriter& writer) const
+void Bindings::InputMap::Write(tExprWriter& writer) const
 {
 	writer.Begin();
 	writer.Indent();

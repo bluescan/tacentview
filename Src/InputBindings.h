@@ -173,8 +173,8 @@ namespace Bindings
 		// The returned string will be empty if nothing is bound to the operation.
 		tString FindModKeyText(Operation op)																			{ int key = 0; uint32 mods = 0; if (FindModKey(key, mods, op)) return GetModKeyText(key, mods); else return tString(); }
 
-		void Read(tExpression);
-		void Write(tScriptWriter&) const;
+		void Read(tExpr);
+		void Write(tExprWriter&) const;
 
 		InputMap& operator=(const InputMap& src)																		{ Set(src); return *this; }
 

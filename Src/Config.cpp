@@ -92,7 +92,7 @@ void Config::Load(const tString& filename)
 		return;
 	}
 
-	tScriptReader reader(filename);
+	tExprReader reader(filename);
 	for (tExpr e = reader.First(); e.IsValid(); e = e.Next())
 	{
 		switch (e.Item0().Hash())
@@ -139,7 +139,7 @@ void Config::Load(const tString& filename)
 
 void Config::Save(const tString& filename)
 {
-	tScriptWriter writer(filename);
+	tExprWriter writer(filename);
 	writer.Rem("Tacent View Configuration File");
 	writer.CR();
 
@@ -160,7 +160,7 @@ void Config::Save(const tString& filename)
 }
 
 
-void Config::GlobalSettings::Save(tScriptWriter& writer)
+void Config::GlobalSettings::Save(tExprWriter& writer)
 {
 	writer.Begin();
 	writer.Indent();
@@ -427,7 +427,7 @@ void Config::Settings::Load(tExpression expr)
 }
 
 
-bool Config::Settings::Save(tScriptWriter& writer) const
+bool Config::Settings::Save(tExprWriter& writer) const
 {
 	writer.Begin();
 	writer.Indent();

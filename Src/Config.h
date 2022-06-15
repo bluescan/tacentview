@@ -162,7 +162,7 @@ struct Settings
 	Viewer::Bindings::InputMap InputBindings;	// Each Settings struct (profile) gets its own copy of the InputMap (key bindings).
 
 	void Load(tExpression);
-	bool Save(tScriptWriter&) const;
+	bool Save(tExprWriter&) const;
 
 	// Yes, this struct only represents a single profile, but the defaults are different
 	// depending on which profile is chosen, so we need to pass it in.
@@ -176,8 +176,8 @@ struct GlobalSettings
 	int ConfigVersion;
 	int CurrentProfile;
 
-	void Save(tScriptWriter&);
-	void Load(tExpression);
+	void Save(tExprWriter&);
+	void Load(tExpr);
 	void Reset();
 	void Clear()						{ ConfigVersion = -1; CurrentProfile = int(Profile::Main); }
 };
