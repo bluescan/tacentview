@@ -174,7 +174,7 @@ namespace Bindings
 		tString FindModKeyText(Operation op)																			{ int key = 0; uint32 mods = 0; if (FindModKey(key, mods, op)) return GetModKeyText(key, mods); else return tString(); }
 
 		void Read(tExpression);
-		void Write(tScriptWriter&);
+		void Write(tScriptWriter&) const;
 
 		InputMap& operator=(const InputMap& src)																		{ Set(src); return *this; }
 

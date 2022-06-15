@@ -427,7 +427,7 @@ void Config::Settings::Load(tExpression expr)
 }
 
 
-bool Config::Settings::Save(tScriptWriter& writer)
+bool Config::Settings::Save(tScriptWriter& writer) const
 {
 	writer.Begin();
 	writer.Indent();
