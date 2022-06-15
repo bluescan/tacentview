@@ -15,6 +15,7 @@
 #pragma once
 #include <Foundation/tString.h>
 #include <System/tFile.h>
+#include <System/tScript.h>
 
 
 // This seems like a reasonable namespace for all generic ImGui widgets and dialogs that may eventually find a home
@@ -41,6 +42,18 @@ public:
 
 	// In OpenDir dialog mode the file-types are ignored. If file-types is empty (default) then all types are used.
 	FileDialog(DialogMode, const tSystem::tFileTypes& = tSystem::tFileTypes());
+
+	// Call to save the dialogs settings (bookmarks, current dir/file, etc) to disk. Writes to the file tExprWriter
+	// was constructed with.
+	// @wip
+	bool Save(tExprWriter&) const;
+
+
+	// Call to load the dialog settings from disk. By not passing in a tExprWriter you can place the settings as an
+	// expression in your own config file along with other things. This cunction reads from the passed-in expression.
+	// Pass in a tExprReader directly if you want to load from a separate file.
+	// @wip
+	void Load(tExpr);
 
 	// Call when you want the modal dialog to open.	
 	void OpenPopup();

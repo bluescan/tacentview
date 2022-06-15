@@ -161,8 +161,8 @@ struct Settings
 	float MonitorGamma;							// Used when displaying HDR formats to do gamma correction.
 	Viewer::Bindings::InputMap InputBindings;	// Each Settings struct (profile) gets its own copy of the InputMap (key bindings).
 
-	void Load(tExpression);
-	bool Save(tExprWriter&) const;
+	void Load(tExpr);							// Reads from the expression. Pass in a tExprReader if you want to load from a file directly.
+	bool Save(tExprWriter&) const;				// Writes to the file tExprWriter was constructed with.
 
 	// Yes, this struct only represents a single profile, but the defaults are different
 	// depending on which profile is chosen, so we need to pass it in.
