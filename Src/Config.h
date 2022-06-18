@@ -187,6 +187,9 @@ struct GlobalSettings
 	int WindowH;
 	bool TransparentWorkArea;
 	bool FullscreenMode;
+
+private:
+	static void GetScreenSize(int& width, int& height);
 };
 
 

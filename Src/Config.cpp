@@ -183,6 +183,15 @@ void Config::GlobalSettings::Save(tExprWriter& writer)
 }
 
 
+void Config::GlobalSettings::GetScreenSize(int& screenW, int& screenH)
+{
+	GLFWmonitor* monitor		= glfwGetPrimaryMonitor();
+	const GLFWvidmode* mode		= monitor ? glfwGetVideoMode(monitor) : nullptr;
+	screenW						= mode ? mode->width  : 1920;
+	screenH						= mode ? mode->height : 1080;
+}
+
+
 void Config::GlobalSettings::Load(tExpression expr)
 {
 	for (tExpr e = expr.Item1(); e.IsValid(); e = e.Next())
@@ -200,14 +209,20 @@ void Config::GlobalSettings::Load(tExpression expr)
 		}
 	}
 
-	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-	const GLFWvidmode* mode = monitor ? glfwGetVideoMode(monitor) : nullptr;
-	int screenW = mode ? mode->width  : 1280;
-	int screenH = mode ? mode->height : 720;
+	#ifdef PLATFORM_LINUX
+	// No need to clamp to screen dimensions on Linux. It deals with making sure window is visible.
+	tiClampMin(WindowW, 640);
+	tiClampMin(WindowH, 360);
+	#endif
+
+	#ifdef PLATFORM_WINDOWS
+	int screenW, screenH;
+	GetScreenSize(screenW, screenH);
 	tiClamp		(WindowW, 640, screenW);
 	tiClamp		(WindowH, 360, screenH);
 	tiClamp		(WindowX, 0, screenW - WindowW);
 	tiClamp		(WindowY, 0, screenH - WindowH);
+	#endif
 }
 
 
@@ -216,10 +231,8 @@ void Config::GlobalSettings::Reset()
 	ConfigVersion = ConfigFileVersion;
 	CurrentProfile = int(Profile::Main);
 
-	GLFWmonitor* monitor		= glfwGetPrimaryMonitor();
-	const GLFWvidmode* mode		= monitor ? glfwGetVideoMode(monitor) : nullptr;
-	int screenW					= mode ? mode->width  : 1920;
-	int screenH					= mode ? mode->height : 1080;
+	int screenW, screenH;
+	GetScreenSize(screenW, screenH);
 	WindowW						= 1280;
 	WindowH						= 720;						//	Sub 37 if want 720 inc title bar;
 	WindowX						= (screenW - WindowW) >> 1;
