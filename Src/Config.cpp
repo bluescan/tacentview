@@ -169,7 +169,13 @@ void Config::GlobalSettings::Save(tExprWriter& writer)
 	writer.CR();
 
 	WriteItem(ConfigVersion);
-	WriteLast(CurrentProfile);
+	WriteItem(CurrentProfile);
+	WriteItem(WindowX);
+	WriteItem(WindowY);
+	WriteItem(WindowW);
+	WriteItem(WindowH);
+	WriteItem(TransparentWorkArea);
+	WriteLast(FullscreenMode);
 
 	writer.Dedent();
 	writer.CR();
@@ -185,8 +191,23 @@ void Config::GlobalSettings::Load(tExpression expr)
 		{
 			ReadItem(ConfigVersion);
 			ReadItem(CurrentProfile);
+			ReadItem(WindowX);
+			ReadItem(WindowY);
+			ReadItem(WindowW);
+			ReadItem(WindowH);
+			ReadItem(TransparentWorkArea);
+			ReadItem(FullscreenMode);
 		}
 	}
+
+	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+	const GLFWvidmode* mode = monitor ? glfwGetVideoMode(monitor) : nullptr;
+	int screenW = mode ? mode->width  : 1280;
+	int screenH = mode ? mode->height : 720;
+	tiClamp		(WindowW, 640, screenW);
+	tiClamp		(WindowH, 360, screenH);
+	tiClamp		(WindowX, 0, screenW - WindowW);
+	tiClamp		(WindowY, 0, screenH - WindowH);
 }
 
 
@@ -194,6 +215,17 @@ void Config::GlobalSettings::Reset()
 {
 	ConfigVersion = ConfigFileVersion;
 	CurrentProfile = int(Profile::Main);
+
+	GLFWmonitor* monitor		= glfwGetPrimaryMonitor();
+	const GLFWvidmode* mode		= monitor ? glfwGetVideoMode(monitor) : nullptr;
+	int screenW					= mode ? mode->width  : 1920;
+	int screenH					= mode ? mode->height : 1080;
+	WindowW						= 1280;
+	WindowH						= 720;						//	Sub 37 if want 720 inc title bar;
+	WindowX						= (screenW - WindowW) >> 1;
+	WindowY						= (screenH - WindowH) >> 1;
+	TransparentWorkArea			= false;
+	FullscreenMode				= false;
 }
 
 
@@ -201,15 +233,6 @@ void Config::Settings::Reset(Viewer::Profile profile, uint32 categories)
 {
 	if (categories & Category_Unspecified)
 	{
-		GLFWmonitor* monitor		= glfwGetPrimaryMonitor();
-		const GLFWvidmode* mode		= monitor ? glfwGetVideoMode(monitor) : nullptr;
-		int screenW					= mode ? mode->width  : 1280;
-		int screenH					= mode ? mode->height : 720;
-		WindowW						= 1280;
-		WindowH						= 720;						//	Sub 37 if want 720 inc title bar;
-		WindowX						= (screenW - WindowW) >> 1;
-		WindowY						= (screenH - WindowH) >> 1;
-
 		ShowMenuBar					= (profile == Profile::Basic) ? false : true;
 		ShowNavBar					= (profile == Profile::Basic) ? false : true;
 		ShowImageDetails			= (profile == Profile::Basic) ? false : true;
@@ -217,7 +240,12 @@ void Config::Settings::Reset(Viewer::Profile profile, uint32 categories)
 		ShowPixelEditor				= false;
 		ShowChannelFilter			= false;
 		ShowFrameScrubber			= (profile == Profile::Basic) ? false : true;
-		ContentViewShow				= false;
+		ShowContentView				= false;
+		ShowPropsWindow				= false;
+		ShowBindingsWindow			= false;
+		ShowCheatSheet				= false;
+		ShowAbout					= false;
+
 		ThumbnailWidth				= 128.0f;
 		SortKey						= 0;
 		SortAscending				= true;
@@ -259,7 +287,6 @@ void Config::Settings::Reset(Viewer::Profile profile, uint32 categories)
 		BackgroundStyle				= (profile == Profile::Basic) ? int(BGStyle::None) : int(BGStyle::Checkerboard);
 		BackgroundColour			= tColouri::black;
 		BackgroundExtend			= false;
-		TransparentWorkArea			= false;
 		FixedAspectWorkArea			= false;
 	}
 
@@ -304,10 +331,6 @@ void Config::Settings::Load(tExpression expr)
 	{
 		switch (e.Command().Hash())
 		{
-			ReadItem(WindowX);
-			ReadItem(WindowY);
-			ReadItem(WindowW);
-			ReadItem(WindowH);
 			ReadItem(ShowMenuBar);
 			ReadItem(ShowNavBar);
 			ReadItem(ShowImageDetails);
@@ -315,7 +338,11 @@ void Config::Settings::Load(tExpression expr)
 			ReadItem(ShowPixelEditor);
 			ReadItem(ShowChannelFilter);
 			ReadItem(ShowFrameScrubber);
-			ReadItem(ContentViewShow);
+			ReadItem(ShowContentView);
+			ReadItem(ShowPropsWindow);
+			ReadItem(ShowBindingsWindow);
+			ReadItem(ShowCheatSheet);
+			ReadItem(ShowAbout);
 			ReadItem(ThumbnailWidth);
 			ReadItem(SortKey);
 			ReadItem(SortAscending);
@@ -324,7 +351,6 @@ void Config::Settings::Load(tExpression expr)
 			ReadItem(BackgroundStyle);
 			ReadItem(BackgroundColour);
 			ReadItem(BackgroundExtend);
-			ReadItem(TransparentWorkArea);
 			ReadItem(FixedAspectWorkArea);
 			ReadItem(ResampleFilter);
 			ReadItem(ResampleEdgeMode);
@@ -381,11 +407,6 @@ void Config::Settings::Load(tExpression expr)
 		}
 	}
 
-	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-	const GLFWvidmode* mode = monitor ? glfwGetVideoMode(monitor) : nullptr;
-	int screenW = mode ? mode->width  : 1280;
-	int screenH = mode ? mode->height : 720;
-
 	tiClamp		(ResampleFilter, 0, int(tImage::tResampleFilter::NumFilters)-1);		// No None allowed.
 	tiClamp		(ResampleEdgeMode, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);
 	tiClamp		(ResampleFilterRotateUp, 0, int(tImage::tResampleFilter::NumFilters));	// None allowed.
@@ -394,10 +415,6 @@ void Config::Settings::Load(tExpression expr)
 	tiClamp		(DefaultZoomMode, 0, int(ZoomMode::NumModes)-1);
 	tiClampMin	(SlideshowPeriod, 1.0/60.0);
 	tiClamp		(BackgroundStyle, 0, int(BGStyle::NumStyles)-1);
-	tiClamp		(WindowW, 640, screenW);
-	tiClamp		(WindowH, 360, screenH);
-	tiClamp		(WindowX, 0, screenW - WindowW);
-	tiClamp		(WindowY, 0, screenH - WindowH);
 	tiClamp		(OverlayCorner, 0, 3);
 	tiClamp		(SaveFileType, 0, 7);
 	tiClamp		(SaveFileTypeMultiFrame, 0, 3);
@@ -435,10 +452,6 @@ bool Config::Settings::Save(tExprWriter& writer) const
 	writer.WriteAtom(Profile);
 	writer.CR();
 
-	WriteItem(WindowX);
-	WriteItem(WindowY);
-	WriteItem(WindowW);
-	WriteItem(WindowH);
 	WriteItem(ShowMenuBar);
 	WriteItem(ShowNavBar);
 	WriteItem(ShowImageDetails);
@@ -446,7 +459,11 @@ bool Config::Settings::Save(tExprWriter& writer) const
 	WriteItem(ShowPixelEditor);
 	WriteItem(ShowChannelFilter);
 	WriteItem(ShowFrameScrubber);
-	WriteItem(ContentViewShow);
+	WriteItem(ShowContentView);
+	WriteItem(ShowPropsWindow);
+	WriteItem(ShowBindingsWindow);
+	WriteItem(ShowCheatSheet);
+	WriteItem(ShowAbout);
 	WriteItem(ThumbnailWidth);
 	WriteItem(SortKey);
 	WriteItem(SortAscending);
@@ -455,7 +472,6 @@ bool Config::Settings::Save(tExprWriter& writer) const
 	WriteItem(BackgroundStyle);
 	WriteItem(BackgroundColour);
 	WriteItem(BackgroundExtend);
-	WriteItem(TransparentWorkArea);
 	WriteItem(FixedAspectWorkArea);
 	WriteItem(ResampleFilter);
 	WriteItem(ResampleEdgeMode);
@@ -506,7 +522,7 @@ bool Config::Settings::Save(tExprWriter& writer) const
 	WriteItem(MipmapChaining);
 	WriteItem(AutoPropertyWindow);
 	WriteItem(AutoPlayAnimatedImages);
-	WriteItem(MonitorGamma);
+	WriteLast(MonitorGamma);
 
 	writer.Dedent();
 	writer.CR();

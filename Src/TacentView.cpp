@@ -137,11 +137,8 @@ namespace Viewer
 	double DisappearCountdown					= DisappearDuration;
 	double SlideshowCountdown					= 0.0;
 	float ReticleToMouseDist					= 75.0f;
-	bool SlideshowPlaying						= false;
-	bool FullscreenMode							= false;
+	bool SlideshowPlaying						= false;;
 	bool WindowIconified						= false;
-	bool ShowCheatSheet							= false;
-	bool ShowAbout								= false;
 
 	bool Request_OpenFileModal					= false;
 	bool Request_OpenDirModal					= false;
@@ -159,8 +156,6 @@ namespace Viewer
 	bool Request_SnapMessage_NoFrameTrans		= false;
 	bool Request_Quit							= false;
 	bool PrefsWindow							= false;
-	bool PropsWindow							= false;
-	bool BindingsWindow							= false;
 	bool BindingsWindowJustOpened				= false;
 	bool CropMode								= false;
 	bool LMBDown								= false;
@@ -303,7 +298,7 @@ int Viewer::GetNavBarHeight()
 	if (!Config::Current->ShowNavBar)
 		return 0;
 
-	return NavBar.GetShowLog() ? 150 : 24;
+	return NavBar.GetShowLog() ? 150 : 29;
 }
 
 
@@ -481,10 +476,10 @@ void Viewer::SetCurrentImage(const tString& currFilename)
 void Viewer::AutoPropertyWindow()
 {
 	if (Config::Current->AutoPropertyWindow)
-		PropsWindow = (CurrImage->TypeSupportsProperties() || (CurrImage->GetNumFrames() > 1));
+		Config::Current->ShowPropsWindow = (CurrImage->TypeSupportsProperties() || (CurrImage->GetNumFrames() > 1));
 
 	if (SlideshowPlaying)
-		PropsWindow = false;
+		Config::Current->ShowPropsWindow = false;
 }
 
 
@@ -724,7 +719,7 @@ void Viewer::ResetPan(bool resetX, bool resetY)
 
 void Viewer::DrawBackground(float l, float r, float b, float t)
 {
-	if (Config::Current->TransparentWorkArea)
+	if (Config::Global.TransparentWorkArea)
 		return;
 
 	switch (Config::Current->BackgroundStyle)
@@ -906,7 +901,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (dopoll)
 		glfwPollEvents();
 
-	if (Config::Current->TransparentWorkArea)
+	if (Config::Global.TransparentWorkArea)
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	else
 		glClearColor(ColourClear.x, ColourClear.y, ColourClear.z, ColourClear.w);
@@ -1355,7 +1350,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	// Scrubber
 	if
 	(
-		!CropMode && PropsWindow &&
+		!CropMode && Config::Current->ShowPropsWindow &&
 		Config::Current->ShowFrameScrubber && CurrImage && (CurrImage->GetNumFrames() > 1) && !CurrImage->IsAltPictureEnabled()
 	)
 	{
@@ -1457,9 +1452,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+120.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(tVector2(40, 40), ImGuiCond_Always);
 		ImGui::Begin("Fullscreen", nullptr, flagsImgButton);
-		uint64 fsImageID = FullscreenMode ? WindowedImage.Bind() : FullscreenImage.Bind();
+		uint64 fsImageID = Config::Global.FullscreenMode ? WindowedImage.Bind() : FullscreenImage.Bind();
 		if (ImGui::ImageButton(ImTextureID(fsImageID), tVector2(24,24), tVector2(0,0), tVector2(1,1), 2, tVector4(0,0,0,0), tVector4(1,1,1,1)))
-			ChangeScreenMode(!FullscreenMode);
+			ChangeScreenMode(!Config::Global.FullscreenMode);
 		ImGui::End();
 
 		// Exit basic profile.
@@ -1536,8 +1531,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::Separator();
 
 			tString bindingsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::KeyBindings);
-			if (ImGui::MenuItem("Key Bindings...", bindingsKey.Charz(), &BindingsWindow))
-				if (BindingsWindow)
+			if (ImGui::MenuItem("Key Bindings...", bindingsKey.Charz(), &Config::Current->ShowBindingsWindow))
+				if (Config::Current->ShowBindingsWindow)
 					BindingsWindowJustOpened = true;
 
 			tString prefsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Preferences);
@@ -1652,7 +1647,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::MenuItem("Channel Filter...", chanFiltKey.Charz(), &Config::Current->ShowChannelFilter);
 
 			tString propsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::PropertyEdit);
-			ImGui::MenuItem("Image Properties...", propsKey.Charz(), &PropsWindow);
+			ImGui::MenuItem("Image Properties...", propsKey.Charz(), &Config::Current->ShowPropsWindow);
 
 			ImGui::PopStyleVar();
 			ImGui::EndMenu();
@@ -1692,7 +1687,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::MenuItem("Image Meta Data", metaDataKey.Charz(), &Config::Current->ShowImageMetaData);
 
 			tString thumbKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Thumbnails);
-			ImGui::MenuItem("Thumbnail View", thumbKey.Charz(), &Config::Current->ContentViewShow);
+			ImGui::MenuItem("Thumbnail View", thumbKey.Charz(), &Config::Current->ShowContentView);
 
 			ImGui::Separator();
 
@@ -1754,9 +1749,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 
 			tString cheatKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::CheatSheet);
-			ImGui::MenuItem("Cheat Sheet", cheatKey.Charz(), &ShowCheatSheet);
+			ImGui::MenuItem("Cheat Sheet", cheatKey.Charz(), &Config::Current->ShowCheatSheet);
 
-			ImGui::MenuItem("About", nullptr, &ShowAbout);
+			ImGui::MenuItem("About", nullptr, &Config::Current->ShowAbout);
 			ImGui::PopStyleVar();
 			ImGui::EndMenu();
 		}
@@ -1784,8 +1779,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton
 		(
 			ImTextureID(ContentViewImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
-			Config::Current->ContentViewShow ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	Config::Current->ContentViewShow = !Config::Current->ContentViewShow;
+			Config::Current->ShowContentView ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	Config::Current->ShowContentView = !Config::Current->ShowContentView;
 		ShowToolTip("Content Thumbnail View");
 
 		bool tileAvail = CurrImage ? !CropMode : false;
@@ -1879,8 +1874,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton
 		(
 			ImTextureID(PropEditImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
-			PropsWindow ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	PropsWindow = !PropsWindow;
+			Config::Current->ShowPropsWindow ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	Config::Current->ShowPropsWindow = !Config::Current->ShowPropsWindow;
 		ShowToolTip("Image Properties");
 
 		if (ImGui::ImageButton
@@ -1925,8 +1920,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton
 		(
 			ImTextureID(HelpImage.Bind()), ToolImageSize, tVector2(0, 1), tVector2(1, 0), 1,
-			ShowCheatSheet ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	ShowCheatSheet = !ShowCheatSheet;
+			Config::Current->ShowCheatSheet ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	Config::Current->ShowCheatSheet = !Config::Current->ShowCheatSheet;
 		ShowToolTip("Help");
 
 		if (ImGui::ImageButton
@@ -1945,12 +1940,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (PrefsWindow)
 		ShowPreferencesWindow(&PrefsWindow);
 
-	if (PropsWindow)
-		ShowPropertiesWindow(&PropsWindow);
+	if (Config::Current->ShowPropsWindow)
+		ShowPropertiesWindow(&Config::Current->ShowPropsWindow);
 
-	if (BindingsWindow)
+	if (Config::Current->ShowBindingsWindow)
 	{
-		Bindings::ShowBindingsWindow(&BindingsWindow, BindingsWindowJustOpened);
+		Bindings::ShowBindingsWindow(&Config::Current->ShowBindingsWindow, BindingsWindowJustOpened);
 		BindingsWindowJustOpened = false;
 	}
 
@@ -1971,14 +1966,14 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (Config::Current->ShowChannelFilter)
 		ShowChannelFilterOverlay(&Config::Current->ShowChannelFilter);
 
-	if (Config::Current->ContentViewShow)
-		ShowContentViewDialog(&Config::Current->ContentViewShow);
+	if (Config::Current->ShowContentView)
+		ShowContentViewDialog(&Config::Current->ShowContentView);
 
-	if (ShowCheatSheet)
-		Bindings::ShowCheatSheetWindow(&ShowCheatSheet);
+	if (Config::Current->ShowCheatSheet)
+		Bindings::ShowCheatSheetWindow(&Config::Current->ShowCheatSheet);
 
-	if (ShowAbout)
-		ShowAboutPopup(&ShowAbout);
+	if (Config::Current->ShowAbout)
+		ShowAboutPopup(&Config::Current->ShowAbout);
 
 	ShowCropPopup(tVector4(left, right, top, bottom), tVector2(umarg, vmarg), tVector2(uoff, voff));
 
@@ -2067,14 +2062,14 @@ bool Viewer::DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin)
 
 bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 {
-	if (!force && (FullscreenMode == fullscreen))
+	if (!force && (Config::Global.FullscreenMode == fullscreen))
 		return false;
 
 	// If currently in windowed mode, remember our window geometry.
-	if (!force && !FullscreenMode)
+	if (!force && !Config::Global.FullscreenMode)
 	{
-		glfwGetWindowPos(Viewer::Window, &Viewer::Config::Current->WindowX, &Viewer::Config::Current->WindowY);
-		glfwGetWindowSize(Viewer::Window, &Viewer::Config::Current->WindowW, &Viewer::Config::Current->WindowH);
+		glfwGetWindowPos(Viewer::Window, &Viewer::Config::Global.WindowX, &Viewer::Config::Global.WindowY);
+		glfwGetWindowSize(Viewer::Window, &Viewer::Config::Global.WindowW, &Viewer::Config::Global.WindowH);
 	}
 
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
@@ -2086,7 +2081,7 @@ bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 
 	if (fullscreen)
 	{
-		if (Config::Current->TransparentWorkArea)
+		if (Config::Global.TransparentWorkArea)
 		{
 			glfwSetWindowSize(Viewer::Window, mode->width, mode->height);
 			glfwSetWindowPos(Viewer::Window, 0, 0);
@@ -2098,18 +2093,18 @@ bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 	}
 	else
 	{
-		if (Config::Current->TransparentWorkArea)
+		if (Config::Global.TransparentWorkArea)
 		{
-			glfwSetWindowSize(Viewer::Window, Viewer::Config::Current->WindowW, Viewer::Config::Current->WindowH);
-			glfwSetWindowPos(Viewer::Window, Viewer::Config::Current->WindowX, Viewer::Config::Current->WindowY);
+			glfwSetWindowSize(Viewer::Window, Viewer::Config::Global.WindowW, Viewer::Config::Global.WindowH);
+			glfwSetWindowPos(Viewer::Window, Viewer::Config::Global.WindowX, Viewer::Config::Global.WindowY);
 		}
 		else
 		{
-			glfwSetWindowMonitor(Viewer::Window, nullptr, Viewer::Config::Current->WindowX, Viewer::Config::Current->WindowY, Viewer::Config::Current->WindowW, Viewer::Config::Current->WindowH, mode->refreshRate);
+			glfwSetWindowMonitor(Viewer::Window, nullptr, Viewer::Config::Global.WindowX, Viewer::Config::Global.WindowY, Viewer::Config::Global.WindowW, Viewer::Config::Global.WindowH, mode->refreshRate);
 		}
 	}
 
-	FullscreenMode = fullscreen;
+	Config::Global.FullscreenMode = fullscreen;
 	return true;
 }
 
@@ -2142,17 +2137,10 @@ void Viewer::ChangeProfile(Profile profile)
 	// viewer. Turns off the nav and menu bars, any dialogs (help, about, thumbnails, info, etc), sets the zoom
 	// mode to downscale-only, makes the background match the border colour, sets the auto prop editor to false,
 	// sets the slideshow/play to looping, and the slideshow duration to 8 seconds.
+	//
 	// Note that the settings mentioned above are for the _default_ settings of the basic profile. There is nothing
 	// stopping the user from customizing the profile however they want. It is essentially a complete set of alternate
 	// settings, the only difference is the default values are different than the main profile.
-	if (profile == Profile::Basic)
-	{
-		// These ones are runtime only.
-		PropsWindow								= false;
-		BindingsWindow							= false;
-		ShowCheatSheet							= false;
-		ShowAbout								= false;
-	}
 
 	AutoPropertyWindow();
 }
@@ -2338,7 +2326,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::PropertyEdit:
-			PropsWindow = !PropsWindow;
+			Config::Current->ShowPropsWindow = !Config::Current->ShowPropsWindow;
 			break;
 
 		case Bindings::Operation::ChannelFilter:
@@ -2452,7 +2440,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::Thumbnails:
-			Viewer::Config::Current->ContentViewShow = !Viewer::Config::Current->ContentViewShow;
+			Viewer::Config::Current->ShowContentView = !Viewer::Config::Current->ShowContentView;
 			break;
 
 		case Bindings::Operation::FileBrowser:
@@ -2472,7 +2460,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::CheatSheet:
-			ShowCheatSheet = !ShowCheatSheet;
+			Config::Current->ShowCheatSheet = !Config::Current->ShowCheatSheet;
 			break;
 
 		case Bindings::Operation::DebugLog:
@@ -2490,23 +2478,23 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::KeyBindings:
-			BindingsWindow = !BindingsWindow;
-			if (BindingsWindow) BindingsWindowJustOpened = true;
+			Config::Current->ShowBindingsWindow = !Config::Current->ShowBindingsWindow;
+			if (Config::Current->ShowBindingsWindow) BindingsWindowJustOpened = true;
 			break;
 
 		case Bindings::Operation::Fullscreen:
-			ChangeScreenMode(!FullscreenMode);
+			ChangeScreenMode(!Config::Global.FullscreenMode);
 			break;
 
 		case Bindings::Operation::Escape:
-			if (FullscreenMode)
+			if (Config::Global.FullscreenMode)
 				ChangeScreenMode(false);
 			else if (Config::GetProfile() == Profile::Basic)
 				ChangeProfile(Profile::Main);
 			break;
 
 		case Bindings::Operation::EscapeSupportingQuit:
-			if (FullscreenMode)
+			if (Config::Global.FullscreenMode)
 				ChangeScreenMode(false);
 			else if (Config::GetProfile() == Profile::Basic)
 				ChangeProfile(Profile::Main);
@@ -2837,13 +2825,13 @@ int main(int argc, char** argv)
 		tSystem::tCreateDir(Viewer::Image::ThumbCacheDir);
 	
 	Viewer::Config::Load(cfgFile);
-	Viewer::PendingTransparentWorkArea = Viewer::Config::Current->TransparentWorkArea;
+	Viewer::PendingTransparentWorkArea = Viewer::Config::Global.TransparentWorkArea;
 
 	// We start with window invisible. For windows DwmSetWindowAttribute won't redraw properly otherwise.
 	// For all plats, we want to position the window before displaying it.
 	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 	bool requestSnapMessageNoTrans = false;
-	if (Viewer::Config::Current->TransparentWorkArea)
+	if (Viewer::Config::Global.TransparentWorkArea)
 	{
 		glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
 		#ifdef PACKAGE_SNAP
@@ -2858,13 +2846,13 @@ int main(int argc, char** argv)
 	// The title here seems to override the Linux hint above. When we create with the title string "tacentview",
 	// glfw makes it the X11 WM_CLASS. This is needed so that the Ubuntu can map the same name in the .desktop file
 	// to find things like the correct dock icon to display. The SetWindowTitle afterwards does not mod the WM_CLASS.
-	Viewer::Window = glfwCreateWindow(Viewer::Config::Current->WindowW, Viewer::Config::Current->WindowH, "tacentview", nullptr, nullptr);
+	Viewer::Window = glfwCreateWindow(Viewer::Config::Global.WindowW, Viewer::Config::Global.WindowH, "tacentview", nullptr, nullptr);
 	if (!Viewer::Window)
 		return 1;
 
 	Viewer::SetWindowIcon(dataDir + "TacentView.ico");
 	Viewer::SetWindowTitle();
-	glfwSetWindowPos(Viewer::Window, Viewer::Config::Current->WindowX, Viewer::Config::Current->WindowY);
+	glfwSetWindowPos(Viewer::Window, Viewer::Config::Global.WindowX, Viewer::Config::Global.WindowY);
 
 	#ifdef PLATFORM_WINDOWS
 	// Make the window title bar show up in black.
@@ -2874,6 +2862,7 @@ int main(int argc, char** argv)
 	BOOL isDarkMode = 1;
 	DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_A, &isDarkMode, sizeof(isDarkMode));
 	DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_B, &isDarkMode, sizeof(isDarkMode));
+
 	if (!tSystem::tDirExists(dataDir))
 	{
 		::MessageBoxA
@@ -2962,7 +2951,7 @@ int main(int argc, char** argv)
 	else
 		Viewer::SetCurrentImage();
 
-	if (Viewer::Config::Current->TransparentWorkArea)
+	if (Viewer::Config::Global.TransparentWorkArea)
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	else
 		glClearColor(Viewer::ColourClear.x, Viewer::ColourClear.y, Viewer::ColourClear.z, Viewer::ColourClear.w);
@@ -2982,6 +2971,9 @@ int main(int argc, char** argv)
 	// glfwSwapInterval(1);
 	glfwMakeContextCurrent(Viewer::Window);
 	glfwSwapBuffers(Viewer::Window);
+
+	if (Viewer::Config::Global.FullscreenMode)
+		Viewer::ChangeScreenMode(true, true);
 
 	// Main loop.
 	static double lastUpdateTime = glfwGetTime();
@@ -3011,13 +3003,13 @@ int main(int argc, char** argv)
 	Viewer::UnloadAppImages();
 
 	// Get current window geometry and set in config file if we're not in fullscreen mode and not iconified.
-	if (!Viewer::FullscreenMode && !Viewer::WindowIconified)
+	if (!Viewer::Config::Global.FullscreenMode && !Viewer::WindowIconified)
 	{
-		glfwGetWindowPos(Viewer::Window, &Viewer::Config::Current->WindowX, &Viewer::Config::Current->WindowY);
-		glfwGetWindowSize(Viewer::Window, &Viewer::Config::Current->WindowW, &Viewer::Config::Current->WindowH);
+		glfwGetWindowPos(Viewer::Window, &Viewer::Config::Global.WindowX, &Viewer::Config::Global.WindowY);
+		glfwGetWindowSize(Viewer::Window, &Viewer::Config::Global.WindowW, &Viewer::Config::Global.WindowH);
 	}
 
-	Viewer::Config::Current->TransparentWorkArea = Viewer::PendingTransparentWorkArea;
+	Viewer::Config::Global.TransparentWorkArea = Viewer::PendingTransparentWorkArea;
 	Viewer::Config::Save(cfgFile);
 
 	// Cleanup.

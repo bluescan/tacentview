@@ -45,10 +45,7 @@ struct Settings
 {
 	Settings()									: Profile(), InputBindings() { Reset(Profile::Main, Category_All); }
 	tString Profile;
-	int WindowX;
-	int WindowY;
-	int WindowW;
-	int WindowH;
+
 	bool ShowMenuBar;
 	bool ShowNavBar;
 	bool ShowImageDetails;
@@ -56,7 +53,12 @@ struct Settings
 	bool ShowPixelEditor;
 	bool ShowChannelFilter;
 	bool ShowFrameScrubber;
-	bool ContentViewShow;
+	bool ShowContentView;
+	bool ShowPropsWindow;
+	bool ShowBindingsWindow;
+	bool ShowCheatSheet;
+	bool ShowAbout;
+
 	float ThumbnailWidth;
 	enum class SortKeyEnum
 	{
@@ -84,7 +86,6 @@ struct Settings
 	int BackgroundStyle;
 	tColouri BackgroundColour;					// Only used if BGStyle is SolidColour.
 	bool BackgroundExtend;						// Extend background past image bounds.
-	bool TransparentWorkArea;
 	bool FixedAspectWorkArea;
 
 	int ResampleFilter;							// Matches tImage::tResampleFilter.
@@ -172,14 +173,20 @@ struct Settings
 
 struct GlobalSettings
 {
-	GlobalSettings()					{ Clear(); }
-	int ConfigVersion;
-	int CurrentProfile;
+	GlobalSettings()					{ Reset(); }
 
 	void Save(tExprWriter&);
 	void Load(tExpr);
 	void Reset();
-	void Clear()						{ ConfigVersion = -1; CurrentProfile = int(Profile::Main); }
+
+	int ConfigVersion;
+	int CurrentProfile;
+	int WindowX;
+	int WindowY;
+	int WindowW;
+	int WindowH;
+	bool TransparentWorkArea;
+	bool FullscreenMode;
 };
 
 
@@ -203,6 +210,7 @@ void ResetAllProfiles(uint32 categories);
 // All profiles reset. Resets everything. Calls ResetAllProfiles with All as the category.
 void ResetAll();
 
+extern GlobalSettings Global;
 extern Settings* Current;
 extern Settings MainSettings;
 extern Settings BasicSettings;

@@ -254,8 +254,7 @@ void Viewer::ShowAboutPopup(bool* popen)
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
-		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoFocusOnAppearing	|
-		ImGuiWindowFlags_NoNav;
+		ImGuiWindowFlags_NoFocusOnAppearing	|	ImGuiWindowFlags_NoNav;
 
 	if (ImGui::Begin("About", popen, flags))
 	{
@@ -516,11 +515,11 @@ void Viewer::NavLogBar::AddLog(const char* fmt, ...)
 void Viewer::NavLogBar::Draw()
 {
 	ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 14.0f);
-	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 1.0f);
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
 
 	if
 	(
-		ImGui::ImageButton(ImTextureID(UpFolderImage.Bind()), tVector2(18,18), tVector2(0,1), tVector2(1,0), 1,
+		ImGui::ImageButton(ImTextureID(UpFolderImage.Bind()), tVector2(20,20), tVector2(0,1), tVector2(1,0), 1,
 		Viewer::ColourBG, tVector4(1.00f, 1.00f, 1.00f, 1.00f))
 	)
 	{

@@ -471,9 +471,9 @@ void Bindings::InputMap::Write(tExprWriter& writer) const
 void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 {
 	tVector2 windowPos = GetDialogOrigin(7);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Appearing);
-	ImGui::SetNextWindowSize(tVector2(440.0f, 600.0f), ImGuiCond_Appearing);
-	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize;
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(tVector2(440.0f, 600.0f), ImGuiCond_FirstUseEver);
+	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize;
 
 	if (ImGui::Begin("Keyboard Bindings", popen, flags))
 	{
@@ -793,9 +793,9 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(5);
 	ImGui::SetNextWindowBgAlpha(0.80f);
-	ImGui::SetNextWindowSize(tVector2(350.0f, 600.0f), ImGuiCond_Appearing);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Appearing);
-	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+	ImGui::SetNextWindowSize(tVector2(350.0f, 600.0f), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
 
 	if (ImGui::Begin("Cheat Sheet", popen, flags))
 	{

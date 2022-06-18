@@ -29,7 +29,7 @@ class TreeNode;
 
 
 // You can use multiple instances or repurpose the same one.
-class FileDialog
+class FileDialog : public tLink<FileDialog>
 {
 public:
 	enum class DialogMode
@@ -42,20 +42,21 @@ public:
 
 	// In OpenDir dialog mode the file-types are ignored. If file-types is empty (default) then all types are used.
 	FileDialog(DialogMode, const tSystem::tFileTypes& = tSystem::tFileTypes());
+	~FileDialog();
 
 	// Call to save the dialogs settings (bookmarks, current dir/file, etc) to disk. Writes to the file tExprWriter
-	// was constructed with.
-	// @wip
-	bool Save(tExprWriter&) const;
+	// was constructed with. All settings are shared between all instances of FileDialog, so this function is static.
+	// Saving may be performed at any time, even if a dialog is open. Returns false if writing fails.
+	static bool Save(tExprWriter&);
 
+	// Call to load the dialog settings from disk. By passing in a tExpr you can use your own config file along with
+	// other expressions. This function reads from the passed-in expression. Pass in a tExprReader directly if you
+	// want to load from a separate file. All settings are shared between all instances of FileDialog, so this
+	// function is static. Loading must _not_ be performed while a dialog is currently open. Returns false if fails
+	// to load. @todo Support loading at any time (open dialogs would need to update live).
+	static bool Load(tExpr);
 
-	// Call to load the dialog settings from disk. By not passing in a tExprWriter you can place the settings as an
-	// expression in your own config file along with other things. This cunction reads from the passed-in expression.
-	// Pass in a tExprReader directly if you want to load from a separate file.
-	// @wip
-	void Load(tExpr);
-
-	// Call when you want the modal dialog to open.	
+	// Call when you want the modal dialog to open.
 	void OpenPopup();
 
 	enum class DialogResult
@@ -68,6 +69,15 @@ public:
 	DialogResult DoPopup();					// Call every frame and observe result.
 	tString GetResult();
 
+	// This struct stores shared state between all FileDialog instances. This includes things like the list of
+	// bookmarks/favourites and last accessed paths.
+	struct State
+	{
+		tList<tStringItem> Bookmarks;
+		tString CurrentPath;
+	};
+	State SharedState;
+	
 private:
 	tString GetSelectedDir();
 	void DoSelectable(ContentItem*);

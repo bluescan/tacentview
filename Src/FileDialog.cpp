@@ -12,6 +12,7 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+#include <Foundation/tList.h>
 #include <Math/tVector2.h>
 #include <System/tTime.h>
 #include "imgui.h"
@@ -27,6 +28,9 @@ using namespace tInterface;
 
 namespace tInterface
 {
+	// An internal list of all currently instanced file dialogs.
+	tList<FileDialog> FileDialogs(tListMode::StaticZero);
+
 	// Content items are containers used to store information about a piece of information in a file dialog. It stores
 	// the stuff you see in the right-hand panel. Namely the information displayed in a table row about a file or
 	// directory, as well as if it is selected or not.
@@ -275,6 +279,26 @@ FileDialog::FileDialog(DialogMode mode, const tSystem::tFileTypes& fileTypes) :
 	#ifdef PLATFORM_WINDOWS
 	PopulateNetwork();
 	#endif
+
+	FileDialogs.Append(this);
+}
+
+
+FileDialog::~FileDialog()
+{
+	FileDialogs.Remove(this);
+}
+
+
+bool FileDialog::Save(tExprWriter& writer)
+{
+	return true;
+}
+
+
+bool FileDialog::Load(tExpr expr)
+{
+	return true;
 }
 
 

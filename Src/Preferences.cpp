@@ -51,7 +51,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::NewLine();
 			ImGui::Checkbox("Transparent Work Area", &PendingTransparentWorkArea);
 			#ifndef PACKAGE_SNAP
-			if (PendingTransparentWorkArea != Config::Current->TransparentWorkArea)
+			if (PendingTransparentWorkArea != Config::Global.TransparentWorkArea)
 			{
 				ImGui::SameLine();
 				ImGui::Text("(Needs Restart)");
@@ -67,7 +67,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::Checkbox("Fixed Aspect Work Area", &Config::Current->FixedAspectWorkArea);
 
 			ImGui::Checkbox("Background Extend", &Config::Current->BackgroundExtend);
-			if (!Config::Current->TransparentWorkArea)
+			if (!Config::Global.TransparentWorkArea)
 			{
 				const char* backgroundItems[] = { "None", "Checker", "Solid" };
 				ImGui::PushItemWidth(110);
@@ -269,11 +269,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	if (ImGui::Button("Reset Profile", tVector2(100.0f, 0.0f)))
 	{
 		Config::ResetProfile(Config::Category_AllNoBindings);
-
-		// Since the reset always turns transparent work area off, we can always safely clear the pending.
-		PendingTransparentWorkArea = false;
 		SlideshowCountdown = Config::Current->SlideshowPeriod;
-		ChangeScreenMode(false, true);
 	}
 	ShowToolTip
 	(
@@ -286,7 +282,6 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	if (ImGui::Button("Reset Tab", tVector2(100.0f, 0.0f)))
 	{
 		Config::ResetProfile(category);
-		PendingTransparentWorkArea = false;
 		SlideshowCountdown = Config::Current->SlideshowPeriod;
 	}
 	ShowToolTip("Resets the current tab/category for the current profile (what you see above).");
@@ -294,10 +289,14 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	if (ImGui::Button("Reset All", tVector2(100.0f, 0.0f)))
 	{
 		Config::ResetAllProfiles(Config::Category_AllNoBindings);
+		Config::Global.Reset();
 		Config::SetProfile(Profile::Main);
-		PendingTransparentWorkArea = false;
+
+		// If the global reset turns transparent work area off we can always safely clear the pending.
+		if (!Config::Global.TransparentWorkArea)
+			PendingTransparentWorkArea = false;
 		SlideshowCountdown = Config::Current->SlideshowPeriod;
-		ChangeScreenMode(false, true);
+		ChangeScreenMode(Config::Global.FullscreenMode, true);
 	}
 	ShowToolTip
 	(
