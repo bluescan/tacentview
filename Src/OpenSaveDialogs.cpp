@@ -45,7 +45,7 @@ void Viewer::DoOpenFileModal(bool openFilePressed)
 	if (result == FileDialog::DialogResult::OK)
 	{
 		tString chosenFile = OpenFileDialog.GetResult();
-		tPrintf("Opening file: %s\n", chosenFile.Chars());
+		tPrintf("Opening file: %s\n", chosenFile.Chs());
 		ImageFileParam.Param = chosenFile;
 		PopulateImages();
 		SetCurrentImage(chosenFile);
@@ -75,15 +75,15 @@ tString Viewer::DoSubFolder()
 {
 	// Output sub-folder
 	char subFolder[256]; tMemset(subFolder, 0, 256);
-	tStrncpy(subFolder, Config::Current->SaveSubFolder.Chars(), 255);
+	tStrncpy(subFolder, Config::Current->SaveSubFolder.Chs(), 255);
 	ImGui::InputText("SubFolder", subFolder, 256);
 	Config::Current->SaveSubFolder.Set(subFolder);
 	tString destDir = ImagesDir;
 	if (!Config::Current->SaveSubFolder.IsEmpty())
 		destDir += Config::Current->SaveSubFolder + "/";
 	tString toolTipText;
-	tsPrintf(toolTipText, "Save to %s", destDir.Chars());
-	ShowToolTip(toolTipText.Chars());
+	tsPrintf(toolTipText, "Save to %s", destDir.Chs());
+	ShowToolTip(toolTipText.Chs());
 	ImGui::SameLine();
 	if (ImGui::Button("Default"))
 		Config::Current->SaveSubFolder.Set("Saved");
@@ -356,9 +356,9 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 	}
 
 	if (success)
-		tPrintf("Saved image as %s\n", outFile.Chars());
+		tPrintf("Saved image as %s\n", outFile.Chs());
 	else
-		tPrintf("Failed to save image %s\n", outFile.Chars());
+		tPrintf("Failed to save image %s\n", outFile.Chs());
 
 	return success;
 }
@@ -426,9 +426,9 @@ bool Viewer::SaveResizeImageAs(Image& img, const tString& outFile, int width, in
 		success = outPic.Save(outFile, colourFmt, Config::Current->SaveFileJpegQuality);
 
 	if (success)
-		tPrintf("Saved image as %s\n", outFile.Chars());
+		tPrintf("Saved image as %s\n", outFile.Chs());
 	else
-		tPrintf("Failed to save image %s\n", outFile.Chars());
+		tPrintf("Failed to save image %s\n", outFile.Chs());
 
 	return success;
 }
@@ -456,7 +456,7 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 	if (saveAsPressed)
 	{
 		tString baseName = tSystem::tGetFileBaseName(CurrImage->Filename);
-		tStrcpy(filename, baseName.Chars());
+		tStrcpy(filename, baseName.Chs());
 	}
 	ImGui::InputText("Filename", filename, tNumElements(filename));
 	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
@@ -706,14 +706,14 @@ void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFi
 	for (tStringItem* filename = overwriteFiles.First(); filename && (fnum < maxToShow); filename = filename->Next(), fnum++)
 	{
 		tString file = tSystem::tGetFileName(*filename);
-		ImGui::Text("%s", file.Chars());
+		ImGui::Text("%s", file.Chs());
 	}
 	int remaining = overwriteFiles.GetNumItems() - fnum;
 	if (remaining > 0)
 		ImGui::Text("And %d more.", remaining);
 	ImGui::Unindent();
 	ImGui::Text("Already Exist In Folder");
-	ImGui::Indent(); ImGui::Text("%s", dir.Chars()); ImGui::Unindent();
+	ImGui::Indent(); ImGui::Text("%s", dir.Chs()); ImGui::Unindent();
 	ImGui::NewLine();
 	ImGui::Text("Overwrite Files?");
 	ImGui::NewLine();
@@ -797,9 +797,9 @@ void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool&
 	tString file = tSystem::tGetFileName(outFile);
 	tString dir = tSystem::tGetDir(outFile);
 	ImGui::Text("Overwrite file");
-		ImGui::Indent(); ImGui::Text("%s", file.Chars()); ImGui::Unindent();
+		ImGui::Indent(); ImGui::Text("%s", file.Chs()); ImGui::Unindent();
 	ImGui::Text("In Folder");
-		ImGui::Indent(); ImGui::Text("%s", dir.Chars()); ImGui::Unindent();
+		ImGui::Indent(); ImGui::Text("%s", dir.Chs()); ImGui::Unindent();
 	ImGui::NewLine();
 	ImGui::Separator();
 

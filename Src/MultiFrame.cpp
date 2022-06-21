@@ -140,8 +140,8 @@ void Viewer::DoMultiFrameModal(bool saveMultiFramePressed)
 
 	int numImg = Images.Count();
 	tString genMsg;
-	tsPrintf(genMsg, "Image %s%s will have %d frames.", filename, extension.Chars(), numImg);
-	ImGui::Text(genMsg.Chars());
+	tsPrintf(genMsg, "Image %s%s will have %d frames.", filename, extension.Chs(), numImg);
+	ImGui::Text(genMsg.Chs());
 
 	ImGui::NewLine();
 	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))

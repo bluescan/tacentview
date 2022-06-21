@@ -5945,7 +5945,8 @@ bool ImGui::CollapsingHeader(const char* label, bool* p_visible, ImGuiTreeNodeFl
     ImGuiID id = window->GetID(label);
     flags |= ImGuiTreeNodeFlags_CollapsingHeader;
     if (p_visible)
-        flags |= ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_ClipLabelForTrailingButton;
+		// @tacent fix C++20 warning on GCC11.2
+        flags |= int(ImGuiTreeNodeFlags_AllowItemOverlap) | int(ImGuiTreeNodeFlags_ClipLabelForTrailingButton);
     bool is_open = TreeNodeBehavior(id, flags, label);
     if (p_visible != NULL)
     {

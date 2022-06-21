@@ -274,10 +274,10 @@ void Viewer::ShowAboutPopup(bool* popen)
 			package = "Zip";
 		#endif
 
-		ImGui::Text("Platform: %s", platform.Chars());
-		ImGui::Text("Architecture: %s", architec.Chars());
-		ImGui::Text("Configuration: %s", config.Chars());
-		ImGui::Text("Package: %s", package.Chars());
+		ImGui::Text("Platform: %s", platform.Chs());
+		ImGui::Text("Architecture: %s", architec.Chs());
+		ImGui::Text("Configuration: %s", config.Chs());
+		ImGui::Text("Package: %s", package.Chs());
 
 		ImGui::Separator();
 		ImGui::Text("Tacent Library V %d.%d.%d", tVersion::Major, tVersion::Minor, tVersion::Revision);
@@ -316,9 +316,9 @@ void Viewer::DoDeleteFileModal()
 	tString file = tSystem::tGetFileName(fullname);
 	tString dir = tSystem::tGetDir(fullname);
 	ImGui::Text("Delete File");
-		ImGui::Indent(); ImGui::Text("%s", file.Chars()); ImGui::Unindent();
+		ImGui::Indent(); ImGui::Text("%s", file.Chs()); ImGui::Unindent();
 	ImGui::Text("In Folder");
-		ImGui::Indent(); ImGui::Text("%s", dir.Chars()); ImGui::Unindent();
+		ImGui::Indent(); ImGui::Text("%s", dir.Chs()); ImGui::Unindent();
 	ImGui::NewLine();
 	ImGui::Separator();
 
@@ -348,9 +348,9 @@ void Viewer::DoDeleteFileNoRecycleModal()
 	tString file = tSystem::tGetFileName(fullname);
 	tString dir = tSystem::tGetDir(fullname);
 	ImGui::Text("Delete File");
-		ImGui::Indent(); ImGui::Text("%s", file.Chars()); ImGui::Unindent();
+		ImGui::Indent(); ImGui::Text("%s", file.Chs()); ImGui::Unindent();
 	ImGui::Text("In Folder");
-		ImGui::Indent(); ImGui::Text("%s", dir.Chars()); ImGui::Unindent();
+		ImGui::Indent(); ImGui::Text("%s", dir.Chs()); ImGui::Unindent();
 	ImGui::NewLine();
 	ImGui::Separator();
 	ImGui::NewLine();
@@ -382,7 +382,7 @@ void Viewer::DoRenameModal(bool justOpened)
 
 	static char newname[128] = "Filename";
 	if (justOpened)
-		tStd::tStrcpy(newname, origname.Chars());
+		tStd::tStrcpy(newname, origname.Chs());
 
 	bool nameChanged = false;
 	if (ImGui::InputText("", newname, tNumElements(newname), ImGuiInputTextFlags_EnterReturnsTrue))
@@ -534,7 +534,7 @@ void Viewer::NavLogBar::Draw()
 	}
 	ImGui::SameLine();
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
-	ImGui::Text("%s", ImagesDir.Chars());
+	ImGui::Text("%s", ImagesDir.Chs());
 
 	if (ImagesSubDirs.NumItems() > 0)
 	{
@@ -545,7 +545,7 @@ void Viewer::NavLogBar::Draw()
 			for (tStringItem* subDir = ImagesSubDirs.First(); subDir; subDir = subDir->Next())
 			{
 				bool isSelected = false;
-				if (ImGui::Selectable(subDir->Chars(), isSelected))
+				if (ImGui::Selectable(subDir->Chs(), isSelected))
 				{
 					// Selection made. This only runs once.
 					ImageFileParam.Param = ImagesDir + *subDir + "/" + "dummyfile.txt";

@@ -155,7 +155,7 @@ target_compile_options(
 		$<$<AND:$<CONFIG:Release>,$<CXX_COMPILER_ID:MSVC>>:/O2>
 )
 
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 # This is how you set things like CMAKE_DEBUG_POSTFIX for a target.
 set_target_properties(

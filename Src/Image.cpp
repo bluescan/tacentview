@@ -1145,7 +1145,7 @@ void Image::GenerateThumbnail()
 	hash = tHash::tHashData256((uint8*)&ThumbWidth, sizeof(ThumbWidth), hash);
 	hash = tHash::tHashData256((uint8*)&ThumbHeight, sizeof(ThumbHeight), hash);
 	tString hashFile;
-	tsPrintf(hashFile, "%s%032|256X.bin", ThumbCacheDir.Chars(), hash);
+	tsPrintf(hashFile, "%s%032|256X.bin", ThumbCacheDir.Chs(), hash);
 	if (tFileExists(hashFile))
 	{
 		bool loaded = false;

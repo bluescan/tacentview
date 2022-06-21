@@ -138,7 +138,7 @@ ContentItem::ContentItem(const tSystem::tFileInfo& fileInfo) :
 
 	// Modification time field. Choose greater of mod and creation time.
 	ModTime = tMath::tMax(fileInfo.ModificationTime, fileInfo.CreationTime);
-	tsPrintf(ModTimeString, "%s", tSystem::tConvertTimeToString(tSystem::tConvertTimeToLocal(ModTime)).Chars());
+	tsPrintf(ModTimeString, "%s", tSystem::tConvertTimeToString(tSystem::tConvertTimeToLocal(ModTime)).Chs());
 
 	// File type field.
 	FileType = tSystem::tGetFileType(Name);
@@ -420,7 +420,7 @@ void FileDialog::TreeNodeRecursive(TreeNode* node)
 		populate = true;
 	}
 
-	bool isOpen = ImGui::TreeNodeEx(node->Name, flags);
+	bool isOpen = ImGui::TreeNodeEx(node->Name.Chs(), flags);
 	bool isClicked = ImGui::IsItemClicked();
 	if (isClicked)
 	{
@@ -487,7 +487,7 @@ void FileDialog::InvalidateAllNodeContentRecursive(TreeNode* node)
 void FileDialog::DoSelectable(ContentItem* item)
 {
 	tString label = item->Name;
-	if (ImGui::Selectable(label, &item->Selected, ImGuiSelectableFlags_SpanAllColumns))
+	if (ImGui::Selectable(label.Chs(), &item->Selected, ImGuiSelectableFlags_SpanAllColumns))
 	{
 		// This block enforces single selection.
 		if (Mode != DialogMode::OpenFiles)
@@ -532,7 +532,7 @@ void FileDialog::TreeNodeFlat(TreeNode* node)
 		flags |= ImGuiTreeNodeFlags_Selected;
 	flags |= ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
-	bool isOpen = ImGui::TreeNodeEx(node->Name, flags);
+	bool isOpen = ImGui::TreeNodeEx(node->Name.Chs(), flags);
 	bool isClicked = ImGui::IsItemClicked();
 
 	if (isOpen)
@@ -690,15 +690,15 @@ FileDialog::DialogResult FileDialog::DoPopup()
 
 					ImGui::TableNextColumn();
 					if (!item->IsDir)
-						ImGui::Text("%s", item->ModTimeString.Text());
+						ImGui::Text("%s", item->ModTimeString.Chs());
 
 					ImGui::TableNextColumn();
 					if (!item->IsDir)
-						ImGui::Text("%s", item->FileTypeString.Text());
+						ImGui::Text("%s", item->FileTypeString.Chs());
 
 					ImGui::TableNextColumn();
 					if (!item->IsDir)
-						ImGui::Text("%s", item->FileSizeString.Text());
+						ImGui::Text("%s", item->FileSizeString.Chs());
 				}
 				ImGui::EndTable();
 			}
@@ -742,7 +742,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		if (!resultAvail)
 			ImGui::PushStyleColor(ImGuiCol_Text, tVector4(0.5f, 0.5f, 0.52f, 1.0f) );
 		tString fname = resultAvail ? selItem->Name : "File Name";
-		ImGui::InputText("##File Name", fname.Text(), fname.Length()+1, flags);
+		ImGui::InputText("##File Name", fname.Txt(), fname.Length()+1, flags);
 		if (!resultAvail)
 			ImGui::PopStyleColor();
 
@@ -753,7 +753,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		// Nothing selected means all types used.
 		bool allTypes = !FileTypes.AnySelected();
 		tString currChosen = allTypes ? "All Image Types" : FileTypes.GetSelectedString(tSystem::tFileTypes::Separator::CommaSpace, 4);
-		if (ImGui::BeginCombo("##TypeFilter", currChosen.Chars())) //, ImGuiComboFlags_NoArrowButton))
+		if (ImGui::BeginCombo("##TypeFilter", currChosen.Chs())) //, ImGuiComboFlags_NoArrowButton))
 		{
 			if (ImGui::Selectable("All Image Types", allTypes))
 			{
