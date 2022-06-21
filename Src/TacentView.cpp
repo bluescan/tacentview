@@ -2762,11 +2762,11 @@ int main(int argc, char** argv)
 	if (Viewer::ImageFileParam.IsPresent())
 	{
 		tString dest(MAX_PATH);
-		int numchars = GetLongPathNameA(Viewer::ImageFileParam.Param.ConstText(), dest.Text(), MAX_PATH);
+		int numchars = GetLongPathNameA(Viewer::ImageFileParam.Param.Chs(), dest.Txt(), MAX_PATH);
 		if (numchars > 0)
 			Viewer::ImageFileParam.Param = dest;
 
-		tPrintf("LongPath:%s\n", dest.ConstText());
+		tPrintf("LongPath:%s\n", dest.Chs());
 	}
 	#endif
 
