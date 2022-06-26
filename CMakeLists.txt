@@ -136,8 +136,8 @@ target_compile_definitions(
 target_compile_options(
 	${PROJECT_NAME}
 	PRIVATE
-		# MSVC compiler.
-		$<$<CXX_COMPILER_ID:MSVC>:/W2 /GS /Gy /Zc:wchar_t /Gm- /Zc:inline /fp:precise /WX- /Zc:forScope /Gd /FC>
+		# MSVC compiler. Warning /utf-8 is needed for MSVC to support UTF-8 source files. Basically u8 string literals won't work without it.
+		$<$<CXX_COMPILER_ID:MSVC>:/utf-8 /W2 /GS /Gy /Zc:wchar_t /Gm- /Zc:inline /fp:precise /WX- /Zc:forScope /Gd /FC>
 
 		# Clang compiler.
 		$<$<CXX_COMPILER_ID:Clang>:-Wno-switch>
