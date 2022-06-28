@@ -2754,6 +2754,10 @@ void Viewer::UnloadAppImages()
 
 int main(int argc, char** argv)
 {
+	#ifdef PLATFORM_WINDOWS
+	setlocale(LC_ALL, ".UTF8");
+	#endif
+	
 	tSystem::tSetSupplementaryDebuggerOutput();
 	tSystem::tSetStdoutRedirectCallback(Viewer::PrintRedirectCallback);
 	tCmdLine::tParse(argc, argv);

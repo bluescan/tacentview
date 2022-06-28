@@ -126,6 +126,13 @@ target_compile_definitions(
 		$<$<CONFIG:Release>:CONFIG_RELEASE>
 		$<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_DEPRECATE>
 		$<$<PLATFORM_ID:Windows>:PLATFORM_WINDOWS>
+
+		# These two shouldn't actually be necessary as there are no direct Windows API calls
+		# in TacentView (they are abstracted away by the Tacent libraries). But just in case
+		# anything were to be called in the future, these enable the UTF-16 versions of API calls.
+		$<$<PLATFORM_ID:Windows>:UNICODE>		# C++	UFF-16
+		$<$<PLATFORM_ID:Windows>:_UNICODE>		# C 	UTF-16
+
 		$<$<PLATFORM_ID:Linux>:PLATFORM_LINUX>
 		$<$<AND:$<PLATFORM_ID:Linux>,$<BOOL:${PACKAGE_SNAP}>>:PACKAGE_SNAP>
 		$<$<AND:$<PLATFORM_ID:Linux>,$<BOOL:${PACKAGE_DEB}>>:PACKAGE_DEB>
