@@ -132,6 +132,7 @@ target_compile_definitions(
 		# anything were to be called in the future, these enable the UTF-16 versions of API calls.
 		$<$<PLATFORM_ID:Windows>:UNICODE>		# C++	UFF-16
 		$<$<PLATFORM_ID:Windows>:_UNICODE>		# C 	UTF-16
+		$<$<PLATFORM_ID:Windows>:TACENT_USE_UTF16_WINDOWS_API>
 
 		$<$<PLATFORM_ID:Linux>:PLATFORM_LINUX>
 		$<$<AND:$<PLATFORM_ID:Linux>,$<BOOL:${PACKAGE_SNAP}>>:PACKAGE_SNAP>
