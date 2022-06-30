@@ -36,8 +36,11 @@ if (Git_FOUND)
 	message(STATUS "Viewer -- Git found: ${GIT_EXECUTABLE}")
 endif()
 
-# Grab the Tacent library from github at configure time.
 include(FetchContent)
+
+# Grab the Tacent library from github at configure time. Set desired options here first.
+option(TACENT_UTF16_API_CALLS "Build Tacent With UTF16 API Calls" On)
+
 FetchContent_Declare(
 	tacent
 	GIT_REPOSITORY https://github.com/bluescan/tacent.git
@@ -127,12 +130,13 @@ target_compile_definitions(
 		$<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_DEPRECATE>
 		$<$<PLATFORM_ID:Windows>:PLATFORM_WINDOWS>
 
-		# These two shouldn't actually be necessary as there are no direct Windows API calls
+		# These shouldn't actually be necessary as there are no direct Windows API calls
 		# in TacentView (they are abstracted away by the Tacent libraries). But just in case
-		# anything were to be called in the future, these enable the UTF-16 versions of API calls.
-		$<$<PLATFORM_ID:Windows>:UNICODE>		# C++	UFF-16
-		$<$<PLATFORM_ID:Windows>:_UNICODE>		# C 	UTF-16
-		$<$<PLATFORM_ID:Windows>:TACENT_USE_UTF16_WINDOWS_API>
+		# anything in the viewer were to call an OS-level function, these enable the UTF-16
+		# versions if the TACENT_UTF16_API_CALLS option is set.
+		$<$<AND:$<PLATFORM_ID:Windows>,$<BOOL:${TACENT_UTF16_API_CALLS}>>:UNICODE>	# C++	UFF-16
+		$<$<AND:$<PLATFORM_ID:Windows>,$<BOOL:${TACENT_UTF16_API_CALLS}>>:_UNICODE>	# C 	UTF-16
+		$<$<AND:$<PLATFORM_ID:Windows>,$<BOOL:${TACENT_UTF16_API_CALLS}>>:TACENT_UTF16_API_CALLS>
 
 		$<$<PLATFORM_ID:Linux>:PLATFORM_LINUX>
 		$<$<AND:$<PLATFORM_ID:Linux>,$<BOOL:${PACKAGE_SNAP}>>:PACKAGE_SNAP>
