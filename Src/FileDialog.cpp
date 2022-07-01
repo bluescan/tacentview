@@ -113,6 +113,8 @@ namespace tInterface
 		bool ContentsPopulated = false;
 		tList<ContentItem> Contents;
 	};
+
+	const int FileDialogConfigVersion = 1;
 }
 
 
@@ -257,6 +259,9 @@ bool TreeNode::IsNetworkLocation() const
 }
 
 
+tString FileDialog::ConfigLastSelectedDir;
+
+
 FileDialog::FileDialog(DialogMode mode, const tSystem::tFileTypes& fileTypes) :
 	Mode(mode),
 	FileTypes(fileTypes)
@@ -290,14 +295,51 @@ FileDialog::~FileDialog()
 }
 
 
-bool FileDialog::Save(tExprWriter& writer)
+bool FileDialog::Save(tExprWriter& writer, const tString& exprName)
 {
+	writer.CR();
+	writer.Rem("File dialog configuration.");
+	writer.Begin();			writer.Indent();	writer.CR();
+	writer.Atom(exprName);	writer.CR();
+
+	writer.Begin();
+	writer.Atom("FileDialogConfigVersion");		writer.Atom(FileDialogConfigVersion);
+	writer.End();
+	writer.CR();
+
+	writer.Begin();
+	writer.Atom("LastSelectedDir");			writer.Atom(ConfigLastSelectedDir);
+	writer.End();
+
+	writer.Dedent();
+	writer.CR();
+	writer.End();
 	return true;
 }
 
 
-bool FileDialog::Load(tExpr expr)
+bool FileDialog::Load(tExpr expr, const tString& exprName)
 {
+	tExpr e = expr.Item0();
+	if (e != exprName)
+		return false;
+
+	int loadedVersion = 0;
+	for (tExpr e = expr.Item1(); e.IsValid(); e = e.Next())
+	{
+		switch (e.Command().Hash())
+		{
+			case tHash::tHashCT("FileDialogConfigVersion"):
+				loadedVersion = e.Item1();
+				break;
+
+			case tHash::tHashCT("LastSelectedDir"):
+				ConfigLastSelectedDir = e.Item1();
+				break;
+		}
+	}
+
+	tPrintf("FileDialog LoadedVersion: %d\n", loadedVersion);
 	return true;
 }
 
@@ -425,6 +467,9 @@ void FileDialog::TreeNodeRecursive(TreeNode* node)
 	if (isClicked)
 	{
 		SelectedNode = node;
+		// SelectedNode Updated. Need to update LastSelectedDir string.
+		ConfigLastSelectedDir = GetSelectedDir();
+	
 		populate = true;
 	}
 
@@ -520,6 +565,9 @@ void FileDialog::DoSelectable(ContentItem* item)
 				tAssert(node->ChildrenPopulated == false);
 			}
 			SelectedNode = node;
+
+			// SelectedNode Updated. Need to update LastSelectedDir string.
+			ConfigLastSelectedDir = GetSelectedDir();
 		}
 	}
 }
@@ -573,7 +621,9 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		ImGui::TableSetupColumn("RightContentColumn", ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableNextRow();
 
+		//
 		// Left tree panel.
+		//
 		ImGui::TableSetColumnIndex(0);
 		ImGui::BeginChild("LeftTreePanel", tVector2(0.0f, -bottomBarHeight), false, ImGuiWindowFlags_HorizontalScrollbar);
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(0.0f, 3.0f));
@@ -594,8 +644,14 @@ FileDialog::DialogResult FileDialog::DoPopup()
 
 		ImGui::PopStyleVar();
 		ImGui::EndChild();
-		
+
+		//////////////////////
+		// @wip Here I need to take ConfigLastSelectedDir and, if valid, set SelectedNode
+		//////////////////////	
+
+		//
 		// Right content panel.
+		//
 		ImGui::TableSetColumnIndex(1);
 		ImGui::BeginChild("RightContentPanel", tVector2(0.0f, -bottomBarHeight));
 

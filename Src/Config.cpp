@@ -27,6 +27,7 @@
 #include <Image/tResample.h>
 #include "Config.h"
 #include "Image.h"
+#include "FileDialog.h"
 using namespace tMath;
 #define ReadItem(name) case tHash::tHashCT(#name): name = e.Arg1(); break
 #define	WriteItem(name) writer.Comp(#name, name)
@@ -82,6 +83,32 @@ void Config::ResetAll()
 }
 
 
+void Config::Save(const tString& filename)
+{
+	tExprWriter writer(filename);
+	writer.Rem("Tacent View Configuration File");
+	writer.CR();
+
+	// We always save in most recent / current version.
+	Global.ConfigVersion = ConfigFileVersion;
+	Global.Save(writer);
+	writer.CR();
+	writer.CR();
+
+	MainSettings.Profile = "MainProfile";
+	MainSettings.Save(writer);
+	writer.CR();
+	writer.CR();
+
+	BasicSettings.Profile = "BasicProfile";
+	BasicSettings.Save(writer);
+	writer.CR();
+
+	// Save the file dialog settings.
+	tInterface::FileDialog::Save(writer, "FileDialog");
+}
+
+
 void Config::Load(const tString& filename)
 {
 	if (!tSystem::tFileExists(filename))
@@ -107,6 +134,10 @@ void Config::Load(const tString& filename)
 			
 			case tHash::tHashCT("BasicProfile"):
 				BasicSettings.Load(e);
+				break;
+
+			case tHash::tHashCT("FileDialog"):
+				tInterface::FileDialog::Load(e, "FileDialog");
 				break;
 		}
 	}
@@ -134,29 +165,6 @@ void Config::Load(const tString& filename)
 		case Profile::Main:		Current = &MainSettings;	break;
 		case Profile::Basic:	Current = &BasicSettings;	break;
 	}
-}
-
-
-void Config::Save(const tString& filename)
-{
-	tExprWriter writer(filename);
-	writer.Rem("Tacent View Configuration File");
-	writer.CR();
-
-	// We always save in most recent / current version.
-	Global.ConfigVersion = ConfigFileVersion;
-	Global.Save(writer);
-	writer.CR();
-	writer.CR();
-
-	MainSettings.Profile = "MainProfile";
-	MainSettings.Save(writer);
-	writer.CR();
-	writer.CR();
-
-	BasicSettings.Profile = "BasicProfile";
-	BasicSettings.Save(writer);
-	writer.CR();
 }
 
 
