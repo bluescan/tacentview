@@ -116,10 +116,35 @@ namespace tFileDialog
 	tList<tStringItem> ConfigOpenDirPath(tListMode::StaticZero);
 	tList<tStringItem> ConfigSaveFilePath(tListMode::StaticZero);
 
-	// Stores an individual bookmark comprised of a list of string path items.
+	// Stores an individual bookmark comprised of a list of string path items. Bookmarks currently
+	// represent directories, not individual files.
 	struct Bookmark : public tLink<Bookmark>
 	{
-		tList<tStringItem> ItemPath;
+		enum class Type
+		{
+			User,							// A normal directory bookmark.
+			Home,							// A bookmark from the user's home directory (Linux) or the user directory (Windows).
+			Root							// A bookmark from the root of the filesyetem (Linux) or an appropriate drive letter (Windows).
+		};
+		Bookmark()							/* Creates an invalid bookmark. */											: Items() { }
+		Bookmark(const Bookmark& src)		/* Copy cons. */															: Items() { Set(src); }
+		Bookmark(const tString& fullPath)	/* From a full path string. */												: Items() { Set(fullPath); }
+		Bookmark(Type type)					/* Accepts Home or Root. */													: Items() { Set(type); }
+
+		bool Set(const Bookmark& src);
+		bool Set(const tString& fullPath);
+		bool Set(Type type);				// Accepts Home or Root. */
+
+		void Clear()						/* Makes bookmark invalid. */												{ Items.Empty(); }
+		bool IsValid() const				/* A bookmark is valid if it has items, even if it doesn't exist. */		{ return !Items.IsEmpty(); }
+		bool Exists() const;				// Does the bookmark still exist on the filesystem. In case the directory was deleted.
+		tString GetPath() const;			// Converts from internal item list to full path.
+
+		bool Save(tExprWriter&) const;
+		bool Load(tExpr expr);
+
+		Type BookmarkType;
+		tList<tStringItem> Items;
 	};
 	tList<Bookmark> Bookmarks;
 
@@ -128,6 +153,31 @@ namespace tFileDialog
 }
 using namespace tFileDialog;
 
+
+bool Bookmark::Set(Type type)
+{
+	if (type == Type::User)
+		return false;
+
+	if (type == Type::Home)
+	{
+		// All Windows platforms get a 'user' bookmark. Linux gets the 'home' location.
+		tString home = tSystem::tGetHomeDir();
+
+		tList<tStringItem> exploded;
+		home.ExtractLeft("/");
+		tStd::tExplode(exploded, home, '/');
+
+		//	for (tStringItem* item = exploded.First(); item; item = item->Next())
+		//		tPrintf("HOME ITEM: %s\n", item->Chs());
+	}
+	else if (type == Type::Root)
+	{
+		// @todo be smart on windows as to which drive letter to use. A/B low priority, then
+		// maybe lowest letter.
+	}
+	return true;
+}
 
 bool tFileDialog::Save(tExprWriter& writer, const tString& exprName)
 {
@@ -240,24 +290,11 @@ bool tFileDialog::Load(tExpr expr, const tString& exprName)
 
 bool tFileDialog::LoadBookmarks(tExpr expr)
 {
-	#if defined(PLATFORM_LINUX)
-	// All Linux platforms get a 'Home' bookmark.
-	Bookmarks.Append(new Bookmark);
-	#endif
+	// Allways add a fresh home and root bookmark. Not loaded to disk.
+	Bookmarks.Append(new Bookmark(Bookmark::Type::Home));
+	Bookmarks.Append(new Bookmark(Bookmark::Type::Root));
 
-	#if defined(PLATFORM_WINDOWS)
-	// All Windows platforms get a 'User' bookmark.
-	tString home = tSystem::tGetHomeDir();
-
-	tList<tStringItem> exploded;
-	home.ExtractLeft("/");
-	tStd::tExplode(exploded, home, '/');
-
-	//	for (tStringItem* item = exploded.First(); item; item = item->Next())
-	//		tPrintf("HOME ITEM: %s\n", item->Chs());
-	Bookmarks.Append(new Bookmark);
-	#endif
-
+	// @todo load all the User bookmarks from the expression.
 	return true;
 }
 
