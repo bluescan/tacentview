@@ -115,6 +115,16 @@ namespace tFileDialog
 	tList<tStringItem> ConfigOpenFilePath(tListMode::StaticZero);
 	tList<tStringItem> ConfigOpenDirPath(tListMode::StaticZero);
 	tList<tStringItem> ConfigSaveFilePath(tListMode::StaticZero);
+
+	// Stores an individual bookmark comprised of a list of string path items.
+	struct Bookmark : public tLink<Bookmark>
+	{
+		tList<tStringItem> ItemPath;
+	};
+	tList<Bookmark> Bookmarks;
+
+	bool SaveBookmarks(tExprWriter& writer);
+	bool LoadBookmarks(tExpr expr);
 }
 using namespace tFileDialog;
 
@@ -131,6 +141,7 @@ bool tFileDialog::Save(tExprWriter& writer, const tString& exprName)
 	writer.End();
 	writer.CR();
 
+	// We save a different last-used path for each mode.
 	if (!ConfigOpenFilePath.IsEmpty())
 	{
 		writer.Begin();
@@ -161,10 +172,25 @@ bool tFileDialog::Save(tExprWriter& writer, const tString& exprName)
 		writer.CR();
 	}
 
+	SaveBookmarks(writer);
+
 	writer.Dedent();
 	writer.CR();
 
 	writer.End();
+	return true;
+}
+
+
+bool tFileDialog::SaveBookmarks(tExprWriter& writer)
+{
+	writer.Begin();
+	writer.Atom("Bookmarks");
+	for (Bookmark* bookmark = Bookmarks.First(); bookmark; bookmark = bookmark->Next())
+	{
+	}
+	writer.End();
+	writer.CR();
 	return true;
 }
 
@@ -201,10 +227,37 @@ bool tFileDialog::Load(tExpr expr, const tString& exprName)
 				for (tExpr ne = e.Item1(); ne.IsValid(); ne = ne.Next())
 					ConfigSaveFilePath.Append(new tStringItem(ne.GetAtomString()));
 				break;
+
+			case tHash::tHashCT("Bookmarks"):
+				LoadBookmarks(e);
+				break;
 		}
 	}
 
-	// tPrintf("FileDialog LoadedVersion: %d\n", loadedVersion);
+	return true;
+}
+
+
+bool tFileDialog::LoadBookmarks(tExpr expr)
+{
+	#if defined(PLATFORM_LINUX)
+	// All Linux platforms get a 'Home' bookmark.
+	Bookmarks.Append(new Bookmark);
+	#endif
+
+	#if defined(PLATFORM_WINDOWS)
+	// All Windows platforms get a 'User' bookmark.
+	tString home = tSystem::tGetHomeDir();
+
+	tList<tStringItem> exploded;
+	home.ExtractLeft("/");
+	tStd::tExplode(exploded, home, '/');
+
+	//	for (tStringItem* item = exploded.First(); item; item = item->Next())
+	//		tPrintf("HOME ITEM: %s\n", item->Chs());
+	Bookmarks.Append(new Bookmark);
+	#endif
+
 	return true;
 }
 
@@ -355,18 +408,9 @@ tFileDialog::FileDialog::FileDialog(DialogMode mode, const tSystem::tFileTypes& 
 	Mode(mode),
 	FileTypes(fileTypes)
 {
-	#ifdef TACENTVIEW_BOOKMARKS
-	BookmarkTreeNode = new TreeNode("Bookmarks", this);
-	#endif
-	
 	LocalTreeNode = new tFileDialog::TreeNode("Local", this);
 	#ifdef PLATFORM_WINDOWS
 	NetworkTreeNode = new TreeNode("Network", this);
-	#endif
-
-	#ifdef TACENTVIEW_BOOKMARKS
-	// @wip Bookmarks is disabled until I implement it fully.
-	PopulateBookmarks();
 	#endif
 
 	PopulateLocal();
@@ -403,22 +447,6 @@ void FileDialog::OpenPopup()
 
 	PopupJustOpened	= true;
 }
-
-
-#ifdef TACENTVIEW_BOOKMARKS
-void FileDialog::PopulateBookmarks()
-{
-	#if defined(PLATFORM_LINUX)
-	// All linux platforms get a 'home' bookmark.
-	#endif
-
-	#if defined(PLATFORM_WINDOWS)
-	// All windows platforms get a 'user' bookmark.
-	TreeNode* user = new TreeNode("User", this, BookmarkTreeNode);
-	BookmarkTreeNode->AppendChild(user);
-	#endif
-}
-#endif
 
 
 void FileDialog::PopulateLocal()
@@ -644,8 +672,9 @@ void FileDialog::DoSelectable(ContentItem* item)
 }
 
 
-void FileDialog::TreeNodeFlat(TreeNode* node)
+void FileDialog::BookmarksLoop()
 {
+	/*
 	int flags = (node->Children.GetNumItems() == 0) ? ImGuiTreeNodeFlags_Leaf : 0;
 	if (SelectedNode == node)
 		flags |= ImGuiTreeNodeFlags_Selected;
@@ -661,6 +690,7 @@ void FileDialog::TreeNodeFlat(TreeNode* node)
 		//	FavouritesTreeNodeFlat(child.GetObject());
 		ImGui::TreePop();
 	}
+	*/
 }
 
 
@@ -703,18 +733,13 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		ImGui::TableNextRow();
 
 		//
-		// Left tree panel.
+		// Left tree panel. This is the workhorse of the dialog.
 		//
 		ImGui::TableSetColumnIndex(0);
 		ImGui::BeginChild("LeftTreePanel", tVector2(0.0f, -bottomBarHeight), false, ImGuiWindowFlags_HorizontalScrollbar);
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(0.0f, 3.0f));
 
-		// This block is the workhorse of the dialog.
-
-		#ifdef TACENTVIEW_BOOKMARKS
-		// @wip Bookmarks are disabled until implemented fully.
-		TreeNodeFlat(BookmarkTreeNode);
-		#endif
+		BookmarksLoop();
 		TreeNodeRecursive(LocalTreeNode, selectPathItemName);
 		#ifdef PLATFORM_WINDOWS
 		bool somethingAdded = ProcessShareResults();

@@ -65,24 +65,12 @@ public:
 	};
 	DialogResult DoPopup();					// Call every frame and observe result.
 	tString GetResult();
-
-	// This struct stores shared state between all FileDialog instances. This includes things like the list of
-	// bookmarks/favourites and last accessed paths.
-	struct State
-	{
-		tList<tStringItem> Bookmarks;
-		tString CurrentPath;
-	};
-	State SharedState;
 	
 private:
 	tString GetDir(const TreeNode*);
 	void GetDir(tList<tStringItem>& destDirItems, const TreeNode*);
 	void DoSelectable(ContentItem*);
 
-	#ifdef TACENTVIEW_BOOKMARKS
-	void PopulateBookmarks();
-	#endif
 	void PopulateLocal();
 	#ifdef PLATFORM_WINDOWS
 	void PopulateNetwork();
@@ -92,7 +80,7 @@ private:
 	void InvalidateAllNodeContent();
 	void InvalidateAllNodeContentRecursive(TreeNode*);
 	void TreeNodeRecursive(TreeNode*, tStringItem* selectPathItemName = nullptr);
-	void TreeNodeFlat(TreeNode*);
+	void BookmarksLoop();
 
 	#ifdef PLATFORM_WINDOWS
 	void RequestNetworkSharesThread();
@@ -105,10 +93,6 @@ private:
 	DialogMode Mode;
 	tSystem::tFileTypes FileTypes;
 	tString Result;
-
-	#ifdef TACENTVIEW_BOOKMARKS
-	TreeNode* BookmarkTreeNode;
-	#endif
 
 	TreeNode* LocalTreeNode;
 	#ifdef PLATFORM_WINDOWS
