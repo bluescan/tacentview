@@ -83,9 +83,9 @@ namespace Viewer
 	tFileTypes FileTypes_SaveMultiFrame;
 
 	// @todo Don't use same filetypes for all of these.
-	tInterface::FileDialog OpenFileDialog(tInterface::FileDialog::DialogMode::OpenFile, Viewer::FileTypes_Load);
-	tInterface::FileDialog OpenDirDialog(tInterface::FileDialog::DialogMode::OpenDir);
-	tInterface::FileDialog SaveFileDialog(tInterface::FileDialog::DialogMode::SaveFile, Viewer::FileTypes_Save);
+	tFileDialog::FileDialog OpenFileDialog(tFileDialog::DialogMode::OpenFile, Viewer::FileTypes_Load);
+	tFileDialog::FileDialog OpenDirDialog(tFileDialog::DialogMode::OpenDir);
+	tFileDialog::FileDialog SaveFileDialog(tFileDialog::DialogMode::SaveFile, Viewer::FileTypes_Save);
 
 	NavLogBar NavBar;
 	tString ImagesDir;

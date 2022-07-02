@@ -23,14 +23,10 @@ using namespace tStd;
 using namespace tMath;
 using namespace tSystem;
 using namespace tImage;
-using namespace tInterface;
 
 
-namespace tInterface
+namespace tFileDialog
 {
-	// An internal list of all currently instanced file dialogs.
-	tList<FileDialog> FileDialogs(tListMode::StaticZero);
-
 	// Content items are containers used to store information about a piece of information in a file dialog. It stores
 	// the stuff you see in the right-hand panel. Namely the information displayed in a table row about a file or
 	// directory, as well as if it is selected or not.
@@ -115,6 +111,101 @@ namespace tInterface
 	};
 
 	const int FileDialogConfigVersion = 1;
+	tList<FileDialog> FileDialogs(tListMode::StaticZero);				// An internal list of all currently instanced file dialogs.
+	tList<tStringItem> ConfigOpenFilePath(tListMode::StaticZero);
+	tList<tStringItem> ConfigOpenDirPath(tListMode::StaticZero);
+	tList<tStringItem> ConfigSaveFilePath(tListMode::StaticZero);
+}
+using namespace tFileDialog;
+
+
+bool tFileDialog::Save(tExprWriter& writer, const tString& exprName)
+{
+	writer.CR();
+	writer.Rem("File dialog configuration.");
+	writer.Begin();			writer.Indent();	writer.CR();
+	writer.Atom(exprName);	writer.CR();
+
+	writer.Begin();
+	writer.Atom("FileDialogConfigVersion");		writer.Atom(FileDialogConfigVersion);
+	writer.End();
+	writer.CR();
+
+	if (!ConfigOpenFilePath.IsEmpty())
+	{
+		writer.Begin();
+		writer.Atom("OpenFilePath");
+		for (tStringItem* n = ConfigOpenFilePath.First(); n; n = n->Next())
+			writer.Atom(*n);
+		writer.End();
+		writer.CR();
+	}
+
+	if (!ConfigOpenDirPath.IsEmpty())
+	{
+		writer.Begin();
+		writer.Atom("OpenDirPath");
+		for (tStringItem* n = ConfigOpenDirPath.First(); n; n = n->Next())
+			writer.Atom(*n);
+		writer.End();
+		writer.CR();
+	}
+
+	if (!ConfigSaveFilePath.IsEmpty())
+	{
+		writer.Begin();
+		writer.Atom("SaveFilePath");
+		for (tStringItem* n = ConfigSaveFilePath.First(); n; n = n->Next())
+			writer.Atom(*n);
+		writer.End();
+		writer.CR();
+	}
+
+	writer.Dedent();
+	writer.CR();
+
+	writer.End();
+	return true;
+}
+
+
+bool tFileDialog::Load(tExpr expr, const tString& exprName)
+{
+	tExpr e = expr.Item0();
+	if (e != exprName)
+		return false;
+
+	int loadedVersion = 0;
+	for (tExpr e = expr.Item1(); e.IsValid(); e = e.Next())
+	{
+		switch (e.Command().Hash())
+		{
+			case tHash::tHashCT("FileDialogConfigVersion"):
+				loadedVersion = e.Item1();
+				break;
+
+			case tHash::tHashCT("OpenFilePath"):
+				ConfigOpenFilePath.Empty();
+				for (tExpr ne = e.Item1(); ne.IsValid(); ne = ne.Next())
+					ConfigOpenFilePath.Append(new tStringItem(ne.GetAtomString()));
+				break;
+
+			case tHash::tHashCT("OpenDirPath"):
+				ConfigOpenDirPath.Empty();
+				for (tExpr ne = e.Item1(); ne.IsValid(); ne = ne.Next())
+					ConfigOpenDirPath.Append(new tStringItem(ne.GetAtomString()));
+				break;
+
+			case tHash::tHashCT("SaveFilePath"):
+				ConfigSaveFilePath.Empty();
+				for (tExpr ne = e.Item1(); ne.IsValid(); ne = ne.Next())
+					ConfigSaveFilePath.Append(new tStringItem(ne.GetAtomString()));
+				break;
+		}
+	}
+
+	// tPrintf("FileDialog LoadedVersion: %d\n", loadedVersion);
+	return true;
 }
 
 
@@ -259,10 +350,8 @@ bool TreeNode::IsNetworkLocation() const
 }
 
 
-tString FileDialog::ConfigLastSelectedDir;
-
-
-FileDialog::FileDialog(DialogMode mode, const tSystem::tFileTypes& fileTypes) :
+tFileDialog::FileDialog::FileDialog(DialogMode mode, const tSystem::tFileTypes& fileTypes) :
+	PopupJustOpened(false),
 	Mode(mode),
 	FileTypes(fileTypes)
 {
@@ -270,7 +359,7 @@ FileDialog::FileDialog(DialogMode mode, const tSystem::tFileTypes& fileTypes) :
 	BookmarkTreeNode = new TreeNode("Bookmarks", this);
 	#endif
 	
-	LocalTreeNode = new TreeNode("Local", this);
+	LocalTreeNode = new tFileDialog::TreeNode("Local", this);
 	#ifdef PLATFORM_WINDOWS
 	NetworkTreeNode = new TreeNode("Network", this);
 	#endif
@@ -295,58 +384,8 @@ FileDialog::~FileDialog()
 }
 
 
-bool FileDialog::Save(tExprWriter& writer, const tString& exprName)
-{
-	writer.CR();
-	writer.Rem("File dialog configuration.");
-	writer.Begin();			writer.Indent();	writer.CR();
-	writer.Atom(exprName);	writer.CR();
-
-	writer.Begin();
-	writer.Atom("FileDialogConfigVersion");		writer.Atom(FileDialogConfigVersion);
-	writer.End();
-	writer.CR();
-
-	writer.Begin();
-	writer.Atom("LastSelectedDir");			writer.Atom(ConfigLastSelectedDir);
-	writer.End();
-
-	writer.Dedent();
-	writer.CR();
-	writer.End();
-	return true;
-}
-
-
-bool FileDialog::Load(tExpr expr, const tString& exprName)
-{
-	tExpr e = expr.Item0();
-	if (e != exprName)
-		return false;
-
-	int loadedVersion = 0;
-	for (tExpr e = expr.Item1(); e.IsValid(); e = e.Next())
-	{
-		switch (e.Command().Hash())
-		{
-			case tHash::tHashCT("FileDialogConfigVersion"):
-				loadedVersion = e.Item1();
-				break;
-
-			case tHash::tHashCT("LastSelectedDir"):
-				ConfigLastSelectedDir = e.Item1();
-				break;
-		}
-	}
-
-	tPrintf("FileDialog LoadedVersion: %d\n", loadedVersion);
-	return true;
-}
-
-
 void FileDialog::OpenPopup()
 {
-	//ImGui::SetNextWindowSize(tVector2(640.0f, 400.0f), ImGuiCond_FirstUseEver);
 	switch (Mode)
 	{
 		case DialogMode::OpenDir:
@@ -361,6 +400,8 @@ void FileDialog::OpenPopup()
 			ImGui::OpenPopup("Save File");
 			break;
 	}
+
+	PopupJustOpened	= true;
 }
 
 
@@ -415,10 +456,11 @@ void FileDialog::PopulateNetwork()
 }
 
 
-void FileDialog::ProcessShareResults()
+bool FileDialog::ProcessShareResults()
 {
 	// Most of time this will be empty since we remove the items when they are available, just like a message queue.
 	tStringItem* share = NetworkShareResults.ShareNames.Remove();
+	bool somethingAdded = false;
 	if (share)
 	{
 		tList<tStringItem> exploded;
@@ -428,24 +470,27 @@ void FileDialog::ProcessShareResults()
 		{
 			TreeNode* machine = new TreeNode(machName.Text(), this, NetworkTreeNode);
 			NetworkTreeNode->AppendChild(machine);
+			somethingAdded = true;
 		}
 
 		TreeNode* machNode = NetworkTreeNode->Find(machName);
 		tAssert(machNode);
 		tStringItem* shareName = (exploded.GetNumItems() == 2) ? exploded.Last() : nullptr;
-
 		if (shareName && !machNode->Contains(*shareName))
 		{
 			TreeNode* shareNode = new TreeNode(shareName->Text(), this, machNode);
 			machNode->AppendChild(shareNode);
+			somethingAdded = true;
 		}
 		delete share;
 	}
+
+	return somethingAdded;
 }
 #endif
 
 
-void FileDialog::TreeNodeRecursive(TreeNode* node)
+void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemName)
 {
 	int flags =
 		ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_DefaultOpen |
@@ -454,22 +499,46 @@ void FileDialog::TreeNodeRecursive(TreeNode* node)
 
 	bool populate = false;
 
+	if (selectPathItemName)
+	{
+		if (*selectPathItemName == node->Name)
+		{
+			node->NextOpen = true;
+			selectPathItemName = selectPathItemName->Next();
+			SelectedNode = node;
+		}
+		else
+		{
+			selectPathItemName = nullptr;
+		}
+	}
+
 	// This is the magic that's needed if you select from the right-hand panel.
 	if (node->NextOpen)
 	{
-		ImGui::SetNextTreeNodeOpen(true);
+		ImGui::SetNextItemOpen(true);
 		node->NextOpen = false;
 		populate = true;
 	}
 
 	bool isOpen = ImGui::TreeNodeEx(node->Name.Chs(), flags);
 	bool isClicked = ImGui::IsItemClicked();
+
 	if (isClicked)
 	{
-		SelectedNode = node;
-		// SelectedNode Updated. Need to update LastSelectedDir string.
-		ConfigLastSelectedDir = GetSelectedDir();
-	
+		if (!selectPathItemName)
+		{
+			SelectedNode = node;
+
+			// SelectedNode Updated. Need to update global (saved) FilePath.
+			if (Mode == DialogMode::OpenFile)
+				GetDir(ConfigOpenFilePath, SelectedNode);
+			else if (Mode == DialogMode::OpenDir)
+				GetDir(ConfigOpenDirPath, SelectedNode);
+			if (Mode == DialogMode::SaveFile)
+				GetDir(ConfigSaveFilePath, SelectedNode);
+		}
+
 		populate = true;
 	}
 
@@ -481,7 +550,7 @@ void FileDialog::TreeNodeRecursive(TreeNode* node)
 		#endif
 		{
 			// Need to be careful here. tFindDirs would (reasonably?) use the current working dir if we passed in an empty string.
-			tString currDir = GetSelectedDir();
+			tString currDir = GetDir(node);
 			tList<tStringItem> foundDirs;
 			if (!currDir.IsEmpty())
 				tSystem::tFindDirs(foundDirs, currDir);
@@ -503,7 +572,7 @@ void FileDialog::TreeNodeRecursive(TreeNode* node)
 	{
 		// Recurse children.
 		for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
-			TreeNodeRecursive(child.GetObject());
+			TreeNodeRecursive(child.GetObject(), selectPathItemName);
 
 		ImGui::TreePop();
 	}
@@ -535,22 +604,19 @@ void FileDialog::DoSelectable(ContentItem* item)
 	if (ImGui::Selectable(label.Chs(), &item->Selected, ImGuiSelectableFlags_SpanAllColumns))
 	{
 		// This block enforces single selection.
-		if (Mode != DialogMode::OpenFiles)
+		if (item->Selected)
 		{
-			if (item->Selected)
+			// Only allowed one selected max. Clear the others.
+			for (ContentItem* i = SelectedNode->Contents.First(); i; i = i->Next())
 			{
-				// Only allowed one selected max. Clear the others.
-				for (ContentItem* i = SelectedNode->Contents.First(); i; i = i->Next())
-				{
-					if (i == item)
-						continue;
-					i->Selected = false;
-				}
+				if (i == item)
+					continue;
+				i->Selected = false;
 			}
-
-			// Do not allow deselection of the single item.
-			item->Selected = true;
 		}
+
+		// Do not allow deselection of the single item.
+		item->Selected = true;
 
 		// If a directory is selected in the right panel, we support updating the current selected TreeNode.
 		if (item->IsDir)
@@ -566,8 +632,13 @@ void FileDialog::DoSelectable(ContentItem* item)
 			}
 			SelectedNode = node;
 
-			// SelectedNode Updated. Need to update LastSelectedDir string.
-			ConfigLastSelectedDir = GetSelectedDir();
+			// SelectedNode Updated. Need to update global FilePath.
+			if (Mode == DialogMode::OpenFile)
+				GetDir(ConfigOpenFilePath, SelectedNode);
+			else if (Mode == DialogMode::OpenDir)
+				GetDir(ConfigOpenDirPath, SelectedNode);
+			if (Mode == DialogMode::SaveFile)
+				GetDir(ConfigSaveFilePath, SelectedNode);
 		}
 	}
 }
@@ -598,14 +669,22 @@ FileDialog::DialogResult FileDialog::DoPopup()
 	// The unused isOpen bool is just so we get a close button in ImGui. 
 	bool isOpen = true;
 	const char* label = nullptr;
+	tList<tStringItem>* configPath = nullptr;
 	switch (Mode)
 	{
-		case DialogMode::OpenFile:		label = "Open File";		break;
-		case DialogMode::OpenFiles:		label = "Open Files";		break;
-		case DialogMode::OpenDir:		label = "Open Directory";	break;
-		case DialogMode::SaveFile:		label = "Save File";		break;
+		case DialogMode::OpenFile:		label = "Open File";		configPath = &ConfigOpenFilePath;	break;
+		case DialogMode::OpenDir:		label = "Open Directory";	configPath = &ConfigOpenDirPath;	break;
+		case DialogMode::SaveFile:		label = "Save File";		configPath = &ConfigSaveFilePath;	break;
 	}
 	ImGui::SetNextWindowSize(tVector2(660.0f, 400.0f), ImGuiCond_Appearing);
+
+	tStringItem* selectPathItemName = nullptr;
+	if (PopupJustOpened)
+	{
+		selectPathItemName = (!configPath || configPath->IsEmpty()) ? nullptr : configPath->Head();
+		PopupJustOpened = false;
+	}
+
 	if (!ImGui::BeginPopupModal(label, &isOpen, 0))
 		return DialogResult::Closed;
 
@@ -614,8 +693,10 @@ FileDialog::DialogResult FileDialog::DoPopup()
 
 	// The left and right panels are cells in a 1 row, 2 column table.
 	float bottomBarHeight = 20.0f + 28.0f;
+	ImGui::PushStyleColor(ImGuiCol_TableBorderStrong, tVector4(0.50f, 0.50f, 0.54f, 1.00f));
 	ImGui::PushStyleColor(ImGuiCol_TableBorderLight, tVector4(0.50f, 0.50f, 0.54f, 1.00f));
-	if (ImGui::BeginTable("FileDialogTable", 2, ImGuiTableFlags_Resizable, tVector2(0.0f, -bottomBarHeight)))
+	int outerTableFlags = ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable;
+	if (ImGui::BeginTable("FileDialogTable", 2, outerTableFlags, tVector2(0.0f, -bottomBarHeight)))
 	{
 		ImGui::TableSetupColumn("LeftTreeColumn", ImGuiTableColumnFlags_WidthFixed, 160.0f);
 		ImGui::TableSetupColumn("RightContentColumn", ImGuiTableColumnFlags_WidthStretch);
@@ -634,20 +715,21 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		// @wip Bookmarks are disabled until implemented fully.
 		TreeNodeFlat(BookmarkTreeNode);
 		#endif
-		TreeNodeRecursive(LocalTreeNode);
+		TreeNodeRecursive(LocalTreeNode, selectPathItemName);
 		#ifdef PLATFORM_WINDOWS
-		ProcessShareResults();
+		bool somethingAdded = ProcessShareResults();
+
+		// If something added from our network shares request, we need to try the last selected path again.
+		if (somethingAdded)
+			selectPathItemName = (!configPath || configPath->IsEmpty()) ? nullptr : configPath->Head();
+
 		ProcessingNetworkPath = true;
-		TreeNodeRecursive(NetworkTreeNode);
+		TreeNodeRecursive(NetworkTreeNode, selectPathItemName);
 		ProcessingNetworkPath = false;
 		#endif
 
 		ImGui::PopStyleVar();
 		ImGui::EndChild();
-
-		//////////////////////
-		// @wip Here I need to take ConfigLastSelectedDir and, if valid, set SelectedNode
-		//////////////////////	
 
 		//
 		// Right content panel.
@@ -659,7 +741,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		{
 			if (!SelectedNode->ContentsPopulated)
 			{
-				tString selDir = GetSelectedDir();
+				tString selDir = GetDir(SelectedNode);
 
 				// Directories.
 				tList<tStringItem> foundDirs;
@@ -704,7 +786,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				//ImGuiTableFlags_SizingFixedFit |
 				ImGuiTableFlags_ScrollY;		// This is needed so the table itself has a scroll bar that respects the top-row freeze.
 
-			ImGui::PushStyleColor(ImGuiCol_TableBorderLight, tVector4(0.25f, 0.25f, 0.28f, 1.00f));
+			ImGui::PushStyleColor(ImGuiCol_TableBorderLight, tVector4(0.30f, 0.30f, 0.31f, 1.00f));
 			if (ImGui::BeginTable("ContentItems", 5, tableFlags))
 			{
 				// The columns. Each one gets its own unique ID.
@@ -764,6 +846,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		ImGui::EndTable();
 	}
 	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
 
 	ContentItem* selItem = SelectedNode ? SelectedNode->FindSelectedItem() : nullptr;
 	bool resultAvail = false;
@@ -774,7 +857,6 @@ FileDialog::DialogResult FileDialog::DoPopup()
 			((Mode == DialogMode::OpenFile) && !selItem->IsDir) ||
 			((Mode == DialogMode::SaveFile) && !selItem->IsDir) ||
 			((Mode == DialogMode::OpenDir) && selItem->IsDir)
-			// @todo multiple files.
 		);
 	}
 
@@ -789,9 +871,21 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		);
 	}
 
-	// For file modes, display the filename and types combo.
-	if (Mode != DialogMode::OpenDir)
+	if (Mode == DialogMode::OpenDir)
 	{
+		int flags = ImGuiInputTextFlags_ReadOnly;
+		ImGui::SetNextItemWidth( ImGui::GetWindowContentRegionMax().x / 2.0f );
+
+		if (!resultAvail)
+			ImGui::PushStyleColor(ImGuiCol_Text, tVector4(0.5f, 0.5f, 0.52f, 1.0f) );
+		tString fname = resultAvail ? SelectedNode->Name : "Directory Name";
+		ImGui::InputText("##Directory Name", fname.Txt(), fname.Length()+1, flags);
+		if (!resultAvail)
+			ImGui::PopStyleColor();
+	}
+	else
+	{
+		// For file modes, display the filename and types combo.
 		int flags = ImGuiInputTextFlags_ReadOnly;
 		ImGui::SetNextItemWidth( ImGui::GetWindowContentRegionMax().x / 2.0f );
 
@@ -846,7 +940,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
 		if (ImGui::Button("Open", tVector2(70.0f, 0.0f)))
 		{
-			Result = GetSelectedDir();
+			Result = GetDir(SelectedNode);
 			if ((Mode == DialogMode::OpenFile) && selItem)
 				Result += selItem->Name;
 			result = DialogResult::OK;
@@ -872,28 +966,41 @@ tString FileDialog::GetResult()
 }
 
 
-tString FileDialog::GetSelectedDir()
+tString FileDialog::GetDir(const TreeNode* node)
 {
-	if (!SelectedNode)
+	if (!node)
 		return tString();
 
-	bool isNetworkLoc = SelectedNode->IsNetworkLocation();
+	bool isNetworkLoc = node->IsNetworkLocation();
 
 	tString dir;
-	TreeNode* curr = SelectedNode;
-	while (curr)
+	while (node)
 	{
-		if (!curr->Name.IsEmpty() && (curr->Depth() > 0))
+		if (!node->Name.IsEmpty() && (node->Depth() > 0))
 		{
-			if (isNetworkLoc && (curr->Depth() == 1))
-				dir = curr->Name + "\\" + dir;
+			if (isNetworkLoc && (node->Depth() == 1))
+				dir = node->Name + "\\" + dir;
 			else
-				dir = curr->Name + "/" + dir;
+				dir = node->Name + "/" + dir;
 		}
-		curr = curr->Parent;
+		node = node->Parent;
 	}
 	if (isNetworkLoc)
 		dir = tString("\\\\") + dir;
 
 	return dir;
+}
+
+
+void FileDialog::GetDir(tList<tStringItem>& destDirItems, const TreeNode* node)
+{
+	destDirItems.Empty();
+	if (!node)
+		return;
+
+	while (node)
+	{
+		destDirItems.Insert(new tStringItem(node->Name));
+		node = node->Parent;
+	}
 }

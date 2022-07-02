@@ -21,7 +21,7 @@ using namespace tStd;
 using namespace tSystem;
 using namespace tMath;
 using namespace tImage;
-using namespace tInterface;
+using namespace tFileDialog;
 
 
 namespace Viewer

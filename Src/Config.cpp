@@ -105,7 +105,7 @@ void Config::Save(const tString& filename)
 	writer.CR();
 
 	// Save the file dialog settings.
-	tInterface::FileDialog::Save(writer, "FileDialog");
+	tFileDialog::Save(writer, "FileDialog");
 }
 
 
@@ -137,7 +137,7 @@ void Config::Load(const tString& filename)
 				break;
 
 			case tHash::tHashCT("FileDialog"):
-				tInterface::FileDialog::Load(e, "FileDialog");
+				tFileDialog::Load(e, "FileDialog");
 				break;
 		}
 	}

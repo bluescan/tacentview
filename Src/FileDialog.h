@@ -16,13 +16,30 @@
 #include <Foundation/tString.h>
 #include <System/tFile.h>
 #include <System/tScript.h>
-
-
-// This seems like a reasonable namespace for all generic ImGui widgets and dialogs that may eventually find a home
-// outside this viewer app.
-namespace tInterface
+namespace tFileDialog
 {
 
+
+// Call to save the dialogs settings (bookmarks, current dir/file, etc) to disk. Writes to the file tExprWriter
+// was constructed with. All settings are shared between all instances of FileDialog. The expressionName is
+// whatever you like. It is the name of the expression you will see in the written file. You should make sure it
+// doesn't collide with any other names you may be using. Use the same name when loading. Saving may be performed
+// at any time, even if a dialog is open. Returns false if writing fails.
+bool Save(tExprWriter&, const tString& expressionName);
+
+// Call to load the dialog settings from disk. By passing in a tExpr you can use your own config file along with
+// other expressions. This function reads from the passed-in expression. Pass in a tExprReader directly if you
+// want to load from a separate file. All settings are shared between all instances of FileDialog. The
+// expressionName is the name of the expression you used when saving. Make sure it doesn't collide with any other
+// names you may be using. Use the same name when saving. Returns false if fails to load.
+bool Load(tExpr, const tString& expressionName);
+
+enum class DialogMode
+{
+	OpenFile,
+	OpenDir,
+	SaveFile
+};
 
 struct ContentItem;
 class TreeNode;
@@ -32,31 +49,9 @@ class TreeNode;
 class FileDialog : public tLink<FileDialog>
 {
 public:
-	enum class DialogMode
-	{
-		OpenFile,
-		OpenFiles,
-		OpenDir,
-		SaveFile
-	};
-
 	// In OpenDir dialog mode the file-types are ignored. If file-types is empty (default) then all types are used.
 	FileDialog(DialogMode, const tSystem::tFileTypes& = tSystem::tFileTypes());
 	~FileDialog();
-
-	// Call to save the dialogs settings (bookmarks, current dir/file, etc) to disk. Writes to the file tExprWriter
-	// was constructed with. All settings are shared between all instances of FileDialog, so this function is static.
-	// The expressionName is whatever you like. It is the name of the expression you will see in the written file.
-	// You should make sure it doesn't collide with any other names you may be using. Use the same name when loading.
-	// Saving may be performed at any time, even if a dialog is open. Returns false if writing fails.
-	static bool Save(tExprWriter&, const tString& expressionName);
-
-	// Call to load the dialog settings from disk. By passing in a tExpr you can use your own config file along with
-	// other expressions. This function reads from the passed-in expression. Pass in a tExprReader directly if you
-	// want to load from a separate file. All settings are shared between all instances of FileDialog, so this
-	// function is static. The expressionName is the name of the expression you used when saving. Make sure it doesn't
-	// collide with any other names you may be using. Use the same name when saving. Returns false if fails to load.
-	static bool Load(tExpr, const tString& expressionName);
 
 	// Call when you want the modal dialog to open.
 	void OpenPopup();
@@ -81,7 +76,8 @@ public:
 	State SharedState;
 	
 private:
-	tString GetSelectedDir();
+	tString GetDir(const TreeNode*);
+	void GetDir(tList<tStringItem>& destDirItems, const TreeNode*);
 	void DoSelectable(ContentItem*);
 
 	#ifdef TACENTVIEW_BOOKMARKS
@@ -95,21 +91,20 @@ private:
 	// Needed in cases where we need a reload of content. For example, when changing filetype filters.
 	void InvalidateAllNodeContent();
 	void InvalidateAllNodeContentRecursive(TreeNode*);
-	void TreeNodeRecursive(TreeNode*);
+	void TreeNodeRecursive(TreeNode*, tStringItem* selectPathItemName = nullptr);
 	void TreeNodeFlat(TreeNode*);
 
 	#ifdef PLATFORM_WINDOWS
 	void RequestNetworkSharesThread();
-	void ProcessShareResults();
+	bool ProcessShareResults();
 	tSystem::tNetworkShareResult NetworkShareResults;
 	bool ProcessingNetworkPath = false;
 	#endif
 
+	bool PopupJustOpened;
 	DialogMode Mode;
 	tSystem::tFileTypes FileTypes;
 	tString Result;
-
-	static tString ConfigLastSelectedDir;
 
 	#ifdef TACENTVIEW_BOOKMARKS
 	TreeNode* BookmarkTreeNode;

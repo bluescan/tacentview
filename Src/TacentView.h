@@ -27,9 +27,9 @@ namespace Viewer
 	extern tSystem::tFileTypes FileTypes_Load;
 	extern tSystem::tFileTypes FileTypes_Save;
 	extern tSystem::tFileTypes FileTypes_SaveMultiFrame;
-	extern tInterface::FileDialog OpenFileDialog;
-	extern tInterface::FileDialog OpenDirDialog;
-	extern tInterface::FileDialog SaveFileDialog;
+	extern tFileDialog::FileDialog OpenFileDialog;
+	extern tFileDialog::FileDialog OpenDirDialog;
+	extern tFileDialog::FileDialog SaveFileDialog;
 
 	extern Image* CurrImage;
 	extern tString ImagesDir;
