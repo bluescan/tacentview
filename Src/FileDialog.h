@@ -34,6 +34,8 @@ bool Save(tExprWriter&, const tString& expressionName);
 // names you may be using. Use the same name when saving. Returns false if fails to load.
 bool Load(tExpr, const tString& expressionName);
 
+void Reset();
+
 enum class DialogMode
 {
 	OpenFile,
@@ -80,7 +82,7 @@ private:
 	void InvalidateAllNodeContent();
 	void InvalidateAllNodeContentRecursive(TreeNode*);
 	void TreeNodeRecursive(TreeNode*, tStringItem* selectPathItemName = nullptr);
-	void BookmarksLoop();
+	tStringItem* BookmarksLoop();
 
 	#ifdef PLATFORM_WINDOWS
 	void RequestNetworkSharesThread();

@@ -123,13 +123,15 @@ namespace tFileDialog
 		enum class Type
 		{
 			User,							// A normal directory bookmark.
-			Home,							// A bookmark from the user's home directory (Linux) or the user directory (Windows).
-			Root							// A bookmark from the root of the filesyetem (Linux) or an appropriate drive letter (Windows).
+			Home,							// A bookmark of the user's home directory (Linux) or the user directory (Windows).
+			Root							// A bookmark of the root of the filesyetem (Linux) or an appropriate drive letter (Windows).
 		};
 		Bookmark()							/* Creates an invalid bookmark. */											: Items() { }
 		Bookmark(const Bookmark& src)		/* Copy cons. */															: Items() { Set(src); }
 		Bookmark(const tString& fullPath)	/* From a full path string. */												: Items() { Set(fullPath); }
 		Bookmark(Type type)					/* Accepts Home or Root. */													: Items() { Set(type); }
+		Bookmark(tExpr expr)																							: Items() { Load(expr); }
+		~Bookmark()																										{ Items.Empty(); }
 
 		bool Set(const Bookmark& src);
 		bool Set(const tString& fullPath);
@@ -143,15 +145,25 @@ namespace tFileDialog
 		bool Save(tExprWriter&) const;
 		bool Load(tExpr expr);
 
-		Type BookmarkType;
+		Type BookmarkType					= Type::User;
 		tList<tStringItem> Items;
+		bool Selected						= false;
 	};
 	tList<Bookmark> Bookmarks;
-
-	bool SaveBookmarks(tExprWriter& writer);
-	bool LoadBookmarks(tExpr expr);
+	void EnsureDefaultBookmarksExist();
+	void UnselectAllBookmarks();
 }
+
+
 using namespace tFileDialog;
+
+
+bool Bookmark::Set(const tString& fullPath)
+{
+	Items.Empty();
+	BookmarkType = Type::User;
+	return true;
+}
 
 
 bool Bookmark::Set(Type type)
@@ -161,6 +173,8 @@ bool Bookmark::Set(Type type)
 
 	if (type == Type::Home)
 	{
+		BookmarkType = Type::Home;
+ 
 		// All Windows platforms get a 'user' bookmark. Linux gets the 'home' location.
 		tString home = tSystem::tGetHomeDir();
 
@@ -168,16 +182,109 @@ bool Bookmark::Set(Type type)
 		home.ExtractLeft("/");
 		tStd::tExplode(exploded, home, '/');
 
-		//	for (tStringItem* item = exploded.First(); item; item = item->Next())
-		//		tPrintf("HOME ITEM: %s\n", item->Chs());
+		Items.Append(new tStringItem("Local"));
+		for (tStringItem* item = exploded.First(); item; item = item->Next())
+			Items.Append(new tStringItem(*item));
 	}
 	else if (type == Type::Root)
 	{
-		// @todo be smart on windows as to which drive letter to use. A/B low priority, then
-		// maybe lowest letter.
+		BookmarkType = Type::Root;
+		Items.Append(new tStringItem("Local"));
+
+		#ifdef PLATFORM_WINDOWS
+		tList<tStringItem> drives;
+		tSystem::tGetDrives(drives);
+		tString root;
+		for (tStringItem* drive = drives.First(); drive; drive = drive->Next())
+		{
+			tDriveInfo driveInfo;
+			bool ok = tGetDriveInfo(driveInfo, *drive);
+			if (ok && (driveInfo.DriveType != tDriveType::Removable))
+			{
+				root = *drive;
+				break;
+			}			
+		}
+		if (root.IsValid())
+			Items.Append(new tStringItem(root));
+		else
+			Items.Append(new tStringItem("C:"));
+		#endif
+
+		#ifdef PLATFORM_LINUX
+		Items.Append(new tStringItem("/"));
+		#endif
 	}
 	return true;
 }
+
+
+bool Bookmark::Exists() const
+{
+	if (!IsValid())
+		return false;
+
+	if (BookmarkType != Type::User)
+		return true;
+
+	tString loc = *Items.First();
+
+	// We assume network locations exist for now.
+	if (loc != "Local")
+		return true;
+
+	tString path;
+	for (tStringItem* item = Items.First()->Next(); item; item = item->Next())
+		path += *item + "/";
+
+	return tSystem::tDirExists(path);
+}
+
+
+bool Bookmark::Save(tExprWriter& writer) const
+{
+	if (!IsValid())
+		return false;
+
+	writer.Begin();
+	writer.Atom("Bookmark");
+	switch (BookmarkType)
+	{
+		case Type::User:	writer.Atom("User");	break;
+		case Type::Home:	writer.Atom("Home");	break;
+		case Type::Root:	writer.Atom("Root");	break;
+	}
+
+	for (tStringItem* i = Items.First(); i; i = i->Next())
+		writer.Atom(*i);
+	writer.End();
+
+	return true;
+}
+
+
+bool Bookmark::Load(tExpr expr)
+{
+	Items.Empty();
+	if (expr.Item0() != "Bookmark")
+		return false;
+
+	if (expr.CountItems() < 3)
+		return false;
+
+	switch (expr.Item1().Hash())
+	{
+		case tHash::tHashCT("User"):	BookmarkType = Type::User;		break;
+		case tHash::tHashCT("Home"):	BookmarkType = Type::Home;		break;
+		case tHash::tHashCT("Root"):	BookmarkType = Type::Root;		break;
+	}
+
+	for (tExpr e = expr.Item2(); e.IsValid(); e = e.Next())
+		Items.Append(new tStringItem(e.GetAtomString()));
+
+	return false;
+}
+
 
 bool tFileDialog::Save(tExprWriter& writer, const tString& exprName)
 {
@@ -194,7 +301,7 @@ bool tFileDialog::Save(tExprWriter& writer, const tString& exprName)
 	// We save a different last-used path for each mode.
 	if (!ConfigOpenFilePath.IsEmpty())
 	{
-		writer.Begin();
+ 		writer.Begin();
 		writer.Atom("OpenFilePath");
 		for (tStringItem* n = ConfigOpenFilePath.First(); n; n = n->Next())
 			writer.Atom(*n);
@@ -222,25 +329,24 @@ bool tFileDialog::Save(tExprWriter& writer, const tString& exprName)
 		writer.CR();
 	}
 
-	SaveBookmarks(writer);
+	if (!Bookmarks.IsEmpty())
+	{
+		// Save all bookmarks. We save all 3 types.
+		writer.Begin();
+		writer.Atom("Bookmarks"); writer.Indent();
+		for (Bookmark* bookmark = Bookmarks.First(); bookmark; bookmark = bookmark->Next())
+		{
+			writer.CR();
+			bookmark->Save(writer);
+		}
+		writer.Dedent();
+		writer.CR();
+		writer.End();
+	}
 
 	writer.Dedent();
 	writer.CR();
-
 	writer.End();
-	return true;
-}
-
-
-bool tFileDialog::SaveBookmarks(tExprWriter& writer)
-{
-	writer.Begin();
-	writer.Atom("Bookmarks");
-	for (Bookmark* bookmark = Bookmarks.First(); bookmark; bookmark = bookmark->Next())
-	{
-	}
-	writer.End();
-	writer.CR();
 	return true;
 }
 
@@ -248,54 +354,97 @@ bool tFileDialog::SaveBookmarks(tExprWriter& writer)
 bool tFileDialog::Load(tExpr expr, const tString& exprName)
 {
 	tExpr e = expr.Item0();
-	if (e != exprName)
-		return false;
-
 	int loadedVersion = 0;
-	for (tExpr e = expr.Item1(); e.IsValid(); e = e.Next())
+	if (e == exprName)
 	{
-		switch (e.Command().Hash())
+		for (tExpr e = expr.Item1(); e.IsValid(); e = e.Next())
 		{
-			case tHash::tHashCT("FileDialogConfigVersion"):
-				loadedVersion = e.Item1();
-				break;
+			switch (e.Command().Hash())
+			{
+				case tHash::tHashCT("FileDialogConfigVersion"):
+					loadedVersion = e.Item1();
+					break;
 
-			case tHash::tHashCT("OpenFilePath"):
-				ConfigOpenFilePath.Empty();
-				for (tExpr ne = e.Item1(); ne.IsValid(); ne = ne.Next())
-					ConfigOpenFilePath.Append(new tStringItem(ne.GetAtomString()));
-				break;
+				case tHash::tHashCT("OpenFilePath"):
+					ConfigOpenFilePath.Empty();
+					for (tExpr ne = e.Item1(); ne.IsValid(); ne = ne.Next())
+						ConfigOpenFilePath.Append(new tStringItem(ne.GetAtomString()));
+					break;
 
-			case tHash::tHashCT("OpenDirPath"):
-				ConfigOpenDirPath.Empty();
-				for (tExpr ne = e.Item1(); ne.IsValid(); ne = ne.Next())
-					ConfigOpenDirPath.Append(new tStringItem(ne.GetAtomString()));
-				break;
+				case tHash::tHashCT("OpenDirPath"):
+					ConfigOpenDirPath.Empty();
+					for (tExpr ne = e.Item1(); ne.IsValid(); ne = ne.Next())
+						ConfigOpenDirPath.Append(new tStringItem(ne.GetAtomString()));
+					break;
 
-			case tHash::tHashCT("SaveFilePath"):
-				ConfigSaveFilePath.Empty();
-				for (tExpr ne = e.Item1(); ne.IsValid(); ne = ne.Next())
-					ConfigSaveFilePath.Append(new tStringItem(ne.GetAtomString()));
-				break;
+				case tHash::tHashCT("SaveFilePath"):
+					ConfigSaveFilePath.Empty();
+					for (tExpr ne = e.Item1(); ne.IsValid(); ne = ne.Next())
+						ConfigSaveFilePath.Append(new tStringItem(ne.GetAtomString()));
+					break;
 
-			case tHash::tHashCT("Bookmarks"):
-				LoadBookmarks(e);
-				break;
+				case tHash::tHashCT("Bookmarks"):
+					Bookmarks.Empty();
+					for (tExpr be = e.Item1(); be.IsValid(); be = be.Next())
+					{
+						// We only keep the bookmark if it still exists on the filesystem.
+						Bookmark* bookmark = new Bookmark(be);
+						if (bookmark->Exists())
+							Bookmarks.Append(bookmark);
+						else
+							delete bookmark;
+					}
+					break;
+			}
 		}
 	}
 
+	// Now that bookmarks are loaded and exist, we make sure both a home and root bookmark exist.
+	EnsureDefaultBookmarksExist();
 	return true;
 }
 
 
-bool tFileDialog::LoadBookmarks(tExpr expr)
+void tFileDialog::EnsureDefaultBookmarksExist()
 {
-	// Allways add a fresh home and root bookmark. Not loaded to disk.
-	Bookmarks.Append(new Bookmark(Bookmark::Type::Home));
-	Bookmarks.Append(new Bookmark(Bookmark::Type::Root));
+	Bookmark* homeBM = nullptr;
+	for (Bookmark* bookmark = Bookmarks.First(); bookmark; bookmark = bookmark->Next())
+		if (bookmark->BookmarkType == Bookmark::Type::Home)
+		{
+			homeBM = bookmark;
+			break;
+		}
 
-	// @todo load all the User bookmarks from the expression.
-	return true;
+	Bookmark* rootBM = nullptr;
+	for (Bookmark* bookmark = Bookmarks.First(); bookmark; bookmark = bookmark->Next())
+		if (bookmark->BookmarkType == Bookmark::Type::Root)
+		{
+			rootBM = bookmark;
+			break;
+		}
+
+	if (!rootBM)
+		Bookmarks.Insert(new Bookmark(Bookmark::Type::Root));
+
+	if (!homeBM)
+		Bookmarks.Insert(new Bookmark(Bookmark::Type::Home));
+}
+
+
+void tFileDialog::UnselectAllBookmarks()
+{
+	for (Bookmark* bookmark = Bookmarks.First(); bookmark; bookmark = bookmark->Next())
+		bookmark->Selected = false;
+}
+
+
+void tFileDialog::Reset()
+{
+	ConfigOpenFilePath.Empty();
+	ConfigOpenDirPath.Empty();
+	ConfigSaveFilePath.Empty();
+	Bookmarks.Empty();
+	EnsureDefaultBookmarksExist();
 }
 
 
@@ -709,25 +858,42 @@ void FileDialog::DoSelectable(ContentItem* item)
 }
 
 
-void FileDialog::BookmarksLoop()
+tStringItem* FileDialog::BookmarksLoop()
 {
-	/*
-	int flags = (node->Children.GetNumItems() == 0) ? ImGuiTreeNodeFlags_Leaf : 0;
-	if (SelectedNode == node)
-		flags |= ImGuiTreeNodeFlags_Selected;
+	int flags = Bookmarks.IsEmpty() ? ImGuiTreeNodeFlags_Leaf : 0;
 	flags |= ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
-	bool isOpen = ImGui::TreeNodeEx(node->Name.Chs(), flags);
-	bool isClicked = ImGui::IsItemClicked();
-
+	bool isOpen = ImGui::TreeNodeEx("Bookmarks", flags);
+	tStringItem* bookmarkItem = nullptr;
 	if (isOpen)
 	{
-		// Recurse children.
-		// for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
-		//	FavouritesTreeNodeFlat(child.GetObject());
+		int bmNum = 0;
+		for (Bookmark* bookmark = Bookmarks.First(); bookmark; bookmark = bookmark->Next(), bmNum++)
+		{
+			int bmflags = ImGuiTreeNodeFlags_Leaf | (bookmark->Selected ? ImGuiTreeNodeFlags_Selected : 0);
+
+			tString name;
+			tsPrintf(name, "User##Num%d", bmNum);
+			if (bookmark->BookmarkType == Bookmark::Type::Home)
+				tsPrintf(name, "Home##Num%d", bmNum);
+			else if (bookmark->BookmarkType == Bookmark::Type::Root)
+				tsPrintf(name, "Root##Num%d", bmNum);
+			
+			bool isOpenBM = ImGui::TreeNodeEx(name.Chs(), bmflags);
+			bool isClicked = ImGui::IsItemClicked();
+			if (isClicked)
+			{
+				UnselectAllBookmarks();
+				bookmark->Selected = true;
+				bookmarkItem = bookmark->Items.First();
+			}
+			if (isOpen)
+				ImGui::TreePop();
+		}
 		ImGui::TreePop();
 	}
-	*/
+
+	return bookmarkItem;
 }
 
 
@@ -776,7 +942,10 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		ImGui::BeginChild("LeftTreePanel", tVector2(0.0f, -bottomBarHeight), false, ImGuiWindowFlags_HorizontalScrollbar);
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(0.0f, 3.0f));
 
-		BookmarksLoop();
+		tStringItem* bookmarkItem = BookmarksLoop();
+		if (bookmarkItem)
+			selectPathItemName = bookmarkItem;
+
 		TreeNodeRecursive(LocalTreeNode, selectPathItemName);
 		#ifdef PLATFORM_WINDOWS
 		bool somethingAdded = ProcessShareResults();

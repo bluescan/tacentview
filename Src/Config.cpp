@@ -116,6 +116,7 @@ void Config::Load(const tString& filename)
 		Global.Reset();
 		ResetAll();
 		Current = &MainSettings;
+		tFileDialog::Reset();
 		return;
 	}
 
