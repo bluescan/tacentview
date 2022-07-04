@@ -122,28 +122,31 @@ namespace tFileDialog
 	{
 		enum class Type
 		{
-			User,							// A normal directory bookmark.
-			Home,							// A bookmark of the user's home directory (Linux) or the user directory (Windows).
-			Root							// A bookmark of the root of the filesyetem (Linux) or an appropriate drive letter (Windows).
+			User,								// A normal directory bookmark.
+			Home,								// A bookmark of the user's home directory (Linux) or the user directory (Windows).
+			Root								// A bookmark of the root of the filesyetem (Linux) or an appropriate drive letter (Windows).
 		};
-		Bookmark()							/* Creates an invalid bookmark. */											: Items() { }
-		Bookmark(const Bookmark& src)		/* Copy cons. */															: Items() { Set(src); }
-		Bookmark(const tString& fullPath)	/* From a full path string. */												: Items() { Set(fullPath); }
-		Bookmark(Type type)					/* Accepts Home or Root. */													: Items() { Set(type); }
+		Bookmark()								/* Creates an invalid bookmark. */										: Items() { }
+		Bookmark(const Bookmark& src)			/* Copy cons. */														: Items() { Set(src); }
+		Bookmark(const tString& fullPath)		/* From a full path string. */											: Items() { Set(fullPath); }
+		Bookmark(const tList<tStringItem>& i)	/* A user bookmark from item list. */									: Items() { Set(i); }
+		Bookmark(Type type)						/* Accepts Home or Root. */												: Items() { Set(type); }
 		Bookmark(tExpr expr)																							: Items() { Load(expr); }
 		~Bookmark()																										{ Items.Empty(); }
 
 		bool Set(const Bookmark& src);
 		bool Set(const tString& fullPath);
-		bool Set(Type type);				// Accepts Home or Root. */
+		bool Set(const tList<tStringItem>&);	// A user bookmark from item list.
+ 		bool Set(Type type);					// Accepts Home or Root.
 
-		void Clear()						/* Makes bookmark invalid. */												{ Items.Empty(); }
-		bool IsValid() const				/* A bookmark is valid if it has items, even if it doesn't exist. */		{ return !Items.IsEmpty(); }
-		bool Exists() const;				// Does the bookmark still exist on the filesystem. In case the directory was deleted.
-		tString GetPath() const;			// Converts from internal item list to full path.
+		void Clear()							/* Makes bookmark invalid. */											{ Items.Empty(); }
+		bool IsValid() const					/* A bookmark is valid if it has items, even if it doesn't exist. */	{ return !Items.IsEmpty(); }
+		bool Exists() const;					// Does the bookmark still exist on the filesystem. In case the directory was deleted.
+		tString GetPath() const;				// Converts from internal item list to full path.
 
 		bool Save(tExprWriter&) const;
 		bool Load(tExpr expr);
+		bool operator==(const Bookmark&) const;
 
 		Type BookmarkType					= Type::User;
 		tList<tStringItem> Items;
@@ -152,6 +155,8 @@ namespace tFileDialog
 	tList<Bookmark> Bookmarks;
 	void EnsureDefaultBookmarksExist();
 	void UnselectAllBookmarks();
+	bool AddUniqueBookmark(const tList<tStringItem>&);
+	void ClearBookmarksSelected();
 }
 
 
@@ -162,6 +167,18 @@ bool Bookmark::Set(const tString& fullPath)
 {
 	Items.Empty();
 	BookmarkType = Type::User;
+	tAssert(!"Bookmark::Set not implemented.");
+	return false;
+}
+
+
+bool Bookmark::Set(const tList<tStringItem>& src)
+{
+	Items.Empty();
+	BookmarkType = Type::User;
+	for (tStringItem* i = src.First(); i; i = i->Next())
+		Items.Append(new tStringItem(*i));
+
 	return true;
 }
 
@@ -241,6 +258,28 @@ bool Bookmark::Exists() const
 }
 
 
+tString Bookmark::GetPath() const
+{
+	if (!IsValid())
+		return tString();
+	
+	tString pathType = *Items.First();
+	bool isNetworkLoc = (pathType == "Network");
+
+	tString dir;
+	int depth = 0;
+	for (tStringItem* item = Items.First()->Next(); item && item->IsValid(); item = item->Next(), depth++)
+	{
+		if (isNetworkLoc && (depth == 0))
+			dir += "\\\\" + *item + "\\";
+		else
+			dir += *item + "/";
+	}
+
+	return dir;
+}
+
+
 bool Bookmark::Save(tExprWriter& writer) const
 {
 	if (!IsValid())
@@ -283,6 +322,26 @@ bool Bookmark::Load(tExpr expr)
 		Items.Append(new tStringItem(e.GetAtomString()));
 
 	return false;
+}
+
+
+bool Bookmark::operator==(const Bookmark& b) const
+{
+	if (!IsValid() && !b.IsValid())
+		return true;
+
+	if (Items.GetNumItems() != b.Items.GetNumItems())
+		return false;
+
+	if (BookmarkType != b.BookmarkType)
+		return false;
+
+	const tStringItem* bitem = b.Items.First();
+	for (const tStringItem* item = Items.First(); item; item = item->Next(), bitem = bitem->Next())
+		if (*item != *bitem)
+			return false;
+
+	return true;
 }
 
 
@@ -435,6 +494,37 @@ void tFileDialog::UnselectAllBookmarks()
 {
 	for (Bookmark* bookmark = Bookmarks.First(); bookmark; bookmark = bookmark->Next())
 		bookmark->Selected = false;
+}
+
+
+bool tFileDialog::AddUniqueBookmark(const tList<tStringItem>& items)
+{
+	Bookmark* bookmarkToAdd = new Bookmark(items);
+	bool found = false;
+	for (Bookmark* b = Bookmarks.First(); b; b = b->Next())
+	{
+		if (*bookmarkToAdd == *b)
+		{
+			found = true;
+			break;
+		}
+	}
+
+	if (found)
+	{
+		delete bookmarkToAdd;
+		return false;
+	}
+
+	Bookmarks.Append(bookmarkToAdd);
+	return true;
+}
+
+
+void tFileDialog::ClearBookmarksSelected()
+{
+	for (Bookmark* b = Bookmarks.First(); b; b = b->Next())
+		b->Selected = false;
 }
 
 
@@ -706,10 +796,12 @@ bool FileDialog::ProcessShareResults()
 
 void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemName)
 {
+	bool isSelected = (SelectedNode == node);
 	int flags =
 		ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_DefaultOpen |
 		((node->Children.GetNumItems() == 0) ? ImGuiTreeNodeFlags_Leaf : 0) |
-		((SelectedNode == node) ? ImGuiTreeNodeFlags_Selected : 0);
+		(isSelected ? ImGuiTreeNodeFlags_Selected : 0) |
+		(isSelected ? ImGuiTreeNodeFlags_AllowItemOverlap : 0);
 
 	bool populate = false;
 
@@ -738,6 +830,26 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 	bool isOpen = ImGui::TreeNodeEx(node->Name.Chs(), flags);
 	bool isClicked = ImGui::IsItemClicked();
 
+	// If selected we need a button for adding to bookmarks.
+	if (isSelected)
+	{
+		ImGui::AlignTextToFramePadding();
+		ImGui::SameLine();
+		if (ImGui::SmallButton(" + ##BookmarkAdd"))
+			ImGui::OpenPopup("DirContextMenu");
+
+		if (ImGui::BeginPopup("DirContextMenu")) 
+		{
+			if (ImGui::MenuItem("Add Bookmark"))
+			{
+				tList<tStringItem> bookmarkItems;
+				GetDir(bookmarkItems, node);
+				AddUniqueBookmark(bookmarkItems);
+			}
+			ImGui::EndPopup();
+		}	
+	}
+
 	if (isClicked)
 	{
 		if (!selectPathItemName)
@@ -751,6 +863,8 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 				GetDir(ConfigOpenDirPath, SelectedNode);
 			if (Mode == DialogMode::SaveFile)
 				GetDir(ConfigSaveFilePath, SelectedNode);
+
+			ClearBookmarksSelected();
 		}
 
 		populate = true;
@@ -860,37 +974,87 @@ void FileDialog::DoSelectable(ContentItem* item)
 
 tStringItem* FileDialog::BookmarksLoop()
 {
-	int flags = Bookmarks.IsEmpty() ? ImGuiTreeNodeFlags_Leaf : 0;
-	flags |= ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+	int flags =
+		(Bookmarks.IsEmpty() ? ImGuiTreeNodeFlags_Leaf : 0) |
+		ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
 	bool isOpen = ImGui::TreeNodeEx("Bookmarks", flags);
 	tStringItem* bookmarkItem = nullptr;
+	Bookmark* bookmarkToRemove = nullptr;
 	if (isOpen)
 	{
 		int bmNum = 0;
 		for (Bookmark* bookmark = Bookmarks.First(); bookmark; bookmark = bookmark->Next(), bmNum++)
 		{
-			int bmflags = ImGuiTreeNodeFlags_Leaf | (bookmark->Selected ? ImGuiTreeNodeFlags_Selected : 0);
+			int bmflags =
+				ImGuiTreeNodeFlags_Leaf |
+				(bookmark->Selected ? ImGuiTreeNodeFlags_Selected : 0) |
+				(bookmark->Selected ? ImGuiTreeNodeFlags_AllowItemOverlap : 0);
 
 			tString name;
-			tsPrintf(name, "User##Num%d", bmNum);
-			if (bookmark->BookmarkType == Bookmark::Type::Home)
-				tsPrintf(name, "Home##Num%d", bmNum);
-			else if (bookmark->BookmarkType == Bookmark::Type::Root)
-				tsPrintf(name, "Root##Num%d", bmNum);
-			
+			switch (bookmark->BookmarkType)
+			{
+				case Bookmark::Type::Home:
+					tsPrintf(name, "Home##Num%d", bmNum);
+					break;
+
+				case Bookmark::Type::Root:
+					tsPrintf(name, "Root##Num%d", bmNum);
+					break;
+
+				case Bookmark::Type::User:
+				default:
+					tsPrintf(name, "%s##Num%d", bookmark->Items.Last()->Chs(), bmNum);
+					break;
+			}
+
 			bool isOpenBM = ImGui::TreeNodeEx(name.Chs(), bmflags);
-			bool isClicked = ImGui::IsItemClicked();
-			if (isClicked)
+
+			if (ImGui::IsItemHovered())
+			{
+				tString toolText = bookmark->GetPath();
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(3.0f, 3.0f));
+				ImGui::BeginTooltip();
+				ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+				ImGui::TextUnformatted(toolText.Chs());
+				ImGui::PopTextWrapPos();
+				ImGui::EndTooltip();
+				ImGui::PopStyleVar();
+			}
+
+			// If selected we need a button for removing bookmarks.
+			if (bookmark->Selected && (bookmark->BookmarkType == Bookmark::Type::User))
+			{
+				ImGui::AlignTextToFramePadding();
+				ImGui::SameLine();
+				if (ImGui::SmallButton(" - ##BookmarkSub"))
+					ImGui::OpenPopup("BookmarkContextMenu");
+
+				if (ImGui::BeginPopup("BookmarkContextMenu"))
+				{
+					if (ImGui::MenuItem("Remove Bookmark"))
+						bookmarkToRemove = bookmark;
+					ImGui::EndPopup();
+				}	
+			}
+
+			if (ImGui::IsItemClicked())
 			{
 				UnselectAllBookmarks();
 				bookmark->Selected = true;
 				bookmarkItem = bookmark->Items.First();
 			}
-			if (isOpen)
+			if (isOpenBM)
 				ImGui::TreePop();
 		}
-		ImGui::TreePop();
+		ImGui::TreePop();	
+	}
+
+	if (bookmarkToRemove)
+	{
+		Bookmarks.Remove(bookmarkToRemove);
+		delete bookmarkToRemove;
+		return nullptr;
 	}
 
 	return bookmarkItem;
