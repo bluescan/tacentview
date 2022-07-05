@@ -794,7 +794,7 @@ bool FileDialog::ProcessShareResults()
 #endif
 
 
-void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemName)
+void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemName, bool setYScrollToSel)
 {
 	bool isSelected = (SelectedNode == node);
 	int flags =
@@ -804,7 +804,7 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 		(isSelected ? ImGuiTreeNodeFlags_AllowItemOverlap : 0);
 
 	bool populate = false;
-
+	bool setScroll = false;
 	if (selectPathItemName)
 	{
 		if (*selectPathItemName == node->Name)
@@ -812,10 +812,13 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 			node->NextOpen = true;
 			selectPathItemName = selectPathItemName->Next();
 			SelectedNode = node;
+			if (setYScrollToSel)
+				setScroll = true;
 		}
 		else
 		{
 			selectPathItemName = nullptr;
+			setYScrollToSel = false;
 		}
 	}
 
@@ -833,9 +836,8 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 	// If selected we need a button for adding to bookmarks.
 	if (isSelected)
 	{
-		ImGui::AlignTextToFramePadding();
 		ImGui::SameLine();
-		if (ImGui::SmallButton(" + ##BookmarkAdd"))
+		if (ImGui::SmallButton("  +  ##BookmarkAdd"))
 			ImGui::OpenPopup("DirContextMenu");
 
 		if (ImGui::BeginPopup("DirContextMenu")) 
@@ -848,6 +850,13 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 			}
 			ImGui::EndPopup();
 		}	
+	}
+
+	if (setScroll)
+	{
+		// Couldn't get ImGui::SetScrollHereY() to work.
+		float cy = ImGui::GetCursorPosY();
+		ImGui::SetScrollY(cy - ImGui::GetTextLineHeight()*2.0f);
 	}
 
 	if (isClicked)
@@ -900,7 +909,7 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 	{
 		// Recurse children.
 		for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
-			TreeNodeRecursive(child.GetObject(), selectPathItemName);
+			TreeNodeRecursive(child.GetObject(), selectPathItemName, setYScrollToSel);
 
 		ImGui::TreePop();
 	}
@@ -976,7 +985,8 @@ tStringItem* FileDialog::BookmarksLoop()
 {
 	int flags =
 		(Bookmarks.IsEmpty() ? ImGuiTreeNodeFlags_Leaf : 0) |
-		ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+		ImGuiTreeNodeFlags_OpenOnArrow |
+		ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
 	bool isOpen = ImGui::TreeNodeEx("Bookmarks", flags);
 	tStringItem* bookmarkItem = nullptr;
@@ -989,7 +999,7 @@ tStringItem* FileDialog::BookmarksLoop()
 			int bmflags =
 				ImGuiTreeNodeFlags_Leaf |
 				(bookmark->Selected ? ImGuiTreeNodeFlags_Selected : 0) |
-				(bookmark->Selected ? ImGuiTreeNodeFlags_AllowItemOverlap : 0);
+				ImGuiTreeNodeFlags_AllowItemOverlap;
 
 			tString name;
 			switch (bookmark->BookmarkType)
@@ -1009,8 +1019,10 @@ tStringItem* FileDialog::BookmarksLoop()
 			}
 
 			bool isOpenBM = ImGui::TreeNodeEx(name.Chs(), bmflags);
-
-			if (ImGui::IsItemHovered())
+			bool hovered = ImGui::IsItemHovered();
+			bool isActive = ImGui::IsItemActive();
+			bool isClicked = ImGui::IsItemClicked();
+			if (hovered)
 			{
 				tString toolText = bookmark->GetPath();
 				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(3.0f, 3.0f));
@@ -1023,11 +1035,13 @@ tStringItem* FileDialog::BookmarksLoop()
 			}
 
 			// If selected we need a button for removing bookmarks.
-			if (bookmark->Selected && (bookmark->BookmarkType == Bookmark::Type::User))
+			if ((bookmark->BookmarkType == Bookmark::Type::User))
 			{
-				ImGui::AlignTextToFramePadding();
 				ImGui::SameLine();
-				if (ImGui::SmallButton(" - ##BookmarkSub"))
+
+				tString buttonName;
+				tsPrintf(buttonName, "  -  ##BookmarkSubNum%d", bmNum);
+				if (ImGui::SmallButton(buttonName.Chs()))
 					ImGui::OpenPopup("BookmarkContextMenu");
 
 				if (ImGui::BeginPopup("BookmarkContextMenu"))
@@ -1037,8 +1051,7 @@ tStringItem* FileDialog::BookmarksLoop()
 					ImGui::EndPopup();
 				}	
 			}
-
-			if (ImGui::IsItemClicked())
+			if (isClicked && isActive)
 			{
 				UnselectAllBookmarks();
 				bookmark->Selected = true;
@@ -1046,6 +1059,9 @@ tStringItem* FileDialog::BookmarksLoop()
 			}
 			if (isOpenBM)
 				ImGui::TreePop();
+
+			if (bookmarkItem || bookmarkToRemove)
+				break;
 		}
 		ImGui::TreePop();	
 	}
@@ -1103,14 +1119,18 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		// Left tree panel. This is the workhorse of the dialog.
 		//
 		ImGui::TableSetColumnIndex(0);
+
 		ImGui::BeginChild("LeftTreePanel", tVector2(0.0f, -bottomBarHeight), false, ImGuiWindowFlags_HorizontalScrollbar);
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(0.0f, 3.0f));
-
+		bool setYScrollToSel = false;
 		tStringItem* bookmarkItem = BookmarksLoop();
 		if (bookmarkItem)
+		{
 			selectPathItemName = bookmarkItem;
-
-		TreeNodeRecursive(LocalTreeNode, selectPathItemName);
+			setYScrollToSel = true;
+		}
+		// ImGui::Separator();
+		TreeNodeRecursive(LocalTreeNode, selectPathItemName, setYScrollToSel);
 		#ifdef PLATFORM_WINDOWS
 		bool somethingAdded = ProcessShareResults();
 
@@ -1119,7 +1139,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 			selectPathItemName = (!configPath || configPath->IsEmpty()) ? nullptr : configPath->Head();
 
 		ProcessingNetworkPath = true;
-		TreeNodeRecursive(NetworkTreeNode, selectPathItemName);
+		TreeNodeRecursive(NetworkTreeNode, selectPathItemName, setYScrollToSel);
 		ProcessingNetworkPath = false;
 		#endif
 

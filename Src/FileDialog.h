@@ -81,7 +81,7 @@ private:
 	// Needed in cases where we need a reload of content. For example, when changing filetype filters.
 	void InvalidateAllNodeContent();
 	void InvalidateAllNodeContentRecursive(TreeNode*);
-	void TreeNodeRecursive(TreeNode*, tStringItem* selectPathItemName = nullptr);
+	void TreeNodeRecursive(TreeNode*, tStringItem* selectPathItemName = nullptr, bool setYScrollToSel = false);
 	tStringItem* BookmarksLoop();
 
 	#ifdef PLATFORM_WINDOWS
