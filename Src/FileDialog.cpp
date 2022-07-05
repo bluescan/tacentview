@@ -1040,7 +1040,7 @@ tStringItem* FileDialog::BookmarksLoop()
 				ImGui::SameLine();
 
 				tString buttonName;
-				tsPrintf(buttonName, "  -  ##BookmarkSubNum%d", bmNum);
+				tsPrintf(buttonName, "  +  ##BookmarkSubNum%d", bmNum);
 				if (ImGui::SmallButton(buttonName.Chs()))
 					ImGui::OpenPopup("BookmarkContextMenu");
 
@@ -1318,7 +1318,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		// Nothing selected means all types used.
 		bool allTypes = !FileTypes.AnySelected();
 		tString currChosen = allTypes ? "All Image Types" : FileTypes.GetSelectedString(tSystem::tFileTypes::Separator::CommaSpace, 4);
-		if (ImGui::BeginCombo("##TypeFilter", currChosen.Chs())) //, ImGuiComboFlags_NoArrowButton))
+		if (ImGui::BeginCombo("##TypeFilter", currChosen.Chs()))
 		{
 			if (ImGui::Selectable("All Image Types", allTypes))
 			{
