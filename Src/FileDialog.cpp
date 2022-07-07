@@ -16,6 +16,7 @@
 #include <Math/tVector2.h>
 #include <System/tTime.h>
 #include "imgui.h"
+#include "imgui_internal.h"		// For SplitterBehavior.
 #include "FileDialog.h"
 #include "TacentView.h"
 #include "Image.h"
@@ -157,6 +158,11 @@ namespace tFileDialog
 	void UnselectAllBookmarks();
 	bool AddUniqueBookmark(const tList<tStringItem>&);
 	void ClearBookmarksSelected();
+
+	// Splitter functions. @todo These should go somewhere more public as they are not particularly tied to
+	// the file dialog.
+	bool HorizontalSplitter(float thickness, float& height1, float& height2, float minHeight1, float minHeight2, float hoverExtend = 4.0f, float hoverDelay = 0.0f);
+	bool VerticalSplitter(float thickness, float& width1, float& width2, float minWidth1, float minWidth2, float hoverExtend = 4.0f, float hoverDelay = 0.0f);
 }
 
 
@@ -854,9 +860,10 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 
 	if (setScroll)
 	{
-		// Couldn't get ImGui::SetScrollHereY() to work.
+		// Couldn't get ImGui::SetScrollHereY() to work. The 2 gives us 2 lines so we have one
+		// non-selected line above the selected one (for a bit of context).
 		float cy = ImGui::GetCursorPosY();
-		ImGui::SetScrollY(cy - ImGui::GetTextLineHeight()*2.0f);
+		ImGui::SetScrollY(cy - ImGui::GetTextLineHeightWithSpacing()*2.0f);
 	}
 
 	if (isClicked)
@@ -984,9 +991,8 @@ void FileDialog::DoSelectable(ContentItem* item)
 tStringItem* FileDialog::BookmarksLoop()
 {
 	int flags =
-		(Bookmarks.IsEmpty() ? ImGuiTreeNodeFlags_Leaf : 0) |
-		ImGuiTreeNodeFlags_OpenOnArrow |
-		ImGuiTreeNodeFlags_OpenOnDoubleClick;
+		(Bookmarks.IsEmpty() ? ImGuiTreeNodeFlags_Leaf : ImGuiTreeNodeFlags_DefaultOpen) |
+		ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
 	bool isOpen = ImGui::TreeNodeEx("Bookmarks", flags);
 	tStringItem* bookmarkItem = nullptr;
@@ -1077,6 +1083,40 @@ tStringItem* FileDialog::BookmarksLoop()
 }
 
 
+bool tFileDialog::HorizontalSplitter(float thickness, float& height1, float& height2, float minHeight1, float minHeight2, float hoverExtend, float hoverDelay)
+{
+	ImGuiContext& g = *GImGui;
+	ImGuiWindow* window = g.CurrentWindow;
+	ImGuiID id = window->GetID("##HorizontalSplitter");
+	ImRect bb;
+	bb.Min.x = window->DC.CursorPos.x + 0.0f;
+	bb.Min.y = window->DC.CursorPos.y + height1;
+
+	ImVec2 calc = ImGui::CalcItemSize(ImVec2(-1.0f, thickness), 0.0f, 0.0f);
+	bb.Max.x = bb.Min.x + calc.x;
+	bb.Max.y = bb.Min.y + calc.y;
+
+	return ImGui::SplitterBehavior(bb, id, ImGuiAxis_Y, &height1, &height2, minHeight1, minHeight2, hoverExtend, hoverDelay);
+}
+
+
+bool tFileDialog::VerticalSplitter(float thickness, float& width1, float& width2, float minWidth1, float minWidth2, float hoverExtend, float hoverDelay)
+{
+	ImGuiContext& g = *GImGui;
+	ImGuiWindow* window = g.CurrentWindow;
+	ImGuiID id = window->GetID("##VerticalSplitter");
+	ImRect bb;
+	bb.Min.x = window->DC.CursorPos.x + width1;
+	bb.Min.y = window->DC.CursorPos.y + 0.0f;
+
+	ImVec2 calc = ImGui::CalcItemSize(ImVec2(thickness, -1.0f), 0.0f, 0.0f);
+	bb.Max.x = bb.Min.x + calc.x;
+	bb.Max.y = bb.Min.y + calc.y;
+
+	return ImGui::SplitterBehavior(bb, id, ImGuiAxis_X, &width1, &width2, minWidth1, minWidth2, hoverExtend, hoverDelay);
+}
+
+
 FileDialog::DialogResult FileDialog::DoPopup()
 {
 	// The unused isOpen bool is just so we get a close button in ImGui. 
@@ -1116,11 +1156,26 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		ImGui::TableNextRow();
 
 		//
-		// Left tree panel. This is the workhorse of the dialog.
+		// Left tree panel (bookmarks and tree-view). This is the workhorse of the dialog.
 		//
 		ImGui::TableSetColumnIndex(0);
+		
+		static float heightBookmarks = ImGui::GetTextLineHeightWithSpacing() * 5.0f;
+		static float heightTreeView = 0.0f;
+		static float panelHeight = 0.0f;
+		float currPanelHeight = ImGui::GetWindowHeight() - bottomBarHeight - ImGui::GetFrameHeight() - 20;
+		if (panelHeight != currPanelHeight)
+		{
+			panelHeight = currPanelHeight;
+			heightTreeView = panelHeight - heightBookmarks;
+		}
 
-		ImGui::BeginChild("LeftTreePanel", tVector2(0.0f, -bottomBarHeight), false, ImGuiWindowFlags_HorizontalScrollbar);
+		// We use a two line min height for the bookmarks and tree-view in case there
+		// is a horizontal scrollbar at the bottom (for long paths).
+		float minSplitHeight = 2.0f * ImGui::GetTextLineHeightWithSpacing();
+		HorizontalSplitter(1.0f, heightBookmarks, heightTreeView, minSplitHeight, minSplitHeight);
+
+		ImGui::BeginChild("LeftBookmarkPanel", tVector2(0.0f, heightBookmarks), false, ImGuiWindowFlags_HorizontalScrollbar);
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(0.0f, 3.0f));
 		bool setYScrollToSel = false;
 		tStringItem* bookmarkItem = BookmarksLoop();
@@ -1129,7 +1184,12 @@ FileDialog::DialogResult FileDialog::DoPopup()
 			selectPathItemName = bookmarkItem;
 			setYScrollToSel = true;
 		}
-		// ImGui::Separator();
+		ImGui::PopStyleVar();
+		ImGui::EndChild();
+
+		ImGui::BeginChild("LeftTreeViewPanel", tVector2(0.0f, heightTreeView), false, ImGuiWindowFlags_HorizontalScrollbar);
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(0.0f, 3.0f));
+
 		TreeNodeRecursive(LocalTreeNode, selectPathItemName, setYScrollToSel);
 		#ifdef PLATFORM_WINDOWS
 		bool somethingAdded = ProcessShareResults();
