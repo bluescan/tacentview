@@ -45,7 +45,7 @@ void Viewer::DoOpenFileModal(bool openFilePressed)
 	if (result == FileDialog::DialogResult::OK)
 	{
 		tString chosenFile = OpenFileDialog.GetResult();
-		tPrintf("Opening file: %s\n", chosenFile.Chs());
+		tPrintf("Opening file: %s\n", chosenFile.Chr());
 		ImageFileParam.Param = chosenFile;
 		PopulateImages();
 		SetCurrentImage(chosenFile);
@@ -71,19 +71,143 @@ void Viewer::DoOpenDirModal(bool openDirPressed)
 }
 
 
+void Viewer::DoSaveAsModal(bool saveAsPressed)
+{
+	/*
+	if (saveAsPressed)
+		SaveAsDialog.OpenPopup();
+
+	FileDialog::DialogResult result = SaveAsDialog.DoPopup();
+	if (result == FileDialog::DialogResult::OK)
+	{
+		tString saveAsFile = SaveAsDialog.GetResult();
+		tPrintf()
+	}
+	*/
+
+	if (saveAsPressed)
+		ImGui::OpenPopup("Save As");
+
+	// The unused isOpenSaveAs bool is just so we get a close button in ImGui. Returns false if popup not open.
+	bool isOpenSaveAs = true;
+	if (!ImGui::BeginPopupModal("Save As", &isOpenSaveAs, ImGuiWindowFlags_AlwaysAutoResize))
+		return;
+	
+	tAssert(CurrImage);
+	tPicture* picture = CurrImage->GetCurrentPic();
+	tAssert(picture);
+
+	tString extension = DoSaveFiletype();
+	ImGui::Separator();
+	tString destDir = DoSubFolder();
+
+	static char filename[128] = "Filename";
+	if (saveAsPressed)
+	{
+		tString baseName = tSystem::tGetFileBaseName(CurrImage->Filename);
+		tStrcpy(filename, baseName.Chr());
+	}
+	ImGui::InputText("Filename", filename, tNumElements(filename));
+	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
+
+	ImGui::NewLine();
+	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
+		ImGui::CloseCurrentPopup();
+	ImGui::SameLine();
+	
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+
+	tString outFile = destDir + tString(filename) + extension;
+	bool closeThisModal = false;
+	if (ImGui::Button("Save", tVector2(100.0f, 0.0f)))
+	{
+		bool dirExists = tDirExists(destDir);
+		if (!dirExists)
+		{
+			dirExists = tCreateDir(destDir);
+			PopulateImagesSubDirs();
+		}
+
+		if (dirExists)
+		{
+			if (tFileExists(outFile) && Config::Current->ConfirmFileOverwrites)
+			{
+				ImGui::OpenPopup("Overwrite File");
+			}
+			else
+			{
+				bool ok = SaveImageAs(*CurrImage, outFile);
+				if (ok)
+				{
+					// This gets a bit tricky. Image A may be saved as the same name as image B also in the list. We need to search for it.
+					// If it's not found, we need to add it to the list iff it was saved to the current folder.
+					Image* foundImage = FindImage(outFile);
+					if (foundImage)
+					{
+						foundImage->Unload(true);
+						foundImage->ClearDirty();
+						foundImage->RequestInvalidateThumbnail();
+					}
+					else
+						AddSavedImageIfNecessary(outFile);
+
+					SortImages(Config::Settings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
+					SetCurrentImage(outFile);
+				}
+				closeThisModal = true;
+			}
+		}
+	}
+
+	// The unused isOpen bool is just so we get a close button in ImGui. 
+	bool isOpen = true;
+	if (ImGui::BeginPopupModal("Overwrite File", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		bool pressedOK = false, pressedCancel = false;
+		DoOverwriteFileModal(outFile, pressedOK, pressedCancel);
+		if (pressedOK)
+		{
+			bool ok = SaveImageAs(*CurrImage, outFile);
+			if (ok)
+			{
+				Image* foundImage = FindImage(outFile);
+				if (foundImage)
+				{
+					foundImage->Unload(true);
+					foundImage->ClearDirty();
+					foundImage->RequestInvalidateThumbnail();
+				}
+				else
+					AddSavedImageIfNecessary(outFile);
+
+				SortImages(Config::Settings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
+				SetCurrentImage(outFile);
+			}
+		}
+		if (pressedOK || pressedCancel)
+			closeThisModal = true;
+	}
+
+	if (closeThisModal)
+		ImGui::CloseCurrentPopup();
+
+	ImGui::EndPopup();
+}
+
+
 tString Viewer::DoSubFolder()
 {
 	// Output sub-folder
 	char subFolder[256]; tMemset(subFolder, 0, 256);
-	tStrncpy(subFolder, Config::Current->SaveSubFolder.Chs(), 255);
+	tStrncpy(subFolder, Config::Current->SaveSubFolder.Chr(), 255);
 	ImGui::InputText("SubFolder", subFolder, 256);
 	Config::Current->SaveSubFolder.Set(subFolder);
 	tString destDir = ImagesDir;
 	if (!Config::Current->SaveSubFolder.IsEmpty())
 		destDir += Config::Current->SaveSubFolder + "/";
 	tString toolTipText;
-	tsPrintf(toolTipText, "Save to %s", destDir.Chs());
-	ShowToolTip(toolTipText.Chs());
+	tsPrintf(toolTipText, "Save to %s", destDir.Chr());
+	ShowToolTip(toolTipText.Chr());
 	ImGui::SameLine();
 	if (ImGui::Button("Default"))
 		Config::Current->SaveSubFolder.Set("Saved");
@@ -356,9 +480,9 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 	}
 
 	if (success)
-		tPrintf("Saved image as %s\n", outFile.Chs());
+		tPrintf("Saved image as %s\n", outFile.Chr());
 	else
-		tPrintf("Failed to save image %s\n", outFile.Chs());
+		tPrintf("Failed to save image %s\n", outFile.Chr());
 
 	return success;
 }
@@ -426,123 +550,11 @@ bool Viewer::SaveResizeImageAs(Image& img, const tString& outFile, int width, in
 		success = outPic.Save(outFile, colourFmt, Config::Current->SaveFileJpegQuality);
 
 	if (success)
-		tPrintf("Saved image as %s\n", outFile.Chs());
+		tPrintf("Saved image as %s\n", outFile.Chr());
 	else
-		tPrintf("Failed to save image %s\n", outFile.Chs());
+		tPrintf("Failed to save image %s\n", outFile.Chr());
 
 	return success;
-}
-
-
-void Viewer::DoSaveAsModal(bool saveAsPressed)
-{
-	if (saveAsPressed)
-		ImGui::OpenPopup("Save As");
-
-	// The unused isOpenSaveAs bool is just so we get a close button in ImGui. Returns false if popup not open.
-	bool isOpenSaveAs = true;
-	if (!ImGui::BeginPopupModal("Save As", &isOpenSaveAs, ImGuiWindowFlags_AlwaysAutoResize))
-		return;
-	
-	tAssert(CurrImage);
-	tPicture* picture = CurrImage->GetCurrentPic();
-	tAssert(picture);
-
-	tString extension = DoSaveFiletype();
-	ImGui::Separator();
-	tString destDir = DoSubFolder();
-
-	static char filename[128] = "Filename";
-	if (saveAsPressed)
-	{
-		tString baseName = tSystem::tGetFileBaseName(CurrImage->Filename);
-		tStrcpy(filename, baseName.Chs());
-	}
-	ImGui::InputText("Filename", filename, tNumElements(filename));
-	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
-
-	ImGui::NewLine();
-	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
-		ImGui::CloseCurrentPopup();
-	ImGui::SameLine();
-	
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-
-	tString outFile = destDir + tString(filename) + extension;
-	bool closeThisModal = false;
-	if (ImGui::Button("Save", tVector2(100.0f, 0.0f)))
-	{
-		bool dirExists = tDirExists(destDir);
-		if (!dirExists)
-		{
-			dirExists = tCreateDir(destDir);
-			PopulateImagesSubDirs();
-		}
-
-		if (dirExists)
-		{
-			if (tFileExists(outFile) && Config::Current->ConfirmFileOverwrites)
-			{
-				ImGui::OpenPopup("Overwrite File");
-			}
-			else
-			{
-				bool ok = SaveImageAs(*CurrImage, outFile);
-				if (ok)
-				{
-					// This gets a bit tricky. Image A may be saved as the same name as image B also in the list. We need to search for it.
-					// If it's not found, we need to add it to the list iff it was saved to the current folder.
-					Image* foundImage = FindImage(outFile);
-					if (foundImage)
-					{
-						foundImage->Unload(true);
-						foundImage->ClearDirty();
-						foundImage->RequestInvalidateThumbnail();
-					}
-					else
-						AddSavedImageIfNecessary(outFile);
-
-					SortImages(Config::Settings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
-					SetCurrentImage(outFile);
-				}
-				closeThisModal = true;
-			}
-		}
-	}
-
-	// The unused isOpen bool is just so we get a close button in ImGui. 
-	bool isOpen = true;
-	if (ImGui::BeginPopupModal("Overwrite File", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
-	{
-		bool pressedOK = false, pressedCancel = false;
-		DoOverwriteFileModal(outFile, pressedOK, pressedCancel);
-		if (pressedOK)
-		{
-			bool ok = SaveImageAs(*CurrImage, outFile);
-			if (ok)
-			{
-				Image* foundImage = FindImage(outFile);
-				if (foundImage)
-				{
-					foundImage->Unload(true);
-					foundImage->ClearDirty();
-					foundImage->RequestInvalidateThumbnail();
-				}
-				else
-					AddSavedImageIfNecessary(outFile);
-
-				SortImages(Config::Settings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
-				SetCurrentImage(outFile);
-			}
-		}
-		if (pressedOK || pressedCancel)
-			closeThisModal = true;
-	}
-
-	if (closeThisModal)
-		ImGui::CloseCurrentPopup();
-
-	ImGui::EndPopup();
 }
 
 
@@ -706,14 +718,14 @@ void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFi
 	for (tStringItem* filename = overwriteFiles.First(); filename && (fnum < maxToShow); filename = filename->Next(), fnum++)
 	{
 		tString file = tSystem::tGetFileName(*filename);
-		ImGui::Text("%s", file.Chs());
+		ImGui::Text("%s", file.Chr());
 	}
 	int remaining = overwriteFiles.GetNumItems() - fnum;
 	if (remaining > 0)
 		ImGui::Text("And %d more.", remaining);
 	ImGui::Unindent();
 	ImGui::Text("Already Exist In Folder");
-	ImGui::Indent(); ImGui::Text("%s", dir.Chs()); ImGui::Unindent();
+	ImGui::Indent(); ImGui::Text("%s", dir.Chr()); ImGui::Unindent();
 	ImGui::NewLine();
 	ImGui::Text("Overwrite Files?");
 	ImGui::NewLine();
@@ -797,9 +809,9 @@ void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool&
 	tString file = tSystem::tGetFileName(outFile);
 	tString dir = tSystem::tGetDir(outFile);
 	ImGui::Text("Overwrite file");
-		ImGui::Indent(); ImGui::Text("%s", file.Chs()); ImGui::Unindent();
+		ImGui::Indent(); ImGui::Text("%s", file.Chr()); ImGui::Unindent();
 	ImGui::Text("In Folder");
-		ImGui::Indent(); ImGui::Text("%s", dir.Chs()); ImGui::Unindent();
+		ImGui::Indent(); ImGui::Text("%s", dir.Chr()); ImGui::Unindent();
 	ImGui::NewLine();
 	ImGui::Separator();
 

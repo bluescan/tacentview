@@ -67,11 +67,11 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				else if (altCubemapPicAvail)
 					texName = "Cubemap Side";
 
-				ImGui::Text("%ss (%d)", texName.Chs(), numTextures);
+				ImGui::Text("%ss (%d)", texName.Chr(), numTextures);
 
 				int oneBasedTextureNum = CurrImage->FrameNum + 1;
 				ImGui::PushItemWidth(110);
-				if (ImGui::InputInt(texName.Chs(), &oneBasedTextureNum))
+				if (ImGui::InputInt(texName.Chr(), &oneBasedTextureNum))
 				{
 					CurrImage->FrameNum = oneBasedTextureNum - 1;
 					tMath::tiClamp(CurrImage->FrameNum, 0, numTextures-1);

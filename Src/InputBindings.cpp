@@ -561,7 +561,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 
 					// Key/mods column.
 					ImGui::TableSetColumnIndex(0);
-					ImGui::Text( GetModKeyText(k, m).Chs() );
+					ImGui::Text( GetModKeyText(k, m).Chr() );
 
 					// The operation column.
 					ImGui::TableSetColumnIndex(1);
@@ -603,7 +603,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 						tString opText;
 						tsPrintf(opText, " %s (Permanent Binding)", opDesc);
 
-						if (ImGui::BeginCombo(oplabel, opText.Chs(), ImGuiComboFlags_NoArrowButton))
+						if (ImGui::BeginCombo(oplabel, opText.Chr(), ImGuiComboFlags_NoArrowButton))
 						{
 							bool sel = false;
 							ImGui::Selectable("Rebinding Disabled", &sel);
@@ -761,7 +761,7 @@ void Bindings::ShowAddBindingSection(Config::Settings& settings)
 				);
 			}
 			ImGui::NewLine();
-			ImGui::Text(msg.Chs());
+			ImGui::Text(msg.Chr());
 			ImGui::NewLine();
 
 			if (ImGui::Button("Cancel##AssignWarn", tVector2(100.0f, 0.0f)))
@@ -839,7 +839,7 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 
 					// Action column.
 					ImGui::TableSetColumnIndex(0);
-					ImGui::Text( GetModKeyText(k, m).Chs() );
+					ImGui::Text( GetModKeyText(k, m).Chr() );
 
 					// Operation column.
 					ImGui::TableSetColumnIndex(1);

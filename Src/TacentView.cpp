@@ -85,7 +85,7 @@ namespace Viewer
 	// @todo Don't use same filetypes for all of these.
 	tFileDialog::FileDialog OpenFileDialog(tFileDialog::DialogMode::OpenFile, Viewer::FileTypes_Load);
 	tFileDialog::FileDialog OpenDirDialog(tFileDialog::DialogMode::OpenDir);
-	tFileDialog::FileDialog SaveFileDialog(tFileDialog::DialogMode::SaveFile, Viewer::FileTypes_Save);
+	tFileDialog::FileDialog SaveAsDialog(tFileDialog::DialogMode::SaveFile, Viewer::FileTypes_Save);
 
 	NavLogBar NavBar;
 	tString ImagesDir;
@@ -326,7 +326,7 @@ tString Viewer::FindImageFilesInCurrentFolder(tList<tSystem::tFileInfo>& foundFi
 	if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
 		imagesDir = tSystem::tGetDir(ImageFileParam.Get());
 
-	tPrintf("Finding image files in %s\n", imagesDir.Chs());
+	tPrintf("Finding image files in %s\n", imagesDir.Chr());
 	tSystem::tExtensions extensions(FileTypes_Load);
 	tSystem::tFindFilesFast(foundFiles, imagesDir, extensions);
 
@@ -338,7 +338,7 @@ tuint256 Viewer::ComputeImagesHash(const tList<tSystem::tFileInfo>& files)
 {
 	tuint256 hash = 0;
 	for (tSystem::tFileInfo* item = files.First(); item; item = item->Next())
-		hash = tHash::tHashString256(item->FileName.Chs(), hash);
+		hash = tHash::tHashString256(item->FileName.Chr(), hash);
 
 	return hash;
 }
@@ -460,9 +460,9 @@ void Viewer::SetCurrentImage(const tString& currFilename)
 	{
 		CurrImage = Images.First();
 		if (!currFilename.IsEmpty())
-			tPrintf("Could not display [%s].\n", tSystem::tGetFileName(currFilename).Chs());
+			tPrintf("Could not display [%s].\n", tSystem::tGetFileName(currFilename).Chr());
 		if (CurrImage && !CurrImage->Filename.IsEmpty())
-			tPrintf("Displaying [%s] instead.\n", tSystem::tGetFileName(CurrImage->Filename).Chs());
+			tPrintf("Displaying [%s] instead.\n", tSystem::tGetFileName(CurrImage->Filename).Chr());
 	}
 
 	if (CurrImage)
@@ -541,7 +541,7 @@ void Viewer::LoadCurrImage()
 				// Never unload the current image.
 				if (i->IsLoaded() && (i != CurrImage))
 				{
-					tPrintf("Unloading %s freeing %d Bytes\n", tSystem::tGetFileName(i->Filename).Chs(), i->Info.MemSizeBytes);
+					tPrintf("Unloading %s freeing %d Bytes\n", tSystem::tGetFileName(i->Filename).Chr(), i->Info.MemSizeBytes);
 					usedMem -= i->Info.MemSizeBytes;
 					i->Unload();
 					if (usedMem < allowedMem)
@@ -668,7 +668,7 @@ void Viewer::SetWindowTitle()
 			title += "*";
 	}
 
-	glfwSetWindowTitle(Window, title.Chs());
+	glfwSetWindowTitle(Window, title.Chr());
 }
 
 
@@ -1561,16 +1561,16 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			bool undoEnabled = CurrImage && CurrImage->IsUndoAvailable();
 			tString undoDesc = undoEnabled ? CurrImage->GetUndoDesc() : tString();
-			tString undoStr; tsPrintf(undoStr, "Undo %s", undoDesc.Chs());
+			tString undoStr; tsPrintf(undoStr, "Undo %s", undoDesc.Chr());
 			tString undoKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Undo);
-			if (ImGui::MenuItem(undoStr.Chs(), undoKey.Chz(), false, undoEnabled))
+			if (ImGui::MenuItem(undoStr.Chr(), undoKey.Chz(), false, undoEnabled))
 				Undo();
 
 			bool redoEnabled = CurrImage && CurrImage->IsRedoAvailable();
 			tString redoDesc = redoEnabled ? CurrImage->GetRedoDesc() : tString();
-			tString redoStr; tsPrintf(redoStr, "Redo %s", redoDesc.Chs());
+			tString redoStr; tsPrintf(redoStr, "Redo %s", redoDesc.Chr());
 			tString redoKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Redo);
-			if (ImGui::MenuItem(redoStr.Chs(), redoKey.Chz(), false, redoEnabled))
+			if (ImGui::MenuItem(redoStr.Chr(), redoKey.Chz(), false, redoEnabled))
 				Redo();
 
 			ImGui::Separator();
@@ -1713,7 +1713,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			tString currZoomStr;
 			tsPrintf(currZoomStr, "%0.0f%%", ZoomPercent);
 			int zoomIdx = 0;
-			if (ImGui::Combo(currZoomStr.Chs(), &zoomIdx, zoomItems, tNumElements(zoomItems)) && (zoomIdx > 0))
+			if (ImGui::Combo(currZoomStr.Chr(), &zoomIdx, zoomItems, tNumElements(zoomItems)) && (zoomIdx > 0))
 				ApplyZoomDelta(zoomVals[zoomIdx]-ZoomPercent);
 			ImGui::PopItemWidth();
 
@@ -2772,11 +2772,11 @@ int main(int argc, char** argv)
 	if (Viewer::ImageFileParam.IsPresent())
 	{
 		tString dest(MAX_PATH);
-		int numchars = GetLongPathNameA(Viewer::ImageFileParam.Param.Chs(), dest.Txt(), MAX_PATH);
+		int numchars = GetLongPathNameA(Viewer::ImageFileParam.Param.Chr(), dest.Txt(), MAX_PATH);
 		if (numchars > 0)
 			Viewer::ImageFileParam.Param = dest;
 
-		tPrintf("LongPath:%s\n", dest.Chs());
+		tPrintf("LongPath:%s\n", dest.Chr());
 	}
 	#endif
 
@@ -2786,9 +2786,9 @@ int main(int argc, char** argv)
 	tString snapUserData = tSystem::tGetEnvVar("SNAP_USER_DATA") + "/";
 	tString snapUserCommon = tSystem::tGetEnvVar("SNAP_USER_COMMON") + "/";
 	tString ldLibraryPath = tSystem::tGetEnvVar("LD_LIBRARY_PATH") + "/";
-	tPrintf("SNAP_USER_DATA   : %s\n", snapUserData.Chs());
-	tPrintf("SNAP_USER_COMMON : %s\n", snapUserCommon.Chs());
-	tPrintf("LD_LIBRARY_PATH  : %s\n", ldLibraryPath.Chs());
+	tPrintf("SNAP_USER_DATA   : %s\n", snapUserData.Chr());
+	tPrintf("SNAP_USER_COMMON : %s\n", snapUserCommon.Chr());
+	tPrintf("LD_LIBRARY_PATH  : %s\n", ldLibraryPath.Chr());
 	#endif
 
 	// Setup window
@@ -2798,7 +2798,7 @@ int main(int argc, char** argv)
 
 	int glfwMajor = 0; int glfwMinor = 0; int glfwRev = 0;
 	glfwGetVersion(&glfwMajor, &glfwMinor, &glfwRev);
-	tPrintf("Exe %s\n", tSystem::tGetProgramPath().Chs());
+	tPrintf("Exe %s\n", tSystem::tGetProgramPath().Chr());
 	tPrintf("Tacent View V %d.%d.%d\n", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
 	tPrintf("Tacent Library V %d.%d.%d\n", tVersion::Major, tVersion::Minor, tVersion::Revision);
 	tPrintf("Dear ImGui V %s\n", IMGUI_VERSION);
@@ -2952,7 +2952,7 @@ int main(int argc, char** argv)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	tString fontFile = dataDir + "Roboto-Medium.ttf";
-	io.Fonts->AddFontFromFileTTF(fontFile.Chs(), 14.0f);
+	io.Fonts->AddFontFromFileTTF(fontFile.Chr(), 14.0f);
 
 	Viewer::LoadAppImages(dataDir);
 	Viewer::PopulateImages();

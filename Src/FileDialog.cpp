@@ -566,7 +566,7 @@ ContentItem::ContentItem(const tSystem::tFileInfo& fileInfo) :
 
 	// Modification time field. Choose greater of mod and creation time.
 	ModTime = tMath::tMax(fileInfo.ModificationTime, fileInfo.CreationTime);
-	tsPrintf(ModTimeString, "%s", tSystem::tConvertTimeToString(tSystem::tConvertTimeToLocal(ModTime)).Chs());
+	tsPrintf(ModTimeString, "%s", tSystem::tConvertTimeToString(tSystem::tConvertTimeToLocal(ModTime)).Chr());
 
 	// File type field.
 	FileType = tSystem::tGetFileType(Name);
@@ -836,7 +836,7 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 		populate = true;
 	}
 
-	bool isOpen = ImGui::TreeNodeEx(node->Name.Chs(), flags);
+	bool isOpen = ImGui::TreeNodeEx(node->Name.Chr(), flags);
 	bool isClicked = ImGui::IsItemClicked();
 
 	// If selected we need a button for adding to bookmarks.
@@ -945,7 +945,7 @@ void FileDialog::InvalidateAllNodeContentRecursive(TreeNode* node)
 void FileDialog::DoSelectable(ContentItem* item)
 {
 	tString label = item->Name;
-	if (ImGui::Selectable(label.Chs(), &item->Selected, ImGuiSelectableFlags_SpanAllColumns))
+	if (ImGui::Selectable(label.Chr(), &item->Selected, ImGuiSelectableFlags_SpanAllColumns))
 	{
 		// This block enforces single selection.
 		if (item->Selected)
@@ -1020,11 +1020,11 @@ tStringItem* FileDialog::BookmarksLoop()
 
 				case Bookmark::Type::User:
 				default:
-					tsPrintf(name, "%s##Num%d", bookmark->Items.Last()->Chs(), bmNum);
+					tsPrintf(name, "%s##Num%d", bookmark->Items.Last()->Chr(), bmNum);
 					break;
 			}
 
-			bool isOpenBM = ImGui::TreeNodeEx(name.Chs(), bmflags);
+			bool isOpenBM = ImGui::TreeNodeEx(name.Chr(), bmflags);
 			bool hovered = ImGui::IsItemHovered();
 			bool isActive = ImGui::IsItemActive();
 			bool isClicked = ImGui::IsItemClicked();
@@ -1034,7 +1034,7 @@ tStringItem* FileDialog::BookmarksLoop()
 				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(3.0f, 3.0f));
 				ImGui::BeginTooltip();
 				ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-				ImGui::TextUnformatted(toolText.Chs());
+				ImGui::TextUnformatted(toolText.Chr());
 				ImGui::PopTextWrapPos();
 				ImGui::EndTooltip();
 				ImGui::PopStyleVar();
@@ -1047,7 +1047,7 @@ tStringItem* FileDialog::BookmarksLoop()
 
 				tString buttonName;
 				tsPrintf(buttonName, "  +  ##BookmarkSubNum%d", bmNum);
-				if (ImGui::SmallButton(buttonName.Chs()))
+				if (ImGui::SmallButton(buttonName.Chr()))
 					ImGui::OpenPopup("BookmarkContextMenu");
 
 				if (ImGui::BeginPopup("BookmarkContextMenu"))
@@ -1303,15 +1303,15 @@ FileDialog::DialogResult FileDialog::DoPopup()
 
 					ImGui::TableNextColumn();
 					if (!item->IsDir)
-						ImGui::Text("%s", item->ModTimeString.Chs());
+						ImGui::Text("%s", item->ModTimeString.Chr());
 
 					ImGui::TableNextColumn();
 					if (!item->IsDir)
-						ImGui::Text("%s", item->FileTypeString.Chs());
+						ImGui::Text("%s", item->FileTypeString.Chr());
 
 					ImGui::TableNextColumn();
 					if (!item->IsDir)
-						ImGui::Text("%s", item->FileSizeString.Chs());
+						ImGui::Text("%s", item->FileSizeString.Chr());
 				}
 				ImGui::EndTable();
 			}
@@ -1378,7 +1378,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 		// Nothing selected means all types used.
 		bool allTypes = !FileTypes.AnySelected();
 		tString currChosen = allTypes ? "All Image Types" : FileTypes.GetSelectedString(tSystem::tFileTypes::Separator::CommaSpace, 4);
-		if (ImGui::BeginCombo("##TypeFilter", currChosen.Chs()))
+		if (ImGui::BeginCombo("##TypeFilter", currChosen.Chr()))
 		{
 			if (ImGui::Selectable("All Image Types", allTypes))
 			{

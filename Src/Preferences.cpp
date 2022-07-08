@@ -34,7 +34,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 	tString title;
 	tsPrintf(title, "Preferences (%s Profile)", Config::GetProfileName());
-	if (!ImGui::Begin(title.Chs(), popen, windowFlags))
+	if (!ImGui::Begin(title.Chr(), popen, windowFlags))
 	{
 		ImGui::End();
 		return;

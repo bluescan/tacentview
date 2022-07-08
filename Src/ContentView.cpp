@@ -37,8 +37,8 @@ tString Viewer::MakeImageTooltipString(Viewer::Image* image, const tString& file
 		tsPrintf
 		(
 			tooltip, "%s\n%s\n%'d Bytes\nW:%'d\nH:%'d\nArea:%'d",
-			filename.Chs(),
-			tSystem::tConvertTimeToString(tSystem::tConvertTimeToLocal(image->FileModTime)).Chs(),
+			filename.Chr(),
+			tSystem::tConvertTimeToString(tSystem::tConvertTimeToLocal(image->FileModTime)).Chr(),
 			image->FileSizeB,
 			image->Cached_PrimaryWidth,
 			image->Cached_PrimaryHeight,
@@ -48,8 +48,8 @@ tString Viewer::MakeImageTooltipString(Viewer::Image* image, const tString& file
 		tsPrintf
 		(
 			tooltip, "%s\n%s\n%'d Bytes",
-			filename.Chs(),
-			tSystem::tConvertTimeToString(tSystem::tConvertTimeToLocal(image->FileModTime)).Chs(),
+			filename.Chr(),
+			tSystem::tConvertTimeToString(tSystem::tConvertTimeToLocal(image->FileModTime)).Chr(),
 			image->FileSizeB
 		);
 
@@ -127,10 +127,10 @@ void Viewer::ShowContentViewDialog(bool* popen)
 			ImGui::PopStyleColor();
 
 			tString filename = tSystem::tGetFileName(i->Filename);
-			ImGui::Text(filename.Chs());
+			ImGui::Text(filename.Chr());
 			
 			tString ttStr = Viewer::MakeImageTooltipString(i, filename);
-			ShowToolTip(ttStr.Chs());
+			ShowToolTip(ttStr.Chr());
 
 			// We use a separator to indicate the current item.
 			if (isCurr)
@@ -185,7 +185,7 @@ void Viewer::ShowContentViewDialog(bool* popen)
 	{
 		tString progText;
 		tsPrintf(progText, "%d/%d", numGeneratedThumbs, Images.GetNumItems());
-		tVector2 textSize = ImGui::CalcTextSize(progText.Chs());
+		tVector2 textSize = ImGui::CalcTextSize(progText.Chr());
 		float rightx = ImGui::GetWindowContentRegionMax().x - 4.0f;
 		float textx = rightx - textSize.x;
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY()+1.0f);
@@ -193,7 +193,7 @@ void Viewer::ShowContentViewDialog(bool* popen)
 		{
 			ImGui::SameLine();
 			ImGui::SetCursorPosX(textx);
-			ImGui::Text(progText.Chs());
+			ImGui::Text(progText.Chr());
 			ImGui::ProgressBar(float(numGeneratedThumbs)/float(Images.GetNumItems()), tVector2(rightx, 0));
 		}
 	}

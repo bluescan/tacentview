@@ -77,7 +77,7 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 				ImGui::Text("Opaque: %s", info.Opaque ? "true" : "false");
 				ImGui::Text("Frames: %d", CurrImage->GetNumFrames());
 				tString sizeStr; tsPrintf(sizeStr, "File Size: %'d", info.FileSizeBytes);
-				ImGui::Text(sizeStr.Chs());
+				ImGui::Text(sizeStr.Chr());
 				ImGui::Text("Cursor: (%d, %d)", cursorX, cursorY);
 				ImGui::Text("Zoom: %.0f%%", zoom);
 			}
@@ -107,44 +107,44 @@ void Viewer::ColourCopyAs()
 	tString cpyTxt;
 
 	tsPrintf(cpyTxt, "%d %d %d %d", ri, gi, bi, ai);
-	if (ImGui::Selectable(cpyTxt.Chs()))
-		ImGui::SetClipboardText(cpyTxt.Chs());
+	if (ImGui::Selectable(cpyTxt.Chr()))
+		ImGui::SetClipboardText(cpyTxt.Chr());
 	tsPrintf(cpyTxt, "%d %d %d", ri, gi, bi);
-	if (ImGui::Selectable(cpyTxt.Chs()))
-		ImGui::SetClipboardText(cpyTxt.Chs());
+	if (ImGui::Selectable(cpyTxt.Chr()))
+		ImGui::SetClipboardText(cpyTxt.Chr());
 	tsPrintf(cpyTxt, "(%d, %d, %d, %d)", ri, gi, bi, ai);
-	if (ImGui::Selectable(cpyTxt.Chs()))
-		ImGui::SetClipboardText(cpyTxt.Chs());
+	if (ImGui::Selectable(cpyTxt.Chr()))
+		ImGui::SetClipboardText(cpyTxt.Chr());
 	tsPrintf(cpyTxt, "(%d, %d, %d)", ri, gi, bi);
-	if (ImGui::Selectable(cpyTxt.Chs()))
-		ImGui::SetClipboardText(cpyTxt.Chs());
+	if (ImGui::Selectable(cpyTxt.Chr()))
+		ImGui::SetClipboardText(cpyTxt.Chr());
 	tsPrintf(cpyTxt, "%02X%02X%02X%02X", ri, gi, bi, ai);
-	if (ImGui::Selectable(cpyTxt.Chs()))
-		ImGui::SetClipboardText(cpyTxt.Chs());
+	if (ImGui::Selectable(cpyTxt.Chr()))
+		ImGui::SetClipboardText(cpyTxt.Chr());
 	tsPrintf(cpyTxt, "%02X%02X%02X", ri, gi, bi);
-	if (ImGui::Selectable(cpyTxt.Chs()))
-		ImGui::SetClipboardText(cpyTxt.Chs());
+	if (ImGui::Selectable(cpyTxt.Chr()))
+		ImGui::SetClipboardText(cpyTxt.Chr());
 	tsPrintf(cpyTxt, "#%02X%02X%02X%02X", ri, gi, bi, ai);
-	if (ImGui::Selectable(cpyTxt.Chs()))
-		ImGui::SetClipboardText(cpyTxt.Chs());
+	if (ImGui::Selectable(cpyTxt.Chr()))
+		ImGui::SetClipboardText(cpyTxt.Chr());
 	tsPrintf(cpyTxt, "#%02X%02X%02X", ri, gi, bi);
-	if (ImGui::Selectable(cpyTxt.Chs()))
-		ImGui::SetClipboardText(cpyTxt.Chs());
+	if (ImGui::Selectable(cpyTxt.Chr()))
+		ImGui::SetClipboardText(cpyTxt.Chr());
 	tsPrintf(cpyTxt, "0x%02X%02X%02X%02X", ri, gi, bi, ai);
-	if (ImGui::Selectable(cpyTxt.Chs()))
-		ImGui::SetClipboardText(cpyTxt.Chs());
+	if (ImGui::Selectable(cpyTxt.Chr()))
+		ImGui::SetClipboardText(cpyTxt.Chr());
 	tsPrintf(cpyTxt, "%.3f, %.3f, %.3f, %.3f", rf, gf, bf, af);
-	if (ImGui::Selectable(cpyTxt.Chs()))
-		ImGui::SetClipboardText(cpyTxt.Chs());
+	if (ImGui::Selectable(cpyTxt.Chr()))
+		ImGui::SetClipboardText(cpyTxt.Chr());
 	tsPrintf(cpyTxt, "%.3ff, %.3ff, %.3ff, %.3ff", rf, gf, bf, af);
-	if (ImGui::Selectable(cpyTxt.Chs()))
-		ImGui::SetClipboardText(cpyTxt.Chs());
+	if (ImGui::Selectable(cpyTxt.Chr()))
+		ImGui::SetClipboardText(cpyTxt.Chr());
 	tsPrintf(cpyTxt, "(%.3f, %.3f, %.3f, %.3f)", rf, gf, bf, af);
-	if (ImGui::Selectable(cpyTxt.Chs()))
-		ImGui::SetClipboardText(cpyTxt.Chs());
+	if (ImGui::Selectable(cpyTxt.Chr()))
+		ImGui::SetClipboardText(cpyTxt.Chr());
 	tsPrintf(cpyTxt, "(%.3ff, %.3ff, %.3ff, %.3ff)", rf, gf, bf, af);
-	if (ImGui::Selectable(cpyTxt.Chs()))
-		ImGui::SetClipboardText(cpyTxt.Chs());
+	if (ImGui::Selectable(cpyTxt.Chr()))
+		ImGui::SetClipboardText(cpyTxt.Chr());
 	ImGui::EndPopup();
 }
 
@@ -205,14 +205,14 @@ void Viewer::ShowImageMetaDataOverlay(bool* popen)
 						tString tagDesc = tGetMetaTagDesc(tag);
 						ImGui::TableNextRow();
 						ImGui::TableSetColumnIndex(0);
-						ImGui::Text(tagName.Chs());
-						ShowToolTip(tagDesc.Chs());
+						ImGui::Text(tagName.Chr());
+						ShowToolTip(tagDesc.Chr());
 
 						ImGui::TableSetColumnIndex(1);
-						ImGui::Text(value.Chs());
+						ImGui::Text(value.Chr());
 						tVector2 rect = ImGui::GetItemRectSize();
 						if (rect.x > 188)
-							ShowToolTip(value.Chs());
+							ShowToolTip(value.Chr());
 					}
 				}
 			}

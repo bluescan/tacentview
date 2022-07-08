@@ -155,7 +155,7 @@ void Viewer::DoContactSheetModal(bool saveContactSheetPressed)
 		tsPrintf(genMsg, " Sheet will have %d frames with %d images.", numRows*numCols, tMin(numImg, numRows*numCols));
 	else
 		tsPrintf(genMsg, " Warning: At least 2 images are needed.");
-	ImGui::Text(genMsg.Chs());
+	ImGui::Text(genMsg.Chr());
 
 	ImGui::NewLine();
 	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
@@ -246,7 +246,7 @@ void Viewer::SaveContactSheetTo
 			continue;
 		}
 
-		tPrintf("Processing frame %d : %s at (%d, %d).\n", frame, currImg->Filename.Chs(), ix, iy);
+		tPrintf("Processing frame %d : %s at (%d, %d).\n", frame, currImg->Filename.Chr(), ix, iy);
 		frame++;
 		tImage::tPicture* currPic = currImg->GetCurrentPic();
 

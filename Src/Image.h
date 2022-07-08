@@ -100,8 +100,8 @@ public:
 	void Redo()																											{ UndoStack.Redo(Pictures, Dirty); }
 	bool IsUndoAvailable() const																						{ return UndoStack.UndoAvailable(); }
 	bool IsRedoAvailable() const																						{ return UndoStack.RedoAvailable(); }
-	tString GetUndoDesc() const																							{ tString desc; tsPrintf(desc, "[%s]", UndoStack.GetUndoDesc().Chs()); return desc; }
-	tString GetRedoDesc() const																							{ tString desc; tsPrintf(desc, "[%s]", UndoStack.GetRedoDesc().Chs()); return desc; }
+	tString GetUndoDesc() const																							{ tString desc; tsPrintf(desc, "[%s]", UndoStack.GetUndoDesc().Chr()); return desc; }
+	tString GetRedoDesc() const																							{ tString desc; tsPrintf(desc, "[%s]", UndoStack.GetRedoDesc().Chr()); return desc; }
 
 	// Since from outside this class you can save to any filename, we need the ability to clear the dirty flag.
 	void ClearDirty()																									{ Dirty = false; }
