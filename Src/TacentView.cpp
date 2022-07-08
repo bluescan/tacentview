@@ -1469,24 +1469,30 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 	}
 
-	ImGui::SetNextWindowPos(tVector2(0, 0));
+	// File requests.
+	bool openFilePressed			= Request_OpenFileModal;			Request_OpenFileModal				= false;
+	bool openDirPressed				= Request_OpenDirModal;				Request_OpenDirModal				= false;
+	bool saveAsPressed				= Request_SaveAsModal;				Request_SaveAsModal					= false;
+	bool saveAllPressed				= Request_SaveAllModal;				Request_SaveAllModal				= false;
+	bool saveContactSheetPressed	= Request_ContactSheetModal;		Request_ContactSheetModal			= false;
+	bool saveMultiFramePressed		= Request_MultiFrameModal;			Request_MultiFrameModal				= false;
+	bool snapMessageNoFileBrowse	= Request_SnapMessage_NoFileBrowse;	Request_SnapMessage_NoFileBrowse	= false;
+	bool snapMessageNoFrameTrans	= Request_SnapMessage_NoFrameTrans;	Request_SnapMessage_NoFrameTrans	= false;
+
+	// Edit requests.
+	bool resizeImagePressed			= Request_ResizeImageModal;			Request_ResizeImageModal			= false;
+	bool resizeCanvasPressed		= Request_ResizeCanvasModal;		Request_ResizeCanvasModal			= false;
+	bool rotateImagePressed			= Request_RotateImageModal;			Request_RotateImageModal			= false;
 
 	if (Config::Current->ShowMenuBar)
 	{
+		ImGui::SetNextWindowPos(tVector2(0, 0));
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,8));
 		ImGui::BeginMainMenuBar();
 
 		//
 		// File Menu.
 		//
-		bool openFilePressed			= Request_OpenFileModal;			Request_OpenFileModal				= false;
-		bool openDirPressed				= Request_OpenDirModal;				Request_OpenDirModal				= false;
-		bool saveAsPressed				= Request_SaveAsModal;				Request_SaveAsModal					= false;
-		bool saveAllPressed				= Request_SaveAllModal;				Request_SaveAllModal				= false;
-		bool saveContactSheetPressed	= Request_ContactSheetModal;		Request_ContactSheetModal			= false;
-		bool saveMultiFramePressed		= Request_MultiFrameModal;			Request_MultiFrameModal				= false;
-		bool snapMessageNoFileBrowse	= Request_SnapMessage_NoFileBrowse;	Request_SnapMessage_NoFileBrowse	= false;
-		bool snapMessageNoFrameTrans	= Request_SnapMessage_NoFrameTrans;	Request_SnapMessage_NoFrameTrans	= false;
 		if (ImGui::BeginMenu("File"))
 		{
 			// Show file menu items...
@@ -1546,25 +1552,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::EndMenu();
 		}
 
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
-
-		DoOpenFileModal(openFilePressed);
-		DoOpenDirModal(openDirPressed);
-
-		DoSaveAsModal(saveAsPressed);
-		DoSaveAllModal(saveAllPressed);
-		DoContactSheetModal(saveContactSheetPressed);
-		DoMultiFrameModal(saveMultiFramePressed);
-		DoSnapMessageNoFileBrowseModal(snapMessageNoFileBrowse);
-		DoSnapMessageNoFrameTransModal(snapMessageNoFrameTrans);
-		ImGui::PopStyleVar();
-
 		//
 		// Edit Menu.
 		//
-		bool resizeImagePressed		= Request_ResizeImageModal;		Request_ResizeImageModal = false;
-		bool resizeCanvasPressed	= Request_ResizeCanvasModal;	Request_ResizeCanvasModal = false;
-		bool rotateImagePressed		= Request_RotateImageModal;		Request_RotateImageModal = false;
 		if (ImGui::BeginMenu("Edit"))
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
@@ -1652,12 +1642,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::PopStyleVar();
 			ImGui::EndMenu();
 		}
-
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
-		DoResizeImageModal(resizeImagePressed);
-		DoResizeCanvasModal(resizeCanvasPressed);
-		DoRotateImageModal(rotateImagePressed);
-		ImGui::PopStyleVar();
 
 		//
 		// View Menu.
@@ -1937,6 +1921,29 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4,3));
 
+	// Process any actions. Either from keyboard requests or from the menubar. The ones here are for ImGui windows
+	// that require an update every frame. This could be reorganized so that when the operation is executed (in the
+	// big keybindings switch) the call to open the popup is performed, but we'd still need the dialog updates here,
+	// so this gives better encapsulation.
+	//
+	// File requests.
+	//
+	DoOpenFileModal					(openFilePressed);
+	DoOpenDirModal					(openDirPressed);
+	DoSaveAsModal					(saveAsPressed);
+	DoSaveAllModal					(saveAllPressed);
+	DoContactSheetModal				(saveContactSheetPressed);
+	DoMultiFrameModal				(saveMultiFramePressed);
+	DoSnapMessageNoFileBrowseModal	(snapMessageNoFileBrowse);
+	DoSnapMessageNoFrameTransModal	(snapMessageNoFrameTrans);
+
+	//
+	// Edit requests.
+	//
+	DoResizeImageModal				(resizeImagePressed);
+	DoResizeCanvasModal				(resizeCanvasPressed);
+	DoRotateImageModal				(rotateImagePressed);
+
 	if (PrefsWindow)
 		ShowPreferencesWindow(&PrefsWindow);
 
@@ -2006,7 +2013,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		renameJustOpened = true;
 		Request_RenameModal = false;
 	}
-
 	if (renameJustOpened)
 		ImGui::OpenPopup("Rename File");	
 	// The unused isOpenRen bool is just so we get a close button in ImGui.
@@ -2022,7 +2028,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	glfwSwapBuffers(window);
 	FrameNumber++;
 
-	// We're done the frame. Is slideshow playing.
+	// We're done the frame. Is slideshow playing? If so, decrement the timer.
 	if (!ImGui::IsAnyPopupOpen() && SlideshowPlaying)
 	{
 		SlideshowCountdown -= dt;

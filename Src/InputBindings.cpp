@@ -381,10 +381,7 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 
 	AssignKey(GLFW_KEY_F11,			Modifier_None,					Operation::Fullscreen,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_ENTER,		Modifier_Alt,					Operation::Fullscreen,				onlyIfUnassigned);
-	if (profile == Profile::Basic)
-		AssignKey(GLFW_KEY_ESCAPE,	Modifier_None,					Operation::Quit,					onlyIfUnassigned);
-	else
-		AssignKey(GLFW_KEY_ESCAPE,	Modifier_None,					Operation::Escape,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_ESCAPE,		Modifier_None,					Operation::Escape,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_F4,			Modifier_Alt,					Operation::Quit,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_O,			Modifier_Ctrl,					Operation::OpenFile,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_O,			Modifier_Alt,					Operation::OpenDir,					onlyIfUnassigned);
