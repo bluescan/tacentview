@@ -141,7 +141,9 @@ void Viewer::DoContactSheetModal(bool saveContactSheetPressed)
 	ImGui::SameLine();
 	ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");
 
-	tString extension = DoSaveFiletype();
+	tFileType fileType = DoSaveChooseFiletype();
+	DoSaveFiletypeOptions(fileType);
+	tString extensionWithDot = tString(".") + tGetExtension(fileType);
 	ImGui::Separator();
 	tString destDir = DoSubFolder();
 
@@ -164,7 +166,7 @@ void Viewer::DoContactSheetModal(bool saveContactSheetPressed)
 	
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 
-	tString outFile = destDir + tString(filename) + extension;
+	tString outFile = destDir + tString(filename) + extensionWithDot;
 	bool closeThisModal = false;
 	if (ImGui::Button("Generate", tVector2(100.0f, 0.0f)) && (numImg >= 2))
 	{

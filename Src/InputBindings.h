@@ -96,12 +96,18 @@ namespace Bindings
 		Escape,					// Exit-Fullscreen | Exit-Basic-Profile.
 		EscapeSupportingQuit,	// Exit-Fullscreen | Exit-Basic-Profile | Quit.
 		Quit,
+
+		//
+		// Here are new operations that were added to keep keybindings in tact. Can be cleaned up when config version increases.
+		//
 		OpenFile,
 		OpenDir,
-
 		MetaData,
-
+		Save,					// A save that does not ask for a new filename.
+		//
 		// Add new operations here. Adding above will invalidate save file keybindings.
+		//
+
 		NumOperations
 	};
 

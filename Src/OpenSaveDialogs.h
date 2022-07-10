@@ -15,6 +15,7 @@
 #pragma once
 #include <Foundation/tList.h>
 #include <Foundation/tString.h>
+#include <System/tFile.h>
 
 
 namespace Viewer
@@ -22,13 +23,15 @@ namespace Viewer
 	void DoOpenFileModal(bool openFilePressed);
 	void DoOpenDirModal(bool openDirPressed);
 
-	void DoSaveAsModal(bool saveAsPressed);
+	void DoSaveModal(bool savePressed);
+	void DoSaveAsModal(bool savePressed);
 	void DoSaveAllModal(bool saveAllPressed);
 
 	void DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool& pressedCancel);
 	void DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFiles, bool& pressedOK, bool& pressedCancel);
 
-	tString DoSubFolder();				// Returns destination dir.
-	tString DoSaveFiletype(bool chooseType = true);			// Returns extension.
-	tString DoSaveFiletypeMultiFrame();	// Returns extension.
+	tString DoSubFolder();									// Returns destination dir.
+	tSystem::tFileType DoSaveChooseFiletype();
+	void DoSaveFiletypeOptions(tSystem::tFileType);
+	tString DoSaveFiletypeMultiFrame();						// Returns extension.
 }

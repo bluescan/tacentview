@@ -33,6 +33,7 @@ namespace Viewer
 	// This function saves the picture to the filename specified.
 	bool SaveImageAs(Image&, const tString& outFile);
 	bool SaveResizeImageAs(Image&, const tString& outFile, int width, int height, float scale = 1.0f, Config::Settings::SizeMode = Config::Settings::SizeMode::SetWidthAndHeight);
+	void DoSavePopup();
 
 	tString SaveAsFile;
 }
@@ -73,25 +74,58 @@ void Viewer::DoOpenDirModal(bool openDirPressed)
 }
 
 
+void Viewer::DoSaveModal(bool savePressed)
+{
+	static tString label;
+	if (!CurrImage)
+		return;
+
+	SaveAsFile = CurrImage->Filename;
+	if (savePressed)
+	{
+		tsPrintf(label, "Save %s Options", tGetFileTypeName(tGetFileType(SaveAsFile)));
+		ImGui::OpenPopup(label.Chr());
+	}
+	tPrintf("SaveAsFile: [%s]\n", SaveAsFile.Chr());
+
+	// The unused isOpenSaveAs bool is just so we get a close button in ImGui. Returns false if popup not open.
+	bool isOpenSaveOptions = true;
+	ImGui::SetNextWindowSize(tVector2(300.0f, 0.0f));
+	if (!ImGui::BeginPopupModal(label.Chr(), &isOpenSaveOptions, ImGuiWindowFlags_AlwaysAutoResize))
+		return;
+	
+	DoSavePopup();
+	ImGui::EndPopup();
+}
+
+
 void Viewer::DoSaveAsModal(bool saveAsPressed)
 {
+	static tString label;
 	if (saveAsPressed)
 		SaveAsDialog.OpenPopup();
-
 	FileDialog::DialogState state = SaveAsDialog.DoPopup();
 	if (state == FileDialog::DialogState::OK)
 	{
 		SaveAsFile = SaveAsDialog.GetResult();
-		tPrintf("SaveAsFile: [%s]\n", SaveAsFile.Chr());
-		ImGui::OpenPopup("Save Options");
+		tsPrintf(label, "SaveAs %s Options", tGetFileTypeName(tGetFileType(SaveAsFile)));
+		ImGui::OpenPopup(label.Chr());
 	}
+	tPrintf("SaveAsFile: [%s]\n", SaveAsFile.Chr());
 
 	// The unused isOpenSaveAs bool is just so we get a close button in ImGui. Returns false if popup not open.
-	bool isOpenSaveAs = true;
+	bool isOpenSaveOptions = true;
 	ImGui::SetNextWindowSize(tVector2(300.0f, 0.0f));
-	if (!ImGui::BeginPopupModal("Save Options", &isOpenSaveAs, ImGuiWindowFlags_AlwaysAutoResize))
+	if (!ImGui::BeginPopupModal(label.Chr(), &isOpenSaveOptions, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
-	
+
+	DoSavePopup();
+	ImGui::EndPopup();
+}
+
+
+void Viewer::DoSavePopup()
+{
 	tAssert(CurrImage);
 	tPicture* picture = CurrImage->GetCurrentPic();
 	tAssert(picture);
@@ -105,30 +139,12 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 		case tFileType::BMP:	Config::Current->SaveFileType = 2;	break;
 		case tFileType::JPG:	Config::Current->SaveFileType = 3;	break;
 		case tFileType::WEBP:	Config::Current->SaveFileType = 4;	break;
-
 		case tFileType::GIF:	Config::Current->SaveFileType = 5;	break;
 		case tFileType::APNG:	Config::Current->SaveFileType = 6;	break;
 		case tFileType::TIFF:	Config::Current->SaveFileType = 7;	break;
 	}
 
-	DoSaveFiletype(false);
-
-/*
-	tString extension = DoSaveFiletype();
-	ImGui::Separator();
-	tString destDir = DoSubFolder();
-*/
-
-/*
-	static char filename[128] = "Filename";
-	if (saveAsPressed)
-	{
-		tString baseName = tSystem::tGetFileBaseName(CurrImage->Filename);
-		tStrcpy(filename, baseName.Chr());
-	}
-	ImGui::InputText("Filename", filename, tNumElements(filename));
-	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
-*/
+	DoSaveFiletypeOptions(saveType);
 
 	ImGui::NewLine();
 	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
@@ -136,48 +152,34 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 	ImGui::SameLine();
 	
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-
-	//tString outFile = destDir + tString(filename) + extension;
 	bool closeThisModal = false;
 	if (ImGui::Button("Save", tVector2(100.0f, 0.0f)))
 	{
-		/*
-		bool dirExists = tDirExists(destDir);
-		if (!dirExists)
+		if (tFileExists(SaveAsFile) && Config::Current->ConfirmFileOverwrites)
 		{
-			dirExists = tCreateDir(destDir);
-			PopulateImagesSubDirs();
+			ImGui::OpenPopup("Overwrite File");
 		}
-		*/
-
-//		if (dirExists)
+		else
 		{
-			if (tFileExists(SaveAsFile) && Config::Current->ConfirmFileOverwrites)
+			bool ok = SaveImageAs(*CurrImage, SaveAsFile);
+			if (ok)
 			{
-				ImGui::OpenPopup("Overwrite File");
-			}
-			else
-			{
-				bool ok = SaveImageAs(*CurrImage, SaveAsFile);
-				if (ok)
+				// This gets a bit tricky. Image A may be saved as the same name as image B also in the list. We need to search for it.
+				// If it's not found, we need to add it to the list iff it was saved to the current folder.
+				Image* foundImage = FindImage(SaveAsFile);
+				if (foundImage)
 				{
-					// This gets a bit tricky. Image A may be saved as the same name as image B also in the list. We need to search for it.
-					// If it's not found, we need to add it to the list iff it was saved to the current folder.
-					Image* foundImage = FindImage(SaveAsFile);
-					if (foundImage)
-					{
-						foundImage->Unload(true);
-						foundImage->ClearDirty();
-						foundImage->RequestInvalidateThumbnail();
-					}
-					else
-						AddSavedImageIfNecessary(SaveAsFile);
-
-					SortImages(Config::Settings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
-					SetCurrentImage(SaveAsFile);
+					foundImage->Unload(true);
+					foundImage->ClearDirty();
+					foundImage->RequestInvalidateThumbnail();
 				}
-				closeThisModal = true;
+				else
+					AddSavedImageIfNecessary(SaveAsFile);
+
+				SortImages(Config::Settings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
+				SetCurrentImage(SaveAsFile);
 			}
+			closeThisModal = true;
 		}
 	}
 
@@ -212,8 +214,6 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 
 	if (closeThisModal)
 		ImGui::CloseCurrentPopup();
-
-	ImGui::EndPopup();
 }
 
 
@@ -241,41 +241,49 @@ tString Viewer::DoSubFolder()
 }
 
 
-tString Viewer::DoSaveFiletype(bool chooseType)
+tSystem::tFileType Viewer::DoSaveChooseFiletype()
 {
 	// @todo This is silly. Should be using the Viewer::FileTypes_Save object -- from that Tacent can get the actual extensions.
-	if (chooseType)
-	{
-		const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "webp", "gif", "apng", "tiff" };
-		ImGui::Combo("File Type", &Config::Current->SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
-		ImGui::SameLine();
-		ShowHelpMark("Output image format.\nFull (non-binary) alpha supported by tga, png, apng, bmp, tiff, and webp.\nAnimation supported by webp, gif, tiff, and apng.");
-	}
+	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "webp", "gif", "apng", "tiff" };
+	ImGui::Combo("File Type", &Config::Current->SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
+	ImGui::SameLine();
+	ShowHelpMark("Output image format.\nFull (non-binary) alpha supported by tga, png, apng, bmp, tiff, and webp.\nAnimation supported by webp, gif, tiff, and apng.");
 
-	// There are different options depending on what type you are saving as.
-	tString extension = ".tga";
+	// This is also now silly. We can use the tFileType directly in the config now that Tacent has better support.
 	switch (Config::Current->SaveFileType)
 	{
-		case 0:
-			extension = ".tga";
+		case 0: return tFileType::TGA;
+		case 1: return tFileType::PNG;
+		case 2: return tFileType::BMP;
+		case 3: return tFileType::JPG;
+		case 4: return tFileType::WEBP;
+		case 5: return tFileType::GIF;
+		case 6: return tFileType::APNG;
+		case 7: return tFileType::TIFF;
+	}
+	return tFileType::TGA;
+}
+
+
+void Viewer::DoSaveFiletypeOptions(tFileType fileType)
+{
+	switch (fileType)
+	{
+		case tFileType::TGA:
 			ImGui::Checkbox("RLE Compression", &Config::Current->SaveFileTargaRLE);
 			break;
 
-		case 1:
-			extension = ".png";
+		case tFileType::PNG:
 			break;
 
-		case 2:
-			extension = ".bmp";
+		case tFileType::BMP:
 			break;
 
-		case 3:
-			extension = ".jpg";
+		case tFileType::JPG:
 			ImGui::SliderInt("Quality", &Config::Current->SaveFileJpegQuality, 1, 100, "%d");
 			break;
 
-		case 4:
-			extension = ".webp";
+		case tFileType::WEBP:
 			ImGui::Checkbox("Lossy", &Config::Current->SaveFileWebpLossy);
 			ImGui::SliderFloat("Quality / Compression", &Config::Current->SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
 			ImGui::SameLine(); ShowToolTip("Image quality percent if lossy. Image compression strength if not lossy"); ImGui::NewLine();
@@ -287,8 +295,7 @@ tString Viewer::DoSaveFiletype(bool chooseType)
 			if (ImGui::Button("60fps")) Config::Current->SaveFileWebpDurOverride = 16;
 			break;
 
-		case 5:
-			extension = ".gif";
+		case tFileType::GIF:
 			ImGui::SliderInt("Duration Override", &Config::Current->SaveFileGifDurOverride, -1, 1000, "%d");
 			ImGui::SameLine(); ShowToolTip("In 1/100 seconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
 			if (ImGui::Button("1.0s"))  Config::Current->SaveFileGifDurOverride = 100; ImGui::SameLine();
@@ -297,8 +304,7 @@ tString Viewer::DoSaveFiletype(bool chooseType)
 			if (ImGui::Button("30fps")) Config::Current->SaveFileGifDurOverride = 3;
 			break;
 
-		case 6:
-			extension = ".apng";
+		case tFileType::APNG:
 			ImGui::SliderInt("Duration Override", &Config::Current->SaveFileApngDurOverride, -1, 10000, "%d");
 			ImGui::SameLine(); ShowToolTip("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
 			if (ImGui::Button("1.0s"))  Config::Current->SaveFileApngDurOverride = 1000; ImGui::SameLine();
@@ -307,8 +313,7 @@ tString Viewer::DoSaveFiletype(bool chooseType)
 			if (ImGui::Button("60fps")) Config::Current->SaveFileApngDurOverride = 16;
 			break;
 
-		case 7:
-			extension = ".tiff";
+		case tFileType::TIFF:
 			ImGui::SliderInt("Duration Override", &Config::Current->SaveFileTiffDurOverride, -1, 10000, "%d");
 			ImGui::SameLine(); ShowToolTip("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
 			if (ImGui::Button("1.0s"))  Config::Current->SaveFileTiffDurOverride = 1000; ImGui::SameLine();
@@ -317,8 +322,6 @@ tString Viewer::DoSaveFiletype(bool chooseType)
 			if (ImGui::Button("60fps")) Config::Current->SaveFileTiffDurOverride = 16;
 			break;
 	}
-
-	return extension;
 }
 
 
@@ -658,7 +661,9 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 	tMath::tiClampMin(width, 4);
 	tMath::tiClampMin(height, 4);
 
-	tString extension = DoSaveFiletype();
+	tFileType fileType = DoSaveChooseFiletype();
+	DoSaveFiletypeOptions(fileType);
+	tString extensionWithDot = tString(".") + tGetExtension(fileType);
 	ImGui::Separator();
 	tString destDir = DoSubFolder();
 
@@ -684,14 +689,14 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 		if (dirExists)
 		{
 			overwriteFiles.Empty();
-			GetFilesNeedingOverwrite(destDir, overwriteFiles, extension);
+			GetFilesNeedingOverwrite(destDir, overwriteFiles, extensionWithDot);
 			if (!overwriteFiles.IsEmpty() && Config::Current->ConfirmFileOverwrites)
 			{
 				ImGui::OpenPopup("Overwrite Multiple Files");
 			}
 			else
 			{
-				SaveAllImages(destDir, extension, percent, width, height);
+				SaveAllImages(destDir, extensionWithDot, percent, width, height);
 				closeThisModal = true;
 			}
 		}
@@ -704,7 +709,7 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 		bool pressedOK = false, pressedCancel = false;
 		DoOverwriteMultipleFilesModal(overwriteFiles, pressedOK, pressedCancel);
 		if (pressedOK)
-			SaveAllImages(destDir, extension, percent, width, height);
+			SaveAllImages(destDir, extensionWithDot, percent, width, height);
 
 		if (pressedOK || pressedCancel)
 			closeThisModal = true;

@@ -160,6 +160,7 @@ namespace Viewer
 
 	bool Request_OpenFileModal					= false;
 	bool Request_OpenDirModal					= false;
+	bool Request_SaveModal						= false;
 	bool Request_SaveAsModal					= false;
 	bool Request_SaveAllModal					= false;
 	bool Request_ResizeImageModal				= false;
@@ -1490,6 +1491,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	// File requests.
 	bool openFilePressed			= Request_OpenFileModal;			Request_OpenFileModal				= false;
 	bool openDirPressed				= Request_OpenDirModal;				Request_OpenDirModal				= false;
+	bool savePressed				= Request_SaveModal;				Request_SaveModal					= false;
 	bool saveAsPressed				= Request_SaveAsModal;				Request_SaveAsModal					= false;
 	bool saveAllPressed				= Request_SaveAllModal;				Request_SaveAllModal				= false;
 	bool saveContactSheetPressed	= Request_ContactSheetModal;		Request_ContactSheetModal			= false;
@@ -1523,6 +1525,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			tString openDirKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::OpenDir);
 			if (ImGui::MenuItem("Open Dir...", openDirKey.Chz()))
 				openDirPressed = true;
+
+			tString saveKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Save);
+			if (ImGui::MenuItem("Save...", saveKey.Chz()) && CurrImage)
+				savePressed = true;
 
 			tString saveAsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SaveAs);
 			if (ImGui::MenuItem("Save As...", saveAsKey.Chz()) && CurrImage)
@@ -1948,6 +1954,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	//
 	DoOpenFileModal					(openFilePressed);
 	DoOpenDirModal					(openDirPressed);
+	DoSaveModal						(savePressed);
 	DoSaveAsModal					(saveAsPressed);
 	DoSaveAllModal					(saveAllPressed);
 	DoContactSheetModal				(saveContactSheetPressed);
@@ -2437,6 +2444,10 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case Bindings::Operation::DeletePermanent:
 			if (CurrImage) Request_DeleteFileNoRecycleModal = true;
+			break;
+
+		case Bindings::Operation::Save:
+			if (CurrImage) Request_SaveModal = true;
 			break;
 
 		case Bindings::Operation::SaveAs:

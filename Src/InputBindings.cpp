@@ -33,7 +33,8 @@ namespace Bindings
 	char KeyNameTable[GLFW_KEY_LAST+1][MaxKeyNameLength];
 	struct TableInitializer { TableInitializer() { InitKeyNameTables(); } }; TableInitializer Initializer;
 
-	extern const char* OperationDescriptions[int(Operation::NumOperations)];
+	// Do not specify the size here so that we can static assert that the size matches the operations enum.
+	extern const char* OperationDescriptions[];
 
 	// Given a glfw key as input, returns the full name of the key. This is useful if you want to display help text that
 	// describes what a particulr key does. Returns nullptr if the GLFW key define is not supported. Examples:
@@ -108,8 +109,8 @@ void Bindings::InitKeyNameTables()
 }
 
 
-tStaticAssert(sizeof(Bindings::OperationDescriptions)/sizeof(*Bindings::OperationDescriptions) == int(Bindings::Operation::NumOperations));
-const char* Bindings::OperationDescriptions[int(Operation::NumOperations)] =
+// Do not specify the size here so that we can static assert that the size matches the operations enum.
+const char* Bindings::OperationDescriptions[] =
 {
 	"None",
 	"Next Image",
@@ -188,10 +189,11 @@ const char* Bindings::OperationDescriptions[int(Operation::NumOperations)] =
 	"Open File",
 	"Open Dir",
 	"Meta Data",
-	
+	"Save",
+
 	// Add new entries here.
-	// "One Too Many"
 };
+tStaticAssert(sizeof(Bindings::OperationDescriptions)/sizeof(*Bindings::OperationDescriptions) == int(Bindings::Operation::NumOperations));
 
 
 const char* Bindings::GetKeyName(int key)
@@ -308,7 +310,9 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 	return;
 	#endif
 
-	// Order is unimportant, but for consistency it's in same order as the Operation enum. Sometimes more than one key
+	// Order is unimportant, but for consistency it's in same order as the Operation enum unless it is a new operation that
+	// was added to the bottom of the enum (to keep binding config compatibility). In these cases we can re-order when we're
+	// willing to increase the config version number and make enum match this. Sometimes more than one key
 	// maps to the same operation and some operations are not bound by default, so the number of lines != num_ops.
 	AssignKey(GLFW_KEY_SPACE,		Modifier_None,					Operation::NextImage,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_RIGHT,		Modifier_None,					Operation::NextImage,				onlyIfUnassigned);
@@ -349,6 +353,7 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 	AssignKey(GLFW_KEY_5,			Modifier_None,					Operation::ChannelAsIntensity,		onlyIfUnassigned);
 
 	AssignKey(GLFW_KEY_I,			Modifier_None,					Operation::Details,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_X,			Modifier_None,					Operation::MetaData,				onlyIfUnassigned);	// Update enum pending.
 	AssignKey(GLFW_KEY_T,			Modifier_None,					Operation::Tile,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_Z,			Modifier_Ctrl,					Operation::Undo,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_Y,			Modifier_Ctrl,					Operation::Redo,					onlyIfUnassigned);
@@ -358,7 +363,10 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 	AssignKey(GLFW_KEY_DELETE,		Modifier_None,					Operation::Delete,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_DELETE,		Modifier_Shift,					Operation::DeletePermanent,			onlyIfUnassigned);
 
-	AssignKey(GLFW_KEY_S,			Modifier_Ctrl,					Operation::SaveAs,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_O,			Modifier_Ctrl,					Operation::OpenFile,				onlyIfUnassigned);	// Update enum pending.
+	AssignKey(GLFW_KEY_O,			Modifier_Alt,					Operation::OpenDir,					onlyIfUnassigned);	// Update enum pending.
+	AssignKey(GLFW_KEY_S,			Modifier_Ctrl,					Operation::Save,					onlyIfUnassigned);	// Update enum pending.
+	AssignKey(GLFW_KEY_S,			Modifier_Shift,					Operation::SaveAs,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_S,			Modifier_Alt,					Operation::SaveAll,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_M,			Modifier_Ctrl,					Operation::SaveMultiFrameImage,		onlyIfUnassigned);
 	AssignKey(GLFW_KEY_C,			Modifier_None,					Operation::SaveContactSheet,		onlyIfUnassigned);
@@ -383,9 +391,6 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 	AssignKey(GLFW_KEY_ENTER,		Modifier_Alt,					Operation::Fullscreen,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_ESCAPE,		Modifier_None,					Operation::Escape,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_F4,			Modifier_Alt,					Operation::Quit,					onlyIfUnassigned);
-	AssignKey(GLFW_KEY_O,			Modifier_Ctrl,					Operation::OpenFile,				onlyIfUnassigned);
-	AssignKey(GLFW_KEY_O,			Modifier_Alt,					Operation::OpenDir,					onlyIfUnassigned);
-	AssignKey(GLFW_KEY_X,			Modifier_None,					Operation::MetaData,				onlyIfUnassigned);
 }
 
 
