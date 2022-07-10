@@ -1236,7 +1236,8 @@ FileDialog::DialogResult FileDialog::DoPopup()
 					if (!selDir.IsEmpty())
 					{
 						tSystem::tFileTypes selectedTypes;
-						selectedTypes.AddSelected(FileTypes, true);
+						bool allTypesIfNoneSelected = (Mode == DialogMode::OpenFile);
+						selectedTypes.AddSelected(FileTypes, allTypesIfNoneSelected);
 						tSystem::tExtensions extensions(selectedTypes);
 						tSystem::tFindFilesFast(foundFiles, selDir, extensions);
 					}
@@ -1323,106 +1324,110 @@ FileDialog::DialogResult FileDialog::DoPopup()
 	ImGui::PopStyleColor();
 	ImGui::PopStyleColor();
 
-	ContentItem* selItem = SelectedNode ? SelectedNode->FindSelectedItem() : nullptr;
 	bool resultAvail = false;
-	if (selItem)
+	ContentItem* selItem = SelectedNode ? SelectedNode->FindSelectedItem() : nullptr;
+	switch (Mode)
 	{
-		resultAvail =
-		(
-			((Mode == DialogMode::OpenFile) && !selItem->IsDir) ||
-			((Mode == DialogMode::SaveFile) && !selItem->IsDir) ||
-			((Mode == DialogMode::OpenDir) && selItem->IsDir)
-		);
-	}
-
-	if (!resultAvail && (Mode == DialogMode::OpenDir) && SelectedNode)
-	{
-		// OK to select dir in left-hand pane.
-		int depth = SelectedNode->Depth();
-		resultAvail =
-		(
-			(depth > 1) ||
-			(!SelectedNode->IsNetworkLocation() && (depth > 0))
-		);
-	}
-
-	if (Mode == DialogMode::OpenDir)
-	{
-		int flags = ImGuiInputTextFlags_ReadOnly;
-		ImGui::SetNextItemWidth( ImGui::GetWindowContentRegionMax().x / 2.0f );
-
-		if (!resultAvail)
-			ImGui::PushStyleColor(ImGuiCol_Text, tVector4(0.5f, 0.5f, 0.52f, 1.0f) );
-		tString fname = resultAvail ? SelectedNode->Name : "Directory Name";
-		ImGui::InputText("##Directory Name", fname.Txt(), fname.Length()+1, flags);
-		if (!resultAvail)
-			ImGui::PopStyleColor();
-	}
-	else
-	{
-		// For file modes, display the filename and types combo.
-		int flags = ImGuiInputTextFlags_ReadOnly;
-		ImGui::SetNextItemWidth( ImGui::GetWindowContentRegionMax().x / 2.0f );
-
-		if (!resultAvail)
-			ImGui::PushStyleColor(ImGuiCol_Text, tVector4(0.5f, 0.5f, 0.52f, 1.0f) );
-		tString fname = resultAvail ? selItem->Name : "File Name";
-		ImGui::InputText("##File Name", fname.Txt(), fname.Length()+1, flags);
-		if (!resultAvail)
-			ImGui::PopStyleColor();
-
-		ImGui::SameLine();
-		ImGui::SetNextItemWidth(140);
-		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
-
-		// Nothing selected means all types used.
-		bool allTypes = !FileTypes.AnySelected();
-		tString currChosen = allTypes ? "All Image Types" : FileTypes.GetSelectedString(tSystem::tFileTypes::Separator::CommaSpace, 4);
-		if (ImGui::BeginCombo("##TypeFilter", currChosen.Chr()))
+		case DialogMode::OpenFile:
 		{
-			if (ImGui::Selectable("All Image Types", allTypes))
-			{
-				FileTypes.ClearSelected();
-				InvalidateAllNodeContent();
-			}
+			resultAvail = selItem && !selItem->IsDir;
 
-			for (tFileTypes::tFileTypeItem* typeItem = FileTypes.First(); typeItem; typeItem = typeItem->Next())
-			{
-				tFileType fileType = typeItem->FileType;
-				const char* fileTypeName = tSystem::tGetFileTypeName(fileType);
-				if (!fileTypeName)
-					continue;
+			// For OpenFile mode display the filename as read-only.
+			//int flags = (Mode == DialogMode::SaveFile) ? 0 : ImGuiInputTextFlags_ReadOnly;
+			ImGui::SetNextItemWidth( ImGui::GetWindowContentRegionMax().x / 2.0f );
+			if (!resultAvail)
+				ImGui::PushStyleColor(ImGuiCol_Text, tVector4(0.5f, 0.5f, 0.52f, 1.0f) );
+			tString fname = resultAvail ? selItem->Name : "File Name";
+			ImGui::InputText("##File Name", fname.Txt(), fname.Length()+1, ImGuiInputTextFlags_ReadOnly);
+			if (!resultAvail)
+				ImGui::PopStyleColor();
 
-				if (ImGui::Selectable(fileTypeName, typeItem->Selected))
+			DoFileTypesDropdown(true);
+
+			// Open button and set final Result to be picked up.
+			ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - 20.0f);
+			if (resultAvail)
+			{
+				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
+				if (ImGui::Button("Open", tVector2(70.0f, 0.0f)))
 				{
-					typeItem->Selected = !typeItem->Selected;
-					InvalidateAllNodeContent();
+					Result = GetDir(SelectedNode) + selItem->Name;
+					result = DialogResult::OK;
 				}
-
-				if (typeItem->Selected)
-					ImGui::SetItemDefaultFocus();
+				ImGui::SameLine();
 			}
-
-			// Update the filters.
-			ImGui::EndCombo();
+			break;
 		}
-	}
 
-	// Cancel and OK buttons.
-	ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - 20.0f);
-	if (resultAvail)
-	{
-		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
-		if (ImGui::Button("Open", tVector2(70.0f, 0.0f)))
+		case DialogMode::SaveFile:
 		{
-			Result = GetDir(SelectedNode);
-			if ((Mode == DialogMode::OpenFile) && selItem)
-				Result += selItem->Name;
-			result = DialogResult::OK;
+			resultAvail = selItem && !selItem->IsDir;
+
+			// For SaveFile mode always allow input of the filename manually, but populate it with the
+			// selected file (if anything selected).
+			ImGui::SetNextItemWidth( ImGui::GetWindowContentRegionMax().x / 2.0f );
+//			if (!resultAvail)
+//				ImGui::PushStyleColor(ImGuiCol_Text, tVector4(0.5f, 0.5f, 0.52f, 1.0f) );
+			tString fname = resultAvail ? selItem->Name : "File Name";
+
+			static char filename[128];
+			int flags = 0;
+			ImGui::InputText("##File Name", filename, 128, flags);
+// @wip.
+//			if (!resultAvail)
+//				ImGui::PopStyleColor();
+
+			DoFileTypesDropdown(false);
+
+			// Save button and set final Result to be picked up.
+			ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - 20.0f);
+			if (resultAvail)
+			{
+				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
+				if (ImGui::Button("Save", tVector2(70.0f, 0.0f)))
+				{
+					Result = GetDir(SelectedNode) + tString(filename);
+					result = DialogResult::OK;
+				}
+				ImGui::SameLine();
+			}
+			break;
 		}
-		ImGui::SameLine();
+
+		case DialogMode::OpenDir:
+		{
+			resultAvail = selItem && selItem->IsDir;
+			
+			// OK to select dir in left-hand pane where SelectedNode may be valid.
+			int depth = SelectedNode ? SelectedNode->Depth() : 0;
+			if (!resultAvail && depth)
+				resultAvail = (depth > 1) || (!SelectedNode->IsNetworkLocation() && (depth > 0));
+
+			ImGui::SetNextItemWidth( ImGui::GetWindowContentRegionMax().x / 2.0f );
+			if (!resultAvail)
+				ImGui::PushStyleColor(ImGuiCol_Text, tVector4(0.5f, 0.5f, 0.52f, 1.0f) );
+			tString fname = resultAvail ? SelectedNode->Name : "Directory Name";
+			ImGui::InputText("##Directory Name", fname.Txt(), fname.Length()+1, ImGuiInputTextFlags_ReadOnly);
+			if (!resultAvail)
+				ImGui::PopStyleColor();
+
+			// Open button and set final Result to be picked up.
+			ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - 20.0f);
+			if (resultAvail)
+			{
+				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
+				if (ImGui::Button("Open", tVector2(70.0f, 0.0f)))
+				{
+					Result = GetDir(SelectedNode);
+					result = DialogResult::OK;
+				}
+				ImGui::SameLine();
+			}
+			break;
+		}
 	}
 
+	// The cancel button is the same for all modes.
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 70.0f);
 	if (ImGui::Button("Cancel", tVector2(70.0f, 0.0f)))
 		result = DialogResult::Cancel;
@@ -1432,6 +1437,67 @@ FileDialog::DialogResult FileDialog::DoPopup()
 
 	ImGui::EndPopup();
 	return result;
+}
+
+
+void FileDialog::DoFileTypesDropdown(bool supportAllTypes)
+{
+	if (FileTypes.IsEmpty())
+		return;
+
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(140);
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
+
+	// Nothing selected means all types used.
+	bool anySelected = FileTypes.AnySelected();
+	bool allTypes = supportAllTypes && !anySelected;
+	tString currChosen;
+	if (supportAllTypes)
+	{
+		currChosen = allTypes ? "All Types" : FileTypes.GetSelectedString(tSystem::tFileTypes::Separator::CommaSpace, 4);
+	}
+	else
+	{
+		if (!anySelected)
+			FileTypes.First()->Selected = true;		
+		currChosen = FileTypes.GetSelectedString(tSystem::tFileTypes::Separator::CommaSpace, 4);
+	}
+
+	if (ImGui::BeginCombo("##TypeFilter", currChosen.Chr()))
+	{
+		if (supportAllTypes && ImGui::Selectable("All Types", allTypes))
+		{
+			FileTypes.ClearSelected();
+			InvalidateAllNodeContent();
+		}
+
+		for (tFileTypes::tFileTypeItem* typeItem = FileTypes.First(); typeItem; typeItem = typeItem->Next())
+		{
+			tFileType fileType = typeItem->FileType;
+			const char* fileTypeName = tSystem::tGetFileTypeName(fileType);
+			if (!fileTypeName)
+				continue;
+
+			if (ImGui::Selectable(fileTypeName, typeItem->Selected))
+			{
+				if (!supportAllTypes)
+				{
+					FileTypes.ClearSelected();
+					typeItem->Selected = true;
+				}
+				else
+					typeItem->Selected = !typeItem->Selected;
+				InvalidateAllNodeContent();
+			}
+
+			if (typeItem->Selected)
+				ImGui::SetItemDefaultFocus();
+		}
+
+		// Update the filters.
+		ImGui::EndCombo();
+	}
 }
 
 

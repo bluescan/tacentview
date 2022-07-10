@@ -26,7 +26,6 @@ namespace Viewer
 {
 	extern tSystem::tFileTypes FileTypes_Load;
 	extern tSystem::tFileTypes FileTypes_Save;
-	extern tSystem::tFileTypes FileTypes_SaveMultiFrame;
 	extern tFileDialog::FileDialog OpenFileDialog;
 	extern tFileDialog::FileDialog OpenDirDialog;
 	extern tFileDialog::FileDialog SaveAsDialog;

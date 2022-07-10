@@ -72,6 +72,7 @@ private:
 	tString GetDir(const TreeNode*);
 	void GetDir(tList<tStringItem>& destDirItems, const TreeNode*);
 	void DoSelectable(ContentItem*);
+	void DoFileTypesDropdown(bool supportAllTypes);
 
 	void PopulateLocal();
 	#ifdef PLATFORM_WINDOWS

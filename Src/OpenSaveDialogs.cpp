@@ -73,7 +73,6 @@ void Viewer::DoOpenDirModal(bool openDirPressed)
 
 void Viewer::DoSaveAsModal(bool saveAsPressed)
 {
-	/*
 	if (saveAsPressed)
 		SaveAsDialog.OpenPopup();
 
@@ -81,10 +80,10 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 	if (result == FileDialog::DialogResult::OK)
 	{
 		tString saveAsFile = SaveAsDialog.GetResult();
-		tPrintf()
+		tPrintf("saveAsFile: [%s]\n", saveAsFile.Chr());
 	}
-	*/
 
+	return;	// WIP ZZZZZZZZZ
 	if (saveAsPressed)
 		ImGui::OpenPopup("Save As");
 
@@ -221,6 +220,7 @@ tString Viewer::DoSubFolder()
 
 tString Viewer::DoSaveFiletype()
 {
+	// @todo This is silly. Should be using the Viewer::FileTypes_Save object -- from that Tacent can get the actual extensions.
 	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "webp", "gif", "apng", "tiff" };
 	ImGui::Combo("File Type", &Config::Current->SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
 	ImGui::SameLine();
@@ -298,6 +298,7 @@ tString Viewer::DoSaveFiletype()
 
 tString Viewer::DoSaveFiletypeMultiFrame()
 {
+	// @todo This is silly. Should be using the Viewer::FileTypes_SaveMultiFrame object -- from that Tacent can get the actual extensions.
 	const char* fileTypeItems[] = { "webp", "gif", "apng", "tiff" };
 	ImGui::Combo("File Type", &Config::Current->SaveFileTypeMultiFrame, fileTypeItems, tNumElements(fileTypeItems));
 	ImGui::SameLine();

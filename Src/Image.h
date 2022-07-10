@@ -66,9 +66,8 @@ public:
 	float GetLoadedTime() const																							{ return LoadedTime; }
 
 	// Bind to a texture ID and load into VRAM. If already in VRAM, it makes the texture current. Since some ImGui
-	// functions require a texture ID as parameter, this function return the ID.
-	// If the alt image is enabled, the bound texture and ID  will be the alt image's.
-	// Returns 0 (invalid id) if there was a problem.
+	// functions require a texture ID as parameter, this function return the ID. If the alt image is enabled, the bound
+	// texture and ID will be the alt image's. Returns 0 (invalid id) if there was a problem.
 	uint64 Bind();
 	void Unbind();
 	int GetWidth() const;

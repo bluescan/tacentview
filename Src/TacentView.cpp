@@ -76,13 +76,31 @@ namespace Viewer
 		tFileType::TGA,
 		tFileType::TIFF,
 		tFileType::WEBP,
-		tFileType::EndOfList
+		tFileType::EOL
 	);
 
-	tFileTypes FileTypes_Save;
-	tFileTypes FileTypes_SaveMultiFrame;
+	tFileTypes FileTypes_Save
+	(
+		tFileType::TGA,
+		tFileType::PNG,
+		tFileType::BMP,
+		tFileType::JPG,
+		tFileType::WEBP,
+		tFileType::GIF,
+		tFileType::APNG,
+		tFileType::TIFF,
+		tFileType::EOL
+	);
 
-	// @todo Don't use same filetypes for all of these.
+	tFileTypes FileTypes_SaveMultiFrame
+	(
+		tFileType::WEBP,
+		tFileType::GIF,
+		tFileType::APNG,
+		tFileType::TIFF,
+		tFileType::EOL
+	);
+
 	tFileDialog::FileDialog OpenFileDialog(tFileDialog::DialogMode::OpenFile, Viewer::FileTypes_Load);
 	tFileDialog::FileDialog OpenDirDialog(tFileDialog::DialogMode::OpenDir);
 	tFileDialog::FileDialog SaveAsDialog(tFileDialog::DialogMode::SaveFile, Viewer::FileTypes_Save);
