@@ -29,6 +29,6 @@ namespace Viewer
 	void DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFiles, bool& pressedOK, bool& pressedCancel);
 
 	tString DoSubFolder();				// Returns destination dir.
-	tString DoSaveFiletype();			// Returns extension.
+	tString DoSaveFiletype(bool chooseType = true);			// Returns extension.
 	tString DoSaveFiletypeMultiFrame();	// Returns extension.
 }

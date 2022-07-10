@@ -58,21 +58,21 @@ public:
 	// Call when you want the modal dialog to open.
 	void OpenPopup();
 
-	enum class DialogResult
+	enum class DialogState
 	{
 		Open,								// Modal is currently open.
 		Closed,								// Modal is currently not open.
 		OK,									// Call GetResult to see what the user selected.
 		Cancel
 	};
-	DialogResult DoPopup();					// Call every frame and observe result.
+	DialogState DoPopup();					// Call every frame and observe returned state.
 	tString GetResult();
 	
 private:
 	tString GetDir(const TreeNode*);
 	void GetDir(tList<tStringItem>& destDirItems, const TreeNode*);
 	void DoSelectable(ContentItem*);
-	void DoFileTypesDropdown(bool supportAllTypes);
+	void DoFileTypesDropdown(bool supportMultipleTypes);
 
 	void PopulateLocal();
 	#ifdef PLATFORM_WINDOWS
@@ -96,6 +96,10 @@ private:
 	DialogMode Mode;
 	tSystem::tFileTypes FileTypes;
 	tString Result;
+
+	// @todo Once tString has proper support for resizing and a concept of current size vs capacity then
+	// we can do away with this std::string and use Result directly.
+	std::string SaveFileResult;
 
 	TreeNode* LocalTreeNode;
 	#ifdef PLATFORM_WINDOWS

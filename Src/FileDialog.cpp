@@ -17,6 +17,7 @@
 #include <System/tTime.h>
 #include "imgui.h"
 #include "imgui_internal.h"		// For SplitterBehavior.
+#include "imgui_stdlib.h"		// For editing a std::string.
 #include "FileDialog.h"
 #include "TacentView.h"
 #include "Image.h"
@@ -685,7 +686,7 @@ bool TreeNode::IsNetworkLocation() const
 }
 
 
-tFileDialog::FileDialog::FileDialog(DialogMode mode, const tSystem::tFileTypes& fileTypes) :
+FileDialog::FileDialog(DialogMode mode, const tSystem::tFileTypes& fileTypes) :
 	PopupJustOpened(false),
 	Mode(mode),
 	FileTypes(fileTypes)
@@ -957,6 +958,11 @@ void FileDialog::DoSelectable(ContentItem* item)
 					continue;
 				i->Selected = false;
 			}
+
+			// If item just selected and we're in SaveFile mode we need to update the Edit widget.
+			// This widget uses the SaveFileResult string, so we update that.
+			if (Mode == DialogMode::SaveFile)
+				SaveFileResult = tGetFileBaseName(label).Chr();
 		}
 
 		// Do not allow deselection of the single item.
@@ -1117,7 +1123,7 @@ bool tFileDialog::VerticalSplitter(float thickness, float& width1, float& width2
 }
 
 
-FileDialog::DialogResult FileDialog::DoPopup()
+FileDialog::DialogState FileDialog::DoPopup()
 {
 	// The unused isOpen bool is just so we get a close button in ImGui. 
 	bool isOpen = true;
@@ -1139,9 +1145,9 @@ FileDialog::DialogResult FileDialog::DoPopup()
 	}
 
 	if (!ImGui::BeginPopupModal(label, &isOpen, 0))
-		return DialogResult::Closed;
+		return DialogState::Closed;
 
-	DialogResult result = DialogResult::Open;
+	DialogState state = DialogState::Open;
 	Result.Clear();
 
 	// The left and right panels are cells in a 1 row, 2 column table.
@@ -1333,7 +1339,6 @@ FileDialog::DialogResult FileDialog::DoPopup()
 			resultAvail = selItem && !selItem->IsDir;
 
 			// For OpenFile mode display the filename as read-only.
-			//int flags = (Mode == DialogMode::SaveFile) ? 0 : ImGuiInputTextFlags_ReadOnly;
 			ImGui::SetNextItemWidth( ImGui::GetWindowContentRegionMax().x / 2.0f );
 			if (!resultAvail)
 				ImGui::PushStyleColor(ImGuiCol_Text, tVector4(0.5f, 0.5f, 0.52f, 1.0f) );
@@ -1352,7 +1357,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				if (ImGui::Button("Open", tVector2(70.0f, 0.0f)))
 				{
 					Result = GetDir(SelectedNode) + selItem->Name;
-					result = DialogResult::OK;
+					state = DialogState::OK;
 				}
 				ImGui::SameLine();
 			}
@@ -1364,30 +1369,24 @@ FileDialog::DialogResult FileDialog::DoPopup()
 			resultAvail = selItem && !selItem->IsDir;
 
 			// For SaveFile mode always allow input of the filename manually, but populate it with the
-			// selected file (if anything selected).
+			// selected file (if anything selected). The population happens when the file is selected.
 			ImGui::SetNextItemWidth( ImGui::GetWindowContentRegionMax().x / 2.0f );
-//			if (!resultAvail)
-//				ImGui::PushStyleColor(ImGuiCol_Text, tVector4(0.5f, 0.5f, 0.52f, 1.0f) );
-			tString fname = resultAvail ? selItem->Name : "File Name";
-
-			static char filename[128];
-			int flags = 0;
-			ImGui::InputText("##File Name", filename, 128, flags);
-// @wip.
-//			if (!resultAvail)
-//				ImGui::PopStyleColor();
+			ImGui::InputTextWithHint("##File Name", "File Name Sans Extension", &SaveFileResult);
 
 			DoFileTypesDropdown(false);
+			tFileType fileType = FileTypes.GetFirstSelectedType();
 
 			// Save button and set final Result to be picked up.
 			ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - 20.0f);
-			if (resultAvail)
+			if ((fileType != tFileType::Invalid) && (SaveFileResult.length() > 0))
 			{
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
 				if (ImGui::Button("Save", tVector2(70.0f, 0.0f)))
 				{
-					Result = GetDir(SelectedNode) + tString(filename);
-					result = DialogResult::OK;
+					tString extension = tSystem::tGetExtension(fileType);
+					Result = GetDir(SelectedNode) + tString(SaveFileResult.c_str()) + "." + extension;
+					state = DialogState::OK;
+					InvalidateAllNodeContent();
 				}
 				ImGui::SameLine();
 			}
@@ -1419,7 +1418,7 @@ FileDialog::DialogResult FileDialog::DoPopup()
 				if (ImGui::Button("Open", tVector2(70.0f, 0.0f)))
 				{
 					Result = GetDir(SelectedNode);
-					result = DialogResult::OK;
+					state = DialogState::OK;
 				}
 				ImGui::SameLine();
 			}
@@ -1430,17 +1429,17 @@ FileDialog::DialogResult FileDialog::DoPopup()
 	// The cancel button is the same for all modes.
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 70.0f);
 	if (ImGui::Button("Cancel", tVector2(70.0f, 0.0f)))
-		result = DialogResult::Cancel;
+		state = DialogState::Cancel;
 
-	if (result != DialogResult::Open)
+	if (state != DialogState::Open)
 		ImGui::CloseCurrentPopup();
 
 	ImGui::EndPopup();
-	return result;
+	return state;
 }
 
 
-void FileDialog::DoFileTypesDropdown(bool supportAllTypes)
+void FileDialog::DoFileTypesDropdown(bool supportMultipleTypes)
 {
 	if (FileTypes.IsEmpty())
 		return;
@@ -1451,22 +1450,25 @@ void FileDialog::DoFileTypesDropdown(bool supportAllTypes)
 
 	// Nothing selected means all types used.
 	bool anySelected = FileTypes.AnySelected();
-	bool allTypes = supportAllTypes && !anySelected;
+	bool allTypes = supportMultipleTypes && !anySelected;
 	tString currChosen;
-	if (supportAllTypes)
+	if (supportMultipleTypes)
 	{
 		currChosen = allTypes ? "All Types" : FileTypes.GetSelectedString(tSystem::tFileTypes::Separator::CommaSpace, 4);
 	}
 	else
 	{
 		if (!anySelected)
-			FileTypes.First()->Selected = true;		
+		{
+			FileTypes.First()->Selected = true;
+			InvalidateAllNodeContent();
+		}
 		currChosen = FileTypes.GetSelectedString(tSystem::tFileTypes::Separator::CommaSpace, 4);
 	}
 
 	if (ImGui::BeginCombo("##TypeFilter", currChosen.Chr()))
 	{
-		if (supportAllTypes && ImGui::Selectable("All Types", allTypes))
+		if (supportMultipleTypes && ImGui::Selectable("All Types", allTypes))
 		{
 			FileTypes.ClearSelected();
 			InvalidateAllNodeContent();
@@ -1481,7 +1483,7 @@ void FileDialog::DoFileTypesDropdown(bool supportAllTypes)
 
 			if (ImGui::Selectable(fileTypeName, typeItem->Selected))
 			{
-				if (!supportAllTypes)
+				if (!supportMultipleTypes)
 				{
 					FileTypes.ClearSelected();
 					typeItem->Selected = true;

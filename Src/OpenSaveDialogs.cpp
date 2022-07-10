@@ -33,6 +33,8 @@ namespace Viewer
 	// This function saves the picture to the filename specified.
 	bool SaveImageAs(Image&, const tString& outFile);
 	bool SaveResizeImageAs(Image&, const tString& outFile, int width, int height, float scale = 1.0f, Config::Settings::SizeMode = Config::Settings::SizeMode::SetWidthAndHeight);
+
+	tString SaveAsFile;
 }
 
 
@@ -41,8 +43,8 @@ void Viewer::DoOpenFileModal(bool openFilePressed)
 	if (openFilePressed)
 		OpenFileDialog.OpenPopup();
 
-	FileDialog::DialogResult result = OpenFileDialog.DoPopup();
-	if (result == FileDialog::DialogResult::OK)
+	FileDialog::DialogState state = OpenFileDialog.DoPopup();
+	if (state == FileDialog::DialogState::OK)
 	{
 		tString chosenFile = OpenFileDialog.GetResult();
 		tPrintf("Opening file: %s\n", chosenFile.Chr());
@@ -59,8 +61,8 @@ void Viewer::DoOpenDirModal(bool openDirPressed)
 	if (openDirPressed)
 		OpenDirDialog.OpenPopup();
 
-	FileDialog::DialogResult result = OpenDirDialog.DoPopup();
-	if (result == FileDialog::DialogResult::OK)
+	FileDialog::DialogState state = OpenDirDialog.DoPopup();
+	if (state == FileDialog::DialogState::OK)
 	{
 		tString chosenDir = OpenDirDialog.GetResult();
 		ImageFileParam.Param = chosenDir + "dummyfile.txt";
@@ -76,30 +78,48 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 	if (saveAsPressed)
 		SaveAsDialog.OpenPopup();
 
-	FileDialog::DialogResult result = SaveAsDialog.DoPopup();
-	if (result == FileDialog::DialogResult::OK)
+	FileDialog::DialogState state = SaveAsDialog.DoPopup();
+	if (state == FileDialog::DialogState::OK)
 	{
-		tString saveAsFile = SaveAsDialog.GetResult();
-		tPrintf("saveAsFile: [%s]\n", saveAsFile.Chr());
+		SaveAsFile = SaveAsDialog.GetResult();
+		tPrintf("SaveAsFile: [%s]\n", SaveAsFile.Chr());
+		ImGui::OpenPopup("Save Options");
 	}
-
-	return;	// WIP ZZZZZZZZZ
-	if (saveAsPressed)
-		ImGui::OpenPopup("Save As");
 
 	// The unused isOpenSaveAs bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isOpenSaveAs = true;
-	if (!ImGui::BeginPopupModal("Save As", &isOpenSaveAs, ImGuiWindowFlags_AlwaysAutoResize))
+	ImGui::SetNextWindowSize(tVector2(300.0f, 0.0f));
+	if (!ImGui::BeginPopupModal("Save Options", &isOpenSaveAs, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 	
 	tAssert(CurrImage);
 	tPicture* picture = CurrImage->GetCurrentPic();
 	tAssert(picture);
 
+	Config::Current->SaveFileType = 0;
+	tFileType saveType = tGetFileType(SaveAsFile);
+	switch (saveType)
+	{
+		case tFileType::TGA:	Config::Current->SaveFileType = 0;	break;
+		case tFileType::PNG:	Config::Current->SaveFileType = 1;	break;
+		case tFileType::BMP:	Config::Current->SaveFileType = 2;	break;
+		case tFileType::JPG:	Config::Current->SaveFileType = 3;	break;
+		case tFileType::WEBP:	Config::Current->SaveFileType = 4;	break;
+
+		case tFileType::GIF:	Config::Current->SaveFileType = 5;	break;
+		case tFileType::APNG:	Config::Current->SaveFileType = 6;	break;
+		case tFileType::TIFF:	Config::Current->SaveFileType = 7;	break;
+	}
+
+	DoSaveFiletype(false);
+
+/*
 	tString extension = DoSaveFiletype();
 	ImGui::Separator();
 	tString destDir = DoSubFolder();
+*/
 
+/*
 	static char filename[128] = "Filename";
 	if (saveAsPressed)
 	{
@@ -108,6 +128,7 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 	}
 	ImGui::InputText("Filename", filename, tNumElements(filename));
 	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
+*/
 
 	ImGui::NewLine();
 	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
@@ -116,31 +137,33 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 	
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 
-	tString outFile = destDir + tString(filename) + extension;
+	//tString outFile = destDir + tString(filename) + extension;
 	bool closeThisModal = false;
 	if (ImGui::Button("Save", tVector2(100.0f, 0.0f)))
 	{
+		/*
 		bool dirExists = tDirExists(destDir);
 		if (!dirExists)
 		{
 			dirExists = tCreateDir(destDir);
 			PopulateImagesSubDirs();
 		}
+		*/
 
-		if (dirExists)
+//		if (dirExists)
 		{
-			if (tFileExists(outFile) && Config::Current->ConfirmFileOverwrites)
+			if (tFileExists(SaveAsFile) && Config::Current->ConfirmFileOverwrites)
 			{
 				ImGui::OpenPopup("Overwrite File");
 			}
 			else
 			{
-				bool ok = SaveImageAs(*CurrImage, outFile);
+				bool ok = SaveImageAs(*CurrImage, SaveAsFile);
 				if (ok)
 				{
 					// This gets a bit tricky. Image A may be saved as the same name as image B also in the list. We need to search for it.
 					// If it's not found, we need to add it to the list iff it was saved to the current folder.
-					Image* foundImage = FindImage(outFile);
+					Image* foundImage = FindImage(SaveAsFile);
 					if (foundImage)
 					{
 						foundImage->Unload(true);
@@ -148,10 +171,10 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 						foundImage->RequestInvalidateThumbnail();
 					}
 					else
-						AddSavedImageIfNecessary(outFile);
+						AddSavedImageIfNecessary(SaveAsFile);
 
 					SortImages(Config::Settings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
-					SetCurrentImage(outFile);
+					SetCurrentImage(SaveAsFile);
 				}
 				closeThisModal = true;
 			}
@@ -163,13 +186,13 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 	if (ImGui::BeginPopupModal("Overwrite File", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
 	{
 		bool pressedOK = false, pressedCancel = false;
-		DoOverwriteFileModal(outFile, pressedOK, pressedCancel);
+		DoOverwriteFileModal(SaveAsFile, pressedOK, pressedCancel);
 		if (pressedOK)
 		{
-			bool ok = SaveImageAs(*CurrImage, outFile);
+			bool ok = SaveImageAs(*CurrImage, SaveAsFile);
 			if (ok)
 			{
-				Image* foundImage = FindImage(outFile);
+				Image* foundImage = FindImage(SaveAsFile);
 				if (foundImage)
 				{
 					foundImage->Unload(true);
@@ -177,10 +200,10 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 					foundImage->RequestInvalidateThumbnail();
 				}
 				else
-					AddSavedImageIfNecessary(outFile);
+					AddSavedImageIfNecessary(SaveAsFile);
 
 				SortImages(Config::Settings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
-				SetCurrentImage(outFile);
+				SetCurrentImage(SaveAsFile);
 			}
 		}
 		if (pressedOK || pressedCancel)
@@ -218,13 +241,16 @@ tString Viewer::DoSubFolder()
 }
 
 
-tString Viewer::DoSaveFiletype()
+tString Viewer::DoSaveFiletype(bool chooseType)
 {
 	// @todo This is silly. Should be using the Viewer::FileTypes_Save object -- from that Tacent can get the actual extensions.
-	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "webp", "gif", "apng", "tiff" };
-	ImGui::Combo("File Type", &Config::Current->SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
-	ImGui::SameLine();
-	ShowHelpMark("Output image format.\nFull (non-binary) alpha supported by tga, png, apng, bmp, tiff, and webp.\nAnimation supported by webp, gif, tiff, and apng.");
+	if (chooseType)
+	{
+		const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "webp", "gif", "apng", "tiff" };
+		ImGui::Combo("File Type", &Config::Current->SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
+		ImGui::SameLine();
+		ShowHelpMark("Output image format.\nFull (non-binary) alpha supported by tga, png, apng, bmp, tiff, and webp.\nAnimation supported by webp, gif, tiff, and apng.");
+	}
 
 	// There are different options depending on what type you are saving as.
 	tString extension = ".tga";
