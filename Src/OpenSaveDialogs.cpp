@@ -34,6 +34,7 @@ namespace Viewer
 	bool SaveImageAs(Image&, const tString& outFile);
 	bool SaveResizeImageAs(Image&, const tString& outFile, int width, int height, float scale = 1.0f, Config::Settings::SizeMode = Config::Settings::SizeMode::SetWidthAndHeight);
 	void DoSavePopup();
+	void DoSaveUnsupportedTypePopup();
 
 	tString SaveAsFile;
 }
@@ -83,18 +84,24 @@ void Viewer::DoSaveModal(bool savePressed)
 	SaveAsFile = CurrImage->Filename;
 	if (savePressed)
 	{
-		tsPrintf(label, "Save %s Options", tGetFileTypeName(tGetFileType(SaveAsFile)));
+		tString typeNameUpper(tGetFileTypeName(tGetFileType(SaveAsFile)));
+		typeNameUpper.ToUpper();
+		tsPrintf(label, "Save %s Options", typeNameUpper.Chr());
 		ImGui::OpenPopup(label.Chr());
 	}
-	tPrintf("SaveAsFile: [%s]\n", SaveAsFile.Chr());
 
-	// The unused isOpenSaveAs bool is just so we get a close button in ImGui. Returns false if popup not open.
+	// The unused isOpenSaveOptions bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isOpenSaveOptions = true;
 	ImGui::SetNextWindowSize(tVector2(300.0f, 0.0f));
 	if (!ImGui::BeginPopupModal(label.Chr(), &isOpenSaveOptions, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
-	
-	DoSavePopup();
+
+	tFileType saveType = tGetFileType(SaveAsFile);
+	if (FileTypes_Save.Contains(saveType))
+		DoSavePopup();
+	else
+		DoSaveUnsupportedTypePopup();
+
 	ImGui::EndPopup();
 }
 
@@ -102,18 +109,20 @@ void Viewer::DoSaveModal(bool savePressed)
 void Viewer::DoSaveAsModal(bool saveAsPressed)
 {
 	static tString label;
+
 	if (saveAsPressed)
-		SaveAsDialog.OpenPopup();
+		SaveAsDialog.OpenPopup(ImagesDir);
 	FileDialog::DialogState state = SaveAsDialog.DoPopup();
 	if (state == FileDialog::DialogState::OK)
 	{
 		SaveAsFile = SaveAsDialog.GetResult();
-		tsPrintf(label, "SaveAs %s Options", tGetFileTypeName(tGetFileType(SaveAsFile)));
+		tString typeNameUpper(tGetFileTypeName(tGetFileType(SaveAsFile)));
+		typeNameUpper.ToUpper();
+		tsPrintf(label, "Save As %s Options", typeNameUpper.Chr());
 		ImGui::OpenPopup(label.Chr());
 	}
-	tPrintf("SaveAsFile: [%s]\n", SaveAsFile.Chr());
 
-	// The unused isOpenSaveAs bool is just so we get a close button in ImGui. Returns false if popup not open.
+	// The unused isOpenSaveOptions bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isOpenSaveOptions = true;
 	ImGui::SetNextWindowSize(tVector2(300.0f, 0.0f));
 	if (!ImGui::BeginPopupModal(label.Chr(), &isOpenSaveOptions, ImGuiWindowFlags_AlwaysAutoResize))
@@ -217,6 +226,26 @@ void Viewer::DoSavePopup()
 }
 
 
+void Viewer::DoSaveUnsupportedTypePopup()
+{
+	tString saveTypeName = tGetFileTypeName(tGetFileType(SaveAsFile));
+	ImGui::Text("Saving of %s files is not supported.", saveTypeName.Chr());
+
+	tString support;
+	tsPrintf(support, "Supported: ");
+	for (tFileTypes::tFileTypeItem* i = FileTypes_Save.First(); i; i = i->Next())
+		support += tsPrintf("%s ", tGetFileTypeName(i->FileType));
+
+	ImGui::Text("%s", support.Chr());
+	ImGui::NewLine();
+	
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	bool closeThisModal = false;
+	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
+		ImGui::CloseCurrentPopup();
+}
+
+
 tString Viewer::DoSubFolder()
 {
 	// Output sub-folder
@@ -277,7 +306,14 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			break;
 
 		case tFileType::BMP:
+		{
+			const char* bmpModeItems[] = { "Auto", "24 BPP", "32 BPP" };
+			ImGui::SetNextItemWidth(80);
+			ImGui::Combo("Bits Per Pixel", &Config::Current->SaveFileBmpDepthMode , bmpModeItems, tNumElements(bmpModeItems));
+			ImGui::SameLine();
+			ShowHelpMark("Auto: Decide based on opacity. 24 BPP: Force 24 bits per pixel. 32 BPP: Force 32 bits per pixel.");
 			break;
+		}
 
 		case tFileType::JPG:
 			ImGui::SliderInt("Quality", &Config::Current->SaveFileJpegQuality, 1, 100, "%d");
@@ -406,6 +442,26 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 			break;
 		}
 
+		case 2:		// BMP
+		{
+			tPicture* picture = img.GetCurrentPic();
+			if (!picture || !picture->IsValid())
+				return false;
+			//tImage::tPicture::tColourFormat colourFmt = picture->IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
+
+			tImageBMP bmp(picture->GetPixels(), picture->GetWidth(), picture->GetHeight(), false);
+
+			tImageBMP::tFormat saveFormat = tImageBMP::tFormat::Auto;
+			switch (Config::Current->SaveFileBmpDepthMode)
+			{
+				case 1: saveFormat = tImageBMP::tFormat::BPP24;
+				case 2: saveFormat = tImageBMP::tFormat::BPP32;
+			}
+			tImageBMP::tFormat savedFormat = bmp.Save(outFile, saveFormat);
+			success = (savedFormat != tImageBMP::tFormat::Invalid);
+			break;
+		}
+
 		case 4:		// WEBP
 		{
 			tList<tFrame> frames;
@@ -485,7 +541,7 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 				(
 					new tFrame
 					(
-						picture->GetPixelPointer(),
+ 						picture->GetPixelPointer(),
 						picture->GetWidth(),
 						picture->GetHeight(),
 						picture->Duration
@@ -498,7 +554,7 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 			break;
 		}
 
-		default:	// BMP, PNG, JPG etc.
+		default:	// PNG, JPG.
 		{
 			tPicture* picture = img.GetCurrentPic();
 			if (!picture || !picture->IsValid())

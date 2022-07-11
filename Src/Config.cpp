@@ -284,6 +284,7 @@ void Config::Settings::Reset(Viewer::Profile profile, uint32 categories)
 		SaveFileType				= 0;
 		SaveFileTypeMultiFrame		= 0;
 		SaveFileTargaRLE			= false;
+		SaveFileBmpDepthMode		= 0;
 		SaveFileJpegQuality			= 95;
 		SaveFileWebpLossy			= false;
 		SaveFileWebpQualComp		= 90.0f;
@@ -390,6 +391,7 @@ void Config::Settings::Load(tExpression expr)
 			ReadItem(SaveFileType);
 			ReadItem(SaveFileTypeMultiFrame);
 			ReadItem(SaveFileTargaRLE);
+			ReadItem(SaveFileBmpDepthMode);
 			ReadItem(SaveFileJpegQuality);
 			ReadItem(SaveFileWebpLossy);
 			ReadItem(SaveFileWebpQualComp);
@@ -511,6 +513,7 @@ bool Config::Settings::Save(tExprWriter& writer) const
 	WriteItem(SaveFileType);
 	WriteItem(SaveFileTypeMultiFrame);
 	WriteItem(SaveFileTargaRLE);
+	WriteItem(SaveFileBmpDepthMode);
 	WriteItem(SaveFileJpegQuality);
 	WriteItem(SaveFileWebpLossy);
 	WriteItem(SaveFileWebpQualComp);

@@ -711,19 +711,35 @@ FileDialog::~FileDialog()
 }
 
 
-void FileDialog::OpenPopup()
+void FileDialog::OpenPopup(const tString& openDir)
 {
+	/////////TESTING
+	tPrintf("Convert: %s\n", "\\\\MOUNTAINVIEW\\ShareA/FormatVariety/");
+	GetPath(ConfigOpenFilePath, "\\\\MOUNTAINVIEW\\ShareA/FormatVariety/");
+
+	tPrintf("Convert: %s\n", "C:/ShareA/FormatVariety/");
+	GetPath(ConfigOpenFilePath, "C:/ShareA/FormatVariety/");
+
+	tPrintf("Convert: %s\n", "/ShareA/FormatVariety/");
+	GetPath(ConfigOpenFilePath, "/ShareA/FormatVariety/");
+
 	switch (Mode)
 	{
-		case DialogMode::OpenDir:
-			ImGui::OpenPopup("Open Directory");
-			break;
-
 		case DialogMode::OpenFile:
+			if (openDir.IsValid() && tDirExists(openDir))
+				GetPath(ConfigOpenFilePath, openDir);
 			ImGui::OpenPopup("Open File");
 			break;
 
+		case DialogMode::OpenDir:
+			if (openDir.IsValid() && tDirExists(openDir))
+				GetPath(ConfigOpenDirPath, openDir);
+			ImGui::OpenPopup("Open Directory");
+			break;
+
 		case DialogMode::SaveFile:
+			if (openDir.IsValid() && tDirExists(openDir))
+				GetPath(ConfigSaveFilePath, openDir);
 			ImGui::OpenPopup("Save File");
 			break;
 	}
@@ -852,7 +868,7 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 			if (ImGui::MenuItem("Add Bookmark"))
 			{
 				tList<tStringItem> bookmarkItems;
-				GetDir(bookmarkItems, node);
+				GetPath(bookmarkItems, node);
 				AddUniqueBookmark(bookmarkItems);
 			}
 			ImGui::EndPopup();
@@ -875,11 +891,11 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 
 			// SelectedNode Updated. Need to update global (saved) FilePath.
 			if (Mode == DialogMode::OpenFile)
-				GetDir(ConfigOpenFilePath, SelectedNode);
+				GetPath(ConfigOpenFilePath, SelectedNode);
 			else if (Mode == DialogMode::OpenDir)
-				GetDir(ConfigOpenDirPath, SelectedNode);
+				GetPath(ConfigOpenDirPath, SelectedNode);
 			if (Mode == DialogMode::SaveFile)
-				GetDir(ConfigSaveFilePath, SelectedNode);
+				GetPath(ConfigSaveFilePath, SelectedNode);
 
 			ClearBookmarksSelected();
 		}
@@ -984,11 +1000,11 @@ void FileDialog::DoSelectable(ContentItem* item)
 
 			// SelectedNode Updated. Need to update global FilePath.
 			if (Mode == DialogMode::OpenFile)
-				GetDir(ConfigOpenFilePath, SelectedNode);
+				GetPath(ConfigOpenFilePath, SelectedNode);
 			else if (Mode == DialogMode::OpenDir)
-				GetDir(ConfigOpenDirPath, SelectedNode);
+				GetPath(ConfigOpenDirPath, SelectedNode);
 			if (Mode == DialogMode::SaveFile)
-				GetDir(ConfigSaveFilePath, SelectedNode);
+				GetPath(ConfigSaveFilePath, SelectedNode);
 		}
 	}
 }
@@ -1138,10 +1154,13 @@ FileDialog::DialogState FileDialog::DoPopup()
 	ImGui::SetNextWindowSize(tVector2(660.0f, 400.0f), ImGuiCond_Appearing);
 
 	tStringItem* selectPathItemName = nullptr;
+	bool setYScrollToSel = false;
 	if (PopupJustOpened)
 	{
 		selectPathItemName = (!configPath || configPath->IsEmpty()) ? nullptr : configPath->Head();
 		PopupJustOpened = false;
+		if (selectPathItemName)
+			setYScrollToSel = true;
 	}
 
 	if (!ImGui::BeginPopupModal(label, &isOpen, 0))
@@ -1183,7 +1202,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 
 		ImGui::BeginChild("LeftBookmarkPanel", tVector2(0.0f, heightBookmarks), false, ImGuiWindowFlags_HorizontalScrollbar);
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(0.0f, 3.0f));
-		bool setYScrollToSel = false;
+//		bool setYScrollToSel = false;
 		tStringItem* bookmarkItem = BookmarksLoop();
 		if (bookmarkItem)
 		{
@@ -1535,15 +1554,44 @@ tString FileDialog::GetDir(const TreeNode* node)
 }
 
 
-void FileDialog::GetDir(tList<tStringItem>& destDirItems, const TreeNode* node)
+void FileDialog::GetPath(tList<tStringItem>& destPathItems, const TreeNode* node)
 {
-	destDirItems.Empty();
+	destPathItems.Empty();
 	if (!node)
 		return;
 
 	while (node)
 	{
-		destDirItems.Insert(new tStringItem(node->Name));
+		destPathItems.Insert(new tStringItem(node->Name));
 		node = node->Parent;
 	}
+}
+
+
+void FileDialog::GetPath(tList<tStringItem>& destPath, const tString& srcdir)
+{
+	destPath.Empty();
+	if (srcdir.IsEmpty())
+		return;
+
+	// Smallest path would be "/"
+	tString dir(srcdir);
+	bool isNetwork = false;
+	if ((dir.Length() >= 2) && (dir[0] == '\\') && (dir[1] == '\\'))
+		isNetwork = true;
+
+	if (isNetwork)
+		destPath.Append(new tStringItem("Network"));
+	else
+		destPath.Append(new tStringItem("Local"));
+
+	dir.Replace("\\\\", "/");
+	dir.Replace("\\", "/");
+	if (dir[0] == '/')
+		dir.ExtractLeft('/');
+
+	//tList<tStringItem> components;
+	tExplode(destPath, dir, '/');
+	for (tStringItem* c = destPath.First(); c; c = c->Next())
+		tPrintf("COMP: %s\n", c->Chr());
 }

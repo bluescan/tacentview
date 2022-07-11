@@ -55,8 +55,10 @@ public:
 	FileDialog(DialogMode, const tSystem::tFileTypes& = tSystem::tFileTypes());
 	~FileDialog();
 
-	// Call when you want the modal dialog to open.
-	void OpenPopup();
+	// Call when you want the modal dialog to open. If you want it to open in a specific directory supply the openDir
+	// variable. If either the directory doesn't exist or you leave it blank, the last open directory is used.
+	// Note that the dir is remembered in the config file, so persists across runs of the application.
+	void OpenPopup(const tString& openDir = tString());
 
 	enum class DialogState
 	{
@@ -69,8 +71,13 @@ public:
 	tString GetResult();
 	
 private:
-	tString GetDir(const TreeNode*);
-	void GetDir(tList<tStringItem>& destDirItems, const TreeNode*);
+	// The dialog uses a 'path' to represent the current directory. A path consists of a list of strings from root to leaf.
+	// You can convert between a directory string and a path using the functions below.
+	// @todo The concept of a path made of a list should be brought over to Tacent where it can be formalized.
+	tString GetDir(const TreeNode*);								// Converts to a directory string.
+	void GetPath(tList<tStringItem>& destPath, const TreeNode*);	// Converts to a path list.
+	void GetPath(tList<tStringItem>& destPath, const tString& dir);	// Converts dir to a path.
+
 	void DoSelectable(ContentItem*);
 	void DoFileTypesDropdown(bool supportMultipleTypes);
 
