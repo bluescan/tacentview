@@ -357,7 +357,10 @@ tuint256 Viewer::ComputeImagesHash(const tList<tSystem::tFileInfo>& files)
 {
 	tuint256 hash = 0;
 	for (tSystem::tFileInfo* item = files.First(); item; item = item->Next())
+	{
 		hash = tHash::tHashString256(item->FileName.Chr(), hash);
+		hash = tHash::tHashData256((uint8*)&item->FileSize, sizeof(item->FileSize), hash);
+	}
 
 	return hash;
 }
@@ -2658,6 +2661,9 @@ void Viewer::FocusCallback(GLFWwindow* window, int gotFocus)
 	files.Sort(Compare_AlphabeticalAscending, tListSortAlgorithm::Merge);
 	tuint256 hash = ComputeImagesHash(files);
 
+	// @todo There is a subtle bug here. If a file was replaced by the Viewer to exactly match what the file was
+	// when the hash was computed (say from a discard in git), then the hash will not have been updated and it
+	// will not detect a change.
 	if (hash != ImagesHash)
 	{
 		tPrintf("Hash mismatch. Dir contents changed. Resynching.\n");
