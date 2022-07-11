@@ -166,29 +166,36 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		{
 			category = Config::Category_System;
 			ImGui::NewLine();
-			ImGui::PushItemWidth(110);
-			ImGui::InputInt("Max Mem (MB)", &Config::Current->MaxImageMemMB); ImGui::SameLine();
-			ShowHelpMark("Approx memory use limit of this app. Minimum 256 MB.");
-			tMath::tiClampMin(Config::Current->MaxImageMemMB, 256);
-			ImGui::InputInt("Max Cache Files", &Config::Current->MaxCacheFiles); ImGui::SameLine();
-			ShowHelpMark("Maximum number of cache files that may be created. Minimum 200.");
-			tMath::tiClampMin(Config::Current->MaxCacheFiles, 200);
-			if (!DeleteAllCacheFilesOnExit)
-			{
-				if (ImGui::Button("Clear Cache"))
-					DeleteAllCacheFilesOnExit = true;
-			}
-			else
-			{
-				if (ImGui::Button("Cancel"))
-					DeleteAllCacheFilesOnExit = false;
-				ImGui::SameLine(); ImGui::Text("Cache will be cleared on exit.");
-			}
 
 			ImGui::PushItemWidth(110);
 			ImGui::InputInt("Max Undo Steps", &Config::Current->MaxUndoSteps); ImGui::SameLine();
 			ShowHelpMark("Maximum number of undo steps.");
 			tMath::tiClamp(Config::Current->MaxUndoSteps, 1, 32);
+
+			ImGui::PushItemWidth(110);
+			ImGui::InputInt("Max Mem (MB)", &Config::Current->MaxImageMemMB); ImGui::SameLine();
+			ShowHelpMark("Approx memory use limit of this app. Minimum 256 MB.");
+			tMath::tiClampMin(Config::Current->MaxImageMemMB, 256);
+
+			ImGui::InputInt("Max Cache Files", &Config::Current->MaxCacheFiles); ImGui::SameLine();
+			ShowHelpMark("Maximum number of cache files that may be created. Minimum 200.");
+			tMath::tiClampMin(Config::Current->MaxCacheFiles, 200);
+			if (!DeleteAllCacheFilesOnExit)
+			{
+				if (ImGui::Button("Clear Cache On Exit"))
+					DeleteAllCacheFilesOnExit = true;
+				ImGui::SameLine(); ShowHelpMark("Cache will be cleared on exit.");
+			}
+			else
+			{
+				if (ImGui::Button("Cancel Clear Cache"))
+					DeleteAllCacheFilesOnExit = false;
+				ImGui::SameLine(); ShowHelpMark("Cache will no longer be cleared on exit.");
+			}
+
+			if (ImGui::Button("Reset Bookmarks"))
+				tFileDialog::Reset();
+			ImGui::SameLine(); ShowHelpMark("Reset File Dialog Bookmarks.");
 
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 			ImGui::Separator();

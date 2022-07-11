@@ -258,6 +258,10 @@ bool Bookmark::Exists() const
 		return true;
 
 	tString path;
+	#ifdef PLATFORM_LINUX
+	path = "/";
+	#endif
+
 	for (tStringItem* item = Items.First()->Next(); item; item = item->Next())
 		path += *item + "/";
 
@@ -493,11 +497,11 @@ void tFileDialog::EnsureDefaultBookmarksExist()
 			break;
 		}
 
-	if (!rootBM)
-		Bookmarks.Insert(new Bookmark(Bookmark::Type::Root));
-
 	if (!homeBM)
 		Bookmarks.Insert(new Bookmark(Bookmark::Type::Home));
+
+	if (!rootBM)
+		Bookmarks.Insert(new Bookmark(Bookmark::Type::Root));
 }
 
 
