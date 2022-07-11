@@ -206,14 +206,14 @@ bool Bookmark::Set(Type type)
 		home.ExtractLeft("/");
 		tStd::tExplode(exploded, home, '/');
 
-		Items.Append(new tStringItem("Local"));
+		Items.Append(new tStringItem("Root"));
 		for (tStringItem* item = exploded.First(); item; item = item->Next())
 			Items.Append(new tStringItem(*item));
 	}
 	else if (type == Type::Root)
 	{
 		BookmarkType = Type::Root;
-		Items.Append(new tStringItem("Local"));
+		Items.Append(new tStringItem("Root"));
 
 		#ifdef PLATFORM_WINDOWS
 		tList<tStringItem> drives;
@@ -236,8 +236,7 @@ bool Bookmark::Set(Type type)
 		#endif
 
 		#ifdef PLATFORM_LINUX
-		// We encode "/" as the single node "Local" on Linux. No need to add a "/" item.
-		// Items.Append(new tStringItem("/"));
+		// We encode "/" as the single node "Root" on Linux. No need to add a "/" item.
 		#endif
 	}
 	return true;
@@ -255,7 +254,7 @@ bool Bookmark::Exists() const
 	tString loc = *Items.First();
 
 	// We assume network locations exist for now.
-	if (loc != "Local")
+	if (loc != "Root")
 		return true;
 
 	tString path;
@@ -696,7 +695,7 @@ FileDialog::FileDialog(DialogMode mode, const tSystem::tFileTypes& fileTypes) :
 	Mode(mode),
 	FileTypes(fileTypes)
 {
-	LocalTreeNode = new tFileDialog::TreeNode("Local", this);
+	LocalTreeNode = new tFileDialog::TreeNode("Root", this);
 	#ifdef PLATFORM_WINDOWS
 	NetworkTreeNode = new TreeNode("Network", this);
 	#endif
@@ -1581,17 +1580,13 @@ void FileDialog::GetPath(tList<tStringItem>& destPath, const tString& srcdir)
 	if (isNetwork)
 		destPath.Append(new tStringItem("Network"));
 	else
-		destPath.Append(new tStringItem("Local"));
+		destPath.Append(new tStringItem("Root"));
 
 	dir.Replace("\\\\", "/");
 	dir.Replace("\\", "/");
 
-//	#ifdef PLATFORM_WINDOWS
 	if (dir[0] == '/')
 		dir.ExtractLeft('/');
-//	#endif
 
 	tExplode(destPath, dir, '/');
-//	for (tStringItem* c = destPath.First(); c; c = c->Next())
-//		tPrintf("COMP: %s\n", c->Chr());
 }
