@@ -86,6 +86,10 @@ private:
 	void PopulateNetwork();
 	#endif
 
+	// This currently does not invalidate network shares on windows because they take a long time to rebuild.
+	// @todo Revisit this.
+	void InvalidateTree();
+
 	// Needed in cases where we need a reload of content. For example, when changing filetype filters.
 	void InvalidateAllNodeContent();
 	void InvalidateAllNodeContentRecursive(TreeNode*);

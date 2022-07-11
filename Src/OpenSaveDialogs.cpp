@@ -234,7 +234,11 @@ void Viewer::DoSaveUnsupportedTypePopup()
 	tString support;
 	tsPrintf(support, "Supported: ");
 	for (tFileTypes::tFileTypeItem* i = FileTypes_Save.First(); i; i = i->Next())
-		support += tsPrintf("%s ", tGetFileTypeName(i->FileType));
+	{
+		tString line;
+		tsPrintf(line, "%s ", tGetFileTypeName(i->FileType));
+		support += line;
+	}
 
 	ImGui::Text("%s", support.Chr());
 	ImGui::NewLine();

@@ -86,6 +86,7 @@ namespace tFileDialog
 	public:
 		TreeNode()																											: Name(), Parent(nullptr) { }
 		TreeNode(const tString& name, FileDialog* dialog, TreeNode* parent = nullptr)										: Name(name), Dialog(dialog), Parent(parent) { }
+		virtual ~TreeNode()																									{ Contents.Empty(); Children.Empty(); }
 
 		void AppendChild(TreeNode* treeNode)																				{ Children.Append(treeNode); }
 
@@ -721,6 +722,10 @@ FileDialog::~FileDialog()
 
 void FileDialog::OpenPopup(const tString& openDir)
 {
+	// When opening we always invalidate the current tree. This is in case directories were added/removed
+	// outside of the viewer. @todo Revisit. Might be heavy-handed.
+	InvalidateTree();
+
 	switch (Mode)
 	{
 		case DialogMode::OpenFile:
@@ -935,6 +940,14 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 
 		ImGui::TreePop();
 	}
+}
+
+
+void FileDialog::InvalidateTree()
+{
+	delete LocalTreeNode;
+	LocalTreeNode = new tFileDialog::TreeNode("Root", this);
+	PopulateLocal();
 }
 
 
