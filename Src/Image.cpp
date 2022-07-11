@@ -338,6 +338,7 @@ bool Image::Load()
 				uint32 loadFlags =
 					(Config::Current->StrictLoading		? tImageJPG::LoadFlag_Strict		: 0) |
 					(Config::Current->ExifOrientLoading	? tImageJPG::LoadFlag_ExifOrient	: 0);
+
 				bool ok = jpg.Load(Filename, loadFlags);
 				if (!ok)
 					return false;
