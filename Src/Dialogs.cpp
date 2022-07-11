@@ -519,7 +519,7 @@ void Viewer::NavLogBar::Draw()
 
 	if
 	(
-		ImGui::ImageButton(ImTextureID(UpFolderImage.Bind()), tVector2(20,20), tVector2(0,1), tVector2(1,0), 1,
+		ImGui::ImageButton(ImTextureID(UpFolderImage.Bind()), tVector2(20.0f, 20.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 		Viewer::ColourBG, tVector4(1.00f, 1.00f, 1.00f, 1.00f))
 	)
 	{
@@ -574,11 +574,11 @@ void Viewer::NavLogBar::DrawLog()
 	ImGui::SameLine();
 	LogFilter.Draw("Filter", -100.0f);
 	ImGui::Separator();
-	ImGui::BeginChild("scrolling", tVector2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
+	ImGui::BeginChild("scrolling", tVector2(0.0f, 0.0f), false, ImGuiWindowFlags_HorizontalScrollbar);
 	if (copy)
 		ImGui::LogToClipboard();
 
-	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2(0, 0));
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2(0.0f, 0.0f));
 	const char* buf = LogBuf.begin();
 	const char* bufEnd = LogBuf.end();
 	if (LogFilter.IsActive())

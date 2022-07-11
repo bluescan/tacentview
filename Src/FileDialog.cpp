@@ -236,7 +236,8 @@ bool Bookmark::Set(Type type)
 		#endif
 
 		#ifdef PLATFORM_LINUX
-		Items.Append(new tStringItem("/"));
+		//ZZZZZZZZZZZ
+//		Items.Append(new tStringItem("/"));
 		#endif
 	}
 	return true;
@@ -282,6 +283,10 @@ tString Bookmark::GetPath() const
 		else
 			dir += *item + "/";
 	}
+
+	#ifdef PLATFORM_LINUX
+	dir = tString("/") + dir;
+	#endif
 
 	return dir;
 }
@@ -713,16 +718,6 @@ FileDialog::~FileDialog()
 
 void FileDialog::OpenPopup(const tString& openDir)
 {
-	/////////TESTING
-	tPrintf("Convert: %s\n", "\\\\MOUNTAINVIEW\\ShareA/FormatVariety/");
-	GetPath(ConfigOpenFilePath, "\\\\MOUNTAINVIEW\\ShareA/FormatVariety/");
-
-	tPrintf("Convert: %s\n", "C:/ShareA/FormatVariety/");
-	GetPath(ConfigOpenFilePath, "C:/ShareA/FormatVariety/");
-
-	tPrintf("Convert: %s\n", "/ShareA/FormatVariety/");
-	GetPath(ConfigOpenFilePath, "/ShareA/FormatVariety/");
-
 	switch (Mode)
 	{
 		case DialogMode::OpenFile:
@@ -1063,7 +1058,7 @@ tStringItem* FileDialog::BookmarksLoop()
 			}
 
 			// If selected we need a button for removing bookmarks.
-			if ((bookmark->BookmarkType == Bookmark::Type::User))
+			if (bookmark->BookmarkType == Bookmark::Type::User)
 			{
 				ImGui::SameLine();
 
@@ -1202,7 +1197,6 @@ FileDialog::DialogState FileDialog::DoPopup()
 
 		ImGui::BeginChild("LeftBookmarkPanel", tVector2(0.0f, heightBookmarks), false, ImGuiWindowFlags_HorizontalScrollbar);
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(0.0f, 3.0f));
-//		bool setYScrollToSel = false;
 		tStringItem* bookmarkItem = BookmarksLoop();
 		if (bookmarkItem)
 		{
@@ -1321,7 +1315,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 					ImGui::TableNextColumn();
 					uint64 imgID = item->IsDir ? Viewer::FolderImage.Bind() : Viewer::FileImage.Bind();
 					ImGui::SetCursorPosX(ImGui::GetCursorPosX()+4.0f);
-					ImGui::Image(ImTextureID(imgID), tVector2(16, 16), tVector2(0, 1), tVector2(1, 0), Viewer::ColourEnabledTint);
+					ImGui::Image(ImTextureID(imgID), tVector2(16.0f, 16.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), Viewer::ColourEnabledTint);
 
 					// The name column selectable spans all columns.
 					ImGui::TableNextColumn();
@@ -1550,6 +1544,10 @@ tString FileDialog::GetDir(const TreeNode* node)
 	if (isNetworkLoc)
 		dir = tString("\\\\") + dir;
 
+	#ifdef PLATFORM_LINUX
+	dir = tString("/") + dir;
+	#endif
+
 	return dir;
 }
 
@@ -1587,11 +1585,13 @@ void FileDialog::GetPath(tList<tStringItem>& destPath, const tString& srcdir)
 
 	dir.Replace("\\\\", "/");
 	dir.Replace("\\", "/");
+
+//	#ifdef PLATFORM_WINDOWS
 	if (dir[0] == '/')
 		dir.ExtractLeft('/');
+//	#endif
 
-	//tList<tStringItem> components;
 	tExplode(destPath, dir, '/');
-	for (tStringItem* c = destPath.First(); c; c = c->Next())
-		tPrintf("COMP: %s\n", c->Chr());
+//	for (tStringItem* c = destPath.First(); c; c = c->Next())
+//		tPrintf("COMP: %s\n", c->Chr());
 }

@@ -160,12 +160,12 @@ void Viewer::DoFillColourInterface(const char* toolTipText)
 
 	ImGui::SameLine();
 	tPicture* picture = CurrImage ? CurrImage->GetCurrentPic() : nullptr;
-	if (ImGui::Button("Origin", tVector2(63, 0)) && picture)
+	if (ImGui::Button("Origin", tVector2(63.0f, 0.0f)) && picture)
 		Config::Current->FillColour = picture->GetPixel(0, 0);
 	ShowToolTip("Pick the colour from pixel (0, 0) in the current image.");
 
 	ImGui::SameLine();
-	if (ImGui::Button("Cursor", tVector2(63, 0)))
+	if (ImGui::Button("Cursor", tVector2(63.0f, 0.0f)))
 		Config::Current->FillColour.Set(Viewer::PixelColour);
 	ShowToolTip("Pick the colour from the cursor pixel in the current image.");
 }

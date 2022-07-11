@@ -133,7 +133,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ShowHelpMark("Exposure adjustment [-10, 10]. Hold Ctrl to speedup.");
 			tMath::tiClamp(CurrImage->LoadParams.HDR_Exposure, -10, 10);
 
-			if (ImGui::Button("Reset", tVector2(110, 0)))
+			if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
 			{
 				CurrImage->ResetLoadParams();
 				reloadChanges = true;
@@ -194,7 +194,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ShowHelpMark("Upper bound knee taper [3.5, 7.5]. Hold Ctrl to speedup.");
 			tMath::tiClamp(CurrImage->LoadParams.EXR_KneeHigh, 3.5f, 7.5f);
 
-			if (ImGui::Button("Reset", tVector2(110, 0)))
+			if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
 			{
 				CurrImage->ResetLoadParams();
 				reloadChanges = true;
@@ -287,21 +287,21 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
 
 		uint64 loopImageID = CurrImage->FramePlayLooping ? PlayOnceImage.Bind() : PlayLoopImage.Bind();
-		if (ImGui::ImageButton(ImTextureID(loopImageID), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2, ColourBG, ColourEnabledTint))
+		if (ImGui::ImageButton(ImTextureID(loopImageID), tVector2(18.0f, 18.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2, ColourBG, ColourEnabledTint))
 			CurrImage->FramePlayLooping = !CurrImage->FramePlayLooping;
 		ImGui::SameLine();
 
 		bool prevEnabled = !CurrImage->FramePlaying && (CurrImage->FrameNum > 0);
 		if (ImGui::ImageButton
 		(
-			ImTextureID(SkipBeginImage.Bind()), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2,
+			ImTextureID(SkipBeginImage.Bind()), tVector2(18.0f, 18.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2,
 			ColourBG, prevEnabled ? ColourEnabledTint : ColourDisabledTint) && prevEnabled
 		)	CurrImage->FrameNum = 0;
 		ImGui::SameLine();
 
 		if (ImGui::ImageButton
 		(
-			ImTextureID(PrevImage.Bind()), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2,
+			ImTextureID(PrevImage.Bind()), tVector2(18.0f, 18.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2,
 			ColourBG, prevEnabled ? ColourEnabledTint : ColourDisabledTint) && prevEnabled
 		)	CurrImage->FrameNum = tClampMin(CurrImage->FrameNum-1, 0);
 		ImGui::SameLine();
@@ -310,7 +310,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		uint64 playRevImageID = !CurrImage->FramePlaying ? PlayRevImage.Bind() : StopRevImage.Bind();
 		if (ImGui::ImageButton
 		(
-			ImTextureID(playRevImageID), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2,
+			ImTextureID(playRevImageID), tVector2(18.0f, 18.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2,
 			ColourBG, playRevEnabled ? ColourEnabledTint : ColourDisabledTint) && playRevEnabled
 		)
 		{
@@ -323,7 +323,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		uint64 playImageID = !CurrImage->FramePlaying ? PlayImage.Bind() : StopImage.Bind();
 		if (ImGui::ImageButton
 		(
-			ImTextureID(playImageID), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2,
+			ImTextureID(playImageID), tVector2(18.0f, 18.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2,
 			ColourBG, playFwdEnabled ? ColourEnabledTint : ColourDisabledTint) && playFwdEnabled
 		)
 		{
@@ -335,14 +335,14 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		bool nextEnabled = !CurrImage->FramePlaying && (CurrImage->FrameNum < (numFrames-1));
 		if (ImGui::ImageButton
 		(
-			ImTextureID(NextImage.Bind()), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2,
+			ImTextureID(NextImage.Bind()), tVector2(18.0f, 18.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2,
 			ColourBG, nextEnabled ? ColourEnabledTint : ColourDisabledTint) && nextEnabled
 		)	CurrImage->FrameNum = tClampMax(CurrImage->FrameNum+1, numFrames-1);
 		ImGui::SameLine();
 
 		if (ImGui::ImageButton
 		(
-			ImTextureID(SkipEndImage.Bind()), tVector2(18, 18), tVector2(0, 1), tVector2(1, 0), 2,
+			ImTextureID(SkipEndImage.Bind()), tVector2(18.0f, 18.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2,
 			ColourBG, nextEnabled ? ColourEnabledTint : ColourDisabledTint) && nextEnabled
 		)	CurrImage->FrameNum = numFrames-1;
 		ImGui::SameLine();

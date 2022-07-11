@@ -294,7 +294,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvmarg, const t
 	else
 		ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
-	ImGui::SetNextWindowSize(tVector2(180, 160), ImGuiCond_Always);
+	ImGui::SetNextWindowSize(tVector2(180.0f, 160.0f), ImGuiCond_Always);
 	ImGui::SetNextWindowBgAlpha(0.70f);
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|

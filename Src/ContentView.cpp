@@ -104,7 +104,7 @@ void Viewer::ShowContentViewDialog(bool* popen)
 			numGeneratedThumbs++;
 
 		// Unlike other widgets, BeginChild ALWAYS needs a corresponding EndChild, even if it's invisible.
-		bool visible = ImGui::BeginChild("ThumbItem", thumbButtonSize+tVector2(0.0, 32.0f), false, ImGuiWindowFlags_NoDecoration);
+		bool visible = ImGui::BeginChild("ThumbItem", thumbButtonSize+tVector2(0.0f, 32.0f), false, ImGuiWindowFlags_NoDecoration);
 		int maxNonVisibleThumbThreads = 3;
 		if (visible)
 		{
@@ -117,7 +117,7 @@ void Viewer::ShowContentViewDialog(bool* popen)
 			if
 			(
 				thumbnailTexID &&
-				ImGui::ImageButton(ImTextureID(thumbnailTexID), thumbButtonSize, tVector2(0,1), tVector2(1,0), 0,
+				ImGui::ImageButton(ImTextureID(thumbnailTexID), thumbButtonSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 0,
 				ColourBG, ColourEnabledTint)
 			)
 			{
