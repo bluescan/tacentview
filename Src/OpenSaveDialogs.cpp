@@ -81,9 +81,9 @@ void Viewer::DoSaveModal(bool savePressed)
 	if (!CurrImage)
 		return;
 
-	SaveAsFile = CurrImage->Filename;
 	if (savePressed)
 	{
+		SaveAsFile = CurrImage->Filename;
 		tString typeNameUpper(tGetFileTypeName(tGetFileType(SaveAsFile)));
 		typeNameUpper.ToUpper();
 		tsPrintf(label, "Save %s Options", typeNameUpper.Chr());
