@@ -236,8 +236,8 @@ bool Bookmark::Set(Type type)
 		#endif
 
 		#ifdef PLATFORM_LINUX
-		//ZZZZZZZZZZZ
-//		Items.Append(new tStringItem("/"));
+		// We encode "/" as the single node "Local" on Linux. No need to add a "/" item.
+		// Items.Append(new tStringItem("/"));
 		#endif
 	}
 	return true;
