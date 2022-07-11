@@ -38,13 +38,12 @@ enum Category
 };
 
 
-// The settings struct represents a single set of all configurable parameters.
-// There can be multiple instances for different profiles. Currently we only have
-// two profiles: normal and basic.
-struct Settings
+// The ProfileSettings struct represents a single set of all configurable parameters. There can be multiple instances for
+// different profiles. Currently we only have two profiles: Main and Basic.
+struct ProfileSettings
 {
-	Settings()									: Profile(), InputBindings() { Reset(Profile::Main, Category_All); }
-	tString Profile;
+	ProfileSettings()							: Name(), InputBindings() { Reset(Profile::Main, Category_All); }
+	tString Name;								// The name of the profile.
 
 	bool ShowMenuBar;
 	bool ShowNavBar;
@@ -212,13 +211,13 @@ void ResetProfile(uint32 categories);
 // Resets all profiles, but only the categories specified.
 void ResetAllProfiles(uint32 categories);
 
-// All profiles reset. Resets everything. Calls ResetAllProfiles with All as the category.
-void ResetAll();
+// Resets all profiles. All categories. Calls ResetAllProfiles with All as the category.
+void ResetAllProfiles();
 
 extern GlobalSettings Global;
-extern Settings* Current;
-extern Settings MainSettings;
-extern Settings BasicSettings;
+extern ProfileSettings* Current;
+extern ProfileSettings MainProfileSettings;
+extern ProfileSettings BasicProfileSettings;
 
 
 } }

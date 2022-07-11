@@ -84,7 +84,7 @@ namespace Viewer
 	void SetCurrentImage(const tString& currFilename = tString());
 	void LoadCurrImage();
 	bool ChangeScreenMode(bool fullscreeen, bool force = false);
-	void SortImages(Config::Settings::SortKeyEnum, bool ascending);
+	void SortImages(Config::ProfileSettings::SortKeyEnum, bool ascending);
 	bool DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin);
 	void SetWindowTitle();
 	void ZoomFit();

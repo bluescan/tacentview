@@ -74,7 +74,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				ImGui::Combo("Background Style", &Config::Current->BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
 				ImGui::PopItemWidth();
 
-				if (Config::Current->BackgroundStyle == int(Config::Settings::BGStyle::SolidColour))
+				if (Config::Current->BackgroundStyle == int(Config::ProfileSettings::BGStyle::SolidColour))
 				{
 					tColourf floatCol(Config::Current->BackgroundColour);
 					if (ImGui::ColorEdit3("Choose Colour", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))

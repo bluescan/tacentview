@@ -32,7 +32,7 @@ namespace Viewer
 
 	// This function saves the picture to the filename specified.
 	bool SaveImageAs(Image&, const tString& outFile);
-	bool SaveResizeImageAs(Image&, const tString& outFile, int width, int height, float scale = 1.0f, Config::Settings::SizeMode = Config::Settings::SizeMode::SetWidthAndHeight);
+	bool SaveResizeImageAs(Image&, const tString& outFile, int width, int height, float scale = 1.0f, Config::ProfileSettings::SizeMode = Config::ProfileSettings::SizeMode::SetWidthAndHeight);
 	void DoSavePopup();
 	void DoSaveUnsupportedTypePopup();
 
@@ -185,7 +185,7 @@ void Viewer::DoSavePopup()
 				else
 					AddSavedImageIfNecessary(SaveAsFile);
 
-				SortImages(Config::Settings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
+				SortImages(Config::ProfileSettings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
 				SetCurrentImage(SaveAsFile);
 			}
 			closeThisModal = true;
@@ -213,7 +213,7 @@ void Viewer::DoSavePopup()
 				else
 					AddSavedImageIfNecessary(SaveAsFile);
 
-				SortImages(Config::Settings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
+				SortImages(Config::ProfileSettings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
 				SetCurrentImage(SaveAsFile);
 			}
 		}
@@ -607,7 +607,7 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 }
 
 
-bool Viewer::SaveResizeImageAs(Image& img, const tString& outFile, int width, int height, float scale, Config::Settings::SizeMode sizeMode)
+bool Viewer::SaveResizeImageAs(Image& img, const tString& outFile, int width, int height, float scale, Config::ProfileSettings::SizeMode sizeMode)
 {
 	// We make sure to maintain the loaded/unloaded state. This function may be called many times in succession
 	// so we don't want them all in memory at once by indiscriminantly loading them all.
@@ -633,24 +633,24 @@ bool Viewer::SaveResizeImageAs(Image& img, const tString& outFile, int width, in
 
 	switch (sizeMode)
 	{
-		case Config::Settings::SizeMode::Percent:
+		case Config::ProfileSettings::SizeMode::Percent:
 			if (tMath::tApproxEqual(scale, 1.0f, 0.01f))
 				break;
 			outW = int( tRound(float(outW)*scale) );
 			outH = int( tRound(float(outH)*scale) );
 			break;
 
-		case Config::Settings::SizeMode::SetWidthAndHeight:
+		case Config::ProfileSettings::SizeMode::SetWidthAndHeight:
 			outW = width;
 			outH = height;
 			break;
 
-		case Config::Settings::SizeMode::SetWidthRetainAspect:
+		case Config::ProfileSettings::SizeMode::SetWidthRetainAspect:
 			outW = width;
 			outH = int( tRound(float(width) / aspect) );
 			break;
 
-		case Config::Settings::SizeMode::SetHeightRetainAspect:
+		case Config::ProfileSettings::SizeMode::SetHeightRetainAspect:
 			outH = height;
 			outW = int( tRound(float(height) * aspect) );
 			break;
@@ -716,28 +716,28 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 	static float percent = 100.0f;
 	const char* sizeModeNames[] = { "Percent of Original", "Set Width and Height", "Set Width - Retain Aspect", "Set Height - Retain Aspect" };
 	ImGui::Combo("Size Mode", &Config::Current->SaveAllSizeMode, sizeModeNames, tNumElements(sizeModeNames));
-	switch (Config::Settings::SizeMode(Config::Current->SaveAllSizeMode))
+	switch (Config::ProfileSettings::SizeMode(Config::Current->SaveAllSizeMode))
 	{
-		case Config::Settings::SizeMode::Percent:
+		case Config::ProfileSettings::SizeMode::Percent:
 			ImGui::InputFloat("Percent", &percent, 1.0f, 10.0f, "%.1f");	ImGui::SameLine();	ShowHelpMark("Percent of original size.");
 			break;
 
-		case Config::Settings::SizeMode::SetWidthAndHeight:
+		case Config::ProfileSettings::SizeMode::SetWidthAndHeight:
 			ImGui::InputInt("Width", &width);	ImGui::SameLine();	ShowHelpMark("Output width in pixels for all images.");
 			ImGui::InputInt("Height", &height);	ImGui::SameLine();	ShowHelpMark("Output height in pixels for all images.");
 			break;
 
-		case Config::Settings::SizeMode::SetWidthRetainAspect:
+		case Config::ProfileSettings::SizeMode::SetWidthRetainAspect:
 			ImGui::InputInt("Width", &width);	ImGui::SameLine();	ShowHelpMark("Output width in pixels for all images.");
 			break;
 
-		case Config::Settings::SizeMode::SetHeightRetainAspect:
+		case Config::ProfileSettings::SizeMode::SetHeightRetainAspect:
 			ImGui::InputInt("Height", &height);	ImGui::SameLine();	ShowHelpMark("Output height in pixels for all images.");
 			break;
 	};
 
 	ImGui::Separator();
-	if (!((Config::Settings::SizeMode(Config::Current->SaveAllSizeMode) == Config::Settings::SizeMode::Percent) && (percent == 100.0f)))
+	if (!((Config::ProfileSettings::SizeMode(Config::Current->SaveAllSizeMode) == Config::ProfileSettings::SizeMode::Percent) && (percent == 100.0f)))
 	{
 		ImGui::Combo("Filter", &Config::Current->ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 		ImGui::SameLine();
@@ -884,7 +884,7 @@ void Viewer::SaveAllImages(const tString& destDir, const tString& extension, flo
 		tString baseName = tSystem::tGetFileBaseName(image->Filename);
 		tString outFile = destDir + tString(baseName) + extension;
 
-		bool ok = SaveResizeImageAs(*image, outFile, width, height, scale, Config::Settings::SizeMode(Config::Current->SaveAllSizeMode));
+		bool ok = SaveResizeImageAs(*image, outFile, width, height, scale, Config::ProfileSettings::SizeMode(Config::Current->SaveAllSizeMode));
 		if (ok)
 		{
 			Image* foundImage = FindImage(outFile);
@@ -903,7 +903,7 @@ void Viewer::SaveAllImages(const tString& destDir, const tString& extension, flo
 	// If we saved to the same dir we are currently viewing we need to reload and set the current image again.
 	if (anySaved)
 	{
-		SortImages(Config::Settings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
+		SortImages(Config::ProfileSettings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
 		SetCurrentImage(currFile);
 	}
 }

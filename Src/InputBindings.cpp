@@ -26,7 +26,7 @@ namespace Viewer
 
 namespace Bindings
 {
-	void ShowAddBindingSection(Config::Settings& settings);
+	void ShowAddBindingSection(Config::ProfileSettings& settings);
 	void InitKeyNameTables();
 
 	const int MaxKeyNameLength = 16;
@@ -485,7 +485,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 
 		ImGui::SetNextItemWidth(104);
 		ImGui::Combo("##ProfileToEdit", &profile, ProfileNamesLong, int(Profile::NumProfiles));
-		Config::Settings& settings = (profile == 0) ? Config::MainSettings : Config::BasicSettings;
+		Config::ProfileSettings& settings = (profile == 0) ? Config::MainProfileSettings : Config::BasicProfileSettings;
 
 		ImGui::SameLine();
 		if (ImGui::Button("Reset", tVector2(72.0f, 0.0f)))
@@ -495,8 +495,8 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		ImGui::SameLine();
 		if (ImGui::Button("Reset All", tVector2(72.0f, 0.0f)))
 		{
-			Config::MainSettings.InputBindings.Reset(Profile::Main);
-			Config::BasicSettings.InputBindings.Reset(Profile::Basic);
+			Config::MainProfileSettings.InputBindings.Reset(Profile::Main);
+			Config::BasicProfileSettings.InputBindings.Reset(Profile::Basic);
 		}
 		ShowToolTip("Resets the key bindings to default for all profiles.");
 
@@ -504,8 +504,8 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		if (ImGui::Button("Set All", tVector2(72.0f, 0.0f)))
 		{
 			// Operator= deals with the object being the same one, so just copy them both over indescriminately.
-			Config::MainSettings.InputBindings = settings.InputBindings;
-			Config::BasicSettings.InputBindings = settings.InputBindings;
+			Config::MainProfileSettings.InputBindings = settings.InputBindings;
+			Config::BasicProfileSettings.InputBindings = settings.InputBindings;
 		}
 		ShowToolTip("Copies the keybindings to all profiles. Useful if you want them all the same.");
 
@@ -637,7 +637,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 }
 
 
-void Bindings::ShowAddBindingSection(Config::Settings& settings)
+void Bindings::ShowAddBindingSection(Config::ProfileSettings& settings)
 {
 	uint32 tableFlags = ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
 	const float rowHeight = 25.0f;

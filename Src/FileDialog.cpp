@@ -754,11 +754,11 @@ void FileDialog::PopulateLocal()
 		TreeNode* driveNode = new TreeNode(*drive, this, LocalTreeNode);
 		LocalTreeNode->AppendChild(driveNode);	
 	}
+	#endif
 
-	#elif defined(PLATFORM_LINUX)
-	TreeNode* rootNode = new TreeNode("/", this, LocalTreeNode);
-	LocalTreeNode->AppendChild(rootNode);
-
+	#if defined(PLATFORM_LINUX)
+	// There's nothing to do for Linux here as it's a little cleaner and there are no
+	// special 'root locations' to be added like the lettered-drives on Windows.
 	#endif
 }
 

@@ -165,14 +165,14 @@ void Viewer::ShowContentViewDialog(bool* popen)
 	ImGui::PushItemWidth(100);
 	const char* sortItems[] = { "Name", "Date", "Size", "Type", "Area", "Width", "Height" };
 	if (ImGui::Combo("Sort", &Config::Current->SortKey, sortItems, tNumElements(sortItems)))
-		SortImages(Config::Settings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
+		SortImages(Config::ProfileSettings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
 	ImGui::SameLine();
 	if (ImGui::Checkbox("Ascending", &Config::Current->SortAscending))
-		SortImages(Config::Settings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
+		SortImages(Config::ProfileSettings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
 
 	// If we are sorting by a thumbnail cached key, resort if necessary.
-	Config::Settings::SortKeyEnum sortKey = Config::Settings::SortKeyEnum(Config::Current->SortKey);
-	if ((sortKey == Config::Settings::SortKeyEnum::ImageArea) || (sortKey == Config::Settings::SortKeyEnum::ImageWidth) || (sortKey == Config::Settings::SortKeyEnum::ImageHeight))
+	Config::ProfileSettings::SortKeyEnum sortKey = Config::ProfileSettings::SortKeyEnum(Config::Current->SortKey);
+	if ((sortKey == Config::ProfileSettings::SortKeyEnum::ImageArea) || (sortKey == Config::ProfileSettings::SortKeyEnum::ImageWidth) || (sortKey == Config::ProfileSettings::SortKeyEnum::ImageHeight))
 	{
 		if (numThumbsWhenSorted != numGeneratedThumbs)
 		{

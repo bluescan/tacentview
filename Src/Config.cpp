@@ -40,9 +40,9 @@ namespace Config
 	const int ConfigFileVersion = 3;
 
 	GlobalSettings Global;
-	Settings MainSettings;
-	Settings BasicSettings;
-	Settings* Current = &MainSettings;
+	ProfileSettings MainProfileSettings;
+	ProfileSettings BasicProfileSettings;
+	ProfileSettings* Current = &MainProfileSettings;
 }
 
 
@@ -53,8 +53,8 @@ void Config::SetProfile(Profile profile)
 
 	switch (profile)
 	{
-		case Profile::Main:		Current = &MainSettings;	break;
-		case Profile::Basic:	Current = &BasicSettings;	break;
+		case Profile::Main:		Current = &MainProfileSettings;		break;
+		case Profile::Basic:	Current = &BasicProfileSettings;	break;
 	}
 	Global.CurrentProfile = int(profile);
 }
@@ -72,12 +72,12 @@ void Config::ResetProfile(uint32 categories)
 
 void Config::ResetAllProfiles(uint32 categories)
 {
-	MainSettings.Reset(Profile::Main, categories);
-	BasicSettings.Reset(Profile::Basic, categories);
+	MainProfileSettings.Reset(Profile::Main, categories);
+	BasicProfileSettings.Reset(Profile::Basic, categories);
 }
 
 
-void Config::ResetAll()
+void Config::ResetAllProfiles()
 {
 	ResetAllProfiles(Category_All);
 }
@@ -95,13 +95,13 @@ void Config::Save(const tString& filename)
 	writer.CR();
 	writer.CR();
 
-	MainSettings.Profile = "MainProfile";
-	MainSettings.Save(writer);
+	MainProfileSettings.Name = "MainProfile";
+	MainProfileSettings.Save(writer);
 	writer.CR();
 	writer.CR();
 
-	BasicSettings.Profile = "BasicProfile";
-	BasicSettings.Save(writer);
+	BasicProfileSettings.Name = "BasicProfile";
+	BasicProfileSettings.Save(writer);
 	writer.CR();
 
 	// Save the file dialog settings.
@@ -114,12 +114,16 @@ void Config::Load(const tString& filename)
 	if (!tSystem::tFileExists(filename))
 	{
 		Global.Reset();
-		ResetAll();
-		Current = &MainSettings;
+		ResetAllProfiles();
+		Current = &MainProfileSettings;
 		tFileDialog::Reset();
 		return;
 	}
 
+	bool loadedGlobal		= false;
+	bool loadedMainProfile	= false;
+	bool loadedBasicProfile	= false;
+	bool loadedFileDialog	= false;
 	tExprReader reader(filename);
 	for (tExpr e = reader.First(); e.IsValid(); e = e.Next())
 	{
@@ -127,21 +131,38 @@ void Config::Load(const tString& filename)
 		{
 			case tHash::tHashCT("Global"):
 				Global.Load(e);
+				loadedGlobal = true;
 				break;
 
 			case tHash::tHashCT("MainProfile"):
-				MainSettings.Load(e);
+				MainProfileSettings.Load(e);
+				loadedMainProfile = true;
 				break;
 			
 			case tHash::tHashCT("BasicProfile"):
-				BasicSettings.Load(e);
+				BasicProfileSettings.Load(e);
+				loadedBasicProfile = true;
 				break;
 
 			case tHash::tHashCT("FileDialog"):
 				tFileDialog::Load(e, "FileDialog");
+				loadedFileDialog = true;
 				break;
 		}
 	}
+
+	// If the config existed but any particular top-level expression was missing, we reset it.
+	if (!loadedGlobal)
+		Global.Reset();
+
+	if (!loadedMainProfile)
+		MainProfileSettings.Reset(Viewer::Profile::Main, Category_All);
+
+	if (!loadedBasicProfile)
+		BasicProfileSettings.Reset(Viewer::Profile::Basic, Category_All);
+
+	if (!loadedFileDialog)
+		tFileDialog::Reset();
 
 	// At this point the cfg file exists and has been loaded. However, even without a version number increase we want
 	// to be able to support new operations than may have been added and have the key-bindings assigned. This is
@@ -149,22 +170,22 @@ void Config::Load(const tString& filename)
 	// if the new operations default bindings do not have the key already reassigned to something else, we should
 	// assign them here.
 	bool onlyIfUnassigned = true;
-	MainSettings.InputBindings.Reset(Viewer::Profile::Main, onlyIfUnassigned);
-	BasicSettings.InputBindings.Reset(Viewer::Profile::Basic, onlyIfUnassigned);
+	MainProfileSettings.InputBindings.Reset(Viewer::Profile::Main, onlyIfUnassigned);
+	BasicProfileSettings.InputBindings.Reset(Viewer::Profile::Basic, onlyIfUnassigned);
 
 	// Add stuff here if you care about what version you loaded from.
 	if (Global.ConfigVersion <= 2)
 	{
 		Global.Reset();
-		ResetAll();
+		ResetAllProfiles();
 	}
 
 	// I think it makes sense to restore the currently selected profile when the config file is loaded.
 	// This means if you were in Basic profile when you close, you will be in basic when you start the app again.
 	switch (Profile(Global.CurrentProfile))
 	{
-		case Profile::Main:		Current = &MainSettings;	break;
-		case Profile::Basic:	Current = &BasicSettings;	break;
+		case Profile::Main:		Current = &MainProfileSettings;		break;
+		case Profile::Basic:	Current = &BasicProfileSettings;	break;
 	}
 }
 
@@ -251,7 +272,7 @@ void Config::GlobalSettings::Reset()
 }
 
 
-void Config::Settings::Reset(Viewer::Profile profile, uint32 categories)
+void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 {
 	if (categories & Category_Unspecified)
 	{
@@ -349,7 +370,7 @@ void Config::Settings::Reset(Viewer::Profile profile, uint32 categories)
 }
 
 
-void Config::Settings::Load(tExpression expr)
+void Config::ProfileSettings::Load(tExpression expr)
 {
 	for (tExpr e = expr.Item1(); e.IsValid(); e = e.Next())
 	{
@@ -470,12 +491,12 @@ void Config::Settings::Load(tExpression expr)
 }
 
 
-bool Config::Settings::Save(tExprWriter& writer) const
+bool Config::ProfileSettings::Save(tExprWriter& writer) const
 {
 	writer.Begin();
 	writer.Indent();
 	writer.CR();
-	writer.WriteAtom(Profile);
+	writer.WriteAtom(Name);
 	writer.CR();
 
 	WriteItem(ShowMenuBar);

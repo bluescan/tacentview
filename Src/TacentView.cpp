@@ -151,71 +151,71 @@ namespace Viewer
 	Image CropImage;
 	Image DefaultThumbnailImage;
 
-	GLFWwindow* Window							= nullptr;
-	double DisappearCountdown					= DisappearDuration;
-	double SlideshowCountdown					= 0.0;
-	float ReticleToMouseDist					= 75.0f;
-	bool SlideshowPlaying						= false;;
-	bool WindowIconified						= false;
+	GLFWwindow* Window								= nullptr;
+	double DisappearCountdown						= DisappearDuration;
+	double SlideshowCountdown						= 0.0;
+	float ReticleToMouseDist						= 75.0f;
+	bool SlideshowPlaying							= false;;
+	bool WindowIconified							= false;
 
-	bool Request_OpenFileModal					= false;
-	bool Request_OpenDirModal					= false;
-	bool Request_SaveModal						= false;
-	bool Request_SaveAsModal					= false;
-	bool Request_SaveAllModal					= false;
-	bool Request_ResizeImageModal				= false;
-	bool Request_ResizeCanvasModal				= false;
-	bool Request_RotateImageModal				= false;
-	bool Request_ContactSheetModal				= false;
-	bool Request_MultiFrameModal				= false;
-	bool Request_DeleteFileModal				= false;
-	bool Request_DeleteFileNoRecycleModal		= false;
-	bool Request_RenameModal					= false;
-	bool Request_SnapMessage_NoFileBrowse		= false;
-	bool Request_SnapMessage_NoFrameTrans		= false;
-	bool Request_Quit							= false;
-	bool PrefsWindow							= false;
-	bool BindingsWindowJustOpened				= false;
-	bool CropMode								= false;
-	bool LMBDown								= false;
-	bool RMBDown								= false;
-	bool DeleteAllCacheFilesOnExit				= false;
-	bool PendingTransparentWorkArea				= false;
-	bool DrawChannel_AsIntensity				= false;
-	bool DrawChannel_R							= true;
-	bool DrawChannel_G							= true;
-	bool DrawChannel_B							= true;
-	bool DrawChannel_A							= true;
-	int DragAnchorX								= 0;
-	int DragAnchorY								= 0;
-	int CursorX									= 0;
-	int CursorY									= 0;
-	float RotateAnglePreview					= 0.0f;
+	bool Request_OpenFileModal						= false;
+	bool Request_OpenDirModal						= false;
+	bool Request_SaveModal							= false;
+	bool Request_SaveAsModal						= false;
+	bool Request_SaveAllModal						= false;
+	bool Request_ResizeImageModal					= false;
+	bool Request_ResizeCanvasModal					= false;
+	bool Request_RotateImageModal					= false;
+	bool Request_ContactSheetModal					= false;
+	bool Request_MultiFrameModal					= false;
+	bool Request_DeleteFileModal					= false;
+	bool Request_DeleteFileNoRecycleModal			= false;
+	bool Request_RenameModal						= false;
+	bool Request_SnapMessage_NoFileBrowse			= false;
+	bool Request_SnapMessage_NoFrameTrans			= false;
+	bool Request_Quit								= false;
+	bool PrefsWindow								= false;
+	bool BindingsWindowJustOpened					= false;
+	bool CropMode									= false;
+	bool LMBDown									= false;
+	bool RMBDown									= false;
+	bool DeleteAllCacheFilesOnExit					= false;
+	bool PendingTransparentWorkArea					= false;
+	bool DrawChannel_AsIntensity					= false;
+	bool DrawChannel_R								= true;
+	bool DrawChannel_G								= true;
+	bool DrawChannel_B								= true;
+	bool DrawChannel_A								= true;
+	int DragAnchorX									= 0;
+	int DragAnchorY									= 0;
+	int CursorX										= 0;
+	int CursorY										= 0;
+	float RotateAnglePreview						= 0.0f;
 
-	Config::Settings::ZoomMode CurrZoomMode		= Config::Settings::ZoomMode::DownscaleOnly;
-	float ZoomPercent							= 100.0f;
+	Config::ProfileSettings::ZoomMode CurrZoomMode	= Config::ProfileSettings::ZoomMode::DownscaleOnly;
+	float ZoomPercent								= 100.0f;
 
-	int Dispw									= 1;
-	int Disph									= 1;
-	int PanOffsetX								= 0;
-	int PanOffsetY								= 0;
-	int PanDragDownOffsetX						= 0;
-	int PanDragDownOffsetY						= 0;
-	float ReticleX								= -1.0f;
-	float ReticleY								= -1.0f;
-	tColouri PixelColour						= tColouri::black;
+	int Dispw										= 1;
+	int Disph										= 1;
+	int PanOffsetX									= 0;
+	int PanOffsetY									= 0;
+	int PanDragDownOffsetX							= 0;
+	int PanDragDownOffsetY							= 0;
+	float ReticleX									= -1.0f;
+	float ReticleY									= -1.0f;
+	tColouri PixelColour							= tColouri::black;
 
-	const tVector4 ColourEnabledTint			= tVector4(1.00f, 1.00f, 1.00f, 1.00f);
-	const tVector4 ColourDisabledTint			= tVector4(0.54f, 0.54f, 0.54f, 1.00f);
-	const tVector4 ColourBG						= tVector4(0.00f, 0.00f, 0.00f, 0.00f);
-	const tVector4 ColourPressedBG				= tVector4(0.21f, 0.45f, 0.21f, 1.00f);
-	const tVector4 ColourClear					= tVector4(0.10f, 0.10f, 0.12f, 1.00f);
+	const tVector4 ColourEnabledTint				= tVector4(1.00f, 1.00f, 1.00f, 1.00f);
+	const tVector4 ColourDisabledTint				= tVector4(0.54f, 0.54f, 0.54f, 1.00f);
+	const tVector4 ColourBG							= tVector4(0.00f, 0.00f, 0.00f, 0.00f);
+	const tVector4 ColourPressedBG					= tVector4(0.21f, 0.45f, 0.21f, 1.00f);
+	const tVector4 ColourClear						= tVector4(0.10f, 0.10f, 0.12f, 1.00f);
 
-	const int MenuBarHeight						= 30;
-	const float ZoomMin							= 10.0f;
-	const float ZoomMax							= 2500.0f;
-	uint64 FrameNumber							= 0;
-	tVector2 ToolImageSize						(24.0f, 24.0f);
+	const int MenuBarHeight							= 30;
+	const float ZoomMin								= 10.0f;
+	const float ZoomMax								= 2500.0f;
+	uint64 FrameNumber								= 0;
+	tVector2 ToolImageSize							(24.0f, 24.0f);
 
 	void DrawBackground(float l, float r, float b, float t);
 	void DrawNavBar(float x, float y, float w, float h);
@@ -402,41 +402,41 @@ void Viewer::PopulateImages()
 		ImagesLoadTimeSorted.Append(newImg);
 	}
 
-	SortImages(Config::Settings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
+	SortImages(Config::ProfileSettings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
 	CurrImage = nullptr;
 }
 
 
-void Viewer::SortImages(Config::Settings::SortKeyEnum key, bool ascending)
+void Viewer::SortImages(Config::ProfileSettings::SortKeyEnum key, bool ascending)
 {
 	ImageCompareFn* sortFn;
 	switch (key)
 	{
-		case Config::Settings::SortKeyEnum::FileName:
+		case Config::ProfileSettings::SortKeyEnum::FileName:
 			sortFn = ascending ? Compare_ImageFileNameAscending : &Compare_ImageFileNameDescending;
 			break;
 
-		case Config::Settings::SortKeyEnum::FileModTime:
+		case Config::ProfileSettings::SortKeyEnum::FileModTime:
 			sortFn = ascending ? Compare_ImageModTimeAscending : Compare_ImageModTimeDescending;
 			break;
 
-		case Config::Settings::SortKeyEnum::FileSize:
+		case Config::ProfileSettings::SortKeyEnum::FileSize:
 			sortFn = ascending ? Compare_ImageFileSizeAscending : Compare_ImageFileSizeDescending;
 			break;
 
-		case Config::Settings::SortKeyEnum::FileType:
+		case Config::ProfileSettings::SortKeyEnum::FileType:
 			sortFn = ascending ? Compare_ImageFileTypeAscending : Compare_ImageFileTypeDescending;
 			break;
 
-		case Config::Settings::SortKeyEnum::ImageArea:
+		case Config::ProfileSettings::SortKeyEnum::ImageArea:
 			sortFn = ascending ? Compare_ImageAreaAscending : Compare_ImageAreaDescending;
 			break;
 
-		case Config::Settings::SortKeyEnum::ImageWidth:
+		case Config::ProfileSettings::SortKeyEnum::ImageWidth:
 			sortFn = ascending ? Compare_ImageWidthAscending : Compare_ImageWidthDescending;
 			break;
 
-		case Config::Settings::SortKeyEnum::ImageHeight:
+		case Config::ProfileSettings::SortKeyEnum::ImageHeight:
 			sortFn = ascending ? Compare_ImageHeightAscending : Compare_ImageHeightDescending;
 			break;
 	}
@@ -486,7 +486,7 @@ void Viewer::SetCurrentImage(const tString& currFilename)
 
 	if (CurrImage)
 	{
-		CurrZoomMode = Config::Settings::ZoomMode::DownscaleOnly;
+		CurrZoomMode = Config::ProfileSettings::ZoomMode::DownscaleOnly;
 		LoadCurrImage();
 	}
 }
@@ -509,11 +509,11 @@ void Viewer::LoadCurrImage()
 	if (!CurrImage->IsLoaded())
 		imgJustLoaded = CurrImage->Load();
 
-	if (Config::Current->DefaultZoomMode != int(Config::Settings::ZoomMode::User))
+	if (Config::Current->DefaultZoomMode != int(Config::ProfileSettings::ZoomMode::User))
 	{
-		CurrZoomMode = Config::Settings::ZoomMode(Config::Current->DefaultZoomMode);
+		CurrZoomMode = Config::ProfileSettings::ZoomMode(Config::Current->DefaultZoomMode);
 
-		if (CurrZoomMode == Config::Settings::ZoomMode::OneToOne)
+		if (CurrZoomMode == Config::ProfileSettings::ZoomMode::OneToOne)
 			ZoomPercent = 100.0f;
 	}
 
@@ -743,10 +743,10 @@ void Viewer::DrawBackground(float l, float r, float b, float t)
 
 	switch (Config::Current->BackgroundStyle)
 	{
-		case int(Config::Settings::BGStyle::None):
+		case int(Config::ProfileSettings::BGStyle::None):
 			return;
 
-		case int(Config::Settings::BGStyle::Checkerboard):
+		case int(Config::ProfileSettings::BGStyle::Checkerboard):
 		{
 			// Semitransparent checkerboard background.
 			int x = 0;
@@ -797,7 +797,7 @@ void Viewer::DrawBackground(float l, float r, float b, float t)
 			break;
 		}
 
-		case int(Config::Settings::BGStyle::SolidColour):
+		case int(Config::ProfileSettings::BGStyle::SolidColour):
 		{
 			glColor4ubv(Config::Current->BackgroundColour.E);
 			glBegin(GL_QUADS);
@@ -1015,7 +1015,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		bottom	= tMath::tRound(vmargin);
 		top		= tMath::tRound(vmargin+drawh);
 
-		if (CurrZoomMode == Config::Settings::ZoomMode::DownscaleOnly)
+		if (CurrZoomMode == Config::ProfileSettings::ZoomMode::DownscaleOnly)
 		{
 			if (Config::Current->FixedAspectWorkArea)
 			{
@@ -1032,7 +1032,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 					ZoomPercent = 100.0f * tMath::tMin(zoomh, zoomv);
 			}
 		}
-		else if (CurrZoomMode == Config::Settings::ZoomMode::Fit)
+		else if (CurrZoomMode == Config::ProfileSettings::ZoomMode::Fit)
 		{
 			if (Config::Current->FixedAspectWorkArea)
 			{
@@ -1699,36 +1699,36 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			ImGui::Separator();
 
-			bool userMode = CurrZoomMode == Config::Settings::ZoomMode::User;
+			bool userMode = CurrZoomMode == Config::ProfileSettings::ZoomMode::User;
 			if (ImGui::MenuItem("Zoom User", nullptr, &userMode))
 			{
 				ResetPan();
-				CurrZoomMode = Config::Settings::ZoomMode::User;
+				CurrZoomMode = Config::ProfileSettings::ZoomMode::User;
 			}
 
-			bool fitMode = CurrZoomMode == Config::Settings::ZoomMode::Fit;
+			bool fitMode = CurrZoomMode == Config::ProfileSettings::ZoomMode::Fit;
 			tString zoomFitKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ZoomFit);
 			if (ImGui::MenuItem("Zoom Fit", zoomFitKey.Chz(), &fitMode))
 			{
 				ResetPan();
-				CurrZoomMode = Config::Settings::ZoomMode::Fit;
+				CurrZoomMode = Config::ProfileSettings::ZoomMode::Fit;
 			}
 
-			bool downscale = CurrZoomMode == Config::Settings::ZoomMode::DownscaleOnly;
+			bool downscale = CurrZoomMode == Config::ProfileSettings::ZoomMode::DownscaleOnly;
 			tString zoomDSKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ZoomDownscaleOnly);
 			if (ImGui::MenuItem("Zoom Downscale", zoomDSKey.Chz(), &downscale))
 			{
 				ResetPan();
-				CurrZoomMode = Config::Settings::ZoomMode::DownscaleOnly;
+				CurrZoomMode = Config::ProfileSettings::ZoomMode::DownscaleOnly;
 			}
 
-			bool oneToOne = CurrZoomMode == Config::Settings::ZoomMode::OneToOne;
+			bool oneToOne = CurrZoomMode == Config::ProfileSettings::ZoomMode::OneToOne;
 			tString zoomOneKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ZoomOneToOne);
 			if (ImGui::MenuItem("Zoom 1:1", zoomOneKey.Chz(), &oneToOne))
 			{
 				ZoomPercent = 100.0f;
 				ResetPan();
-				CurrZoomMode = Config::Settings::ZoomMode::OneToOne;
+				CurrZoomMode = Config::ProfileSettings::ZoomMode::OneToOne;
 			}
 
 			ImGui::PushItemWidth(60);
@@ -2142,7 +2142,7 @@ bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 
 void Viewer::ApplyZoomDelta(float zoomDelta)
 {
-	CurrZoomMode = Config::Settings::ZoomMode::User;
+	CurrZoomMode = Config::ProfileSettings::ZoomMode::User;
 	float zoomOrig = ZoomPercent;
 	ZoomPercent += zoomDelta;
 	if (((zoomOrig < 100.0f) && (ZoomPercent > 100.0f)) || ((zoomOrig > 100.0f) && (ZoomPercent < 100.0f)))
@@ -2180,14 +2180,14 @@ void Viewer::ChangeProfile(Profile profile)
 void Viewer::ZoomFit()
 {
 	ResetPan();
-	CurrZoomMode = Config::Settings::ZoomMode::Fit;
+	CurrZoomMode = Config::ProfileSettings::ZoomMode::Fit;
 }
 
 
 void Viewer::ZoomDownscaleOnly()
 {
 	ResetPan();
-	CurrZoomMode = Config::Settings::ZoomMode::DownscaleOnly;
+	CurrZoomMode = Config::ProfileSettings::ZoomMode::DownscaleOnly;
 }
 
 
@@ -2296,18 +2296,18 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case Bindings::Operation::ZoomFit:
 			ResetPan();
-			CurrZoomMode = Config::Settings::ZoomMode::Fit;
+			CurrZoomMode = Config::ProfileSettings::ZoomMode::Fit;
 			break;
 
 		case Bindings::Operation::ZoomDownscaleOnly:
 			ResetPan();
-			CurrZoomMode = Config::Settings::ZoomMode::DownscaleOnly;
+			CurrZoomMode = Config::ProfileSettings::ZoomMode::DownscaleOnly;
 			break;
 
 		case Bindings::Operation::ZoomOneToOne:
 			ZoomPercent = 100.0f;
 			ResetPan();
-			CurrZoomMode = Config::Settings::ZoomMode::OneToOne;
+			CurrZoomMode = Config::ProfileSettings::ZoomMode::OneToOne;
 			break;
 
 		case Bindings::Operation::ResetPan:
@@ -2625,7 +2625,7 @@ void Viewer::ScrollWheelCallback(GLFWwindow* window, double x, double y)
 
 	DisappearCountdown = DisappearDuration;
 
-	CurrZoomMode = Config::Settings::ZoomMode::User;
+	CurrZoomMode = Config::ProfileSettings::ZoomMode::User;
 	float percentChange = (y > 0.0) ? 0.1f : 1.0f-0.909090909f;
 	float zoomDelta = ZoomPercent * percentChange * float(y);
 	ApplyZoomDelta(zoomDelta);
