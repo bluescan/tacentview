@@ -303,7 +303,14 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			break;
 
 		case tFileType::PNG:
+		{
+			const char* pngModeItems[] = { "Auto", "24 BPP", "32 BPP" };
+			ImGui::SetNextItemWidth(80);
+			ImGui::Combo("Bits Per Pixel", &Config::Current->SaveFilePngDepthMode , pngModeItems, tNumElements(pngModeItems));
+			ImGui::SameLine();
+			ShowHelpMark("Auto: Decide based on opacity. 24 BPP: Force 24 bits per pixel. 32 BPP: Force 32 bits per pixel.");
 			break;
+		}
 
 		case tFileType::BMP:
 		{
@@ -442,15 +449,30 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 			break;
 		}
 
+		case 1:		// PNG
+		{
+			tPicture* picture = img.GetCurrentPic();
+			if (!picture || !picture->IsValid())
+				return false;
+
+			tImagePNG png(picture->GetPixels(), picture->GetWidth(), picture->GetHeight(), false);
+			tImagePNG::tFormat saveFormat = tImagePNG::tFormat::Auto;
+			switch (Config::Current->SaveFilePngDepthMode)
+			{
+				case 1: saveFormat = tImagePNG::tFormat::BPP24;
+				case 2: saveFormat = tImagePNG::tFormat::BPP32;
+			}
+			success = png.Save(outFile, saveFormat);
+			break;
+		}
+
 		case 2:		// BMP
 		{
 			tPicture* picture = img.GetCurrentPic();
 			if (!picture || !picture->IsValid())
 				return false;
-			//tImage::tPicture::tColourFormat colourFmt = picture->IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
 
 			tImageBMP bmp(picture->GetPixels(), picture->GetWidth(), picture->GetHeight(), false);
-
 			tImageBMP::tFormat saveFormat = tImageBMP::tFormat::Auto;
 			switch (Config::Current->SaveFileBmpDepthMode)
 			{
@@ -459,6 +481,17 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 			}
 			tImageBMP::tFormat savedFormat = bmp.Save(outFile, saveFormat);
 			success = (savedFormat != tImageBMP::tFormat::Invalid);
+			break;
+		}
+
+		case 3:		// JPG
+		{
+			tPicture* picture = img.GetCurrentPic();
+			if (!picture || !picture->IsValid())
+				return false;
+
+			tImageJPG jpg(picture->GetPixels(), picture->GetWidth(), picture->GetHeight(), false);
+			success = jpg.Save(outFile, Config::Current->SaveFileJpegQuality);
 			break;
 		}
 
@@ -554,7 +587,7 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 			break;
 		}
 
-		default:	// PNG, JPG.
+		default:
 		{
 			tPicture* picture = img.GetCurrentPic();
 			if (!picture || !picture->IsValid())

@@ -122,6 +122,7 @@ struct Settings
 	int		SaveFileType;
 	int		SaveFileTypeMultiFrame;
 	bool	SaveFileTargaRLE;
+	int		SaveFilePngDepthMode;				// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
 	int		SaveFileBmpDepthMode;				// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
 	int		SaveFileJpegQuality;				// E [1, 100]
 	bool	SaveFileWebpLossy;
