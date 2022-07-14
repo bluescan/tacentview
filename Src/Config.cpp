@@ -205,6 +205,7 @@ void Config::GlobalSettings::Save(tExprWriter& writer)
 	WriteItem(WindowW);
 	WriteItem(WindowH);
 	WriteItem(TransparentWorkArea);
+	WriteItem(LastOpenPath);
 	WriteLast(FullscreenMode);
 
 	writer.Dedent();
@@ -235,6 +236,7 @@ void Config::GlobalSettings::Load(tExpression expr)
 			ReadItem(WindowW);
 			ReadItem(WindowH);
 			ReadItem(TransparentWorkArea);
+			ReadItem(LastOpenPath);
 			ReadItem(FullscreenMode);
 		}
 	}
@@ -268,6 +270,7 @@ void Config::GlobalSettings::Reset()
 	WindowX						= (screenW - WindowW) >> 1;
 	WindowY						= (screenH - WindowH) >> 1;
 	TransparentWorkArea			= false;
+	LastOpenPath				.Clear();
 	FullscreenMode				= false;
 }
 

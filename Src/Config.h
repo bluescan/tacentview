@@ -187,6 +187,7 @@ struct GlobalSettings
 	int WindowW;
 	int WindowH;
 	bool TransparentWorkArea;
+	tString LastOpenPath;
 	bool FullscreenMode;
 
 private:

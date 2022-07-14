@@ -43,7 +43,7 @@ namespace Viewer
 void Viewer::DoOpenFileModal(bool openFilePressed)
 {
 	if (openFilePressed)
-		OpenFileDialog.OpenPopup();
+		OpenFileDialog.OpenPopup(ImagesDir);
 
 	FileDialog::DialogState state = OpenFileDialog.DoPopup();
 	if (state == FileDialog::DialogState::OK)
@@ -61,7 +61,7 @@ void Viewer::DoOpenFileModal(bool openFilePressed)
 void Viewer::DoOpenDirModal(bool openDirPressed)
 {
 	if (openDirPressed)
-		OpenDirDialog.OpenPopup();
+		OpenDirDialog.OpenPopup(ImagesDir);
 
 	FileDialog::DialogState state = OpenDirDialog.DoPopup();
 	if (state == FileDialog::DialogState::OK)

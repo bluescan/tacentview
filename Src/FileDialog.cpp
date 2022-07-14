@@ -698,17 +698,22 @@ bool TreeNode::IsNetworkLocation() const
 FileDialog::FileDialog(DialogMode mode, const tSystem::tFileTypes& fileTypes) :
 	PopupJustOpened(false),
 	Mode(mode),
-	FileTypes(fileTypes)
+	FileTypes(fileTypes),
+	RootTreeNode(nullptr),
+	#ifdef PLATFORM_WINDOWS
+	NetworkTreeNode(nullptr),
+	#endif
+	SelectedNode(nullptr)
 {
-	LocalTreeNode = new tFileDialog::TreeNode("Root", this);
-	#ifdef PLATFORM_WINDOWS
-	NetworkTreeNode = new TreeNode("Network", this);
-	#endif
+//	LocalTreeNode = nullptr; // new tFileDialog::TreeNode("Root", this);
+//	#ifdef PLATFORM_WINDOWS
+//	NetworkTreeNode = nullptr;//new TreeNode("Network", this);
+//	#endif
 
-	PopulateLocal();
-	#ifdef PLATFORM_WINDOWS
-	PopulateNetwork();
-	#endif
+//	PopulateLocal();
+//	#ifdef PLATFORM_WINDOWS
+//	PopulateNetwork();
+//	#endif
 
 	FileDialogs.Append(this);
 }
@@ -724,25 +729,32 @@ void FileDialog::OpenPopup(const tString& openDir)
 {
 	// When opening we always invalidate the current tree. This is in case directories were added/removed
 	// outside of the viewer. @todo Revisit. Might be heavy-handed.
-	InvalidateTree();
+	//InvalidateTree();
+	
+	// We now defer population of the trees to this OpenPopup call. Before we did it in the constructor,
+	// but that seems like it's too early, especially if the dialog is a global object.
+	PopulateTrees();
+//	#ifdef PLATFORM_WINDOWS
+//	PopulateNetwork();
+//	#endif
 
 	switch (Mode)
 	{
 		case DialogMode::OpenFile:
 			if (openDir.IsValid() && tDirExists(openDir))
-				GetPath(ConfigOpenFilePath, openDir);
+				DirToPath(ConfigOpenFilePath, openDir);
 			ImGui::OpenPopup("Open File");
 			break;
 
 		case DialogMode::OpenDir:
 			if (openDir.IsValid() && tDirExists(openDir))
-				GetPath(ConfigOpenDirPath, openDir);
+				DirToPath(ConfigOpenDirPath, openDir);
 			ImGui::OpenPopup("Open Directory");
 			break;
 
 		case DialogMode::SaveFile:
 			if (openDir.IsValid() && tDirExists(openDir))
-				GetPath(ConfigSaveFilePath, openDir);
+				DirToPath(ConfigSaveFilePath, openDir);
 			ImGui::OpenPopup("Save File");
 			break;
 	}
@@ -751,23 +763,45 @@ void FileDialog::OpenPopup(const tString& openDir)
 }
 
 
-void FileDialog::PopulateLocal()
+/*
+void FileDialog::InvalidateTree()
 {
+	delete LocalTreeNode;
+	LocalTreeNode = new tFileDialog::TreeNode("Root", this);
+	PopulateLocal();
+}
+*/
+
+
+void FileDialog::PopulateTrees()
+{
+	// The SelectedNode may be pointing inside an existing tree. We need to clear it.
+	SelectedNode = nullptr;
+
+	// Delete previous trees and create the new ones.
+	delete RootTreeNode;
+	RootTreeNode = new tFileDialog::TreeNode("Root", this);
+
 	#if defined(PLATFORM_WINDOWS)
 	tList<tStringItem> drives;
 	tSystem::tGetDrives(drives);
-
 	for (tStringItem* drive = drives.First(); drive; drive = drive->Next())
 	{
-		TreeNode* driveNode = new TreeNode(*drive, this, LocalTreeNode);
-		LocalTreeNode->AppendChild(driveNode);	
+		TreeNode* driveNode = new TreeNode(*drive, this, RootTreeNode);
+		RootTreeNode->AppendChild(driveNode);	
 	}
+
+	// NetworkTree. Windows only.
+	delete NetworkTreeNode;
+	NetworkTreeNode = new TreeNode("Network", this);
+
+	// Start the request on a different thread.
+	std::thread threadGetShares(&FileDialog::RequestNetworkSharesThread, this);
+	threadGetShares.detach();
 	#endif
 
-	#if defined(PLATFORM_LINUX)
 	// There's nothing to do for Linux here as it's a little cleaner and there are no
 	// special 'root locations' to be added like the lettered-drives on Windows.
-	#endif
 }
 
 
@@ -775,14 +809,6 @@ void FileDialog::PopulateLocal()
 void FileDialog::RequestNetworkSharesThread()
 {
 	tSystem::tGetNetworkShares(NetworkShareResults);
-}
-
-
-void FileDialog::PopulateNetwork()
-{
-	// Start the request on a different thread.
-	std::thread threadGetShares(&FileDialog::RequestNetworkSharesThread, this);
-	threadGetShares.detach();
 }
 
 
@@ -871,7 +897,7 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 			if (ImGui::MenuItem("Add Bookmark"))
 			{
 				tList<tStringItem> bookmarkItems;
-				GetPath(bookmarkItems, node);
+				NodeToPath(bookmarkItems, node);
 				AddUniqueBookmark(bookmarkItems);
 			}
 			ImGui::EndPopup();
@@ -894,11 +920,11 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 
 			// SelectedNode Updated. Need to update global (saved) FilePath.
 			if (Mode == DialogMode::OpenFile)
-				GetPath(ConfigOpenFilePath, SelectedNode);
+				NodeToPath(ConfigOpenFilePath, SelectedNode);
 			else if (Mode == DialogMode::OpenDir)
-				GetPath(ConfigOpenDirPath, SelectedNode);
+				NodeToPath(ConfigOpenDirPath, SelectedNode);
 			if (Mode == DialogMode::SaveFile)
-				GetPath(ConfigSaveFilePath, SelectedNode);
+				NodeToPath(ConfigSaveFilePath, SelectedNode);
 
 			ClearBookmarksSelected();
 		}
@@ -914,7 +940,7 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 		#endif
 		{
 			// Need to be careful here. tFindDirs would (reasonably?) use the current working dir if we passed in an empty string.
-			tString currDir = GetDir(node);
+			tString currDir = NodeToDir(node);
 			tList<tStringItem> foundDirs;
 			if (!currDir.IsEmpty())
 				tSystem::tFindDirs(foundDirs, currDir);
@@ -943,20 +969,12 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 }
 
 
-void FileDialog::InvalidateTree()
-{
-	delete LocalTreeNode;
-	LocalTreeNode = new tFileDialog::TreeNode("Root", this);
-	PopulateLocal();
-}
-
-
 void FileDialog::InvalidateAllNodeContent()
 {
+	InvalidateAllNodeContentRecursive(RootTreeNode);
 	#ifdef PLATFORM_WINDOWS
 	InvalidateAllNodeContentRecursive(NetworkTreeNode);
 	#endif
-	InvalidateAllNodeContentRecursive(LocalTreeNode);
 }
 
 
@@ -1009,13 +1027,13 @@ void FileDialog::DoSelectable(ContentItem* item)
 			}
 			SelectedNode = node;
 
-			// SelectedNode Updated. Need to update global FilePath.
+			// SelectedNode Updated. Need to update global config path.
 			if (Mode == DialogMode::OpenFile)
-				GetPath(ConfigOpenFilePath, SelectedNode);
+				NodeToPath(ConfigOpenFilePath, SelectedNode);
 			else if (Mode == DialogMode::OpenDir)
-				GetPath(ConfigOpenDirPath, SelectedNode);
+				NodeToPath(ConfigOpenDirPath, SelectedNode);
 			if (Mode == DialogMode::SaveFile)
-				GetPath(ConfigSaveFilePath, SelectedNode);
+				NodeToPath(ConfigSaveFilePath, SelectedNode);
 		}
 	}
 }
@@ -1225,7 +1243,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 		ImGui::BeginChild("LeftTreeViewPanel", tVector2(0.0f, heightTreeView), false, ImGuiWindowFlags_HorizontalScrollbar);
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(0.0f, 3.0f));
 
-		TreeNodeRecursive(LocalTreeNode, selectPathItemName, setYScrollToSel);
+		TreeNodeRecursive(RootTreeNode, selectPathItemName, setYScrollToSel);
 		#ifdef PLATFORM_WINDOWS
 		bool somethingAdded = ProcessShareResults();
 
@@ -1251,7 +1269,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 		{
 			if (!SelectedNode->ContentsPopulated)
 			{
-				tString selDir = GetDir(SelectedNode);
+				tString selDir = NodeToDir(SelectedNode);
 
 				// Directories.
 				tList<tStringItem> foundDirs;
@@ -1385,7 +1403,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
 				if (ImGui::Button("Open", tVector2(70.0f, 0.0f)))
 				{
-					Result = GetDir(SelectedNode) + selItem->Name;
+					Result = NodeToDir(SelectedNode) + selItem->Name;
 					state = DialogState::OK;
 				}
 				ImGui::SameLine();
@@ -1413,7 +1431,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 				if (ImGui::Button("Save", tVector2(70.0f, 0.0f)))
 				{
 					tString extension = tSystem::tGetExtension(fileType);
-					Result = GetDir(SelectedNode) + tString(SaveFileResult.c_str()) + "." + extension;
+					Result = NodeToDir(SelectedNode) + tString(SaveFileResult.c_str()) + "." + extension;
 					state = DialogState::OK;
 					InvalidateAllNodeContent();
 				}
@@ -1446,7 +1464,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
 				if (ImGui::Button("Open", tVector2(70.0f, 0.0f)))
 				{
-					Result = GetDir(SelectedNode);
+					Result = NodeToDir(SelectedNode);
 					state = DialogState::OK;
 				}
 				ImGui::SameLine();
@@ -1538,7 +1556,7 @@ tString FileDialog::GetResult()
 }
 
 
-tString FileDialog::GetDir(const TreeNode* node)
+tString FileDialog::NodeToDir(const TreeNode* node)
 {
 	if (!node)
 		return tString();
@@ -1568,7 +1586,7 @@ tString FileDialog::GetDir(const TreeNode* node)
 }
 
 
-void FileDialog::GetPath(tList<tStringItem>& destPathItems, const TreeNode* node)
+void FileDialog::NodeToPath(tList<tStringItem>& destPathItems, const TreeNode* node)
 {
 	destPathItems.Empty();
 	if (!node)
@@ -1582,7 +1600,7 @@ void FileDialog::GetPath(tList<tStringItem>& destPathItems, const TreeNode* node
 }
 
 
-void FileDialog::GetPath(tList<tStringItem>& destPath, const tString& srcdir)
+void FileDialog::DirToPath(tList<tStringItem>& destPath, const tString& srcdir)
 {
 	destPath.Empty();
 	if (srcdir.IsEmpty())

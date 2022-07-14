@@ -52,12 +52,17 @@ class FileDialog : public tLink<FileDialog>
 {
 public:
 	// In OpenDir dialog mode the file-types are ignored. If file-types is empty (default) then all types are used.
+	// If FileTypes is not empty, selecting "All Types" in the dialog means all types supplied here.
 	FileDialog(DialogMode, const tSystem::tFileTypes& = tSystem::tFileTypes());
 	~FileDialog();
 
 	// Call when you want the modal dialog to open. If you want it to open in a specific directory supply the openDir
 	// variable. If either the directory doesn't exist or you leave it blank, the last open directory is used.
-	// Note that the dir is remembered in the config file, so persists across runs of the application.
+	// The last-open is remembered in the config file per-dialog-mode, and persists across runs of the application (so
+	// long as you called tFileDialog:;Load of course). Note that the file dialog does all the work of figuring out
+	// what is on the file-system (and network shares for Windows) when you call this function. Currently only the
+	// network share query is offloaded to another thread. @todo Consider also affloading the root (main filesystem)
+	// queries.
 	void OpenPopup(const tString& openDir = tString());
 
 	enum class DialogState
@@ -71,26 +76,25 @@ public:
 	tString GetResult();
 	
 private:
-	// The dialog uses a 'path' to represent the current directory. A path consists of a list of strings from root to leaf.
-	// You can convert between a directory string and a path using the functions below.
-	// @todo The concept of a path made of a list should be brought over to Tacent where it can be formalized.
-	tString GetDir(const TreeNode*);								// Converts to a directory string.
-	void GetPath(tList<tStringItem>& destPath, const TreeNode*);	// Converts to a path list.
-	void GetPath(tList<tStringItem>& destPath, const tString& dir);	// Converts dir to a path.
+	// The dialog uses a 'path' to represent the current directory. A path consists of a list of strings from root to
+	// leaf. You can convert to a path from a directory string or a treenode, and you can convert to a directory string
+	// from a treenode.
+	// @todo The concept of a path made of a string list should be brought over to Tacent where it can be formalized.
+	tString NodeToDir(const TreeNode*);									// Converts to a directory string.
+	void NodeToPath(tList<tStringItem>& destPath, const TreeNode*);		// Converts to a path list.
+	void DirToPath(tList<tStringItem>& destPath, const tString& dir);	// Converts dir to a path.
 
 	void DoSelectable(ContentItem*);
 	void DoFileTypesDropdown(bool supportMultipleTypes);
 
-	void PopulateLocal();
-	#ifdef PLATFORM_WINDOWS
-	void PopulateNetwork();
-	#endif
+	// You can call this more than once if you need to refresh the trees. The old trees (if any) are deleted.
+	// For efficiency, only the top level is populated. The user must open directories manually to expand and
+	// populate the tree dynamically.
+	void PopulateTrees();
 
-	// This currently does not invalidate network shares on windows because they take a long time to rebuild.
-	// @todo Revisit this.
-	void InvalidateTree();
-
-	// Needed in cases where we need a reload of content. For example, when changing filetype filters.
+	// Needed in cases where we need a reload of content. For example, when changing filetype filters. This function
+	// only invalidates the _content_ (the stuff in the right-hand panel). The tree itself remains intact and so
+	// the SelectedNode does not need to be cleared.
 	void InvalidateAllNodeContent();
 	void InvalidateAllNodeContentRecursive(TreeNode*);
 	void TreeNodeRecursive(TreeNode*, tStringItem* selectPathItemName = nullptr, bool setYScrollToSel = false);
@@ -112,10 +116,13 @@ private:
 	// we can do away with this std::string and use Result directly.
 	std::string SaveFileResult;
 
-	TreeNode* LocalTreeNode;
+	TreeNode* RootTreeNode;
 	#ifdef PLATFORM_WINDOWS
 	TreeNode* NetworkTreeNode;
 	#endif
+
+	// This member points to a node in one of the supported trees -- RootTreeNode for Linux and both RootTreeNode
+	// and NetworTreeNode for Windows. Be careful, the SelectedNode must be cleared or reset if the tree is deleted.
 	TreeNode* SelectedNode = nullptr;
 };
 

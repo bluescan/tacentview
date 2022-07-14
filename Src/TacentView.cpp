@@ -523,6 +523,7 @@ void Viewer::LoadCurrImage()
 	AutoPropertyWindow();
 	if
 	(
+		// @todo We have a list of animated/multi-frame filetypes we should use here.
 		Config::Current->AutoPlayAnimatedImages && (CurrImage->GetNumFrames() > 1) &&
 		(
 			(CurrImage->Filetype == tFileType::GIF) ||
@@ -2845,7 +2846,6 @@ int main(int argc, char** argv)
 	tString cfgFile = dataDir + "Viewer.cfg";
 
 	#elif defined(PLATFORM_LINUX)
-
 		#ifdef PACKAGE_SNAP
 		tString progDir = tSystem::tGetProgramDir();
 		tString dataDir = progDir + "Data/";
@@ -2863,13 +2863,17 @@ int main(int argc, char** argv)
 		Viewer::Image::ThumbCacheDir = localAppDir + "Cache/";
 		tString cfgFile = localAppDir + "Viewer.cfg";
 		#endif
-
 	#endif
 
 	if (!tSystem::tDirExists(Viewer::Image::ThumbCacheDir))
 		tSystem::tCreateDir(Viewer::Image::ThumbCacheDir);
 	
 	Viewer::Config::Load(cfgFile);
+
+	// If no file from commandline, see if there is one set in the config.
+	if (!Viewer::ImageFileParam.IsPresent() && Viewer::Config::Global.LastOpenPath.IsValid())
+		Viewer::ImageFileParam.Param = Viewer::Config::Global.LastOpenPath;
+
 	Viewer::PendingTransparentWorkArea = Viewer::Config::Global.TransparentWorkArea;
 
 	// We start with window invisible. For windows DwmSetWindowAttribute won't redraw properly otherwise.
@@ -3033,14 +3037,19 @@ int main(int argc, char** argv)
 			Viewer::Request_SnapMessage_NoFrameTrans = true;
 			requestSnapMessageNoTrans = false;
 		}
-		
+
 		// I don't seem to be able to get Linux to v-sync. This stops it using all the CPU.
 		#ifdef PLATFORM_LINUX
 		tSystem::tSleep(16);
 		#endif
-		
+
 		lastUpdateTime = currUpdateTime;
 	}
+
+	if (Viewer::CurrImage)
+		Viewer::Config::Global.LastOpenPath = Viewer::CurrImage->Filename;
+	else if (Viewer::ImagesDir.IsValid())
+		Viewer::Config::Global.LastOpenPath = Viewer::ImagesDir;
 
 	// This is important. We need the destructors to run BEFORE we shutdown GLFW. Deconstructing the images may block for a bit while shutting
 	// down worker threads. We could show a 'shutting down' popup here if we wanted -- if Image::ThumbnailNumThreadsRunning is > 0.

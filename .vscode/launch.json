@@ -17,7 +17,6 @@
 			"args": [],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/TestImages/FormatVariety",
-//			"cwd": "/home/tristan/GoogleDrive/Google Photos",
 			"environment": [],
 			"externalConsole": false,
 			"MIMode": "gdb",
@@ -37,8 +36,7 @@
 			"program": "${workspaceFolder}/build/ViewerInstall/tacentview.exe",
 			"args": [],
 			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}/TestImages/FormatVariety",
-//			"cwd": "G:/My Drive/Google Photos",
+			// "cwd": "${workspaceFolder}/TestImages/FormatVariety",
 			"environment": [],
 			"console": "integratedTerminal",
 		}
