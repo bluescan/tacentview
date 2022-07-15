@@ -41,6 +41,7 @@ namespace Viewer
 	extern Viewer::Image FileImage;
 	extern Viewer::Image FolderImage;
 	extern Viewer::Image UpFolderImage;
+	extern Viewer::Image RotateThetaImage;
 	extern Viewer::Image PlayImage;
 	extern Viewer::Image PlayRevImage;
 	extern Viewer::Image StopImage;
@@ -51,6 +52,8 @@ namespace Viewer
 	extern Viewer::Image NextImage;
 	extern Viewer::Image SkipBeginImage;
 	extern Viewer::Image SkipEndImage;
+	extern Viewer::Image RefreshImage;
+	extern Viewer::Image ShowHiddenImage;
 	extern bool CropMode;
 	extern bool DeleteAllCacheFilesOnExit;
 	extern bool PendingTransparentWorkArea;

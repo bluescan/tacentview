@@ -778,16 +778,6 @@ void FileDialog::OpenPopup(const tString& openDir)
 }
 
 
-/*
-void FileDialog::InvalidateTree()
-{
-	delete LocalTreeNode;
-	LocalTreeNode = new tFileDialog::TreeNode("Root", this);
-	PopulateLocal();
-}
-*/
-
-
 void FileDialog::PopulateTrees()
 {
 	// The SelectedNode may be pointing inside an existing tree. We need to clear it.
@@ -1207,11 +1197,86 @@ FileDialog::DialogState FileDialog::DoPopup()
 			setYScrollToSel = true;
 	}
 
+//#define FILEDIALOG_TOOLBAR
+#ifdef FILEDIALOG_TOOLBAR
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4.0f, 5.0f));
+	if (!ImGui::BeginPopupModal(label, &isOpen, ImGuiWindowFlags_MenuBar))
+#endif
 	if (!ImGui::BeginPopupModal(label, &isOpen, 0))
+	{
+#ifdef FILEDIALOG_TOOLBAR
+		ImGui::PopStyleVar();
+#endif
 		return DialogState::Closed;
+	}
 
 	DialogState state = DialogState::Open;
 	Result.Clear();
+
+#ifdef FILEDIALOG_TOOLBAR
+	if (ImGui::BeginMenuBar())
+	{
+		tVector2 ToolImageSize							(24.0f, 24.0f);
+		const tVector4 ColourEnabledTint				= tVector4(1.00f, 1.00f, 1.00f, 1.00f);
+		const tVector4 ColourDisabledTint				= tVector4(0.54f, 0.54f, 0.54f, 1.00f);
+		const tVector4 ColourBG							= tVector4(0.00f, 0.00f, 0.00f, 0.00f);
+		const tVector4 ColourPressedBG					= tVector4(0.21f, 0.45f, 0.21f, 1.00f);
+		const tVector4 ColourClear						= tVector4(0.10f, 0.10f, 0.12f, 1.00f);
+
+		// Up directory.
+		uint64 upImgID = Viewer::UpFolderImage.Bind();
+		static bool isEnabledUp = false;
+		if (ImGui::ImageButton
+		(
+			ImTextureID(upImgID), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			isEnabledUp ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)
+		{
+			tPrintf("Up Button Pressed\n");
+			isEnabledUp = !isEnabledUp;
+		}
+
+		// Show hidden.
+		uint64 showHiddenImgID = Viewer::ShowHiddenImage.Bind();// : Viewer::FileImage.Bind();
+		static bool isEnabledHidden = false;
+		if (ImGui::ImageButton
+		(
+			ImTextureID(showHiddenImgID), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			isEnabledHidden ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)
+		{
+			tPrintf("Show Hidden Button Pressed\n");
+			isEnabledHidden = !isEnabledHidden;
+		}
+
+		if (ImGui::BeginMenu("View##FileDialog"))
+		{
+			ImGui::MenuItem("Show Hidden");
+			ImGui::MenuItem("List View");
+			ImGui::MenuItem("Details View");
+			ImGui::EndMenu();
+		}
+
+		// Resfresh.
+		uint64 refreshImgID = Viewer::RotateThetaImage.Bind();
+		static bool isEnabledRefresh = false;
+		if (ImGui::ImageButton
+		(
+			ImTextureID(refreshImgID), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			isEnabledRefresh ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)
+		{
+			tPrintf("Button Refresh Pressed\n");
+			isEnabledRefresh = !isEnabledRefresh;
+		}
+
+
+		//ShowToolTip("Toolbar filedialog button.");
+		ImGui::EndMenuBar();
+	}
+	ImGui::PopStyleVar();
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 6.0f);
+#endif
 
 	// The left and right panels are cells in a 1 row, 2 column table.
 	float bottomBarHeight = 20.0f + 28.0f;

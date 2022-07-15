@@ -132,6 +132,7 @@ namespace Viewer
 	Image SkipBeginImage;
 	Image SkipEndImage;
 	Image RefreshImage;
+	Image ShowHiddenImage;
 	Image RecycleImage;
 	Image PropEditImage;
 	Image InfoOverlayImage;
@@ -1960,6 +1961,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	DoOpenDirModal					(openDirPressed);
 	DoSaveModal						(savePressed);
 	DoSaveAsModal					(saveAsPressed);
+
 	DoSaveAllModal					(saveAllPressed);
 	DoContactSheetModal				(saveContactSheetPressed);
 	DoMultiFrameModal				(saveMultiFramePressed);
@@ -2733,6 +2735,7 @@ void Viewer::LoadAppImages(const tString& dataDir)
 	SkipBeginImage			.Load(dataDir + "SkipBegin.png");
 	SkipEndImage			.Load(dataDir + "SkipEnd.png");
 	RefreshImage			.Load(dataDir + "Refresh.png");
+	ShowHiddenImage			.Load(dataDir + "ShowHidden.png");
 	RecycleImage			.Load(dataDir + "Recycle.png");
 	PropEditImage			.Load(dataDir + "PropEdit.png");
 	InfoOverlayImage		.Load(dataDir + "InfoOverlay.png");
@@ -2773,6 +2776,7 @@ void Viewer::UnloadAppImages()
 	SkipBeginImage			.Unload();
 	SkipEndImage			.Unload();
 	RefreshImage			.Unload();
+	ShowHiddenImage			.Unload();
 	RecycleImage			.Unload();
 	PropEditImage			.Unload();
 	InfoOverlayImage		.Unload();
