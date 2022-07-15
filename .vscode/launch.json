@@ -36,7 +36,7 @@
 			"program": "${workspaceFolder}/build/ViewerInstall/tacentview.exe",
 			"args": [],
 			"stopAtEntry": false,
-			// "cwd": "${workspaceFolder}/TestImages/FormatVariety",
+			"cwd": "${workspaceFolder}/TestImages/FormatVariety",
 			"environment": [],
 			"console": "integratedTerminal",
 		}

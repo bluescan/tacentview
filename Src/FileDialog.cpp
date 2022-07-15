@@ -120,7 +120,8 @@ namespace tFileDialog
 	tList<tStringItem> ConfigSaveFilePath(tListMode::StaticZero);
 
 	// Stores an individual bookmark comprised of a list of string path items. Bookmarks currently
-	// represent directories, not individual files.
+	// represent directories, not individual files. @todo This 'bookmark' class could easity become
+	// the basis for a tPath in Tacent. All it really is is a list of tStrings.
 	struct Bookmark : public tLink<Bookmark>
 	{
 		enum class Type
@@ -143,7 +144,10 @@ namespace tFileDialog
  		bool Set(Type type);					// Accepts Home or Root.
 
 		void Clear()							/* Makes bookmark invalid. */											{ Items.Empty(); }
-		bool IsValid() const					/* A bookmark is valid if it has items, even if it doesn't exist. */	{ return !Items.IsEmpty(); }
+
+		// A bookmark is valid if it has items and the first item that specifies the path type is a supported type.
+		// The bookmark does not need to exist on the filesystem to be valid. Use Exists for that.
+		bool IsValid() const;
 		bool Exists() const;					// Does the bookmark still exist on the filesystem. In case the directory was deleted.
 		tString GetPath() const;				// Converts from internal item list to full path.
 
@@ -193,6 +197,7 @@ bool Bookmark::Set(const tList<tStringItem>& src)
 
 bool Bookmark::Set(Type type)
 {
+	// Only home and root supported when trying to generate a bookmark from a type only.
 	if (type == Type::User)
 		return false;
 
@@ -211,6 +216,9 @@ bool Bookmark::Set(Type type)
 		for (tStringItem* item = exploded.First(); item; item = item->Next())
 			Items.Append(new tStringItem(*item));
 	}
+
+	// Note that the bookmark type of Root is different from the path first item of "Root".
+	// The latter just means what kind of path the items represent.
 	else if (type == Type::Root)
 	{
 		BookmarkType = Type::Root;
@@ -224,6 +232,8 @@ bool Bookmark::Set(Type type)
 		{
 			tDriveInfo driveInfo;
 			bool ok = tGetDriveInfo(driveInfo, *drive);
+
+			// This excludes the old A: and B: typically used for floppies.
 			if (ok && (driveInfo.DriveType != tDriveType::Removable))
 			{
 				root = *drive;
@@ -244,6 +254,20 @@ bool Bookmark::Set(Type type)
 }
 
 
+bool Bookmark::IsValid() const
+{
+	// You need at least the path type and the next item -- meaning 2 items min.
+	if (Items.GetNumItems() < 2)
+		return false;
+
+	tString type = *Items.First();
+	if ((type != "Network") && (type != "Root"))
+		return false;
+
+	return true;
+}
+
+
 bool Bookmark::Exists() const
 {
 	if (!IsValid())
@@ -255,7 +279,7 @@ bool Bookmark::Exists() const
 	tString loc = *Items.First();
 
 	// We assume network locations exist for now.
-	if (loc != "Root")
+	if (loc == "Network")
 		return true;
 
 	tString path;
@@ -276,6 +300,11 @@ tString Bookmark::GetPath() const
 		return tString();
 	
 	tString pathType = *Items.First();
+
+	// @todo When we move to Tacent, consider these path types:
+	// 1) "Network" or "Net" for a Windows network share of format "\\machinename\sharename"
+	// 2) "Drive" for a Windows drive-based path like "D:/dir/subdir/"
+	// 3) "Root" for a regular Linux style path like "/dir/subdir/"
 	bool isNetworkLoc = (pathType == "Network");
 
 	tString dir;
@@ -705,16 +734,6 @@ FileDialog::FileDialog(DialogMode mode, const tSystem::tFileTypes& fileTypes) :
 	#endif
 	SelectedNode(nullptr)
 {
-//	LocalTreeNode = nullptr; // new tFileDialog::TreeNode("Root", this);
-//	#ifdef PLATFORM_WINDOWS
-//	NetworkTreeNode = nullptr;//new TreeNode("Network", this);
-//	#endif
-
-//	PopulateLocal();
-//	#ifdef PLATFORM_WINDOWS
-//	PopulateNetwork();
-//	#endif
-
 	FileDialogs.Append(this);
 }
 
@@ -729,14 +748,10 @@ void FileDialog::OpenPopup(const tString& openDir)
 {
 	// When opening we always invalidate the current tree. This is in case directories were added/removed
 	// outside of the viewer. @todo Revisit. Might be heavy-handed.
-	//InvalidateTree();
-	
+	//
 	// We now defer population of the trees to this OpenPopup call. Before we did it in the constructor,
 	// but that seems like it's too early, especially if the dialog is a global object.
 	PopulateTrees();
-//	#ifdef PLATFORM_WINDOWS
-//	PopulateNetwork();
-//	#endif
 
 	switch (Mode)
 	{
