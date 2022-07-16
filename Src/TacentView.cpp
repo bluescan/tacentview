@@ -1384,7 +1384,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::PushItemWidth(-1);
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(7.0f, 2.0f));
 		int frmNum = CurrImage->FrameNum + 1;
-		if (ImGui::SliderInt("", &frmNum, 1, CurrImage->GetNumFrames(), "%d", ImGuiSliderFlags_ClampOnInput))
+		if (ImGui::SliderInt("##ScrubberSlider", &frmNum, 1, CurrImage->GetNumFrames(), "%d", ImGuiSliderFlags_ClampOnInput))
 		{
 			tMath::tiClamp(frmNum, 1, CurrImage->GetNumFrames());
 			CurrImage->FrameNum = frmNum-1;
@@ -1776,7 +1776,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6.0f);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
-		if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, tVector2(26,26)))
+		if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, tVector2(26,26)))
 			ImGui::OpenPopup("CopyColourAs");
 
 		if (ImGui::BeginPopup("CopyColourAs"))
@@ -2059,8 +2059,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	glfwSwapBuffers(window);
 	FrameNumber++;
 
-	// We're done the frame. Is slideshow playing? If so, decrement the timer.
-	if (!ImGui::IsAnyPopupOpen() && SlideshowPlaying)
+	// We're done the frame. Is slideshow playing? If so, decrement the timer. Note: IsPopupOpen ignores str_id if ImGuiPopupFlags_AnyPopupId set.
+	if (!ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel) && SlideshowPlaying)
 	{
 		SlideshowCountdown -= dt;
 		if ((SlideshowCountdown <= 0.0f))
@@ -2223,7 +2223,8 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		return;
 
 	ImGuiIO& io = ImGui::GetIO();
-	if (io.WantTextInput || ImGui::IsAnyPopupOpen())
+	// Note: IsPopupOpen ignores str_id if ImGuiPopupFlags_AnyPopupId set.
+	if (io.WantTextInput || ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel))
 		return;
 
 	// Don't let key repeats starve the update loop. Ignore repeats if there hasn't

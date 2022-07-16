@@ -56,7 +56,7 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 		{
 			tColourf floatCol(PixelColour);
 			tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
-			if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, tVector2(15,15)))
+			if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, tVector2(15,15)))
 				ImGui::OpenPopup("CopyColourOverlayAs");
 
 			if (ImGui::BeginPopup("CopyColourOverlayAs"))
