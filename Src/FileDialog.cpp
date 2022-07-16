@@ -34,7 +34,6 @@ namespace tFileDialog
 	// directory, as well as if it is selected or not.
 	struct ContentItem : tLink<ContentItem>
 	{
-		ContentItem(const tString& dirName);
 		ContentItem(const tSystem::tFileInfo& fileInfo);
 		bool Selected;
 
@@ -56,25 +55,21 @@ namespace tFileDialog
 			bool operator() (const ContentItem& a, const ContentItem& b) const;
 		};
 
-		// Name field.
 		tString Name;
 		bool IsDir;
+		bool IsHidden;
 
-		// These are not valid for directories. Note that we store field data redundantly in some cases since we need to be
-		// able to sort based on a key decoupled from the display string. For example, sorting by date should be done with
-		// an integer, not the string representation. Same with filesizes, we may want them displayed in KB or MB is they
-		// get large, but want to sort on num-bytes. We store the string reps because it's more efficient to cache them
-		// rather than regenerate them every time.
+		// Note that we store some fields redundantly since we need to be able to sort based on a key decoupled from the
+		// display string. For example, sorting by date should be done with an integer, not the string representation.
+		// Same with filesizes, we may want them displayed in KB or MB is they get large, but want to sort on num-bytes.
+		// We store the string reps because it's more efficient to cache them rather than regenerate them every time.
 
-		// Modification time (last) field.
-		int64 ModTime;							// In posix epoch.
+		int64 ModTime;							// Last modification time In posix epoch.
 		tString ModTimeString;					// Displayed.
 
-		// File type field.
 		tSystem::tFileType FileType;
 		tString FileTypeString;					// Displayed.
 
-		// File size field.
 		int64 FileSize;
 		tString FileSizeString;					// Displayed.
 	};
@@ -84,8 +79,8 @@ namespace tFileDialog
 	class TreeNode
 	{
 	public:
-		TreeNode()																											: Name(), Parent(nullptr) { }
-		TreeNode(const tString& name, FileDialog* dialog, TreeNode* parent = nullptr)										: Name(name), Dialog(dialog), Parent(parent) { }
+		TreeNode()																											: Name(), Hidden(false), Parent(nullptr) { }
+		TreeNode(const tString& name, bool hidden, FileDialog* dialog, TreeNode* parent)									: Name(name), Hidden(hidden), Dialog(dialog), Parent(parent) { }
 		virtual ~TreeNode()																									{ Contents.Empty(); Children.Empty(); }
 
 		void AppendChild(TreeNode* treeNode)																				{ Children.Append(treeNode); }
@@ -100,6 +95,7 @@ namespace tFileDialog
 		ContentItem* FindSelectedItem() const;
 
 		tString Name;
+		bool Hidden;
 		FileDialog* Dialog;
 		bool ChildrenPopulated = false;
 		TreeNode* Parent;
@@ -118,6 +114,9 @@ namespace tFileDialog
 	tList<tStringItem> ConfigOpenFilePath(tListMode::StaticZero);
 	tList<tStringItem> ConfigOpenDirPath(tListMode::StaticZero);
 	tList<tStringItem> ConfigSaveFilePath(tListMode::StaticZero);
+
+	// For now these state variables are saved globally for all diaglog types.
+	bool ConfigShowHidden = false;
 
 	// Stores an individual bookmark comprised of a list of string path items. Bookmarks currently
 	// represent directories, not individual files. @todo This 'bookmark' class could easity become
@@ -304,7 +303,7 @@ tString Bookmark::GetPath() const
 	// @todo When we move to Tacent, consider these path types:
 	// 1) "Network" or "Net" for a Windows network share of format "\\machinename\sharename"
 	// 2) "Drive" for a Windows drive-based path like "D:/dir/subdir/"
-	// 3) "Root" for a regular Linux style path like "/dir/subdir/"
+	// 3) "Posix" for a regular Linux-style path like "/dir/subdir/". Start with /.
 	bool isNetworkLoc = (pathType == "Network");
 
 	tString dir;
@@ -402,6 +401,11 @@ bool tFileDialog::Save(tExprWriter& writer, const tString& exprName)
 	writer.End();
 	writer.CR();
 
+	writer.Begin();
+	writer.Atom("ShowHidden");					writer.Atom(ConfigShowHidden);
+	writer.End();
+	writer.CR();
+
 	// We save a different last-used path for each mode.
 	if (!ConfigOpenFilePath.IsEmpty())
 	{
@@ -467,6 +471,10 @@ bool tFileDialog::Load(tExpr expr, const tString& exprName)
 			{
 				case tHash::tHashCT("FileDialogConfigVersion"):
 					loadedVersion = e.Item1();
+					break;
+
+				case tHash::tHashCT("ShowHidden"):
+					ConfigShowHidden = e.Item1();
 					break;
 
 				case tHash::tHashCT("OpenFilePath"):
@@ -583,25 +591,13 @@ void tFileDialog::Reset()
 }
 
 
-ContentItem::ContentItem(const tString& dirName) :
-	Selected(false),
-	IsDir(true)
-{
-	Name = dirName;
-	ModTime = 0;
-	ModTimeString.Clear();
-	FileType = tSystem::tFileType::Invalid;
-	FileSize = 0;
-	FileSizeString.Clear();
-}
-
-
 ContentItem::ContentItem(const tSystem::tFileInfo& fileInfo) :
 	Selected(false)
 {
 	// Name field.
 	Name = tSystem::tGetFileName(fileInfo.FileName);
 	IsDir = fileInfo.Directory;
+	IsHidden = fileInfo.Hidden;
 
 	// Modification time field. Choose greater of mod and creation time.
 	ModTime = tMath::tMax(fileInfo.ModificationTime, fileInfo.CreationTime);
@@ -785,20 +781,20 @@ void FileDialog::PopulateTrees()
 
 	// Delete previous trees and create the new ones.
 	delete RootTreeNode;
-	RootTreeNode = new tFileDialog::TreeNode("Root", this);
+	RootTreeNode = new tFileDialog::TreeNode("Root", false, this, nullptr);
 
 	#if defined(PLATFORM_WINDOWS)
 	tList<tStringItem> drives;
 	tSystem::tGetDrives(drives);
 	for (tStringItem* drive = drives.First(); drive; drive = drive->Next())
 	{
-		TreeNode* driveNode = new TreeNode(*drive, this, RootTreeNode);
+		TreeNode* driveNode = new TreeNode(*drive, false, this, RootTreeNode);
 		RootTreeNode->AppendChild(driveNode);	
 	}
 
 	// NetworkTree. Windows only.
 	delete NetworkTreeNode;
-	NetworkTreeNode = new TreeNode("Network", this);
+	NetworkTreeNode = new TreeNode("Network", false, this, nullptr);
 
 	// Start the request on a different thread.
 	std::thread threadGetShares(&FileDialog::RequestNetworkSharesThread, this);
@@ -829,7 +825,7 @@ bool FileDialog::ProcessShareResults()
 		tString machName = *exploded.First();
 		if (!NetworkTreeNode->Contains(machName))
 		{
-			TreeNode* machine = new TreeNode(machName.Text(), this, NetworkTreeNode);
+			TreeNode* machine = new TreeNode(machName.Text(), false, this, NetworkTreeNode);
 			NetworkTreeNode->AppendChild(machine);
 			somethingAdded = true;
 		}
@@ -839,7 +835,7 @@ bool FileDialog::ProcessShareResults()
 		tStringItem* shareName = (exploded.GetNumItems() == 2) ? exploded.Last() : nullptr;
 		if (shareName && !machNode->Contains(*shareName))
 		{
-			TreeNode* shareNode = new TreeNode(shareName->Text(), this, machNode);
+			TreeNode* shareNode = new TreeNode(shareName->Text(), false, this, machNode);
 			machNode->AppendChild(shareNode);
 			somethingAdded = true;
 		}
@@ -853,6 +849,12 @@ bool FileDialog::ProcessShareResults()
 
 void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemName, bool setYScrollToSel)
 {
+	// There were two ways to implement hidden. Invalidate everything and enumerate the filesystem objects again (less memory)
+	// or the implemented method: enumerate hidden and non-hidden always, and just display or not based on the hidden flag.
+	// This way, everything will be snappy when toggling hidden on/off.
+	if (!ConfigShowHidden && node->Hidden)
+		return;
+
 	bool isSelected = (SelectedNode == node);
 	int flags =
 		ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_DefaultOpen |
@@ -946,17 +948,17 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 		{
 			// Need to be careful here. tFindDirs would (reasonably?) use the current working dir if we passed in an empty string.
 			tString currDir = NodeToDir(node);
-			tList<tStringItem> foundDirs;
+			tList<tFileInfo> foundDirs;
 			if (!currDir.IsEmpty())
 				tSystem::tFindDirs(foundDirs, currDir);
 
-			for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
+			for (tFileInfo* dir = foundDirs.First(); dir; dir = dir->Next())
 			{
-				tString relDir = tSystem::tGetRelativePath(currDir, *dir);
+				tString relDir = tSystem::tGetRelativePath(currDir, dir->FileName);
 				relDir.ExtractLeft("./");
 				relDir.ExtractRight("/");
 
-				TreeNode* child = new TreeNode(relDir, this, node);
+				TreeNode* child = new TreeNode(relDir, dir->Hidden, this, node);
 				node->AppendChild(child);
 			}
 			node->ChildrenPopulated = true;
@@ -1026,9 +1028,12 @@ void FileDialog::DoSelectable(ContentItem* item)
 			if (!node)
 			{
 				// Need to create a new one and connect it up.
-				node = new TreeNode(item->Name, this, SelectedNode);
+				node = new TreeNode(item->Name, false, this, SelectedNode);
 				SelectedNode->AppendChild(node);
 				tAssert(node->ChildrenPopulated == false);
+
+				tString newdir = NodeToDir(node);
+				node->Hidden = tIsHidden(newdir);
 			}
 			SelectedNode = node;
 
@@ -1197,26 +1202,23 @@ FileDialog::DialogState FileDialog::DoPopup()
 			setYScrollToSel = true;
 	}
 
-//#define FILEDIALOG_TOOLBAR
-#ifdef FILEDIALOG_TOOLBAR
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4.0f, 5.0f));
 	if (!ImGui::BeginPopupModal(label, &isOpen, ImGuiWindowFlags_MenuBar))
-#endif
-	if (!ImGui::BeginPopupModal(label, &isOpen, 0))
 	{
-#ifdef FILEDIALOG_TOOLBAR
 		ImGui::PopStyleVar();
-#endif
 		return DialogState::Closed;
 	}
 
 	DialogState state = DialogState::Open;
 	Result.Clear();
 
-#ifdef FILEDIALOG_TOOLBAR
+	//
+	// Begin MenuBar
+	//
+	const float menuBarHeight = 24.0f;
 	if (ImGui::BeginMenuBar())
 	{
-		tVector2 ToolImageSize							(24.0f, 24.0f);
+		tVector2 ToolImageSize							(24.0f, menuBarHeight);
 		const tVector4 ColourEnabledTint				= tVector4(1.00f, 1.00f, 1.00f, 1.00f);
 		const tVector4 ColourDisabledTint				= tVector4(0.54f, 0.54f, 0.54f, 1.00f);
 		const tVector4 ColourBG							= tVector4(0.00f, 0.00f, 0.00f, 0.00f);
@@ -1224,6 +1226,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 		const tVector4 ColourClear						= tVector4(0.10f, 0.10f, 0.12f, 1.00f);
 
 		// Up directory.
+		/* @wip
 		uint64 upImgID = Viewer::UpFolderImage.Bind();
 		static bool isEnabledUp = false;
 		if (ImGui::ImageButton
@@ -1232,32 +1235,23 @@ FileDialog::DialogState FileDialog::DoPopup()
 			isEnabledUp ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)
 		{
-			tPrintf("Up Button Pressed\n");
 			isEnabledUp = !isEnabledUp;
 		}
+		*/
 
 		// Show hidden.
-		uint64 showHiddenImgID = Viewer::ShowHiddenImage.Bind();// : Viewer::FileImage.Bind();
-		static bool isEnabledHidden = false;
+		uint64 showHiddenImgID = Viewer::ShowHiddenImage.Bind();
 		if (ImGui::ImageButton
 		(
 			ImTextureID(showHiddenImgID), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
-			isEnabledHidden ? ColourPressedBG : ColourBG, ColourEnabledTint)
+			ConfigShowHidden ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)
 		{
-			tPrintf("Show Hidden Button Pressed\n");
-			isEnabledHidden = !isEnabledHidden;
-		}
-
-		if (ImGui::BeginMenu("View##FileDialog"))
-		{
-			ImGui::MenuItem("Show Hidden");
-			ImGui::MenuItem("List View");
-			ImGui::MenuItem("Details View");
-			ImGui::EndMenu();
+			ConfigShowHidden = !ConfigShowHidden;
 		}
 
 		// Resfresh.
+		/* @wip
 		uint64 refreshImgID = Viewer::RotateThetaImage.Bind();
 		static bool isEnabledRefresh = false;
 		if (ImGui::ImageButton
@@ -1266,8 +1260,16 @@ FileDialog::DialogState FileDialog::DoPopup()
 			isEnabledRefresh ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)
 		{
-			tPrintf("Button Refresh Pressed\n");
 			isEnabledRefresh = !isEnabledRefresh;
+		}
+		*/
+
+		if (ImGui::BeginMenu("View##FileDialog"))
+		{
+			ImGui::MenuItem("Show Hidden", "", &ConfigShowHidden);
+			// @wip ImGui::MenuItem("List View");
+			// @wip ImGui::MenuItem("Details View");
+			ImGui::EndMenu();
 		}
 
 
@@ -1276,10 +1278,13 @@ FileDialog::DialogState FileDialog::DoPopup()
 	}
 	ImGui::PopStyleVar();
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 6.0f);
-#endif
+
+	//
+	// End of menubar.
+	//
 
 	// The left and right panels are cells in a 1 row, 2 column table.
-	float bottomBarHeight = 20.0f + 28.0f;
+	float bottomBarHeight = 20.0f + 28.0f + menuBarHeight;
 	ImGui::PushStyleColor(ImGuiCol_TableBorderStrong, tVector4(0.50f, 0.50f, 0.54f, 1.00f));
 	ImGui::PushStyleColor(ImGuiCol_TableBorderLight, tVector4(0.50f, 0.50f, 0.54f, 1.00f));
 	int outerTableFlags = ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable;
@@ -1352,13 +1357,13 @@ FileDialog::DialogState FileDialog::DoPopup()
 				tString selDir = NodeToDir(SelectedNode);
 
 				// Directories.
-				tList<tStringItem> foundDirs;
+				tList<tFileInfo> foundDirs;
 				if (!selDir.IsEmpty())
 					tSystem::tFindDirs(foundDirs, selDir);
-				for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
+				for (tFileInfo* dir = foundDirs.First(); dir; dir = dir->Next())
 				{
-					(*dir)[dir->Length()-1] = '\0';				// Remove slash.
-					ContentItem* contentItem = new ContentItem(tSystem::tGetFileName(*dir));
+					(dir->FileName)[dir->FileName.Length()-1] = '\0';				// Remove slash.
+					ContentItem* contentItem = new ContentItem(*dir);
 					SelectedNode->Contents.Append(contentItem);
 				}
 
@@ -1424,6 +1429,12 @@ FileDialog::DialogState FileDialog::DoPopup()
 				// need a 'Next' loop to get to the right clipper starting point (clipper.DisplayStart).
 				for (ContentItem* item = SelectedNode->Contents.First(); item; item = item->Next())
 				{
+					// There were two ways to implement hidden. Invalidate everything and enumerate the filesystem objects again (less memory)
+					// or the implemented method: enumerate hidden and non-hidden always, and just display or not based on the hidden flag.
+					// This way, everything will be snappy when toggling hidden on/off.
+					if (!ConfigShowHidden && item->IsHidden)
+						continue;
+
 					ImGui::TableNextRow();
 
 					ImGui::TableNextColumn();
