@@ -748,7 +748,8 @@ void FileDialog::OpenPopup(const tString& openDir)
 	// We now defer population of the trees to this OpenPopup call. Before we did it in the constructor,
 	// but that seems like it's too early, especially if the dialog is a global object.
 	PopulateTrees();
-
+	ForceSortSpecsDirty = true;
+	
 	switch (Mode)
 	{
 		case DialogMode::OpenFile:
@@ -1417,7 +1418,13 @@ FileDialog::DialogState FileDialog::DoPopup()
 
 				// Sort the rows.
 				ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs();
-				if (sortSpecs && (sortSpecs->SpecsDirty) && (sortSpecs->SpecsCount > 0))
+				if (ForceSortSpecsDirty && sortSpecs)
+				{
+					sortSpecs->SpecsDirty = true;
+					ForceSortSpecsDirty = false;
+				}
+
+				if (sortSpecs && sortSpecs->SpecsDirty && (sortSpecs->SpecsCount > 0))
 				{
 					ContentItem::CompareFunctionObject compare(sortSpecs);
 					SelectedNode->Contents.Sort(compare);
