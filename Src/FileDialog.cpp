@@ -164,11 +164,16 @@ namespace tFileDialog
 	void UnselectAllBookmarks();
 	bool AddUniqueBookmark(const tList<tStringItem>&);
 	void ClearBookmarksSelected();
+	void ShowToolTip(const char* desc);
 
 	// Splitter functions. @todo These should go somewhere more public as they are not particularly tied to
 	// the file dialog.
 	bool HorizontalSplitter(float thickness, float& height1, float& height2, float minHeight1, float minHeight2, float hoverExtend = 4.0f, float hoverDelay = 0.0f);
 	bool VerticalSplitter(float thickness, float& width1, float& width2, float minWidth1, float minWidth2, float hoverExtend = 4.0f, float hoverDelay = 0.0f);
+
+	const tVector4 ColourEnabledTint				= tVector4(1.00f, 1.00f, 1.00f, 1.00f);
+	const tVector4 ColourBG							= tVector4(0.00f, 0.00f, 0.00f, 0.00f);
+	const tVector4 ColourPressedBG					= tVector4(0.21f, 0.45f, 0.21f, 1.00f);
 }
 
 
@@ -515,6 +520,21 @@ bool tFileDialog::Load(tExpr expr, const tString& exprName)
 	// Now that bookmarks are loaded and exist, we make sure both a home and root bookmark exist.
 	EnsureDefaultBookmarksExist();
 	return true;
+}
+
+
+void tFileDialog::ShowToolTip(const char* desc)
+{
+	if (!ImGui::IsItemHovered())
+		return;
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(3.0f, 3.0f));
+	ImGui::BeginTooltip();
+	ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+	ImGui::TextUnformatted(desc);
+	ImGui::PopTextWrapPos();
+	ImGui::EndTooltip();
+	ImGui::PopStyleVar();
 }
 
 
@@ -1223,12 +1243,6 @@ FileDialog::DialogState FileDialog::DoPopup()
 	if (ImGui::BeginMenuBar())
 	{
 		tVector2 ToolImageSize							(24.0f, menuBarHeight);
-		const tVector4 ColourEnabledTint				= tVector4(1.00f, 1.00f, 1.00f, 1.00f);
-		const tVector4 ColourDisabledTint				= tVector4(0.54f, 0.54f, 0.54f, 1.00f);
-		const tVector4 ColourBG							= tVector4(0.00f, 0.00f, 0.00f, 0.00f);
-		const tVector4 ColourPressedBG					= tVector4(0.21f, 0.45f, 0.21f, 1.00f);
-		const tVector4 ColourClear						= tVector4(0.10f, 0.10f, 0.12f, 1.00f);
-
 		// Up directory.
 		/* @wip
 		uint64 upImgID = Viewer::UpFolderImage.Bind();
@@ -1241,6 +1255,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 		{
 			isEnabledUp = !isEnabledUp;
 		}
+		ShowToolTip("Up Directory");
 		*/
 
 		// Show hidden.
@@ -1253,6 +1268,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 		{
 			ConfigShowHidden = !ConfigShowHidden;
 		}
+		ShowToolTip("Show Hidden");
 
 		// Refresh.
 		uint64 refreshImgID = Viewer::RotateThetaImage.Bind();
@@ -1262,7 +1278,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 			ColourBG, ColourEnabledTint)
 		)
 		{
-			// SelectedNode Updated. Need to update global (saved) FilePath.
+			// Remember where we are.
 			if (Mode == DialogMode::OpenFile)
 				NodeToPath(ConfigOpenFilePath, SelectedNode);
 			else if (Mode == DialogMode::OpenDir)
@@ -1272,6 +1288,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 
 			PopulateTrees();
 
+			// Restore where we are.
 			if (Mode == DialogMode::OpenFile)
 				selectPathItemName = ConfigOpenFilePath.Head();
 			else if (Mode == DialogMode::OpenDir)
@@ -1281,6 +1298,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 			if (selectPathItemName)
 				setYScrollToSel = true;
 		}
+		ShowToolTip("Refresh");
 
 		if (ImGui::BeginMenu("View##FileDialog"))
 		{
@@ -1290,13 +1308,10 @@ FileDialog::DialogState FileDialog::DoPopup()
 			ImGui::EndMenu();
 		}
 
-
-		//ShowToolTip("Toolbar filedialog button.");
 		ImGui::EndMenuBar();
 	}
 	ImGui::PopStyleVar();
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 6.0f);
-
 	//
 	// End of menubar.
 	//
