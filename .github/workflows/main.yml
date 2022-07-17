@@ -23,8 +23,8 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it.
     - uses: actions/checkout@v2
 
-    # Build CMake NMake.
-    - uses: ilammy/msvc-dev-cmd@v1.4.1
+    # Build CMake VS2022 (NMake too slow).
+    # - uses: ilammy/msvc-dev-cmd@v1.4.1
     - name: Build using CMake MSVC
       run: |
         echo '*** CMake Configure ***'
