@@ -1254,19 +1254,33 @@ FileDialog::DialogState FileDialog::DoPopup()
 			ConfigShowHidden = !ConfigShowHidden;
 		}
 
-		// Resfresh.
-		/* @wip
+		// Refresh.
 		uint64 refreshImgID = Viewer::RotateThetaImage.Bind();
-		static bool isEnabledRefresh = false;
 		if (ImGui::ImageButton
 		(
 			ImTextureID(refreshImgID), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
-			isEnabledRefresh ? ColourPressedBG : ColourBG, ColourEnabledTint)
+			ColourBG, ColourEnabledTint)
 		)
 		{
-			isEnabledRefresh = !isEnabledRefresh;
+			// SelectedNode Updated. Need to update global (saved) FilePath.
+			if (Mode == DialogMode::OpenFile)
+				NodeToPath(ConfigOpenFilePath, SelectedNode);
+			else if (Mode == DialogMode::OpenDir)
+				NodeToPath(ConfigOpenDirPath, SelectedNode);
+			if (Mode == DialogMode::SaveFile)
+				NodeToPath(ConfigSaveFilePath, SelectedNode);
+
+			PopulateTrees();
+
+			if (Mode == DialogMode::OpenFile)
+				selectPathItemName = ConfigOpenFilePath.Head();
+			else if (Mode == DialogMode::OpenDir)
+				selectPathItemName = ConfigOpenDirPath.Head();
+			if (Mode == DialogMode::SaveFile)
+				selectPathItemName = ConfigSaveFilePath.Head();
+			if (selectPathItemName)
+				setYScrollToSel = true;
 		}
-		*/
 
 		if (ImGui::BeginMenu("View##FileDialog"))
 		{
