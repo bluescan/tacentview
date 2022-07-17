@@ -1335,11 +1335,11 @@ FileDialog::DialogState FileDialog::DoPopup()
 	//
 
 	// The left and right panels are cells in a 1 row, 2 column table.
-	float bottomBarHeight = 20.0f + 28.0f + menuBarHeight;
+	float bottomBarHeight = 20.0f + 28.0f;
 	ImGui::PushStyleColor(ImGuiCol_TableBorderStrong, tVector4(0.50f, 0.50f, 0.54f, 1.00f));
 	ImGui::PushStyleColor(ImGuiCol_TableBorderLight, tVector4(0.50f, 0.50f, 0.54f, 1.00f));
 	int outerTableFlags = ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable;
-	if (ImGui::BeginTable("FileDialogTable", 2, outerTableFlags, tVector2(0.0f, -bottomBarHeight)))
+	if (ImGui::BeginTable("FileDialogTable", 2, outerTableFlags, tVector2(0.0f, -(bottomBarHeight + menuBarHeight))))
 	{
 		ImGui::TableSetupColumn("LeftTreeColumn", ImGuiTableColumnFlags_WidthFixed, 160.0f);
 		ImGui::TableSetupColumn("RightContentColumn", ImGuiTableColumnFlags_WidthStretch);
@@ -1353,7 +1353,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 		static float heightBookmarks = ImGui::GetTextLineHeightWithSpacing() * 5.0f;
 		static float heightTreeView = 0.0f;
 		static float panelHeight = 0.0f;
-		float currPanelHeight = ImGui::GetWindowHeight() - bottomBarHeight - ImGui::GetFrameHeight() - 20;
+		float currPanelHeight = ImGui::GetWindowHeight() - (bottomBarHeight + menuBarHeight) - ImGui::GetFrameHeight() - 20;
 		if (panelHeight != currPanelHeight)
 		{
 			panelHeight = currPanelHeight;
