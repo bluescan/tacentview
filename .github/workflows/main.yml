@@ -13,7 +13,7 @@ on:
 jobs:
 
   # The checkoutbuildwindows job builds tacentview on windows.
-  checkoutbuildwindows:
+  CheckoutBuildWindows_CmakeNinjaMsvc:
 
     # The type of runner that the job will run on
     runs-on: windows-latest
@@ -23,10 +23,12 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it.
     - uses: actions/checkout@v2
 
-    # Build CMake VS2022 (NMake too slow).
-    # - uses: ilammy/msvc-dev-cmd@v1.4.1
-    - uses: ilammy/msvc-dev-cmd@v1.10.0
-    - name: Build using CMake MSVC
+    # Build using CMake
+    # NMake generator really slow. Lacks parallel build.
+    # Ninja and 'Visual Studio 17 2022' both slow compared to Ubuntu build.
+    # I think msvc-dev-cmd needed for Ninja.
+    # - uses: ilammy/msvc-dev-cmd@v1.10.0
+    - name: Build using CMake Ninja MSVC
       run: |
         echo '*** CMake Configure ***'
         mkdir build
@@ -38,12 +40,12 @@ jobs:
         echo '*** Done Building ***'
         
   # The checkoutbuildubuntu job builds tacentview on ubuntu.
-  checkoutbuildubuntu:
+  CheckoutBuildUbuntu_CmakeNinjaClang:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - uses: seanmiddleditch/gha-setup-ninja@master
-    - name: Build Using CMake Ninja
+    - name: Build Using CMake Ninja Clang
       run: |
         echo '*** Configuring CMake ***'
         mkdir buildninja
