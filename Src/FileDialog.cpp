@@ -172,6 +172,7 @@ namespace tFileDialog
 	bool VerticalSplitter(float thickness, float& width1, float& width2, float minWidth1, float minWidth2, float hoverExtend = 4.0f, float hoverDelay = 0.0f);
 
 	const tVector4 ColourEnabledTint				= tVector4(1.00f, 1.00f, 1.00f, 1.00f);
+	const tVector4 ColourDisabledTint				= tVector4(0.54f, 0.54f, 0.54f, 1.00f);
 	const tVector4 ColourBG							= tVector4(0.00f, 0.00f, 0.00f, 0.00f);
 	const tVector4 ColourPressedBG					= tVector4(0.21f, 0.45f, 0.21f, 1.00f);
 }
@@ -1243,20 +1244,37 @@ FileDialog::DialogState FileDialog::DoPopup()
 	if (ImGui::BeginMenuBar())
 	{
 		tVector2 ToolImageSize							(24.0f, menuBarHeight);
+
 		// Up directory.
-		/* @wip
 		uint64 upImgID = Viewer::UpFolderImage.Bind();
-		static bool isEnabledUp = false;
+		bool upAvail = SelectedNode && SelectedNode->Parent;
 		if (ImGui::ImageButton
 		(
 			ImTextureID(upImgID), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
-			isEnabledUp ? ColourPressedBG : ColourBG, ColourEnabledTint)
+			ColourBG, upAvail ? ColourEnabledTint : ColourDisabledTint) && upAvail
 		)
 		{
-			isEnabledUp = !isEnabledUp;
+			// Put the current location up one directory to the parent.
+			if (Mode == DialogMode::OpenFile)
+			{
+				NodeToPath(ConfigOpenFilePath, SelectedNode->Parent);
+				selectPathItemName = ConfigOpenFilePath.Head();
+			}
+			else if (Mode == DialogMode::OpenDir)
+			{
+				NodeToPath(ConfigOpenDirPath, SelectedNode->Parent);
+				selectPathItemName = ConfigOpenDirPath.Head();
+			}
+			if (Mode == DialogMode::SaveFile)
+			{
+				NodeToPath(ConfigSaveFilePath, SelectedNode->Parent);
+				selectPathItemName = ConfigSaveFilePath.Head();
+			}
+
+			if (selectPathItemName)
+				setYScrollToSel = true;
 		}
 		ShowToolTip("Up Directory");
-		*/
 
 		// Show hidden.
 		uint64 showHiddenImgID = Viewer::ShowHiddenImage.Bind();
