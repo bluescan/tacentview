@@ -1366,7 +1366,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 					tSystem::tFindDirs(foundDirs, selDir);
 				for (tFileInfo* dir = foundDirs.First(); dir; dir = dir->Next())
 				{
-					(dir->FileName)[dir->FileName.Length()-1] = '\0';				// Remove slash.
+					(dir->FileName)[dir->FileName.Length()-1] = '\0';				// Remove trailing slash.
 					ContentItem* contentItem = new ContentItem(*dir);
 					SelectedNode->Contents.Append(contentItem);
 				}
