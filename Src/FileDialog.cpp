@@ -106,6 +106,7 @@ namespace tFileDialog
 		// Is the Contents list below populated and valid. It is slightly different than having an empty Contents list
 		// because a leaf empty directory may have no contents, but it HAS read the filesystem so is populated.
 		bool ContentsPopulated = false;
+		bool SortingDirty = true;
 		tList<ContentItem> Contents;
 	};
 
@@ -748,7 +749,6 @@ void FileDialog::OpenPopup(const tString& openDir)
 	// We now defer population of the trees to this OpenPopup call. Before we did it in the constructor,
 	// but that seems like it's too early, especially if the dialog is a global object.
 	PopulateTrees();
-	ForceSortSpecsDirty = true;
 	
 	switch (Mode)
 	{
@@ -872,6 +872,7 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 			node->NextOpen = true;
 			selectPathItemName = selectPathItemName->Next();
 			SelectedNode = node;
+			SelectedNode->SortingDirty = true;
 			if (setYScrollToSel)
 				setScroll = true;
 		}
@@ -925,6 +926,7 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 		if (!selectPathItemName)
 		{
 			SelectedNode = node;
+			SelectedNode->SortingDirty = true;
 
 			// SelectedNode Updated. Need to update global (saved) FilePath.
 			if (Mode == DialogMode::OpenFile)
@@ -1037,6 +1039,7 @@ void FileDialog::DoSelectable(ContentItem* item)
 				node->Hidden = tIsHidden(newdir);
 			}
 			SelectedNode = node;
+			SelectedNode->SortingDirty = true;
 
 			// SelectedNode Updated. Need to update global config path.
 			if (Mode == DialogMode::OpenFile)
@@ -1388,6 +1391,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 				}
 
 				SelectedNode->ContentsPopulated = true;
+				SelectedNode->SortingDirty = true;
 			}
 
 			int tableFlags =
@@ -1414,22 +1418,22 @@ FileDialog::DialogState FileDialog::DoPopup()
 				ImGui::TableSetupColumn("Type",		propFlags,	36.0f,	uint32(ContentItem::FieldID::FileType)	);
 				ImGui::TableSetupColumn("Size",		propFlags,	0.0f,	uint32(ContentItem::FieldID::FileSize)	);
 				ImGui::TableSetupScrollFreeze(0, 1); // Make this row always visible.
+
 				ImGui::TableHeadersRow();
 
 				// Sort the rows.
 				ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs();
-				if (ForceSortSpecsDirty && sortSpecs)
-				{
+				if (SelectedNode->SortingDirty && sortSpecs)
 					sortSpecs->SpecsDirty = true;
-					ForceSortSpecsDirty = false;
-				}
 
 				if (sortSpecs && sortSpecs->SpecsDirty && (sortSpecs->SpecsCount > 0))
 				{
 					ContentItem::CompareFunctionObject compare(sortSpecs);
 					SelectedNode->Contents.Sort(compare);
+					SelectedNode->SortingDirty = false;
 					sortSpecs->SpecsDirty = false;
 				}
+
 
 				// Do the content rows. We could use ImGuiListClipper here but so far, even with thousands of files in
 				// the Contents list, it is very responsive. Also, since it's a list rather than an array, we'd still

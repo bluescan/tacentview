@@ -124,8 +124,6 @@ private:
 	// This member points to a node in one of the supported trees -- RootTreeNode for Linux and both RootTreeNode
 	// and NetworTreeNode for Windows. Be careful, the SelectedNode must be cleared or reset if the tree is deleted.
 	TreeNode* SelectedNode = nullptr;
-
-	bool ForceSortSpecsDirty = false;
 };
 
 
