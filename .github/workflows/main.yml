@@ -25,12 +25,14 @@ jobs:
 
     # Build CMake VS2022 (NMake too slow).
     # - uses: ilammy/msvc-dev-cmd@v1.4.1
+    - uses: ilammy/msvc-dev-cmd@v1.10.0
     - name: Build using CMake MSVC
       run: |
         echo '*** CMake Configure ***'
         mkdir build
         cd build
-        cmake .. -G"Visual Studio 17 2022" -Ax64
+        # cmake .. -G"Visual Studio 17 2022" -Ax64
+        cmake .. -G"Ninja"
         echo '*** CMake Build ***'
         cmake --build . --config Release --target install
         echo '*** Done Building ***'
