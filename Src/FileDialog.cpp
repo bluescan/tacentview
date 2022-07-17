@@ -1444,13 +1444,13 @@ FileDialog::DialogState FileDialog::DoPopup()
 			int tableFlags =
 				ImGuiTableFlags_Resizable | 
 				ImGuiTableFlags_NoSavedSettings |
-				ImGuiTableFlags_Reorderable |	// Drag columns to an order you like.
-				ImGuiTableFlags_Hideable |		// Hide individual columns.
-				ImGuiTableFlags_Sortable |		// Sort by column.
-				// ImGuiTableFlags_SortTristate	// Ascending, Descending, None. May get 0 sort specs.
-				ImGuiTableFlags_SortMulti |		// Allow sorting multiple columns by shift-selecting them. May get > 1 sort specs.
+				ImGuiTableFlags_Reorderable |		// Drag columns to an order you like.
+				ImGuiTableFlags_Hideable |			// Hide individual columns.
+				ImGuiTableFlags_Sortable |			// Sort by column.
+				// ImGuiTableFlags_SortTristate		// Ascending, Descending, None. May get 0 sort specs.
+				ImGuiTableFlags_SortMulti |			// Allow sorting multiple columns by shift-selecting them. May get > 1 sort specs.
 				//ImGuiTableFlags_SizingFixedFit |
-				ImGuiTableFlags_ScrollY;		// This is needed so the table itself has a scroll bar that respects the top-row freeze.
+				ImGuiTableFlags_ScrollY;			// This is needed so the table itself has a scroll bar that respects the top-row freeze.
 
 			ImGui::PushStyleColor(ImGuiCol_TableBorderLight, tVector4(0.30f, 0.30f, 0.31f, 1.00f));
 			if (ImGui::BeginTable("ContentItems", 5, tableFlags))
