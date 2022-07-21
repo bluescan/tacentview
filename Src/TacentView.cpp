@@ -14,6 +14,7 @@
 
 #ifdef PLATFORM_WINDOWS
 #include <dwmapi.h>
+#include <locale.h>
 #endif
 
 #include <glad/glad.h>
