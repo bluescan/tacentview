@@ -1428,7 +1428,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 						bool allTypesIfNoneSelected = (Mode == DialogMode::OpenFile);
 						selectedTypes.AddSelected(FileTypes, allTypesIfNoneSelected);
 						tSystem::tExtensions extensions(selectedTypes);
-						tSystem::tFindFilesFast(foundFiles, selDir, extensions);
+						tSystem::tFindFiles(foundFiles, selDir, extensions);
 					}
 					for (tFileInfo* fileInfo = foundFiles.First(); fileInfo; fileInfo = fileInfo->Next())
 					{

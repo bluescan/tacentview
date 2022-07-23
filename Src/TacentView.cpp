@@ -349,7 +349,7 @@ tString Viewer::FindImageFilesInCurrentFolder(tList<tSystem::tFileInfo>& foundFi
 
 	tPrintf("Finding image files in %s\n", imagesDir.Chr());
 	tSystem::tExtensions extensions(FileTypes_Load);
-	tSystem::tFindFilesFast(foundFiles, imagesDir, extensions);
+	tSystem::tFindFiles(foundFiles, imagesDir, extensions);
 
 	return imagesDir;
 }
@@ -2694,7 +2694,7 @@ void Viewer::IconifyCallback(GLFWwindow* window, int iconified)
 int Viewer::RemoveOldCacheFiles(const tString& cacheDir)
 {
 	tList<tSystem::tFileInfo> cacheFiles;
-	tSystem::tFindFilesFast(cacheFiles, cacheDir, "bin");
+	tSystem::tFindFiles(cacheFiles, cacheDir, "bin");
 	int numFiles = cacheFiles.NumItems();
 	if (numFiles <= Config::Current->MaxCacheFiles)
 		return 0;
