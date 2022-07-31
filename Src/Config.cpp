@@ -335,7 +335,6 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 		BackgroundStyle				= (profile == Profile::Basic) ? int(BGStyle::None) : int(BGStyle::Checkerboard);
 		BackgroundColour			= tColouri::black;
 		BackgroundExtend			= false;
-		FixedAspectWorkArea			= false;
 	}
 
 	if (categories & Category_Slideshow)
@@ -399,7 +398,6 @@ void Config::ProfileSettings::Load(tExpression expr)
 			ReadItem(BackgroundStyle);
 			ReadItem(BackgroundColour);
 			ReadItem(BackgroundExtend);
-			ReadItem(FixedAspectWorkArea);
 			ReadItem(ResampleFilter);
 			ReadItem(ResampleEdgeMode);
 			ReadItem(ResampleFilterRotateUp);
@@ -522,7 +520,6 @@ bool Config::ProfileSettings::Save(tExprWriter& writer) const
 	WriteItem(BackgroundStyle);
 	WriteItem(BackgroundColour);
 	WriteItem(BackgroundExtend);
-	WriteItem(FixedAspectWorkArea);
 	WriteItem(ResampleFilter);
 	WriteItem(ResampleEdgeMode);
 	WriteItem(ResampleFilterRotateUp);

@@ -19,33 +19,40 @@ namespace Viewer
 {
 
 
-void ShowCropPopup(const tMath::tVector4& lrtb, const tMath::tVector2& uvmarg, const tMath::tVector2& uvoffset);
+void ShowCropPopup(const tMath::tVector4& lrtb, const tMath::tVector2& uvoffset);
 
 
 class CropLine
 {
 public:
-	CropLine()				{ }
-	float Get() const		{ return V + PressedDelta; }
-	float V					= -1.0f;
-	bool Hovered			= false;
-	bool Pressed			= false;
-	float PressedAnchor		= 0.0f;
-	float PressedDelta		= 0.0f;
+	CropLine()					{ }
+	float GetScreenVal() const	{ return ScreenVal + PressedDelta; }
+	float ScreenVal				= -1.0f;
+	int ImageVal				= -1;
+	bool Hovered				= false;
+	bool Pressed				= false;
+	float PressedAnchor			= 0.0f;
+	float PressedDelta			= 0.0f;
 };
 
 
 class CropWidget
 {
 public:
-	CropWidget() { }
+	CropWidget()																										{ }
 
-	void SetLines(const tMath::tVector4& linesLRTB);								// Don't call this every frame. Only once for each image.
 	void MouseButton(bool down, const tMath::tVector2& mouse);
-	void UpdateDraw
+	void Update
 	(
-		const tMath::tVector4& imgext, const tMath::tVector2& mouse,
-		const tMath::tVector2& uvmarg, const tMath::tVector2& uvoffset
+		const tMath::tVector4& imgext, const tMath::tVector2& mouse, const tMath::tVector2& uvoffset
+	);
+
+	// Don't call this every frame. Only when you want to reset the crop lines.
+	// The LRTB ints are in image-space.
+	void SetLines
+	(
+		int l, int r, int t, int b,
+		const tMath::tVector4& imgext, const tMath::tVector2& uvoffset
 	);
 
 	CropLine LineL;
@@ -54,18 +61,12 @@ public:
 	CropLine LineB;
 
 private:
-	void DrawMatt
-	(
-		const tMath::tVector4& imgext,
-		const tMath::tVector2& uvmarg,
-		const tMath::tVector2& uvoffset
-	);
+	void DrawMatt(const tMath::tVector4& imgext, const tMath::tVector2& uvoffset);
 	void DrawLines();
 	void DrawHandles();
 
-	void MouseHovered(CropLine& line, const tMath::tVector2& mouse, const tMath::tVector2& ends, bool horizontal);
+	void MouseHovered(CropLine&, const tMath::tVector2& mouse, const tMath::tVector2& ends, bool horizontal);
 	void MouseButton(CropLine&, bool down, float mouse);
-
 	void ConstrainCropLines(const tMath::tVector4& imgext, bool forceAll = true);
 };
 

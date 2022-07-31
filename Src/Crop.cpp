@@ -28,15 +28,15 @@ namespace Viewer
 {
 	CropWidget CropGizmo;
 
-	tColour CropHovCol		(0.25f, 0.55f, 1.00f, 1.00f);
-	tColour CropCol			(1.00f, 1.00f, 1.00f, 1.00f);
+	tColour CropHovCol		(0.15f, 0.45f, 1.00f, 1.00f);
+	tColour CropCol			(0.85f, 0.85f, 0.85f, 1.00f);
 }
 
 
 void Viewer::CropWidget::MouseButton(CropLine& line, bool down, float mouse)
 {
 	// Up or down.
-	line.V += line.PressedDelta;
+	line.ScreenVal += line.PressedDelta;
 	line.PressedDelta = 0.0f;
 
 	if (down)
@@ -58,9 +58,9 @@ void Viewer::CropWidget::MouseHovered(CropLine& line, const tVector2& mouse, con
 {
 	tARect2 hitBox;
 	if (horizontal)
-		hitBox.Set(tVector2(ends.x, line.V+line.PressedDelta), tVector2(ends.y, line.V+line.PressedDelta));
+		hitBox.Set(tVector2(ends.x, line.GetScreenVal()), tVector2(ends.y, line.GetScreenVal()));
 	else
-		hitBox.Set(tVector2(line.V+line.PressedDelta, ends.x), tVector2(line.V+line.PressedDelta, ends.y));
+		hitBox.Set(tVector2(line.GetScreenVal(), ends.x), tVector2(line.GetScreenVal(), ends.y));
 	hitBox.Expand(4);
 	line.Hovered = hitBox.IsPointInside(mouse);
 }
@@ -75,20 +75,7 @@ void Viewer::CropWidget::MouseButton(bool down, const tVector2& mouse)
 }
 
 
-void Viewer::CropWidget::SetLines(const tVector4& lines)
-{
-	LineL.V = lines.L;	LineL.PressedDelta = 0.0f;
-	LineR.V = lines.R;	LineR.PressedDelta = 0.0f;
-	LineT.V = lines.T;	LineT.PressedDelta = 0.0f;
-	LineB.V = lines.B;	LineB.PressedDelta = 0.0f;
-}
-
-
-void Viewer::CropWidget::UpdateDraw
-(
-	const tVector4& imgext, const tVector2& mouse,
-	const tVector2& uvmarg, const tVector2& uvoffset
-)
+void Viewer::CropWidget::Update(const tVector4& imgext, const tVector2& mouse, const tVector2& uvoffset)
 {
 	if (LineB.Pressed)
 		LineB.PressedDelta = mouse.y - LineB.PressedAnchor;
@@ -99,10 +86,10 @@ void Viewer::CropWidget::UpdateDraw
 	if (LineR.Pressed)
 		LineR.PressedDelta = mouse.x - LineR.PressedAnchor;
 
-	float l = LineL.V + LineL.PressedDelta;
-	float r = LineR.V + LineR.PressedDelta;
-	float b = LineB.V + LineB.PressedDelta;
-	float t = LineT.V + LineT.PressedDelta;
+	float l = LineL.GetScreenVal();
+	float r = LineR.GetScreenVal();
+	float b = LineB.GetScreenVal();
+	float t = LineT.GetScreenVal();
 
 	MouseHovered(LineB, mouse, tVector2(l, r), true);
 	MouseHovered(LineT, mouse, tVector2(l, r), true);
@@ -110,70 +97,108 @@ void Viewer::CropWidget::UpdateDraw
 	MouseHovered(LineR, mouse, tVector2(b, t), false);
 
 	ConstrainCropLines(imgext, false);
-	DrawMatt(imgext, uvmarg, uvoffset);
+
+	if (LineL.Pressed || LineR.Pressed || LineT.Pressed || LineB.Pressed)
+	{
+		tVector2 scrPosMin(LineL.GetScreenVal(), LineB.GetScreenVal());
+		ConvertScreenPosToImagePos(LineL.ImageVal, LineB.ImageVal, scrPosMin, imgext, uvoffset);
+		tVector2 scrPosMax(LineR.GetScreenVal(), LineT.GetScreenVal());
+		ConvertScreenPosToImagePos(LineR.ImageVal, LineT.ImageVal, scrPosMax, imgext, uvoffset);
+	}
+	else
+	{
+		SetLines(LineL.ImageVal, LineR.ImageVal, LineT.ImageVal, LineB.ImageVal, imgext, uvoffset);
+	}
+
+	DrawMatt(imgext, uvoffset);
 	DrawLines();
 	DrawHandles();
 }
 
 
+void Viewer::CropWidget::SetLines(int left, int right, int top, int bottom, const tMath::tVector4& imgext, const tMath::tVector2& uvoffset)
+{
+	LineL.ImageVal = left;
+	LineR.ImageVal = right;
+	LineT.ImageVal = top;
+	LineB.ImageVal = bottom;
+
+	tVector2 min;
+	ConvertImagePosToScreenPos(min, left, bottom, imgext, uvoffset, true);
+
+	tVector2 max;
+	ConvertImagePosToScreenPos(max, right, top, imgext, uvoffset, true);
+
+	LineL.ScreenVal = min.x;	LineL.PressedDelta = 0.0f;
+	LineR.ScreenVal = max.x;	LineR.PressedDelta = 0.0f;
+	LineT.ScreenVal = max.y;	LineT.PressedDelta = 0.0f;
+	LineB.ScreenVal = min.y;	LineB.PressedDelta = 0.0f;
+}
+
+
 void Viewer::CropWidget::ConstrainCropLines(const tVector4& imgext, bool forceAll)
 {
+	float scrPixelsPerImgPixelW = (imgext.R-imgext.L)/CurrImage->GetWidth();
+	float scrPixelsPerImgPixelH = (imgext.T-imgext.B)/CurrImage->GetHeight();
+
 	if (LineL.Pressed || forceAll)
 	{
-		if (LineL.V + LineL.PressedDelta + 8 > LineR.V + LineR.PressedDelta)
-			LineL.PressedDelta = LineR.V + LineR.PressedDelta - LineL.V - 8;
-		if (LineL.V + LineL.PressedDelta < imgext.L)
-			LineL.PressedDelta = imgext.L - LineL.V;
+		if (LineL.GetScreenVal() + 3.0f*scrPixelsPerImgPixelW > LineR.GetScreenVal())
+			LineL.PressedDelta = LineR.GetScreenVal() - LineL.ScreenVal - 3.0f*scrPixelsPerImgPixelW;
+		if (LineL.GetScreenVal() < imgext.L)
+			LineL.PressedDelta = imgext.L - LineL.ScreenVal;
 	}
 
 	if (LineR.Pressed || forceAll)
 	{
-		if (LineR.V + LineR.PressedDelta - 8 < LineL.V + LineL.PressedDelta)
-			LineR.PressedDelta = LineL.V + LineL.PressedDelta - LineR.V + 8;
-		if (LineR.V + LineR.PressedDelta > imgext.R)
-			LineR.PressedDelta = imgext.R - LineR.V;
+		if (LineR.GetScreenVal()- 3.0f*scrPixelsPerImgPixelW < LineL.GetScreenVal())
+			LineR.PressedDelta = LineL.GetScreenVal() - LineR.ScreenVal + 3.0f*scrPixelsPerImgPixelW;
+		if (LineR.GetScreenVal() > imgext.R)
+			LineR.PressedDelta = imgext.R - LineR.ScreenVal;
 	}
 
 	if (LineB.Pressed || forceAll)
 	{
-		if (LineB.V + LineB.PressedDelta + 8 > LineT.V + LineT.PressedDelta)
-			LineB.PressedDelta = LineT.V + LineT.PressedDelta - LineB.V - 8;
-		if (LineB.V + LineB.PressedDelta < imgext.B)
-			LineB.PressedDelta = imgext.B - LineB.V;
+		if (LineB.GetScreenVal() + 3.0f*scrPixelsPerImgPixelH > LineT.GetScreenVal())
+			LineB.PressedDelta = LineT.GetScreenVal() - LineB.ScreenVal - 3.0f*scrPixelsPerImgPixelH;
+		if (LineB.GetScreenVal() < imgext.B)
+			LineB.PressedDelta = imgext.B - LineB.ScreenVal;
 	}
 
 	if (LineT.Pressed || forceAll)
 	{
-		if (LineT.V + LineT.PressedDelta - 8 < LineB.V + LineB.PressedDelta)
-			LineT.PressedDelta = LineB.V + LineB.PressedDelta - LineT.V + 8;
-		if (LineT.V + LineT.PressedDelta > imgext.T)
-			LineT.PressedDelta = imgext.T - LineT.V;
+		if (LineT.GetScreenVal() - 3.0f*scrPixelsPerImgPixelH < LineB.GetScreenVal())
+			LineT.PressedDelta = LineB.GetScreenVal() - LineT.ScreenVal + 3.0f*scrPixelsPerImgPixelH;
+		if (LineT.GetScreenVal() > imgext.T)
+			LineT.PressedDelta = imgext.T - LineT.ScreenVal;
 	}
 }
 
 
-void Viewer::CropWidget::DrawMatt(const tVector4& imext, const tVector2& uvmarg, const tVector2& uvoffset)
+void Viewer::CropWidget::DrawMatt(const tVector4& imext, const tVector2& uvoffset)
 {
-	float l = LineL.V + LineL.PressedDelta;
-	float r = LineR.V + LineR.PressedDelta;
-	float b = LineB.V + LineB.PressedDelta;
-	float t = LineT.V + LineT.PressedDelta;
+	float l = LineL.GetScreenVal();
+	float r = LineR.GetScreenVal();
+	float b = LineB.GetScreenVal();
+	float t = LineT.GetScreenVal();
 
-	tVector2 scrCropMin(LineL.Get(), LineB.Get());
-	tVector2 scrCropMax(LineR.Get(), LineT.Get());
+	tVector2 scrCropMin(l, b);
+	tVector2 scrCropMax(r, t);
 	int minX, minY;
-	ConvertScreenPosToImagePos(minX, minY, scrCropMin, imext, uvmarg, uvoffset);
+	ConvertScreenPosToImagePos(minX, minY, scrCropMin, imext, uvoffset);
 	int maxX, maxY;
-	ConvertScreenPosToImagePos(maxX, maxY, scrCropMax, imext, uvmarg, uvoffset);
+	ConvertScreenPosToImagePos(maxX, maxY, scrCropMax, imext, uvoffset);
 
 	maxX += 1; maxY += 1;
 	tVector2 bl;
-	ConvertImagePosToScreenPos(bl, minX, minY, imext, uvmarg, uvoffset);
+	ConvertImagePosToScreenPos(bl, minX, minY, imext, uvoffset);
 
 	tVector2 tr;
-	ConvertImagePosToScreenPos(tr, maxX, maxY, imext, uvmarg, uvoffset);
+	ConvertImagePosToScreenPos(tr, maxX, maxY, imext, uvoffset);	
 
 	glColor4f(ColourClear.x, ColourClear.y, ColourClear.z, 0.75f);
+
+	// Imagine a picture frame with mitre cuts at each corner.
 	glBegin(GL_QUAD_STRIP);
 	glVertex2f(imext.L, imext.B);
 	glVertex2f(bl.x, bl.y);
@@ -192,27 +217,27 @@ void Viewer::CropWidget::DrawMatt(const tVector4& imext, const tVector2& uvmarg,
 void Viewer::CropWidget::DrawLines()
 {
 	glColor4fv(tColourf::white.E);
-	float l = LineL.V + LineL.PressedDelta;
-	float r = LineR.V + LineR.PressedDelta;
-	float b = LineB.V + LineB.PressedDelta;
-	float t = LineT.V + LineT.PressedDelta;
+	float l = (LineL.GetScreenVal());
+	float r = (LineR.GetScreenVal()) - 1.0f;
+	float b = (LineB.GetScreenVal());
+	float t = (LineT.GetScreenVal()) - 1.0f;
 	bool anyPressed = LineL.Pressed || LineR.Pressed || LineB.Pressed || LineT.Pressed;
 	glBegin(GL_LINES);
 
 	glColor4fv((!anyPressed && LineB.Hovered) || LineB.Pressed ? CropHovCol.E : CropCol.E);
 	glVertex2f(l,	b);
-	glVertex2f(r+1,	b);
+	glVertex2f(r,	b);
 
 	glColor4fv((!anyPressed && LineR.Hovered) || LineR.Pressed ? CropHovCol.E : CropCol.E);
-	glVertex2f(r+1,	b);
-	glVertex2f(r+1,	t+1);
+	glVertex2f(r,	b);
+	glVertex2f(r,	t);
 
 	glColor4fv((!anyPressed && LineT.Hovered) || LineT.Pressed ? CropHovCol.E : CropCol.E);
-	glVertex2f(r+1,	t+1);
-	glVertex2f(l,	t+1);
+	glVertex2f(r,	t);
+	glVertex2f(l,	t);
 
 	glColor4fv((!anyPressed && LineL.Hovered) || LineL.Pressed ? CropHovCol.E : CropCol.E);
-	glVertex2f(l,	t+1);
+	glVertex2f(l,	t);
 	glVertex2f(l,	b);
 
 	glColor4fv(tColourf::white.E);
@@ -222,10 +247,10 @@ void Viewer::CropWidget::DrawLines()
 
 void Viewer::CropWidget::DrawHandles()
 {
-	float l = LineL.V + LineL.PressedDelta;
-	float r = LineR.V + LineR.PressedDelta;
-	float b = LineB.V + LineB.PressedDelta;
-	float t = LineT.V + LineT.PressedDelta;
+	float l = (LineL.GetScreenVal());
+	float r = (LineR.GetScreenVal()) - 1.0f;
+	float b = (LineB.GetScreenVal());
+	float t = (LineT.GetScreenVal()) - 1.0f;
 	bool anyPressed = LineL.Pressed || LineR.Pressed || LineB.Pressed || LineT.Pressed;
 
 	glBegin(GL_QUADS);
@@ -234,36 +259,36 @@ void Viewer::CropWidget::DrawHandles()
 	(
 		(!anyPressed && LineL.Hovered && LineB.Hovered) || (LineL.Pressed && LineB.Pressed) ? CropHovCol.E : CropCol.E
 	);
-	glVertex2f(l-4,		b-4);
-	glVertex2f(l+3,		b-4);
-	glVertex2f(l+3,		b+3);
-	glVertex2f(l-4,		b+3);
+	glVertex2f(l-4.f,		b-4.f);
+	glVertex2f(l+4.f,		b-4.f);
+	glVertex2f(l+4.f,		b+4.f);
+	glVertex2f(l-4.f,		b+4.f);
 
 	glColor4fv
 	(
 		(!anyPressed && LineR.Hovered && LineB.Hovered) || (LineR.Pressed && LineB.Pressed) ? CropHovCol.E : CropCol.E
 	);
-	glVertex2f(r-3,		b-4);
+	glVertex2f(r-4,		b-4);
 	glVertex2f(r+4,		b-4);
-	glVertex2f(r+4,		b+3);
-	glVertex2f(r-3,		b+3);
+	glVertex2f(r+4,		b+4);
+	glVertex2f(r-4,		b+4);
 
 	glColor4fv
 	(
 		(!anyPressed && LineR.Hovered && LineT.Hovered) || (LineR.Pressed && LineT.Pressed) ? CropHovCol.E : CropCol.E
 	);
-	glVertex2f(r-3,		t-3);
-	glVertex2f(r+4,		t-3);
+	glVertex2f(r-4,		t-4);
+	glVertex2f(r+4,		t-4);
 	glVertex2f(r+4,		t+4);
-	glVertex2f(r-3,		t+4);
+	glVertex2f(r-4,		t+4);
 
 	glColor4fv
 	(
 		(!anyPressed && LineL.Hovered && LineT.Hovered) || (LineL.Pressed && LineT.Pressed) ? CropHovCol.E : CropCol.E
 	);
-	glVertex2f(l-4,		t-3);
-	glVertex2f(l+3,		t-3);
-	glVertex2f(l+3,		t+4);
+	glVertex2f(l-4,		t-4);
+	glVertex2f(l+4,		t-4);
+	glVertex2f(l+4,		t+4);
 	glVertex2f(l-4,		t+4);
 
 	glColor4fv(tColourf::white.E);
@@ -271,7 +296,7 @@ void Viewer::CropWidget::DrawHandles()
 }
 
 
-void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvmarg, const tVector2& uvoffset)
+void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 {
 	if (!CurrImage)
 	{
@@ -303,12 +328,12 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvmarg, const t
 
 	if (ImGui::Begin("Crop", &CropMode, flags))
 	{
-		tVector2 scrCropMin(CropGizmo.LineL.Get(), CropGizmo.LineB.Get());
-		tVector2 scrCropMax(CropGizmo.LineR.Get(), CropGizmo.LineT.Get());
+		tVector2 scrCropMin(CropGizmo.LineL.GetScreenVal(), CropGizmo.LineB.GetScreenVal());
+		tVector2 scrCropMax(CropGizmo.LineR.GetScreenVal(), CropGizmo.LineT.GetScreenVal());
 		int minX, minY;
-		ConvertScreenPosToImagePos(minX, minY, scrCropMin, lrtb, uvmarg, uvoffset);
+		ConvertScreenPosToImagePos(minX, minY, scrCropMin, lrtb, uvoffset);
 		int maxX, maxY;
-		ConvertScreenPosToImagePos(maxX, maxY, scrCropMax, lrtb, uvmarg, uvoffset);
+		ConvertScreenPosToImagePos(maxX, maxY, scrCropMax, lrtb, uvoffset);
 
 		int origW = CurrImage->GetWidth();
 		int origH = CurrImage->GetHeight();
@@ -327,11 +352,6 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvmarg, const t
 		ImGui::Text("V Margins");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("B:%d T:%d", margB, margT);
 		ImGui::Text("Orig Size");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("W:%d H:%d", origW, origH);
 		ImGui::Text("New Size");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("W:%d H:%d", newW, newH);
-		if ((maxX - minX + 1 < 4) || (maxY - minY + 1 < 4))
-		{
-			ImGui::SameLine();
-			ImGui::Text("Min 4x4");
-		}
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 7.0f);
 
@@ -351,6 +371,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvmarg, const t
 			CurrImage->Bind();
 			Viewer::SetWindowTitle();
 			CropMode = false;
+			ResetPan();
 		}
 	}
 	ImGui::End();

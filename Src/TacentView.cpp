@@ -319,7 +319,7 @@ int Viewer::GetNavBarHeight()
 	if (!Config::Current->ShowNavBar)
 		return 0;
 
-	return NavBar.GetShowLog() ? 150 : 29;
+	return NavBar.GetShowLog() ? 150 : 30;
 }
 
 
@@ -820,9 +820,8 @@ void Viewer::DrawBackground(float l, float r, float b, float t)
 
 void Viewer::ConvertScreenPosToImagePos
 (
-	int& imgX, int& imgY,
-	const tVector2& scrPos, const tVector4& lrtb,
-	const tVector2& uvMarg, const tVector2& uvOff
+	int& imgX, int& imgY, const tVector2& scrPos,
+	const tVector4& lrtb, const tVector2& uvOff
 )
 {
 	float picX = scrPos.x - lrtb.L;
@@ -842,8 +841,8 @@ void Viewer::ConvertScreenPosToImagePos
 	float imagew = float(CurrImage->GetWidth());
 	float imageh = float(CurrImage->GetHeight());
 
-	float imposX = imagew * tMath::tLisc(normX, 0.0f + uvMarg.u + uvOff.u, 1.0f - uvMarg.u + uvOff.u);
-	float imposY = imageh * tMath::tLisc(normY, 0.0f + uvMarg.v + uvOff.v, 1.0f - uvMarg.v + uvOff.v);
+	float imposX = imagew * tMath::tLisc(normX, 0.0f + uvOff.u, 1.0f + uvOff.u);
+	float imposY = imageh * tMath::tLisc(normY, 0.0f + uvOff.v, 1.0f + uvOff.v);
 
 	imgX = int(imposX);
 	imgY = int(imposY);
@@ -866,7 +865,7 @@ void Viewer::ConvertImagePosToScreenPos
 (
 	tVector2& scrPos,
 	int imposX, int imposY, const tVector4& lrtb,
-	const tVector2& uvMarg, const tVector2& uvOff
+	const tVector2& uvOff, bool centerPixel
 )
 {
 	tMath::tiClamp(imposX, 0, CurrImage->GetWidth());
@@ -877,20 +876,25 @@ void Viewer::ConvertImagePosToScreenPos
 	float imagew = float(CurrImage->GetWidth());
 	float imageh = float(CurrImage->GetHeight());
 
-	float umin = 0.0f + uvMarg.u + uvOff.u;
-	float umax = 1.0f - uvMarg.u + uvOff.u;
+	float umin = 0.0f + uvOff.u;
+	float umax = 1.0f + uvOff.u;
 	float u = (imgX/imagew - umin) / (umax-umin);
 
-	float vmin = 0.0f + uvMarg.v + uvOff.v;
-	float vmax = 1.0f - uvMarg.v + uvOff.v;
+	float vmin = 0.0f + uvOff.v;
+	float vmax = 1.0f + uvOff.v;
 	float v = (imgY/imageh - vmin) / (vmax-vmin);
 
 	float picX = u * (lrtb.R-lrtb.L);
 	float picY = v * (lrtb.T-lrtb.B);
 
 	scrPos.x = tCeiling(picX + lrtb.L);
-	//scrPos.y = picY + 1.0f + lrtb.B;
 	scrPos.y = tCeiling(picY + lrtb.B);
+
+	if (centerPixel)
+	{
+		scrPos.x += 0.5f*(lrtb.R-lrtb.L)/imagew;
+		scrPos.y += 0.5f*(lrtb.T-lrtb.B)/imageh;
+	}
 }
 
 
@@ -932,7 +936,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		glClearColor(ColourClear.x, ColourClear.y, ColourClear.z, ColourClear.w);
 	glClear(GL_COLOR_BUFFER_BIT);
 	int bottomUIHeight	= GetNavBarHeight();
-	int topUIHeight		= !Config::Current->ShowMenuBar ? 0 : MenuBarHeight;
+	int topUIHeight		= !Config::Current->ShowMenuBar ? 0 : MenuBarHeight+1;
 
 	ImGui_ImplOpenGL2_NewFrame();		
 	ImGui_ImplGlfw_NewFrame();
@@ -957,18 +961,16 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	glMatrixMode(GL_MODELVIEW);
 	float draww		= 1.0f;		float drawh		= 1.0f;
 	float iw 		= 1.0f;		float ih		= 1.0f;
-	float hmargin	= 0.0f;		float vmargin	= 0.0f;
-
 	float left		= 0.0f;
 	float right		= 0.0f;
 	float top		= 0.0f;
 	float bottom	= 0.0f;
 	float uoff		= 0.0f;
 	float voff		= 0.0f;
-	float umarg		= 0.0f;
-	float vmarg		= 0.0f;
-	static bool skipUpdatePlaying = false;
+	float panX		= 0.0f;
+	float panY		= 0.0f;
 
+	static bool skipUpdatePlaying = false;
 	double mouseXd, mouseYd;
 	glfwGetCursorPos(window, &mouseXd, &mouseYd);
 
@@ -985,129 +987,69 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (!skipUpdatePlaying)
 			CurrImage->UpdatePlaying(float(dt));
 
-		iw = float(CurrImage->GetWidth());
-		ih = float(CurrImage->GetHeight());
+		int iwi = CurrImage->GetWidth();
+		int ihi = CurrImage->GetHeight();
+		iw = float(iwi);
+		ih = float(ihi);
 		float picAspect = iw/ih;
 
-		float cropExtraMargin = CropMode ? 5.0f : 0.0f;
-		if (Config::Current->FixedAspectWorkArea)
-		{
-			if (workAreaAspect > picAspect)
-			{
-				drawh = float(workAreaH) - cropExtraMargin*2.0f;
-				draww = picAspect * drawh;
-				hmargin = (workAreaW - draww) * 0.5f;
-				vmargin = cropExtraMargin;
-			}
-			else
-			{
-				draww = float(workAreaW) - cropExtraMargin*2.0f;
-				drawh = draww / picAspect;
-				vmargin = (workAreaH - drawh) * 0.5f;
-				hmargin = cropExtraMargin;
-			}
-		}
-		else
-		{
-			draww = float(workAreaW) - cropExtraMargin*2.0f;
-			drawh = float(workAreaH) - cropExtraMargin*2.0f;
-			vmargin = cropExtraMargin;
-			hmargin = cropExtraMargin;
-		}
-
-		// w and h are the image width and height. draww and drawh are the drawable area width and height.
-		left	= tMath::tRound(hmargin);
-		right	= tMath::tRound(hmargin+draww);
-		bottom	= tMath::tRound(vmargin);
-		top		= tMath::tRound(vmargin+drawh);
+		draww = float(workAreaW);
+		drawh = float(workAreaH);
 
 		if (CurrZoomMode == Config::ProfileSettings::ZoomMode::DownscaleOnly)
 		{
-			if (Config::Current->FixedAspectWorkArea)
-			{
-				ZoomPercent = 100.0f;
-				if (draww < iw)
-					ZoomPercent = 100.0f * draww / iw;
-			}
-			else
-			{
-				ZoomPercent = 100.0f;
-				float zoomh = draww / iw;
-				float zoomv = drawh / ih;
-				if ((iw > draww) || (ih > drawh))
-					ZoomPercent = 100.0f * tMath::tMin(zoomh, zoomv);
-			}
+			ZoomPercent = 100.0f;
+			float zoomh = draww / iw;
+			float zoomv = drawh / ih;
+			if ((iw > draww) || (ih > drawh))
+				ZoomPercent = 100.0f * tMath::tMin(zoomh, zoomv);
 		}
 		else if (CurrZoomMode == Config::ProfileSettings::ZoomMode::Fit)
 		{
-			if (Config::Current->FixedAspectWorkArea)
-			{
-				ZoomPercent = 100.0f * draww / iw;
-			}
-			else
-			{
-				float zoomh = draww / iw;
-				float zoomv = drawh / ih;
-				ZoomPercent = 100.0f * tMath::tMin(zoomh, zoomv);
-			}
+			float zoomh = draww / iw;
+			float zoomv = drawh / ih;
+			ZoomPercent = 100.0f * tMath::tMin(zoomh, zoomv);
 		}
 
 		float w = iw * ZoomPercent/100.0f;
 		float h = ih * ZoomPercent/100.0f;
 
-		// If the image is smaller than the drawable area we draw a quad of the correct size with full 0..1 range in the uvs.
-		// Setting the UV margins is then what allows the fixed-aspect work area to work properly.
-		if (Config::Current->FixedAspectWorkArea && (w > draww))
+		if (!Config::Current->Tile)
 		{
-			float propw = draww / w;
-			umarg = (1.0f - propw)/2.0f;
-			float proph = drawh / h;
-			vmarg = (1.0f - proph)/2.0f;
+			int panExtX = tMath::tMax(workAreaW/2, int(w)/2);
+			int panExtY = tMath::tMax(workAreaH/2, int(h)/2);
+			tMath::tiClamp(PanDragDownOffsetX, -panExtX-PanOffsetX, panExtX-PanOffsetX);
+			tMath::tiClamp(PanDragDownOffsetY, -panExtY-PanOffsetY, panExtY-PanOffsetY);
 		}
-		else
+		panX = float(PanOffsetX+PanDragDownOffsetX);
+		panY = float(PanOffsetY+PanDragDownOffsetY);
+
+		// w and h are the image width and height. draww and drawh are the drawable area width and height.
+		left	= tMath::tRound(panX);
+		right	= tMath::tRound(draww+panX);
+		bottom	= tMath::tRound(panY);
+		top		= tMath::tRound(drawh+panY);
+
+		// Compute extents.
+		float offsetW = tMath::tRound((draww - w) / 2.0f);
+		left	+= offsetW;
+		right	= left + w;		// Fix by Oddwarg. I had "right -= offsetW".
+
+		float offsetH = tMath::tRound((drawh - h) / 2.0f);
+		bottom	+= offsetH;
+		top		= bottom + h;	// Fix by Oddwarg. I had "top -= offsetH".
+
+		// Panning.
+		if (RMBDown)
 		{
-			// Compute extents.
-			float offsetW = tMath::tRound((draww - w) / 2.0f);
-			left	+= offsetW;
-			right	= left + w;		// Fix by Oddwarg. I had "right -= offsetW".
-
-			float offsetH = tMath::tRound((drawh - h) / 2.0f);
-			bottom	+= offsetH;
-			top		= bottom + h;	// Fix by Oddwarg. I had "top -= offsetH".
+			PanDragDownOffsetX = mouseXi - DragAnchorX;
+			PanDragDownOffsetY = mouseYi - DragAnchorY;
 		}
-
-		// Modify the UVs here to magnify.
-		if ((draww < w) || Config::Current->Tile)
-		{
-			if (RMBDown)
-				PanDragDownOffsetX = mouseXi - DragAnchorX;
-
-			if (!Config::Current->Tile)
-				tMath::tiClamp(PanDragDownOffsetX, int(-(w-draww)/2.0f) - PanOffsetX, int((w-draww)/2.0f) - PanOffsetX);
-		}
-
-		if ((drawh < h) || Config::Current->Tile)
-		{
-			if (RMBDown)
-				PanDragDownOffsetY = mouseYi - DragAnchorY;
-
-			if (!Config::Current->Tile)
-				tMath::tiClamp(PanDragDownOffsetY, int(-(h-drawh)/2.0f) - PanOffsetY, int((h-drawh)/2.0f) - PanOffsetY);
-		}
-
-		if ((draww > w) && !Config::Current->Tile)
-			ResetPan(true, false);
-
-		if ((drawh > h) && !Config::Current->Tile)
-			ResetPan(false, true);
-
-		uoff = -float(PanOffsetX+PanDragDownOffsetX)/w;
-		voff = -float(PanOffsetY+PanDragDownOffsetY)/h;
 
 		// Draw background.
 		glDisable(GL_TEXTURE_2D);
 		if ((Config::Current->BackgroundExtend || Config::Current->Tile) && !CropMode)
-			DrawBackground(hmargin, hmargin+draww, vmargin, vmargin+drawh);
+			DrawBackground(0.0f, draww, 0.0f, drawh);
 		else
 			DrawBackground(left, right, bottom, top);
 
@@ -1128,7 +1070,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 
 		// Decide which colour channels to draw. OpenGL handles all this with swizzling.
-
 		int swizzle[4] =
 		{
 			DrawChannel_R ? GL_RED : GL_ZERO,
@@ -1152,19 +1093,22 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		glBegin(GL_QUADS);
 		if (!Config::Current->Tile)
 		{
-			glTexCoord2f(0.0f + umarg + uoff, 0.0f + vmarg + voff); glVertex2f(left,  bottom);
-			glTexCoord2f(0.0f + umarg + uoff, 1.0f - vmarg + voff); glVertex2f(left,  top);
-			glTexCoord2f(1.0f - umarg + uoff, 1.0f - vmarg + voff); glVertex2f(right, top);
-			glTexCoord2f(1.0f - umarg + uoff, 0.0f + vmarg + voff); glVertex2f(right, bottom);
+			glTexCoord2f(0.0f, 0.0f); glVertex2f(left,  bottom);
+			glTexCoord2f(0.0f, 1.0f); glVertex2f(left,  top);
+			glTexCoord2f(1.0f, 1.0f); glVertex2f(right, top);
+			glTexCoord2f(1.0f, 0.0f); glVertex2f(right, bottom);
 		}
 		else
 		{
 			float repU = draww/(right-left);	float offU = (1.0f-repU)/2.0f;
 			float repV = drawh/(top-bottom);	float offV = (1.0f-repV)/2.0f;
-			glTexCoord2f(offU + 0.0f + umarg + uoff,	offV + 0.0f + vmarg + voff);	glVertex2f(hmargin,			vmargin);
-			glTexCoord2f(offU + 0.0f + umarg + uoff,	offV + repV - vmarg + voff);	glVertex2f(hmargin,			vmargin+drawh);
-			glTexCoord2f(offU + repU - umarg + uoff,	offV + repV - vmarg + voff);	glVertex2f(hmargin+draww,	vmargin+drawh);
-			glTexCoord2f(offU + repU - umarg + uoff,	offV + 0.0f + vmarg + voff);	glVertex2f(hmargin+draww,	vmargin);
+			float uoffp = -panX/w;
+			float voffp = -panY/h;
+
+			glTexCoord2f(offU + 0.0f + uoffp,	offV + 0.0f + voffp);	glVertex2f(0.0f,	0.0f);
+			glTexCoord2f(offU + 0.0f + uoffp,	offV + repV + voffp);	glVertex2f(0.0f,	drawh);
+			glTexCoord2f(offU + repU + uoffp,	offV + repV + voffp);	glVertex2f(draww,	drawh);
+			glTexCoord2f(offU + repU + uoffp,	offV + 0.0f + voffp);	glVertex2f(draww,	0.0f);
 		}
 		glEnd();
 
@@ -1191,7 +1135,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			tiClamp(CursorX, 0, CurrImage->GetWidth() - 1);
 			tiClamp(CursorY, 0, CurrImage->GetHeight() - 1);
 			tVector2 reticle;
-			ConvertImagePosToScreenPos(reticle, CursorX, CursorY, tVector4(left, right, top, bottom), tVector2(umarg, vmarg), tVector2(uoff, voff));
+			ConvertImagePosToScreenPos(reticle, CursorX, CursorY, tVector4(left, right, top, bottom), tVector2(0.0f, 0.0f), tVector2(uoff, voff));
 			ReticleX = reticle.x;
 			ReticleY = reticle.y;
 			RequestCursorMove = CursorMove_None;
@@ -1202,7 +1146,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ConvertScreenPosToImagePos
 		(
 			CursorX, CursorY, scrCursorPos, tVector4(left, right, top, bottom),
-			tVector2(umarg, vmarg), tVector2(uoff, voff)
+			tVector2(uoff, voff)
 		);
 
 		PixelColour = CurrImage->GetPixel(CursorX, CursorY);
@@ -1243,19 +1187,14 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			if (ZoomPercent >= 500.0f)
 			{
+				tVector4 lrtb(left, right, top, bottom);
+				tVector2 uvoffset(uoff, voff);
+
 				// Draw the reticle as a box.
 				tVector2 scrPosBL;
-				ConvertImagePosToScreenPos
-				(
-					scrPosBL, CursorX, CursorY, tVector4(left, right, top, bottom),
-					tVector2(umarg, vmarg), tVector2(uoff, voff)
-				);
+				ConvertImagePosToScreenPos(scrPosBL, CursorX,   CursorY,   lrtb, uvoffset);
 				tVector2 scrPosTR;
-				ConvertImagePosToScreenPos
-				(
-					scrPosTR, CursorX+1, CursorY+1, tVector4(left, right, top, bottom),
-					tVector2(umarg, vmarg), tVector2(uoff, voff)
-				);
+				ConvertImagePosToScreenPos(scrPosTR, CursorX+1, CursorY+1, lrtb, uvoffset);
 
 				glBegin(GL_LINES);
 				glVertex2f(scrPosBL.x-1,	scrPosBL.y-1);
@@ -1295,14 +1234,17 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		static bool lastCropMode = false;
 		if (CropMode)
 		{
-			if (!lastCropMode)
-				CropGizmo.SetLines(tVector4(left, right, top, bottom));
+			tVector4 lrtb(left, right, top, bottom);
+			tVector2 uvoffset(uoff, voff);
+			CropGizmo.Update(lrtb, tVector2(mouseX, mouseY), uvoffset);
 
-			CropGizmo.UpdateDraw
-			(
-				tVector4(left, right, top, bottom), tVector2(mouseX, mouseY),
-				tVector2(umarg, vmarg), tVector2(uoff, voff)
-			);
+			if (!lastCropMode)
+				// Lines are in image space.
+				CropGizmo.SetLines
+				(
+					0, CurrImage->GetWidth()-1, CurrImage->GetHeight()-1, 0,
+					lrtb, uvoffset
+				);
 		}
 		lastCropMode = CropMode;
 	}
@@ -1648,7 +1590,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::Separator();
 
 			tString cropKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Crop);
-			ImGui::MenuItem("Crop...", cropKey.Chz(), &CropMode);
+			if (ImGui::MenuItem("Crop...", cropKey.Chz(), &CropMode))
+			{
+				if (CropMode)
+					Config::Current->Tile = false;
+			}
 
 			tString resizeImgKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ResizeImage);
 			if (ImGui::MenuItem("Resize Image...", resizeImgKey.Chz()) && CurrImage)
@@ -1880,7 +1826,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		(
 			ImTextureID(CropImage.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			CropMode ? ColourPressedBG : ColourBG, cropAvail ? ColourEnabledTint : ColourDisabledTint) && cropAvail
-		)	CropMode = !CropMode;
+		)
+		{
+			CropMode = !CropMode;
+			if (CropMode)
+				Config::Current->Tile = false;
+		}
 		ShowToolTip("Crop");
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical, 3.0f);
@@ -2014,7 +1965,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (Config::Current->ShowAbout)
 		ShowAboutPopup(&Config::Current->ShowAbout);
 
-	ShowCropPopup(tVector4(left, right, top, bottom), tVector2(umarg, vmarg), tVector2(uoff, voff));
+	ShowCropPopup(tVector4(left, right, top, bottom), tVector2(uoff, voff));
 
 	if (Request_DeleteFileModal)
 	{
@@ -2350,6 +2301,8 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case Bindings::Operation::Crop:
 			CropMode = !CropMode;
+			if (CropMode)
+				Config::Current->Tile = false;
 			break;
 
 		case Bindings::Operation::ResizeImage:
@@ -2418,6 +2371,8 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::Tile:
+			if (CropMode)
+				break;
 			Config::Current->Tile = !Config::Current->Tile;
 			if (!Config::Current->Tile)
 				ResetPan();

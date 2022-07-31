@@ -100,14 +100,12 @@ namespace Viewer
 
 	void ConvertScreenPosToImagePos
 	(
-		int& imgX, int& imgY,
-		const tMath::tVector2& scrPos, const tMath::tVector4& lrtb,
-		const tMath::tVector2& uvMarg, const tMath::tVector2& uvOff
+		int& imgX, int& imgY, const tMath::tVector2& scrPos,
+		const tMath::tVector4& lrtb, const tMath::tVector2& uvOff
 	);
 	void ConvertImagePosToScreenPos
 	(
-		tMath::tVector2& scrPos,
-		int imgX, int imgY, const tMath::tVector4& lrtb,
-		const tMath::tVector2& uvMarg, const tMath::tVector2& uvOff
+		tMath::tVector2& scrPos, int imgX, int imgY, const tMath::tVector4& lrtb,
+		const tMath::tVector2& uvOff, bool centerPixel = false
 	);
 }

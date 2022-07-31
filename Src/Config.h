@@ -85,7 +85,6 @@ struct ProfileSettings
 	int BackgroundStyle;
 	tColouri BackgroundColour;					// Only used if BGStyle is SolidColour.
 	bool BackgroundExtend;						// Extend background past image bounds.
-	bool FixedAspectWorkArea;
 
 	int ResampleFilter;							// Matches tImage::tResampleFilter.
 	int ResampleEdgeMode;						// Matches tImage::tResampleEdgeMode.

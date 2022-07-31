@@ -64,8 +64,6 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			}
 			#endif
 
-			ImGui::Checkbox("Fixed Aspect Work Area", &Config::Current->FixedAspectWorkArea);
-
 			ImGui::Checkbox("Background Extend", &Config::Current->BackgroundExtend);
 			if (!Config::Global.TransparentWorkArea)
 			{
