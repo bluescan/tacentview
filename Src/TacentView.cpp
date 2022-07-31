@@ -1351,6 +1351,17 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		((DisappearCountdown > 0.0) || hitAreaControlButtons.IsPointInside(mousePos))
 	)
 	{
+		// Center pan button.
+		if ((PanOffsetX+PanDragDownOffsetX) || (PanOffsetY+PanDragDownOffsetY))
+		{
+			ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-160.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
+			ImGui::SetNextWindowSize(tVector2(40.0f, 40.0f), ImGuiCond_Always);
+			ImGui::Begin("CenterPan", nullptr, flagsImgButton);
+			if (ImGui::ImageButton(ImTextureID(AnchorCenterImage.Bind()), tVector2(24.0f, 24.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
+				ResetPan();
+			ImGui::End();
+		}
+
 		// Looping button.
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-120.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(tVector2(40.0f, 40.0f), ImGuiCond_Always);

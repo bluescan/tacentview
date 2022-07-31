@@ -54,6 +54,10 @@ namespace Viewer
 	extern Viewer::Image SkipEndImage;
 	extern Viewer::Image RefreshImage;
 	extern Viewer::Image ShowHiddenImage;
+	extern Viewer::Image AnchorCenterImage;
+	extern Viewer::Image AnchorCornerImage;
+	extern Viewer::Image AnchorSideImage;
+
 	extern bool CropMode;
 	extern bool DeleteAllCacheFilesOnExit;
 	extern bool PendingTransparentWorkArea;
