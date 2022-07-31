@@ -151,6 +151,9 @@ namespace Viewer
 	Image ContentViewImage;
 	Image UpFolderImage;
 	Image CropImage;
+	Image AnchorCenterImage;
+	Image AnchorCornerImage;
+	Image AnchorSideImage;
 	Image DefaultThumbnailImage;
 
 	GLFWwindow* Window								= nullptr;
@@ -2710,6 +2713,9 @@ void Viewer::LoadAppImages(const tString& dataDir)
 	ContentViewImage		.Load(dataDir + "ContentView.png");
 	UpFolderImage			.Load(dataDir + "UpFolder.png");
 	CropImage				.Load(dataDir + "Crop.png");
+	AnchorCenterImage		.Load(dataDir + "AnchorCenter.png");
+	AnchorCornerImage		.Load(dataDir + "AnchorCorner.png");
+	AnchorSideImage			.Load(dataDir + "AnchorSide.png");
 	DefaultThumbnailImage	.Load(dataDir + "DefaultThumbnail.png");
 }
 
@@ -2751,6 +2757,9 @@ void Viewer::UnloadAppImages()
 	ContentViewImage		.Unload();
 	UpFolderImage			.Unload();
 	CropImage				.Unload();
+	AnchorCenterImage		.Unload();
+	AnchorCornerImage		.Unload();
+	AnchorSideImage			.Unload();
 	DefaultThumbnailImage	.Unload();
 }
 
