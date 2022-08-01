@@ -79,6 +79,7 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 				tString sizeStr; tsPrintf(sizeStr, "File Size: %'d", info.FileSizeBytes);
 				ImGui::Text(sizeStr.Chr());
 				ImGui::Text("Cursor: (%d, %d)", cursorX, cursorY);
+				ImGui::Text("Pan: (%d, %d)", GetPanX(), GetPanY());
 				ImGui::Text("Zoom: %.0f%%", zoom);
 			}
 		}

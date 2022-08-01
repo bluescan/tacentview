@@ -24,6 +24,21 @@ class tColouri;
 
 namespace Viewer
 {
+	enum class Anchor
+	{
+		Invalid			= -1,
+		TopLeft,		TL = TopLeft,
+		TopMiddle,		TM = TopMiddle,
+		TopRight,		TR = TopRight,
+		MiddleLeft,		ML = MiddleLeft,
+		Middle,			MM = Middle,
+		MiddleRight,	MR = MiddleRight,
+		BottomLeft,		BL = BottomLeft,
+		BottomMiddle,	BM = BottomMiddle,
+		BottomRight,	BR = BottomRight,
+		NumAnchors
+	};
+
 	extern tSystem::tFileTypes FileTypes_Load;
 	extern tSystem::tFileTypes FileTypes_Save;
 	extern tFileDialog::FileDialog OpenFileDialog;
@@ -54,11 +69,14 @@ namespace Viewer
 	extern Viewer::Image SkipEndImage;
 	extern Viewer::Image RefreshImage;
 	extern Viewer::Image ShowHiddenImage;
-	extern Viewer::Image AnchorCenterImage;
-	extern Viewer::Image AnchorCornerImage;
-	extern Viewer::Image AnchorSideImage;
+	extern Viewer::Image AnchorBLImage;
+	extern Viewer::Image AnchorBMImage;
+	extern Viewer::Image AnchorMLImage;
+	extern Viewer::Image AnchorMMImage;
 
+	extern Config::ProfileSettings::ZoomMode CurrZoomMode;
 	extern bool CropMode;
+	extern Anchor Request_PanSnap;
 	extern bool DeleteAllCacheFilesOnExit;
 	extern bool PendingTransparentWorkArea;
 	extern bool DrawChannel_AsIntensity;
@@ -97,6 +115,8 @@ namespace Viewer
 	void ZoomFit();
 	void ZoomDownscaleOnly();
 	void ResetPan(bool resetX = true, bool resetY = true);
+	int GetPanX();
+	int GetPanY();
 	tMath::tVector2 GetDialogOrigin(float index);
 
 	void Undo();

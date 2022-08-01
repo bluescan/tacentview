@@ -151,9 +151,10 @@ namespace Viewer
 	Image ContentViewImage;
 	Image UpFolderImage;
 	Image CropImage;
-	Image AnchorCenterImage;
-	Image AnchorCornerImage;
-	Image AnchorSideImage;
+	Image AnchorBLImage;
+	Image AnchorBMImage;
+	Image AnchorMLImage;
+	Image AnchorMMImage;
 	Image DefaultThumbnailImage;
 
 	GLFWwindow* Window								= nullptr;
@@ -179,6 +180,8 @@ namespace Viewer
 	bool Request_SnapMessage_NoFileBrowse			= false;
 	bool Request_SnapMessage_NoFrameTrans			= false;
 	bool Request_Quit								= false;
+	bool Request_CropLineConstrain					= false;
+	Anchor Request_PanSnap							= Anchor::Invalid;
 	bool PrefsWindow								= false;
 	bool BindingsWindowJustOpened					= false;
 	bool CropMode									= false;
@@ -546,6 +549,7 @@ void Viewer::LoadCurrImage()
 
 	SetWindowTitle();
 	ResetPan();
+	Request_CropLineConstrain = true;
 
 	// We only need to consider unloading an image when a new one is loaded... in this function.
 	// We currently do not allow unloading when in slideshow and the frame duration is small.
@@ -742,6 +746,18 @@ void Viewer::ResetPan(bool resetX, bool resetY)
 		PanOffsetY = 0;
 		PanDragDownOffsetY = 0;
 	}
+}
+
+
+int Viewer::GetPanX()
+{
+	return PanOffsetX+PanDragDownOffsetX;
+}
+
+
+int Viewer::GetPanY()
+{
+	return PanOffsetY+PanDragDownOffsetY;
 }
 
 
@@ -949,7 +965,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	{
 		Dispw = dispw;
 		Disph = disph;
-		if ((PanOffsetX+PanDragDownOffsetX == 0) && (PanOffsetY+PanDragDownOffsetY == 0))
+		if (!GetPanX() && !GetPanY())
 			ResetPan();
 	}
 
@@ -1019,13 +1035,43 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		if (!Config::Current->Tile)
 		{
-			int panExtX = tMath::tMax(workAreaW/2, int(w)/2);
-			int panExtY = tMath::tMax(workAreaH/2, int(h)/2);
-			tMath::tiClamp(PanDragDownOffsetX, -panExtX-PanOffsetX, panExtX-PanOffsetX);
-			tMath::tiClamp(PanDragDownOffsetY, -panExtY-PanOffsetY, panExtY-PanOffsetY);
+			if (Request_PanSnap != Anchor::Invalid)
+			{
+				// The panPercent is the percent of drawable width (or height) we want to not include the image
+				// after snapping. The math for the offsets is easier to understand if you draw yourself a little
+				// picture, but essentially it's drawableWidth - imageWidth is the margin, then we need to subtract
+				// the margin we want (percent*drawableWidth) to get the offset.
+				float panPercent = 0.25f;
+				int panOffsetX = int( (draww-w)/2.0f - panPercent*draww );
+				int panOffsetY = int( (drawh-h)/2.0f - panPercent*drawh );
+
+				PanDragDownOffsetX = 0;
+				switch (Request_PanSnap)
+				{
+					case Anchor::TL:	case Anchor::ML:	case Anchor::BL:	PanOffsetX = -panOffsetX; break;
+					case Anchor::TM:	case Anchor::MM:	case Anchor::BM:	PanOffsetX = 0; break;
+					case Anchor::TR:	case Anchor::MR:	case Anchor::BR:	PanOffsetX = panOffsetX; break;
+				}
+
+				PanDragDownOffsetY = 0;
+				switch (Request_PanSnap)
+				{
+					case Anchor::TL:	case Anchor::TM:	case Anchor::TR:	PanOffsetY = panOffsetY; break;
+					case Anchor::ML:	case Anchor::MM:	case Anchor::MR:	PanOffsetY = 0; break;
+					case Anchor::BL:	case Anchor::BM:	case Anchor::BR:	PanOffsetY = -panOffsetY; break;
+				}
+				Request_PanSnap = Anchor::Invalid;
+			}
+			else
+			{
+				int panExtX = tMath::tMax(workAreaW/2, int(w)/2);
+				int panExtY = tMath::tMax(workAreaH/2, int(h)/2);
+				tMath::tiClamp(PanDragDownOffsetX, -panExtX-PanOffsetX, panExtX-PanOffsetX);
+				tMath::tiClamp(PanDragDownOffsetY, -panExtY-PanOffsetY, panExtY-PanOffsetY);
+			}
 		}
-		panX = float(PanOffsetX+PanDragDownOffsetX);
-		panY = float(PanOffsetY+PanDragDownOffsetY);
+		panX = float(GetPanX());
+		panY = float(GetPanY());
 
 		// w and h are the image width and height. draww and drawh are the drawable area width and height.
 		left	= tMath::tRound(panX);
@@ -1242,12 +1288,16 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			CropGizmo.Update(lrtb, tVector2(mouseX, mouseY), uvoffset);
 
 			if (!lastCropMode)
+			{
 				// Lines are in image space.
-				CropGizmo.SetLines
-				(
-					0, CurrImage->GetWidth()-1, CurrImage->GetHeight()-1, 0,
-					lrtb, uvoffset
-				);
+				CropGizmo.SetLines(0, CurrImage->GetWidth()-1, CurrImage->GetHeight()-1, 0, lrtb, uvoffset);
+			}
+
+			if (Request_CropLineConstrain)
+			{
+				CropGizmo.ConstrainLines(0, CurrImage->GetWidth()-1, CurrImage->GetHeight()-1, 0, lrtb, uvoffset);
+				Request_CropLineConstrain = false;
+			}
 		}
 		lastCropMode = CropMode;
 	}
@@ -1352,12 +1402,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	)
 	{
 		// Center pan button.
-		if ((PanOffsetX+PanDragDownOffsetX) || (PanOffsetY+PanDragDownOffsetY))
+		if (GetPanX() || GetPanY())
 		{
 			ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-160.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 			ImGui::SetNextWindowSize(tVector2(40.0f, 40.0f), ImGuiCond_Always);
 			ImGui::Begin("CenterPan", nullptr, flagsImgButton);
-			if (ImGui::ImageButton(ImTextureID(AnchorCenterImage.Bind()), tVector2(24.0f, 24.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
+			if (ImGui::ImageButton(ImTextureID(AnchorMMImage.Bind()), tVector2(24.0f, 24.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
 				ResetPan();
 			ImGui::End();
 		}
@@ -2724,9 +2774,10 @@ void Viewer::LoadAppImages(const tString& dataDir)
 	ContentViewImage		.Load(dataDir + "ContentView.png");
 	UpFolderImage			.Load(dataDir + "UpFolder.png");
 	CropImage				.Load(dataDir + "Crop.png");
-	AnchorCenterImage		.Load(dataDir + "AnchorCenter.png");
-	AnchorCornerImage		.Load(dataDir + "AnchorCorner.png");
-	AnchorSideImage			.Load(dataDir + "AnchorSide.png");
+	AnchorBLImage			.Load(dataDir + "AnchorBL.png");
+	AnchorBMImage			.Load(dataDir + "AnchorBM.png");
+	AnchorMLImage			.Load(dataDir + "AnchorML.png");
+	AnchorMMImage			.Load(dataDir + "AnchorMM.png");
 	DefaultThumbnailImage	.Load(dataDir + "DefaultThumbnail.png");
 }
 
@@ -2768,9 +2819,10 @@ void Viewer::UnloadAppImages()
 	ContentViewImage		.Unload();
 	UpFolderImage			.Unload();
 	CropImage				.Unload();
-	AnchorCenterImage		.Unload();
-	AnchorCornerImage		.Unload();
-	AnchorSideImage			.Unload();
+	AnchorBLImage			.Unload();
+	AnchorBMImage			.Unload();
+	AnchorMLImage			.Unload();
+	AnchorMMImage			.Unload();
 	DefaultThumbnailImage	.Unload();
 }
 

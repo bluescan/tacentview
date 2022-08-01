@@ -54,6 +54,11 @@ public:
 		int l, int r, int t, int b,
 		const tMath::tVector4& imgext, const tMath::tVector2& uvoffset
 	);
+	void ConstrainLines
+	(
+		int l, int r, int t, int b,
+		const tMath::tVector4& imgext, const tMath::tVector2& uvoffset
+	);
 
 	CropLine LineL;
 	CropLine LineR;

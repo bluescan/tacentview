@@ -118,21 +118,43 @@ void Viewer::CropWidget::Update(const tVector4& imgext, const tVector2& mouse, c
 
 void Viewer::CropWidget::SetLines(int left, int right, int top, int bottom, const tMath::tVector4& imgext, const tMath::tVector2& uvoffset)
 {
+	tVector2 min;
+	ConvertImagePosToScreenPos(min, left, bottom, imgext, uvoffset, true);
+	tVector2 max;
+	ConvertImagePosToScreenPos(max, right, top, imgext, uvoffset, true);
+
 	LineL.ImageVal = left;
 	LineR.ImageVal = right;
 	LineT.ImageVal = top;
 	LineB.ImageVal = bottom;
 
-	tVector2 min;
-	ConvertImagePosToScreenPos(min, left, bottom, imgext, uvoffset, true);
-
-	tVector2 max;
-	ConvertImagePosToScreenPos(max, right, top, imgext, uvoffset, true);
-
 	LineL.ScreenVal = min.x;	LineL.PressedDelta = 0.0f;
 	LineR.ScreenVal = max.x;	LineR.PressedDelta = 0.0f;
 	LineT.ScreenVal = max.y;	LineT.PressedDelta = 0.0f;
 	LineB.ScreenVal = min.y;	LineB.PressedDelta = 0.0f;
+}
+
+
+void Viewer::CropWidget::ConstrainLines(int l, int r, int t, int b, const tMath::tVector4& imgext, const tMath::tVector2& uvoffset)
+{
+	tVector2 min; ConvertImagePosToScreenPos(min, l, b, imgext, uvoffset, true);
+	tVector2 max; ConvertImagePosToScreenPos(max, r, t, imgext, uvoffset, true);
+	if (LineL.ImageVal < l)
+	{
+		LineL.ImageVal = l; LineL.ScreenVal = min.x; LineL.PressedDelta = 0.0f;
+	}
+	if (LineR.ImageVal > r)
+	{
+		LineR.ImageVal = r; LineR.ScreenVal = max.x; LineR.PressedDelta = 0.0f;
+	}
+	if (LineT.ImageVal > t)
+	{
+		LineT.ImageVal = t; LineT.ScreenVal = max.y; LineT.PressedDelta = 0.0f;
+	}
+	if (LineB.ImageVal < b)
+	{
+		LineB.ImageVal = b; LineB.ScreenVal = min.y; LineB.PressedDelta = 0.0f;
+	}
 }
 
 
@@ -251,45 +273,67 @@ void Viewer::CropWidget::DrawHandles()
 	float r = (LineR.GetScreenVal()) - 1.0f;
 	float b = (LineB.GetScreenVal());
 	float t = (LineT.GetScreenVal()) - 1.0f;
+	float h = (l+r)/2.0f;
+	float v = (b+t)/2.0f;
 	bool anyPressed = LineL.Pressed || LineR.Pressed || LineB.Pressed || LineT.Pressed;
 
 	glBegin(GL_QUADS);
 
-	glColor4fv
-	(
-		(!anyPressed && LineL.Hovered && LineB.Hovered) || (LineL.Pressed && LineB.Pressed) ? CropHovCol.E : CropCol.E
-	);
-	glVertex2f(l-4.f,		b-4.f);
-	glVertex2f(l+4.f,		b-4.f);
-	glVertex2f(l+4.f,		b+4.f);
-	glVertex2f(l-4.f,		b+4.f);
+	// TL
+	glColor4fv( (!anyPressed && LineL.Hovered && LineT.Hovered) || (LineL.Pressed && LineT.Pressed) ? CropHovCol.E : CropCol.E );
+	glVertex2f(l-4,		t-4);
+	glVertex2f(l+4,		t-4);
+	glVertex2f(l+4,		t+4);
+	glVertex2f(l-4,		t+4);
 
-	glColor4fv
-	(
-		(!anyPressed && LineR.Hovered && LineB.Hovered) || (LineR.Pressed && LineB.Pressed) ? CropHovCol.E : CropCol.E
-	);
-	glVertex2f(r-4,		b-4);
-	glVertex2f(r+4,		b-4);
-	glVertex2f(r+4,		b+4);
-	glVertex2f(r-4,		b+4);
+	// TM
+	glColor4fv( (!anyPressed && LineT.Hovered) || (LineT.Pressed) ? CropHovCol.E : CropCol.E );
+	glVertex2f(h-4,		t-4);
+	glVertex2f(h+4,		t-4);
+	glVertex2f(h+4,		t+4);
+	glVertex2f(h-4,		t+4);
 
-	glColor4fv
-	(
-		(!anyPressed && LineR.Hovered && LineT.Hovered) || (LineR.Pressed && LineT.Pressed) ? CropHovCol.E : CropCol.E
-	);
+	// TR
+	glColor4fv( (!anyPressed && LineR.Hovered && LineT.Hovered) || (LineR.Pressed && LineT.Pressed) ? CropHovCol.E : CropCol.E );
 	glVertex2f(r-4,		t-4);
 	glVertex2f(r+4,		t-4);
 	glVertex2f(r+4,		t+4);
 	glVertex2f(r-4,		t+4);
 
-	glColor4fv
-	(
-		(!anyPressed && LineL.Hovered && LineT.Hovered) || (LineL.Pressed && LineT.Pressed) ? CropHovCol.E : CropCol.E
-	);
-	glVertex2f(l-4,		t-4);
-	glVertex2f(l+4,		t-4);
-	glVertex2f(l+4,		t+4);
-	glVertex2f(l-4,		t+4);
+	// ML
+	glColor4fv( (!anyPressed && LineL.Hovered) || (LineL.Pressed) ? CropHovCol.E : CropCol.E );
+	glVertex2f(l-4,		v-4);
+	glVertex2f(l+4,		v-4);
+	glVertex2f(l+4,		v+4);
+	glVertex2f(l-4,		v+4);
+
+	// MR
+	glColor4fv( (!anyPressed && LineR.Hovered) || (LineR.Pressed) ? CropHovCol.E : CropCol.E );
+	glVertex2f(r-4,		v-4);
+	glVertex2f(r+4,		v-4);
+	glVertex2f(r+4,		v+4);
+	glVertex2f(r-4,		v+4);
+
+	// BL
+	glColor4fv( (!anyPressed && LineL.Hovered && LineB.Hovered) || (LineL.Pressed && LineB.Pressed) ? CropHovCol.E : CropCol.E );
+	glVertex2f(l-4,		b-4);
+	glVertex2f(l+4,		b-4);
+	glVertex2f(l+4,		b+4);
+	glVertex2f(l-4,		b+4);
+
+	// BM
+	glColor4fv( (!anyPressed && LineB.Hovered) || (LineB.Pressed) ? CropHovCol.E : CropCol.E );
+	glVertex2f(h-4,		b-4);
+	glVertex2f(h+4,		b-4);
+	glVertex2f(h+4,		b+4);
+	glVertex2f(h-4,		b+4);
+
+	// BR
+	glColor4fv( (!anyPressed && LineR.Hovered && LineB.Hovered) || (LineR.Pressed && LineB.Pressed) ? CropHovCol.E : CropCol.E );
+	glVertex2f(r-4,		b-4);
+	glVertex2f(r+4,		b-4);
+	glVertex2f(r+4,		b+4);
+	glVertex2f(r-4,		b+4);
 
 	glColor4fv(tColourf::white.E);
 	glEnd();
@@ -319,7 +363,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 	else
 		ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
-	ImGui::SetNextWindowSize(tVector2(180.0f, 160.0f), ImGuiCond_Always);
+	ImGui::SetNextWindowSize(tVector2(180.0f, 280.0f), ImGuiCond_Appearing);
 	ImGui::SetNextWindowBgAlpha(0.70f);
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
@@ -345,7 +389,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		int margB = minY;
 		int margT = origH - maxY - 1;
 
-		float col = ImGui::GetCursorPosX() + 70.0f;
+		float col = ImGui::GetCursorPosX() + 76.0f;
 		ImGui::Text("Bot Left");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("X:%d Y:%d", minX, minY);
 		ImGui::Text("Top Right");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("X:%d Y:%d", maxX, maxY);
 		ImGui::Text("H Margins");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("L:%d R:%d", margL, margR);
@@ -353,15 +397,94 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		ImGui::Text("Orig Size");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("W:%d H:%d", origW, origH);
 		ImGui::Text("New Size");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("W:%d H:%d", newW, newH);
 
+		tVector2 ancImageSize(24.0f, 24.0f);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 7.0f);
+		float panNavLeft = 48.0f;
+		float panNavSpace = 6.0f;
 
-		if (ImGui::Button("Cancel", tVector2(64, 0)))
+		// Top Row
+		ImGui::SetCursorPosX(panNavLeft);
+
+		ImGui::PushID("TL");
+		if (ImGui::ImageButton(ImTextureID(AnchorBLImage.Bind()), ancImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
+			Request_PanSnap = Anchor::TL;
+		ImGui::PopID();
+
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
+		ImGui::PushID("TM");
+		if (ImGui::ImageButton(ImTextureID(AnchorBMImage.Bind()), ancImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
+			Request_PanSnap = Anchor::TM;
+		ImGui::PopID();
+
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
+		ImGui::PushID("TR");
+		if (ImGui::ImageButton(ImTextureID(AnchorBLImage.Bind()), ancImageSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
+			Request_PanSnap = Anchor::TR;	
+		ImGui::PopID();
+
+		// Middle Row
+		ImGui::SetCursorPosX(panNavLeft);
+
+		ImGui::PushID("ML");
+		if (ImGui::ImageButton(ImTextureID(AnchorMLImage.Bind()), ancImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
+			Request_PanSnap = Anchor::ML;
+		ImGui::PopID();
+
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
+		ImGui::PushID("MM");
+		if (ImGui::ImageButton(ImTextureID(AnchorMMImage.Bind()), ancImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
+			Request_PanSnap = Anchor::MM;
+		ImGui::PopID();
+
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
+		ImGui::PushID("MR");
+		if (ImGui::ImageButton(ImTextureID(AnchorMLImage.Bind()), ancImageSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
+			Request_PanSnap = Anchor::MR;
+		ImGui::PopID();
+
+		// Bottom Row.
+		ImGui::SetCursorPosX(panNavLeft);
+
+		ImGui::PushID("BL");
+		if (ImGui::ImageButton(ImTextureID(AnchorBLImage.Bind()), ancImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, ColourEnabledTint))
+			Request_PanSnap = Anchor::BL;
+		ImGui::PopID();
+
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
+		ImGui::PushID("BM");
+		if (ImGui::ImageButton(ImTextureID(AnchorBMImage.Bind()), ancImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, ColourEnabledTint))
+			Request_PanSnap = Anchor::BM;
+		ImGui::PopID();
+
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
+		ImGui::PushID("BR");
+		if (ImGui::ImageButton(ImTextureID(AnchorBLImage.Bind()), ancImageSize, tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 1, ColourBG, ColourEnabledTint))
+			Request_PanSnap = Anchor::BR;
+		ImGui::PopID();
+
+		// Buttons.
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 7.0f);
+		if (ImGui::Button("Cancel", tVector2(50, 0)))
 			CropMode = false;
 
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 64.0f);
+		if (ImGui::Button("Reset", tVector2(50, 0)))
+		{
+			ResetPan();
+			CurrZoomMode = Config::ProfileSettings::ZoomMode::DownscaleOnly;
+			CropGizmo.SetLines(0, CurrImage->GetWidth()-1, CurrImage->GetHeight()-1, 0, lrtb, uvoffset);
+		}
 
-		if (ImGui::Button("Apply", tVector2(64, 0)))
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 50.0f);
+
+		if (ImGui::Button("Apply", tVector2(50, 0)))
 		{
 			newW = tClampMin(newW, 4);
 			newH = tClampMin(newH, 4);
