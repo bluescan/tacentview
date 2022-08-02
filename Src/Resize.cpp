@@ -96,31 +96,93 @@ void Viewer::DoResizeFilterInterface(int srcW, int srcH, int dstW, int dstH)
 
 void Viewer::DoResizeAnchorInterface()
 {
-	static const char* shortNames[3*3] = { "TL", "TM", "TR", "ML", "MM", "MR", "BL", "BM", "BR" };
 	static const char* longNames[3*3] = { "Top-Left", "Top-Middle", "Top-Right", "Middle-Left", "Middle", "Middle-Right", "Bottom-Left", "Bottom-Middle", "Bottom-Right" };
 
 	ImGui::NewLine();
+	ImGui::SetCursorPosX(58.0f);
 	ImGui::Text("Anchor: %s", (Config::Current->CropAnchor == -1) ? "Cursor Position" : longNames[Config::Current->CropAnchor]);
 	ImGui::SameLine();
 	ShowHelpMark("Choose an anchor below. To use the cursor position, deselect the current anchor.");
 
-	ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, tVector2(0.5f, 0.5f));
-	for (int y = 0; y < 3; y++)
-	{
-		for (int x = 0; x < 3; x++)
-		{
-			int index = 3*y + x;
-			char name[4];
-			tsPrintf(name, "%s", shortNames[index]);
-			if (x > 0)
-				ImGui::SameLine();
+	tVector2 imgSize(24.0f, 24.0f);
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 7.0f);
+	float ancLeft = 98.0f;
+	float ancSpace = 6.0f;
 
-			bool selected = (Config::Current->CropAnchor == index);
-			if (ImGui::Selectable(name, &selected, ImGuiSelectableFlags_DontClosePopups, ImVec2(22, 22)))
-				Config::Current->CropAnchor = !selected ? -1 : index;
-		}
-	}
-	ImGui::PopStyleVar();
+	// Top Row
+	ImGui::SetCursorPosX(ancLeft);
+
+	bool selTL = (Config::Current->CropAnchor == int(Anchor::TL));
+	ImGui::PushID("TL");
+	if (ImGui::ImageButton(ImTextureID(AnchorBLImage.Bind()), imgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, selTL ? ColourEnabledTint : ColourDisabledTint))
+		Config::Current->CropAnchor = selTL ? -1 : int(Anchor::TL);
+	ImGui::PopID();
+
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
+	bool selTM = (Config::Current->CropAnchor == int(Anchor::TM));
+	ImGui::PushID("TM");
+	if (ImGui::ImageButton(ImTextureID(AnchorBMImage.Bind()), imgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, selTM ? ColourEnabledTint : ColourDisabledTint))
+		Config::Current->CropAnchor = selTM ? -1 : int(Anchor::TM);
+	ImGui::PopID();
+
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
+	bool selTR = (Config::Current->CropAnchor == int(Anchor::TR));
+	ImGui::PushID("TR");
+	if (ImGui::ImageButton(ImTextureID(AnchorBLImage.Bind()), imgSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, selTR ? ColourEnabledTint : ColourDisabledTint))
+		Config::Current->CropAnchor = selTR ? -1 : int(Anchor::TR);
+	ImGui::PopID();
+
+	// Middle Row
+	ImGui::SetCursorPosX(ancLeft);
+
+	bool selML = (Config::Current->CropAnchor == int(Anchor::ML));
+	ImGui::PushID("ML");
+	if (ImGui::ImageButton(ImTextureID(AnchorMLImage.Bind()), imgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, selML ? ColourEnabledTint : ColourDisabledTint))
+		Config::Current->CropAnchor = selML ? -1 : int(Anchor::ML);
+	ImGui::PopID();
+
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
+	bool selMM = (Config::Current->CropAnchor == int(Anchor::MM));
+	ImGui::PushID("MM");
+	if (ImGui::ImageButton(ImTextureID(AnchorMMImage.Bind()), imgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, selMM ? ColourEnabledTint : ColourDisabledTint))
+		Config::Current->CropAnchor = selMM ? -1 : int(Anchor::MM);
+	ImGui::PopID();
+
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
+	bool selMR = (Config::Current->CropAnchor == int(Anchor::MR));
+	ImGui::PushID("MR");
+	if (ImGui::ImageButton(ImTextureID(AnchorMLImage.Bind()), imgSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, selMR ? ColourEnabledTint : ColourDisabledTint))
+		Config::Current->CropAnchor = selMR ? -1 : int(Anchor::MR);
+	ImGui::PopID();
+
+	// Bottom Row
+	ImGui::SetCursorPosX(ancLeft);
+
+	bool selBL = (Config::Current->CropAnchor == int(Anchor::BL));
+	ImGui::PushID("BL");
+	if (ImGui::ImageButton(ImTextureID(AnchorBLImage.Bind()), imgSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, selBL ? ColourEnabledTint : ColourDisabledTint))
+		Config::Current->CropAnchor = selBL ? -1 : int(Anchor::BL);
+	ImGui::PopID();
+
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
+	bool selBM = (Config::Current->CropAnchor == int(Anchor::BM));
+	ImGui::PushID("BM");
+	if (ImGui::ImageButton(ImTextureID(AnchorBMImage.Bind()), imgSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, selBM ? ColourEnabledTint : ColourDisabledTint))
+		Config::Current->CropAnchor = selBM ? -1 : int(Anchor::BM);
+	ImGui::PopID();
+
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
+	bool selBR = (Config::Current->CropAnchor == int(Anchor::BR));
+	ImGui::PushID("BR");
+	if (ImGui::ImageButton(ImTextureID(AnchorBLImage.Bind()), imgSize, tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 1, ColourBG, selBR ? ColourEnabledTint : ColourDisabledTint))
+		Config::Current->CropAnchor = selBR ? -1 : int(Anchor::BR);
+	ImGui::PopID();
 }
 
 

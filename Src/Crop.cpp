@@ -287,7 +287,7 @@ void Viewer::CropWidget::DrawHandles()
 	glVertex2f(l-4,		t+4);
 
 	// TM
-	glColor4fv( (!anyPressed && LineT.Hovered) || (LineT.Pressed) ? CropHovCol.E : CropCol.E );
+	glColor4fv( (!anyPressed && LineT.Hovered && !LineL.Hovered && !LineR.Hovered) || (LineT.Pressed) ? CropHovCol.E : CropCol.E );
 	glVertex2f(h-4,		t-4);
 	glVertex2f(h+4,		t-4);
 	glVertex2f(h+4,		t+4);
@@ -301,14 +301,14 @@ void Viewer::CropWidget::DrawHandles()
 	glVertex2f(r-4,		t+4);
 
 	// ML
-	glColor4fv( (!anyPressed && LineL.Hovered) || (LineL.Pressed) ? CropHovCol.E : CropCol.E );
+	glColor4fv( (!anyPressed && LineL.Hovered && !LineT.Hovered && !LineB.Hovered) || (LineL.Pressed) ? CropHovCol.E : CropCol.E );
 	glVertex2f(l-4,		v-4);
 	glVertex2f(l+4,		v-4);
 	glVertex2f(l+4,		v+4);
 	glVertex2f(l-4,		v+4);
 
 	// MR
-	glColor4fv( (!anyPressed && LineR.Hovered) || (LineR.Pressed) ? CropHovCol.E : CropCol.E );
+	glColor4fv( (!anyPressed && LineR.Hovered && !LineT.Hovered && !LineB.Hovered) || (LineR.Pressed) ? CropHovCol.E : CropCol.E );
 	glVertex2f(r-4,		v-4);
 	glVertex2f(r+4,		v-4);
 	glVertex2f(r+4,		v+4);
@@ -322,7 +322,7 @@ void Viewer::CropWidget::DrawHandles()
 	glVertex2f(l-4,		b+4);
 
 	// BM
-	glColor4fv( (!anyPressed && LineB.Hovered) || (LineB.Pressed) ? CropHovCol.E : CropCol.E );
+	glColor4fv( (!anyPressed && LineB.Hovered && !LineL.Hovered && !LineR.Hovered) || (LineB.Pressed) ? CropHovCol.E : CropCol.E );
 	glVertex2f(h-4,		b-4);
 	glVertex2f(h+4,		b-4);
 	glVertex2f(h+4,		b+4);
