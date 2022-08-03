@@ -2,7 +2,7 @@
 //
 // GL and ImGui code that implements cropping images.
 //
-// Copyright (c) 2020 Tristan Grimmer.
+// Copyright (c) 2020, 2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -13,8 +13,9 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #pragma once
-#include<Math/tVector2.h>
-#include<Math/tVector4.h>
+#include <Math/tVector2.h>
+#include <Math/tVector4.h>
+#include "TacentView.h"
 namespace Viewer
 {
 
@@ -42,10 +43,7 @@ public:
 	CropWidget()																										{ }
 
 	void MouseButton(bool down, const tMath::tVector2& mouse);
-	void Update
-	(
-		const tMath::tVector4& imgext, const tMath::tVector2& mouse, const tMath::tVector2& uvoffset
-	);
+	void Update(const tMath::tVector4& imgext, const tMath::tVector2& mouse, const tMath::tVector2& uvoffset);
 
 	// Don't call this every frame. Only when you want to reset the crop lines.
 	// The LRTB ints are in image-space.
@@ -59,11 +57,13 @@ public:
 		int l, int r, int t, int b,
 		const tMath::tVector4& imgext, const tMath::tVector2& uvoffset
 	);
+	void MoveDirection(CursorMove, const tMath::tVector4& imgext, const tMath::tVector2& uvoffset);
 
 	CropLine LineL;
 	CropLine LineR;
 	CropLine LineT;
 	CropLine LineB;
+	Anchor LastSelectedHandle = Anchor::TopRight;
 
 private:
 	void DrawMatt(const tMath::tVector4& imgext, const tMath::tVector2& uvoffset);
@@ -71,7 +71,7 @@ private:
 	void DrawHandles();
 
 	void MouseHovered(CropLine&, const tMath::tVector2& mouse, const tMath::tVector2& ends, bool horizontal);
-	void MouseButton(CropLine&, bool down, float mouse);
+	bool MouseButton(CropLine&, bool down, float mouse);
 	void ConstrainCropLines(const tMath::tVector4& imgext, bool forceAll = true);
 };
 

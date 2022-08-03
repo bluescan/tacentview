@@ -266,14 +266,6 @@ namespace Viewer
 	tuint256 ComputeImagesHash(const tList<tSystem::tFileInfo>& files);
 	int RemoveOldCacheFiles(const tString& cacheDir);								// Returns num removed.
 
-	enum CursorMove
-	{
-		CursorMove_None,
-		CursorMove_Left,
-		CursorMove_Right,
-		CursorMove_Up,
-		CursorMove_Down
-	};
 	CursorMove RequestCursorMove = CursorMove_None;
 
 	void Update(GLFWwindow* window, double dt, bool dopoll = true);
@@ -1174,29 +1166,32 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		// If a request was made to move the cursor/reticle, process the request here,
 		if (RequestCursorMove)
 		{
-			switch (RequestCursorMove)
+			if (!CropMode)
 			{
-				case CursorMove_Left:	CursorX--;	break;
-				case CursorMove_Right:	CursorX++;	break;
-				case CursorMove_Up:		CursorY++;	break;
-				case CursorMove_Down:	CursorY--;	break;
+				switch (RequestCursorMove)
+				{
+					case CursorMove_Left:	CursorX--;	break;
+					case CursorMove_Right:	CursorX++;	break;
+					case CursorMove_Up:		CursorY++;	break;
+					case CursorMove_Down:	CursorY--;	break;
+				}
+				tiClamp(CursorX, 0, CurrImage->GetWidth() - 1);
+				tiClamp(CursorY, 0, CurrImage->GetHeight() - 1);
+				tVector2 reticle;
+				ConvertImagePosToScreenPos(reticle, CursorX, CursorY, tVector4(left, right, top, bottom), tVector2(0.0f, 0.0f), tVector2(uoff, voff));
+				ReticleX = reticle.x;
+				ReticleY = reticle.y;
 			}
-			tiClamp(CursorX, 0, CurrImage->GetWidth() - 1);
-			tiClamp(CursorY, 0, CurrImage->GetHeight() - 1);
-			tVector2 reticle;
-			ConvertImagePosToScreenPos(reticle, CursorX, CursorY, tVector4(left, right, top, bottom), tVector2(0.0f, 0.0f), tVector2(uoff, voff));
-			ReticleX = reticle.x;
-			ReticleY = reticle.y;
+			else
+			{
+				CropGizmo.MoveDirection(RequestCursorMove, tVector4(left, right, top, bottom), tVector2(uoff, voff));
+			}
 			RequestCursorMove = CursorMove_None;
 		}
 
 		// Get the colour under the reticle.
 		tVector2 scrCursorPos(ReticleX, ReticleY);
-		ConvertScreenPosToImagePos
-		(
-			CursorX, CursorY, scrCursorPos, tVector4(left, right, top, bottom),
-			tVector2(uoff, voff)
-		);
+		ConvertScreenPosToImagePos(CursorX, CursorY, scrCursorPos, tVector4(left, right, top, bottom), tVector2(uoff, voff));
 
 		PixelColour = CurrImage->GetPixel(CursorX, CursorY);
 

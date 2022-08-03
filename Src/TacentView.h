@@ -39,6 +39,15 @@ namespace Viewer
 		NumAnchors
 	};
 
+	enum CursorMove
+	{
+		CursorMove_None,
+		CursorMove_Left,
+		CursorMove_Right,
+		CursorMove_Up,
+		CursorMove_Down
+	};
+
 	extern tSystem::tFileTypes FileTypes_Load;
 	extern tSystem::tFileTypes FileTypes_Save;
 	extern tFileDialog::FileDialog OpenFileDialog;
