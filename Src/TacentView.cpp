@@ -1175,8 +1175,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 					case CursorMove_Up:		CursorY++;	break;
 					case CursorMove_Down:	CursorY--;	break;
 				}
-				tiClamp(CursorX, 0, CurrImage->GetWidth() - 1);
-				tiClamp(CursorY, 0, CurrImage->GetHeight() - 1);
+				tiClamp(CursorX, 0, iwi - 1);
+				tiClamp(CursorY, 0, ihi - 1);
 				tVector2 reticle;
 				ConvertImagePosToScreenPos(reticle, CursorX, CursorY, tVector4(left, right, top, bottom), tVector2(0.0f, 0.0f), tVector2(uoff, voff));
 				ReticleX = reticle.x;
@@ -1184,7 +1184,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			else
 			{
-				CropGizmo.MoveDirection(RequestCursorMove, tVector4(left, right, top, bottom), tVector2(uoff, voff));
+				CropGizmo.MoveDirection(RequestCursorMove, tVector4(left, right, top, bottom), tVector2(uoff, voff), iwi, ihi);
 			}
 			RequestCursorMove = CursorMove_None;
 		}

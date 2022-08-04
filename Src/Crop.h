@@ -57,7 +57,7 @@ public:
 		int l, int r, int t, int b,
 		const tMath::tVector4& imgext, const tMath::tVector2& uvoffset
 	);
-	void MoveDirection(CursorMove, const tMath::tVector4& imgext, const tMath::tVector2& uvoffset);
+	void MoveDirection(CursorMove, const tMath::tVector4& imgext, const tMath::tVector2& uvoffset, int imgW, int imgH);
 
 	CropLine LineL;
 	CropLine LineR;
