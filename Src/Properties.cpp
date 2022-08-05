@@ -286,41 +286,48 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
 
-		uint64 loopImageID = CurrImage->FramePlayLooping ? PlayOnceImage.Bind() : PlayLoopImage.Bind();
+		uint64 loopImageID = CurrImage->FramePlayLooping ? Image_PlayOnce.Bind() : Image_PlayLoop.Bind();
 		if (ImGui::ImageButton(ImTextureID(loopImageID), tVector2(18.0f, 18.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2, ColourBG, ColourEnabledTint))
 			CurrImage->FramePlayLooping = !CurrImage->FramePlayLooping;
 		ImGui::SameLine();
 
 		bool prevEnabled = !CurrImage->FramePlaying && (CurrImage->FrameNum > 0);
+		ImGui::PushID("PropSkipBegin");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(SkipBeginImage.Bind()), tVector2(18.0f, 18.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2,
+			ImTextureID(Image_SkipEnd_SkipBegin.Bind()), tVector2(18.0f, 18.0f), tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 2,
 			ColourBG, prevEnabled ? ColourEnabledTint : ColourDisabledTint) && prevEnabled
 		)	CurrImage->FrameNum = 0;
+		ImGui::PopID();
 		ImGui::SameLine();
 
+		ImGui::PushID("PropPrev");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(PrevImage.Bind()), tVector2(18.0f, 18.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2,
+			ImTextureID(Image_Next_Prev.Bind()), tVector2(18.0f, 18.0f), tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 2,
 			ColourBG, prevEnabled ? ColourEnabledTint : ColourDisabledTint) && prevEnabled
 		)	CurrImage->FrameNum = tClampMin(CurrImage->FrameNum-1, 0);
+		ImGui::PopID();
 		ImGui::SameLine();
 
 		bool playRevEnabled = !(CurrImage->FramePlaying && !CurrImage->FramePlayRev);
-		uint64 playRevImageID = !CurrImage->FramePlaying ? PlayRevImage.Bind() : StopRevImage.Bind();
+		uint64 playRevImageID = !CurrImage->FramePlaying ? Image_Play_PlayRev.Bind() : Image_Stop.Bind();
+		ImGui::PushID("PropPlayRev");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(playRevImageID), tVector2(18.0f, 18.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2,
+			ImTextureID(playRevImageID), tVector2(18.0f, 18.0f), tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 2,
 			ColourBG, playRevEnabled ? ColourEnabledTint : ColourDisabledTint) && playRevEnabled
 		)
 		{
 			CurrImage->FramePlayRev = true;
 			if (CurrImage->FramePlaying) CurrImage->Stop(); else CurrImage->Play();
 		}
+		ImGui::PopID();
 		ImGui::SameLine();
 
 		bool playFwdEnabled = !(CurrImage->FramePlaying && CurrImage->FramePlayRev);
-		uint64 playImageID = !CurrImage->FramePlaying ? PlayImage.Bind() : StopImage.Bind();
+		uint64 playImageID = !CurrImage->FramePlaying ? Image_Play_PlayRev.Bind() : Image_Stop.Bind();
+		ImGui::PushID("PropPlayFwd");
 		if (ImGui::ImageButton
 		(
 			ImTextureID(playImageID), tVector2(18.0f, 18.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2,
@@ -330,21 +337,26 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			CurrImage->FramePlayRev = false;
 			if (CurrImage->FramePlaying) CurrImage->Stop(); else CurrImage->Play();
 		}
+		ImGui::PopID();
 		ImGui::SameLine();
 
 		bool nextEnabled = !CurrImage->FramePlaying && (CurrImage->FrameNum < (numFrames-1));
+		ImGui::PushID("PropNext");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(NextImage.Bind()), tVector2(18.0f, 18.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2,
+			ImTextureID(Image_Next_Prev.Bind()), tVector2(18.0f, 18.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2,
 			ColourBG, nextEnabled ? ColourEnabledTint : ColourDisabledTint) && nextEnabled
 		)	CurrImage->FrameNum = tClampMax(CurrImage->FrameNum+1, numFrames-1);
+		ImGui::PopID();
 		ImGui::SameLine();
 
+		ImGui::PushID("PropSkipEnd");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(SkipEndImage.Bind()), tVector2(18.0f, 18.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2,
+			ImTextureID(Image_SkipEnd_SkipBegin.Bind()), tVector2(18.0f, 18.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2,
 			ColourBG, nextEnabled ? ColourEnabledTint : ColourDisabledTint) && nextEnabled
 		)	CurrImage->FrameNum = numFrames-1;
+		ImGui::PopID();
 		ImGui::SameLine();
 	}
 

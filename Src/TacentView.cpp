@@ -116,46 +116,40 @@ namespace Viewer
 	
 	void LoadAppImages(const tString& dataDir);
 	void UnloadAppImages();
-	Image ReticleImage;
-	Image PrevImage;
-	Image NextImage;
-	Image PrevArrowImage;
-	Image NextArrowImage;
-	Image FileImage;
-	Image FolderImage;
-	Image FlipHImage;
-	Image FlipVImage;
-	Image RotateACWImage;
-	Image RotateCWImage;
-	Image RotateThetaImage;
-	Image FullscreenImage;
-	Image WindowedImage;
-	Image SkipBeginImage;
-	Image SkipEndImage;
-	Image RefreshImage;
-	Image ShowHiddenImage;
-	Image RecycleImage;
-	Image PropEditImage;
-	Image InfoOverlayImage;
-	Image MetaDataImage;
-	Image HelpImage;
-	Image PrefsImage;
-	Image TileImage;
-	Image StopImage;
-	Image StopRevImage;
-	Image PlayImage;
-	Image PlayRevImage;
-	Image PlayLoopImage;
-	Image PlayOnceImage;
-	Image ChannelFilterImage;
-	Image ContentViewImage;
-	Image UpFolderImage;
-	Image CropImage;
-	Image AnchorBLImage;
-	Image AnchorBMImage;
-	Image AnchorMLImage;
-	Image AnchorMMImage;
-	Image DefaultThumbnailImage;
+	Image Image_Reticle;
+	Image Image_Next_Prev;							// For Prev flip UVs horizontally.
+	Image Image_NextSide_PrevSide;					// For PrevSide flip UVs horizontally.
+	Image Image_File;
+	Image Image_Folder;
+	Image Image_FlipH;
+	Image Image_FlipV;
+	Image Image_RotCW_RotACW;						// For RotACW flip UVs horizontally.
+	Image Image_RotateTheta;
+	Image Image_Fullscreen;
+	Image Image_Windowed;
+	Image Image_SkipEnd_SkipBegin;					// For SkipBegin flip UVs horizontally.
+	Image Image_Refresh;
+	Image Image_ShowHidden;
+	Image Image_Recycle;
+	Image Image_PropEdit;
+	Image Image_InfoOverlay;
+	Image Image_MetaData;
+	Image Image_Help;
+	Image Image_Prefs;
+	Image Image_Tile;
+	Image Image_Stop;
+	Image Image_Play_PlayRev;						// For PlayRev flip UVs horizontally.
+	Image Image_PlayLoop;
+	Image Image_PlayOnce;
+	Image Image_ChannelFilter;
+	Image Image_ContentView;
+	Image Image_UpFolder;
+	Image Image_Crop;
+	Image Image_AnchorBL;
+	Image Image_AnchorBM;
+	Image Image_AnchorML;
+	Image Image_AnchorMM;
+	Image Image_DefaultThumbnail;
 
 	GLFWwindow* Window								= nullptr;
 	double DisappearCountdown						= DisappearDuration;
@@ -1257,12 +1251,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			else
 			{
 				// Draw the reticle.
-				float cw = float((ReticleImage.GetWidth()) >> 1);
-				float ch = float((ReticleImage.GetHeight()) >> 1);
+				float cw = float((Image_Reticle.GetWidth()) >> 1);
+				float ch = float((Image_Reticle.GetHeight()) >> 1);
 				float cx = ReticleX;
 				float cy = ReticleY;
 				glEnable(GL_TEXTURE_2D);
-				ReticleImage.Bind();
+				Image_Reticle.Bind();
 				glBegin(GL_QUADS);
 				glTexCoord2f(0.0f, 0.0f); glVertex2f(cx-cw, cy+ch);
 				glTexCoord2f(0.0f, 1.0f); glVertex2f(cx-cw, cy-ch);
@@ -1338,8 +1332,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::SetNextWindowSize(tVector2(16, 70), ImGuiCond_Always);
 		ImGui::Begin("PrevArrow", nullptr, flagsImgButton);
 		ImGui::SetCursorPos(tVector2(6, 2));
-		if (ImGui::ImageButton(ImTextureID(PrevArrowImage.Bind()), tVector2(15.0f, 56.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 3, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
+		ImGui::PushID("MainPrevArrow");
+		if (ImGui::ImageButton(ImTextureID(Image_NextSide_PrevSide.Bind()), tVector2(15.0f, 56.0f), tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 3, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
 			OnPrevious();
+		ImGui::PopID();
 		ImGui::End();
 	}
 
@@ -1357,8 +1353,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::SetNextWindowSize(tVector2(16, 70), ImGuiCond_Always);
 		ImGui::Begin("NextArrow", nullptr, flagsImgButton);
 		ImGui::SetCursorPos(tVector2(6, 2));
-		if (ImGui::ImageButton(ImTextureID(NextArrowImage.Bind()), tVector2(15.0f, 56.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 3, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
+		ImGui::PushID("MainNextArrow");
+		if (ImGui::ImageButton(ImTextureID(Image_NextSide_PrevSide.Bind()), tVector2(15.0f, 56.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 3, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
 			OnNext();
+		ImGui::PopID();
 		ImGui::End();
 	}
 
@@ -1402,7 +1400,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-160.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 			ImGui::SetNextWindowSize(tVector2(40.0f, 40.0f), ImGuiCond_Always);
 			ImGui::Begin("CenterPan", nullptr, flagsImgButton);
-			if (ImGui::ImageButton(ImTextureID(AnchorMMImage.Bind()), tVector2(24.0f, 24.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
+			if (ImGui::ImageButton(ImTextureID(Image_AnchorMM.Bind()), tVector2(24.0f, 24.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
 				ResetPan();
 			ImGui::End();
 		}
@@ -1411,7 +1409,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-120.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(tVector2(40.0f, 40.0f), ImGuiCond_Always);
 		ImGui::Begin("Repeat", nullptr, flagsImgButton);
-		uint64 playModeImageID = Config::Current->SlideshowLooping ? PlayOnceImage.Bind() : PlayLoopImage.Bind();
+		uint64 playModeImageID = Config::Current->SlideshowLooping ? Image_PlayOnce.Bind() : Image_PlayLoop.Bind();
 		if (ImGui::ImageButton(ImTextureID(playModeImageID), tVector2(24.0f, 24.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
 			Config::Current->SlideshowLooping = !Config::Current->SlideshowLooping;
 		ImGui::End();
@@ -1421,34 +1419,40 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-80.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(tVector2(40.0f, 40.0f), ImGuiCond_Always);
 		ImGui::Begin("SkipBegin", nullptr, flagsImgButton);
+		ImGui::PushID("MainSkipBegin");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(SkipBeginImage.Bind()), tVector2(24.0f, 24.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2,
+			ImTextureID(Image_SkipEnd_SkipBegin.Bind()), tVector2(24.0f, 24.0f), tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 2,
 			ColourBG, prevAvail ? ColourEnabledTint : ColourDisabledTint) && prevAvail
 		)	OnSkipBegin();
+		ImGui::PopID();
 		ImGui::End();
 
 		// Prev button.
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-40.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(tVector2(40.0f, 40.0f), ImGuiCond_Always);
 		ImGui::Begin("Prev", nullptr, flagsImgButton);
+		ImGui::PushID("MainPrev");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(PrevImage.Bind()), tVector2(24.0f, 24.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2,
+			ImTextureID(Image_Next_Prev.Bind()), tVector2(24.0f, 24.0f), tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 2,
 			ColourBG, prevAvail ? ColourEnabledTint : ColourDisabledTint) && prevAvail
 		)	OnPrevious();
+		ImGui::PopID();
 		ImGui::End();
 
 		// Slideshow Play/Stop button.
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+0.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(tVector2(40.0f, 40.0f), ImGuiCond_Always);
 		ImGui::Begin("Slideshow", nullptr, flagsImgButton);
-		uint64 psImageID = SlideshowPlaying ? StopImage.Bind() : PlayImage.Bind();
+		uint64 psImageID = SlideshowPlaying ? Image_Stop.Bind() : Image_Play_PlayRev.Bind();
+		ImGui::PushID("MainPlayStop");
 		if (ImGui::ImageButton(ImTextureID(psImageID), tVector2(24.0f, 24.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0,0,0,0), tVector4(1,1,1,1)))
 		{
 			SlideshowPlaying = !SlideshowPlaying;
 			SlideshowCountdown = Config::Current->SlideshowPeriod;
 		}
+		ImGui::PopID();
 		ImGui::End();
 
 		// Next button.
@@ -1456,29 +1460,33 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+40.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(tVector2(40.0f, 40.0f), ImGuiCond_Always);
 		ImGui::Begin("Next", nullptr, flagsImgButton);
+		ImGui::PushID("MainNext");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(NextImage.Bind()), tVector2(24.0f, 24.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2,
+			ImTextureID(Image_Next_Prev.Bind()), tVector2(24.0f, 24.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2,
 			ColourBG, nextAvail ? ColourEnabledTint : ColourDisabledTint) && nextAvail
 		)	OnNext();
+		ImGui::PopID();
 		ImGui::End();
 
 		// Skip to end button.
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+80.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(tVector2(40.0f, 40.0f), ImGuiCond_Always);
 		ImGui::Begin("SkipEnd", nullptr, flagsImgButton);
+		ImGui::PushID("MainSkipEnd");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(SkipEndImage.Bind()), tVector2(24.0f, 24.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2,
+			ImTextureID(Image_SkipEnd_SkipBegin.Bind()), tVector2(24.0f, 24.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2,
 			ColourBG, nextAvail ? ColourEnabledTint : ColourDisabledTint) && nextAvail
 		)	OnSkipEnd();
+		ImGui::PopID();
 		ImGui::End();
 
 		// Fullscreen / Windowed button.
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+120.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(tVector2(40.0f, 40.0f), ImGuiCond_Always);
 		ImGui::Begin("Fullscreen", nullptr, flagsImgButton);
-		uint64 fsImageID = Config::Global.FullscreenMode ? WindowedImage.Bind() : FullscreenImage.Bind();
+		uint64 fsImageID = Config::Global.FullscreenMode ? Image_Windowed.Bind() : Image_Fullscreen.Bind();
 		if (ImGui::ImageButton(ImTextureID(fsImageID), tVector2(24.0f, 24.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0,0,0,0), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
 			ChangeScreenMode(!Config::Global.FullscreenMode);
 		ImGui::End();
@@ -1790,14 +1798,14 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		if (ImGui::ImageButton
 		(
-			ImTextureID(ChannelFilterImage.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_ChannelFilter.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			Config::Current->ShowChannelFilter ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	Config::Current->ShowChannelFilter = !Config::Current->ShowChannelFilter;
 		ShowToolTip("Colour Channel Filter");
 
 		if (ImGui::ImageButton
 		(
-			ImTextureID(ContentViewImage.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_ContentView.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			Config::Current->ShowContentView ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	Config::Current->ShowContentView = !Config::Current->ShowContentView;
 		ShowToolTip("Content Thumbnail View");
@@ -1805,7 +1813,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		bool tileAvail = CurrImage ? !CropMode : false;
 		if (ImGui::ImageButton
 		(
-			ImTextureID(TileImage.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_Tile.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			Config::Current->Tile ? ColourPressedBG : ColourBG, tileAvail ? ColourEnabledTint : ColourDisabledTint) && tileAvail
 		)
 		{
@@ -1820,7 +1828,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		bool transAvail = CurrImage ? !CurrImage->IsAltPictureEnabled() : false;
 		if (ImGui::ImageButton
 		(
-			ImTextureID(FlipVImage.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
+			ImTextureID(Image_FlipV.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
 			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 		)
 		{
@@ -1833,7 +1841,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		if (ImGui::ImageButton
 		(
-			ImTextureID(FlipHImage.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
+			ImTextureID(Image_FlipH.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
 			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 		)
 		{
@@ -1844,9 +1852,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 		ShowToolTip("Flip Horizontally");
 
+		ImGui::PushID("ToolRotACW");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(RotateACWImage.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
+			ImTextureID(Image_RotCW_RotACW.Bind()), ToolImageSize, tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 1, ColourBG,
 			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 		)
 		{
@@ -1855,11 +1864,13 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			CurrImage->Bind();
 			SetWindowTitle();
 		}
+		ImGui::PopID();
 		ShowToolTip("Rotate 90 Anticlockwise");
 
+		ImGui::PushID("ToolRotCW");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(RotateCWImage.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
+			ImTextureID(Image_RotCW_RotACW.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
 			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 		)
 		{
@@ -1868,11 +1879,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			CurrImage->Bind();
 			SetWindowTitle();
 		}
+		ImGui::PopID();
 		ShowToolTip("Rotate 90 Clockwise");
 
 		if (ImGui::ImageButton
 		(
-			ImTextureID(RotateThetaImage.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
+			ImTextureID(Image_RotateTheta.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
 			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 		)
 		{
@@ -1883,7 +1895,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		bool cropAvail = CurrImage && transAvail && !Config::Current->Tile;
 		if (ImGui::ImageButton
 		(
-			ImTextureID(CropImage.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_Crop.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			CropMode ? ColourPressedBG : ColourBG, cropAvail ? ColourEnabledTint : ColourDisabledTint) && cropAvail
 		)
 		{
@@ -1897,21 +1909,21 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		if (ImGui::ImageButton
 		(
-			ImTextureID(PropEditImage.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_PropEdit.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			Config::Current->ShowPropsWindow ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	Config::Current->ShowPropsWindow = !Config::Current->ShowPropsWindow;
 		ShowToolTip("Image Properties");
 
 		if (ImGui::ImageButton
 		(
-			ImTextureID(InfoOverlayImage.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_InfoOverlay.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			Config::Current->ShowImageDetails ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	Config::Current->ShowImageDetails = !Config::Current->ShowImageDetails;
 		ShowToolTip("Image Details Overlay");
 
 		if (ImGui::ImageButton
 		(
-			ImTextureID(MetaDataImage.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_MetaData.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			Config::Current->ShowImageMetaData ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	Config::Current->ShowImageMetaData = !Config::Current->ShowImageMetaData;
 		ShowToolTip("Image Meta-Data Overlay");
@@ -1919,7 +1931,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		bool refreshAvail = CurrImage ? true : false;
 		if (ImGui::ImageButton
 		(
-			ImTextureID(RefreshImage.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_Refresh.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			ColourBG, refreshAvail ? ColourEnabledTint : ColourDisabledTint) && refreshAvail
 		)
 		{
@@ -1934,7 +1946,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		bool recycleAvail = CurrImage ? true : false;
 		if (ImGui::ImageButton
 		(
-			ImTextureID(RecycleImage.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_Recycle.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			ColourBG, recycleAvail ? ColourEnabledTint : ColourDisabledTint) && recycleAvail
 		)	Request_DeleteFileModal = true;
 		ShowToolTip("Delete Current File");
@@ -1943,14 +1955,14 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		if (ImGui::ImageButton
 		(
-			ImTextureID(HelpImage.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_Help.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			Config::Current->ShowCheatSheet ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	Config::Current->ShowCheatSheet = !Config::Current->ShowCheatSheet;
 		ShowToolTip("Help");
 
 		if (ImGui::ImageButton
 		(
-			ImTextureID(PrefsImage.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_Prefs.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			PrefsWindow ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	PrefsWindow = !PrefsWindow;
 		ShowToolTip("Preferences");
@@ -2734,91 +2746,79 @@ int Viewer::RemoveOldCacheFiles(const tString& cacheDir)
 
 void Viewer::LoadAppImages(const tString& dataDir)
 {
-	ReticleImage			.Load(dataDir + "Reticle.png");
-	PrevImage				.Load(dataDir + "Prev.png");
-	NextImage				.Load(dataDir + "Next.png");
-	PrevArrowImage			.Load(dataDir + "PrevArrow.png");
-	NextArrowImage			.Load(dataDir + "NextArrow.png");
-	FileImage				.Load(dataDir + "File.png");
-	FolderImage				.Load(dataDir + "Folder.png");
-	FlipHImage				.Load(dataDir + "FlipH.png");
-	FlipVImage				.Load(dataDir + "FlipV.png");
-	RotateACWImage			.Load(dataDir + "RotACW.png");
-	RotateCWImage			.Load(dataDir + "RotCW.png");
-	RotateThetaImage		.Load(dataDir + "RotTheta.png");
-	FullscreenImage			.Load(dataDir + "Fullscreen.png");
-	WindowedImage			.Load(dataDir + "Windowed.png");
-	SkipBeginImage			.Load(dataDir + "SkipBegin.png");
-	SkipEndImage			.Load(dataDir + "SkipEnd.png");
-	RefreshImage			.Load(dataDir + "Refresh.png");
-	ShowHiddenImage			.Load(dataDir + "ShowHidden.png");
-	RecycleImage			.Load(dataDir + "Recycle.png");
-	PropEditImage			.Load(dataDir + "PropEdit.png");
-	InfoOverlayImage		.Load(dataDir + "InfoOverlay.png");
-	MetaDataImage			.Load(dataDir + "MetaData.png");
-	HelpImage				.Load(dataDir + "Help.png");
-	PrefsImage				.Load(dataDir + "Settings.png");
-	TileImage				.Load(dataDir + "Tile.png");
-	StopImage				.Load(dataDir + "Stop.png");
-	StopRevImage			.Load(dataDir + "Stop.png");
-	PlayImage				.Load(dataDir + "Play.png");
-	PlayRevImage			.Load(dataDir + "PlayRev.png");
-	PlayLoopImage			.Load(dataDir + "PlayLoop.png");
-	PlayOnceImage			.Load(dataDir + "PlayOnce.png");
-	ChannelFilterImage		.Load(dataDir + "ChannelFilter.png");
-	ContentViewImage		.Load(dataDir + "ContentView.png");
-	UpFolderImage			.Load(dataDir + "UpFolder.png");
-	CropImage				.Load(dataDir + "Crop.png");
-	AnchorBLImage			.Load(dataDir + "AnchorBL.png");
-	AnchorBMImage			.Load(dataDir + "AnchorBM.png");
-	AnchorMLImage			.Load(dataDir + "AnchorML.png");
-	AnchorMMImage			.Load(dataDir + "AnchorMM.png");
-	DefaultThumbnailImage	.Load(dataDir + "DefaultThumbnail.png");
+	Image_Reticle			.Load(dataDir + "Reticle.png");
+	Image_Next_Prev			.Load(dataDir + "Next_Prev.png");
+	Image_NextSide_PrevSide	.Load(dataDir + "NextSide_PrevSide.png");
+	Image_File				.Load(dataDir + "File.png");
+	Image_Folder			.Load(dataDir + "Folder.png");
+	Image_FlipH				.Load(dataDir + "FlipH.png");
+	Image_FlipV				.Load(dataDir + "FlipV.png");
+	Image_RotCW_RotACW		.Load(dataDir + "RotCW_RotACW.png");
+	Image_RotateTheta		.Load(dataDir + "RotTheta.png");
+	Image_Fullscreen		.Load(dataDir + "Fullscreen.png");
+	Image_Windowed			.Load(dataDir + "Windowed.png");
+	Image_SkipEnd_SkipBegin	.Load(dataDir + "SkipEnd_SkipBegin.png");
+	Image_Refresh			.Load(dataDir + "Refresh.png");
+	Image_ShowHidden		.Load(dataDir + "ShowHidden.png");
+	Image_Recycle			.Load(dataDir + "Recycle.png");
+	Image_PropEdit			.Load(dataDir + "PropEdit.png");
+	Image_InfoOverlay		.Load(dataDir + "InfoOverlay.png");
+	Image_MetaData			.Load(dataDir + "MetaData.png");
+	Image_Help				.Load(dataDir + "Help.png");
+	Image_Prefs				.Load(dataDir + "Settings.png");
+	Image_Tile				.Load(dataDir + "Tile.png");
+	Image_Stop				.Load(dataDir + "Stop.png");
+	Image_Play_PlayRev		.Load(dataDir + "Play_PlayRev.png");
+	Image_PlayLoop			.Load(dataDir + "PlayLoop.png");
+	Image_PlayOnce			.Load(dataDir + "PlayOnce.png");
+	Image_ChannelFilter		.Load(dataDir + "ChannelFilter.png");
+	Image_ContentView		.Load(dataDir + "ContentView.png");
+	Image_UpFolder			.Load(dataDir + "UpFolder.png");
+	Image_Crop				.Load(dataDir + "Crop.png");
+	Image_AnchorBL			.Load(dataDir + "AnchorBL.png");
+	Image_AnchorBM			.Load(dataDir + "AnchorBM.png");
+	Image_AnchorML			.Load(dataDir + "AnchorML.png");
+	Image_AnchorMM			.Load(dataDir + "AnchorMM.png");
+	Image_DefaultThumbnail	.Load(dataDir + "DefaultThumbnail.png");
 }
 
 
 void Viewer::UnloadAppImages()
 {
-	ReticleImage			.Unload();
-	PrevImage				.Unload();
-	NextImage				.Unload();
-	PrevArrowImage			.Unload();
-	NextArrowImage			.Unload();
-	FileImage				.Unload();
-	FolderImage				.Unload();
-	FlipHImage				.Unload();
-	FlipVImage				.Unload();
-	RotateACWImage			.Unload();
-	RotateCWImage			.Unload();
-	RotateThetaImage		.Unload();
-	FullscreenImage			.Unload();
-	WindowedImage			.Unload();
-	SkipBeginImage			.Unload();
-	SkipEndImage			.Unload();
-	RefreshImage			.Unload();
-	ShowHiddenImage			.Unload();
-	RecycleImage			.Unload();
-	PropEditImage			.Unload();
-	InfoOverlayImage		.Unload();
-	MetaDataImage			.Unload();
-	HelpImage				.Unload();
-	PrefsImage				.Unload();
-	TileImage				.Unload();
-	StopImage				.Unload();
-	StopRevImage			.Unload();
-	PlayImage				.Unload();
-	PlayRevImage			.Unload();
-	PlayLoopImage			.Unload();
-	PlayOnceImage			.Unload();
-	ChannelFilterImage		.Unload();
-	ContentViewImage		.Unload();
-	UpFolderImage			.Unload();
-	CropImage				.Unload();
-	AnchorBLImage			.Unload();
-	AnchorBMImage			.Unload();
-	AnchorMLImage			.Unload();
-	AnchorMMImage			.Unload();
-	DefaultThumbnailImage	.Unload();
+	Image_Reticle			.Unload();
+	Image_Next_Prev			.Unload();
+	Image_NextSide_PrevSide	.Unload();
+	Image_File				.Unload();
+	Image_Folder			.Unload();
+	Image_FlipH				.Unload();
+	Image_FlipV				.Unload();
+	Image_RotCW_RotACW		.Unload();
+	Image_RotateTheta		.Unload();
+	Image_Fullscreen		.Unload();
+	Image_Windowed			.Unload();
+	Image_SkipEnd_SkipBegin	.Unload();
+	Image_Refresh			.Unload();
+	Image_ShowHidden		.Unload();
+	Image_Recycle			.Unload();
+	Image_PropEdit			.Unload();
+	Image_InfoOverlay		.Unload();
+	Image_MetaData			.Unload();
+	Image_Help				.Unload();
+	Image_Prefs				.Unload();
+	Image_Tile				.Unload();
+	Image_Stop				.Unload();
+	Image_Play_PlayRev		.Unload();
+	Image_PlayLoop			.Unload();
+	Image_PlayOnce			.Unload();
+	Image_ChannelFilter		.Unload();
+	Image_ContentView		.Unload();
+	Image_UpFolder			.Unload();
+	Image_Crop				.Unload();
+	Image_AnchorBL			.Unload();
+	Image_AnchorBM			.Unload();
+	Image_AnchorML			.Unload();
+	Image_AnchorMM			.Unload();
+	Image_DefaultThumbnail	.Unload();
 }
 
 

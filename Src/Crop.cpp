@@ -518,21 +518,21 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		ImGui::SetCursorPosX(panNavLeft);
 
 		ImGui::PushID("TL");
-		if (ImGui::ImageButton(ImTextureID(AnchorBLImage.Bind()), ancImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
+		if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), ancImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::TL;
 		ImGui::PopID();
 
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
 		ImGui::PushID("TM");
-		if (ImGui::ImageButton(ImTextureID(AnchorBMImage.Bind()), ancImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
+		if (ImGui::ImageButton(ImTextureID(Image_AnchorBM.Bind()), ancImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::TM;
 		ImGui::PopID();
 
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
 		ImGui::PushID("TR");
-		if (ImGui::ImageButton(ImTextureID(AnchorBLImage.Bind()), ancImageSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
+		if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), ancImageSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::TR;	
 		ImGui::PopID();
 
@@ -540,21 +540,21 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		ImGui::SetCursorPosX(panNavLeft);
 
 		ImGui::PushID("ML");
-		if (ImGui::ImageButton(ImTextureID(AnchorMLImage.Bind()), ancImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
+		if (ImGui::ImageButton(ImTextureID(Image_AnchorML.Bind()), ancImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::ML;
 		ImGui::PopID();
 
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
 		ImGui::PushID("MM");
-		if (ImGui::ImageButton(ImTextureID(AnchorMMImage.Bind()), ancImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
+		if (ImGui::ImageButton(ImTextureID(Image_AnchorMM.Bind()), ancImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::MM;
 		ImGui::PopID();
 
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
 		ImGui::PushID("MR");
-		if (ImGui::ImageButton(ImTextureID(AnchorMLImage.Bind()), ancImageSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
+		if (ImGui::ImageButton(ImTextureID(Image_AnchorML.Bind()), ancImageSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::MR;
 		ImGui::PopID();
 
@@ -562,21 +562,21 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		ImGui::SetCursorPosX(panNavLeft);
 
 		ImGui::PushID("BL");
-		if (ImGui::ImageButton(ImTextureID(AnchorBLImage.Bind()), ancImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, ColourEnabledTint))
+		if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), ancImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::BL;
 		ImGui::PopID();
 
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
 		ImGui::PushID("BM");
-		if (ImGui::ImageButton(ImTextureID(AnchorBMImage.Bind()), ancImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, ColourEnabledTint))
+		if (ImGui::ImageButton(ImTextureID(Image_AnchorBM.Bind()), ancImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::BM;
 		ImGui::PopID();
 
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
 		ImGui::PushID("BR");
-		if (ImGui::ImageButton(ImTextureID(AnchorBLImage.Bind()), ancImageSize, tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 1, ColourBG, ColourEnabledTint))
+		if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), ancImageSize, tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::BR;
 		ImGui::PopID();
 

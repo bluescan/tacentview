@@ -112,7 +112,7 @@ void Viewer::ShowContentViewDialog(bool* popen)
 			// we request non-visible ones.
 			i->RequestThumbnail();
 			if (!thumbnailTexID)
-				thumbnailTexID = DefaultThumbnailImage.Bind();
+				thumbnailTexID = Image_DefaultThumbnail.Bind();
 			ImGui::PushStyleColor(ImGuiCol_Button, ColourClear);
 			if
 			(

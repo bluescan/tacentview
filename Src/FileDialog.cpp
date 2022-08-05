@@ -1246,7 +1246,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 		tVector2 ToolImageSize							(24.0f, menuBarHeight);
 
 		// Up directory.
-		uint64 upImgID = Viewer::UpFolderImage.Bind();
+		uint64 upImgID = Viewer::Image_UpFolder.Bind();
 		bool upAvail = SelectedNode && SelectedNode->Parent;
 		if (ImGui::ImageButton
 		(
@@ -1277,7 +1277,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 		ShowToolTip("Up Directory");
 
 		// Show hidden.
-		uint64 showHiddenImgID = Viewer::ShowHiddenImage.Bind();
+		uint64 showHiddenImgID = Viewer::Image_ShowHidden.Bind();
 		if (ImGui::ImageButton
 		(
 			ImTextureID(showHiddenImgID), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
@@ -1289,7 +1289,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 		ShowToolTip("Show Hidden");
 
 		// Refresh.
-		uint64 refreshImgID = Viewer::RotateThetaImage.Bind();
+		uint64 refreshImgID = Viewer::Image_RotateTheta.Bind();
 		if (ImGui::ImageButton
 		(
 			ImTextureID(refreshImgID), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
@@ -1496,7 +1496,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 					ImGui::TableNextRow();
 
 					ImGui::TableNextColumn();
-					uint64 imgID = item->IsDir ? Viewer::FolderImage.Bind() : Viewer::FileImage.Bind();
+					uint64 imgID = item->IsDir ? Viewer::Image_Folder.Bind() : Viewer::Image_File.Bind();
 					ImGui::SetCursorPosX(ImGui::GetCursorPosX()+4.0f);
 					ImGui::Image(ImTextureID(imgID), tVector2(16.0f, 16.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), Viewer::ColourEnabledTint);
 

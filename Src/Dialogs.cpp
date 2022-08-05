@@ -519,7 +519,7 @@ void Viewer::NavLogBar::Draw()
 
 	if
 	(
-		ImGui::ImageButton(ImTextureID(UpFolderImage.Bind()), tVector2(20.0f, 20.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+		ImGui::ImageButton(ImTextureID(Image_UpFolder.Bind()), tVector2(20.0f, 20.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 		Viewer::ColourBG, tVector4(1.00f, 1.00f, 1.00f, 1.00f))
 	)
 	{

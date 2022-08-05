@@ -114,7 +114,7 @@ void Viewer::DoResizeAnchorInterface()
 
 	bool selTL = (Config::Current->CropAnchor == int(Anchor::TL));
 	ImGui::PushID("TL");
-	if (ImGui::ImageButton(ImTextureID(AnchorBLImage.Bind()), imgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, selTL ? ColourEnabledTint : ColourDisabledTint))
+	if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), imgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, selTL ? ColourEnabledTint : ColourDisabledTint))
 		Config::Current->CropAnchor = selTL ? -1 : int(Anchor::TL);
 	ImGui::PopID();
 
@@ -122,7 +122,7 @@ void Viewer::DoResizeAnchorInterface()
 	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
 	bool selTM = (Config::Current->CropAnchor == int(Anchor::TM));
 	ImGui::PushID("TM");
-	if (ImGui::ImageButton(ImTextureID(AnchorBMImage.Bind()), imgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, selTM ? ColourEnabledTint : ColourDisabledTint))
+	if (ImGui::ImageButton(ImTextureID(Image_AnchorBM.Bind()), imgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, selTM ? ColourEnabledTint : ColourDisabledTint))
 		Config::Current->CropAnchor = selTM ? -1 : int(Anchor::TM);
 	ImGui::PopID();
 
@@ -130,7 +130,7 @@ void Viewer::DoResizeAnchorInterface()
 	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
 	bool selTR = (Config::Current->CropAnchor == int(Anchor::TR));
 	ImGui::PushID("TR");
-	if (ImGui::ImageButton(ImTextureID(AnchorBLImage.Bind()), imgSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, selTR ? ColourEnabledTint : ColourDisabledTint))
+	if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), imgSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, selTR ? ColourEnabledTint : ColourDisabledTint))
 		Config::Current->CropAnchor = selTR ? -1 : int(Anchor::TR);
 	ImGui::PopID();
 
@@ -139,7 +139,7 @@ void Viewer::DoResizeAnchorInterface()
 
 	bool selML = (Config::Current->CropAnchor == int(Anchor::ML));
 	ImGui::PushID("ML");
-	if (ImGui::ImageButton(ImTextureID(AnchorMLImage.Bind()), imgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, selML ? ColourEnabledTint : ColourDisabledTint))
+	if (ImGui::ImageButton(ImTextureID(Image_AnchorML.Bind()), imgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, selML ? ColourEnabledTint : ColourDisabledTint))
 		Config::Current->CropAnchor = selML ? -1 : int(Anchor::ML);
 	ImGui::PopID();
 
@@ -147,7 +147,7 @@ void Viewer::DoResizeAnchorInterface()
 	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
 	bool selMM = (Config::Current->CropAnchor == int(Anchor::MM));
 	ImGui::PushID("MM");
-	if (ImGui::ImageButton(ImTextureID(AnchorMMImage.Bind()), imgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, selMM ? ColourEnabledTint : ColourDisabledTint))
+	if (ImGui::ImageButton(ImTextureID(Image_AnchorMM.Bind()), imgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, selMM ? ColourEnabledTint : ColourDisabledTint))
 		Config::Current->CropAnchor = selMM ? -1 : int(Anchor::MM);
 	ImGui::PopID();
 
@@ -155,7 +155,7 @@ void Viewer::DoResizeAnchorInterface()
 	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
 	bool selMR = (Config::Current->CropAnchor == int(Anchor::MR));
 	ImGui::PushID("MR");
-	if (ImGui::ImageButton(ImTextureID(AnchorMLImage.Bind()), imgSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, selMR ? ColourEnabledTint : ColourDisabledTint))
+	if (ImGui::ImageButton(ImTextureID(Image_AnchorML.Bind()), imgSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, selMR ? ColourEnabledTint : ColourDisabledTint))
 		Config::Current->CropAnchor = selMR ? -1 : int(Anchor::MR);
 	ImGui::PopID();
 
@@ -164,7 +164,7 @@ void Viewer::DoResizeAnchorInterface()
 
 	bool selBL = (Config::Current->CropAnchor == int(Anchor::BL));
 	ImGui::PushID("BL");
-	if (ImGui::ImageButton(ImTextureID(AnchorBLImage.Bind()), imgSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, selBL ? ColourEnabledTint : ColourDisabledTint))
+	if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), imgSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, selBL ? ColourEnabledTint : ColourDisabledTint))
 		Config::Current->CropAnchor = selBL ? -1 : int(Anchor::BL);
 	ImGui::PopID();
 
@@ -172,7 +172,7 @@ void Viewer::DoResizeAnchorInterface()
 	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
 	bool selBM = (Config::Current->CropAnchor == int(Anchor::BM));
 	ImGui::PushID("BM");
-	if (ImGui::ImageButton(ImTextureID(AnchorBMImage.Bind()), imgSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, selBM ? ColourEnabledTint : ColourDisabledTint))
+	if (ImGui::ImageButton(ImTextureID(Image_AnchorBM.Bind()), imgSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, selBM ? ColourEnabledTint : ColourDisabledTint))
 		Config::Current->CropAnchor = selBM ? -1 : int(Anchor::BM);
 	ImGui::PopID();
 
@@ -180,7 +180,7 @@ void Viewer::DoResizeAnchorInterface()
 	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
 	bool selBR = (Config::Current->CropAnchor == int(Anchor::BR));
 	ImGui::PushID("BR");
-	if (ImGui::ImageButton(ImTextureID(AnchorBLImage.Bind()), imgSize, tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 1, ColourBG, selBR ? ColourEnabledTint : ColourDisabledTint))
+	if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), imgSize, tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 1, ColourBG, selBR ? ColourEnabledTint : ColourDisabledTint))
 		Config::Current->CropAnchor = selBR ? -1 : int(Anchor::BR);
 	ImGui::PopID();
 }
