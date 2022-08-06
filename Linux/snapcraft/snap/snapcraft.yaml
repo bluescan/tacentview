@@ -40,7 +40,8 @@ parts:
       - -DCMAKE_BUILD_TYPE=Release
       - -DPACKAGE_SNAP=True
     build-packages:
-      - g++
+      #- g++10
+      - clang-12
       - make
       - cmake
       # - libx11-6
@@ -57,6 +58,9 @@ parts:
       cp ../stage/root/parts/tacentview/build/ViewerInstall/tacentview tacentview
       mkdir -p Data
       cp ../stage/root/parts/tacentview/build/ViewerInstall/Data/* Data/
+#    override-build: | 
+#      export CC=clang-12
+#      export CXX=clang++-12
     after:
       - desktop-glib-only
 

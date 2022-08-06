@@ -39,7 +39,9 @@ endif()
 include(FetchContent)
 
 # Grab the Tacent library from github at configure time. Set desired options here first.
-option(TACENT_UTF16_API_CALLS "Build Tacent With UTF16 API Calls" On)
+if (WIN32)
+	option(TACENT_UTF16_API_CALLS "Build Tacent With UTF16 API Calls" On)
+endif()
 
 FetchContent_Declare(
 	tacent
