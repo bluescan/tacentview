@@ -2839,6 +2839,7 @@ int main(int argc, char** argv)
 		int numchars = GetLongPathNameA(Viewer::ImageFileParam.Param.Chr(), dest.Txt(), MAX_PATH);
 		if (numchars > 0)
 			Viewer::ImageFileParam.Param = dest;
+		dest.SetLength( tStd::tStrlen(dest.Text()) );
 
 		tPrintf("LongPath:%s\n", dest.Chr());
 	}
