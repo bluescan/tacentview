@@ -279,6 +279,12 @@ void Viewer::ShowAboutPopup(bool* popen)
 		ImGui::Text("Configuration: %s", config.Chr());
 		ImGui::Text("Package: %s", package.Chr());
 
+		#ifdef TACENT_UTF16_API_CALLS
+		ImGui::Text("API Mode: UTF-16");
+		#else
+		ImGui::Text("API Mode: UTF-8");
+		#endif
+
 		ImGui::Separator();
 		ImGui::Text("Tacent Library V %d.%d.%d", tVersion::Major, tVersion::Minor, tVersion::Revision);
 		ImGui::Text("Dear ImGui V %s", IMGUI_VERSION);
