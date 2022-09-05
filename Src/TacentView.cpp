@@ -219,7 +219,7 @@ namespace Viewer
 	uint64 FrameNumber								= 0;
 	tVector2 ToolImageSize							(24.0f, 24.0f);
 
-	void DrawBackground(float l, float r, float b, float t);
+	void DrawBackground(float l, float r, float b, float t, float drawW, float drawH);
 	void DrawNavBar(float x, float y, float w, float h);
 	int GetNavBarHeight();
 	void PrintRedirectCallback(const char* text, int numChars);
@@ -747,7 +747,7 @@ int Viewer::GetPanY()
 }
 
 
-void Viewer::DrawBackground(float l, float r, float b, float t)
+void Viewer::DrawBackground(float l, float r, float b, float t, float drawW, float drawH)
 {
 	if (Config::Global.TransparentWorkArea)
 		return;
@@ -760,12 +760,41 @@ void Viewer::DrawBackground(float l, float r, float b, float t)
 		case int(Config::ProfileSettings::BGStyle::Checkerboard):
 		{
 			// Semitransparent checkerboard background.
+			float checkSize = 16.0f;
+
+			// This is for efficiency. Why draw checrboxes where we don'e have to (off screen)?
+			// We cull in widths of 2*checkSize so the checherbox colour works out.
+			if (l < 0.0f)
+			{
+				int numXhidden = int((0.0f-l) / (2.0f*checkSize));
+				l += float(numXhidden)*(2.0f*checkSize);
+			}
+			if (r >= drawW)
+			{
+				int numXhidden = int((r-drawW) / (2.0f*checkSize));
+				r -= float(numXhidden)*(2.0f*checkSize);
+			}
+
+			if (b < 0.0f)
+			{
+				int numYhidden = int((0.0f-b) / (2.0f*checkSize));
+				b += float(numYhidden)*(2.0f*checkSize);
+			}
+			if (t >= drawH)
+			{
+				int numYhidden = int((t-drawH) / (2.0f*checkSize));
+				t -= float(numYhidden)*(2.0f*checkSize);
+			}
+
 			int x = 0;
 			int y = 0;
+
 			bool lineStartToggle = false;
-			float checkSize = 16.0f;
 			float bgH = t - b;
 			float bgW = r - l;
+			glBegin(GL_QUADS);
+
+			int numCheckQuads = 0;
 			while (y*checkSize < bgH)
 			{
 				bool colourToggle = lineStartToggle;
@@ -792,12 +821,11 @@ void Viewer::DrawBackground(float l, float r, float b, float t)
 					float bc = (b+y*checkSize);
 					float tc = (b+y*checkSize+ch);
 
-					glBegin(GL_QUADS);
 					glVertex2f(lc, bc);
 					glVertex2f(lc, tc);
 					glVertex2f(rc, tc);
 					glVertex2f(rc, bc);
-					glEnd();
+					numCheckQuads++;
 
 					x++;
 				}
@@ -805,6 +833,7 @@ void Viewer::DrawBackground(float l, float r, float b, float t)
 				y++;
 				lineStartToggle = !lineStartToggle;
 			}
+			glEnd();
 			break;
 		}
 
@@ -1084,9 +1113,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		// Draw background.
 		glDisable(GL_TEXTURE_2D);
 		if ((Config::Current->BackgroundExtend || Config::Current->Tile) && !CropMode)
-			DrawBackground(0.0f, draww, 0.0f, drawh);
+			DrawBackground(0.0f, draww, 0.0f, drawh, draww, drawh);
 		else
-			DrawBackground(left, right, bottom, top);
+			DrawBackground(left, right, bottom, top, draww, drawh);
 
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		CurrImage->Bind();
