@@ -760,7 +760,7 @@ void Viewer::DrawBackground(float l, float r, float b, float t, float drawW, flo
 		case int(Config::ProfileSettings::BGStyle::Checkerboard):
 		{
 			// Semitransparent checkerboard background.
-			float checkSize = 16.0f;
+			float checkSize = Config::Current->BackgroundCheckerboxSize;
 
 			// This is for efficiency. Why draw checrboxes where we don'e have to (off screen)?
 			// We cull in widths of 2*checkSize so the checherbox colour works out.

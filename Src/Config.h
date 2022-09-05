@@ -83,6 +83,7 @@ struct ProfileSettings
 		NumStyles
 	};
 	int BackgroundStyle;
+	int BackgroundCheckerboxSize;
 	tColouri BackgroundColour;					// Only used if BGStyle is SolidColour.
 	bool BackgroundExtend;						// Extend background past image bounds.
 

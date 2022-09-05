@@ -103,6 +103,15 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 					}
 					ImGui::PopItemWidth();
 				}
+
+				if (Config::Current->BackgroundStyle == int(Config::ProfileSettings::BGStyle::Checkerboard))
+				{
+					ImGui::PushItemWidth(110);
+					ImGui::InputInt("Checker Size", &Config::Current->BackgroundCheckerboxSize);
+					ImGui::PopItemWidth();
+					tMath::tiClamp(Config::Current->BackgroundCheckerboxSize, 2, 256);
+				}
+
 			}
 			ImGui::EndTabItem();
 		}

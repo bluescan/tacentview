@@ -333,6 +333,7 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 	if (categories & Category_Display)
 	{
 		BackgroundStyle				= (profile == Profile::Basic) ? int(BGStyle::None) : int(BGStyle::Checkerboard);
+		BackgroundCheckerboxSize	= 16;
 		BackgroundColour			= tColouri::black;
 		BackgroundExtend			= false;
 	}
@@ -396,6 +397,7 @@ void Config::ProfileSettings::Load(tExpression expr)
 			ReadItem(OverlayCorner);
 			ReadItem(Tile);
 			ReadItem(BackgroundStyle);
+			ReadItem(BackgroundCheckerboxSize);
 			ReadItem(BackgroundColour);
 			ReadItem(BackgroundExtend);
 			ReadItem(ResampleFilter);
@@ -463,6 +465,7 @@ void Config::ProfileSettings::Load(tExpression expr)
 	tiClamp		(DefaultZoomMode, 0, int(ZoomMode::NumModes)-1);
 	tiClampMin	(SlideshowPeriod, 1.0/60.0);
 	tiClamp		(BackgroundStyle, 0, int(BGStyle::NumStyles)-1);
+	tiClamp		(BackgroundCheckerboxSize, 2, 256);
 	tiClamp		(OverlayCorner, 0, 3);
 	tiClamp		(SaveFileType, 0, 7);
 	tiClamp		(SaveFileTypeMultiFrame, 0, 3);
@@ -518,6 +521,7 @@ bool Config::ProfileSettings::Save(tExprWriter& writer) const
 	WriteItem(OverlayCorner);
 	WriteItem(Tile);
 	WriteItem(BackgroundStyle);
+	WriteItem(BackgroundCheckerboxSize);
 	WriteItem(BackgroundColour);
 	WriteItem(BackgroundExtend);
 	WriteItem(ResampleFilter);
