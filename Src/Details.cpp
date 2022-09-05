@@ -150,6 +150,12 @@ void Viewer::ColourCopyAs()
 }
 
 
+namespace ViewerMetaData
+{
+	int CopyRowIndex = -1;
+}
+
+
 void Viewer::ShowImageMetaDataOverlay(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(6);
@@ -196,25 +202,75 @@ void Viewer::ShowImageMetaDataOverlay(bool* popen)
 			}
 			else
 			{
+				bool colHovered = (ImGui::TableGetColumnFlags(0) & ImGuiTableColumnFlags_IsHovered) || (ImGui::TableGetColumnFlags(1) & ImGuiTableColumnFlags_IsHovered);
+				if (colHovered  && (ImGui::GetMousePos().y >= ImGui::GetItemRectMin().y) && (ImGui::GetMousePos().y <= ImGui::GetItemRectMax().y))
+				{
+					ViewerMetaData::CopyRowIndex = -1;
+					if (ImGui::IsMouseReleased(1))
+						ImGui::OpenPopup("CopyPopup");
+				}
+
 				for (int tagIndex = 0; tagIndex < int(tMetaTag::NumTags); tagIndex++)
 				{
 					tMetaTag tag = tMetaTag(tagIndex);
 					tString value = metaData->GetPrettyValue(tag);
-					if (value.IsValid())
-					{
-						tString tagName = tGetMetaTagName(tag);
-						tString tagDesc = tGetMetaTagDesc(tag);
-						ImGui::TableNextRow();
-						ImGui::TableSetColumnIndex(0);
-						ImGui::Text(tagName.Chr());
-						ShowToolTip(tagDesc.Chr());
+					if (!value.IsValid())
+						continue;
 
-						ImGui::TableSetColumnIndex(1);
-						ImGui::Text(value.Chr());
-						tVector2 rect = ImGui::GetItemRectSize();
-						if (rect.x > 188)
-							ShowToolTip(value.Chr());
+					tString tagName = tGetMetaTagName(tag);
+					tString tagDesc = tGetMetaTagDesc(tag);
+					ImGui::TableNextRow();
+
+					ImGui::TableSetColumnIndex(0);
+					ImGui::Text(tagName.Chr());
+					ShowToolTip(tagDesc.Chr());
+
+					ImGui::TableSetColumnIndex(1);	
+					ImGui::Text(value.Chr());
+
+					tVector2 rect = ImGui::GetItemRectSize();
+					// If the value was truncated, show it all in a tooltip.
+					if (rect.x > 188)
+						ShowToolTip(value.Chr());
+
+					if (ImGui::IsMouseReleased(1) && colHovered  && (ImGui::GetMousePos().y >= ImGui::GetItemRectMin().y) && (ImGui::GetMousePos().y <= ImGui::GetItemRectMax().y))
+					{
+						ViewerMetaData::CopyRowIndex = tagIndex;
+						ImGui::OpenPopup("CopyPopup");
 					}
+				}
+
+				if (ImGui::BeginPopup("CopyPopup"))
+				{
+					if (ViewerMetaData::CopyRowIndex != -1)
+					{
+						tMetaTag rowTag = tMetaTag(ViewerMetaData::CopyRowIndex);
+						tString rowName = tGetMetaTagName(rowTag);
+
+						tString copyRowText = "Copy " + rowName;
+						if (ImGui::MenuItem(copyRowText.Chr(), nullptr, false, true))
+						{
+							tString rowCopyBuf = rowName + ": " + metaData->GetPrettyValue(rowTag);
+							ImGui::SetClipboardText(rowCopyBuf.Chr());
+						}
+					}
+
+					if (ImGui::MenuItem("Copy All",	nullptr, false, true))
+					{
+						tString copyAllBuf;
+						for (int tagIndex = 0; tagIndex < int(tMetaTag::NumTags); tagIndex++)
+						{
+							tMetaTag tag = tMetaTag(tagIndex);
+							tString value = metaData->GetPrettyValue(tag);
+							if (!value.IsValid())
+								continue;
+
+							tString rowName = tGetMetaTagName(tag);
+							copyAllBuf += rowName + ": " + value + "\n";
+						}
+						ImGui::SetClipboardText(copyAllBuf.Chr());
+					}
+					ImGui::EndPopup();
 				}
 			}
 
