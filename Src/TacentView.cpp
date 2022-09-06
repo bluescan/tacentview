@@ -760,10 +760,10 @@ void Viewer::DrawBackground(float l, float r, float b, float t, float drawW, flo
 		case int(Config::ProfileSettings::BGStyle::Checkerboard):
 		{
 			// Semitransparent checkerboard background.
-			float checkSize = Config::Current->BackgroundCheckerboxSize;
+			float checkSize = float(Config::Current->BackgroundCheckerboxSize);
 
 			// This is for efficiency. Why draw checrboxes where we don'e have to (off screen)?
-			// We cull in widths of 2*checkSize so the checherbox colour works out.
+			// We cull in widths of 2*checkSize so the alternating checherbox colour works out.
 			if (l < 0.0f)
 			{
 				int numXhidden = int((0.0f-l) / (2.0f*checkSize));
@@ -1114,7 +1114,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		glDisable(GL_TEXTURE_2D);
 		if ((Config::Current->BackgroundExtend || Config::Current->Tile) && !CropMode)
 			DrawBackground(0.0f, draww, 0.0f, drawh, draww, drawh);
-		else
+
+		// There is no point drawing the background at all if the image is completely opaque.
+		else if (!CurrImage->IsOpaque())
 			DrawBackground(left, right, bottom, top, draww, drawh);
 
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);

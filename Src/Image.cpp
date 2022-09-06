@@ -617,13 +617,14 @@ void Image::Unbind()
 
 bool Image::IsOpaque() const
 {
+	// @todo Why different to GetWidth etc.
 	if (DDSCubemap.IsValid())
 		return DDSCubemap.AllSidesOpaque();
 
 	if (DDSTexture2D.IsValid())
 		return DDSTexture2D.IsOpaque();
 
-	tPicture* picture = Pictures.First();
+	tPicture* picture = GetCurrentPic();
 	if (picture && picture->IsValid())
 		return picture->IsOpaque();
 
