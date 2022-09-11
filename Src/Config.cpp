@@ -299,6 +299,10 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 		Tile						= false;
 		ResampleFilter				= int(tImage::tResampleFilter::Bilinear);
 		ResampleEdgeMode			= int(tImage::tResampleEdgeMode::Clamp);
+		ResampleFilterContactFrame	= int(tImage::tResampleFilter::Bilinear);
+		ResampleEdgeModeContactFrame= int(tImage::tResampleEdgeMode::Clamp);
+		ResampleFilterContactFinal	= int(tImage::tResampleFilter::Bilinear);
+		ResampleEdgeModeContactFinal= int(tImage::tResampleEdgeMode::Clamp);
 		ResampleFilterRotateUp		= int(tImage::tResampleFilter::Bilinear);
 		ResampleFilterRotateDown	= int(tImage::tResampleFilter::None);
 		RotateMode					= int(RotMode::Fill);
@@ -402,6 +406,10 @@ void Config::ProfileSettings::Load(tExpression expr)
 			ReadItem(BackgroundExtend);
 			ReadItem(ResampleFilter);
 			ReadItem(ResampleEdgeMode);
+			ReadItem(ResampleFilterContactFrame);
+			ReadItem(ResampleEdgeModeContactFrame);
+			ReadItem(ResampleFilterContactFinal);
+			ReadItem(ResampleEdgeModeContactFinal);
 			ReadItem(ResampleFilterRotateUp);
 			ReadItem(ResampleFilterRotateDown);
 			ReadItem(RotateMode);
@@ -459,6 +467,10 @@ void Config::ProfileSettings::Load(tExpression expr)
 
 	tiClamp		(ResampleFilter, 0, int(tImage::tResampleFilter::NumFilters)-1);		// No None allowed.
 	tiClamp		(ResampleEdgeMode, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);
+	tiClamp		(ResampleFilterContactFrame, 0, int(tImage::tResampleFilter::NumFilters)-1);		// No None allowed.
+	tiClamp		(ResampleEdgeModeContactFrame, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);
+	tiClamp		(ResampleFilterContactFinal, 0, int(tImage::tResampleFilter::NumFilters)-1);		// No None allowed.
+	tiClamp		(ResampleEdgeModeContactFinal, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);
 	tiClamp		(ResampleFilterRotateUp, 0, int(tImage::tResampleFilter::NumFilters));	// None allowed.
 	tiClamp		(ResampleFilterRotateDown, 0, int(tImage::tResampleFilter::NumFilters));// None allowed.
 	tiClamp		(RotateMode, 0, int(RotMode::NumModes)-1);
@@ -526,6 +538,10 @@ bool Config::ProfileSettings::Save(tExprWriter& writer) const
 	WriteItem(BackgroundExtend);
 	WriteItem(ResampleFilter);
 	WriteItem(ResampleEdgeMode);
+	WriteItem(ResampleFilterContactFrame);
+	WriteItem(ResampleEdgeModeContactFrame);
+	WriteItem(ResampleFilterContactFinal);
+	WriteItem(ResampleEdgeModeContactFinal);
 	WriteItem(ResampleFilterRotateUp);
 	WriteItem(ResampleFilterRotateDown);
 	WriteItem(RotateMode);

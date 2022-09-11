@@ -33,6 +33,28 @@ namespace Viewer
 		int numCols, int numRows,
 		int finalWidth, int finalHeight
 	);
+
+	bool AnyImageNeedsResize(int frameWidth, int frameHeight);
+}
+
+
+bool Viewer::AnyImageNeedsResize(int frameWidth, int frameHeight)
+{
+	Image* checkImg = Images.First();
+	bool anyImageNeedsResize = false;
+	while (checkImg)
+	{
+		if (!checkImg->IsLoaded())
+			checkImg->Load();
+
+		if ((checkImg->GetWidth() != frameWidth) || (checkImg->GetHeight() != frameHeight))
+		{
+			anyImageNeedsResize = true;
+			break;
+		}
+		checkImg = checkImg->Next();
+	}
+	return anyImageNeedsResize;
 }
 
 
@@ -48,6 +70,7 @@ void Viewer::DoContactSheetModal(bool saveContactSheetPressed)
 
 	static int frameWidth = 256;
 	static int frameHeight = 256;
+	static bool anyImageNeedsResize = false;
 	static int numRows = 4;
 	static int numCols = 4;
 	static int finalWidth = 2048;
@@ -63,6 +86,7 @@ void Viewer::DoContactSheetModal(bool saveContactSheetPressed)
 		frameHeight = picH;
 		numRows = int(tCeiling(tSqrt(float(Images.Count()))));
 		numCols = int(tCeiling(tSqrt(float(Images.Count()))));
+		anyImageNeedsResize = AnyImageNeedsResize(frameWidth, frameHeight);
 	}
 
 	int contactWidth = frameWidth * numCols;
@@ -77,7 +101,8 @@ void Viewer::DoContactSheetModal(bool saveContactSheetPressed)
 	static char hi[32];
 	tVector2 bsize(50.0f, 0.0f);
 
-	ImGui::InputInt("Frame Width", &frameWidth);
+	if (ImGui::InputInt("Frame Width", &frameWidth))
+		anyImageNeedsResize = AnyImageNeedsResize(frameWidth, frameHeight);
 	tiClampMin(frameWidth, 4);
 	int loP2W = tNextLowerPower2(frameWidth);	tiClampMin(loP2W, 4);	tsPrintf(lo, "%d##framewidth", loP2W);
 	ImGui::SameLine(); if (ImGui::Button(lo, bsize)) frameWidth = loP2W;
@@ -85,7 +110,8 @@ void Viewer::DoContactSheetModal(bool saveContactSheetPressed)
 	ImGui::SameLine(); if (ImGui::Button(hi, bsize)) frameWidth = hiP2W;
 	ImGui::SameLine(); ShowHelpMark("Single frame width in pixels.");
 
-	ImGui::InputInt("Frame Height", &frameHeight);
+	if (ImGui::InputInt("Frame Height", &frameHeight))
+		anyImageNeedsResize = AnyImageNeedsResize(frameWidth, frameHeight);
 	tiClampMin(frameHeight, 4);
 	int loP2H = tNextLowerPower2(frameHeight);	tiClampMin(loP2H, 4);	tsPrintf(lo, "%d##frameheight", loP2H);
 	ImGui::SameLine(); if (ImGui::Button(lo, bsize)) frameHeight = loP2H;
@@ -133,13 +159,33 @@ void Viewer::DoContactSheetModal(bool saveContactSheetPressed)
 	}
 	ImGui::Separator();
 
-	ImGui::Combo("Filter", &Config::Current->ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
-	ImGui::SameLine();
-	ShowHelpMark("Filtering method to use when resizing images.");
+	// Only display filter option if filtering will be used.
+	bool needFinalResize = ((finalWidth != contactWidth) || (finalHeight != contactHeight));
+	if (anyImageNeedsResize || needFinalResize)
+	{
+		if (anyImageNeedsResize)
+		{
+			ImGui::Combo("Frame Filter", &Config::Current->ResampleFilterContactFrame, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
+			ImGui::SameLine();
+			ShowHelpMark("Filtering method to use when resizing input frame images.");
 
-	ImGui::Combo("Filter Edge Mode", &Config::Current->ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
-	ImGui::SameLine();
-	ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");
+			ImGui::Combo("Frame Filter Edge Mode", &Config::Current->ResampleEdgeModeContactFrame, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
+			ImGui::SameLine();
+			ShowHelpMark("How frame filter chooses pixels along image edges. Use wrap for tiled textures.");
+		}
+		if (needFinalResize)
+		{
+			ImGui::Combo("Final Filter", &Config::Current->ResampleFilterContactFinal, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
+			ImGui::SameLine();
+			ShowHelpMark("Filtering method to use when resizing output image.");
+
+			ImGui::Combo("Final Filter Edge Mode", &Config::Current->ResampleEdgeModeContactFinal, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
+			ImGui::SameLine();
+			ShowHelpMark("How output filter chooses pixels along image edges. Use wrap for tiled textures.");
+		}
+
+		ImGui::Separator();
+	}
 
 	tFileType fileType = DoSaveChooseFiletype();
 	DoSaveFiletypeOptions(fileType);
@@ -256,7 +302,11 @@ void Viewer::SaveContactSheetTo
 		if ((currImg->GetWidth() != frameWidth) || (currImg->GetHeight() != frameHeight))
 		{
 			resampled.Set(*currPic);
-			resampled.Resample(frameWidth, frameHeight, tImage::tResampleFilter(Config::Current->ResampleFilter), tImage::tResampleEdgeMode(Config::Current->ResampleEdgeMode));
+			resampled.Resample(frameWidth, frameHeight, tImage::tResampleFilter(Config::Current->ResampleFilterContactFrame), tImage::tResampleEdgeMode(Config::Current->ResampleEdgeModeContactFrame));
+		}
+		else
+		{
+			tPrintf("No resizing of [%s] needed.\n", tSystem::tGetFileBaseName(currImg->Filename).Chr());
 		}
 
 		// Copy resampled frame into place.
@@ -285,6 +335,7 @@ void Viewer::SaveContactSheetTo
 	tImage::tImageTGA::tFormat tgaFmt = allOpaque ? tImage::tImageTGA::tFormat::Bit24 : tImage::tImageTGA::tFormat::Bit32;
 	if ((finalWidth == contactWidth) && (finalHeight == contactHeight))
 	{
+		tPrintf("No resizing of output [%s] image needed.\n", tSystem::tGetFileBaseName(outFile).Chr());
 		if (Config::Current->SaveFileType == 0)
 			outPic.SaveTGA(outFile, tgaFmt, Config::Current->SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
 		else
@@ -293,7 +344,7 @@ void Viewer::SaveContactSheetTo
 	else
 	{
 		tImage::tPicture finalResampled(outPic);
-		finalResampled.Resample(finalWidth, finalHeight, tImage::tResampleFilter(Config::Current->ResampleFilter), tImage::tResampleEdgeMode(Config::Current->ResampleEdgeMode));
+		finalResampled.Resample(finalWidth, finalHeight, tImage::tResampleFilter(Config::Current->ResampleFilterContactFinal), tImage::tResampleEdgeMode(Config::Current->ResampleEdgeModeContactFinal));
 
 		if (Config::Current->SaveFileType == 0)
 			finalResampled.SaveTGA(outFile, tgaFmt, Config::Current->SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);

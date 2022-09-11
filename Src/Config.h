@@ -87,10 +87,14 @@ struct ProfileSettings
 	tColouri BackgroundColour;					// Only used if BGStyle is SolidColour.
 	bool BackgroundExtend;						// Extend background past image bounds.
 
-	int ResampleFilter;							// Matches tImage::tResampleFilter.
-	int ResampleEdgeMode;						// Matches tImage::tResampleEdgeMode.
-	int ResampleFilterRotateUp;					// Matches tImage::tResampleFilter.
-	int ResampleFilterRotateDown;				// Matches tImage::tResampleFilter.
+	int ResampleFilter;							// Matches tImage::tResampleFilter. Used for image resize when saving and multiframe saving.
+	int ResampleEdgeMode;						// Matches tImage::tResampleEdgeMode. Used for image resize when saving and multiframe saving.
+	int ResampleFilterContactFrame;				// Matches tImage::tResampleFilter. Used for contact sheet frame resizing.
+	int ResampleEdgeModeContactFrame;			// Matches tImage::tResampleEdgeMode. Used for contact sheet frame resizing.
+	int ResampleFilterContactFinal;				// Matches tImage::tResampleFilter. Used for contact sheet final resizing.
+	int ResampleEdgeModeContactFinal;			// Matches tImage::tResampleEdgeMode. Used for contact sheet final resizing.
+	int ResampleFilterRotateUp;					// Matches tImage::tResampleFilter. Used for image rotations.
+	int ResampleFilterRotateDown;				// Matches tImage::tResampleFilter. Used for image rotations.
 
 	enum class RotMode
 	{
