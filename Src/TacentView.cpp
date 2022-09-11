@@ -1156,27 +1156,34 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (modifiedSwizzle)
 			glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
 	
-		glBegin(GL_QUADS);
 		if (!Config::Current->Tile)
 		{
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+			glBegin(GL_QUADS);
 			glTexCoord2f(0.0f, 0.0f); glVertex2f(left,  bottom);
 			glTexCoord2f(0.0f, 1.0f); glVertex2f(left,  top);
 			glTexCoord2f(1.0f, 1.0f); glVertex2f(right, top);
 			glTexCoord2f(1.0f, 0.0f); glVertex2f(right, bottom);
+			glEnd();
 		}
 		else
 		{
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+			glBegin(GL_QUADS);
 			float repU = draww/(right-left);	float offU = (1.0f-repU)/2.0f;
 			float repV = drawh/(top-bottom);	float offV = (1.0f-repV)/2.0f;
 			float uoffp = -panX/w;
 			float voffp = -panY/h;
-
 			glTexCoord2f(offU + 0.0f + uoffp,	offV + 0.0f + voffp);	glVertex2f(0.0f,	0.0f);
 			glTexCoord2f(offU + 0.0f + uoffp,	offV + repV + voffp);	glVertex2f(0.0f,	drawh);
 			glTexCoord2f(offU + repU + uoffp,	offV + repV + voffp);	glVertex2f(draww,	drawh);
 			glTexCoord2f(offU + repU + uoffp,	offV + 0.0f + voffp);	glVertex2f(draww,	0.0f);
+			glEnd();
 		}
-		glEnd();
 
 		// Restore swizzle to normal if it was modified.
 		if (modifiedSwizzle)
