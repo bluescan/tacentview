@@ -85,3 +85,9 @@ Copyright (c) 2010 Benjamin Lippmeier
  included in all copies or substantial portions of the Software.
 
 -------------------------------------------------------------------------------
+
+The bottom right quadrant of TacentTestPattern.tga (the 'splash') is CC0
+licensed and from user UploadMeToday at purepng.com. The other quadrants are
+my photos or generated gradients and are ISC.
+
+-------------------------------------------------------------------------------
