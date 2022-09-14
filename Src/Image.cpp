@@ -977,6 +977,12 @@ void Image::GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFormat,
 			compressed = true;
 			break;
 
+		case tPixelFormat::BC7:
+			srcFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+			dstFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+			compressed = true;
+			break;
+
 		case tPixelFormat::G3B5A1R5G2:
 			srcFormat = GL_BGRA;								// The type reverses this order to ARGB, just like the PixelFormat. Cuz GL_UNSIGNED_SHORT is to be interpreted as little endian, the type swaps the bytes yielding the proper G3B5A1R5G2.
 			srcType = GL_UNSIGNED_SHORT_1_5_5_5_REV;			// This type is a special case and applies to the entire BGRA group (unlike GL_UNSIGNED_BYTE).
