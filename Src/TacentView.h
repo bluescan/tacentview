@@ -19,7 +19,6 @@
 #include "Config.h"
 #include "FileDialog.h"
 namespace Viewer { class Image; }
-class tColouri;
 
 
 namespace Viewer

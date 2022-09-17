@@ -876,10 +876,18 @@ void Image::BindLayers(const tList<tLayer>& layers, uint texID)
 	if (layers.IsEmpty())
 		return;
 
+	// Since all layers are the same pixel format we first check if we support loading the format and early exit if we don't.
+	GLint srcFormat, dstFormat; GLenum srcType; bool compressed;
+	tPixelFormat pixelFormat = layers.First()->PixelFormat;
+	GetGLFormatInfo(srcFormat, srcType, dstFormat, compressed, pixelFormat);
+	if (compressed  && (dstFormat == GL_INVALID_VALUE))
+		return;
+	if (!compressed && ((srcFormat == GL_INVALID_VALUE) || (srcType == GL_INVALID_ENUM) || (dstFormat == GL_INVALID_VALUE)))
+		return;
+
 	glBindTexture(GL_TEXTURE_2D, texID);
 	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	// If the texture format is a mipmapped one, we need to set up OpenGL slightly differently.
@@ -890,115 +898,98 @@ void Image::BindLayers(const tList<tLayer>& layers, uint texID)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 	int mipmapLevel = 0;
-	for (tLayer* layer = layers.First(); layer; layer = layer->Next(), mipmapLevel++)
-	{
-		GLint srcFormat, dstFormat;
-		GLenum srcType;
-		bool compressed;
-		tPixelFormat pixelFormat = layers.First()->PixelFormat;
-		GetGLFormatInfo(srcFormat, srcType, dstFormat, compressed, pixelFormat);
+	if (compressed) for (tLayer* layer = layers.First(); layer; layer = layer->Next(), mipmapLevel++)
+		// For each layer (non-mipmapped formats will only have one) we need to submit the texture data.
+		// Do a straight DMA. No conversion. Fast.
+		glCompressedTexImage2D(GL_TEXTURE_2D, mipmapLevel, dstFormat, layer->Width, layer->Height, 0, layer->GetDataSize(), layer->Data);
 
-		if (compressed)
-		{
-			// For each layer (non-mipmapped formats will only have one) we need to submit the texture data.
-			// Do a straight DMA. No conversion. Fast.
-			glCompressedTexImage2D(GL_TEXTURE_2D, mipmapLevel, dstFormat, layer->Width, layer->Height, 0, layer->GetDataSize(), layer->Data);
-		}
-		else
-		{
-			// Although this call can handle compressing during the DMA, it should never need to do any work because
-			// the internal and external texture formats should always be identical. This isn't always entirely true.
-			// The nVidia paper "Achieving Efficient Bandwidth Rates" explains that the src data should be in BGRA,
-			// while the dest can be RGBA8 (for 32bit textures). This is because internally to the driver the OpenGL
-			// internalFormal GL_RGBA8 will be stored as BGRA so if the source isn't BGRA then some swizzling takes
-			// place. This is why PixelFormat_B8G8R8A8 is quite efficient for example.
-			glTexImage2D(GL_TEXTURE_2D, mipmapLevel, dstFormat, layer->Width, layer->Height, 0, srcFormat, srcType, layer->Data);
-		}
-	}
+	else for (tLayer* layer = layers.First(); layer; layer = layer->Next(), mipmapLevel++)
+		// Although this call can handle compressing during the DMA, it should never need to do any work because
+		// the internal and external texture formats should always be identical. This isn't always entirely true.
+		// The nVidia paper "Achieving Efficient Bandwidth Rates" explains that the src data should be in BGRA,
+		// while the dest can be RGBA8 (for 32bit textures). This is because internally to the driver the OpenGL
+		// internalFormal GL_RGBA8 will be stored as BGRA so if the source isn't BGRA then some swizzling takes
+		// place. This is why PixelFormat_B8G8R8A8 is quite efficient for example.
+		glTexImage2D(GL_TEXTURE_2D, mipmapLevel, dstFormat, layer->Width, layer->Height, 0, srcFormat, srcType, layer->Data);
 }
 
 
 void Image::GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFormat, bool& compressed, tPixelFormat pixelFormat)
 {
-	srcFormat = GL_RGBA;
-	srcType = GL_UNSIGNED_BYTE;
+	srcFormat	= GL_INVALID_VALUE;
+	srcType		= GL_INVALID_ENUM;
+	dstFormat	= GL_INVALID_VALUE;
+	compressed	= false;
 
-	// Note that the destination format only specifies the resolution of each colour component,
-	// not the order or the specifics... they're up to the OpenGL driver. For example, nVidia cards
-	// use an internal BGRA format when GL_RGBA8 is specified... that's why having srcFormat = GL_BGRA
-	// and dstFormat = RGBA8 would be very efficient (no swizzling).
-	dstFormat = GL_RGBA8;
-	compressed = false;
-
+	// Note that the destination format only specifies the resolution of each colour component, not the order or the
+	// specifics -- they're up to the OpenGL driver. For example, nVidia cards use an internal BGRA format when GL_RGBA8
+	// is specified -- that's why having srcFormat = GL_BGRA and dstFormat = RGBA8 is very efficient (no swizzling).
 	tAssert(GL_EXT_texture_compression_s3tc);
 	switch (pixelFormat)
 	{
 		case tPixelFormat::R8G8B8:
-			srcFormat = GL_RGB;
+			srcFormat = GL_RGB;										srcType = GL_UNSIGNED_BYTE;
 			dstFormat = GL_RGB8;
 			break;
 
 		case tPixelFormat::R8G8B8A8:
-			srcFormat = GL_RGBA;
+			srcFormat = GL_RGBA;									srcType = GL_UNSIGNED_BYTE;
 			dstFormat = GL_RGBA8;
 			break;
 
-		case tPixelFormat::B8G8R8:		// Efficient transfer to VRAM.
-			srcFormat = GL_BGR;
+		case tPixelFormat::B8G8R8:
+			srcFormat = GL_BGR;										srcType = GL_UNSIGNED_BYTE;
 			dstFormat = GL_RGB8;
 			break;
 
-		case tPixelFormat::B8G8R8A8:	// Efficient transfer to VRAM.
-			srcFormat = GL_BGRA;
+		case tPixelFormat::B8G8R8A8:
+			srcFormat = GL_BGRA;									srcType = GL_UNSIGNED_BYTE;
 			dstFormat = GL_RGBA8;
 			break;
 
 		case tPixelFormat::BC1_DXT1BA:
-			srcFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-			dstFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-			compressed = true;
+			dstFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;			compressed = true;
 			break;
 
 		case tPixelFormat::BC1_DXT1:
-			srcFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-			dstFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-			compressed = true;
+			dstFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;			compressed = true;
 			break;
 
 		case tPixelFormat::BC2_DXT3:
-			srcFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-			dstFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-			compressed = true;
+			dstFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;			compressed = true;
 			break;
 
 		case tPixelFormat::BC3_DXT5:
-			srcFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-			dstFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-			compressed = true;
+			dstFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;			compressed = true;
 			break;
 
-		case tPixelFormat::BC7:
-			srcFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
-			dstFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
-			compressed = true;
+		case tPixelFormat::BC7_UNORM:
+			dstFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;			compressed = true;
+			break;
+
+		case tPixelFormat::BC6H_S16:
+			dstFormat = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB;	compressed = true;
 			break;
 
 		case tPixelFormat::G3B5A1R5G2:
-			srcFormat = GL_BGRA;								// The type reverses this order to ARGB, just like the PixelFormat. Cuz GL_UNSIGNED_SHORT is to be interpreted as little endian, the type swaps the bytes yielding the proper G3B5A1R5G2.
-			srcType = GL_UNSIGNED_SHORT_1_5_5_5_REV;			// This type is a special case and applies to the entire BGRA group (unlike GL_UNSIGNED_BYTE).
+			// The type reverses this order to ARGB, just like the PixelFormat. Cuz GL_UNSIGNED_SHORT is to be
+			// interpreted as little endian, the type swaps the bytes yielding the proper G3B5A1R5G2. It is a special
+			// case and applies to the entire BGRA group (unlike GL_UNSIGNED_BYTE).
+			srcFormat = GL_BGRA;									srcType = GL_UNSIGNED_SHORT_1_5_5_5_REV;
 			dstFormat = GL_RGB5_A1;
 			break;
 
 		case tPixelFormat::G4B4A4R4:
-			srcFormat = GL_BGRA;								// The type reverses this order to ARGB, just like the PixelFormat. Cuz GL_UNSIGNED_SHORT is to be interpreted as little endian, the type swaps the bytes yielding the proper G4B4A4R4.
-			srcType = GL_UNSIGNED_SHORT_4_4_4_4_REV;			// This type is a special case and applies to the entire BGRA group (unlike GL_UNSIGNED_BYTE).
+			// Same comment as above but yields the proper G4B4A4R4 format.
+			srcFormat = GL_BGRA;									srcType = GL_UNSIGNED_SHORT_4_4_4_4_REV;
 			dstFormat = GL_RGBA4;
 			break;
 
 		case tPixelFormat::G3B5R5G3:
-			srcFormat = GL_RGB;									// Cuz GL_UNSIGNED_SHORT is to be interpreted as little endian, the unsigned short modifies the format R5G6B5 to the desired src format of G3B5R5G3.
-			srcType = GL_UNSIGNED_SHORT_5_6_5;					// This type is a special case and applies to the entire RGB group (unlike GL_UNSIGNED_BYTE).
-			dstFormat = GL_RGB5;								// Usually the OpenGL driver gives you a 565 format for this. Don't know why a the exact internal format doesn't exist.
+			// SrcType modifies the format R5G6B5 to the desired src format of G3B5R5G3. Usually the OpenGL driver gives
+			// you a 565 format for dst. Don't know why a the exact internal format doesn't exist.
+			srcFormat = GL_RGB;										srcType = GL_UNSIGNED_SHORT_5_6_5;
+			dstFormat = GL_RGB5;
 			break;
 	}
 }
