@@ -955,15 +955,15 @@ void Image::GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFormat,
 			dstFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;			compressed = true;
 			break;
 
-		case tPixelFormat::BC2_DXT3:
+		case tPixelFormat::BC2_DXT2_DXT3:
 			dstFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;			compressed = true;
 			break;
 
-		case tPixelFormat::BC3_DXT5:
+		case tPixelFormat::BC3_DXT4_DXT5:
 			dstFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;			compressed = true;
 			break;
 
-		case tPixelFormat::BC7_UNORM:
+		case tPixelFormat::BC7:
 			dstFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;			compressed = true;
 			break;
 
