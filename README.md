@@ -132,6 +132,7 @@ This project relies on myriad 3rd-party libraries. In the Data folder you will f
 * WebP Reference Library
 * LibTIFF
 * ZLib
+* BCDec from iOrange
 * This software is based in part on the work of the Independent JPEG Group.
 * This software includes [Radiance software](http://radsite.lbl.gov/) developed by the [Lawrence Berkeley National Laboratory](http://www.lbl.gov/).
 
