@@ -38,9 +38,10 @@ const uint32 Image::ThumbChunkInfoID		= 0x0B000000;
 const uint32 Image::ThumbChunkMetaDataID	= 0x8B000010;
 const uint32 Image::ThumbChunkMetaDatumID	= 0x0B000020;
 
-const int Image::ThumbWidth				= 256;
-const int Image::ThumbHeight			= 144;
-const int Image::ThumbMinDispWidth		= 64;
+
+const int Image::ThumbWidth					= 256;
+const int Image::ThumbHeight				= 144;
+const int Image::ThumbMinDispWidth			= 64;
 
 
 Image::Image() :
@@ -947,19 +948,19 @@ void Image::GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFormat,
 			dstFormat = GL_RGBA8;
 			break;
 
-		case tPixelFormat::BC1_DXT1BA:
+		case tPixelFormat::BC1DXT1A:
 			dstFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;			compressed = true;
 			break;
 
-		case tPixelFormat::BC1_DXT1:
+		case tPixelFormat::BC1DXT1:
 			dstFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;			compressed = true;
 			break;
 
-		case tPixelFormat::BC2_DXT2_DXT3:
+		case tPixelFormat::BC2DXT2DXT3:
 			dstFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;			compressed = true;
 			break;
 
-		case tPixelFormat::BC3_DXT4_DXT5:
+		case tPixelFormat::BC3DXT4DXT5:
 			dstFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;			compressed = true;
 			break;
 
