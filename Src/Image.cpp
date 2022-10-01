@@ -896,7 +896,9 @@ void Image::BindLayers(const tList<tLayer>& layers, uint texID)
 	if (mipmapped)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	else
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		// If we're not mipmapping anyway, we might as well avoid bleeding that we get with GL_LINEAR.
+		// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 	int mipmapLevel = 0;
 	if (compressed) for (tLayer* layer = layers.First(); layer; layer = layer->Next(), mipmapLevel++)
