@@ -157,6 +157,7 @@ struct ProfileSettings
 	int MaxImageMemMB;							// Max image mem before unloading images.
 	int MaxCacheFiles;							// Max number of cache files before removing oldest.
 	int MaxUndoSteps;
+	bool SpreadLuminance;						// Some image files have luminance or red information only. This will spread the luminance to all RGB channels giving you a grey-scale image.
 	bool StrictLoading;							// No attempt to display ill-formed images.
 	bool ExifOrientLoading;						// Reorient images on load if Exif meta-data contains camera orientation information.
 	bool DetectAPNGInsidePNG;					// Look for APNG data (animated) hidden inside a regular PNG file.

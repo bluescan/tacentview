@@ -353,6 +353,7 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 		MaxImageMemMB				= 2048;
 		MaxCacheFiles				= 8192;
 		MaxUndoSteps				= 16;
+		SpreadLuminance				= false;
 		StrictLoading				= false;
 		ExifOrientLoading			= true;
 		DetectAPNGInsidePNG			= true;
@@ -454,6 +455,7 @@ void Config::ProfileSettings::Load(tExpression expr)
 			ReadItem(MaxImageMemMB);
 			ReadItem(MaxCacheFiles);
 			ReadItem(MaxUndoSteps);
+			ReadItem(SpreadLuminance);
 			ReadItem(StrictLoading);
 			ReadItem(ExifOrientLoading);
 			ReadItem(DetectAPNGInsidePNG);
@@ -584,6 +586,7 @@ bool Config::ProfileSettings::Save(tExprWriter& writer) const
 	WriteItem(MaxImageMemMB);
 	WriteItem(MaxCacheFiles);
 	WriteItem(MaxUndoSteps);
+	WriteItem(SpreadLuminance);
 	WriteItem(StrictLoading);
 	WriteItem(ExifOrientLoading);
 	WriteItem(DetectAPNGInsidePNG);

@@ -208,6 +208,9 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::Separator();
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 
+			ImGui::Checkbox("Spread Luminance", &Config::Current->SpreadLuminance); ImGui::SameLine();
+			ShowHelpMark("Some image files have luminance or red information only. This will\nspread the luminance to all RGB channels giving you a grey-scale image.\nIf desired refresh (F5) the current image to force a reload after changing this.");
+
 			ImGui::Checkbox("Strict Loading", &Config::Current->StrictLoading); ImGui::SameLine();
 			ShowHelpMark("Some image files are ill-formed. If strict is true no attempt to display them is made.");
 

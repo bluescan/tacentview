@@ -416,7 +416,10 @@ bool Image::Load()
 			case tSystem::tFileType::DDS:
 			{
 				tImageDDS dds;
-				bool ok = dds.Load(Filename, tImageDDS::LoadFlag_Decode | tImageDDS::LoadFlag_ReverseRowOrder | tImageDDS::LoadFlag_GammaCorrectHDR);
+				uint32 loadFlags = tImageDDS::LoadFlag_Decode | tImageDDS::LoadFlag_ReverseRowOrder | tImageDDS::LoadFlag_GammaCorrectHDR;
+				loadFlags |= (Config::Current->SpreadLuminance ? tImageDDS::LoadFlag_SpreadLuminance : 0);
+
+				bool ok = dds.Load(Filename, loadFlags);
 				if (!ok || !dds.IsValid())
 					return false;
 
