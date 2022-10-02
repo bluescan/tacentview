@@ -190,8 +190,12 @@ namespace Viewer
 	bool DrawChannel_A								= true;
 	int DragAnchorX									= 0;
 	int DragAnchorY									= 0;
+
+	// CursorX/Y are the real position. CursorMouseX/Y are updated when mouse clicked and update CursorX/Y.
 	int CursorX										= 0;
 	int CursorY										= 0;
+	float CursorMouseX								= -1.0f;
+	float CursorMouseY								= -1.0f;
 	float RotateAnglePreview						= 0.0f;
 
 	Config::ProfileSettings::ZoomMode CurrZoomMode	= Config::ProfileSettings::ZoomMode::DownscaleOnly;
@@ -203,8 +207,6 @@ namespace Viewer
 	int PanOffsetY									= 0;
 	int PanDragDownOffsetX							= 0;
 	int PanDragDownOffsetY							= 0;
-	float ReticleX									= -1.0f;
-	float ReticleY									= -1.0f;
 	tColouri PixelColour							= tColouri::black;
 
 	const tVector4 ColourEnabledTint				= tVector4(1.00f, 1.00f, 1.00f, 1.00f);
@@ -1195,6 +1197,14 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (RotateAnglePreview != 0.0f)
 	 		glPopMatrix();
 
+		// If mouse was cllcked to adjust cursor pos, CursorMouseX/Y will be >= 0.0f;
+		if ((CursorMouseX >= 0.0f) && (CursorMouseX >= 0.0f))
+		{
+			tVector2 scrCursorPos(CursorMouseX, CursorMouseY);
+			ConvertScreenPosToImagePos(CursorX, CursorY, scrCursorPos, tVector4(left, right, top, bottom), tVector2(uoff, voff));
+			CursorMouseX = -1.0f; CursorMouseY = -1.0f;
+		}
+
 		// If a request was made to move the cursor/reticle, process the request here,
 		if (RequestCursorMove)
 		{
@@ -1207,12 +1217,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 					case CursorMove_Up:		CursorY++;	break;
 					case CursorMove_Down:	CursorY--;	break;
 				}
-				tiClamp(CursorX, 0, iwi - 1);
-				tiClamp(CursorY, 0, ihi - 1);
-				tVector2 reticle;
-				ConvertImagePosToScreenPos(reticle, CursorX, CursorY, tVector4(left, right, top, bottom), tVector2(0.0f, 0.0f), tVector2(uoff, voff));
-				ReticleX = reticle.x;
-				ReticleY = reticle.y;
 			}
 			else
 			{
@@ -1221,19 +1225,17 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			RequestCursorMove = CursorMove_None;
 		}
 
-		// Get the colour under the reticle.
-		tVector2 scrCursorPos(ReticleX, ReticleY);
-		ConvertScreenPosToImagePos(CursorX, CursorY, scrCursorPos, tVector4(left, right, top, bottom), tVector2(uoff, voff));
+		// We always clamp. Image could have been cropped or otherwise resized.
+		tiClamp(CursorX, 0, iwi - 1);
+		tiClamp(CursorY, 0, ihi - 1);
 
+		// Get the colour under the reticle.
 		PixelColour = CurrImage->GetPixel(CursorX, CursorY);
 
-		// Show the reticle.
 		glDisable(GL_TEXTURE_2D);
 		glColor4fv(tColour::white.E);
 
-		tVector2 mousePos(mouseX, mouseY);
-		tVector2 reticPos(ReticleX, ReticleY);
-		float retMouseDistSq = tMath::tDistBetweenSq(mousePos, reticPos);
+		// Show the cursor either as a square ouline or a reticle.
 		if
 		(
 			// Must not be cropping.
@@ -1242,36 +1244,29 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			// Must have a colour inspector visible (menu bar and details both have one).
 			(
 				Config::Current->ShowMenuBar ||
-				Config::Current->ShowImageDetails
-			) &&
-
-			// And any of the following: a) details is on, b) disappear countdown not finished, or c) mouse is close.
-			(
-				Config::Current->ShowImageDetails || (DisappearCountdown > 0.0) ||
-
-				// Continue to draw the reticle if mouse is close enough (even if timer expired).
-				(retMouseDistSq < ReticleToMouseDist*ReticleToMouseDist)
+				Config::Current->ShowImageDetails ||
+				(DisappearCountdown > 0.0)
 			)
 		)
 		{
-			tColouri hsv = PixelColour;
-			hsv.RGBToHSV();
-			if (hsv.V > 150)
-				glColor4ubv(tColouri::black.E);
-			else
+			int intensity = (PixelColour.R + PixelColour.G + PixelColour.B) / 3;
+			if ((intensity < 180) || (PixelColour.A < 180))
 				glColor4ubv(tColouri::white.E);
+			else
+				glColor4ubv(tColouri::black.E);
 
-			if (ZoomPercent >= 500.0f)
+			tVector4 lrtb(left, right, top, bottom);
+			tVector2 uvoffset(uoff, voff);
+			tVector2 scrPosBL;
+			ConvertImagePosToScreenPos(scrPosBL, CursorX,   CursorY,   lrtb, uvoffset);
+			tVector2 scrPosTR;
+			ConvertImagePosToScreenPos(scrPosTR, CursorX+1, CursorY+1, lrtb, uvoffset);
+
+			// Decide how to draw reticle based on how big pixels are. If zoomed in, it will be drawn as a square outline.
+			const float scrSizeSquareReticle = 8.0f;
+			if (tMath::tDistBetweenSq(scrPosBL, scrPosTR) > scrSizeSquareReticle*scrSizeSquareReticle)
 			{
-				tVector4 lrtb(left, right, top, bottom);
-				tVector2 uvoffset(uoff, voff);
-
-				// Draw the reticle as a box.
-				tVector2 scrPosBL;
-				ConvertImagePosToScreenPos(scrPosBL, CursorX,   CursorY,   lrtb, uvoffset);
-				tVector2 scrPosTR;
-				ConvertImagePosToScreenPos(scrPosTR, CursorX+1, CursorY+1, lrtb, uvoffset);
-
+				// Draw as square outline.
 				glBegin(GL_LINES);
 				glVertex2f(scrPosBL.x-1,	scrPosBL.y-1);
 				glVertex2f(scrPosTR.x,		scrPosBL.y);
@@ -1288,11 +1283,13 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 			else
 			{
-				// Draw the reticle.
+				// Draw as reticle centered in the pixel position.
 				float cw = float((Image_Reticle.GetWidth()) >> 1);
 				float ch = float((Image_Reticle.GetHeight()) >> 1);
-				float cx = ReticleX;
-				float cy = ReticleY;
+				tVector2 mid = (scrPosBL + scrPosTR) / 2.0f;
+				float cx = mid.x;
+				float cy = mid.y;
+
 				glEnable(GL_TEXTURE_2D);
 				Image_Reticle.Bind();
 				glBegin(GL_QUADS);
@@ -2656,8 +2653,8 @@ void Viewer::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press,
 			}
 			else if (LMBDown)
 			{
-				ReticleX = mouseX;
-				ReticleY = mouseY;
+				CursorMouseX = mouseX;
+				CursorMouseY = mouseY;
 			}
 			break;
 		}
