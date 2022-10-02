@@ -115,8 +115,8 @@ public:
 		int MemSizeBytes								= 0;
 	};
 
-	bool IsAltMipmapsPictureAvail() const																				{ return DDSTexture2D.IsValid() && AltPicture.IsValid(); }
-	bool IsAltCubemapPictureAvail() const																				{ return DDSCubemap.IsValid() && AltPicture.IsValid(); }
+	bool IsAltMipmapsPictureAvail() const																				{ return (AltPictureTyp == AltPictureType::MipmapSideBySide); }
+	bool IsAltCubemapPictureAvail() const																				{ return (AltPictureTyp == AltPictureType::CubemapTLayout); }
 	void EnableAltPicture(bool enabled)																					{ AltPictureEnabled = enabled; }
 	bool IsAltPictureEnabled() const																					{ return AltPictureEnabled; }
 
@@ -163,18 +163,28 @@ public:
 private:
 	void PushUndo(const tString& desc)																					{ UndoStack.Push(Pictures, desc, Dirty); }
 
-	// Dds files are special and already in HW ready format. The tTexture can store dds files, while tPicture stores
-	// other types (tga, gif, jpg, bmp, tif, png, etc). If the image is a dds file, the tTexture is valid and in order
-	// to read pixel data, the image is fetched from the framebuffer to ALSO make a valid PictureImage.
-	//
-	// Note: A tTexture contains all mipmap levels while a tPicture does not. That's why we have a list of tPictures.
-	tImage::tTexture DDSTexture2D;
-	tImage::tCubemap DDSCubemap;
+	// If the image is from a DDS file, we keep the DDS around so we have access to the iage data in its original pixel
+	// format. This will allow us to do things like cropping without a decode/recode step.
+	// @todo For mow we don't support this feature and don't need the DDS to be remembered.
+	// tImage::tImageDDS;
+
+	// There are multiple pictures for a few reasons. Images with multiple frames (gifs, exrs, tiffs, webps etc) store
+	// the individual frames as separate pictures in the list, dds files may store a cubemap and the 6 sides are stored
+	// in the picture list, and dds files may contain mipmaps, also stored in the list.
+	// @todo Yes, currently no way 
+	// second to store the  
 	tList<tImage::tPicture> Pictures;
 
 	// The 'alternative' picture is valid when there is another valid way of displaying the image.
 	// Specifically for cubemaps and dds files with mipmaps this offers an alternative view.
 	bool AltPictureEnabled = false;
+	enum class AltPictureType
+	{
+		None,				// Alt picture not in use.
+		CubemapTLayout,
+		MipmapSideBySide
+	};
+	AltPictureType AltPictureTyp = AltPictureType::None;
 	tImage::tPicture AltPicture;
 
 	bool ThumbnailRequested = false;					// True if ever requested.
@@ -195,12 +205,11 @@ private:
 
 	// Returns the approx main mem size of this image. Considers the Pictures list and the AltPicture.
 	int GetMemSizeBytes() const;
-	bool ConvertTexture2DToPicture();
-	bool ConvertCubemapToPicture();
+	void PopulatePicturesDDS(const tImage::tImageDDS&);
+	void CreateAltPicturesDDS(const tImage::tImageDDS&);
+
 	void GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFormat, bool& compressed, tImage::tPixelFormat);
 	void BindLayers(const tList<tImage::tLayer>&, uint texID);
-	void CreateAltPictureFromDDS_2DMipmaps();
-	void CreateAltPictureFromDDS_Cubemap();
 
 	float LoadedTime = -1.0f;
 	bool Dirty = false;
