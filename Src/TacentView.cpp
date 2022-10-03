@@ -509,8 +509,8 @@ void Viewer::LoadCurrImage()
 
 	if (Config::Current->DefaultZoomMode != int(Config::ProfileSettings::ZoomMode::User))
 	{
-		CurrZoomMode = Config::ProfileSettings::ZoomMode(Config::Current->DefaultZoomMode);
-
+		// Removed on purpose.
+		// CurrZoomMode = Config::ProfileSettings::ZoomMode(Config::Current->DefaultZoomMode);
 		if (CurrZoomMode == Config::ProfileSettings::ZoomMode::OneToOne)
 			CurrImage->ZoomPercent = 100.0f;
 	}
