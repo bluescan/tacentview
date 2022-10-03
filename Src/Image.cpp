@@ -423,13 +423,14 @@ bool Image::Load()
 				if (!ok || !dds.IsValid())
 					return false;
 
-				Info.SrcPixelFormat = dds.GetPixelFormatOrig();
-
 				// Appends to the Pictures list.
 				PopulatePicturesDDS(dds);
 
 				// Creates any alt images for cubemap or mipmapped dds files.
 				CreateAltPicturesDDS(dds);
+
+				Info.SrcPixelFormat = dds.GetPixelFormatOrig();
+				success = true;
 				break;
 			}
 
@@ -918,6 +919,7 @@ void Image::BindLayers(const tList<tLayer>& layers, uint texID)
 		return;
 
 	// Since all layers are the same pixel format we first check if we support loading the format and early exit if we don't.
+	// Note that ATM we are decoding all DDS files to RGBA, so they are not compressed.
 	GLint srcFormat, dstFormat; GLenum srcType; bool compressed;
 	tPixelFormat pixelFormat = layers.First()->PixelFormat;
 	GetGLFormatInfo(srcFormat, srcType, dstFormat, compressed, pixelFormat);
