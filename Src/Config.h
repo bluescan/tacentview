@@ -113,7 +113,7 @@ struct ProfileSettings
 		OneToOne,
 		NumModes
 	};
-	int DefaultZoomMode;						// Zoom mode to use when opening a new image. User means don't change modes.
+	int DefaultZoomMode;						// Zoom mode to use when opening a new image. User means don't change zoom.
 
 	bool ConfirmDeletes;
 	bool ConfirmFileOverwrites;

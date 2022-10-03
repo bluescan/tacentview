@@ -199,7 +199,6 @@ namespace Viewer
 	float RotateAnglePreview						= 0.0f;
 
 	Config::ProfileSettings::ZoomMode CurrZoomMode	= Config::ProfileSettings::ZoomMode::DownscaleOnly;
-	float ZoomPercent								= 100.0f;
 
 	int Dispw										= 1;
 	int Disph										= 1;
@@ -513,7 +512,7 @@ void Viewer::LoadCurrImage()
 		CurrZoomMode = Config::ProfileSettings::ZoomMode(Config::Current->DefaultZoomMode);
 
 		if (CurrZoomMode == Config::ProfileSettings::ZoomMode::OneToOne)
-			ZoomPercent = 100.0f;
+			CurrImage->ZoomPercent = 100.0f;
 	}
 
 	AutoPropertyWindow();
@@ -1034,21 +1033,21 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		if (CurrZoomMode == Config::ProfileSettings::ZoomMode::DownscaleOnly)
 		{
-			ZoomPercent = 100.0f;
+			CurrImage->ZoomPercent = 100.0f;
 			float zoomh = draww / iw;
 			float zoomv = drawh / ih;
 			if ((iw > draww) || (ih > drawh))
-				ZoomPercent = 100.0f * tMath::tMin(zoomh, zoomv);
+				CurrImage->ZoomPercent = 100.0f * tMath::tMin(zoomh, zoomv);
 		}
 		else if (CurrZoomMode == Config::ProfileSettings::ZoomMode::Fit)
 		{
 			float zoomh = draww / iw;
 			float zoomv = drawh / ih;
-			ZoomPercent = 100.0f * tMath::tMin(zoomh, zoomv);
+			CurrImage->ZoomPercent = 100.0f * tMath::tMin(zoomh, zoomv);
 		}
 
-		float w = iw * ZoomPercent/100.0f;
-		float h = ih * ZoomPercent/100.0f;
+		float w = iw * CurrImage->ZoomPercent/100.0f;
+		float h = ih * CurrImage->ZoomPercent/100.0f;
 
 		if (!Config::Current->Tile)
 		{
@@ -1250,7 +1249,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		)
 		{
 			int intensity = (PixelColour.R + PixelColour.G + PixelColour.B) / 3;
-			if ((intensity < 180) || (PixelColour.A < 180))
+			if ((intensity < 128) || (PixelColour.A < 128))
 				glColor4ubv(tColouri::white.E);
 			else
 				glColor4ubv(tColouri::black.E);
@@ -1780,7 +1779,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			tString zoomOneKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ZoomOneToOne);
 			if (ImGui::MenuItem("Zoom 1:1", zoomOneKey.Chz(), &oneToOne))
 			{
-				ZoomPercent = 100.0f;
+				if (CurrImage) CurrImage->ZoomPercent = 100.0f;
 				ResetPan();
 				CurrZoomMode = Config::ProfileSettings::ZoomMode::OneToOne;
 			}
@@ -1788,11 +1787,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::PushItemWidth(60);
 			const char* zoomItems[] = { "Zoom", "20%", "50%", "100%", "150%", "200%", "400%", "800%", "1200%", "1800%", "2500%"};
 			float zoomVals[] = { -1.0f, 20.0f, 50.0f, 100.0f, 150.0f, 200.0f, 400.0f, 800.0f, 1200.0f, 1800.0f, 2500.0f };
+			float zoomPercent = CurrImage ? CurrImage->ZoomPercent : 100.0f;
 			tString currZoomStr;
-			tsPrintf(currZoomStr, "%0.0f%%", ZoomPercent);
+			tsPrintf(currZoomStr, "%0.0f%%", zoomPercent);
 			int zoomIdx = 0;
 			if (ImGui::Combo(currZoomStr.Chr(), &zoomIdx, zoomItems, tNumElements(zoomItems)) && (zoomIdx > 0))
-				ApplyZoomDelta(zoomVals[zoomIdx]-ZoomPercent);
+				ApplyZoomDelta(zoomVals[zoomIdx]-zoomPercent);
 			ImGui::PopItemWidth();
 
 			tString panKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ResetPan);
@@ -2051,7 +2051,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		DrawNavBar(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
 
 	if (Config::Current->ShowImageDetails)
-		ShowImageDetailsOverlay(&Config::Current->ShowImageDetails, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), CursorX, CursorY, ZoomPercent);
+	{
+		float zoomPercent = CurrImage ? CurrImage->ZoomPercent : 100.0f;
+		ShowImageDetailsOverlay(&Config::Current->ShowImageDetails, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), CursorX, CursorY, zoomPercent);
+	}
 
 	if (Config::Current->ShowImageMetaData)
 		ShowImageMetaDataOverlay(&Config::Current->ShowImageMetaData);
@@ -2206,18 +2209,22 @@ bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 
 void Viewer::ApplyZoomDelta(float zoomDelta)
 {
-	CurrZoomMode = Config::ProfileSettings::ZoomMode::User;
-	float zoomOrig = ZoomPercent;
-	ZoomPercent += zoomDelta;
-	if (((zoomOrig < 100.0f) && (ZoomPercent > 100.0f)) || ((zoomOrig > 100.0f) && (ZoomPercent < 100.0f)))
-		ZoomPercent = 100.0f;
+	if (!CurrImage)
+		return;
 
-	tMath::tiClamp(ZoomPercent, ZoomMin, ZoomMax);
+	float& zoomPercent = CurrImage->ZoomPercent;
+	CurrZoomMode = Config::ProfileSettings::ZoomMode::User;
+	float zoomOrig = zoomPercent;
+	zoomPercent += zoomDelta;
+	if (((zoomOrig < 100.0f) && (zoomPercent > 100.0f)) || ((zoomOrig > 100.0f) && (zoomPercent < 100.0f)))
+		zoomPercent = 100.0f;
+
+	tMath::tiClamp(zoomPercent, ZoomMin, ZoomMax);
 
 	PanOffsetX += PanDragDownOffsetX; PanDragDownOffsetX = 0;
 	PanOffsetY += PanDragDownOffsetY; PanDragDownOffsetY = 0;
-	PanOffsetX = int(float(PanOffsetX)*ZoomPercent/zoomOrig);
-	PanOffsetY = int(float(PanOffsetY)*ZoomPercent/zoomOrig);
+	PanOffsetX = int(float(PanOffsetX)*zoomPercent/zoomOrig);
+	PanOffsetY = int(float(PanOffsetY)*zoomPercent/zoomOrig);
 }
 
 
@@ -2352,11 +2359,13 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::ZoomIn:
-			ApplyZoomDelta(tMath::tRound(ZoomPercent*0.1f));
+			if (CurrImage)
+				ApplyZoomDelta(tMath::tRound(CurrImage->ZoomPercent*0.1f));
 			break;
 
 		case Bindings::Operation::ZoomOut:
-			ApplyZoomDelta(tMath::tRound(ZoomPercent*(0.909090909f - 1.0f)));
+			if (CurrImage)
+				ApplyZoomDelta(tMath::tRound(CurrImage->ZoomPercent*(0.909090909f - 1.0f)));
 			break;
 
 		case Bindings::Operation::ZoomFit:
@@ -2370,9 +2379,12 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::ZoomOneToOne:
-			ZoomPercent = 100.0f;
-			ResetPan();
-			CurrZoomMode = Config::ProfileSettings::ZoomMode::OneToOne;
+			if (CurrImage)
+			{
+				CurrImage->ZoomPercent = 100.0f;
+				ResetPan();
+				CurrZoomMode = Config::ProfileSettings::ZoomMode::OneToOne;
+			}
 			break;
 
 		case Bindings::Operation::ResetPan:
@@ -2695,9 +2707,12 @@ void Viewer::ScrollWheelCallback(GLFWwindow* window, double x, double y)
 	DisappearCountdown = DisappearDuration;
 
 	CurrZoomMode = Config::ProfileSettings::ZoomMode::User;
-	float percentChange = (y > 0.0) ? 0.1f : 1.0f-0.909090909f;
-	float zoomDelta = ZoomPercent * percentChange * float(y);
-	ApplyZoomDelta(zoomDelta);
+	if (CurrImage)
+	{
+		float percentChange = (y > 0.0) ? 0.1f : 1.0f-0.909090909f;
+		float zoomDelta = CurrImage->ZoomPercent * percentChange * float(y);
+		ApplyZoomDelta(zoomDelta);
+	}
 }
 
 

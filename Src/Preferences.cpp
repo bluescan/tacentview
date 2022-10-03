@@ -262,13 +262,13 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 			const char* zoomModes[] = { "Keep", "Fit", "Downscale", "OneToOne" };
 			ImGui::PushItemWidth(86);
-			ImGui::Combo("Default Zoom Mode", &Config::Current->DefaultZoomMode, zoomModes, tNumElements(zoomModes));
+			ImGui::Combo("Zoom Mode", &Config::Current->DefaultZoomMode, zoomModes, tNumElements(zoomModes));
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark
 			(
-				"Controls what zoom mode to use when displaying a new image.\n"
-				"Keep: No change to zoom mode when switching images.\n"
+				"Controls what zoom to use when displaying a new image.\n"
+				"Keep: No change. Use the zoom last used with the image. \n"
 				"Fit: Image is zoomed to fit display area no matter its size.\n"
 				"Downscale: Shows it at 100% zoom unless image is too big and needs downscaling.\n"
 				"OneToOne: One image pixel takes up one screen pixel."

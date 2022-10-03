@@ -160,6 +160,9 @@ public:
 
 	bool TypeSupportsProperties() const;
 
+	// Zoom is stored per-image so we can flip between images without losing the setting.
+	float ZoomPercent = 100.0f;
+
 private:
 	void PushUndo(const tString& desc)																					{ UndoStack.Push(Pictures, desc, Dirty); }
 
