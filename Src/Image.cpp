@@ -533,12 +533,7 @@ void Image::PopulatePicturesDDS(const tImageDDS& dds)
 
 		int numMipmaps = layers.GetNumItems();
 		for (tLayer* layer = layers.First(); layer; layer = layer->Next())
-		{
-			tPicture* picture = new tPicture(layer->Width, layer->Height, (tPixel*)layer->Data, true);
-			for (int p = 0; p < tMath::tMin(picture->GetArea(), 1000); p++)
-				tPrintf("Alpha%d: %d\n", p, ((tPixel*)layer->Data)[p].A);
-			Pictures.Append(picture);
-		}
+			Pictures.Append(new tPicture(layer->Width, layer->Height, (tPixel*)layer->Data, true));
 
 		layers.Reset();
 	}
@@ -903,7 +898,10 @@ uint64 Image::Bind()
 	if (!IsLoaded())
 		return 0;
 
-	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+	// We do this in reverse order so that the last image we bind is the highest resolution image.
+	// This is more efficient when it comes to drawing the image since the lowest mip is likely not
+	// the one we're going to be viewing right after binding.
+	for (tPicture* picture = Pictures.Last(); picture; picture = picture->Prev())
 	{
 		if (!picture->IsValid())
 			continue;
