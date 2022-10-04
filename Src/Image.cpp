@@ -533,7 +533,12 @@ void Image::PopulatePicturesDDS(const tImageDDS& dds)
 
 		int numMipmaps = layers.GetNumItems();
 		for (tLayer* layer = layers.First(); layer; layer = layer->Next())
-			Pictures.Append(new tPicture(layer->Width, layer->Height, (tPixel*)layer->Data, true));
+		{
+			tPicture* picture = new tPicture(layer->Width, layer->Height, (tPixel*)layer->Data, true);
+			for (int p = 0; p < tMath::tMin(picture->GetArea(), 1000); p++)
+				tPrintf("Alpha%d: %d\n", p, ((tPixel*)layer->Data)[p].A);
+			Pictures.Append(picture);
+		}
 
 		layers.Reset();
 	}
