@@ -87,10 +87,10 @@ public:
 	void Flip(bool horizontal);
 	void Crop(int newWidth, int newHeight, int originX, int originY, const tColouri& fillColour = tColour::black);
 	void Crop(int newWidth, int newHeight, tImage::tPicture::Anchor, const tColouri& fillColour = tColour::black);
-	void Crop(const tColouri& borderColour, uint32 channels = tMath::ColourChannel_RGBA);
+	void Crop(const tColouri& borderColour, tcomps channels = tComp_RGBA);
 	void Resample(int newWidth, int newHeight, tImage::tResampleFilter filter, tImage::tResampleEdgeMode edgeMode);
 	void SetPixelColour(int x, int y, const tColouri&, bool pushUndo, bool supressDirty = false);
-	void SetAllPixels(const tColouri& colour, uint32 channels = tMath::ColourChannel_RGBA);
+	void SetAllPixels(const tColouri& colour, tcomps channels = tComp_RGBA);
 	void AlphaBlendColour(const tColouri& blendColour, bool resetAlpha);
 	void SetFrameDuration(float duration, bool allFrames = false);
 

@@ -416,7 +416,7 @@ bool Image::Load()
 			case tSystem::tFileType::DDS:
 			{
 				tImageDDS dds;
-				uint32 loadFlags = tImageDDS::LoadFlag_Decode | tImageDDS::LoadFlag_ReverseRowOrder | tImageDDS::LoadFlag_GammaCorrectHDR;
+				uint32 loadFlags = tImageDDS::LoadFlag_Decode | tImageDDS::LoadFlag_ReverseRowOrder | tImageDDS::LoadFlag_GammaCompression;
 				loadFlags |= (Config::Current->SpreadLuminance ? tImageDDS::LoadFlag_SpreadLuminance : 0);
 
 				bool ok = dds.Load(Filename, loadFlags);
@@ -783,7 +783,7 @@ void Image::Crop(int newWidth, int newHeight, tPicture::Anchor anchor, const tCo
 }
 
 
-void Image::Crop(const tColouri& borderColour, uint32 channels)
+void Image::Crop(const tColouri& borderColour, tcomps channels)
 {
 	PushUndo("Crop Borders");
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
@@ -823,7 +823,7 @@ void Image::SetPixelColour(int x, int y, const tColouri& colour, bool pushUndo, 
 }
 
 
-void Image::SetAllPixels(const tColouri& colour, uint32 channels)
+void Image::SetAllPixels(const tColouri& colour, tcomps channels)
 {
 	tString desc; tsPrintf(desc, "Set Pixels (%d,%d,%d,%d)", colour.R, colour.G, colour.B, colour.A);
 	PushUndo(desc);

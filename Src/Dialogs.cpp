@@ -220,7 +220,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 		ImGui::SameLine();
 		ShowHelpMark("Blend background colour into RGB of image based on alpha. Sets alphas to full when done.");
 
-		uint32 channels = (Viewer::DrawChannel_R ? ColourChannel_R : 0) | (Viewer::DrawChannel_G ? ColourChannel_G : 0) | (Viewer::DrawChannel_B ? ColourChannel_B : 0) | (Viewer::DrawChannel_A ? ColourChannel_A : 0);
+		tcomps channels = (Viewer::DrawChannel_R ? tComp_R : 0) | (Viewer::DrawChannel_G ? tComp_G : 0) | (Viewer::DrawChannel_B ? tComp_B : 0) | (Viewer::DrawChannel_A ? tComp_A : 0);
 		if (ImGui::Button("Max Selected", tVector2(112.0f, 0.0f)))
 		{
 			CurrImage->Unbind();

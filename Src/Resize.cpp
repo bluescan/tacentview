@@ -437,10 +437,10 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool justOpened)
 	if (ImGui::Button("Crop Borders", tVector2(100.0f, 0.0f)))
 	{
 		uint32 channels =
-			(channelR ? tMath::ColourChannel_R : 0) |
-			(channelG ? tMath::ColourChannel_G : 0) |
-			(channelB ? tMath::ColourChannel_B : 0) |
-			(channelA ? tMath::ColourChannel_A : 0);
+			(channelR ? tComp_R : 0) |
+			(channelG ? tComp_G : 0) |
+			(channelB ? tComp_B : 0) |
+			(channelA ? tComp_A : 0);
 
 		CurrImage->Unbind();
 		CurrImage->Crop(Config::Current->FillColour, channels);
