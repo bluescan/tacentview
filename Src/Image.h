@@ -42,6 +42,8 @@ public:
 
 	// These params are in principle different to the ones in tPicture since a Image does not necessarily
 	// only use tPicture to do the loading. For example, we might include dds load params here.
+	// WIP. Tidy up the load params. Differnt filetypes have different load-param requirements.
+	/////////////////////////		
 	void ResetLoadParams();
 	tImage::tPicture::LoadParams LoadParams;
 
