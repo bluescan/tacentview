@@ -207,15 +207,13 @@ bool Image::Load()
 			case tSystem::tFileType::EXR:
 			{
 				tImageEXR exr;
-				bool ok = exr.Load
-				(
-					Filename,
-					LoadParams.GammaValue,
-					LoadParams.EXR_Exposure,
-					LoadParams.EXR_Defog,
-					LoadParams.EXR_KneeLow,
-					LoadParams.EXR_KneeHigh
-				);
+				tImageEXR::LoadParams loadParams;
+				loadParams.Gamma		= LoadParams.GammaValue;
+				loadParams.Exposure		= LoadParams.EXR_Exposure;
+				loadParams.Defog		= LoadParams.EXR_Defog;
+				loadParams.KneeLow		= LoadParams.EXR_KneeLow;
+				loadParams.KneeHigh		= LoadParams.EXR_KneeHigh;
+				bool ok = exr.Load(Filename, loadParams);
 				if (!ok)
 					return false;
 
@@ -265,7 +263,10 @@ bool Image::Load()
 			case tSystem::tFileType::HDR:
 			{
 				tImageHDR hdr;
-				bool ok = hdr.Load(Filename, LoadParams.GammaValue, LoadParams.HDR_Exposure);
+				tImageHDR::LoadParams loadParams;
+				loadParams.Gamma		= LoadParams.GammaValue;
+				loadParams.Exposure		= LoadParams.HDR_Exposure;
+				bool ok = hdr.Load(Filename, loadParams);
 				if (!ok)
 					return false;
 
