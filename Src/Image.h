@@ -40,12 +40,10 @@ public:
 	Image(const tSystem::tFileInfo& fileInfo);
 	virtual ~Image();
 
-	// These params are in principle different to the ones in tPicture since a Image does not necessarily
-	// only use tPicture to do the loading. For example, we might include dds load params here.
-	// WIP. Tidy up the load params. Differnt filetypes have different load-param requirements.
-	/////////////////////////		
 	void ResetLoadParams();
-	tImage::tPicture::LoadParams LoadParams;
+	tImage::tImageDDS::LoadParams LoadParams_DDS;
+	tImage::tImageEXR::LoadParams LoadParams_EXR;
+	tImage::tImageHDR::LoadParams LoadParams_HDR;
 
 	void Play();
 	void Stop();

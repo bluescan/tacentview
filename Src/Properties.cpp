@@ -48,65 +48,115 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 	{
 		case tSystem::tFileType::DDS:
 		{
-			// DDS files get their own properties UI.
+			bool propsDisplayed = false;
 			int numTextures = CurrImage->GetNumFrames();
-			if (numTextures < 1)
-			{
-				ImGui::Text("No Editable Image Properties Available");
-				ImGui::End();
-				return;
-			}
-
 			bool altMipmapsPicAvail = CurrImage->IsAltMipmapsPictureAvail() && !CropMode;
 			bool altCubemapPicAvail = CurrImage->IsAltCubemapPictureAvail() && !CropMode;
-			if (numTextures > 1)
+
+			if (numTextures >= 2)
 			{
+				bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
+				if (altMipmapsPicAvail)
+				{
+					if (ImGui::Checkbox("Display All Mipmaps", &altMipmapsPicEnabl))
+					{
+						CurrImage->EnableAltPicture(altMipmapsPicEnabl);
+						CurrImage->Bind();
+					}
+					ShowToolTip("Display all mipmaps in a single image.");
+				}
+
+				bool altCubemapPicEnabl = altCubemapPicAvail && CurrImage->IsAltPictureEnabled();
+				if (altCubemapPicAvail)
+				{
+					if (ImGui::Checkbox("Display As Cubemap", &altCubemapPicEnabl))
+					{
+						CurrImage->EnableAltPicture(altCubemapPicEnabl);
+						CurrImage->Bind();
+					}
+					ShowToolTip("Display all cubemap sides in a T-layout.");
+				}
+
 				tString texName = "Texture";
 				if (altMipmapsPicAvail)
 					texName = "Mipmap";
 				else if (altCubemapPicAvail)
 					texName = "Cubemap Side";
 
-				ImGui::Text("%ss (%d)", texName.Chr(), numTextures);
+				if (!CurrImage->IsAltPictureEnabled())
+				{
+					tString imageNumText;
+					tsPrintf(imageNumText, "%s (%d)", texName.Chr(), numTextures);
 
-				int oneBasedTextureNum = CurrImage->FrameNum + 1;
+					int oneBasedTextureNum = CurrImage->FrameNum + 1;
+					ImGui::PushItemWidth(110);
+					if (ImGui::InputInt(imageNumText.Chr(), &oneBasedTextureNum))
+					{
+						CurrImage->FrameNum = oneBasedTextureNum - 1;
+						tMath::tiClamp(CurrImage->FrameNum, 0, numTextures-1);
+					}
+					ImGui::PopItemWidth();
+					ImGui::SameLine(); ShowHelpMark("Which mipmap or cubemap side to display.\nCubemap sides left-handed +X,-X,+Y,-Y,+Z,-Z");
+				}
+				propsDisplayed = true;
+			}
+
+			// If we here, show options when have 1 or more frames.
+			bool altEnabled = CurrImage->IsAltPictureEnabled();
+			bool isHDRFormat = tImage::tIsHDRFormat(CurrImage->Info.SrcPixelFormat);
+			if (isHDRFormat)
+			{
+				bool reloadChanges = false;
+
 				ImGui::PushItemWidth(110);
-				if (ImGui::InputInt(texName.Chr(), &oneBasedTextureNum))
-				{
-					CurrImage->FrameNum = oneBasedTextureNum - 1;
-					tMath::tiClamp(CurrImage->FrameNum, 0, numTextures-1);
-				}
+				if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_DDS.Gamma, 0.01f, 0.1f, "%.3f"))
+					reloadChanges = true;
 				ImGui::PopItemWidth();
-				ImGui::SameLine(); ShowHelpMark("Which mipmap or cubemap side to display.\nCubemap sides left-handed +X,-X,+Y,-Y,+Z,-Z");
-			}
+				ImGui::SameLine();
+				ShowHelpMark("Gamma to use [0.6, 3.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
+				tMath::tiClamp(CurrImage->LoadParams_DDS.Gamma, 0.6f, 3.0f);
 
-			bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
-			if (altMipmapsPicAvail)
-			{
-				if (ImGui::Checkbox("Display Mipmaps", &altMipmapsPicEnabl))
+				bool expEnabled = (CurrImage->LoadParams_DDS.Flags & tImage::tImageDDS::LoadFlag_ToneMapExposure);
+				ImGui::PushItemWidth(110);
+				if (ImGui::InputFloat("Exposure", &CurrImage->LoadParams_DDS.Exposure, 0.01f, 0.1f, "%.3f", expEnabled ? 0 : ImGuiInputTextFlags_ReadOnly))
+					reloadChanges = true;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+				ImGui::PopItemWidth();
+				ImGui::SameLine();
+				if (ImGui::CheckboxFlags("##ExposureEnabled", &CurrImage->LoadParams_DDS.Flags, tImage::tImageDDS::LoadFlag_ToneMapExposure))
+					reloadChanges = true;
+				ImGui::SameLine();
+				ShowHelpMark("Exposure adjustment [0.01, 5]. Hold Ctrl to speedup.");
+				tMath::tiClamp(CurrImage->LoadParams_DDS.Exposure, 0.01f, 5.0f);
+
+				if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
 				{
-					CurrImage->EnableAltPicture(altMipmapsPicEnabl);
-					CurrImage->Bind();
+					CurrImage->ResetLoadParams();
+					reloadChanges = true;
 				}
-				ShowToolTip("Display all mipmaps.");
-			}
 
-			bool altCubemapPicEnabl = altCubemapPicAvail && CurrImage->IsAltPictureEnabled();
-			if (altCubemapPicAvail)
-			{
-				if (ImGui::Checkbox("Display As Cubemap", &altCubemapPicEnabl))
+				if (reloadChanges)
 				{
-					CurrImage->EnableAltPicture(altCubemapPicEnabl);
-					CurrImage->Bind();
+					CurrImage->Unload();
+					CurrImage->Load();
+					if (altEnabled)
+					{
+						CurrImage->EnableAltPicture(true);
+						CurrImage->Bind();
+					}
 				}
-				ShowToolTip("Display all cubemap sides in a T-layout.");
+				propsDisplayed = true;
 			}
 
-			if (!altMipmapsPicAvail && !altCubemapPicAvail && (numTextures <= 1))
-				ImGui::Text("No Editable Image Properties Available");
-
-			if (numTextures > 1)
+			if ((numTextures >= 2) && !altEnabled)
+			{
 				ImGui::Checkbox("Scrubber", &Config::Current->ShowFrameScrubber);
+				propsDisplayed = true;
+			}
+
+			// Some DDS files have no available properties. No textures, no properties.
+			// Only one texture and not HDR and no alt images (no mipmaps or cubemap) -> no properties.
+			if (!propsDisplayed)
+				ImGui::Text("No Editable Image Properties Available");
 
 			ImGui::End();
 			return;
@@ -118,20 +168,20 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			bool reloadChanges = false;
 
 			ImGui::PushItemWidth(110);
-			if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams.GammaValue, 0.01f, 0.1f, "%.3f"))
+			if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_HDR.Gamma, 0.01f, 0.1f, "%.3f"))
 				reloadChanges = true;
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Gamma to use [0.6, 3.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
-			tMath::tiClamp(CurrImage->LoadParams.GammaValue, 0.6f, 3.0f);
+			tMath::tiClamp(CurrImage->LoadParams_HDR.Gamma, 0.6f, 3.0f);
 
 			ImGui::PushItemWidth(110);
-			if (ImGui::InputInt("Exposure", &CurrImage->LoadParams.HDR_Exposure))
+			if (ImGui::InputInt("Exposure", &CurrImage->LoadParams_HDR.Exposure))
 				reloadChanges = true;
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Exposure adjustment [-10, 10]. Hold Ctrl to speedup.");
-			tMath::tiClamp(CurrImage->LoadParams.HDR_Exposure, -10, 10);
+			tMath::tiClamp(CurrImage->LoadParams_HDR.Exposure, -10, 10);
 
 			if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
 			{
@@ -155,44 +205,44 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			bool reloadChanges = false;
 
 			ImGui::PushItemWidth(110);
-			if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams.GammaValue, 0.01f, 0.1f, "%.3f"))
+			if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_EXR.Gamma, 0.01f, 0.1f, "%.3f"))
 				reloadChanges = true;
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Gamma to use [0.6, 3.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
-			tMath::tiClamp(CurrImage->LoadParams.GammaValue, 0.6f, 3.0f);
+			tMath::tiClamp(CurrImage->LoadParams_EXR.Gamma, 0.6f, 3.0f);
 
 			ImGui::PushItemWidth(110);
-			if (ImGui::InputFloat("Exposure", &CurrImage->LoadParams.EXR_Exposure, 0.01f, 0.1f, "%.3f"))
+			if (ImGui::InputFloat("Exposure", &CurrImage->LoadParams_EXR.Exposure, 0.01f, 0.1f, "%.3f"))
 				reloadChanges = true;
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Exposure adjustment [-10.0, 10.0]. Hold Ctrl to speedup.");
-			tMath::tiClamp(CurrImage->LoadParams.EXR_Exposure, -10.0f, 10.0f);
+			tMath::tiClamp(CurrImage->LoadParams_EXR.Exposure, -10.0f, 10.0f);
 
 			ImGui::PushItemWidth(110);
-			if (ImGui::InputFloat("Defog", &CurrImage->LoadParams.EXR_Defog, 0.001f, 0.01f, "%.3f"))
+			if (ImGui::InputFloat("Defog", &CurrImage->LoadParams_EXR.Defog, 0.001f, 0.01f, "%.3f"))
 				reloadChanges = true;
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Remove fog strength [0.0, 0.1]. Hold Ctrl to speedup. Try to keep under 0.01");
-			tMath::tiClamp(CurrImage->LoadParams.EXR_Defog, 0.0f, 0.1f);
+			tMath::tiClamp(CurrImage->LoadParams_EXR.Defog, 0.0f, 0.1f);
 
 			ImGui::PushItemWidth(110);
-			if (ImGui::InputFloat("Knee Low", &CurrImage->LoadParams.EXR_KneeLow, 0.01f, 0.1f, "%.3f"))
+			if (ImGui::InputFloat("Knee Low", &CurrImage->LoadParams_EXR.KneeLow, 0.01f, 0.1f, "%.3f"))
 				reloadChanges = true;
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Lower bound knee taper [-3.0, 3.0]. Hold Ctrl to speedup.");
-			tMath::tiClamp(CurrImage->LoadParams.EXR_KneeLow, -3.0f, 3.0f);
+			tMath::tiClamp(CurrImage->LoadParams_EXR.KneeLow, -3.0f, 3.0f);
 
 			ImGui::PushItemWidth(110);
-			if (ImGui::InputFloat("Knee High", &CurrImage->LoadParams.EXR_KneeHigh, 0.01f, 0.1f, "%.3f"))
+			if (ImGui::InputFloat("Knee High", &CurrImage->LoadParams_EXR.KneeHigh, 0.01f, 0.1f, "%.3f"))
 				reloadChanges = true;
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Upper bound knee taper [3.5, 7.5]. Hold Ctrl to speedup.");
-			tMath::tiClamp(CurrImage->LoadParams.EXR_KneeHigh, 3.5f, 7.5f);
+			tMath::tiClamp(CurrImage->LoadParams_EXR.KneeHigh, 3.5f, 7.5f);
 
 			if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
 			{

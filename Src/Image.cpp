@@ -47,8 +47,7 @@ const int Image::ThumbMinDispWidth			= 64;
 Image::Image() :
 	Filename(),
 	Filetype(tFileType::Unknown),
-	FileSizeB(0),
-	LoadParams()
+	FileSizeB(0)
 {
 	tMemset(&FileModTime, 0, sizeof(FileModTime));
 	ResetLoadParams();
@@ -58,8 +57,7 @@ Image::Image() :
 Image::Image(const tString& filename) :
 	Filename(filename),
 	Filetype(tGetFileType(filename)),
-	FileSizeB(0),
-	LoadParams()
+	FileSizeB(0)
 {
 	tMemset(&FileModTime, 0, sizeof(FileModTime));
 	ResetLoadParams();
@@ -76,8 +74,7 @@ Image::Image(const tSystem::tFileInfo& fileInfo) :
 	Filename(fileInfo.FileName),
 	Filetype(tGetFileType(Filename)),
 	FileModTime(fileInfo.ModificationTime),
-	FileSizeB(fileInfo.FileSize),
-	LoadParams()
+	FileSizeB(fileInfo.FileSize)
 {
 	ResetLoadParams();
 }
@@ -105,8 +102,14 @@ Image::~Image()
 
 void Image::ResetLoadParams()
 {
-	LoadParams = tImage::tPicture::LoadParams();
-	LoadParams.GammaValue = Viewer::Config::Current->MonitorGamma;
+	LoadParams_DDS.Reset();
+	LoadParams_DDS.Gamma = Viewer::Config::Current->MonitorGamma;
+
+	LoadParams_EXR.Reset();
+	LoadParams_EXR.Gamma = Viewer::Config::Current->MonitorGamma;
+
+	LoadParams_HDR.Reset();
+	LoadParams_HDR.Gamma = Viewer::Config::Current->MonitorGamma;
 }
 
 
@@ -166,7 +169,7 @@ bool Image::Load()
 				tImageAPNG apng;
 				bool ok = apng.Load(Filename);
 				if (!ok)
-					return false;
+					break;
 
 				int numFrames = apng.GetNumFrames();
 				for (int f = 0; f < numFrames; f++)
@@ -191,7 +194,7 @@ bool Image::Load()
 				tImageBMP bmp;
 				bool ok = bmp.Load(Filename);
 				if (!ok)
-					return false;
+					break;
 
 				int width = bmp.GetWidth();
 				int height = bmp.GetHeight();
@@ -207,15 +210,9 @@ bool Image::Load()
 			case tSystem::tFileType::EXR:
 			{
 				tImageEXR exr;
-				tImageEXR::LoadParams loadParams;
-				loadParams.Gamma		= LoadParams.GammaValue;
-				loadParams.Exposure		= LoadParams.EXR_Exposure;
-				loadParams.Defog		= LoadParams.EXR_Defog;
-				loadParams.KneeLow		= LoadParams.EXR_KneeLow;
-				loadParams.KneeHigh		= LoadParams.EXR_KneeHigh;
-				bool ok = exr.Load(Filename, loadParams);
+				bool ok = exr.Load(Filename, LoadParams_EXR);
 				if (!ok)
-					return false;
+					break;
 
 				int numFrames = exr.GetNumFrames();
 				for (int f = 0; f < numFrames; f++)
@@ -240,7 +237,7 @@ bool Image::Load()
 				tImageGIF gif;
 				bool ok = gif.Load(Filename);
 				if (!ok)
-					return false;
+					break;
 
 				int numFrames = gif.GetNumFrames();
 				for (int f = 0; f < numFrames; f++)
@@ -263,12 +260,9 @@ bool Image::Load()
 			case tSystem::tFileType::HDR:
 			{
 				tImageHDR hdr;
-				tImageHDR::LoadParams loadParams;
-				loadParams.Gamma		= LoadParams.GammaValue;
-				loadParams.Exposure		= LoadParams.HDR_Exposure;
-				bool ok = hdr.Load(Filename, loadParams);
+				bool ok = hdr.Load(Filename, LoadParams_HDR);
 				if (!ok)
-					return false;
+					break;
 
 				int width = hdr.GetWidth();
 				int height = hdr.GetHeight();
@@ -286,7 +280,7 @@ bool Image::Load()
 				tImageICO ico;
 				bool ok = ico.Load(Filename);
 				if (!ok)
-					return false;
+					break;
 
 				Info.SrcPixelFormat = ico.GetBestSrcPixelFormat();
 				int numFrames = ico.GetNumFrames();
@@ -314,7 +308,7 @@ bool Image::Load()
 
 				bool ok = jpg.Load(Filename, loadFlags);
 				if (!ok)
-					return false;
+					break;
 
 				int width = jpg.GetWidth();
 				int height = jpg.GetHeight();
@@ -334,7 +328,7 @@ bool Image::Load()
 				tImagePNG png;
 				bool ok = png.Load(Filename);
 				if (!ok)
-					return false;
+					break;
 
 				int width = png.GetWidth();
 				int height = png.GetHeight();
@@ -352,7 +346,7 @@ bool Image::Load()
 				tImageTGA tga;
 				bool ok = tga.Load(Filename);
 				if (!ok)
-					return false;
+					break;
 
 				int width = tga.GetWidth();
 				int height = tga.GetHeight();
@@ -370,7 +364,7 @@ bool Image::Load()
 				tImageTIFF tiff;
 				bool ok = tiff.Load(Filename);
 				if (!ok)
-					return false;
+					break;
 
 				int numFrames = tiff.GetNumFrames();
 				for (int f = 0; f < numFrames; f++)
@@ -394,7 +388,7 @@ bool Image::Load()
 				tImageWEBP webp;
 				bool ok = webp.Load(Filename);
 				if (!ok)
-					return false;
+					break;
 
 				int numFrames = webp.GetNumFrames();
 				for (int f = 0; f < numFrames; f++)
@@ -417,12 +411,9 @@ bool Image::Load()
 			case tSystem::tFileType::DDS:
 			{
 				tImageDDS dds;
-				uint32 loadFlags = tImageDDS::LoadFlag_Decode | tImageDDS::LoadFlag_ReverseRowOrder | tImageDDS::LoadFlag_GammaCompression;
-				loadFlags |= (Config::Current->SpreadLuminance ? tImageDDS::LoadFlag_SpreadLuminance : 0);
-
-				bool ok = dds.Load(Filename, loadFlags);
+				bool ok = dds.Load(Filename, LoadParams_DDS);
 				if (!ok || !dds.IsValid())
-					return false;
+					break;
 
 				// Appends to the Pictures list.
 				PopulatePicturesDDS(dds);
@@ -432,31 +423,6 @@ bool Image::Load()
 
 				Info.SrcPixelFormat = dds.GetPixelFormatOrig();
 				success = true;
-				break;
-			}
-
-			// I don't believe we'll get to this catchall. Everything should be handled above.
-			default:
-			{
-				// Some image files may store multiple images (aka frames or parts) in one file.
-				int partNum = 0;
-				bool ok = false;
-				do
-				{
-					tPicture* picture = new tPicture();
-					ok = picture->Load(Filename, partNum, LoadParams);
-					if (ok)
-					{
-						Pictures.Append(picture);
-						partNum++;
-					}
-				} while (ok);
-
-				if (Pictures.NumItems() > 0)
-				{
-					success = true;
-					Info.SrcPixelFormat = Pictures.First()->SrcPixelFormat;
-				}
 				break;
 			}
 		}
