@@ -52,31 +52,32 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			int numTextures = CurrImage->GetNumFrames();
 			bool altMipmapsPicAvail = CurrImage->IsAltMipmapsPictureAvail() && !CropMode;
 			bool altCubemapPicAvail = CurrImage->IsAltCubemapPictureAvail() && !CropMode;
+			bool reloadChanges = false;
+
+			bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
+			if (altMipmapsPicAvail)
+			{
+				if (ImGui::Checkbox("Display All Mipmaps", &altMipmapsPicEnabl))
+				{
+					CurrImage->EnableAltPicture(altMipmapsPicEnabl);
+					CurrImage->Bind();
+				}
+				ShowToolTip("Display all mipmaps in a single image.");
+			}
+
+			bool altCubemapPicEnabl = altCubemapPicAvail && CurrImage->IsAltPictureEnabled();
+			if (altCubemapPicAvail)
+			{
+				if (ImGui::Checkbox("Display As Cubemap", &altCubemapPicEnabl))
+				{
+					CurrImage->EnableAltPicture(altCubemapPicEnabl);
+					CurrImage->Bind();
+				}
+				ShowToolTip("Display all cubemap sides in a T-layout.");
+			}
 
 			if (numTextures >= 2)
 			{
-				bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
-				if (altMipmapsPicAvail)
-				{
-					if (ImGui::Checkbox("Display All Mipmaps", &altMipmapsPicEnabl))
-					{
-						CurrImage->EnableAltPicture(altMipmapsPicEnabl);
-						CurrImage->Bind();
-					}
-					ShowToolTip("Display all mipmaps in a single image.");
-				}
-
-				bool altCubemapPicEnabl = altCubemapPicAvail && CurrImage->IsAltPictureEnabled();
-				if (altCubemapPicAvail)
-				{
-					if (ImGui::Checkbox("Display As Cubemap", &altCubemapPicEnabl))
-					{
-						CurrImage->EnableAltPicture(altCubemapPicEnabl);
-						CurrImage->Bind();
-					}
-					ShowToolTip("Display all cubemap sides in a T-layout.");
-				}
-
 				tString texName = "Texture";
 				if (altMipmapsPicAvail)
 					texName = "Mipmap";
@@ -101,13 +102,10 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				propsDisplayed = true;
 			}
 
-			// If we here, show options when have 1 or more frames.
+			// If we're here show options when have 1 or more frames.
 			bool altEnabled = CurrImage->IsAltPictureEnabled();
-			bool isHDRFormat = tImage::tIsHDRFormat(CurrImage->Info.SrcPixelFormat);
-			if (isHDRFormat)
+			if (tImage::tIsHDRFormat(CurrImage->Info.SrcPixelFormat))
 			{
-				bool reloadChanges = false;
-
 				ImGui::PushItemWidth(110);
 				if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_DDS.Gamma, 0.01f, 0.1f, "%.3f"))
 					reloadChanges = true;
@@ -118,39 +116,47 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 
 				bool expEnabled = (CurrImage->LoadParams_DDS.Flags & tImage::tImageDDS::LoadFlag_ToneMapExposure);
 				ImGui::PushItemWidth(110);
-				if (ImGui::InputFloat("Exposure", &CurrImage->LoadParams_DDS.Exposure, 0.01f, 0.1f, "%.3f", expEnabled ? 0 : ImGuiInputTextFlags_ReadOnly))
+				if (ImGui::InputFloat("Exposure", &CurrImage->LoadParams_DDS.Exposure, 0.001f, 0.05f, "%.4f", expEnabled ? 0 : ImGuiInputTextFlags_ReadOnly))
 					reloadChanges = true;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
 				ImGui::PopItemWidth();
 				ImGui::SameLine();
 				if (ImGui::CheckboxFlags("##ExposureEnabled", &CurrImage->LoadParams_DDS.Flags, tImage::tImageDDS::LoadFlag_ToneMapExposure))
 					reloadChanges = true;
 				ImGui::SameLine();
-				ShowHelpMark("Exposure adjustment [0.01, 5]. Hold Ctrl to speedup.");
-				tMath::tiClamp(CurrImage->LoadParams_DDS.Exposure, 0.01f, 5.0f);
+				ShowHelpMark("Exposure adjustment [0.0, 4]. Hold Ctrl to speedup.");
+				tMath::tiClamp(CurrImage->LoadParams_DDS.Exposure, 0.0f, 4.0f);
 
 				if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
 				{
 					CurrImage->ResetLoadParams();
 					reloadChanges = true;
 				}
-
-				if (reloadChanges)
-				{
-					CurrImage->Unload();
-					CurrImage->Load();
-					if (altEnabled)
-					{
-						CurrImage->EnableAltPicture(true);
-						CurrImage->Bind();
-					}
-				}
 				propsDisplayed = true;
 			}
+
+/////////// WIP
+/////////// Keep scrubber on left. Put Reset to right. Above goes spread if single-channel luminance image.
+/////////// Do scrubber changes for all Reset buttons in this cpp.
+/////////// Gamma above for HDR... only if in GammaCorrect mode (NONE, Gamma Correct, sRGB Correct). Put comment
+/////////// "HDR images are assumed to be in linerar space, To display correctly you need to gamma-correct.
+/////////// If image is not linear-space, you will want to turn this off. There is no way to determine programatically
+/////////// the colour-space -- it's just what the data represents."
 
 			if ((numTextures >= 2) && !altEnabled)
 			{
 				ImGui::Checkbox("Scrubber", &Config::Current->ShowFrameScrubber);
 				propsDisplayed = true;
+			}
+
+			if (reloadChanges)
+			{
+				CurrImage->Unload();
+				CurrImage->Load();
+				if (altEnabled)
+				{
+					CurrImage->EnableAltPicture(true);
+					CurrImage->Bind();
+				}
 			}
 
 			// Some DDS files have no available properties. No textures, no properties.
