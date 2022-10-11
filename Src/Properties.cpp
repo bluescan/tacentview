@@ -126,17 +126,18 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				ShowHelpMark("Exposure adjustment [0.0, 4]. Hold Ctrl to speedup.");
 				tMath::tiClamp(CurrImage->LoadParams_DDS.Exposure, 0.0f, 4.0f);
 
-				if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
-				{
-					CurrImage->ResetLoadParams();
-					reloadChanges = true;
-				}
 				propsDisplayed = true;
 			}
 
+			if (tImage::tIsLuminanceFormat(CurrImage->Info.SrcPixelFormat))
+			{
+				if (ImGui::CheckboxFlags("Spread Luminance", &CurrImage->LoadParams_DDS.Flags, tImage::tImageDDS::LoadFlag_SpreadLuminance))
+					reloadChanges = true;
+				ImGui::SameLine();
+				ShowHelpMark("Luminance-only dds files are represented in this viewer as having a red channel only,\nIf spread is true, the channel is spread to all RGB channels to create a grey-scale image.");
+			}
+
 /////////// WIP
-/////////// Keep scrubber on left. Put Reset to right. Above goes spread if single-channel luminance image.
-/////////// Do scrubber changes for all Reset buttons in this cpp.
 /////////// Gamma above for HDR... only if in GammaCorrect mode (NONE, Gamma Correct, sRGB Correct). Put comment
 /////////// "HDR images are assumed to be in linerar space, To display correctly you need to gamma-correct.
 /////////// If image is not linear-space, you will want to turn this off. There is no way to determine programatically
@@ -146,6 +147,18 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			{
 				ImGui::Checkbox("Scrubber", &Config::Current->ShowFrameScrubber);
 				propsDisplayed = true;
+			}
+
+			if (propsDisplayed)
+			{
+				ImGui::SameLine();
+				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 110.0f);
+				if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
+				{
+					CurrImage->ResetLoadParams();
+					CurrImage->FrameNum = 0;
+					reloadChanges = true;
+				}
 			}
 
 			if (reloadChanges)
@@ -189,6 +202,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ShowHelpMark("Exposure adjustment [-10, 10]. Hold Ctrl to speedup.");
 			tMath::tiClamp(CurrImage->LoadParams_HDR.Exposure, -10, 10);
 
+			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 110.0f);
 			if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
 			{
 				CurrImage->ResetLoadParams();
@@ -250,6 +264,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ShowHelpMark("Upper bound knee taper [3.5, 7.5]. Hold Ctrl to speedup.");
 			tMath::tiClamp(CurrImage->LoadParams_EXR.KneeHigh, 3.5f, 7.5f);
 
+			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 110.0f);
 			if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
 			{
 				CurrImage->ResetLoadParams();
