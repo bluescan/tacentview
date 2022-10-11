@@ -645,28 +645,30 @@ bool Viewer::OnSkipEnd()
 }
 
 
-void Viewer::ShowHelpMark(const char* desc)
+void Viewer::ShowHelpMark(const char* desc, bool autoWrap)
 {
 	ImGui::TextDisabled("[?]");
-	if (!ImGui::IsItemHovered())
+	if (!ImGui::IsItemHovered() || !desc)
 		return;
 
 	ImGui::BeginTooltip();
-	ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+	if (autoWrap)
+		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 	ImGui::TextUnformatted(desc);
 	ImGui::PopTextWrapPos();
 	ImGui::EndTooltip();
 }
 
 
-void Viewer::ShowToolTip(const char* desc)
+void Viewer::ShowToolTip(const char* desc, bool autoWrap)
 {
-	if (!ImGui::IsItemHovered())
+	if (!ImGui::IsItemHovered() || !desc)
 		return;
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(3.0f, 3.0f));
 	ImGui::BeginTooltip();
-	ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+	if (autoWrap)
+		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 	ImGui::TextUnformatted(desc);
 	ImGui::PopTextWrapPos();
 	ImGui::EndTooltip();

@@ -105,8 +105,8 @@ namespace Viewer
 	const double DisappearDuration	= 4.0;
 
 	// Helper to display a little (?) mark which shows a tooltip when hovered.
-	void ShowHelpMark(const char* desc);
-	void ShowToolTip(const char* desc);
+	void ShowHelpMark(const char* desc, bool autoWrap = true);
+	void ShowToolTip(const char* desc, bool autoWrap = true);
 	void PopulateImages();
 	void PopulateImagesSubDirs();
 	Image* FindImage(const tString& filename);
