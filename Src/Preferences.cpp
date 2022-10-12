@@ -208,8 +208,10 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::Separator();
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 
-			ImGui::Checkbox("Spread Luminance", &Config::Current->SpreadLuminance); ImGui::SameLine();
-			ShowHelpMark("Some image files have luminance or red information only. This will\nspread the luminance to all RGB channels giving you a grey-scale image.\nIf desired refresh (F5) the current image to force a reload after changing this.");
+			ImGui::InputFloat("Gamma##Monitor", &Config::Current->MonitorGamma, 0.01f, 0.1f, "%.3f");
+			ImGui::SameLine();
+			ShowHelpMark("Some image property windows allow gamma correction and the gamma to be specified (eg. HDR DDS files).\nThis setting allows you to set a custom value for what the gamma will be reset to in those dialogs.\nResetting this tab always chooses the industry-standard gamm of 2.2");
+			ImGui::PopItemWidth();
 
 			ImGui::Checkbox("Strict Loading", &Config::Current->StrictLoading); ImGui::SameLine();
 			ShowHelpMark("Some image files are ill-formed. If strict is true no attempt to display them is made.");
@@ -236,16 +238,6 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::Combo("Mipmap Filter", &Config::Current->MipmapFilter, tImage::tResampleFilterNames, 1+int(tImage::tResampleFilter::NumFilters), 1+int(tImage::tResampleFilter::NumFilters));
 			ImGui::SameLine();
 			ShowHelpMark("Filtering method to use when generating minification mipmaps.\nUse None for no mipmapping.");
-
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-			ImGui::Separator();
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-
-			ImGui::InputFloat("Gamma##Monitor", &Config::Current->MonitorGamma, 0.01f, 0.1f, "%.3f");
-			ImGui::PopItemWidth();
-			ImGui::SameLine();
-			if (ImGui::Button("Reset##Gamma"))
-				Config::Current->MonitorGamma = tMath::DefaultGamma;
 	
 			ImGui::EndTabItem();
 		}
