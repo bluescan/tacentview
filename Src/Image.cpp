@@ -421,7 +421,7 @@ bool Image::Load()
 				// Creates any alt images for cubemap or mipmapped dds files.
 				CreateAltPicturesDDS(dds);
 
-				Info.SrcPixelFormat = dds.GetPixelFormatOrig();
+				Info.SrcPixelFormat = dds.GetPixelFormatSrc();
 				success = true;
 				break;
 			}
