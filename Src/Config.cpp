@@ -40,8 +40,8 @@ namespace Config
 	const int ConfigFileVersion = 3;
 
 	GlobalSettings Global;
-	ProfileSettings MainProfileSettings;
-	ProfileSettings BasicProfileSettings;
+	ProfileSettings MainProfileSettings(Profile::Main);
+	ProfileSettings BasicProfileSettings(Profile::Basic);
 	ProfileSettings* Current = &MainProfileSettings;
 }
 
@@ -60,8 +60,16 @@ void Config::SetProfile(Profile profile)
 }
 
 
-Viewer::Profile Config::GetProfile()					{ return Profile(Global.CurrentProfile); }
-const char* Config::GetProfileName()					{ return GetProfileName(GetProfile()); }
+Viewer::Profile Config::GetProfile()
+{
+	return Profile(Global.CurrentProfile);
+}
+
+
+const char* Config::GetProfileName()
+{
+	return GetProfileName(GetProfile());
+}
 
 
 void Config::ResetProfile(uint32 categories)
@@ -340,6 +348,7 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 		BackgroundCheckerboxSize	= 16;
 		BackgroundColour			= tColouri::black;
 		BackgroundExtend			= false;
+		ReticleMode					= (profile == Profile::Basic) ? int(RetMode::AutoHide) : int(RetMode::OnSelect);
 	}
 
 	if (categories & Category_Slideshow)
@@ -404,6 +413,7 @@ void Config::ProfileSettings::Load(tExpression expr)
 			ReadItem(BackgroundCheckerboxSize);
 			ReadItem(BackgroundColour);
 			ReadItem(BackgroundExtend);
+			ReadItem(ReticleMode);
 			ReadItem(ResampleFilter);
 			ReadItem(ResampleEdgeMode);
 			ReadItem(ResampleFilterContactFrame);
@@ -478,6 +488,7 @@ void Config::ProfileSettings::Load(tExpression expr)
 	tiClampMin	(SlideshowPeriod, 1.0/60.0);
 	tiClamp		(BackgroundStyle, 0, int(BGStyle::NumStyles)-1);
 	tiClamp		(BackgroundCheckerboxSize, 2, 256);
+	tiClamp		(ReticleMode, 0, int(RetMode::NumModes)-1);
 	tiClamp		(OverlayCorner, 0, 3);
 	tiClamp		(SaveFileType, 0, 7);
 	tiClamp		(SaveFileTypeMultiFrame, 0, 3);
@@ -536,6 +547,7 @@ bool Config::ProfileSettings::Save(tExprWriter& writer) const
 	WriteItem(BackgroundCheckerboxSize);
 	WriteItem(BackgroundColour);
 	WriteItem(BackgroundExtend);
+	WriteItem(ReticleMode);
 	WriteItem(ResampleFilter);
 	WriteItem(ResampleEdgeMode);
 	WriteItem(ResampleFilterContactFrame);

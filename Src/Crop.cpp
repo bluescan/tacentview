@@ -121,7 +121,6 @@ void Viewer::CropWidget::Update(const tVector4& imgext, const tVector2& mouse, c
 	MouseHovered(LineL, mouse, tVector2(b, t), false);
 	MouseHovered(LineR, mouse, tVector2(b, t), false);
 
-//	ConstrainCropLines(imgext, false);
 	ConstrainCropLines(imgext, true);
 
 	if (LineL.Pressed || LineR.Pressed || LineT.Pressed || LineB.Pressed)

@@ -42,8 +42,8 @@ enum Category
 // different profiles. Currently we only have two profiles: Main and Basic.
 struct ProfileSettings
 {
-	ProfileSettings()							: Name(), InputBindings() { Reset(Profile::Main, Category_All); }
-	tString Name;								// The name of the profile.
+	ProfileSettings(Profile profile)				: Name(), InputBindings() { Reset(profile, Category_All); }
+	tString Name;									// The name of the profile.
 
 	bool ShowMenuBar;
 	bool ShowNavBar;
@@ -86,6 +86,16 @@ struct ProfileSettings
 	int BackgroundCheckerboxSize;
 	tColouri BackgroundColour;					// Only used if BGStyle is SolidColour.
 	bool BackgroundExtend;						// Extend background past image bounds.
+
+	enum class RetMode
+	{
+		AlwaysHidden,
+		AlwaysVisible,
+		OnSelect,								// Click outside = hide. Click inside = show. Image change = hide.
+		AutoHide,								// Hidden at same time as on-screen buttons.
+		NumModes
+	};
+	int ReticleMode;
 
 	int ResampleFilter;							// Matches tImage::tResampleFilter. Used for image resize when saving and multiframe saving.
 	int ResampleEdgeMode;						// Matches tImage::tResampleEdgeMode. Used for image resize when saving and multiframe saving.

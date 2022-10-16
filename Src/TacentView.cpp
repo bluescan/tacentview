@@ -154,8 +154,8 @@ namespace Viewer
 	GLFWwindow* Window								= nullptr;
 	double DisappearCountdown						= DisappearDuration;
 	double SlideshowCountdown						= 0.0;
-	float ReticleToMouseDist						= 75.0f;
-	bool SlideshowPlaying							= false;;
+	bool SlideshowPlaying							= false;
+	bool ReticleVisibleOnSelect						= false;
 	bool WindowIconified							= false;
 
 	bool Request_OpenFileModal						= false;
@@ -570,6 +570,8 @@ void Viewer::LoadCurrImage()
 			tPrintf("Used mem %|64dB out of max %|64dB.\n", usedMem, allowedMem);
 		}
 	}
+
+	ReticleVisibleOnSelect = false;
 }
 
 
@@ -855,14 +857,13 @@ void Viewer::DrawBackground(float l, float r, float b, float t, float drawW, flo
 }
 
 
-void Viewer::ConvertScreenPosToImagePos
+bool Viewer::ConvertScreenPosToImagePos
 (
 	int& imgX, int& imgY, const tVector2& scrPos,
 	const tVector4& lrtb, const tVector2& uvOff
 )
 {
 	float picX = scrPos.x - lrtb.L;
-	//float picY = (scrPos.y - 1) - lrtb.B;
 	float picY = (scrPos.y) - lrtb.B;
 	float normX = picX / (lrtb.R-lrtb.L);
 	float normY = picY / (lrtb.T-lrtb.B);
@@ -875,26 +876,34 @@ void Viewer::ConvertScreenPosToImagePos
 		if (normY < 0.0f) normY += 1.0f;
 	}
 
-	float imagew = float(CurrImage->GetWidth());
-	float imageh = float(CurrImage->GetHeight());
+	int imagewi = CurrImage->GetWidth();
+	int imagehi = CurrImage->GetHeight();
+	float imagew = float(imagewi);
+	float imageh = float(imagehi);
 
 	float imposX = imagew * tMath::tLisc(normX, 0.0f + uvOff.u, 1.0f + uvOff.u);
 	float imposY = imageh * tMath::tLisc(normY, 0.0f + uvOff.v, 1.0f + uvOff.v);
 
 	imgX = int(imposX);
 	imgY = int(imposY);
+	bool clamped = false;
 	if (!Config::Current->Tile)
 	{
-		tMath::tiClamp(imgX, 0, CurrImage->GetWidth() - 1);
-		tMath::tiClamp(imgY, 0, CurrImage->GetHeight() - 1);
+		if (((imgX < 0) || (imgX >= imagewi)) || ((imgY < 0) || (imgY >= imagehi)))
+			clamped = true;
+
+		tMath::tiClamp(imgX, 0, imagewi - 1);
+		tMath::tiClamp(imgY, 0, imagehi - 1);
 	}
 	else
 	{
-		imgX %= CurrImage->GetWidth();
-		if (imgX < 0) imgX += CurrImage->GetWidth();
-		imgY %= CurrImage->GetHeight();
-		if (imgY < 0) imgY += CurrImage->GetHeight();
+		imgX %= imagewi;
+		if (imgX < 0) imgX += imagewi;
+		imgY %= imagehi;
+		if (imgY < 0) imgY += imagehi;
 	}
+
+	return clamped;
 }
 
 
@@ -1202,8 +1211,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if ((CursorMouseX >= 0.0f) && (CursorMouseX >= 0.0f))
 		{
 			tVector2 scrCursorPos(CursorMouseX, CursorMouseY);
-			ConvertScreenPosToImagePos(CursorX, CursorY, scrCursorPos, tVector4(left, right, top, bottom), tVector2(uoff, voff));
+			bool clamped = ConvertScreenPosToImagePos(CursorX, CursorY, scrCursorPos, tVector4(left, right, top, bottom), tVector2(uoff, voff));
 			CursorMouseX = -1.0f; CursorMouseY = -1.0f;
+			ReticleVisibleOnSelect = !clamped;
 		}
 
 		// If a request was made to move the cursor/reticle, process the request here,
@@ -1237,18 +1247,32 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		glColor4fv(tColour::white.E);
 
 		// Show the cursor either as a square ouline or a reticle.
-		if
-		(
-			// Must not be cropping.
-			!CropMode &&
+		bool reticleVisible = false;
+		
+		// Must not be cropping to have a chance at making visible.
+		if (!CropMode)
+		{
+			switch (Config::ProfileSettings::RetMode(Config::Current->ReticleMode))
+			{
+				case Config::ProfileSettings::RetMode::AlwaysVisible:
+					reticleVisible = true;
 
-			// Must have a colour inspector visible (menu bar and details both have one).
-			(
-				Config::Current->ShowMenuBar ||
-				Config::Current->ShowImageDetails ||
-				(DisappearCountdown > 0.0)
-			)
-		)
+				case Config::ProfileSettings::RetMode::AlwaysHidden:
+					break;
+
+				case Config::ProfileSettings::RetMode::OnSelect:
+					reticleVisible = ReticleVisibleOnSelect;
+					break;
+
+				case Config::ProfileSettings::RetMode::AutoHide:
+					reticleVisible = (DisappearCountdown > 0.0);
+					break;
+			}
+		}
+		//Config::Current->ShowMenuBar ||
+		//Config::Current->ShowImageDetails ||
+
+		if (reticleVisible)
 		{
 			int intensity = (PixelColour.R + PixelColour.G + PixelColour.B) / 3;
 			if ((intensity < 128) || (PixelColour.A < 128))

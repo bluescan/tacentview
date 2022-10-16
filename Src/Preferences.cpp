@@ -111,8 +111,23 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 					ImGui::PopItemWidth();
 					tMath::tiClamp(Config::Current->BackgroundCheckerboxSize, 2, 256);
 				}
-
 			}
+
+			// Reticle mode.
+			const char* reticleModeItems[] = { "Always Hidden", "Always Visible", "On Select", "Auto Hide" };
+			ImGui::PushItemWidth(110);
+			ImGui::Combo("Reticle Mode", &Config::Current->ReticleMode, reticleModeItems, tNumElements(reticleModeItems));
+			ImGui::PopItemWidth();
+			ImGui::SameLine();
+			ShowHelpMark
+			(
+				"Controls when the cursor reticle is visible.\n"
+				"Always Hidden: Never display reticle. Driving blind.\n"
+				"Always Visible: Never hide the reticle.\n"
+				"On Select: Visible when click mouse. Hides when switch image or click outside image.\n"
+				"Auto Hide: Hides after inactivity timeout."
+			);
+
 			ImGui::EndTabItem();
 		}
 

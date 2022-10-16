@@ -126,7 +126,8 @@ namespace Viewer
 	void Undo();
 	void Redo();
 
-	void ConvertScreenPosToImagePos
+	// Returns true if clamping was necessary.
+	bool ConvertScreenPosToImagePos
 	(
 		int& imgX, int& imgY, const tMath::tVector2& scrPos,
 		const tMath::tVector4& lrtb, const tMath::tVector2& uvOff
