@@ -295,8 +295,8 @@ void Viewer::ShowAboutPopup(bool* popen)
 		// ImGui::Text("GLAD V %d.%d", GLVersion.major, GLVersion.minor);
 
 		ImGui::Text("GLFW V %d.%d.%d", glfwMajor, glfwMinor, glfwRev);
-		ImGui::Text("nVidia Texture Tools");
-		ImGui::Text("Ionicons");
+		ImGui::Text("Ico Load");
+		ImGui::Text("Ion Icons");
 		ImGui::Text("Roboto Google Font");
 		ImGui::Text("Radiance Software");
 		ImGui::Text("LibJPEG-Turbo V %s", tImage::Version_LibJpegTurbo);
