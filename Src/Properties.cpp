@@ -210,6 +210,170 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			return;
 		}
 
+		case tSystem::tFileType::KTX:
+		case tSystem::tFileType::KTX2:
+		{
+			bool propsDisplayed = false;
+			int numTextures = CurrImage->GetNumFrames();
+			bool altMipmapsPicAvail = CurrImage->IsAltMipmapsPictureAvail() && !CropMode;
+			bool altCubemapPicAvail = CurrImage->IsAltCubemapPictureAvail() && !CropMode;
+			bool reloadChanges = false;
+
+			bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
+			if (altMipmapsPicAvail)
+			{
+				if (ImGui::Checkbox("Display All Mipmaps", &altMipmapsPicEnabl))
+				{
+					CurrImage->EnableAltPicture(altMipmapsPicEnabl);
+					CurrImage->Bind();
+				}
+				ShowToolTip("Display all mipmaps in a single image.");
+			}
+
+			bool altCubemapPicEnabl = altCubemapPicAvail && CurrImage->IsAltPictureEnabled();
+			if (altCubemapPicAvail)
+			{
+				if (ImGui::Checkbox("Display As Cubemap", &altCubemapPicEnabl))
+				{
+					CurrImage->EnableAltPicture(altCubemapPicEnabl);
+					CurrImage->Bind();
+				}
+				ShowToolTip("Display all cubemap sides in a T-layout.");
+			}
+
+			if (numTextures >= 2)
+			{
+				tString texName = "Texture";
+				if (altMipmapsPicAvail)
+					texName = "Mipmap";
+				else if (altCubemapPicAvail)
+					texName = "Cubemap Side";
+
+				if (!CurrImage->IsAltPictureEnabled())
+				{
+					tString imageNumText;
+					tsPrintf(imageNumText, "%s (%d)", texName.Chr(), numTextures);
+
+					int oneBasedTextureNum = CurrImage->FrameNum + 1;
+					ImGui::PushItemWidth(110);
+					if (ImGui::InputInt(imageNumText.Chr(), &oneBasedTextureNum))
+					{
+						CurrImage->FrameNum = oneBasedTextureNum - 1;
+						tMath::tiClamp(CurrImage->FrameNum, 0, numTextures-1);
+					}
+					ImGui::PopItemWidth();
+					ImGui::SameLine(); ShowHelpMark("Which mipmap or cubemap side to display.\nCubemap sides left-handed +X,-X,+Y,-Y,+Z,-Z");
+				}
+				propsDisplayed = true;
+			}
+
+			// If we're here show options when have 1 or more frames.
+			bool altEnabled = CurrImage->IsAltPictureEnabled();
+			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat))
+			{
+				// Gamma correction. First read current setting and put it in an int.
+				int gammaMode = 0;
+				if (CurrImage->LoadParams_KTX.Flags & tImageKTX::LoadFlag_GammaCompression)
+					gammaMode = 1;
+				if (CurrImage->LoadParams_KTX.Flags & tImageKTX::LoadFlag_SRGBCompression)
+					gammaMode = 2;
+
+				const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB" };
+				ImGui::PushItemWidth(110);
+				if (ImGui::Combo("Gamma Correct", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
+				{
+					CurrImage->LoadParams_KTX.Flags &= ~(tImageKTX::LoadFlag_GammaCompression | tImageKTX::LoadFlag_SRGBCompression);
+					if (gammaMode == 1) CurrImage->LoadParams_KTX.Flags |= tImageKTX::LoadFlag_GammaCompression;
+					if (gammaMode == 2) CurrImage->LoadParams_KTX.Flags |= tImageKTX::LoadFlag_SRGBCompression;
+					reloadChanges = true;
+				}
+				ImGui::PopItemWidth();
+				ImGui::SameLine();
+				ShowHelpMark
+				(
+					"Gamma Correction\n"
+					"Floating-point pixel formats used for HDR images are often in linear space. Before being displayed\n"
+					"on a screen with non-linear response they need to be 'corrected' to gamma or sRGB-space (brightened).\n"
+					"\n"
+					"Use 'None' if you know the source image data is already in either gamma or sRGB-space.\n\n"
+					"Use 'Gamma' if you want control over the gamma exponent being used to do the correction. 2.2 is standard.\n\n"
+					"Use 'sRGB' if you want to convert to sRGB-space. This more accurately represents a display's response and\n"
+					"is close to a 2.2 gamma but with an extra linear region, a non-unity amplitude, and a slightly larger gamma.",
+					false
+				);
+
+				if (gammaMode == 1)
+				{
+					ImGui::PushItemWidth(110);
+					if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_KTX.Gamma, 0.01f, 0.1f, "%.3f"))
+						reloadChanges = true;
+					ImGui::PopItemWidth();
+					ImGui::SameLine();
+					ShowHelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
+					tMath::tiClamp(CurrImage->LoadParams_KTX.Gamma, 0.5f, 4.0f);
+				}
+
+				bool expEnabled = (CurrImage->LoadParams_KTX.Flags & tImageKTX::LoadFlag_ToneMapExposure);
+				ImGui::PushItemWidth(110);
+				if (ImGui::InputFloat("Exposure", &CurrImage->LoadParams_KTX.Exposure, 0.001f, 0.05f, "%.4f", expEnabled ? 0 : ImGuiInputTextFlags_ReadOnly))
+					reloadChanges = true;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+				ImGui::PopItemWidth();
+				ImGui::SameLine();
+				if (ImGui::CheckboxFlags("##ExposureEnabled", &CurrImage->LoadParams_KTX.Flags, tImageKTX::LoadFlag_ToneMapExposure))
+					reloadChanges = true;
+				ImGui::SameLine();
+				ShowHelpMark("Exposure adjustment [0.0, 4]. Hold Ctrl to speedup.");
+				tMath::tiClamp(CurrImage->LoadParams_KTX.Exposure, 0.0f, 4.0f);
+
+				propsDisplayed = true;
+			}
+
+			if (tIsLuminanceFormat(CurrImage->Info.SrcPixelFormat))
+			{
+				if (ImGui::CheckboxFlags("Spread Luminance", &CurrImage->LoadParams_KTX.Flags, tImageKTX::LoadFlag_SpreadLuminance))
+					reloadChanges = true;
+				ImGui::SameLine();
+				ShowHelpMark("Luminance-only dds files are represented in this viewer as having a red channel only,\nIf spread is true, the channel is spread to all RGB channels to create a grey-scale image.");
+			}
+
+			if ((numTextures >= 2) && !altEnabled)
+			{
+				ImGui::Checkbox("Scrubber", &Config::Current->ShowFrameScrubber);
+				propsDisplayed = true;
+			}
+
+			if (propsDisplayed)
+			{
+				ImGui::SameLine();
+				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 110.0f);
+				if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
+				{
+					CurrImage->ResetLoadParams();
+					CurrImage->FrameNum = 0;
+					reloadChanges = true;
+				}
+			}
+
+			if (reloadChanges)
+			{
+				CurrImage->Unload();
+				CurrImage->Load();
+				if (altEnabled)
+				{
+					CurrImage->EnableAltPicture(true);
+					CurrImage->Bind();
+				}
+			}
+
+			// Some KTX files have no available properties. No textures, no properties.
+			// Only one texture and not HDR and no alt images (no mipmaps or cubemap) -> no properties.
+			if (!propsDisplayed)
+				ImGui::Text("No Editable Image Properties Available");
+
+			ImGui::End();
+			return;
+		}
+
 		case tSystem::tFileType::HDR:
 		{
 			ImGui::Text("Radiance HDR");

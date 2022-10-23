@@ -68,6 +68,8 @@ namespace Viewer
 		tFileType::APNG,
 		tFileType::BMP,
 		tFileType::DDS,
+		tFileType::KTX,
+		tFileType::KTX2,
 		tFileType::EXR,
 		tFileType::GIF,
 		tFileType::HDR,

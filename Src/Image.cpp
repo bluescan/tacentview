@@ -105,6 +105,9 @@ void Image::ResetLoadParams()
 	LoadParams_DDS.Reset();
 	LoadParams_DDS.Gamma = Viewer::Config::Current->MonitorGamma;
 
+	LoadParams_KTX.Reset();
+	LoadParams_KTX.Gamma = Viewer::Config::Current->MonitorGamma;
+
 	LoadParams_EXR.Reset();
 	LoadParams_EXR.Gamma = Viewer::Config::Current->MonitorGamma;
 
@@ -425,6 +428,25 @@ bool Image::Load()
 				success = true;
 				break;
 			}
+
+			case tSystem::tFileType::KTX:
+			case tSystem::tFileType::KTX2:
+			{
+				tImageKTX ktx;
+				bool ok = ktx.Load(Filename, LoadParams_KTX);
+				if (!ok || !ktx.IsValid())
+					break;
+
+				// Appends to the Pictures list.
+				PopulatePicturesKTX(ktx);
+
+				// Creates any alt images for cubemap or mipmapped ktx files.
+				CreateAltPicturesKTX(ktx);
+
+				Info.SrcPixelFormat = ktx.GetPixelFormatSrc();
+				success = true;
+				break;
+			}
 		}
 	}
 	catch (tError error)
@@ -562,6 +584,137 @@ void Image::CreateAltPicturesDDS(const tImageDDS& dds)
 		AltPictureTyp = AltPictureType::CubemapTLayout;
 	}
 	else if (dds.IsMipmapped())
+	{
+		int width = 0;
+		for (tPicture* layer = Pictures.First(); layer; layer = layer->Next())
+			width += layer->GetWidth();
+		int height = GetHeight();
+
+		AltPicture.Set(width, height, tPixel::transparent);
+		int originY = 0;
+		int originX = 0;
+		for (tPicture* layer = Pictures.First(); layer; layer = layer->Next())
+		{
+			for (int y = 0; y < layer->GetHeight(); y++)
+			{
+				for (int x = 0; x < layer->GetWidth(); x++)
+				{
+					tPixel pixel = layer->GetPixel(x, y);
+					AltPicture.SetPixel(originX + x, y, pixel);
+				}
+			}
+			originX += layer->GetWidth();
+		}
+		AltPictureTyp = AltPictureType::MipmapSideBySide;
+	}
+}
+
+
+void Image::PopulatePicturesKTX(const tImageKTX& ktx)
+{
+	if (ktx.IsCubemap())
+	{
+		int w = ktx.GetWidth();
+		int h = ktx.GetHeight();
+
+		// We want the front (+Z) to be the first image.
+		const int numSides = tImageKTX::tSurfIndex_NumSurfaces;
+		int sideOrder[numSides] =
+		{
+			tImageKTX::tSurfIndex_PosZ,
+			tImageKTX::tSurfIndex_NegZ,
+			tImageKTX::tSurfIndex_PosX,
+			tImageKTX::tSurfIndex_NegX,
+			tImageKTX::tSurfIndex_PosY,
+			tImageKTX::tSurfIndex_NegY
+		};
+
+		tList<tLayer> layers[numSides];
+		ktx.GetCubemapLayers(layers);
+		for (int s = 0; s < int(tCubemap::tSide::NumSides); s++)
+		{
+			int side = sideOrder[s];
+
+			tLayer* topMip = layers[side].First();
+			tAssert(topMip->PixelFormat == tPixelFormat::R8G8B8A8);
+			Pictures.Append(new tPicture(w, h, (tPixel*)topMip->Data, true));
+
+			// Lets reset the list so it doesn't do anything bad when destructed.
+			layers[side].Reset();
+		}
+	}
+	else
+	{
+		int w = ktx.GetWidth();
+		int h = ktx.GetHeight();
+
+		tList<tLayer> layers;
+		ktx.GetLayers(layers);
+
+		int numMipmaps = layers.GetNumItems();
+		for (tLayer* layer = layers.First(); layer; layer = layer->Next())
+			Pictures.Append(new tPicture(layer->Width, layer->Height, (tPixel*)layer->Data, true));
+
+		layers.Reset();
+	}
+}
+
+
+void Image::CreateAltPicturesKTX(const tImageKTX& ktx)
+{
+	if (ktx.IsCubemap())
+	{
+		int width = Pictures.First()->GetWidth();
+		int height = Pictures.First()->GetHeight();
+
+		AltPicture.Set(width*4, height*3, tPixel::transparent);
+		int originX, originY;
+		
+		// PosZ
+		tPicture* pic = Pictures.First();
+		originX = width; originY = height;
+		for (int y = 0; y < pic->GetHeight(); y++)
+			for (int x = 0; x < pic->GetWidth(); x++)
+				AltPicture.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+
+		// NegZ
+		pic = pic->Next();
+		originX = 3*width; originY = height;
+		for (int y = 0; y < pic->GetHeight(); y++)
+			for (int x = 0; x < pic->GetWidth(); x++)
+				AltPicture.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+
+		// PosX
+		pic = pic->Next();
+		originX = 2*width; originY = height;
+		for (int y = 0; y < pic->GetHeight(); y++)
+			for (int x = 0; x < pic->GetWidth(); x++)
+				AltPicture.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+
+		// NegX
+		pic = pic->Next();
+		originX = 0; originY = height;
+		for (int y = 0; y < pic->GetHeight(); y++)
+			for (int x = 0; x < pic->GetWidth(); x++)
+				AltPicture.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+
+		// PosY
+		pic = pic->Next();
+		originX = width; originY = 2*height;
+		for (int y = 0; y < pic->GetHeight(); y++)
+			for (int x = 0; x < pic->GetWidth(); x++)
+				AltPicture.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+
+		// NegY
+		pic = pic->Next();
+		originX = width; originY = 0;
+		for (int y = 0; y < pic->GetHeight(); y++)
+			for (int x = 0; x < pic->GetWidth(); x++)
+				AltPicture.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+
+		AltPictureTyp = AltPictureType::CubemapTLayout;
+	}
+	else if (ktx.IsMipmapped())
 	{
 		int width = 0;
 		for (tPicture* layer = Pictures.First(); layer; layer = layer->Next())

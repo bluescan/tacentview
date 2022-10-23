@@ -22,7 +22,6 @@
 #include <Image/tPicture.h>
 #include <Image/tTexture.h>
 #include <Image/tCubemap.h>
-#include <Image/tImageHDR.h>
 #include <Image/tMetaData.h>
 #include "Config.h"
 #include "Undo.h"
@@ -42,6 +41,7 @@ public:
 
 	void ResetLoadParams();
 	tImage::tImageDDS::LoadParams LoadParams_DDS;
+	tImage::tImageKTX::LoadParams LoadParams_KTX;
 	tImage::tImageEXR::LoadParams LoadParams_EXR;
 	tImage::tImageHDR::LoadParams LoadParams_HDR;
 
@@ -208,8 +208,12 @@ private:
 
 	// Returns the approx main mem size of this image. Considers the Pictures list and the AltPicture.
 	int GetMemSizeBytes() const;
+
+	// @todo Combine the KTX and DDS calls.
 	void PopulatePicturesDDS(const tImage::tImageDDS&);
 	void CreateAltPicturesDDS(const tImage::tImageDDS&);
+	void PopulatePicturesKTX(const tImage::tImageKTX&);
+	void CreateAltPicturesKTX(const tImage::tImageKTX&);
 
 	void GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFormat, bool& compressed, tImage::tPixelFormat);
 	void BindLayers(const tList<tImage::tLayer>&, uint texID);
@@ -230,7 +234,10 @@ inline bool Image::TypeSupportsProperties() const
 	return
 	(
 		(Filetype == tSystem::tFileType::HDR) ||
-		(Filetype == tSystem::tFileType::EXR)
+		(Filetype == tSystem::tFileType::EXR) ||
+		(Filetype == tSystem::tFileType::DDS) ||
+		(Filetype == tSystem::tFileType::KTX) ||
+		(Filetype == tSystem::tFileType::KTX2)
 	);
 }
 
