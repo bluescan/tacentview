@@ -123,15 +123,23 @@ Then a deb file with all required content will be generated.
 
 This project relies on myriad 3rd-party libraries. In the Data folder you will find their licences. Some of the more notable dependencies are listed here:
 * Dear ImGui
-* Gif Load
+* GLAD
+* GLFW
 * Ico Load
 * Ion Icons
-* LibJPeg-Turbo
-* OpenEXR
 * Roboto Font
-* WebP Reference Library
+* LibJPeg-Turbo
 * LibTIFF
+* OpenEXR
 * ZLib
+* GIF Load
+* GIF Save
+* WebP Reference Library
+* LibPNG
+* LibKTX
+* APNGDis and APNGAsm
+* TinyXML2
+* TinyEXIF
 * BCDec from iOrange
 * This software is based in part on the work of the Independent JPEG Group.
 * This software includes [Radiance software](http://radsite.lbl.gov/) developed by the [Lawrence Berkeley National Laboratory](http://www.lbl.gov/).
@@ -145,3 +153,4 @@ Various development tools available for open source projects bear mentioning:
 * Github
 * Git and the SmartGit Client
 * OpenGL, GLAD, and GLFW
+* NVidia Texture Tools Exporter
