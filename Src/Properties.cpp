@@ -21,6 +21,86 @@ using namespace tMath;
 using namespace tImage;
 
 
+namespace Viewer
+{
+	// These return true if any UI was drawn.
+	bool DoAltMipmapsDisplay(tString& texTypeName);
+	bool DoAltCubemapDisplay(tString& texTypeName);
+	bool DoChooseDisplayImage(tString& texTypeName);
+}
+
+
+bool Viewer::DoAltMipmapsDisplay(tString& texTypeName)
+{
+	bool altMipmapsPicAvail = CurrImage->IsAltMipmapsPictureAvail() && !CropMode;
+	bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
+	bool anyDraw = false;
+
+	if (altMipmapsPicAvail)
+	{
+		if (ImGui::Checkbox("Display All Mipmaps", &altMipmapsPicEnabl))
+		{
+			CurrImage->EnableAltPicture(altMipmapsPicEnabl);
+			CurrImage->Bind();
+		}
+		ShowToolTip("Display all mipmaps in a single image.");
+		texTypeName = "Mipmap";
+		anyDraw = true;
+	}
+
+	return anyDraw;
+}
+
+
+bool Viewer::DoAltCubemapDisplay(tString& texTypeName)
+{
+	bool altCubemapPicAvail = CurrImage->IsAltCubemapPictureAvail() && !CropMode;
+	bool altCubemapPicEnabl = altCubemapPicAvail && CurrImage->IsAltPictureEnabled();
+	bool anyDraw = false;
+
+	if (altCubemapPicAvail)
+	{
+		if (ImGui::Checkbox("Display As Cubemap", &altCubemapPicEnabl))
+		{
+			CurrImage->EnableAltPicture(altCubemapPicEnabl);
+			CurrImage->Bind();
+		}
+		ShowToolTip("Display all cubemap sides in a T-layout.");
+		texTypeName = "Cubemap Side";
+		anyDraw = true;
+	}
+
+	return anyDraw;
+}
+
+
+bool Viewer::DoChooseDisplayImage(tString& texTypeName)
+{
+	bool anyDraw = false;
+	int numTextures = CurrImage->GetNumFrames();
+	if (numTextures >= 2)
+	{
+		if (!CurrImage->IsAltPictureEnabled())
+		{
+			tString imageNumText;
+			tsPrintf(imageNumText, "%s (%d)", texTypeName.Chr(), numTextures);
+
+			int oneBasedTextureNum = CurrImage->FrameNum + 1;
+			ImGui::PushItemWidth(110);
+			if (ImGui::InputInt(imageNumText.Chr(), &oneBasedTextureNum))
+			{
+				CurrImage->FrameNum = oneBasedTextureNum - 1;
+				tMath::tiClamp(CurrImage->FrameNum, 0, numTextures-1);
+			}
+			ImGui::PopItemWidth();
+			ImGui::SameLine(); ShowHelpMark("Which mipmap or cubemap side to display.\nCubemap sides left-handed +X,-X,+Y,-Y,+Z,-Z");
+
+		}
+	}
+	return anyDraw;
+}
+
+
 void Viewer::ShowPropertiesWindow(bool* popen)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize; // | ImGuiWindowFlags_NoFocusOnAppearing;
@@ -49,59 +129,14 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 	{
 		case tSystem::tFileType::DDS:
 		{
-			bool propsDisplayed = false;
+			bool anyUIDisplayed = false;
 			int numTextures = CurrImage->GetNumFrames();
-			bool altMipmapsPicAvail = CurrImage->IsAltMipmapsPictureAvail() && !CropMode;
-			bool altCubemapPicAvail = CurrImage->IsAltCubemapPictureAvail() && !CropMode;
 			bool reloadChanges = false;
 
-			bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
-			if (altMipmapsPicAvail)
-			{
-				if (ImGui::Checkbox("Display All Mipmaps", &altMipmapsPicEnabl))
-				{
-					CurrImage->EnableAltPicture(altMipmapsPicEnabl);
-					CurrImage->Bind();
-				}
-				ShowToolTip("Display all mipmaps in a single image.");
-			}
-
-			bool altCubemapPicEnabl = altCubemapPicAvail && CurrImage->IsAltPictureEnabled();
-			if (altCubemapPicAvail)
-			{
-				if (ImGui::Checkbox("Display As Cubemap", &altCubemapPicEnabl))
-				{
-					CurrImage->EnableAltPicture(altCubemapPicEnabl);
-					CurrImage->Bind();
-				}
-				ShowToolTip("Display all cubemap sides in a T-layout.");
-			}
-
-			if (numTextures >= 2)
-			{
-				tString texName = "Texture";
-				if (altMipmapsPicAvail)
-					texName = "Mipmap";
-				else if (altCubemapPicAvail)
-					texName = "Cubemap Side";
-
-				if (!CurrImage->IsAltPictureEnabled())
-				{
-					tString imageNumText;
-					tsPrintf(imageNumText, "%s (%d)", texName.Chr(), numTextures);
-
-					int oneBasedTextureNum = CurrImage->FrameNum + 1;
-					ImGui::PushItemWidth(110);
-					if (ImGui::InputInt(imageNumText.Chr(), &oneBasedTextureNum))
-					{
-						CurrImage->FrameNum = oneBasedTextureNum - 1;
-						tMath::tiClamp(CurrImage->FrameNum, 0, numTextures-1);
-					}
-					ImGui::PopItemWidth();
-					ImGui::SameLine(); ShowHelpMark("Which mipmap or cubemap side to display.\nCubemap sides left-handed +X,-X,+Y,-Y,+Z,-Z");
-				}
-				propsDisplayed = true;
-			}
+			tString texTypeName = "Texture";
+			anyUIDisplayed |= DoAltMipmapsDisplay(texTypeName);
+			anyUIDisplayed |= DoAltCubemapDisplay(texTypeName);
+			anyUIDisplayed |= DoChooseDisplayImage(texTypeName);
 
 			// If we're here show options when have 1 or more frames.
 			bool altEnabled = CurrImage->IsAltPictureEnabled();
@@ -161,7 +196,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				ShowHelpMark("Exposure adjustment [0.0, 4]. Hold Ctrl to speedup.");
 				tMath::tiClamp(CurrImage->LoadParams_DDS.Exposure, 0.0f, 4.0f);
 
-				propsDisplayed = true;
+				anyUIDisplayed = true;
 			}
 
 			if (tIsLuminanceFormat(CurrImage->Info.SrcPixelFormat))
@@ -175,10 +210,10 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			if ((numTextures >= 2) && !altEnabled)
 			{
 				ImGui::Checkbox("Scrubber", &Config::Current->ShowFrameScrubber);
-				propsDisplayed = true;
+				anyUIDisplayed = true;
 			}
 
-			if (propsDisplayed)
+			if (anyUIDisplayed)
 			{
 				ImGui::SameLine();
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 110.0f);
@@ -203,7 +238,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 
 			// Some DDS files have no available properties. No textures, no properties.
 			// Only one texture and not HDR and no alt images (no mipmaps or cubemap) -> no properties.
-			if (!propsDisplayed)
+			if (!anyUIDisplayed)
 				ImGui::Text("No Editable Image Properties Available");
 
 			ImGui::End();
@@ -213,59 +248,14 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		case tSystem::tFileType::KTX:
 		case tSystem::tFileType::KTX2:
 		{
-			bool propsDisplayed = false;
+			bool anyUIDisplayed = false;
 			int numTextures = CurrImage->GetNumFrames();
-			bool altMipmapsPicAvail = CurrImage->IsAltMipmapsPictureAvail() && !CropMode;
-			bool altCubemapPicAvail = CurrImage->IsAltCubemapPictureAvail() && !CropMode;
 			bool reloadChanges = false;
 
-			bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
-			if (altMipmapsPicAvail)
-			{
-				if (ImGui::Checkbox("Display All Mipmaps", &altMipmapsPicEnabl))
-				{
-					CurrImage->EnableAltPicture(altMipmapsPicEnabl);
-					CurrImage->Bind();
-				}
-				ShowToolTip("Display all mipmaps in a single image.");
-			}
-
-			bool altCubemapPicEnabl = altCubemapPicAvail && CurrImage->IsAltPictureEnabled();
-			if (altCubemapPicAvail)
-			{
-				if (ImGui::Checkbox("Display As Cubemap", &altCubemapPicEnabl))
-				{
-					CurrImage->EnableAltPicture(altCubemapPicEnabl);
-					CurrImage->Bind();
-				}
-				ShowToolTip("Display all cubemap sides in a T-layout.");
-			}
-
-			if (numTextures >= 2)
-			{
-				tString texName = "Texture";
-				if (altMipmapsPicAvail)
-					texName = "Mipmap";
-				else if (altCubemapPicAvail)
-					texName = "Cubemap Side";
-
-				if (!CurrImage->IsAltPictureEnabled())
-				{
-					tString imageNumText;
-					tsPrintf(imageNumText, "%s (%d)", texName.Chr(), numTextures);
-
-					int oneBasedTextureNum = CurrImage->FrameNum + 1;
-					ImGui::PushItemWidth(110);
-					if (ImGui::InputInt(imageNumText.Chr(), &oneBasedTextureNum))
-					{
-						CurrImage->FrameNum = oneBasedTextureNum - 1;
-						tMath::tiClamp(CurrImage->FrameNum, 0, numTextures-1);
-					}
-					ImGui::PopItemWidth();
-					ImGui::SameLine(); ShowHelpMark("Which mipmap or cubemap side to display.\nCubemap sides left-handed +X,-X,+Y,-Y,+Z,-Z");
-				}
-				propsDisplayed = true;
-			}
+			tString texTypeName = "Texture";
+			anyUIDisplayed |= DoAltMipmapsDisplay(texTypeName);
+			anyUIDisplayed |= DoAltCubemapDisplay(texTypeName);
+			anyUIDisplayed |= DoChooseDisplayImage(texTypeName);
 
 			// If we're here show options when have 1 or more frames.
 			bool altEnabled = CurrImage->IsAltPictureEnabled();
@@ -325,7 +315,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				ShowHelpMark("Exposure adjustment [0.0, 4]. Hold Ctrl to speedup.");
 				tMath::tiClamp(CurrImage->LoadParams_KTX.Exposure, 0.0f, 4.0f);
 
-				propsDisplayed = true;
+				anyUIDisplayed = true;
 			}
 
 			if (tIsLuminanceFormat(CurrImage->Info.SrcPixelFormat))
@@ -339,10 +329,10 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			if ((numTextures >= 2) && !altEnabled)
 			{
 				ImGui::Checkbox("Scrubber", &Config::Current->ShowFrameScrubber);
-				propsDisplayed = true;
+				anyUIDisplayed = true;
 			}
 
-			if (propsDisplayed)
+			if (anyUIDisplayed)
 			{
 				ImGui::SameLine();
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 110.0f);
@@ -367,7 +357,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 
 			// Some KTX files have no available properties. No textures, no properties.
 			// Only one texture and not HDR and no alt images (no mipmaps or cubemap) -> no properties.
-			if (!propsDisplayed)
+			if (!anyUIDisplayed)
 				ImGui::Text("No Editable Image Properties Available");
 
 			ImGui::End();
