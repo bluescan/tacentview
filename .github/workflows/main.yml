@@ -21,7 +21,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it.
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     # Build using CMake
     # NMake generator really slow. Lacks parallel build.
@@ -43,7 +43,7 @@ jobs:
   Ubuntu_CM_NI_CL:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: seanmiddleditch/gha-setup-ninja@master
     - name: Build Ubuntu CMake Ninja Clang
       run: |
