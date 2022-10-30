@@ -207,15 +207,18 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				ShowHelpMark("Luminance-only dds files are represented in this viewer as having a red channel only,\nIf spread is true, the channel is spread to all RGB channels to create a grey-scale image.");
 			}
 
+			bool scrubberDisplayed = false;
 			if ((numTextures >= 2) && !altEnabled)
 			{
 				ImGui::Checkbox("Scrubber", &Config::Current->ShowFrameScrubber);
 				anyUIDisplayed = true;
+				scrubberDisplayed = true;
 			}
 
 			if (anyUIDisplayed)
 			{
-				ImGui::SameLine();
+				if (scrubberDisplayed)
+					ImGui::SameLine();
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 110.0f);
 				if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
 				{
@@ -326,15 +329,18 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				ShowHelpMark("Luminance-only dds files are represented in this viewer as having a red channel only,\nIf spread is true, the channel is spread to all RGB channels to create a grey-scale image.");
 			}
 
+			bool scrubberDisplayed = false;
 			if ((numTextures >= 2) && !altEnabled)
 			{
 				ImGui::Checkbox("Scrubber", &Config::Current->ShowFrameScrubber);
 				anyUIDisplayed = true;
+				scrubberDisplayed = true;
 			}
 
 			if (anyUIDisplayed)
 			{
-				ImGui::SameLine();
+				if (scrubberDisplayed)
+					ImGui::SameLine();
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 110.0f);
 				if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
 				{

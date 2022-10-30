@@ -6,5 +6,5 @@ Architecture: amd64
 Depends: libc6, libstdc++6, libgcc1
 Maintainer: bluescan@users.noreply.github.com
 Description: Tacent View
- An image and texture viewer for tga, png, apng, exr, dds, ktx2, gif, hdr, jpg, tiff, ico, webp, and bmp files.
+ An image and texture viewer for tga, png, apng, exr, dds, ktx, ktx2, gif, hdr, jpg, tiff, ico, webp, and bmp files.
  This program is licensed under the ISC licence.
