@@ -27,7 +27,7 @@ jobs:
     # NMake generator really slow. Lacks parallel build.
     # Ninja and 'Visual Studio 17 2022' both slow compared to Ubuntu build.
     # msvc-dev-cmd needed so old gnu compiler not used. Want latest msvc on windows.
-    - uses: ilammy/msvc-dev-cmd@v1.10.0
+    - uses: ilammy/msvc-dev-cmd@v1
     - name: Build Windows CMake Ninja MSVC
       run: |
         echo '*** CMake Configure ***'
