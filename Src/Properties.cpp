@@ -361,8 +361,8 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				}
 			}
 
-			// Some KTX files have no available properties. No textures, no properties.
-			// Only one texture and not HDR and no alt images (no mipmaps or cubemap) -> no properties.
+			// Some KTX/KTX2 files have no available properties. No textures, no properties.
+			// If only one texture and not HDR and no alt images (no mipmaps or cubemap) -> no properties.
 			if (!anyUIDisplayed)
 				ImGui::Text("No Editable Image Properties Available");
 
