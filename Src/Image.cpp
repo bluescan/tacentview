@@ -158,7 +158,7 @@ bool Image::Load()
 	if ((Filetype == tSystem::tFileType::PNG) && Config::Current->DetectAPNGInsidePNG && tImageAPNG::IsAnimatedPNG(Filename))
 		loadingFiletype = tSystem::tFileType::APNG;
 
-	Info.SrcPixelFormatt = tPixelFormat::Invalid;
+	Info.SrcPixelFormat = tPixelFormat::Invalid;
 	Info.SrcColourSpace = tColourSpace::Unspecified;
 	bool success = false;
 
@@ -188,7 +188,7 @@ bool Image::Load()
 					delete frame;
 					Pictures.Append(picture);
 				}
-				Info.SrcPixelFormatt = apng.SrcPixelFormat;
+				Info.SrcPixelFormat = apng.SrcPixelFormat;
 				success = true;
 				break;
 			}
@@ -204,7 +204,7 @@ bool Image::Load()
 				int height = bmp.GetHeight();
 				tPixel* pixels = bmp.StealPixels();
 
-				Info.SrcPixelFormatt = bmp.SrcPixelFormat;
+				Info.SrcPixelFormat = bmp.SrcPixelFormat;
 				tPicture* picture = new tPicture(width, height, pixels, false);
 				Pictures.Append(picture);
 				success = true;
@@ -231,7 +231,7 @@ bool Image::Load()
 					delete frame;
 					Pictures.Append(picture);
 				}
-				Info.SrcPixelFormatt = exr.SrcPixelFormat;
+				Info.SrcPixelFormat = exr.SrcPixelFormat;
 				success = true;
 				break;
 			}
@@ -256,7 +256,7 @@ bool Image::Load()
 					delete frame;
 					Pictures.Append(picture);
 				}
-				Info.SrcPixelFormatt = gif.SrcPixelFormat;
+				Info.SrcPixelFormat = gif.SrcPixelFormat;
 				success = true;
 				break;
 			}
@@ -272,7 +272,7 @@ bool Image::Load()
 				int height = hdr.GetHeight();
 				tPixel* pixels = hdr.StealPixels();
 
-				Info.SrcPixelFormatt = hdr.SrcPixelFormat;
+				Info.SrcPixelFormat = hdr.SrcPixelFormat;
 				Info.SrcColourSpace = tColourSpace::lRGB;
 				tPicture* picture = new tPicture(width, height, pixels, false);
 				Pictures.Append(picture);
@@ -287,7 +287,7 @@ bool Image::Load()
 				if (!ok)
 					break;
 
-				Info.SrcPixelFormatt = ico.GetBestSrcPixelFormat();
+				Info.SrcPixelFormat = ico.GetBestSrcPixelFormat();
 				int numFrames = ico.GetNumFrames();
 				for (int p = 0; p < numFrames; p++)
 				{
@@ -319,7 +319,7 @@ bool Image::Load()
 				int height = jpg.GetHeight();
 				tPixel* pixels = jpg.StealPixels();
 
-				Info.SrcPixelFormatt = jpg.SrcPixelFormat;
+				Info.SrcPixelFormat = jpg.SrcPixelFormat;
 				tPicture* picture = new tPicture(width, height, pixels, false);
 				Pictures.Append(picture);
 
@@ -339,7 +339,7 @@ bool Image::Load()
 				int height = png.GetHeight();
 				tPixel* pixels = png.StealPixels();
 
-				Info.SrcPixelFormatt = png.SrcPixelFormat;
+				Info.SrcPixelFormat = png.SrcPixelFormat;
 				tPicture* picture = new tPicture(width, height, pixels, false);
 				Pictures.Append(picture);
 				success = true;
@@ -357,7 +357,7 @@ bool Image::Load()
 				int height = tga.GetHeight();
 				tPixel* pixels = tga.StealPixels();
 
-				Info.SrcPixelFormatt = tga.SrcPixelFormat;
+				Info.SrcPixelFormat = tga.SrcPixelFormat;
 				tPicture* picture = new tPicture(width, height, pixels, false);
 				Pictures.Append(picture);
 				success = true;
@@ -383,7 +383,7 @@ bool Image::Load()
 					delete frame;
 					Pictures.Append(picture);
 				}
-				Info.SrcPixelFormatt = tiff.SrcPixelFormat;
+				Info.SrcPixelFormat = tiff.SrcPixelFormat;
 				success = true;
 				break;
 			}
@@ -408,7 +408,7 @@ bool Image::Load()
 					delete frame;
 					Pictures.Append(picture);
 				}
-				Info.SrcPixelFormatt = webp.SrcPixelFormat;
+				Info.SrcPixelFormat = webp.SrcPixelFormat;
 				success = true;
 				break;
 			}
@@ -426,7 +426,7 @@ bool Image::Load()
 				// Creates any alt images for cubemap or mipmapped dds files.
 				CreateAltPicturesDDS(dds);
 
-				Info.SrcPixelFormatt = dds.GetPixelFormatSrc();
+				Info.SrcPixelFormat = dds.GetPixelFormatSrc();
 				success = true;
 				break;
 			}
@@ -445,8 +445,8 @@ bool Image::Load()
 				// Creates any alt images for cubemap or mipmapped ktx files.
 				CreateAltPicturesKTX(ktx);
 
-				Info.SrcPixelFormatt = ktx.GetPixelFormatSrc();
-				Info.SrcColourSpace = ktx.GetColourSpace();
+				Info.SrcPixelFormat = ktx.GetPixelFormatSrc();
+				Info.SrcColourSpace = ktx.GetColourSpaceSrc();
 				success = true;
 				break;
 			}

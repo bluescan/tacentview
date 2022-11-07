@@ -108,8 +108,8 @@ public:
 
 	struct ImgInfo
 	{
-		bool IsValid() const							{ return (SrcPixelFormatt != tImage::tPixelFormat::Invalid); }
-		tImage::tPixelFormat SrcPixelFormatt			= tImage::tPixelFormat::Invalid;
+		bool IsValid() const							{ return (SrcPixelFormat != tImage::tPixelFormat::Invalid); }
+		tImage::tPixelFormat SrcPixelFormat				= tImage::tPixelFormat::Invalid;
 		tColourSpace SrcColourSpace						= tColourSpace::Unspecified;
 		bool Opaque										= false;
 		int FileSizeBytes								= 0;

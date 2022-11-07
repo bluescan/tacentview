@@ -140,7 +140,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 
 			// If we're here show options when have 1 or more frames.
 			bool altEnabled = CurrImage->IsAltPictureEnabled();
-			if (tSupportsHDR(CurrImage->Info.SrcPixelFormatt))
+			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat))
 			{
 				// Gamma correction. First read current setting and put it in an int.
 				int gammaMode = 0;
@@ -199,7 +199,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				anyUIDisplayed = true;
 			}
 
-			if (tIsLuminanceFormat(CurrImage->Info.SrcPixelFormatt))
+			if (tIsLuminanceFormat(CurrImage->Info.SrcPixelFormat))
 			{
 				if (ImGui::CheckboxFlags("Spread Luminance", &CurrImage->LoadParams_DDS.Flags, tImageDDS::LoadFlag_SpreadLuminance))
 					reloadChanges = true;
@@ -262,7 +262,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 
 			// If we're here show options when have 1 or more frames.
 			bool altEnabled = CurrImage->IsAltPictureEnabled();
-			if (tSupportsHDR(CurrImage->Info.SrcPixelFormat) || )
+			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || tIsASTCFormat(CurrImage->Info.SrcPixelFormat))
 			{
 				// Gamma correction. First read current setting and put it in an int.
 				int gammaMode = 0;
@@ -305,7 +305,11 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 					ShowHelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
 					tMath::tiClamp(CurrImage->LoadParams_KTX.Gamma, 0.5f, 4.0f);
 				}
+				anyUIDisplayed = true;
+			}
 
+			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || (CurrImage->Info.SrcColourSpace == tColourSpace::Linear))
+			{
 				bool expEnabled = (CurrImage->LoadParams_KTX.Flags & tImageKTX::LoadFlag_ToneMapExposure);
 				ImGui::PushItemWidth(110);
 				if (ImGui::InputFloat("Exposure", &CurrImage->LoadParams_KTX.Exposure, 0.001f, 0.05f, "%.4f", expEnabled ? 0 : ImGuiInputTextFlags_ReadOnly))
