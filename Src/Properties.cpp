@@ -140,7 +140,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 
 			// If we're here show options when have 1 or more frames.
 			bool altEnabled = CurrImage->IsAltPictureEnabled();
-			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat))
+			if (tSupportsHDR(CurrImage->Info.SrcPixelFormatt))
 			{
 				// Gamma correction. First read current setting and put it in an int.
 				int gammaMode = 0;
@@ -199,7 +199,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				anyUIDisplayed = true;
 			}
 
-			if (tIsLuminanceFormat(CurrImage->Info.SrcPixelFormat))
+			if (tIsLuminanceFormat(CurrImage->Info.SrcPixelFormatt))
 			{
 				if (ImGui::CheckboxFlags("Spread Luminance", &CurrImage->LoadParams_DDS.Flags, tImageDDS::LoadFlag_SpreadLuminance))
 					reloadChanges = true;
@@ -262,7 +262,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 
 			// If we're here show options when have 1 or more frames.
 			bool altEnabled = CurrImage->IsAltPictureEnabled();
-			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat))
+			if (tSupportsHDR(CurrImage->Info.SrcPixelFormat) || )
 			{
 				// Gamma correction. First read current setting and put it in an int.
 				int gammaMode = 0;

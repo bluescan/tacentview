@@ -158,7 +158,8 @@ bool Image::Load()
 	if ((Filetype == tSystem::tFileType::PNG) && Config::Current->DetectAPNGInsidePNG && tImageAPNG::IsAnimatedPNG(Filename))
 		loadingFiletype = tSystem::tFileType::APNG;
 
-	Info.SrcPixelFormat = tPixelFormat::Invalid;
+	Info.SrcPixelFormatt = tPixelFormat::Invalid;
+	Info.SrcColourSpace = tColourSpace::Unspecified;
 	bool success = false;
 
 	// @todo We 'probably' no longer need this try as the default behaviour for the image loaders
@@ -187,7 +188,7 @@ bool Image::Load()
 					delete frame;
 					Pictures.Append(picture);
 				}
-				Info.SrcPixelFormat = apng.SrcPixelFormat;
+				Info.SrcPixelFormatt = apng.SrcPixelFormat;
 				success = true;
 				break;
 			}
@@ -203,7 +204,7 @@ bool Image::Load()
 				int height = bmp.GetHeight();
 				tPixel* pixels = bmp.StealPixels();
 
-				Info.SrcPixelFormat = bmp.SrcPixelFormat;
+				Info.SrcPixelFormatt = bmp.SrcPixelFormat;
 				tPicture* picture = new tPicture(width, height, pixels, false);
 				Pictures.Append(picture);
 				success = true;
@@ -230,7 +231,7 @@ bool Image::Load()
 					delete frame;
 					Pictures.Append(picture);
 				}
-				Info.SrcPixelFormat = exr.SrcPixelFormat;
+				Info.SrcPixelFormatt = exr.SrcPixelFormat;
 				success = true;
 				break;
 			}
@@ -255,7 +256,7 @@ bool Image::Load()
 					delete frame;
 					Pictures.Append(picture);
 				}
-				Info.SrcPixelFormat = gif.SrcPixelFormat;
+				Info.SrcPixelFormatt = gif.SrcPixelFormat;
 				success = true;
 				break;
 			}
@@ -271,7 +272,8 @@ bool Image::Load()
 				int height = hdr.GetHeight();
 				tPixel* pixels = hdr.StealPixels();
 
-				Info.SrcPixelFormat = hdr.SrcPixelFormat;
+				Info.SrcPixelFormatt = hdr.SrcPixelFormat;
+				Info.SrcColourSpace = tColourSpace::lRGB;
 				tPicture* picture = new tPicture(width, height, pixels, false);
 				Pictures.Append(picture);
 				success = true;
@@ -285,7 +287,7 @@ bool Image::Load()
 				if (!ok)
 					break;
 
-				Info.SrcPixelFormat = ico.GetBestSrcPixelFormat();
+				Info.SrcPixelFormatt = ico.GetBestSrcPixelFormat();
 				int numFrames = ico.GetNumFrames();
 				for (int p = 0; p < numFrames; p++)
 				{
@@ -317,7 +319,7 @@ bool Image::Load()
 				int height = jpg.GetHeight();
 				tPixel* pixels = jpg.StealPixels();
 
-				Info.SrcPixelFormat = jpg.SrcPixelFormat;
+				Info.SrcPixelFormatt = jpg.SrcPixelFormat;
 				tPicture* picture = new tPicture(width, height, pixels, false);
 				Pictures.Append(picture);
 
@@ -337,7 +339,7 @@ bool Image::Load()
 				int height = png.GetHeight();
 				tPixel* pixels = png.StealPixels();
 
-				Info.SrcPixelFormat = png.SrcPixelFormat;
+				Info.SrcPixelFormatt = png.SrcPixelFormat;
 				tPicture* picture = new tPicture(width, height, pixels, false);
 				Pictures.Append(picture);
 				success = true;
@@ -355,7 +357,7 @@ bool Image::Load()
 				int height = tga.GetHeight();
 				tPixel* pixels = tga.StealPixels();
 
-				Info.SrcPixelFormat = tga.SrcPixelFormat;
+				Info.SrcPixelFormatt = tga.SrcPixelFormat;
 				tPicture* picture = new tPicture(width, height, pixels, false);
 				Pictures.Append(picture);
 				success = true;
@@ -381,7 +383,7 @@ bool Image::Load()
 					delete frame;
 					Pictures.Append(picture);
 				}
-				Info.SrcPixelFormat = tiff.SrcPixelFormat;
+				Info.SrcPixelFormatt = tiff.SrcPixelFormat;
 				success = true;
 				break;
 			}
@@ -406,7 +408,7 @@ bool Image::Load()
 					delete frame;
 					Pictures.Append(picture);
 				}
-				Info.SrcPixelFormat = webp.SrcPixelFormat;
+				Info.SrcPixelFormatt = webp.SrcPixelFormat;
 				success = true;
 				break;
 			}
@@ -424,7 +426,7 @@ bool Image::Load()
 				// Creates any alt images for cubemap or mipmapped dds files.
 				CreateAltPicturesDDS(dds);
 
-				Info.SrcPixelFormat = dds.GetPixelFormatSrc();
+				Info.SrcPixelFormatt = dds.GetPixelFormatSrc();
 				success = true;
 				break;
 			}
@@ -443,7 +445,8 @@ bool Image::Load()
 				// Creates any alt images for cubemap or mipmapped ktx files.
 				CreateAltPicturesKTX(ktx);
 
-				Info.SrcPixelFormat = ktx.GetPixelFormatSrc();
+				Info.SrcPixelFormatt = ktx.GetPixelFormatSrc();
+				Info.SrcColourSpace = ktx.GetColourSpace();
 				success = true;
 				break;
 			}

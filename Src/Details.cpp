@@ -65,11 +65,11 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 			ImGui::SameLine(); ImGui::Text("(%d, %d, %d, %d)", PixelColour.R, PixelColour.G, PixelColour.B, PixelColour.A);
 
 			Image::ImgInfo& info = CurrImage->Info;
-			int bpp = tImage::tGetBitsPerPixel(info.SrcPixelFormat);
+			int bpp = tImage::tGetBitsPerPixel(info.SrcPixelFormatt);
 			if (info.IsValid())
 			{
 				ImGui::Text("Size: %dx%d", CurrImage->GetWidth(), CurrImage->GetHeight());
-				ImGui::Text("Format: %s", tImage::tGetPixelFormatName(info.SrcPixelFormat));
+				ImGui::Text("Format: %s", tImage::tGetPixelFormatName(info.SrcPixelFormatt));
 				if (bpp > 0)
 					ImGui::Text("Bits Per Pixel: %d", bpp);
 				else
