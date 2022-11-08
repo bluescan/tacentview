@@ -1435,9 +1435,14 @@ void Image::UpdatePlaying(float dt)
 				}
 			}
 		}
-		if (FrameDurationPreviewEnabled)
-			FrameCurrCountdown = FrameDurationPreview;
-		else
-			FrameCurrCountdown = GetCurrentPic()->Duration;
+
+		// Thanks to GitHub user Frousties for noticing animations were playing too slowly in Tacent View. The issue was
+		// we weren't taking into account how much below zero we went when we detected the time was up -- the remainder.
+		// The code below subtracts the remainder after clamping to deal with the case that the frameDuration is set
+		// too low.
+		float remainder = -FrameCurrCountdown;
+		float frameDuration = FrameDurationPreviewEnabled ? FrameDurationPreview : GetCurrentPic()->Duration;
+		tMath::tiClampMin(frameDuration, remainder);
+		FrameCurrCountdown = frameDuration - remainder;
 	}
 }

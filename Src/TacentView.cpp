@@ -3136,7 +3136,9 @@ int main(int argc, char** argv)
 	while (!glfwWindowShouldClose(Viewer::Window) && !Viewer::Request_Quit)
 	{
 		double currUpdateTime = glfwGetTime();
-		Viewer::Update(Viewer::Window, currUpdateTime - lastUpdateTime);
+
+		double elapsed = tMath::tMin(currUpdateTime - lastUpdateTime, 1.0/30.0);
+		Viewer::Update(Viewer::Window, elapsed);
 
 		// Modal dialogs only seem to work after the first Update. May be a ImGui bug?
 		if (requestSnapMessageNoTrans)

@@ -332,8 +332,10 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 
 		case tFileType::WEBP:
 			ImGui::Checkbox("Lossy", &Config::Current->SaveFileWebpLossy);
+			ImGui::SetNextItemWidth(166);
 			ImGui::SliderFloat("Quality / Compression", &Config::Current->SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
 			ImGui::SameLine(); ShowToolTip("Image quality percent if lossy. Image compression strength if not lossy"); ImGui::NewLine();
+			ImGui::SetNextItemWidth(166);
 			ImGui::SliderInt("Duration Override", &Config::Current->SaveFileWebpDurOverride, -1, 10000, "%d");
 			ImGui::SameLine(); ShowToolTip("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
 			if (ImGui::Button("1.0s"))  Config::Current->SaveFileWebpDurOverride = 1000; ImGui::SameLine();
@@ -343,6 +345,7 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			break;
 
 		case tFileType::GIF:
+			ImGui::SetNextItemWidth(166);
 			ImGui::SliderInt("Duration Override", &Config::Current->SaveFileGifDurOverride, -1, 1000, "%d");
 			ImGui::SameLine(); ShowToolTip("In 1/100 seconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
 			if (ImGui::Button("1.0s"))  Config::Current->SaveFileGifDurOverride = 100; ImGui::SameLine();
@@ -352,6 +355,7 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			break;
 
 		case tFileType::APNG:
+			ImGui::SetNextItemWidth(166);
 			ImGui::SliderInt("Duration Override", &Config::Current->SaveFileApngDurOverride, -1, 10000, "%d");
 			ImGui::SameLine(); ShowToolTip("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
 			if (ImGui::Button("1.0s"))  Config::Current->SaveFileApngDurOverride = 1000; ImGui::SameLine();
@@ -361,6 +365,7 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			break;
 
 		case tFileType::TIFF:
+			ImGui::SetNextItemWidth(166);
 			ImGui::SliderInt("Duration Override", &Config::Current->SaveFileTiffDurOverride, -1, 10000, "%d");
 			ImGui::SameLine(); ShowToolTip("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
 			if (ImGui::Button("1.0s"))  Config::Current->SaveFileTiffDurOverride = 1000; ImGui::SameLine();
