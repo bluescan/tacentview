@@ -140,7 +140,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 
 			// If we're here show options when have 1 or more frames.
 			bool altEnabled = CurrImage->IsAltPictureEnabled();
-			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat))
+			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || tIsASTCFormat(CurrImage->Info.SrcPixelFormat))
 			{
 				// Gamma correction. First read current setting and put it in an int.
 				int gammaMode = 0;
@@ -148,14 +148,17 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 					gammaMode = 1;
 				if (CurrImage->LoadParams_DDS.Flags & tImageDDS::LoadFlag_SRGBCompression)
 					gammaMode = 2;
+				if (CurrImage->LoadParams_DDS.Flags & tImageDDS::LoadFlag_AutoGamma)
+					gammaMode = 3;
 
-				const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB" };
+				const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB", "Auto" };
 				ImGui::PushItemWidth(110);
 				if (ImGui::Combo("Gamma Correct", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
 				{
-					CurrImage->LoadParams_DDS.Flags &= ~(tImageDDS::LoadFlag_GammaCompression | tImageDDS::LoadFlag_SRGBCompression);
+					CurrImage->LoadParams_DDS.Flags &= ~(tImageDDS::LoadFlag_GammaCompression | tImageDDS::LoadFlag_SRGBCompression | tImageDDS::LoadFlag_AutoGamma);
 					if (gammaMode == 1) CurrImage->LoadParams_DDS.Flags |= tImageDDS::LoadFlag_GammaCompression;
 					if (gammaMode == 2) CurrImage->LoadParams_DDS.Flags |= tImageDDS::LoadFlag_SRGBCompression;
+					if (gammaMode == 3) CurrImage->LoadParams_DDS.Flags |= tImageDDS::LoadFlag_AutoGamma;
 					reloadChanges = true;
 				}
 				ImGui::PopItemWidth();
@@ -169,7 +172,8 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 					"Use 'None' if you know the source image data is already in either gamma or sRGB-space.\n\n"
 					"Use 'Gamma' if you want control over the gamma exponent being used to do the correction. 2.2 is standard.\n\n"
 					"Use 'sRGB' if you want to convert to sRGB-space. This more accurately represents a display's response and\n"
-					"is close to a 2.2 gamma but with an extra linear region, a non-unity amplitude, and a slightly larger gamma.",
+					"is close to a 2.2 gamma but with an extra linear region, a non-unity amplitude, and a slightly larger gamma."
+					"Use 'Auto' if you want the viewer to try to detect whether to apply sRGB compression or not.\n",
 					false
 				);
 
@@ -270,14 +274,17 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 					gammaMode = 1;
 				if (CurrImage->LoadParams_KTX.Flags & tImageKTX::LoadFlag_SRGBCompression)
 					gammaMode = 2;
+				if (CurrImage->LoadParams_KTX.Flags & tImageKTX::LoadFlag_AutoGamma)
+					gammaMode = 3;
 
-				const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB" };
+				const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB", "Auto" };
 				ImGui::PushItemWidth(110);
 				if (ImGui::Combo("Gamma Correct", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
 				{
-					CurrImage->LoadParams_KTX.Flags &= ~(tImageKTX::LoadFlag_GammaCompression | tImageKTX::LoadFlag_SRGBCompression);
+					CurrImage->LoadParams_KTX.Flags &= ~(tImageKTX::LoadFlag_GammaCompression | tImageKTX::LoadFlag_SRGBCompression | tImageKTX::LoadFlag_AutoGamma);
 					if (gammaMode == 1) CurrImage->LoadParams_KTX.Flags |= tImageKTX::LoadFlag_GammaCompression;
 					if (gammaMode == 2) CurrImage->LoadParams_KTX.Flags |= tImageKTX::LoadFlag_SRGBCompression;
+					if (gammaMode == 3) CurrImage->LoadParams_KTX.Flags |= tImageKTX::LoadFlag_AutoGamma;
 					reloadChanges = true;
 				}
 				ImGui::PopItemWidth();
@@ -291,7 +298,8 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 					"Use 'None' if you know the source image data is already in either gamma or sRGB-space.\n\n"
 					"Use 'Gamma' if you want control over the gamma exponent being used to do the correction. 2.2 is standard.\n\n"
 					"Use 'sRGB' if you want to convert to sRGB-space. This more accurately represents a display's response and\n"
-					"is close to a 2.2 gamma but with an extra linear region, a non-unity amplitude, and a slightly larger gamma.",
+					"is close to a 2.2 gamma but with an extra linear region, a non-unity amplitude, and a slightly larger gamma."
+					"Use 'Auto' if you want the viewer to try to detect whether to apply sRGB compression or not.\n",
 					false
 				);
 
