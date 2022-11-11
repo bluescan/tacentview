@@ -65,15 +65,26 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 			ImGui::SameLine(); ImGui::Text("(%d, %d, %d, %d)", PixelColour.R, PixelColour.G, PixelColour.B, PixelColour.A);
 
 			Image::ImgInfo& info = CurrImage->Info;
-			int bpp = tImage::tGetBitsPerPixel(info.SrcPixelFormat);
 			if (info.IsValid())
 			{
 				ImGui::Text("Size: %dx%d", CurrImage->GetWidth(), CurrImage->GetHeight());
 				ImGui::Text("Format: %s", tImage::tGetPixelFormatName(info.SrcPixelFormat));
+				tString bppStr("--");
+				int bpp = tImage::tGetBitsPerPixel(info.SrcPixelFormat);
 				if (bpp > 0)
-					ImGui::Text("Bits Per Pixel: %d", bpp);
+				{
+					tsPrintf(bppStr, "%d", bpp);
+				}
 				else
-					ImGui::Text("Bits Per Pixel: --");
+				{
+					float bppf = tImage::tGetBitsPerPixelFloat(info.SrcPixelFormat);
+					if (bppf > 0.0f)
+					{
+						tsPrintf(bppStr, "%4.2f", bppf);
+						bppStr.ExtractRight(".00");
+					}
+				}
+				ImGui::Text("Bits Per Pixel: %s", bppStr.Chr());
 				ImGui::Text("Opaque: %s", info.Opaque ? "true" : "false");
 				ImGui::Text("Frames: %d", CurrImage->GetNumFrames());
 				tString sizeStr; tsPrintf(sizeStr, "File Size: %'d", info.FileSizeBytes);
