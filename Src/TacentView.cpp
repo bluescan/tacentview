@@ -77,6 +77,7 @@ namespace Viewer
 		tFileType::JPG,
 		tFileType::PNG,
 		tFileType::TGA,
+		tFileType::QOI,
 		tFileType::TIFF,
 		tFileType::WEBP,
 		tFileType::EOL
@@ -85,6 +86,7 @@ namespace Viewer
 	tFileTypes FileTypes_Save
 	(
 		tFileType::TGA,
+		tFileType::QOI,
 		tFileType::PNG,
 		tFileType::BMP,
 		tFileType::JPG,

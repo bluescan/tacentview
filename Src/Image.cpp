@@ -162,299 +162,308 @@ bool Image::Load()
 	Info.SrcColourSpace = tColourSpace::Unspecified;
 	bool success = false;
 
-	// @todo We 'probably' no longer need this try as the default behaviour for the image loaders
-	// is now to return invalid objects instead of throwing.
-	try
+	switch (loadingFiletype)
 	{
-		switch (loadingFiletype)
+		case tSystem::tFileType::APNG:
 		{
-			case tSystem::tFileType::APNG:
-			{
-				tImageAPNG apng;
-				bool ok = apng.Load(Filename);
-				if (!ok)
-					break;
-
-				int numFrames = apng.GetNumFrames();
-				for (int f = 0; f < numFrames; f++)
-				{
-					tFrame* frame = apng.StealFrame(0);
-					tPicture* picture = new tPicture();
-
-					picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
-					picture->Duration = frame->Duration;
-
-					// Since the pixels were stolen, the frame destructor will not delete them.
-					delete frame;
-					Pictures.Append(picture);
-				}
-				Info.SrcPixelFormat = apng.SrcPixelFormat;
-				success = true;
+			tImageAPNG apng;
+			bool ok = apng.Load(Filename);
+			if (!ok)
 				break;
-			}
 
-			case tSystem::tFileType::BMP:
+			int numFrames = apng.GetNumFrames();
+			for (int f = 0; f < numFrames; f++)
 			{
-				tImageBMP bmp;
-				bool ok = bmp.Load(Filename);
-				if (!ok)
-					break;
+				tFrame* frame = apng.StealFrame(0);
+				tPicture* picture = new tPicture();
 
-				int width = bmp.GetWidth();
-				int height = bmp.GetHeight();
-				tPixel* pixels = bmp.StealPixels();
+				picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
+				picture->Duration = frame->Duration;
 
-				Info.SrcPixelFormat = bmp.SrcPixelFormat;
-				tPicture* picture = new tPicture(width, height, pixels, false);
+				// Since the pixels were stolen, the frame destructor will not delete them.
+				delete frame;
 				Pictures.Append(picture);
-				success = true;
-				break;
 			}
-
-			case tSystem::tFileType::EXR:
-			{
-				tImageEXR exr;
-				bool ok = exr.Load(Filename, LoadParams_EXR);
-				if (!ok)
-					break;
-
-				int numFrames = exr.GetNumFrames();
-				for (int f = 0; f < numFrames; f++)
-				{
-					tFrame* frame = exr.StealFrame(0);
-					tPicture* picture = new tPicture();
-
-					picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
-					picture->Duration = frame->Duration;
-
-					// Since the pixels were stolen, the frame destructor will not delete them.
-					delete frame;
-					Pictures.Append(picture);
-				}
-				Info.SrcPixelFormat = exr.SrcPixelFormat;
-				success = true;
-				break;
-			}
-	
-			case tSystem::tFileType::GIF:
-			{
-				tImageGIF gif;
-				bool ok = gif.Load(Filename);
-				if (!ok)
-					break;
-
-				int numFrames = gif.GetNumFrames();
-				for (int f = 0; f < numFrames; f++)
-				{
-					tFrame* frame = gif.StealFrame(0);
-					tPicture* picture = new tPicture();
-					
-					picture->Set(gif.GetWidth(), gif.GetHeight(), frame->StealPixels(), false);
-					picture->Duration = frame->Duration;
-
-					// Since the pixels were stolen, the frame destructor will not delete them.
-					delete frame;
-					Pictures.Append(picture);
-				}
-				Info.SrcPixelFormat = gif.SrcPixelFormat;
-				success = true;
-				break;
-			}
-
-			case tSystem::tFileType::HDR:
-			{
-				tImageHDR hdr;
-				bool ok = hdr.Load(Filename, LoadParams_HDR);
-				if (!ok)
-					break;
-
-				int width = hdr.GetWidth();
-				int height = hdr.GetHeight();
-				tPixel* pixels = hdr.StealPixels();
-
-				Info.SrcPixelFormat = hdr.SrcPixelFormat;
-				Info.SrcColourSpace = tColourSpace::lRGB;
-				tPicture* picture = new tPicture(width, height, pixels, false);
-				Pictures.Append(picture);
-				success = true;
-				break;
-			}
-
-			case tSystem::tFileType::ICO:
-			{
-				tImageICO ico;
-				bool ok = ico.Load(Filename);
-				if (!ok)
-					break;
-
-				Info.SrcPixelFormat = ico.GetBestSrcPixelFormat();
-				int numFrames = ico.GetNumFrames();
-				for (int p = 0; p < numFrames; p++)
-				{
-					tFrame* frame = ico.StealFrame(0);
-					tAssert(frame);
-					tPicture* picture = new tPicture();
-					picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
-
-					// Since the pixels were stolen, the frame destructor will not delete them.
-					delete frame;
-					Pictures.Append(picture);
-				}
-				success = true;
-				break;
-			}
-
-			case tSystem::tFileType::JPG:
-			{
-				tImageJPG jpg;
-				uint32 loadFlags =
-					(Config::Current->StrictLoading		? tImageJPG::LoadFlag_Strict		: 0) |
-					(Config::Current->ExifOrientLoading	? tImageJPG::LoadFlag_ExifOrient	: 0);
-
-				bool ok = jpg.Load(Filename, loadFlags);
-				if (!ok)
-					break;
-
-				int width = jpg.GetWidth();
-				int height = jpg.GetHeight();
-				tPixel* pixels = jpg.StealPixels();
-
-				Info.SrcPixelFormat = jpg.SrcPixelFormat;
-				tPicture* picture = new tPicture(width, height, pixels, false);
-				Pictures.Append(picture);
-
-				Cached_MetaData = jpg.MetaData;
-				success = true;
-				break;
-			}
-
-			case tSystem::tFileType::PNG:
-			{
-				tImagePNG png;
-				bool ok = png.Load(Filename);
-				if (!ok)
-					break;
-
-				int width = png.GetWidth();
-				int height = png.GetHeight();
-				tPixel* pixels = png.StealPixels();
-
-				Info.SrcPixelFormat = png.SrcPixelFormat;
-				tPicture* picture = new tPicture(width, height, pixels, false);
-				Pictures.Append(picture);
-				success = true;
-				break;
-			}
-
-			case tSystem::tFileType::TGA:
-			{
-				tImageTGA tga;
-				bool ok = tga.Load(Filename);
-				if (!ok)
-					break;
-
-				int width = tga.GetWidth();
-				int height = tga.GetHeight();
-				tPixel* pixels = tga.StealPixels();
-
-				Info.SrcPixelFormat = tga.SrcPixelFormat;
-				tPicture* picture = new tPicture(width, height, pixels, false);
-				Pictures.Append(picture);
-				success = true;
-				break;
-			}
-
-			case tSystem::tFileType::TIFF:
-			{
-				tImageTIFF tiff;
-				bool ok = tiff.Load(Filename);
-				if (!ok)
-					break;
-
-				int numFrames = tiff.GetNumFrames();
-				for (int f = 0; f < numFrames; f++)
-				{
-					tFrame* frame = tiff.StealFrame(0);
-					tPicture* picture = new tPicture();
-					picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
-					picture->Duration = frame->Duration;
-
-					// Since the pixels were stolen, the frame destructor will not delete them.
-					delete frame;
-					Pictures.Append(picture);
-				}
-				Info.SrcPixelFormat = tiff.SrcPixelFormat;
-				success = true;
-				break;
-			}
-	
-			case tSystem::tFileType::WEBP:
-			{
-				tImageWEBP webp;
-				bool ok = webp.Load(Filename);
-				if (!ok)
-					break;
-
-				int numFrames = webp.GetNumFrames();
-				for (int f = 0; f < numFrames; f++)
-				{
-					tFrame* frame = webp.StealFrame(0);
-					tPicture* picture = new tPicture();
-
-					picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
-					picture->Duration = frame->Duration;
-
-					// Since the pixels were stolen, the frame destructor will not delete them.
-					delete frame;
-					Pictures.Append(picture);
-				}
-				Info.SrcPixelFormat = webp.SrcPixelFormat;
-				success = true;
-				break;
-			}
-
-			case tSystem::tFileType::DDS:
-			{
-				tImageDDS dds;
-				bool ok = dds.Load(Filename, LoadParams_DDS);
-				if (!ok || !dds.IsValid())
-					break;
-
-				// Appends to the Pictures list.
-				PopulatePicturesDDS(dds);
-
-				// Creates any alt images for cubemap or mipmapped dds files.
-				CreateAltPicturesDDS(dds);
-
-				Info.SrcPixelFormat = dds.GetPixelFormatSrc();
-				success = true;
-				break;
-			}
-
-			case tSystem::tFileType::KTX:
-			case tSystem::tFileType::KTX2:
-			{
-				tImageKTX ktx;
-				bool ok = ktx.Load(Filename, LoadParams_KTX);
-				if (!ok || !ktx.IsValid())
-					break;
-
-				// Appends to the Pictures list.
-				PopulatePicturesKTX(ktx);
-
-				// Creates any alt images for cubemap or mipmapped ktx files.
-				CreateAltPicturesKTX(ktx);
-
-				Info.SrcPixelFormat = ktx.GetPixelFormatSrc();
-				Info.SrcColourSpace = ktx.GetColourSpaceSrc();
-				success = true;
-				break;
-			}
+			Info.SrcPixelFormat = apng.SrcPixelFormat;
+			success = true;
+			break;
 		}
-	}
-	catch (tError error)
-	{
-		success = false;
+
+		case tSystem::tFileType::BMP:
+		{
+			tImageBMP bmp;
+			bool ok = bmp.Load(Filename);
+			if (!ok)
+				break;
+
+			int width = bmp.GetWidth();
+			int height = bmp.GetHeight();
+			tPixel* pixels = bmp.StealPixels();
+
+			Info.SrcPixelFormat = bmp.SrcPixelFormat;
+			tPicture* picture = new tPicture(width, height, pixels, false);
+			Pictures.Append(picture);
+			success = true;
+			break;
+		}
+
+		case tSystem::tFileType::EXR:
+		{
+			tImageEXR exr;
+			bool ok = exr.Load(Filename, LoadParams_EXR);
+			if (!ok)
+				break;
+
+			int numFrames = exr.GetNumFrames();
+			for (int f = 0; f < numFrames; f++)
+			{
+				tFrame* frame = exr.StealFrame(0);
+				tPicture* picture = new tPicture();
+
+				picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
+				picture->Duration = frame->Duration;
+
+				// Since the pixels were stolen, the frame destructor will not delete them.
+				delete frame;
+				Pictures.Append(picture);
+			}
+			Info.SrcPixelFormat = exr.SrcPixelFormat;
+			success = true;
+			break;
+		}
+
+		case tSystem::tFileType::GIF:
+		{
+			tImageGIF gif;
+			bool ok = gif.Load(Filename);
+			if (!ok)
+				break;
+
+			int numFrames = gif.GetNumFrames();
+			for (int f = 0; f < numFrames; f++)
+			{
+				tFrame* frame = gif.StealFrame(0);
+				tPicture* picture = new tPicture();
+				
+				picture->Set(gif.GetWidth(), gif.GetHeight(), frame->StealPixels(), false);
+				picture->Duration = frame->Duration;
+
+				// Since the pixels were stolen, the frame destructor will not delete them.
+				delete frame;
+				Pictures.Append(picture);
+			}
+			Info.SrcPixelFormat = gif.SrcPixelFormat;
+			success = true;
+			break;
+		}
+
+		case tSystem::tFileType::HDR:
+		{
+			tImageHDR hdr;
+			bool ok = hdr.Load(Filename, LoadParams_HDR);
+			if (!ok)
+				break;
+
+			int width = hdr.GetWidth();
+			int height = hdr.GetHeight();
+			tPixel* pixels = hdr.StealPixels();
+
+			Info.SrcPixelFormat = hdr.SrcPixelFormat;
+			Info.SrcColourSpace = tColourSpace::lRGB;
+			tPicture* picture = new tPicture(width, height, pixels, false);
+			Pictures.Append(picture);
+			success = true;
+			break;
+		}
+
+		case tSystem::tFileType::ICO:
+		{
+			tImageICO ico;
+			bool ok = ico.Load(Filename);
+			if (!ok)
+				break;
+
+			Info.SrcPixelFormat = ico.GetBestSrcPixelFormat();
+			int numFrames = ico.GetNumFrames();
+			for (int p = 0; p < numFrames; p++)
+			{
+				tFrame* frame = ico.StealFrame(0);
+				tAssert(frame);
+				tPicture* picture = new tPicture();
+				picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
+
+				// Since the pixels were stolen, the frame destructor will not delete them.
+				delete frame;
+				Pictures.Append(picture);
+			}
+			success = true;
+			break;
+		}
+
+		case tSystem::tFileType::JPG:
+		{
+			tImageJPG jpg;
+			uint32 loadFlags =
+				(Config::Current->StrictLoading		? tImageJPG::LoadFlag_Strict		: 0) |
+				(Config::Current->ExifOrientLoading	? tImageJPG::LoadFlag_ExifOrient	: 0);
+
+			bool ok = jpg.Load(Filename, loadFlags);
+			if (!ok)
+				break;
+
+			int width = jpg.GetWidth();
+			int height = jpg.GetHeight();
+			tPixel* pixels = jpg.StealPixels();
+
+			Info.SrcPixelFormat = jpg.SrcPixelFormat;
+			tPicture* picture = new tPicture(width, height, pixels, false);
+			Pictures.Append(picture);
+
+			Cached_MetaData = jpg.MetaData;
+			success = true;
+			break;
+		}
+
+		case tSystem::tFileType::PNG:
+		{
+			tImagePNG png;
+			bool ok = png.Load(Filename);
+			if (!ok)
+				break;
+
+			int width = png.GetWidth();
+			int height = png.GetHeight();
+			tPixel* pixels = png.StealPixels();
+
+			Info.SrcPixelFormat = png.SrcPixelFormat;
+			tPicture* picture = new tPicture(width, height, pixels, false);
+			Pictures.Append(picture);
+			success = true;
+			break;
+		}
+
+		case tSystem::tFileType::TGA:
+		{
+			tImageTGA tga;
+			bool ok = tga.Load(Filename);
+			if (!ok)
+				break;
+
+			int width = tga.GetWidth();
+			int height = tga.GetHeight();
+			tPixel* pixels = tga.StealPixels();
+
+			Info.SrcPixelFormat = tga.SrcPixelFormat;
+			tPicture* picture = new tPicture(width, height, pixels, false);
+			Pictures.Append(picture);
+			success = true;
+			break;
+		}
+
+		case tSystem::tFileType::QOI:
+		{
+			tImageQOI qoi;
+			bool ok = qoi.Load(Filename);
+			if (!ok)
+				break;
+
+			int width = qoi.GetWidth();
+			int height = qoi.GetHeight();
+			Info.SrcPixelFormat = qoi.SrcPixelFormat;
+			tPixel* pixels = qoi.StealPixels();
+
+			tPicture* picture = new tPicture(width, height, pixels, false);
+			Pictures.Append(picture);
+			success = true;
+			break;
+		}
+
+		case tSystem::tFileType::TIFF:
+		{
+			tImageTIFF tiff;
+			bool ok = tiff.Load(Filename);
+			if (!ok)
+				break;
+
+			int numFrames = tiff.GetNumFrames();
+			for (int f = 0; f < numFrames; f++)
+			{
+				tFrame* frame = tiff.StealFrame(0);
+				tPicture* picture = new tPicture();
+				picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
+				picture->Duration = frame->Duration;
+
+				// Since the pixels were stolen, the frame destructor will not delete them.
+				delete frame;
+				Pictures.Append(picture);
+			}
+			Info.SrcPixelFormat = tiff.SrcPixelFormat;
+			success = true;
+			break;
+		}
+
+		case tSystem::tFileType::WEBP:
+		{
+			tImageWEBP webp;
+			bool ok = webp.Load(Filename);
+			if (!ok)
+				break;
+
+			int numFrames = webp.GetNumFrames();
+			for (int f = 0; f < numFrames; f++)
+			{
+				tFrame* frame = webp.StealFrame(0);
+				tPicture* picture = new tPicture();
+
+				picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
+				picture->Duration = frame->Duration;
+
+				// Since the pixels were stolen, the frame destructor will not delete them.
+				delete frame;
+				Pictures.Append(picture);
+			}
+			Info.SrcPixelFormat = webp.SrcPixelFormat;
+			success = true;
+			break;
+		}
+
+		case tSystem::tFileType::DDS:
+		{
+			tImageDDS dds;
+			bool ok = dds.Load(Filename, LoadParams_DDS);
+			if (!ok || !dds.IsValid())
+				break;
+
+			// Appends to the Pictures list.
+			PopulatePicturesDDS(dds);
+
+			// Creates any alt images for cubemap or mipmapped dds files.
+			CreateAltPicturesDDS(dds);
+
+			Info.SrcPixelFormat = dds.GetPixelFormatSrc();
+			success = true;
+			break;
+		}
+
+		case tSystem::tFileType::KTX:
+		case tSystem::tFileType::KTX2:
+		{
+			tImageKTX ktx;
+			bool ok = ktx.Load(Filename, LoadParams_KTX);
+			if (!ok || !ktx.IsValid())
+				break;
+
+			// Appends to the Pictures list.
+			PopulatePicturesKTX(ktx);
+
+			// Creates any alt images for cubemap or mipmapped ktx files.
+			CreateAltPicturesKTX(ktx);
+
+			Info.SrcPixelFormat = ktx.GetPixelFormatSrc();
+			Info.SrcColourSpace = ktx.GetColourSpaceSrc();
+			success = true;
+			break;
+		}
 	}
 
 	if (!success)
