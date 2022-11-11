@@ -313,6 +313,7 @@ void Viewer::ShowAboutPopup(bool* popen)
 		ImGui::Text("TinyXML2 V %d.%d.%d", tImage::Version_TinyXML2_Major, tImage::Version_TinyXML2_Minor, tImage::Version_TinyXML2_Patch);
 		ImGui::Text("TinyEXIF V %d.%d.%d", tImage::Version_TinyEXIF_Major, tImage::Version_TinyEXIF_Minor, tImage::Version_TinyEXIF_Patch);
 		ImGui::Text("BCDec V %d.%d", tImage::Version_BCDec_Major, tImage::Version_BCDec_Minor);
+		ImGui::Text("QOI V %s", tImage::Version_QOI);
 	}
 	ImGui::End();
 }
