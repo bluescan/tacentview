@@ -314,7 +314,7 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			ImGui::SetNextItemWidth(80);
 			ImGui::Combo("Bits Per Pixel", &Config::Current->SaveFilePngDepthMode , pngModeItems, tNumElements(pngModeItems));
 			ImGui::SameLine();
-			ShowHelpMark("Auto: Decide based on opacity. 24 BPP: Force 24 bits per pixel. 32 BPP: Force 32 bits per pixel.");
+			ShowHelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.");
 			break;
 		}
 
@@ -324,7 +324,7 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			ImGui::SetNextItemWidth(80);
 			ImGui::Combo("Bits Per Pixel", &Config::Current->SaveFileQoiDepthMode , qoiModeItems, tNumElements(qoiModeItems));
 			ImGui::SameLine();
-			ShowHelpMark("Auto: Decide based on opacity. 24 BPP: Force 24 bits per pixel. 32 BPP: Force 32 bits per pixel.");
+			ShowHelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.");
 
 			const char* qoiSpaceItems[] = { "sRGB", "Linear" };
 			ImGui::SetNextItemWidth(80);
@@ -341,7 +341,7 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			ImGui::SetNextItemWidth(80);
 			ImGui::Combo("Bits Per Pixel", &Config::Current->SaveFileBmpDepthMode , bmpModeItems, tNumElements(bmpModeItems));
 			ImGui::SameLine();
-			ShowHelpMark("Auto: Decide based on opacity. 24 BPP: Force 24 bits per pixel. 32 BPP: Force 32 bits per pixel.");
+			ShowHelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.");
 			break;
 		}
 
