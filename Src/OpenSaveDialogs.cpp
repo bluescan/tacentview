@@ -2,7 +2,7 @@
 //
 // Modal dialogs open-file, open-dir, save-as and save-all.
 //
-// Copyright (c) 2019, 2020, 2021, 2022 Tristan Grimmer.
+// Copyright (c) 2019-2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -151,6 +151,7 @@ void Viewer::DoSavePopup()
 		case tFileType::GIF:	Config::Current->SaveFileType = 5;	break;
 		case tFileType::APNG:	Config::Current->SaveFileType = 6;	break;
 		case tFileType::TIFF:	Config::Current->SaveFileType = 7;	break;
+		case tFileType::QOI:	Config::Current->SaveFileType = 8;	break;
 	}
 
 	DoSaveFiletypeOptions(saveType);
@@ -293,6 +294,7 @@ tSystem::tFileType Viewer::DoSaveChooseFiletype()
 		case 5: return tFileType::GIF;
 		case 6: return tFileType::APNG;
 		case 7: return tFileType::TIFF;
+		case 8: return tFileType::QOI;
 	}
 	return tFileType::TGA;
 }
@@ -313,6 +315,23 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			ImGui::Combo("Bits Per Pixel", &Config::Current->SaveFilePngDepthMode , pngModeItems, tNumElements(pngModeItems));
 			ImGui::SameLine();
 			ShowHelpMark("Auto: Decide based on opacity. 24 BPP: Force 24 bits per pixel. 32 BPP: Force 32 bits per pixel.");
+			break;
+		}
+
+		case tFileType::QOI:
+		{
+			const char* qoiModeItems[] = { "Auto", "24 BPP", "32 BPP" };
+			ImGui::SetNextItemWidth(80);
+			ImGui::Combo("Bits Per Pixel", &Config::Current->SaveFileQoiDepthMode , qoiModeItems, tNumElements(qoiModeItems));
+			ImGui::SameLine();
+			ShowHelpMark("Auto: Decide based on opacity. 24 BPP: Force 24 bits per pixel. 32 BPP: Force 32 bits per pixel.");
+
+			const char* qoiSpaceItems[] = { "sRGB", "Linear" };
+			ImGui::SetNextItemWidth(80);
+			ImGui::Combo("Colour Space", &Config::Current->SaveFileQoiColourSpace , qoiSpaceItems, tNumElements(qoiSpaceItems));
+			ImGui::SameLine();
+			ShowHelpMark("Colour space stored in file. sRGB: The default for most images. Linear: Used when doing lighting calculations.");
+
 			break;
 		}
 
@@ -468,8 +487,8 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 			tImagePNG::tFormat saveFormat = tImagePNG::tFormat::Auto;
 			switch (Config::Current->SaveFilePngDepthMode)
 			{
-				case 1: saveFormat = tImagePNG::tFormat::BPP24;
-				case 2: saveFormat = tImagePNG::tFormat::BPP32;
+				case 1: saveFormat = tImagePNG::tFormat::BPP24;		break;
+				case 2: saveFormat = tImagePNG::tFormat::BPP32;		break;
 			}
 			success = png.Save(outFile, saveFormat);
 			break;
@@ -485,8 +504,8 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 			tImageBMP::tFormat saveFormat = tImageBMP::tFormat::Auto;
 			switch (Config::Current->SaveFileBmpDepthMode)
 			{
-				case 1: saveFormat = tImageBMP::tFormat::BPP24;
-				case 2: saveFormat = tImageBMP::tFormat::BPP32;
+				case 1: saveFormat = tImageBMP::tFormat::BPP24;		break;
+				case 2: saveFormat = tImageBMP::tFormat::BPP32;		break;
 			}
 			tImageBMP::tFormat savedFormat = bmp.Save(outFile, saveFormat);
 			success = (savedFormat != tImageBMP::tFormat::Invalid);
@@ -593,6 +612,33 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 
 			tImageTIFF tiff(frames, true);
 			success = tiff.Save(outFile, Config::Current->SaveFileTiffZLibDeflate, Config::Current->SaveFileTiffDurOverride);
+			break;
+		}
+
+		case 8:		// QOI
+		{
+			tPicture* picture = img.GetCurrentPic();
+			if (!picture || !picture->IsValid())
+				return false;
+
+			tImageQOI qoi(picture->GetPixels(), picture->GetWidth(), picture->GetHeight(), false);
+			tImageQOI::tFormat saveFormat = tImageQOI::tFormat::Auto;
+			switch (Config::Current->SaveFileQoiDepthMode)
+			{
+				case 1: saveFormat = tImageQOI::tFormat::Bit24;		break;
+				case 2: saveFormat = tImageQOI::tFormat::Bit32;		break;
+			}
+
+			tImageQOI::tSpace saveSpace = tImageQOI::tSpace::sRGB;
+			switch (Config::Current->SaveFileQoiColourSpace)
+			{
+				case 0: saveSpace = tImageQOI::tSpace::sRGB;		break;
+				case 1: saveSpace = tImageQOI::tSpace::Linear;		break;
+			}
+			qoi.SetColourSpace(saveSpace);
+
+			tImageQOI::tFormat savedFormat = qoi.Save(outFile, saveFormat);
+			success = (savedFormat != tImageQOI::tFormat::Invalid);
 			break;
 		}
 

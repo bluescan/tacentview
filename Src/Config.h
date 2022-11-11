@@ -2,7 +2,7 @@
 //
 // Viewer settings stored as human-readable symbolic expressions.
 //
-// Copyright (c) 2019, 2020, 2021, 2022 Tristan Grimmer.
+// Copyright (c) 2019-2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -136,6 +136,8 @@ struct ProfileSettings
 	int		SaveFileTypeMultiFrame;
 	bool	SaveFileTargaRLE;
 	int		SaveFilePngDepthMode;				// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
+	int		SaveFileQoiDepthMode;				// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
+	int		SaveFileQoiColourSpace;				// E [0, 1]. 0 = sRGB. 1 = Linear.
 	int		SaveFileBmpDepthMode;				// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
 	int		SaveFileJpegQuality;				// E [1, 100]
 	bool	SaveFileWebpLossy;

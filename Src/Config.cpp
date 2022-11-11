@@ -2,7 +2,7 @@
 //
 // Viewer settings stored as human-readable symbolic expressions.
 //
-// Copyright (c) 2019, 2020, 2021, 2022 Tristan Grimmer.
+// Copyright (c) 2019-2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -321,6 +321,8 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 		SaveFileTypeMultiFrame		= 0;
 		SaveFileTargaRLE			= false;
 		SaveFilePngDepthMode		= 0;
+		SaveFileQoiDepthMode		= 0;
+		SaveFileQoiColourSpace		= 0;
 		SaveFileBmpDepthMode		= 0;
 		SaveFileJpegQuality			= 95;
 		SaveFileWebpLossy			= false;
@@ -435,6 +437,8 @@ void Config::ProfileSettings::Load(tExpression expr)
 			ReadItem(SaveFileTypeMultiFrame);
 			ReadItem(SaveFileTargaRLE);
 			ReadItem(SaveFilePngDepthMode);
+			ReadItem(SaveFileQoiDepthMode);
+			ReadItem(SaveFileQoiColourSpace);
 			ReadItem(SaveFileBmpDepthMode);
 			ReadItem(SaveFileJpegQuality);
 			ReadItem(SaveFileWebpLossy);
@@ -475,14 +479,14 @@ void Config::ProfileSettings::Load(tExpression expr)
 		}
 	}
 
-	tiClamp		(ResampleFilter, 0, int(tImage::tResampleFilter::NumFilters)-1);		// No None allowed.
+	tiClamp		(ResampleFilter, 0, int(tImage::tResampleFilter::NumFilters)-1);					// No None allowed.
 	tiClamp		(ResampleEdgeMode, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);
 	tiClamp		(ResampleFilterContactFrame, 0, int(tImage::tResampleFilter::NumFilters)-1);		// No None allowed.
 	tiClamp		(ResampleEdgeModeContactFrame, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);
 	tiClamp		(ResampleFilterContactFinal, 0, int(tImage::tResampleFilter::NumFilters)-1);		// No None allowed.
 	tiClamp		(ResampleEdgeModeContactFinal, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);
-	tiClamp		(ResampleFilterRotateUp, 0, int(tImage::tResampleFilter::NumFilters));	// None allowed.
-	tiClamp		(ResampleFilterRotateDown, 0, int(tImage::tResampleFilter::NumFilters));// None allowed.
+	tiClamp		(ResampleFilterRotateUp, 0, int(tImage::tResampleFilter::NumFilters));				// None allowed.
+	tiClamp		(ResampleFilterRotateDown, 0, int(tImage::tResampleFilter::NumFilters));			// None allowed.
 	tiClamp		(RotateMode, 0, int(RotMode::NumModes)-1);
 	tiClamp		(DefaultZoomMode, 0, int(ZoomMode::NumModes)-1);
 	tiClampMin	(SlideshowPeriod, 1.0/60.0);
@@ -490,7 +494,7 @@ void Config::ProfileSettings::Load(tExpression expr)
 	tiClamp		(BackgroundCheckerboxSize, 2, 256);
 	tiClamp		(ReticleMode, 0, int(RetMode::NumModes)-1);
 	tiClamp		(OverlayCorner, 0, 3);
-	tiClamp		(SaveFileType, 0, 7);
+	tiClamp		(SaveFileType, 0, 8);
 	tiClamp		(SaveFileTypeMultiFrame, 0, 3);
 	tiClamp		(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
 	tiClamp		(SortKey, 0, 6);
@@ -501,7 +505,7 @@ void Config::ProfileSettings::Load(tExpression expr)
 	tiClampMin	(MaxImageMemMB, 256);
 	tiClampMin	(MaxCacheFiles, 200);	
 	tiClamp		(MaxUndoSteps, 1, 32);
-	tiClamp		(MipmapFilter, 0, int(tImage::tResampleFilter::NumFilters));	// None allowed.
+	tiClamp		(MipmapFilter, 0, int(tImage::tResampleFilter::NumFilters));						// None allowed.
 	tiClamp		(SaveAllSizeMode, 0, 3);
 	tiClamp		(SaveFileJpegQuality, 1, 100);
 	tiClamp		(SaveFileWebpQualComp, 0.0f, 100.0f);
@@ -569,6 +573,8 @@ bool Config::ProfileSettings::Save(tExprWriter& writer) const
 	WriteItem(SaveFileTypeMultiFrame);
 	WriteItem(SaveFileTargaRLE);
 	WriteItem(SaveFilePngDepthMode);
+	WriteItem(SaveFileQoiDepthMode);
+	WriteItem(SaveFileQoiColourSpace);
 	WriteItem(SaveFileBmpDepthMode);
 	WriteItem(SaveFileJpegQuality);
 	WriteItem(SaveFileWebpLossy);
