@@ -1,7 +1,7 @@
 ![Build](https://github.com/bluescan/tacentview/workflows/Build/badge.svg) [![latest](https://img.shields.io/github/v/release/bluescan/tacentview.svg)](https://github.com/bluescan/tacentview/releases) [![tacentview](https://snapcraft.io//tacentview/badge.svg)](https://snapcraft.io/tacentview)
 
 # tacent view
-An image and texture viewer for tga, png, apng, exr, dds, ktx, ktx2, qoi, gif, hdr, jpg, tiff, ico, webp, and bmp files. Uses Dear ImGui and the Tacent library. This viewer is targeted to game devs -- It displays alpha channels correctly and can inspect/edit the colour of individual pixels. There is basic editing functionality, batch resizing, rotations/flips, and the ability to generate contact sheets for FX. Tacent View can save tga, png, bmp, qoi, jpg, (animated) webp, (animated) gif, (animated) apng, and (animated) tiff files.
+An image and texture viewer for tga, png, apng, exr, dds, ktx, ktx2, astc, qoi, gif, hdr, jpg, tiff, ico, webp, and bmp files. Uses Dear ImGui and the Tacent library. This viewer is targeted to game devs -- It displays alpha channels correctly and can inspect/edit the colour of individual pixels. There is basic editing functionality, batch resizing, rotations/flips, and the ability to generate contact sheets for FX. Tacent View can save tga, png, bmp, qoi, jpg, (animated) webp, (animated) gif, (animated) apng, and (animated) tiff files.
 
 Tacent View runs on Windows (10 or 11) and Linux (Kubuntu etc). Browse the releases to grab a zip (Windows) or deb (Linux) package -- or install from the [Snap Store](https://snapcraft.io/tacentview).
 
@@ -142,6 +142,7 @@ This project relies on myriad 3rd-party libraries. In the Data folder you will f
 * TinyEXIF
 * BCDec from iOrange
 * QOI from phoboslab
+* ASTCDec from ARM
 * This software is based in part on the work of the Independent JPEG Group.
 * This software includes [Radiance software](http://radsite.lbl.gov/) developed by the [Lawrence Berkeley National Laboratory](http://www.lbl.gov/).
 

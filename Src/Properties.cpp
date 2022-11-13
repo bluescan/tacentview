@@ -382,6 +382,115 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			return;
 		}
 
+		case tSystem::tFileType::ASTC:
+		{
+			bool reloadChanges = false;
+
+			// Colour Profile.
+			int colourProfile = int(CurrImage->LoadParams_ASTC.Profile);
+			const char* colourProfileItems[] = { "LDR", "LDR FULL", "HDR", "HDR FULL" };
+			ImGui::PushItemWidth(110);
+			if (ImGui::Combo("Colour Profile", &colourProfile, colourProfileItems, tNumElements(colourProfileItems)))
+			{
+				CurrImage->LoadParams_ASTC.Profile = tImageASTC::ColourProfile(colourProfile);
+				reloadChanges = true;
+			}
+			ImGui::PopItemWidth();
+			ImGui::SameLine();
+			ShowHelpMark
+			(
+				"Colour Profile\n"
+				"Most LDR (low-dynamic-range) images have their colours authored in sRGB space since that is what your\n"
+				"monitor displays. If there is an alpha, it is usually in linear-space and clamped to the range [0.0, 1.0].\n"
+				"The ASTC decoder needs to know what kind of pixel data it is dealing with. HDR (high-dynamic-range) just\n"
+				"means the pixel data can be outside the [0.0, 1.0] range. LDR means it is within it. This is a separate\n"
+				"concept to the 'space' the colour or alpha is in. The space is either 'Linear' or 'sRGB'. Generally HDR\n"
+				"images are in linear space.\n"
+				"\n"
+				"LDR PROFILE      : LDR RGB-components in sRGB space. LDR A-component in Linear space. Most LDR images are this.\n"
+				"LDR FULL PROFILE : LDR RGBA-components all in Linear space.\n"
+				"HDR PROFILE      : HDR RGB-components in Linear space. LDR A-component in Linear space. Most HDR images are this.\n"
+				"HDR FULL PROFILE : HDR RGBA-components all in Linear space.",
+				false
+			);
+
+			// Gamma correction. First read current setting and put it in an int.
+			int gammaMode = 0;
+			if (CurrImage->LoadParams_ASTC.Flags & tImageASTC::LoadFlag_GammaCompression)
+				gammaMode = 1;
+			if (CurrImage->LoadParams_ASTC.Flags & tImageASTC::LoadFlag_SRGBCompression)
+				gammaMode = 2;
+
+			const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB" };
+			ImGui::PushItemWidth(110);
+			if (ImGui::Combo("Gamma Correct", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
+			{
+				CurrImage->LoadParams_ASTC.Flags &= ~(tImageASTC::LoadFlag_GammaCompression | tImageASTC::LoadFlag_SRGBCompression);
+				if (gammaMode == 1) CurrImage->LoadParams_ASTC.Flags |= tImageASTC::LoadFlag_GammaCompression;
+				if (gammaMode == 2) CurrImage->LoadParams_ASTC.Flags |= tImageASTC::LoadFlag_SRGBCompression;
+				reloadChanges = true;
+			}
+			ImGui::PopItemWidth();
+			ImGui::SameLine();
+			ShowHelpMark
+			(
+				"Gamma Correction\n"
+				"Floating-point pixel formats used for HDR images are often in linear space. Before being displayed\n"
+				"on a screen with non-linear response they need to be 'corrected' to gamma or sRGB-space (brightened).\n"
+				"\n"
+				"Use 'None' if you know the source image data is already in either gamma or sRGB-space.\n\n"
+				"Use 'Gamma' if you want control over the gamma exponent being used to do the correction. 2.2 is standard.\n\n"
+				"Use 'sRGB' if you want to convert to sRGB-space. This more accurately represents a display's response and\n"
+				"is close to a 2.2 gamma but with an extra linear region, a non-unity amplitude, and a slightly larger gamma.",
+				false
+			);
+
+			if (gammaMode == 1)
+			{
+				ImGui::PushItemWidth(110);
+				if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_ASTC.Gamma, 0.01f, 0.1f, "%.3f"))
+					reloadChanges = true;
+				ImGui::PopItemWidth();
+				ImGui::SameLine();
+				ShowHelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
+				tMath::tiClamp(CurrImage->LoadParams_KTX.Gamma, 0.5f, 4.0f);
+			}
+
+			// WIP Add detection of HDR blocks to tIageASTC.
+			//if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || (CurrImage->Info.SrcColourSpace == tColourSpace::Linear))
+			if (1)
+			{
+				bool expEnabled = (CurrImage->LoadParams_ASTC.Flags & tImageASTC::LoadFlag_ToneMapExposure);
+				ImGui::PushItemWidth(110);
+				if (ImGui::InputFloat("Exposure", &CurrImage->LoadParams_ASTC.Exposure, 0.001f, 0.05f, "%.4f", expEnabled ? 0 : ImGuiInputTextFlags_ReadOnly))
+					reloadChanges = true;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+				ImGui::PopItemWidth();
+				ImGui::SameLine();
+				if (ImGui::CheckboxFlags("##ExposureEnabled", &CurrImage->LoadParams_ASTC.Flags, tImageASTC::LoadFlag_ToneMapExposure))
+					reloadChanges = true;
+				ImGui::SameLine();
+				ShowHelpMark("Exposure adjustment [0.0, 4]. Hold Ctrl to speedup.");
+				tMath::tiClamp(CurrImage->LoadParams_ASTC.Exposure, 0.0f, 4.0f);
+			}
+
+			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 110.0f);
+			if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
+			{
+				CurrImage->ResetLoadParams();
+				CurrImage->FrameNum = 0;
+				reloadChanges = true;
+			}
+
+			if (reloadChanges)
+			{
+				CurrImage->Unload();
+				CurrImage->Load();
+			}
+
+			ImGui::End();
+			return;
+		}
+
 		case tSystem::tFileType::HDR:
 		{
 			ImGui::Text("Radiance HDR");

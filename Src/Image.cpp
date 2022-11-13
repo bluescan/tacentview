@@ -108,6 +108,9 @@ void Image::ResetLoadParams()
 	LoadParams_KTX.Reset();
 	LoadParams_KTX.Gamma = Viewer::Config::Current->MonitorGamma;
 
+	LoadParams_ASTC.Reset();
+	LoadParams_ASTC.Gamma = Viewer::Config::Current->MonitorGamma;
+
 	LoadParams_EXR.Reset();
 	LoadParams_EXR.Gamma = Viewer::Config::Current->MonitorGamma;
 
@@ -461,6 +464,31 @@ bool Image::Load()
 
 			Info.SrcPixelFormat = ktx.GetPixelFormatSrc();
 			Info.SrcColourSpace = ktx.GetColourSpaceSrc();
+			success = true;
+			break;
+		}
+
+		case tSystem::tFileType::ASTC:
+		{
+			tImageASTC astc;
+			bool ok = astc.Load(Filename, LoadParams_ASTC);
+			if (!ok)
+				break;
+
+			int width = astc.GetWidth();
+			int height = astc.GetHeight();
+			Info.SrcPixelFormat = astc.GetPixelFormatSrc();
+
+			tLayer* layer = astc.StealLayer();
+			tAssert(layer && (layer->PixelFormat == tPixelFormat::R8G8B8A8));
+			tPixel* pixels = (tPixel*)layer->StealData();
+
+			// Give the pixels to the tPicture.
+			tPicture* picture = new tPicture(width, height, pixels, false);
+			Pictures.Append(picture);
+
+			// We still delete the layer even though its data has been stolen.
+			delete layer;
 			success = true;
 			break;
 		}

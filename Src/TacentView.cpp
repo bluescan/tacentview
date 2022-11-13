@@ -70,6 +70,7 @@ namespace Viewer
 		tFileType::DDS,
 		tFileType::KTX,
 		tFileType::KTX2,
+		tFileType::ASTC,
 		tFileType::EXR,
 		tFileType::GIF,
 		tFileType::HDR,
@@ -661,7 +662,8 @@ void Viewer::ShowHelpMark(const char* desc, bool autoWrap)
 	if (autoWrap)
 		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 	ImGui::TextUnformatted(desc);
-	ImGui::PopTextWrapPos();
+	if (autoWrap)
+		ImGui::PopTextWrapPos();
 	ImGui::EndTooltip();
 }
 
@@ -676,7 +678,8 @@ void Viewer::ShowToolTip(const char* desc, bool autoWrap)
 	if (autoWrap)
 		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 	ImGui::TextUnformatted(desc);
-	ImGui::PopTextWrapPos();
+	if (autoWrap)
+		ImGui::PopTextWrapPos();
 	ImGui::EndTooltip();
 	ImGui::PopStyleVar();
 }

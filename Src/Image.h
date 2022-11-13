@@ -42,6 +42,7 @@ public:
 	void ResetLoadParams();
 	tImage::tImageDDS::LoadParams LoadParams_DDS;
 	tImage::tImageKTX::LoadParams LoadParams_KTX;
+	tImage::tImageASTC::LoadParams LoadParams_ASTC;
 	tImage::tImageEXR::LoadParams LoadParams_EXR;
 	tImage::tImageHDR::LoadParams LoadParams_HDR;
 
@@ -238,7 +239,8 @@ inline bool Image::TypeSupportsProperties() const
 		(Filetype == tSystem::tFileType::EXR) ||
 		(Filetype == tSystem::tFileType::DDS) ||
 		(Filetype == tSystem::tFileType::KTX) ||
-		(Filetype == tSystem::tFileType::KTX2)
+		(Filetype == tSystem::tFileType::KTX2) ||
+		(Filetype == tSystem::tFileType::ASTC)
 	);
 }
 
