@@ -35,7 +35,7 @@ Flip, rotate-by-90-degrees, rotate-arbitrarily (with live preview), cropping, an
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_Tiled.png)
 
 
-When viewing dds (direct draw surface) files, you can view any present mipmaps and see cubemaps in a 'T' layout.
+When viewing dds, ktx, or ktx2 files, you can view any present mipmaps and see cubemaps in a 'T' layout.
 
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_Cubemap.png)
 
@@ -47,17 +47,17 @@ Users may zoom using Ctrl+/- and pan using the right mouse button. Several zoom 
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_Zoom.png)
 
 
-High Definition Image loading is supported for exr and hdr files. For hdr files the loading code is based on, and is functionally equivalent to, the reference code from the Radiance imaging toolset. Adjustments to gamma correction and exposure are supported when loading radiance hdr files. The images below (Copyright Rafal Mantiuk under Creative Commons 3.0) show an hdr image that loads over-exposed and is subsequentially adjusted to yield a more balanced result.
+High Definition Image loading is supported for exr, hdr (rgbe), dds, ktx and ktx2 files. For hdr/rgbe files the loading code is based on, and is functionally equivalent to, the reference code from the Radiance imaging toolset. Adjustments to gamma correction and exposure are supported when loading any HDR file. The images below (Copyright Rafal Mantiuk under Creative Commons 3.0) show an image that loads over-exposed and is subsequentially adjusted to yield a more balanced result.
 
 ![HDR Loading](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_HDR.png)
 
 
-EXR support also uses reference code from OpenEXR and should be able to load most exr files, including multi-frame (AKA multi-part) files. There is more control for exr parameters including the ability to de-fog. The screenshot below ('desk' image courtesy OpenEXR and under their licence) shows similar successive exposure adjustments.
+EXR support uses reference code from OpenEXR and should be able to load most exr files, including multi-frame (AKA multi-part) files. There is control for various exr parameters including the ability to de-fog. The screenshot below ('desk' image courtesy OpenEXR and under their licence) shows similar successive exposure adjustments.
 
 ![EXR Loading](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_EXR.png)
 
 
-Other formats store multiple images inside a single file. A dds may be a cubemap with 6 sides or a BC compressed image with mipmaps. A tiff may also include multiple 'pages'. Webp and png/apng files may be animated. For these formats the property-editor window allows you to display which frame you see. The hypercube below (courtesy [Jason Hise](https://blog.wikimedia.org/2016/09/22/math-gifs/) under CC0) shows the options and play controls for a multi-frame animated gif.
+Other formats store multiple images inside a single file. A dds or ktx may be a cubemap with 6 sides or a BC/ASTC compressed image with mipmaps. A tiff may also include multiple 'pages'. Webp and png/apng files may be animated. For these formats the property-editor window allows you to display which frame you see. The hypercube below (courtesy [Jason Hise](https://blog.wikimedia.org/2016/09/22/math-gifs/) under CC0) shows the options and play controls for a multi-frame animated gif. In Tacent View the duration of any individual frame may be edited and the file resaved. This works whether a gif, apng or webp is being edited.
 
 ![AnimGif](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_Anim.png)
 
@@ -66,8 +66,7 @@ Alt-Enter toggles fullscreen mode. In this mode the bottom navigation bar and to
 
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_Prefs.png)
 
-The 'transparent work area' option in the preferences allows you to see right through to your desktop -- interpreting the alpha channel in the image, if present, as opacity. If you set the viewer to basic-mode (B-key, no UI widgets), and enter fullscreen mode (Alt-Enter), you can do things like play animated semitransparent webp file right over your desktop. The screenshot below shows transparent-work-area turned on while in windowed (non-fullscreen) mode. This works in both Linux and Windows. For Linux, the snap system disables this feature
-so you will need to install the deb file or build from source.
+The 'transparent work area' option in the preferences allows you to see right through to your desktop -- interpreting the alpha channel in the image, if present, as opacity. If you set the viewer to basic-mode (B-key, no UI widgets), and enter fullscreen mode (Alt-Enter), you can do things like play animated semitransparent webp file right over your desktop. The screenshot below shows transparent-work-area turned on while in windowed (non-fullscreen) mode. This works in both Linux and Windows. For Linux, the snap system disables this feature so you will need to install the deb file or build from source.
 
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_TransparentWorkArea.png)
 
@@ -90,7 +89,7 @@ The install target will also package a zip file with all required content. This 
 
 ## ubuntu
 
-Building for Ubuntu is tested with Clang 13 and GCC 11.2. CMake and Git are required. Ninja is suggested but optional. The 'Software and Updates' app allows you to manage (add and remove) repositories or use the command line:
+Building for Ubuntu is tested with Clang 13 and GCC 11.2 (and is known to work with more recent releases). CMake and Git are required. Ninja is suggested but optional. The 'Software and Updates' app allows you to manage (add and remove) repositories or use the command line:
 ```
 sudo apt-get install gdebi               # Installs gdebi to allow command-line deb file installation. Optional.
 sudo apt-get install git                 # Install git or download the source as a zip.
@@ -136,7 +135,7 @@ This project relies on myriad 3rd-party libraries. In the Data folder you will f
 * GIF Save
 * WebP Reference Library
 * LibPNG
-* LibKTX
+* LibKTX (KTX-Software)
 * APNGDis and APNGAsm
 * TinyXML2
 * TinyEXIF
