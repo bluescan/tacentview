@@ -248,7 +248,6 @@ void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeigh
 			break;
 		}
 	}
-
 	if (!success)
 		return;
 
