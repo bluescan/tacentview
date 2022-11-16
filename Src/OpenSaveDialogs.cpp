@@ -226,7 +226,7 @@ void Viewer::DoSaveUnsupportedTypePopup()
 	for (tFileTypes::tFileTypeItem* i = FileTypes_Save.First(); i; i = i->Next())
 	{
 		tString line;
-		tsPrintf(line, "%s ", tGetFileTypeName(i->FileType));
+		tsPrintf(line, "%s ", tGetFileTypeName(i->FileType).Chr());
 		support += line;
 	}
 
