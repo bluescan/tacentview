@@ -139,20 +139,9 @@ void Viewer::DoSavePopup()
 	tPicture* picture = CurrImage->GetCurrentPic();
 	tAssert(picture);
 
-	Config::Current->SaveFileType = 0;
+	// This gets the filetype from the filename. We then update the current config.
 	tFileType saveType = tGetFileType(SaveAsFile);
-	switch (saveType)
-	{
-		case tFileType::TGA:	Config::Current->SaveFileType = 0;	break;
-		case tFileType::PNG:	Config::Current->SaveFileType = 1;	break;
-		case tFileType::BMP:	Config::Current->SaveFileType = 2;	break;
-		case tFileType::JPG:	Config::Current->SaveFileType = 3;	break;
-		case tFileType::WEBP:	Config::Current->SaveFileType = 4;	break;
-		case tFileType::GIF:	Config::Current->SaveFileType = 5;	break;
-		case tFileType::APNG:	Config::Current->SaveFileType = 6;	break;
-		case tFileType::TIFF:	Config::Current->SaveFileType = 7;	break;
-		case tFileType::QOI:	Config::Current->SaveFileType = 8;	break;
-	}
+	Config::Current->SaveFileType = tGetFileTypeName(saveType);
 
 	DoSaveFiletypeOptions(saveType);
 
@@ -277,26 +266,29 @@ tString Viewer::DoSubFolder()
 
 tSystem::tFileType Viewer::DoSaveChooseFiletype()
 {
-	// @todo This is silly. Should be using the Viewer::FileTypes_Save object -- from that Tacent can get the actual extensions.
-	const char* fileTypeItems[] = { "tga", "png", "bmp", "jpg", "webp", "gif", "apng", "tiff" };
-	ImGui::Combo("File Type", &Config::Current->SaveFileType, fileTypeItems, tNumElements(fileTypeItems));
-	ImGui::SameLine();
-	ShowHelpMark("Output image format.\nFull (non-binary) alpha supported by tga, png, apng, bmp, tiff, and webp.\nAnimation supported by webp, gif, tiff, and apng.");
-
-	// This is also now silly. We can use the tFileType directly in the config now that Tacent has better support.
-	switch (Config::Current->SaveFileType)
+	tString fileTypeName = Config::Current->SaveFileType;
+	tFileType fileType = tGetFileTypeFromName(fileTypeName);
+	if (ImGui::BeginCombo("File Type", fileTypeName.Chr()))
 	{
-		case 0: return tFileType::TGA;
-		case 1: return tFileType::PNG;
-		case 2: return tFileType::BMP;
-		case 3: return tFileType::JPG;
-		case 4: return tFileType::WEBP;
-		case 5: return tFileType::GIF;
-		case 6: return tFileType::APNG;
-		case 7: return tFileType::TIFF;
-		case 8: return tFileType::QOI;
+		for (tFileTypes::tFileTypeItem* item = FileTypes_Save.First(); item; item = item->Next())
+		{
+			tFileType ft = item->FileType;
+			bool selected = (ft == fileType);
+
+			tString ftName = tGetFileTypeName(ft);
+			if (ImGui::Selectable(ftName.Chr(), &selected))
+				Config::Current->SaveFileType = ftName;
+
+			if (selected)
+				ImGui::SetItemDefaultFocus();
+		}
+		
+		ImGui::EndCombo();
 	}
-	return tFileType::TGA;
+	ImGui::SameLine();
+	ShowHelpMark("Output image format.\nFull (non-binary) alpha supported by tga, png, apng, bmp, tiff, qoi, and webp.\nAnimation supported by webp, gif, tiff, and apng.");
+
+	return tGetFileTypeFromName(Config::Current->SaveFileType);
 }
 
 
@@ -318,6 +310,34 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			break;
 		}
 
+		case tFileType::JPG:
+			ImGui::SliderInt("Quality", &Config::Current->SaveFileJpegQuality, 1, 100, "%d");
+			break;
+
+		case tFileType::GIF:
+			ImGui::SetNextItemWidth(166);
+			ImGui::SliderInt("Duration Override", &Config::Current->SaveFileGifDurOverride, -1, 1000, "%d");
+			ImGui::SameLine(); ShowToolTip("In 1/100 seconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
+			if (ImGui::Button("1.0s"))  Config::Current->SaveFileGifDurOverride = 100; ImGui::SameLine();
+			if (ImGui::Button("0.5s"))  Config::Current->SaveFileGifDurOverride = 50;  ImGui::SameLine();
+			if (ImGui::Button("15fps")) Config::Current->SaveFileGifDurOverride = 6;   ImGui::SameLine();
+			if (ImGui::Button("30fps")) Config::Current->SaveFileGifDurOverride = 3;
+			break;
+
+		case tFileType::WEBP:
+			ImGui::Checkbox("Lossy", &Config::Current->SaveFileWebpLossy);
+			ImGui::SetNextItemWidth(166);
+			ImGui::SliderFloat("Quality / Compression", &Config::Current->SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
+			ImGui::SameLine(); ShowToolTip("Image quality percent if lossy. Image compression strength if not lossy"); ImGui::NewLine();
+			ImGui::SetNextItemWidth(166);
+			ImGui::SliderInt("Duration Override", &Config::Current->SaveFileWebpDurOverride, -1, 10000, "%d");
+			ImGui::SameLine(); ShowToolTip("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
+			if (ImGui::Button("1.0s"))  Config::Current->SaveFileWebpDurOverride = 1000; ImGui::SameLine();
+			if (ImGui::Button("0.5s"))  Config::Current->SaveFileWebpDurOverride = 500;  ImGui::SameLine();
+			if (ImGui::Button("30fps")) Config::Current->SaveFileWebpDurOverride = 33;   ImGui::SameLine();
+			if (ImGui::Button("60fps")) Config::Current->SaveFileWebpDurOverride = 16;
+			break;
+
 		case tFileType::QOI:
 		{
 			const char* qoiModeItems[] = { "Auto", "24 BPP", "32 BPP" };
@@ -335,44 +355,6 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			break;
 		}
 
-		case tFileType::BMP:
-		{
-			const char* bmpModeItems[] = { "Auto", "24 BPP", "32 BPP" };
-			ImGui::SetNextItemWidth(80);
-			ImGui::Combo("Bits Per Pixel", &Config::Current->SaveFileBmpDepthMode , bmpModeItems, tNumElements(bmpModeItems));
-			ImGui::SameLine();
-			ShowHelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.");
-			break;
-		}
-
-		case tFileType::JPG:
-			ImGui::SliderInt("Quality", &Config::Current->SaveFileJpegQuality, 1, 100, "%d");
-			break;
-
-		case tFileType::WEBP:
-			ImGui::Checkbox("Lossy", &Config::Current->SaveFileWebpLossy);
-			ImGui::SetNextItemWidth(166);
-			ImGui::SliderFloat("Quality / Compression", &Config::Current->SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
-			ImGui::SameLine(); ShowToolTip("Image quality percent if lossy. Image compression strength if not lossy"); ImGui::NewLine();
-			ImGui::SetNextItemWidth(166);
-			ImGui::SliderInt("Duration Override", &Config::Current->SaveFileWebpDurOverride, -1, 10000, "%d");
-			ImGui::SameLine(); ShowToolTip("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
-			if (ImGui::Button("1.0s"))  Config::Current->SaveFileWebpDurOverride = 1000; ImGui::SameLine();
-			if (ImGui::Button("0.5s"))  Config::Current->SaveFileWebpDurOverride = 500;  ImGui::SameLine();
-			if (ImGui::Button("30fps")) Config::Current->SaveFileWebpDurOverride = 33;   ImGui::SameLine();
-			if (ImGui::Button("60fps")) Config::Current->SaveFileWebpDurOverride = 16;
-			break;
-
-		case tFileType::GIF:
-			ImGui::SetNextItemWidth(166);
-			ImGui::SliderInt("Duration Override", &Config::Current->SaveFileGifDurOverride, -1, 1000, "%d");
-			ImGui::SameLine(); ShowToolTip("In 1/100 seconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
-			if (ImGui::Button("1.0s"))  Config::Current->SaveFileGifDurOverride = 100; ImGui::SameLine();
-			if (ImGui::Button("0.5s"))  Config::Current->SaveFileGifDurOverride = 50;  ImGui::SameLine();
-			if (ImGui::Button("15fps")) Config::Current->SaveFileGifDurOverride = 6;   ImGui::SameLine();
-			if (ImGui::Button("30fps")) Config::Current->SaveFileGifDurOverride = 3;
-			break;
-
 		case tFileType::APNG:
 			ImGui::SetNextItemWidth(166);
 			ImGui::SliderInt("Duration Override", &Config::Current->SaveFileApngDurOverride, -1, 10000, "%d");
@@ -382,6 +364,16 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			if (ImGui::Button("30fps")) Config::Current->SaveFileApngDurOverride = 33;   ImGui::SameLine();
 			if (ImGui::Button("60fps")) Config::Current->SaveFileApngDurOverride = 16;
 			break;
+
+		case tFileType::BMP:
+		{
+			const char* bmpModeItems[] = { "Auto", "24 BPP", "32 BPP" };
+			ImGui::SetNextItemWidth(80);
+			ImGui::Combo("Bits Per Pixel", &Config::Current->SaveFileBmpDepthMode , bmpModeItems, tNumElements(bmpModeItems));
+			ImGui::SameLine();
+			ShowHelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.");
+			break;
+		}
 
 		case tFileType::TIFF:
 			ImGui::SetNextItemWidth(166);
@@ -398,18 +390,44 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 
 tString Viewer::DoSaveFiletypeMultiFrame()
 {
-	// @todo This is silly. Should be using the Viewer::FileTypes_SaveMultiFrame object -- from that Tacent can get the actual extensions.
-	const char* fileTypeItems[] = { "webp", "gif", "apng", "tiff" };
-	ImGui::Combo("File Type", &Config::Current->SaveFileTypeMultiFrame, fileTypeItems, tNumElements(fileTypeItems));
+	tString fileTypeName = Config::Current->SaveFileTypeMultiFrame;
+	tFileType fileType = tGetFileTypeFromName(fileTypeName);
+	if (ImGui::BeginCombo("File Type", fileTypeName.Chr()))
+	{
+		for (tFileTypes::tFileTypeItem* item = FileTypes_SaveMultiFrame.First(); item; item = item->Next())
+		{
+			tFileType ft = item->FileType;
+			bool selected = (ft == fileType);
+
+			tString ftName = tGetFileTypeName(ft);
+			if (ImGui::Selectable(ftName.Chr(), &selected))
+				Config::Current->SaveFileTypeMultiFrame = ftName;
+
+			if (selected)
+				ImGui::SetItemDefaultFocus();
+		}
+		
+		ImGui::EndCombo();
+	}
 	ImGui::SameLine();
 	ShowHelpMark("Multi-frame output image format.");
 
 	// There are different options depending on what type you are saving as.
-	tString extension = ".webp";
-	switch (Config::Current->SaveFileTypeMultiFrame)
+	fileType = tGetFileTypeFromName(Config::Current->SaveFileTypeMultiFrame);
+	tString extension = tGetExtension(fileType);
+	switch (fileType)
 	{
-		case 0:
-			extension = ".webp";
+		case tFileType::GIF:
+			ImGui::SliderInt("Frame Duration", &Config::Current->SaveFileGifDurMultiFrame, 0, 1000, "%d");
+			ImGui::SameLine(); ShowToolTip("In 1/100 seconds."); ImGui::NewLine();
+			if (ImGui::Button("1.0s"))  Config::Current->SaveFileGifDurMultiFrame = 100; ImGui::SameLine();
+			if (ImGui::Button("0.5s"))  Config::Current->SaveFileGifDurMultiFrame = 50;  ImGui::SameLine();
+			if (ImGui::Button("15fps")) Config::Current->SaveFileGifDurMultiFrame = 6;   ImGui::SameLine();
+			if (ImGui::Button("30fps")) Config::Current->SaveFileGifDurMultiFrame = 3;   ImGui::SameLine();
+			if (ImGui::Button("50fps")) Config::Current->SaveFileGifDurMultiFrame = 2;
+			break;
+
+		case tFileType::WEBP:
 			ImGui::Checkbox("Lossy", &Config::Current->SaveFileWebpLossy);
 			ImGui::SliderFloat("Quality / Compression", &Config::Current->SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
 			ImGui::SameLine(); ShowToolTip("Image quality percent if lossy. Image compression strength if not lossy"); ImGui::NewLine();
@@ -421,19 +439,7 @@ tString Viewer::DoSaveFiletypeMultiFrame()
 			if (ImGui::Button("60fps")) Config::Current->SaveFileWebpDurMultiFrame = 16;
 			break;
 
-		case 1:
-			extension = ".gif";
-			ImGui::SliderInt("Frame Duration", &Config::Current->SaveFileGifDurMultiFrame, 0, 1000, "%d");
-			ImGui::SameLine(); ShowToolTip("In 1/100 seconds."); ImGui::NewLine();
-			if (ImGui::Button("1.0s"))  Config::Current->SaveFileGifDurMultiFrame = 100; ImGui::SameLine();
-			if (ImGui::Button("0.5s"))  Config::Current->SaveFileGifDurMultiFrame = 50;  ImGui::SameLine();
-			if (ImGui::Button("15fps")) Config::Current->SaveFileGifDurMultiFrame = 6;   ImGui::SameLine();
-			if (ImGui::Button("30fps")) Config::Current->SaveFileGifDurMultiFrame = 3;   ImGui::SameLine();
-			if (ImGui::Button("50fps")) Config::Current->SaveFileGifDurMultiFrame = 2;
-			break;
-
-		case 2:
-			extension = ".apng";
+		case tFileType::APNG:
 			ImGui::SliderInt("Frame Duration", &Config::Current->SaveFileApngDurMultiFrame, 0, 10000, "%d");
 			ImGui::SameLine(); ShowToolTip("In milliseconds."); ImGui::NewLine();
 			if (ImGui::Button("1.0s"))  Config::Current->SaveFileApngDurMultiFrame = 1000; ImGui::SameLine();
@@ -442,8 +448,7 @@ tString Viewer::DoSaveFiletypeMultiFrame()
 			if (ImGui::Button("60fps")) Config::Current->SaveFileApngDurMultiFrame = 16;
 			break;
 
-		case 3:
-			extension = ".tiff";
+		case tFileType::TIFF:
 			ImGui::SliderInt("Frame Duration", &Config::Current->SaveFileTiffDurMultiFrame, 0, 10000, "%d");
 			ImGui::SameLine(); ShowToolTip("In milliseconds."); ImGui::NewLine();
 			if (ImGui::Button("1.0s"))  Config::Current->SaveFileTiffDurMultiFrame = 1000; ImGui::SameLine();
@@ -466,9 +471,10 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 		img.Load();
 
 	bool success = false;
-	switch (Config::Current->SaveFileType)
+	tFileType fileType = tGetFileTypeFromName( Config::Current->SaveFileType );
+	switch (fileType)
 	{
-		case 0:		// TGA
+		case tFileType::TGA:
 		{
 			tPicture* picture = img.GetCurrentPic();
 			if (!picture || !picture->IsValid())
@@ -477,7 +483,7 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 			break;
 		}
 
-		case 1:		// PNG
+		case tFileType::PNG:
 		{
 			tPicture* picture = img.GetCurrentPic();
 			if (!picture || !picture->IsValid())
@@ -494,25 +500,7 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 			break;
 		}
 
-		case 2:		// BMP
-		{
-			tPicture* picture = img.GetCurrentPic();
-			if (!picture || !picture->IsValid())
-				return false;
-
-			tImageBMP bmp(picture->GetPixels(), picture->GetWidth(), picture->GetHeight(), false);
-			tImageBMP::tFormat saveFormat = tImageBMP::tFormat::Auto;
-			switch (Config::Current->SaveFileBmpDepthMode)
-			{
-				case 1: saveFormat = tImageBMP::tFormat::BPP24;		break;
-				case 2: saveFormat = tImageBMP::tFormat::BPP32;		break;
-			}
-			tImageBMP::tFormat savedFormat = bmp.Save(outFile, saveFormat);
-			success = (savedFormat != tImageBMP::tFormat::Invalid);
-			break;
-		}
-
-		case 3:		// JPG
+		case tFileType::JPG:
 		{
 			tPicture* picture = img.GetCurrentPic();
 			if (!picture || !picture->IsValid())
@@ -523,30 +511,7 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 			break;
 		}
 
-		case 4:		// WEBP
-		{
-			tList<tFrame> frames;
-			tList<tImage::tPicture>& pics = img.GetPictures();
-			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
-			{
-				frames.Append
-				(
-					new tFrame
-					(
-						picture->GetPixelPointer(),
-						picture->GetWidth(),
-						picture->GetHeight(),
-						picture->Duration
-					)
-				);
-			}
-
-			tImageWEBP webp(frames, true);
-			success = webp.Save(outFile, Config::Current->SaveFileWebpLossy, Config::Current->SaveFileWebpQualComp, Config::Current->SaveFileWebpDurOverride);
-			break;
-		}
-
-		case 5:		// GIF
+		case tFileType::GIF:
 		{
 			tList<tFrame> frames;
 			tList<tImage::tPicture>& pics = img.GetPictures();
@@ -569,7 +534,7 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 			break;
 		}
 
-		case 6:		// APNG
+		case tFileType::WEBP:
 		{
 			tList<tFrame> frames;
 			tList<tImage::tPicture>& pics = img.GetPictures();
@@ -587,35 +552,12 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 				);
 			}
 
-			tImageAPNG apng(frames, true);
-			success = apng.Save(outFile, Config::Current->SaveFileApngDurOverride);
+			tImageWEBP webp(frames, true);
+			success = webp.Save(outFile, Config::Current->SaveFileWebpLossy, Config::Current->SaveFileWebpQualComp, Config::Current->SaveFileWebpDurOverride);
 			break;
 		}
 
-		case 7:		// TIFF
-		{
-			tList<tFrame> frames;
-			tList<tImage::tPicture>& pics = img.GetPictures();
-			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
-			{
-				frames.Append
-				(
-					new tFrame
-					(
- 						picture->GetPixelPointer(),
-						picture->GetWidth(),
-						picture->GetHeight(),
-						picture->Duration
-					)
-				);
-			}
-
-			tImageTIFF tiff(frames, true);
-			success = tiff.Save(outFile, Config::Current->SaveFileTiffZLibDeflate, Config::Current->SaveFileTiffDurOverride);
-			break;
-		}
-
-		case 8:		// QOI
+		case tFileType::QOI:
 		{
 			tPicture* picture = img.GetCurrentPic();
 			if (!picture || !picture->IsValid())
@@ -642,13 +584,67 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 			break;
 		}
 
-		default:
+		case tFileType::APNG:
+		{
+			tList<tFrame> frames;
+			tList<tImage::tPicture>& pics = img.GetPictures();
+			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
+			{
+				frames.Append
+				(
+					new tFrame
+					(
+						picture->GetPixelPointer(),
+						picture->GetWidth(),
+						picture->GetHeight(),
+						picture->Duration
+					)
+				);
+			}
+
+			tImageAPNG apng(frames, true);
+			success = apng.Save(outFile, Config::Current->SaveFileApngDurOverride);
+			break;
+		}
+
+		case tFileType::BMP:
 		{
 			tPicture* picture = img.GetCurrentPic();
 			if (!picture || !picture->IsValid())
 				return false;
-			tImage::tPicture::tColourFormat colourFmt = picture->IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-			success = picture->Save(outFile, colourFmt, Config::Current->SaveFileJpegQuality);
+
+			tImageBMP bmp(picture->GetPixels(), picture->GetWidth(), picture->GetHeight(), false);
+			tImageBMP::tFormat saveFormat = tImageBMP::tFormat::Auto;
+			switch (Config::Current->SaveFileBmpDepthMode)
+			{
+				case 1: saveFormat = tImageBMP::tFormat::BPP24;		break;
+				case 2: saveFormat = tImageBMP::tFormat::BPP32;		break;
+			}
+			tImageBMP::tFormat savedFormat = bmp.Save(outFile, saveFormat);
+			success = (savedFormat != tImageBMP::tFormat::Invalid);
+			break;
+		}
+
+		case tFileType::TIFF:
+		{
+			tList<tFrame> frames;
+			tList<tImage::tPicture>& pics = img.GetPictures();
+			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
+			{
+				frames.Append
+				(
+					new tFrame
+					(
+ 						picture->GetPixelPointer(),
+						picture->GetWidth(),
+						picture->GetHeight(),
+						picture->Duration
+					)
+				);
+			}
+
+			tImageTIFF tiff(frames, true);
+			success = tiff.Save(outFile, Config::Current->SaveFileTiffZLibDeflate, Config::Current->SaveFileTiffDurOverride);
 			break;
 		}
 	}
@@ -718,7 +714,8 @@ bool Viewer::SaveResizeImageAs(Image& img, const tString& outFile, int width, in
 
 	bool success = false;
 	tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-	if (Config::Current->SaveFileType == 0)
+	tFileType saveFileType = tGetFileTypeFromName(Config::Current->SaveFileType);
+	if (saveFileType == tFileType::TGA)
 		success = outPic.SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config::Current->SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
 	else
 		success = outPic.Save(outFile, colourFmt, Config::Current->SaveFileJpegQuality);

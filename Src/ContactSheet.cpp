@@ -333,10 +333,11 @@ void Viewer::SaveContactSheetTo
 
 	tImage::tPicture::tColourFormat colourFmt = allOpaque ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
 	tImage::tImageTGA::tFormat tgaFmt = allOpaque ? tImage::tImageTGA::tFormat::Bit24 : tImage::tImageTGA::tFormat::Bit32;
+	tFileType saveFileType = tGetFileTypeFromName(Config::Current->SaveFileType);
 	if ((finalWidth == contactWidth) && (finalHeight == contactHeight))
 	{
 		tPrintf("No resizing of output [%s] image needed.\n", tSystem::tGetFileBaseName(outFile).Chr());
-		if (Config::Current->SaveFileType == 0)
+		if (saveFileType == tFileType::TGA)
 			outPic.SaveTGA(outFile, tgaFmt, Config::Current->SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
 		else
 			outPic.Save(outFile, colourFmt, Config::Current->SaveFileJpegQuality);
@@ -345,8 +346,7 @@ void Viewer::SaveContactSheetTo
 	{
 		tImage::tPicture finalResampled(outPic);
 		finalResampled.Resample(finalWidth, finalHeight, tImage::tResampleFilter(Config::Current->ResampleFilterContactFinal), tImage::tResampleEdgeMode(Config::Current->ResampleEdgeModeContactFinal));
-
-		if (Config::Current->SaveFileType == 0)
+		if (saveFileType == tFileType::TGA)
 			finalResampled.SaveTGA(outFile, tgaFmt, Config::Current->SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
 		else
 			finalResampled.Save(outFile, colourFmt, Config::Current->SaveFileJpegQuality);

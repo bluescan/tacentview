@@ -131,9 +131,9 @@ struct ProfileSettings
 	bool SlideshowProgressArc;
 	double SlideshowPeriod;
 
-	tString SaveSubFolder;
-	int		SaveFileType;
-	int		SaveFileTypeMultiFrame;
+	tString	SaveSubFolder;
+	tString	SaveFileType;
+	tString	SaveFileTypeMultiFrame;
 	bool	SaveFileTargaRLE;
 	int		SaveFilePngDepthMode;				// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
 	int		SaveFileQoiDepthMode;				// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.

@@ -317,8 +317,8 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 
 		SlideshowLooping			= (profile == Profile::Basic) ? true : false;
 		SaveSubFolder				.Clear();
-		SaveFileType				= 0;
-		SaveFileTypeMultiFrame		= 0;
+		SaveFileType				.Set(tSystem::tGetFileTypeName(tSystem::tFileType::TGA));
+		SaveFileTypeMultiFrame		.Set(tSystem::tGetFileTypeName(tSystem::tFileType::GIF));
 		SaveFileTargaRLE			= false;
 		SaveFilePngDepthMode		= 0;
 		SaveFileQoiDepthMode		= 0;
@@ -494,8 +494,6 @@ void Config::ProfileSettings::Load(tExpression expr)
 	tiClamp		(BackgroundCheckerboxSize, 2, 256);
 	tiClamp		(ReticleMode, 0, int(RetMode::NumModes)-1);
 	tiClamp		(OverlayCorner, 0, 3);
-	tiClamp		(SaveFileType, 0, 8);
-	tiClamp		(SaveFileTypeMultiFrame, 0, 3);
 	tiClamp		(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
 	tiClamp		(SortKey, 0, 6);
 	tiClamp		(CropAnchor, -1, 9);

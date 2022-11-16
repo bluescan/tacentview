@@ -140,7 +140,7 @@ void Viewer::DoMultiFrameModal(bool saveMultiFramePressed)
 
 	int numImg = Images.Count();
 	tString genMsg;
-	tsPrintf(genMsg, "Image %s%s will have %d frames.", filename, extension.Chr(), numImg);
+	tsPrintf(genMsg, "Image %s.%s will have %d frames.", filename, extension.Chr(), numImg);
 	ImGui::Text(genMsg.Chr());
 
 	ImGui::NewLine();
@@ -149,7 +149,7 @@ void Viewer::DoMultiFrameModal(bool saveMultiFramePressed)
 	ImGui::SameLine();
 
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	tString outFile = destDir + tString(filename) + extension;
+	tString outFile = destDir + tString(filename) + "." + extension;
 	bool closeThisModal = false;
 	if (ImGui::Button("Generate", tVector2(100.0f, 0.0f)) && (numImg >= 2))
 	{
@@ -217,30 +217,31 @@ void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeigh
 	}
 
 	bool success = false;
-	switch (Config::Current->SaveFileTypeMultiFrame)
+	tFileType fileType = tGetFileTypeFromName( Config::Current->SaveFileTypeMultiFrame );
+	switch (fileType)
 	{
-		case 0:			// WEBP
-		{
-			tImageWEBP webp(frames, true);
-			success = webp.Save(outFile, Config::Current->SaveFileWebpLossy, Config::Current->SaveFileWebpQualComp, Config::Current->SaveFileWebpDurMultiFrame);
-			break;
-		}
-
-		case 1:			// GIF
+		case tFileType::GIF:
 		{
 			tImageGIF gif(frames, true);
 			success = gif.Save(outFile, Config::Current->SaveFileGifDurMultiFrame);
 			break;
 		}
 
-		case 2:			// APNG
+		case tFileType::WEBP:
+		{
+			tImageWEBP webp(frames, true);
+			success = webp.Save(outFile, Config::Current->SaveFileWebpLossy, Config::Current->SaveFileWebpQualComp, Config::Current->SaveFileWebpDurMultiFrame);
+			break;
+		}
+
+		case tFileType::APNG:
 		{
 			tImageAPNG apng(frames, true);
 			success = apng.Save(outFile, Config::Current->SaveFileApngDurMultiFrame);
 			break;
 		}
 
-		case 3:			// TIFF
+		case tFileType::TIFF:
 		{
 			tImageTIFF tiff(frames, true);
 			success = tiff.Save(outFile, Config::Current->SaveFileTiffZLibDeflate, Config::Current->SaveFileTiffDurMultiFrame);

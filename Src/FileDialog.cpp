@@ -1673,11 +1673,11 @@ void FileDialog::DoFileTypesDropdown(bool supportMultipleTypes)
 		for (tFileTypes::tFileTypeItem* typeItem = FileTypes.First(); typeItem; typeItem = typeItem->Next())
 		{
 			tFileType fileType = typeItem->FileType;
-			const char* fileTypeName = tSystem::tGetFileTypeName(fileType);
-			if (!fileTypeName)
+			tString fileTypeName = tSystem::tGetFileTypeName(fileType);
+			if (fileTypeName.IsEmpty())
 				continue;
 
-			if (ImGui::Selectable(fileTypeName, typeItem->Selected))
+			if (ImGui::Selectable(fileTypeName.Chr(), typeItem->Selected))
 			{
 				if (!supportMultipleTypes)
 				{

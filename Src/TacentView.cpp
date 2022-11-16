@@ -65,43 +65,43 @@ namespace Viewer
 
 	tFileTypes FileTypes_Load
 	(
-		tFileType::APNG,
-		tFileType::BMP,
+		tFileType::TGA,
+		tFileType::PNG,
+		tFileType::JPG,
+		tFileType::GIF,
+		tFileType::WEBP,
+		tFileType::QOI,
 		tFileType::DDS,
 		tFileType::KTX,
 		tFileType::KTX2,
 		tFileType::ASTC,
 		tFileType::EXR,
-		tFileType::GIF,
 		tFileType::HDR,
+		tFileType::APNG,
+		tFileType::BMP,
 		tFileType::ICO,
-		tFileType::JPG,
-		tFileType::PNG,
-		tFileType::TGA,
-		tFileType::QOI,
 		tFileType::TIFF,
-		tFileType::WEBP,
 		tFileType::EOL
 	);
 
 	tFileTypes FileTypes_Save
 	(
 		tFileType::TGA,
-		tFileType::QOI,
 		tFileType::PNG,
-		tFileType::BMP,
 		tFileType::JPG,
-		tFileType::WEBP,
 		tFileType::GIF,
+		tFileType::WEBP,
+		tFileType::QOI,
 		tFileType::APNG,
+		tFileType::BMP,
 		tFileType::TIFF,
 		tFileType::EOL
 	);
 
 	tFileTypes FileTypes_SaveMultiFrame
 	(
-		tFileType::WEBP,
 		tFileType::GIF,
+		tFileType::WEBP,
 		tFileType::APNG,
 		tFileType::TIFF,
 		tFileType::EOL
