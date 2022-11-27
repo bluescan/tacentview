@@ -29,6 +29,7 @@
 #include <Foundation/tHash.h>
 #include <System/tCmdLine.h>
 #include <Image/tPicture.h>
+#include <Image/tImageICO.h>
 #include <System/tFile.h>
 #include <System/tTime.h>
 #include <System/tScript.h>
