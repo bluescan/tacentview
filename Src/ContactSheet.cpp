@@ -2,7 +2,7 @@
 //
 // Dialog that generates contact sheets and processes alpha channel properly.
 //
-// Copyright (c) 2019, 2020, 2021, 2022 Tristan Grimmer.
+// Copyright (c) 2019-2022 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -275,14 +275,10 @@ void Viewer::SaveContactSheetTo
 	int frame = 0;
 
 	tPrintf("Loading all frames...\n");
-	bool allOpaque = true;
 	for (Image* img = Images.First(); img; img = img->Next())
 	{
 		if (!img->IsLoaded())
 			img->Load();
-
-		if (img->IsLoaded() && !img->IsOpaque())
-			allOpaque = false;
 	}
 
 	Image* currImg = Images.First();
@@ -331,25 +327,17 @@ void Viewer::SaveContactSheetTo
 		}
 	}
 
-	tImage::tPicture::tColourFormat colourFmt = allOpaque ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
-	tImage::tImageTGA::tFormat tgaFmt = allOpaque ? tImage::tImageTGA::tFormat::Bit24 : tImage::tImageTGA::tFormat::Bit32;
 	tFileType saveFileType = tGetFileTypeFromName(Config::Current->SaveFileType);
 	if ((finalWidth == contactWidth) && (finalHeight == contactHeight))
 	{
 		tPrintf("No resizing of output [%s] image needed.\n", tSystem::tGetFileBaseName(outFile).Chr());
-		if (saveFileType == tFileType::TGA)
-			outPic.SaveTGA(outFile, tgaFmt, Config::Current->SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
-		else
-			outPic.Save(outFile, colourFmt, Config::Current->SaveFileJpegQuality);
+		SavePictureAs(outPic, outFile, saveFileType, true);
 	}
 	else
 	{
 		tImage::tPicture finalResampled(outPic);
 		finalResampled.Resample(finalWidth, finalHeight, tImage::tResampleFilter(Config::Current->ResampleFilterContactFinal), tImage::tResampleEdgeMode(Config::Current->ResampleEdgeModeContactFinal));
-		if (saveFileType == tFileType::TGA)
-			finalResampled.SaveTGA(outFile, tgaFmt, Config::Current->SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
-		else
-			finalResampled.Save(outFile, colourFmt, Config::Current->SaveFileJpegQuality);
+		SavePictureAs(finalResampled, outFile, saveFileType, true);
 	}
 
 	// If we saved to the same dir we are currently viewing, reload

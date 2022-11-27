@@ -16,10 +16,12 @@
 #include <Foundation/tList.h>
 #include <Foundation/tString.h>
 #include <System/tFile.h>
+#include <Image/tPicture.h>
 
 
 namespace Viewer
 {
+	class Image;
 	void DoOpenFileModal(bool openFilePressed);
 	void DoOpenDirModal(bool openDirPressed);
 
@@ -30,8 +32,20 @@ namespace Viewer
 	void DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool& pressedCancel);
 	void DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFiles, bool& pressedOK, bool& pressedCancel);
 
-	tString DoSubFolder();									// Returns destination dir.
+	// Returns destination dir.
+	tString DoSubFolder();
 	tSystem::tFileType DoSaveChooseFiletype();
 	void DoSaveFiletypeOptions(tSystem::tFileType);
-	tString DoSaveFiletypeMultiFrame();						// Returns extension.
+
+	// Returns extension.
+	tString DoSaveFiletypeMultiFrame();
+
+	// Not all fileTypes are supported for save. Reads config for each types save parameters. If you set steal to true
+	// you are indicating you don't mind if picture is modified and the pixels are stolen from it. It's more efficient
+	// to do this if possible. Returns success.
+	bool SavePictureAs(tImage::tPicture& picture, const tString& outFile, tSystem::tFileType fileType, bool steal);
+
+	// Not all fileTypes are supported for save. Reads config for each types save parameters. When saving a
+	// Viewer::Image the pixels are never stolen from it. Handles single and multi-frame images. Returns success.
+	bool SaveImageAs(Viewer::Image& image, const tString& outFile, tSystem::tFileType fileType);
 }

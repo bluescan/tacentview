@@ -18,11 +18,21 @@
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL definitions.
 #include <Foundation/tHash.h>
 #include <Foundation/tFundamentals.h>
-#include <Image/tTexture.h>
+//#include <Image/tTexture.h>
 #include <System/tFile.h>
 #include <System/tTime.h>
 #include <System/tMachine.h>
 #include <System/tChunk.h>
+#include <Image/tImageAPNG.h>
+#include <Image/tImageBMP.h>
+#include <Image/tImageGIF.h>
+#include <Image/tImageICO.h>
+#include <Image/tImageJPG.h>
+#include <Image/tImagePNG.h>
+#include <Image/tImageTGA.h>
+#include <Image/tImageTIFF.h>
+#include <Image/tImageQOI.h>
+#include <Image/tImageWEBP.h>
 #include "Image.h"
 #include "Config.h"
 using namespace tStd;
@@ -178,16 +188,12 @@ bool Image::Load()
 			for (int f = 0; f < numFrames; f++)
 			{
 				tFrame* frame = apng.StealFrame(0);
-				tPicture* picture = new tPicture();
 
-				picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
-				picture->Duration = frame->Duration;
-
-				// Since the pixels were stolen, the frame destructor will not delete them.
-				delete frame;
+				// This constructor sets the duration from the frame as well. The frame is deleted for you since steal is true.
+				tPicture* picture = new tPicture(frame, true);
 				Pictures.Append(picture);
 			}
-			Info.SrcPixelFormat = apng.SrcPixelFormat;
+			Info.SrcPixelFormat = apng.PixelFormatSrc;
 			success = true;
 			break;
 		}
@@ -203,7 +209,7 @@ bool Image::Load()
 			int height = bmp.GetHeight();
 			tPixel* pixels = bmp.StealPixels();
 
-			Info.SrcPixelFormat = bmp.SrcPixelFormat;
+			Info.SrcPixelFormat = bmp.PixelFormatSrc;
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
 			success = true;
@@ -221,16 +227,12 @@ bool Image::Load()
 			for (int f = 0; f < numFrames; f++)
 			{
 				tFrame* frame = exr.StealFrame(0);
-				tPicture* picture = new tPicture();
 
-				picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
-				picture->Duration = frame->Duration;
-
-				// Since the pixels were stolen, the frame destructor will not delete them.
-				delete frame;
+				// This constructor sets the duration from the frame as well. The frame is deleted for you since steal is true.
+				tPicture* picture = new tPicture(frame, true);
 				Pictures.Append(picture);
 			}
-			Info.SrcPixelFormat = exr.SrcPixelFormat;
+			Info.SrcPixelFormat = exr.PixelFormatSrc;
 			success = true;
 			break;
 		}
@@ -246,16 +248,12 @@ bool Image::Load()
 			for (int f = 0; f < numFrames; f++)
 			{
 				tFrame* frame = gif.StealFrame(0);
-				tPicture* picture = new tPicture();
-				
-				picture->Set(gif.GetWidth(), gif.GetHeight(), frame->StealPixels(), false);
-				picture->Duration = frame->Duration;
 
-				// Since the pixels were stolen, the frame destructor will not delete them.
-				delete frame;
+				// This constructor sets the duration from the frame as well. The frame is deleted for you since steal is true.
+				tPicture* picture = new tPicture(frame, true);
 				Pictures.Append(picture);
 			}
-			Info.SrcPixelFormat = gif.SrcPixelFormat;
+			Info.SrcPixelFormat = gif.PixelFormatSrc;
 			success = true;
 			break;
 		}
@@ -271,7 +269,7 @@ bool Image::Load()
 			int height = hdr.GetHeight();
 			tPixel* pixels = hdr.StealPixels();
 
-			Info.SrcPixelFormat = hdr.SrcPixelFormat;
+			Info.SrcPixelFormat = hdr.PixelFormatSrc;
 			Info.SrcColourSpace = tColourSpace::lRGB;
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
@@ -292,11 +290,9 @@ bool Image::Load()
 			{
 				tFrame* frame = ico.StealFrame(0);
 				tAssert(frame);
-				tPicture* picture = new tPicture();
-				picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
 
-				// Since the pixels were stolen, the frame destructor will not delete them.
-				delete frame;
+				// This constructor sets the duration from the frame as well. The frame is deleted for you since steal is true.
+				tPicture* picture = new tPicture(frame, true);
 				Pictures.Append(picture);
 			}
 			success = true;
@@ -318,7 +314,7 @@ bool Image::Load()
 			int height = jpg.GetHeight();
 			tPixel* pixels = jpg.StealPixels();
 
-			Info.SrcPixelFormat = jpg.SrcPixelFormat;
+			Info.SrcPixelFormat = jpg.PixelFormatSrc;
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
 
@@ -338,7 +334,7 @@ bool Image::Load()
 			int height = png.GetHeight();
 			tPixel* pixels = png.StealPixels();
 
-			Info.SrcPixelFormat = png.SrcPixelFormat;
+			Info.SrcPixelFormat = png.PixelFormatSrc;
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
 			success = true;
@@ -356,7 +352,7 @@ bool Image::Load()
 			int height = tga.GetHeight();
 			tPixel* pixels = tga.StealPixels();
 
-			Info.SrcPixelFormat = tga.SrcPixelFormat;
+			Info.SrcPixelFormat = tga.PixelFormatSrc;
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
 			success = true;
@@ -372,7 +368,7 @@ bool Image::Load()
 
 			int width = qoi.GetWidth();
 			int height = qoi.GetHeight();
-			Info.SrcPixelFormat = qoi.SrcPixelFormat;
+			Info.SrcPixelFormat = qoi.PixelFormatSrc;
 			tPixel* pixels = qoi.StealPixels();
 
 			tPicture* picture = new tPicture(width, height, pixels, false);
@@ -392,15 +388,12 @@ bool Image::Load()
 			for (int f = 0; f < numFrames; f++)
 			{
 				tFrame* frame = tiff.StealFrame(0);
-				tPicture* picture = new tPicture();
-				picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
-				picture->Duration = frame->Duration;
 
-				// Since the pixels were stolen, the frame destructor will not delete them.
-				delete frame;
+				// This constructor sets the duration from the frame as well. The frame is deleted for you since steal is true.
+				tPicture* picture = new tPicture(frame, true);
 				Pictures.Append(picture);
 			}
-			Info.SrcPixelFormat = tiff.SrcPixelFormat;
+			Info.SrcPixelFormat = tiff.PixelFormatSrc;
 			success = true;
 			break;
 		}
@@ -416,16 +409,12 @@ bool Image::Load()
 			for (int f = 0; f < numFrames; f++)
 			{
 				tFrame* frame = webp.StealFrame(0);
-				tPicture* picture = new tPicture();
 
-				picture->Set(frame->Width, frame->Height, frame->StealPixels(), false);
-				picture->Duration = frame->Duration;
-
-				// Since the pixels were stolen, the frame destructor will not delete them.
-				delete frame;
+				// This constructor sets the duration from the frame as well. The frame is deleted for you since steal is true.
+				tPicture* picture = new tPicture(frame, true);
 				Pictures.Append(picture);
 			}
-			Info.SrcPixelFormat = webp.SrcPixelFormat;
+			Info.SrcPixelFormat = webp.PixelFormatSrc;
 			success = true;
 			break;
 		}
@@ -539,8 +528,8 @@ void Image::PopulatePicturesDDS(const tImageDDS& dds)
 		};
 
 		tList<tLayer> layers[numSides];
-		dds.GetCubemapLayers(layers);
-		for (int s = 0; s < int(tCubemap::tSide::NumSides); s++)
+		dds.GetCubemapLayers(layers);		
+		for (int s = 0; s < int(tImageDDS::tSurfIndex_NumSurfaces); s++)
 		{
 			int side = sideOrder[s];
 
@@ -671,7 +660,7 @@ void Image::PopulatePicturesKTX(const tImageKTX& ktx)
 
 		tList<tLayer> layers[numSides];
 		ktx.GetCubemapLayers(layers);
-		for (int s = 0; s < int(tCubemap::tSide::NumSides); s++)
+		for (int s = 0; s < int(tImageKTX::tSurfIndex_NumSurfaces); s++)
 		{
 			int side = sideOrder[s];
 

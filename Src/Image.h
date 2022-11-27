@@ -23,6 +23,11 @@
 #include <Image/tTexture.h>
 #include <Image/tCubemap.h>
 #include <Image/tMetaData.h>
+#include <Image/tImageASTC.h>
+#include <Image/tImageDDS.h>
+#include <Image/tImageEXR.h>
+#include <Image/tImageHDR.h>
+#include <Image/tImageKTX.h>
 #include "Config.h"
 #include "Undo.h"
 namespace Viewer

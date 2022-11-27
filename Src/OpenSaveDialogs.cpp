@@ -12,6 +12,15 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+#include <Image/tImageTGA.h>
+#include <Image/tImagePNG.h>
+#include <Image/tImageJPG.h>
+#include <Image/tImageGIF.h>
+#include <Image/tImageWEBP.h>
+#include <Image/tImageQOI.h>
+#include <Image/tImageAPNG.h>
+#include <Image/tImageBMP.h>
+#include <Image/tImageTIFF.h>
 #include "imgui.h"
 #include "OpenSaveDialogs.h"
 #include "Image.h"
@@ -469,186 +478,9 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 	bool imageLoaded = img.IsLoaded();
 	if (!imageLoaded)
 		img.Load();
-
-	bool success = false;
 	tFileType fileType = tGetFileTypeFromName( Config::Current->SaveFileType );
-	switch (fileType)
-	{
-		case tFileType::TGA:
-		{
-			tPicture* picture = img.GetCurrentPic();
-			if (!picture || !picture->IsValid())
-				return false;
-			success = picture->SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config::Current->SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
-			break;
-		}
 
-		case tFileType::PNG:
-		{
-			tPicture* picture = img.GetCurrentPic();
-			if (!picture || !picture->IsValid())
-				return false;
-
-			tImagePNG png(picture->GetPixels(), picture->GetWidth(), picture->GetHeight(), false);
-			tImagePNG::tFormat saveFormat = tImagePNG::tFormat::Auto;
-			switch (Config::Current->SaveFilePngDepthMode)
-			{
-				case 1: saveFormat = tImagePNG::tFormat::BPP24;		break;
-				case 2: saveFormat = tImagePNG::tFormat::BPP32;		break;
-			}
-			success = png.Save(outFile, saveFormat);
-			break;
-		}
-
-		case tFileType::JPG:
-		{
-			tPicture* picture = img.GetCurrentPic();
-			if (!picture || !picture->IsValid())
-				return false;
-
-			tImageJPG jpg(picture->GetPixels(), picture->GetWidth(), picture->GetHeight(), false);
-			success = jpg.Save(outFile, Config::Current->SaveFileJpegQuality);
-			break;
-		}
-
-		case tFileType::GIF:
-		{
-			tList<tFrame> frames;
-			tList<tImage::tPicture>& pics = img.GetPictures();
-			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
-			{
-				frames.Append
-				(
-					new tFrame
-					(
-						picture->GetPixelPointer(),
-						picture->GetWidth(),
-						picture->GetHeight(),
-						picture->Duration
-					)
-				);
-			}
-
-			tImageGIF gif(frames, true);
-			success = gif.Save(outFile, Config::Current->SaveFileGifDurOverride);
-			break;
-		}
-
-		case tFileType::WEBP:
-		{
-			tList<tFrame> frames;
-			tList<tImage::tPicture>& pics = img.GetPictures();
-			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
-			{
-				frames.Append
-				(
-					new tFrame
-					(
-						picture->GetPixelPointer(),
-						picture->GetWidth(),
-						picture->GetHeight(),
-						picture->Duration
-					)
-				);
-			}
-
-			tImageWEBP webp(frames, true);
-			success = webp.Save(outFile, Config::Current->SaveFileWebpLossy, Config::Current->SaveFileWebpQualComp, Config::Current->SaveFileWebpDurOverride);
-			break;
-		}
-
-		case tFileType::QOI:
-		{
-			tPicture* picture = img.GetCurrentPic();
-			if (!picture || !picture->IsValid())
-				return false;
-
-			tImageQOI qoi(picture->GetPixels(), picture->GetWidth(), picture->GetHeight(), false);
-			tImageQOI::tFormat saveFormat = tImageQOI::tFormat::Auto;
-			switch (Config::Current->SaveFileQoiDepthMode)
-			{
-				case 1: saveFormat = tImageQOI::tFormat::Bit24;		break;
-				case 2: saveFormat = tImageQOI::tFormat::Bit32;		break;
-			}
-
-			tImageQOI::tSpace saveSpace = tImageQOI::tSpace::sRGB;
-			switch (Config::Current->SaveFileQoiColourSpace)
-			{
-				case 0: saveSpace = tImageQOI::tSpace::sRGB;		break;
-				case 1: saveSpace = tImageQOI::tSpace::Linear;		break;
-			}
-			qoi.SetColourSpace(saveSpace);
-
-			tImageQOI::tFormat savedFormat = qoi.Save(outFile, saveFormat);
-			success = (savedFormat != tImageQOI::tFormat::Invalid);
-			break;
-		}
-
-		case tFileType::APNG:
-		{
-			tList<tFrame> frames;
-			tList<tImage::tPicture>& pics = img.GetPictures();
-			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
-			{
-				frames.Append
-				(
-					new tFrame
-					(
-						picture->GetPixelPointer(),
-						picture->GetWidth(),
-						picture->GetHeight(),
-						picture->Duration
-					)
-				);
-			}
-
-			tImageAPNG apng(frames, true);
-			success = apng.Save(outFile, Config::Current->SaveFileApngDurOverride);
-			break;
-		}
-
-		case tFileType::BMP:
-		{
-			tPicture* picture = img.GetCurrentPic();
-			if (!picture || !picture->IsValid())
-				return false;
-
-			tImageBMP bmp(picture->GetPixels(), picture->GetWidth(), picture->GetHeight(), false);
-			tImageBMP::tFormat saveFormat = tImageBMP::tFormat::Auto;
-			switch (Config::Current->SaveFileBmpDepthMode)
-			{
-				case 1: saveFormat = tImageBMP::tFormat::BPP24;		break;
-				case 2: saveFormat = tImageBMP::tFormat::BPP32;		break;
-			}
-			tImageBMP::tFormat savedFormat = bmp.Save(outFile, saveFormat);
-			success = (savedFormat != tImageBMP::tFormat::Invalid);
-			break;
-		}
-
-		case tFileType::TIFF:
-		{
-			tList<tFrame> frames;
-			tList<tImage::tPicture>& pics = img.GetPictures();
-			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
-			{
-				frames.Append
-				(
-					new tFrame
-					(
- 						picture->GetPixelPointer(),
-						picture->GetWidth(),
-						picture->GetHeight(),
-						picture->Duration
-					)
-				);
-			}
-
-			tImageTIFF tiff(frames, true);
-			success = tiff.Save(outFile, Config::Current->SaveFileTiffZLibDeflate, Config::Current->SaveFileTiffDurOverride);
-			break;
-		}
-	}
-
+	bool success = SaveImageAs(img, outFile, fileType);
 	if (success)
 		tPrintf("Saved image as %s\n", outFile.Chr());
 	else
@@ -712,14 +544,8 @@ bool Viewer::SaveResizeImageAs(Image& img, const tString& outFile, int width, in
 	if ((outPic.GetWidth() != outW) || (outPic.GetHeight() != outH))
 		outPic.Resample(outW, outH, tImage::tResampleFilter(Config::Current->ResampleFilter), tImage::tResampleEdgeMode(Config::Current->ResampleEdgeMode));
 
-	bool success = false;
-	tImage::tPicture::tColourFormat colourFmt = outPic.IsOpaque() ? tImage::tPicture::tColourFormat::Colour : tImage::tPicture::tColourFormat::ColourAndAlpha;
 	tFileType saveFileType = tGetFileTypeFromName(Config::Current->SaveFileType);
-	if (saveFileType == tFileType::TGA)
-		success = outPic.SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config::Current->SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
-	else
-		success = outPic.Save(outFile, colourFmt, Config::Current->SaveFileJpegQuality);
-
+	bool success = SavePictureAs(outPic, outFile, saveFileType, true);
 	if (success)
 		tPrintf("Saved image as %s\n", outFile.Chr());
 	else
@@ -1006,4 +832,303 @@ void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool&
 		ImGui::CloseCurrentPopup();
 	}
 	ImGui::EndPopup();
+}
+
+
+bool Viewer::SaveImageAs(Image& img, const tString& outFile, tFileType fileType)
+{
+	bool success = false;
+	switch (fileType)
+	{
+		case tFileType::TGA:
+		{
+			tPicture* picture = img.GetCurrentPic();
+			if (!picture || !picture->IsValid())
+				return false;
+			tImageTGA tga(*picture, true);
+
+			tImageTGA::tFormat savedFmt = tga.Save(outFile, tImageTGA::tFormat::Auto, Config::Current->SaveFileTargaRLE ? tImageTGA::tCompression::RLE : tImageTGA::tCompression::None);
+			success = (savedFmt != tImageTGA::tFormat::Invalid);
+			//success = picture->SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config::Current->SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
+			break;
+		}
+
+		case tFileType::PNG:
+		{
+			tPicture* picture = img.GetCurrentPic();
+			if (!picture || !picture->IsValid())
+				return false;
+
+			tImagePNG png(*picture, false);
+			//tImagePNG png(picture->GetPixels(), picture->GetWidth(), picture->GetHeight(), false);
+			tImagePNG::tFormat saveFormat = tImagePNG::tFormat::Auto;
+			switch (Config::Current->SaveFilePngDepthMode)
+			{
+				case 1: saveFormat = tImagePNG::tFormat::BPP24;		break;
+				case 2: saveFormat = tImagePNG::tFormat::BPP32;		break;
+			}
+			success = png.Save(outFile, saveFormat);
+			break;
+		}
+
+		case tFileType::JPG:
+		{
+			tPicture* picture = img.GetCurrentPic();
+			if (!picture || !picture->IsValid())
+				return false;
+
+			tImageJPG jpg(*picture, false);
+			//tImageJPG jpg(picture->GetPixels(), picture->GetWidth(), picture->GetHeight(), false);
+			success = jpg.Save(outFile, Config::Current->SaveFileJpegQuality);
+			break;
+		}
+
+		case tFileType::GIF:
+		{
+			tList<tFrame> frames;
+			tList<tImage::tPicture>& pics = img.GetPictures();
+			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
+			{
+				frames.Append
+				(
+					new tFrame
+					(
+						picture->GetPixelPointer(),
+						picture->GetWidth(),
+						picture->GetHeight(),
+						picture->Duration
+					)
+				);
+			}
+
+			tImageGIF gif(frames, true);
+			success = gif.Save(outFile, Config::Current->SaveFileGifDurOverride);
+			break;
+		}
+
+		case tFileType::WEBP:
+		{
+			tList<tFrame> frames;
+			tList<tImage::tPicture>& pics = img.GetPictures();
+			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
+			{
+				frames.Append
+				(
+					new tFrame
+					(
+						picture->GetPixelPointer(),
+						picture->GetWidth(),
+						picture->GetHeight(),
+						picture->Duration
+					)
+				);
+			}
+
+			tImageWEBP webp(frames, true);
+			success = webp.Save(outFile, Config::Current->SaveFileWebpLossy, Config::Current->SaveFileWebpQualComp, Config::Current->SaveFileWebpDurOverride);
+			break;
+		}
+
+		case tFileType::QOI:
+		{
+			tPicture* picture = img.GetCurrentPic();
+			if (!picture || !picture->IsValid())
+				return false;
+
+			tImageQOI qoi(*picture, false);
+			//tImageQOI qoi(picture->GetPixels(), picture->GetWidth(), picture->GetHeight(), false);
+			tImageQOI::tFormat saveFormat = tImageQOI::tFormat::Auto;
+			switch (Config::Current->SaveFileQoiDepthMode)
+			{
+				case 1: saveFormat = tImageQOI::tFormat::Bit24;		break;
+				case 2: saveFormat = tImageQOI::tFormat::Bit32;		break;
+			}
+
+			tImageQOI::tSpace saveSpace = tImageQOI::tSpace::sRGB;
+			switch (Config::Current->SaveFileQoiColourSpace)
+			{
+				case 0: saveSpace = tImageQOI::tSpace::sRGB;		break;
+				case 1: saveSpace = tImageQOI::tSpace::Linear;		break;
+			}
+			qoi.SetColourSpace(saveSpace);
+
+			tImageQOI::tFormat savedFormat = qoi.Save(outFile, saveFormat);
+			success = (savedFormat != tImageQOI::tFormat::Invalid);
+			break;
+		}
+
+		case tFileType::APNG:
+		{
+			tList<tFrame> frames;
+			tList<tImage::tPicture>& pics = img.GetPictures();
+			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
+			{
+				frames.Append
+				(
+					new tFrame
+					(
+						picture->GetPixelPointer(),
+						picture->GetWidth(),
+						picture->GetHeight(),
+						picture->Duration
+					)
+				);
+			}
+
+			tImageAPNG apng(frames, true);
+			success = apng.Save(outFile, Config::Current->SaveFileApngDurOverride);
+			break;
+		}
+
+		case tFileType::BMP:
+		{
+			tPicture* picture = img.GetCurrentPic();
+			if (!picture || !picture->IsValid())
+				return false;
+
+			tImageBMP bmp(*picture, false);
+			//tImageBMP bmp(picture->GetPixels(), picture->GetWidth(), picture->GetHeight(), false);
+			tImageBMP::tFormat saveFormat = tImageBMP::tFormat::Auto;
+			switch (Config::Current->SaveFileBmpDepthMode)
+			{
+				case 1: saveFormat = tImageBMP::tFormat::BPP24;		break;
+				case 2: saveFormat = tImageBMP::tFormat::BPP32;		break;
+			}
+			tImageBMP::tFormat savedFormat = bmp.Save(outFile, saveFormat);
+			success = (savedFormat != tImageBMP::tFormat::Invalid);
+			break;
+		}
+
+		case tFileType::TIFF:
+		{
+			tList<tFrame> frames;
+			tList<tImage::tPicture>& pics = img.GetPictures();
+			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
+			{
+				frames.Append
+				(
+					new tFrame
+					(
+ 						picture->GetPixelPointer(),
+						picture->GetWidth(),
+						picture->GetHeight(),
+						picture->Duration
+					)
+				);
+			}
+
+			tImageTIFF tiff(frames, true);
+			success = tiff.Save(outFile, Config::Current->SaveFileTiffZLibDeflate, Config::Current->SaveFileTiffDurOverride);
+			break;
+		}
+	}
+
+	return success;
+}
+
+
+bool Viewer::SavePictureAs(tImage::tPicture& picture, const tString& outFile, tFileType fileType, bool steal)
+{
+	if (!picture.IsValid())
+		return false;
+
+	bool success = false;
+	switch (fileType)
+	{
+		case tFileType::TGA:
+		{
+			tImageTGA tga(picture, steal);
+			tImageTGA::tFormat savedFmt = tga.Save(outFile, tImageTGA::tFormat::Auto, Config::Current->SaveFileTargaRLE ? tImageTGA::tCompression::RLE : tImageTGA::tCompression::None);
+			success = (savedFmt != tImageTGA::tFormat::Invalid);
+			//success = picture.SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config::Current->SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
+			break;
+		}
+
+		case tFileType::PNG:
+		{
+			tImagePNG png(picture, steal);
+			tImagePNG::tFormat saveFormat = tImagePNG::tFormat::Auto;
+			switch (Config::Current->SaveFilePngDepthMode)
+			{
+				case 1: saveFormat = tImagePNG::tFormat::BPP24;		break;
+				case 2: saveFormat = tImagePNG::tFormat::BPP32;		break;
+			}
+			success = png.Save(outFile, saveFormat);
+			break;
+		}
+
+		case tFileType::JPG:
+		{
+			tImageJPG jpg(picture, steal);
+			success = jpg.Save(outFile, Config::Current->SaveFileJpegQuality);
+			break;
+		}
+
+		case tFileType::GIF:
+		{
+			tImageGIF gif(picture, steal);
+			success = gif.Save(outFile, Config::Current->SaveFileGifDurOverride);
+			break;
+		}
+
+		case tFileType::WEBP:
+		{
+			tImageWEBP webp(picture, steal);
+			success = webp.Save(outFile, Config::Current->SaveFileWebpLossy, Config::Current->SaveFileWebpQualComp, Config::Current->SaveFileWebpDurOverride);
+			break;
+		}
+
+		case tFileType::QOI:
+		{
+			tImageQOI qoi(picture, steal);
+			tImageQOI::tFormat saveFormat = tImageQOI::tFormat::Auto;
+			switch (Config::Current->SaveFileQoiDepthMode)
+			{
+				case 1: saveFormat = tImageQOI::tFormat::Bit24;		break;
+				case 2: saveFormat = tImageQOI::tFormat::Bit32;		break;
+			}
+
+			tImageQOI::tSpace saveSpace = tImageQOI::tSpace::sRGB;
+			switch (Config::Current->SaveFileQoiColourSpace)
+			{
+				case 0: saveSpace = tImageQOI::tSpace::sRGB;		break;
+				case 1: saveSpace = tImageQOI::tSpace::Linear;		break;
+			}
+			qoi.SetColourSpace(saveSpace);
+
+			tImageQOI::tFormat savedFormat = qoi.Save(outFile, saveFormat);
+			success = (savedFormat != tImageQOI::tFormat::Invalid);
+			break;
+		}
+
+		case tFileType::APNG:
+		{
+			tImageAPNG apng(picture, steal);
+			success = apng.Save(outFile, Config::Current->SaveFileApngDurOverride);
+			break;
+		}
+
+		case tFileType::BMP:
+		{
+			tImageBMP bmp(picture, steal);
+			tImageBMP::tFormat saveFormat = tImageBMP::tFormat::Auto;
+			switch (Config::Current->SaveFileBmpDepthMode)
+			{
+				case 1: saveFormat = tImageBMP::tFormat::BPP24;		break;
+				case 2: saveFormat = tImageBMP::tFormat::BPP32;		break;
+			}
+			tImageBMP::tFormat savedFormat = bmp.Save(outFile, saveFormat);
+			success = (savedFormat != tImageBMP::tFormat::Invalid);
+			break;
+		}
+
+		case tFileType::TIFF:
+		{
+			tImageTIFF tiff(picture, steal);
+			success = tiff.Save(outFile, Config::Current->SaveFileTiffZLibDeflate, Config::Current->SaveFileTiffDurOverride);
+			break;
+		}
+	}
+
+	return success;
 }
