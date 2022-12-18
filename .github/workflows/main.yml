@@ -44,10 +44,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: seanmiddleditch/gha-setup-ninja@master
     - name: Build Ubuntu CMake Ninja Clang
       run: |
         echo '*** Configuring CMake ***'
+        sudo apt-get install ninja-build
         mkdir buildninja
         cd buildninja
         cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang -DCMAKE_C_COMPILER=clang
