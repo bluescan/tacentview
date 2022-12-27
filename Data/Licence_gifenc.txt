@@ -1,0 +1,7 @@
+gifenc by Marcel Rodrigues (lecram) may be found at https://github.com/lecram/gifenc
+
+gifenc is public domain. From the README:
+
+-----------------------------------------
+All of the source code and documentation for gifenc is released into the
+public domain and provided without warranty of any kind.

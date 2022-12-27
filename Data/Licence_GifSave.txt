@@ -1,7 +1,0 @@
-The GIF-saving code is from https://github.com/charlietangora/gif-h and is PD
-//
-// gif.h
-// by Charlie Tangora
-// Public domain.
-// Email me : ctangora -at- gmail -dot- com
-//
