@@ -227,7 +227,10 @@ void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeigh
 		case tFileType::GIF:
 		{
 			tImageGIF gif(frames, true);
-			success = gif.Save(outFile, Config::Current->SaveFileGifDurMultiFrame);
+			success = gif.Save
+			(
+				outFile, tPixelFormat::PAL8BIT, tQuantize::Method::Wu, 0, 127, Config::Current->SaveFileGifDurMultiFrame
+			);
 			break;
 		}
 

@@ -902,7 +902,10 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile, tFileType fileType)
 			}
 
 			tImageGIF gif(frames, true);
-			success = gif.Save(outFile, Config::Current->SaveFileGifDurOverride);
+			success = gif.Save
+			(
+				outFile, tPixelFormat::PAL8BIT, tQuantize::Method::Wu, 0, 127, Config::Current->SaveFileGifDurOverride
+			);
 			break;
 		}
 
@@ -1067,7 +1070,10 @@ bool Viewer::SavePictureAs(tImage::tPicture& picture, const tString& outFile, tF
 		case tFileType::GIF:
 		{
 			tImageGIF gif(picture, steal);
-			success = gif.Save(outFile, Config::Current->SaveFileGifDurOverride);
+			success = gif.Save
+			(
+				outFile, tPixelFormat::PAL8BIT, tQuantize::Method::Wu, 0, 127, Config::Current->SaveFileGifDurOverride
+			);			
 			break;
 		}
 
