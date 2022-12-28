@@ -45,6 +45,7 @@ namespace Viewer
 	void DoSavePopup();
 	void DoSaveUnsupportedTypePopup();
 
+	void DoSaveGifOptions(bool multiframeConfigValues);
 	tString SaveAsFile;
 }
 
@@ -301,6 +302,115 @@ tSystem::tFileType Viewer::DoSaveChooseFiletype()
 }
 
 
+void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
+{
+	const int itemWidth = 160;
+	if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
+	ImGui::SliderInt("Bits per Pixel", &Config::Current->SaveFileGifBPP, 1, 8, "%d");
+	ImGui::SameLine();
+	ShowHelpMark("Determines how many colours the gif uses. From 2 to 256.\nNote that using transparency takes one colour away.");
+	
+	if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
+	const char* methodItems[] = { "Fixed", "Spatial", "Neu", "Wu" };
+	ImGui::Combo("Quantize", &Config::Current->SaveFileGifQuantMethod , methodItems, tNumElements(methodItems));
+	ImGui::SameLine();
+	ShowHelpMark
+	(
+		"The colour quantization method is used to create a high-quality palette,\n\n"
+
+		"Fixed: This is the lowest quality since it doesn't inspect the image pixels.\n"
+		"It is useful for 1-bit palettes as it guarantees black and white for this size.\n\n"
+
+		"Spatial: AKA Scolorq. High quality but slow. Good for 5-bit palettes and smaller.\n\n"
+
+		"Neu: AKA NeuQuant. Defacto standard high-quality quantizer. Neural-network\n"
+		"based. Good for 6-bit palettes and larger.\n\n"
+
+		"Wu: The viewer default quantizer. Fast and looks very good at 5-bit and up."
+	);
+
+	if (Config::Current->SaveFileGifQuantMethod == int(tQuantize::Method::Spatial))
+	{
+		if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
+		const char* filterSizeItems[] = { "Low", "Med", "High" };
+		ImGui::Combo("Quantize Filter Size", &Config::Current->SaveFileGifFilterSize , filterSizeItems, tNumElements(filterSizeItems));
+		ImGui::SameLine();
+		ShowHelpMark("Filter size for the scolorq/spatial quantizer. Low -> 1, Med -> 3, High -> 5");
+
+		if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
+		ImGui::SliderFloat("Quantize Dither", &Config::Current->SaveFileGifDitherLevel, 0.0f, 100.0f, "%.1f");
+		ImGui::SameLine();
+		ShowHelpMark
+		(
+			"Dither level for the scolorq/spatial quantizer. 0 means auto-determine a good value for\n"
+			"the current image based on its dimensions. Greater than zero means manually set the amount."
+		);
+	}
+
+	if (Config::Current->SaveFileGifQuantMethod == int(tQuantize::Method::Neu))
+	{
+		if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
+		ImGui::SliderInt("Sample Factor", &Config::Current->SaveFileGifSampleFactor, 1, 10, "%d");
+		ImGui::SameLine();
+		ShowHelpMark
+		(
+			"Sample factor for the Neu quantizer. 1 is highest quality and slowest. All pixels are visited\n"
+			"during the learning step. 10 means only 1/10th of the image is considered during learning."
+		);
+	}
+
+	if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
+	ImGui::SliderInt("Alpha Threshold", &Config::Current->SaveFileGifAlphaThreshold, -1, 255, "%d");
+	ImGui::SameLine();
+	ShowHelpMark
+	(
+		"When set to -1 this will force the gif to be opaque. When between 0 and 255 it will use\n"
+		"this value to determine if the pixel is transparent or not. A pixel alpha less-than or\n"
+		"equal means the pixel will be transparent. Larger means opaque. Gif only supports binary alpha."
+	);
+
+	if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
+	if (!multiframeConfigValues)
+	{
+		ImGui::SliderInt("Duration Override", &Config::Current->SaveFileGifDurOverride, -1, 1000, "%d");
+		ImGui::SameLine(); ShowHelpMark("In 1/100 seconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
+		if (ImGui::Button("1.0s"))  Config::Current->SaveFileGifDurOverride = 100; ImGui::SameLine();
+		if (ImGui::Button("0.5s"))  Config::Current->SaveFileGifDurOverride = 50;  ImGui::SameLine();
+		if (ImGui::Button("15fps")) Config::Current->SaveFileGifDurOverride = 6;   ImGui::SameLine();
+		if (ImGui::Button("30fps")) Config::Current->SaveFileGifDurOverride = 3;
+	}
+	else
+	{
+		ImGui::SliderInt("Frame Duration", &Config::Current->SaveFileGifDurMultiFrame, 0, 1000, "%d");
+		ImGui::SameLine(); ShowHelpMark("In 1/100 seconds.");
+		if (ImGui::Button("1.0s"))  Config::Current->SaveFileGifDurMultiFrame = 100; ImGui::SameLine();
+		if (ImGui::Button("0.5s"))  Config::Current->SaveFileGifDurMultiFrame = 50;  ImGui::SameLine();
+		if (ImGui::Button("15fps")) Config::Current->SaveFileGifDurMultiFrame = 6;   ImGui::SameLine();
+		if (ImGui::Button("30fps")) Config::Current->SaveFileGifDurMultiFrame = 3;   ImGui::SameLine();
+		if (ImGui::Button("50fps")) Config::Current->SaveFileGifDurMultiFrame = 2;
+	}
+
+	if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
+	ImGui::InputInt("Loop", &Config::Current->SaveFileGifLoop);
+	tiClampMin(Config::Current->SaveFileGifLoop, 0);
+	ImGui::SameLine();
+	ShowHelpMark("How many times the animated gif will loop. 0 means forever.");
+
+	bool isOpaque = (Config::Current->SaveFileGifAlphaThreshold == -1);
+	tString loopDesc = "forever";
+	if (Config::Current->SaveFileGifLoop != 0)
+		tsPrintf(loopDesc, "%d times", Config::Current->SaveFileGifLoop);
+	tString desc; tsPrintf
+	(
+		desc, " A %d colour %s GIF that loops %s.",
+		(1 << Config::Current->SaveFileGifBPP) - (isOpaque ? 0 : 1),
+		isOpaque ? "opaque" : "transparent",
+		loopDesc.Chr()
+	);
+	ImGui::Text(desc.Chr());
+}
+
+
 void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 {
 	switch (fileType)
@@ -324,83 +434,8 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			break;
 
 		case tFileType::GIF:
-		{
-			//ImGui::SetNextItemWidth(166);
-			ImGui::SetNextItemWidth(80);
-			ImGui::SliderInt("Bits per Pixel", &Config::Current->SaveFileGifBPP, 1, 8, "%d");
-			ImGui::SameLine();
-			ShowHelpMark("Determines how many colours the gif uses. From 2 to 256.\nNote that using transparency takes one colour away.");
-			
-			ImGui::SetNextItemWidth(80);
-			const char* methodItems[] = { "Fixed", "Spatial", "Neu", "Wu" };
-			//ImGui::SetNextItemWidth(80);
-			ImGui::Combo("Quantizer", &Config::Current->SaveFileGifQuantMethod , methodItems, tNumElements(methodItems));
-			ImGui::SameLine();
-			ShowHelpMark
-			(
-				"The colour quantization method is used to create a high-quality palette,\n\n"
-
-				"Fixed: This is the lowest quality since it doesn't inspect the image pixels.\n"
-				"It is useful for 1-bit palettes as it guarantees black and white for this size.\n\n"
-
-				"Spatial: AKA Scolorq. High quality but slow. Good for 5-bit palettes and smaller.\n\n"
-
-				"Neu: AKA NeuQuant. Defacto standard high-quality quantizer. Neural-network based.\n"
-				"Good for 6-bit palettes and larger.\n\n"
-
-				"Wu: The viewer default quantizer. Fast and looks very good at 5-bit and up."
-			);
-
-			ImGui::SetNextItemWidth(80);
-			ImGui::InputInt("Loop", &Config::Current->SaveFileGifLoop);
-			tiClampMin(Config::Current->SaveFileGifLoop, 0);
-			ImGui::SameLine();
-			ShowHelpMark("How many times the animated gif will loop. 0 means forever.");
-
-			ImGui::SetNextItemWidth(80);
-			ImGui::SliderInt("Alpha Threshold", &Config::Current->SaveFileGifAlphaThreshold, -1, 255, "%d");
-			ImGui::SameLine();
-			ShowHelpMark
-			(
-				"When set to -1 this will force the gif to be opaque. When between 0 and 255 it will use\n"
-				"this value to determine if the pixel is transparent or not. A pixel alpha less-than or\n"
-				"equal means the pixel will be transparent. Larger means opaque. Gif only supports binary alpha."
-			);
-
-			ImGui::SetNextItemWidth(80);
-			ImGui::SliderFloat("Dither", &Config::Current->SaveFileGifDitherLevel, 0.0f, 100.0f, "%.1f");
-			ImGui::SameLine();
-			ShowToolTip
-			(
-				"Dither level for the scolorq/spatial quantizer. 0 means auto-determine a good value for\n"
-				"the current image based on its dimensions. Greater than zero means manually set the amount."
-			);
-			ImGui::NewLine();
-
-			ImGui::SetNextItemWidth(80);
-			const char* filterSizeItems[] = { "low", "Med", "High" };
-			ImGui::Combo("Filter Size", &Config::Current->SaveFileGifFilterSize , filterSizeItems, tNumElements(filterSizeItems));
-			ImGui::SameLine();
-			ShowHelpMark("Filter size for the scolorq/spatial quantizer. Low -> 1, Med -> 3, High -> 5");
-
-			ImGui::SetNextItemWidth(80);
-			ImGui::SliderInt("Sample Factor", &Config::Current->SaveFileGifSampleFactor, 1, 10, "%d");
-			ImGui::SameLine();
-			ShowHelpMark
-			(
-				"Sample factor for the Neu quantizer. 1 is highest quality and slowest. All pixels are visited\n"
-				"during the learning step. 10 means only 1/10th of the image is considered during learning."
-			);
-
-			ImGui::SetNextItemWidth(80);
-			ImGui::SliderInt("Duration Override", &Config::Current->SaveFileGifDurOverride, -1, 1000, "%d");
-			ImGui::SameLine(); ShowToolTip("In 1/100 seconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame."); ImGui::NewLine();
-			if (ImGui::Button("1.0s"))  Config::Current->SaveFileGifDurOverride = 100; ImGui::SameLine();
-			if (ImGui::Button("0.5s"))  Config::Current->SaveFileGifDurOverride = 50;  ImGui::SameLine();
-			if (ImGui::Button("15fps")) Config::Current->SaveFileGifDurOverride = 6;   ImGui::SameLine();
-			if (ImGui::Button("30fps")) Config::Current->SaveFileGifDurOverride = 3;
+			DoSaveGifOptions(false);
 			break;
-		}
 
 		case tFileType::WEBP:
 			ImGui::Checkbox("Lossy", &Config::Current->SaveFileWebpLossy);
@@ -496,13 +531,7 @@ tString Viewer::DoSaveFiletypeMultiFrame()
 	switch (fileType)
 	{
 		case tFileType::GIF:
-			ImGui::SliderInt("Frame Duration", &Config::Current->SaveFileGifDurMultiFrame, 0, 1000, "%d");
-			ImGui::SameLine(); ShowToolTip("In 1/100 seconds."); ImGui::NewLine();
-			if (ImGui::Button("1.0s"))  Config::Current->SaveFileGifDurMultiFrame = 100; ImGui::SameLine();
-			if (ImGui::Button("0.5s"))  Config::Current->SaveFileGifDurMultiFrame = 50;  ImGui::SameLine();
-			if (ImGui::Button("15fps")) Config::Current->SaveFileGifDurMultiFrame = 6;   ImGui::SameLine();
-			if (ImGui::Button("30fps")) Config::Current->SaveFileGifDurMultiFrame = 3;   ImGui::SameLine();
-			if (ImGui::Button("50fps")) Config::Current->SaveFileGifDurMultiFrame = 2;
+			DoSaveGifOptions(true);
 			break;
 
 		case tFileType::WEBP:
