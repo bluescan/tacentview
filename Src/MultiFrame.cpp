@@ -227,10 +227,16 @@ void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeigh
 		case tFileType::GIF:
 		{
 			tImageGIF gif(frames, true);
-			success = gif.Save
-			(
-				outFile, tPixelFormat::PAL8BIT, tQuantize::Method::Wu, 0, 127, Config::Current->SaveFileGifDurMultiFrame
-			);
+			tImageGIF::SaveParams params;
+			params.Format = tPixelFormat(int(tPixelFormat::FirstPalette) + Config::Current->SaveFileGifBPP - 1);
+			params.Method = tQuantize::Method(Config::Current->SaveFileGifQuantMethod);
+			params.Loop = Config::Current->SaveFileGifLoop;
+			params.AlphaThreshold = Config::Current->SaveFileGifAlphaThreshold;
+			params.OverrideFrameDuration = Config::Current->SaveFileGifDurMultiFrame;
+			params.DitherLevel = double(Config::Current->SaveFileGifDitherLevel);
+			params.FilterSize = (Config::Current->SaveFileGifFilterSize * 2) + 1;
+			params.SampleFactor = Config::Current->SaveFileGifSampleFactor;
+			success = gif.Save(outFile, params);
 			break;
 		}
 

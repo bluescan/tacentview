@@ -25,6 +25,7 @@
 #include <System/tFile.h>
 #include <System/tScript.h>
 #include <Image/tResample.h>
+#include <Image/tQuantize.h>
 #include "Config.h"
 #include "Image.h"
 #include "FileDialog.h"
@@ -328,6 +329,13 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 		SaveFileWebpLossy			= false;
 		SaveFileWebpQualComp		= 90.0f;
 		SaveFileTiffZLibDeflate		= true;
+		SaveFileGifBPP				= 8;
+		SaveFileGifQuantMethod		= int(tImage::tQuantize::Method::Wu);
+		SaveFileGifLoop				= 0;
+		SaveFileGifAlphaThreshold	= -1;
+		SaveFileGifDitherLevel		= 0.0f;
+		SaveFileGifFilterSize		= 1;
+		SaveFileGifSampleFactor		= 1;
 		SaveFileWebpDurOverride		= -1;
 		SaveFileGifDurOverride		= -1;
 		SaveFileApngDurOverride		= -1;
@@ -445,6 +453,14 @@ void Config::ProfileSettings::Load(tExpression expr)
 			ReadItem(SaveFileWebpQualComp);
 			ReadItem(SaveFileTiffZLibDeflate);
 
+			ReadItem(SaveFileGifBPP);
+			ReadItem(SaveFileGifQuantMethod);
+			ReadItem(SaveFileGifLoop);
+			ReadItem(SaveFileGifAlphaThreshold);
+			ReadItem(SaveFileGifDitherLevel);
+			ReadItem(SaveFileGifFilterSize);
+			ReadItem(SaveFileGifSampleFactor);
+
 			ReadItem(SaveFileWebpDurOverride);
 			ReadItem(SaveFileGifDurOverride);
 			ReadItem(SaveFileApngDurOverride);
@@ -485,8 +501,8 @@ void Config::ProfileSettings::Load(tExpression expr)
 	tiClamp		(ResampleEdgeModeContactFrame, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);
 	tiClamp		(ResampleFilterContactFinal, 0, int(tImage::tResampleFilter::NumFilters)-1);		// No None allowed.
 	tiClamp		(ResampleEdgeModeContactFinal, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);
-	tiClamp		(ResampleFilterRotateUp, 0, int(tImage::tResampleFilter::NumFilters));				// None allowed.
-	tiClamp		(ResampleFilterRotateDown, 0, int(tImage::tResampleFilter::NumFilters));			// None allowed.
+	tiClamp		(ResampleFilterRotateUp, 0, int(tImage::tResampleFilter::NumFilters));				// None allowed, so no -1.
+	tiClamp		(ResampleFilterRotateDown, 0, int(tImage::tResampleFilter::NumFilters));			// None allowed, so no -1.
 	tiClamp		(RotateMode, 0, int(RotMode::NumModes)-1);
 	tiClamp		(DefaultZoomMode, 0, int(ZoomMode::NumModes)-1);
 	tiClampMin	(SlideshowPeriod, 1.0/60.0);
@@ -507,6 +523,13 @@ void Config::ProfileSettings::Load(tExpression expr)
 	tiClamp		(SaveAllSizeMode, 0, 3);
 	tiClamp		(SaveFileJpegQuality, 1, 100);
 	tiClamp		(SaveFileWebpQualComp, 0.0f, 100.0f);
+	tiClamp		(SaveFileGifBPP, 1, 8);
+	tiClamp		(SaveFileGifQuantMethod, 0, int(tImage::tQuantize::Method::NumMethods)-1);
+	tiClampMin	(SaveFileGifLoop, 0);
+	tiClamp		(SaveFileGifAlphaThreshold, -1, 255);
+	tiClampMin	(SaveFileGifDitherLevel, 0.0f);
+	tiClamp		(SaveFileGifFilterSize, 0, 2);
+	tiClamp		(SaveFileGifSampleFactor, 1, 10);
 
 	tiClampMin	(SaveFileWebpDurOverride, -1);
 	tiClampMin	(SaveFileGifDurOverride, -1);
@@ -578,6 +601,14 @@ bool Config::ProfileSettings::Save(tExprWriter& writer) const
 	WriteItem(SaveFileWebpLossy);
 	WriteItem(SaveFileWebpQualComp);
 	WriteItem(SaveFileTiffZLibDeflate);
+
+	WriteItem(SaveFileGifBPP);
+	WriteItem(SaveFileGifQuantMethod);
+	WriteItem(SaveFileGifLoop);
+	WriteItem(SaveFileGifAlphaThreshold);
+	WriteItem(SaveFileGifDitherLevel);
+	WriteItem(SaveFileGifFilterSize);
+	WriteItem(SaveFileGifSampleFactor);
 
 	WriteItem(SaveFileWebpDurOverride);
 	WriteItem(SaveFileGifDurOverride);

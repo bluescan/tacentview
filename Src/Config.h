@@ -143,6 +143,13 @@ struct ProfileSettings
 	bool	SaveFileWebpLossy;
 	float	SaveFileWebpQualComp;				// E [0.0, 100.0]
 	bool	SaveFileTiffZLibDeflate;
+	int		SaveFileGifBPP;						// E [1, 8]
+	int		SaveFileGifQuantMethod;				// E [0, 3]
+	int		SaveFileGifLoop;					// E [0, inf]
+	int		SaveFileGifAlphaThreshold;			// E [-1, 255]
+	float	SaveFileGifDitherLevel;				// E [0.0f, inf]
+	int		SaveFileGifFilterSize;				// E [0, 2] Maps to 1, 3, 5.
+	int		SaveFileGifSampleFactor;			// E [1, 10]
 
 	int SaveFileWebpDurOverride;				// E [-1, inf]. In ms.
 	int SaveFileGifDurOverride;					// E [-1, inf]. In 1/100 seconds.
