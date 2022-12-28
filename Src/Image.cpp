@@ -247,6 +247,7 @@ bool Image::Load()
 			int numFrames = gif.GetNumFrames();
 			for (int f = 0; f < numFrames; f++)
 			{
+				// This steals the first frame every time, leving the remainder for the next time through.
 				tFrame* frame = gif.StealFrame(0);
 
 				// This constructor sets the duration from the frame as well. The frame is deleted for you since steal is true.
