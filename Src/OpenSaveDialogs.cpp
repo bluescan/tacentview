@@ -121,7 +121,12 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 	static tString label;
 
 	if (saveAsPressed)
-		SaveAsDialog.OpenPopup(ImagesDir);
+	{
+		tString baseName;
+		if (CurrImage)
+			baseName = tSystem::tGetFileBaseName(CurrImage->Filename);
+		SaveAsDialog.OpenPopup(ImagesDir, baseName);
+	}
 	FileDialog::DialogState state = SaveAsDialog.DoPopup();
 	if (state == FileDialog::DialogState::OK)
 	{
@@ -308,25 +313,30 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 	if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
 	ImGui::SliderInt("Bits per Pixel", &Config::Current->SaveFileGifBPP, 1, 8, "%d");
 	ImGui::SameLine();
-	ShowHelpMark("Determines how many colours the gif uses. From 2 to 256.\nNote that using transparency takes one colour away.");
+	ShowHelpMark
+	(
+		"Determines how many colours the gif uses. From 2 to 256.\n"
+		"Note that using transparency takes one colour away."
+	);
 	
 	if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
-	const char* methodItems[] = { "Fixed", "Spatial", "Neu", "Wu" };
+	const char* methodItems[] = { "Fixed Palette", "Spatial Scolorq", "Neu Quant", "Wu Bipartition" };
 	ImGui::Combo("Quantize", &Config::Current->SaveFileGifQuantMethod , methodItems, tNumElements(methodItems));
 	ImGui::SameLine();
 	ShowHelpMark
 	(
 		"The colour quantization method is used to create a high-quality palette,\n\n"
 
-		"Fixed: This is the lowest quality since it doesn't inspect the image pixels.\n"
-		"It is useful for 1-bit palettes as it guarantees black and white for this size.\n\n"
+		"Fixed Palette: Lowest quality since it doesn't inspect the image pixels. It\n"
+		"is useful for 1-bit palettes as it guarantees black and white for this size.\n\n"
 
-		"Spatial: AKA Scolorq. High quality but slow. Good for 5-bit palettes and smaller.\n\n"
+		"Spatial Scolorq: High quality but slow. Good for 5-bit palettes and smaller.\n"
+		"This is the only quantization method supporting dither.\n\n"
 
-		"Neu: AKA NeuQuant. Defacto standard high-quality quantizer. Neural-network\n"
-		"based. Good for 6-bit palettes and larger.\n\n"
+		"Neu Quant: Defacto high-quality quantizer. Neural-network based.\n"
+		"Good for 6-bit palettes and larger.\n\n"
 
-		"Wu: The viewer default quantizer. Fast and looks very good at 5-bit and up."
+		"Wu Bipartition: The default quantizer. Fast and looks very good at 5-bit and up."
 	);
 
 	if (Config::Current->SaveFileGifQuantMethod == int(tQuantize::Method::Spatial))
@@ -338,19 +348,20 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 		ShowHelpMark("Filter size for the scolorq/spatial quantizer. Low -> 1, Med -> 3, High -> 5");
 
 		if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
-		ImGui::SliderFloat("Quantize Dither", &Config::Current->SaveFileGifDitherLevel, 0.0f, 100.0f, "%.1f");
+ 		ImGui::SliderFloat("Quantize Dither", &Config::Current->SaveFileGifDitherLevel, 0.0f, 2.0f, "%.1f");
 		ImGui::SameLine();
 		ShowHelpMark
 		(
 			"Dither level for the scolorq/spatial quantizer. 0 means auto-determine a good value for\n"
-			"the current image based on its dimensions. Greater than zero means manually set the amount."
+			"the current image based on its dimensions. Greater than zero means manually set the\n"
+			"amount. A dither value of 0.1 results in no dithering. 2.0 results in significant dithering."
 		);
 	}
 
 	if (Config::Current->SaveFileGifQuantMethod == int(tQuantize::Method::Neu))
 	{
 		if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
-		ImGui::SliderInt("Sample Factor", &Config::Current->SaveFileGifSampleFactor, 1, 10, "%d");
+		ImGui::SliderInt("Quantize Factor", &Config::Current->SaveFileGifSampleFactor, 1, 10, "%d");
 		ImGui::SameLine();
 		ShowHelpMark
 		(
@@ -360,9 +371,9 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 	}
 
 	if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
-	ImGui::SliderInt("Alpha Threshold", &Config::Current->SaveFileGifAlphaThreshold, -1, 255, "%d");
-	ImGui::SameLine();
-	ShowHelpMark
+	ImGui::InputInt("Alpha Threshold", &Config::Current->SaveFileGifAlphaThreshold);
+	tiClamp(Config::Current->SaveFileGifAlphaThreshold, -1, 255);
+	ImGui::SameLine(); ShowHelpMark
 	(
 		"When set to -1 this will force the gif to be opaque. When between 0 and 255 it will use\n"
 		"this value to determine if the pixel is transparent or not. A pixel alpha less-than or\n"
@@ -372,7 +383,8 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 	if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
 	if (!multiframeConfigValues)
 	{
-		ImGui::SliderInt("Duration Override", &Config::Current->SaveFileGifDurOverride, -1, 1000, "%d");
+		ImGui::InputInt("Duration Override", &Config::Current->SaveFileGifDurOverride);
+		tiClamp(Config::Current->SaveFileGifAlphaThreshold, -1, 1000);
 		ImGui::SameLine(); ShowHelpMark("In 1/100 seconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
 		if (ImGui::Button("1.0s"))  Config::Current->SaveFileGifDurOverride = 100; ImGui::SameLine();
 		if (ImGui::Button("0.5s"))  Config::Current->SaveFileGifDurOverride = 50;  ImGui::SameLine();
@@ -381,7 +393,8 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 	}
 	else
 	{
-		ImGui::SliderInt("Frame Duration", &Config::Current->SaveFileGifDurMultiFrame, 0, 1000, "%d");
+		ImGui::InputInt("Frame Duration", &Config::Current->SaveFileGifDurMultiFrame);
+		tiClamp(Config::Current->SaveFileGifDurMultiFrame, 0, 1000);
 		ImGui::SameLine(); ShowHelpMark("In 1/100 seconds.");
 		if (ImGui::Button("1.0s"))  Config::Current->SaveFileGifDurMultiFrame = 100; ImGui::SameLine();
 		if (ImGui::Button("0.5s"))  Config::Current->SaveFileGifDurMultiFrame = 50;  ImGui::SameLine();
@@ -394,20 +407,43 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 	ImGui::InputInt("Loop", &Config::Current->SaveFileGifLoop);
 	tiClampMin(Config::Current->SaveFileGifLoop, 0);
 	ImGui::SameLine();
-	ShowHelpMark("How many times the animated gif will loop. 0 means forever.");
+	ShowHelpMark("How many times an animated gif will loop. 0 means forever.\nThis only applies to animated (multi-frame) images.");
 
 	bool isOpaque = (Config::Current->SaveFileGifAlphaThreshold == -1);
 	tString loopDesc = "forever";
 	if (Config::Current->SaveFileGifLoop != 0)
-		tsPrintf(loopDesc, "%d times", Config::Current->SaveFileGifLoop);
+		if (Config::Current->SaveFileGifLoop == 1)
+			tsPrintf(loopDesc, "1 time");
+		else
+			tsPrintf(loopDesc, "%d times", Config::Current->SaveFileGifLoop);
 	tString desc; tsPrintf
 	(
-		desc, " A %d colour %s GIF that loops %s.",
+		desc, " A %d colour %s GIF. If\n animated, loops %s.",
 		(1 << Config::Current->SaveFileGifBPP) - (isOpaque ? 0 : 1),
 		isOpaque ? "opaque" : "transparent",
 		loopDesc.Chr()
 	);
+	if ((Config::Current->SaveFileGifQuantMethod == int(tQuantize::Method::Spatial)) && (Config::Current->SaveFileGifBPP > 5))
+		desc += "\n\n WARNING: Spatial quantization\n at large BPPs may take a long\n time for large images.";
+
 	ImGui::Text(desc.Chr());
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.0f);
+
+	if (ImGui::Button("Reset", tVector2(100.0f, 0.0f)))
+	{
+		Config::Current->SaveFileGifBPP				= 8;
+		Config::Current->SaveFileGifQuantMethod		= int(tImage::tQuantize::Method::Wu);
+		Config::Current->SaveFileGifLoop			= 0;
+		Config::Current->SaveFileGifAlphaThreshold	= -1;
+		Config::Current->SaveFileGifDitherLevel		= 0.0f;
+		Config::Current->SaveFileGifFilterSize		= 1;
+		Config::Current->SaveFileGifSampleFactor	= 1;
+		Config::Current->SaveFileWebpDurOverride	= -1;
+		Config::Current->SaveFileGifDurOverride		= -1;
+		Config::Current->SaveFileGifDurMultiFrame	= 3;
+	}
 }
 
 
@@ -947,7 +983,6 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile, tFileType fileType)
 
 			tImageTGA::tFormat savedFmt = tga.Save(outFile, tImageTGA::tFormat::Auto, Config::Current->SaveFileTargaRLE ? tImageTGA::tCompression::RLE : tImageTGA::tCompression::None);
 			success = (savedFmt != tImageTGA::tFormat::Invalid);
-			//success = picture->SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config::Current->SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
 			break;
 		}
 
@@ -958,7 +993,6 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile, tFileType fileType)
 				return false;
 
 			tImagePNG png(*picture, false);
-			//tImagePNG png(picture->GetPixels(), picture->GetWidth(), picture->GetHeight(), false);
 			tImagePNG::tFormat saveFormat = tImagePNG::tFormat::Auto;
 			switch (Config::Current->SaveFilePngDepthMode)
 			{
@@ -976,7 +1010,6 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile, tFileType fileType)
 				return false;
 
 			tImageJPG jpg(*picture, false);
-			//tImageJPG jpg(picture->GetPixels(), picture->GetWidth(), picture->GetHeight(), false);
 			success = jpg.Save(outFile, Config::Current->SaveFileJpegQuality);
 			break;
 		}
@@ -1043,7 +1076,6 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile, tFileType fileType)
 				return false;
 
 			tImageQOI qoi(*picture, false);
-			//tImageQOI qoi(picture->GetPixels(), picture->GetWidth(), picture->GetHeight(), false);
 			tImageQOI::tFormat saveFormat = tImageQOI::tFormat::Auto;
 			switch (Config::Current->SaveFileQoiDepthMode)
 			{
@@ -1094,7 +1126,6 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile, tFileType fileType)
 				return false;
 
 			tImageBMP bmp(*picture, false);
-			//tImageBMP bmp(picture->GetPixels(), picture->GetWidth(), picture->GetHeight(), false);
 			tImageBMP::tFormat saveFormat = tImageBMP::tFormat::Auto;
 			switch (Config::Current->SaveFileBmpDepthMode)
 			{
@@ -1147,7 +1178,6 @@ bool Viewer::SavePictureAs(tImage::tPicture& picture, const tString& outFile, tF
 			tImageTGA tga(picture, steal);
 			tImageTGA::tFormat savedFmt = tga.Save(outFile, tImageTGA::tFormat::Auto, Config::Current->SaveFileTargaRLE ? tImageTGA::tCompression::RLE : tImageTGA::tCompression::None);
 			success = (savedFmt != tImageTGA::tFormat::Invalid);
-			//success = picture.SaveTGA(outFile, tImage::tImageTGA::tFormat::Auto, Config::Current->SaveFileTargaRLE ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None);
 			break;
 		}
 

@@ -762,7 +762,7 @@ FileDialog::~FileDialog()
 }
 
 
-void FileDialog::OpenPopup(const tString& openDir)
+void FileDialog::OpenPopup(const tString& openDir, const tString& saveFileBaseName)
 {
 	// When opening we always invalidate the current tree. This is in case directories were added/removed
 	// outside of the viewer. @todo Revisit. Might be heavy-handed.
@@ -788,6 +788,9 @@ void FileDialog::OpenPopup(const tString& openDir)
 		case DialogMode::SaveFile:
 			if (openDir.IsValid() && tDirExists(openDir))
 				DirToPath(ConfigSaveFilePath, openDir);
+
+			if (saveFileBaseName.IsValid())
+				SaveFileResult = saveFileBaseName.Chr();
 			ImGui::OpenPopup("Save File");
 			break;
 	}

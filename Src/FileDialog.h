@@ -63,7 +63,10 @@ public:
 	// what is on the file-system (and network shares for Windows) when you call this function. Currently only the
 	// network share query is offloaded to another thread. @todo Consider also affloading the root (main filesystem)
 	// queries.
-	void OpenPopup(const tString& openDir = tString());
+	//
+	// saveFileBaseName is only used for the SaveFile dialog mode. If valid it pre-populates the filename without
+	// extension in the dialog.
+	void OpenPopup(const tString& openDir = tString(), const tString& saveFileBaseName = tString());
 
 	enum class DialogState
 	{
@@ -112,8 +115,7 @@ private:
 	tSystem::tFileTypes FileTypes;
 	tString Result;
 
-	// @todo Once tString has proper support for resizing and a concept of current size vs capacity then
-	// we can do away with this std::string and use Result directly.
+	// std::string is used because InputTextWithHint needs a std::string.
 	std::string SaveFileResult;
 
 	TreeNode* RootTreeNode;
