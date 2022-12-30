@@ -412,10 +412,12 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 	bool isOpaque = (Config::Current->SaveFileGifAlphaThreshold == -1);
 	tString loopDesc = "forever";
 	if (Config::Current->SaveFileGifLoop != 0)
+	{
 		if (Config::Current->SaveFileGifLoop == 1)
 			tsPrintf(loopDesc, "1 time");
 		else
 			tsPrintf(loopDesc, "%d times", Config::Current->SaveFileGifLoop);
+	}
 	tString desc; tsPrintf
 	(
 		desc, " A %d colour %s GIF. If\n animated, loops %s.",
