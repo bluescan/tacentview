@@ -97,6 +97,15 @@ struct ProfileSettings
 	};
 	int ReticleMode;
 
+	enum class UIMode
+	{
+		Small,
+		Medium,
+		Large,
+		NumModes
+	};
+	int UISize;
+
 	int ResampleFilter;							// Matches tImage::tResampleFilter. Used for image resize when saving and multiframe saving.
 	int ResampleEdgeMode;						// Matches tImage::tResampleEdgeMode. Used for image resize when saving and multiframe saving.
 	int ResampleFilterContactFrame;				// Matches tImage::tResampleFilter. Used for contact sheet frame resizing.

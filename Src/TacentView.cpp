@@ -1277,8 +1277,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 					break;
 			}
 		}
-		//Config::Current->ShowMenuBar ||
-		//Config::Current->ShowImageDetails ||
 
 		if (reticleVisible)
 		{
@@ -1363,7 +1361,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	
 	// Show the big demo window. You can browse its code to learn more about Dear ImGui.
 	static bool showDemoWindow = false;
-	// showDemoWindow = true;
+	// static bool showDemoWindow = true;
 	if (showDemoWindow)
 		ImGui::ShowDemoWindow(&showDemoWindow);
 
@@ -3103,8 +3101,16 @@ int main(int argc, char** argv)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	// Fonts must be added from smallest to largest and number of adds needs to match UIMode::NumModes.
 	tString fontFile = dataDir + "Roboto-Medium.ttf";
 	io.Fonts->AddFontFromFileTTF(fontFile.Chr(), 14.0f);
+	io.Fonts->AddFontFromFileTTF(fontFile.Chr(), 16.0f);
+	io.Fonts->AddFontFromFileTTF(fontFile.Chr(), 18.0f);
+	tiClamp(Viewer::Config::Current->UISize, 0, io.Fonts->Fonts.Size - 1);
+	ImFont* fontCurrent = ImGui::GetFont();
+	ImFont* font = io.Fonts->Fonts[Viewer::Config::Current->UISize];
+	if (font != fontCurrent)
+		io.FontDefault = font;
 
 	Viewer::LoadAppImages(dataDir);
 	Viewer::PopulateImages();

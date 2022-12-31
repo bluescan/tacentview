@@ -359,6 +359,7 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 		BackgroundColour			= tColouri::black;
 		BackgroundExtend			= false;
 		ReticleMode					= (profile == Profile::Basic) ? int(RetMode::AutoHide) : int(RetMode::OnSelect);
+		UISize						= int(UIMode::Small);
 	}
 
 	if (categories & Category_Slideshow)
@@ -424,6 +425,7 @@ void Config::ProfileSettings::Load(tExpression expr)
 			ReadItem(BackgroundColour);
 			ReadItem(BackgroundExtend);
 			ReadItem(ReticleMode);
+			ReadItem(UISize);
 			ReadItem(ResampleFilter);
 			ReadItem(ResampleEdgeMode);
 			ReadItem(ResampleFilterContactFrame);
@@ -509,6 +511,7 @@ void Config::ProfileSettings::Load(tExpression expr)
 	tiClamp		(BackgroundStyle, 0, int(BGStyle::NumStyles)-1);
 	tiClamp		(BackgroundCheckerboxSize, 2, 256);
 	tiClamp		(ReticleMode, 0, int(RetMode::NumModes)-1);
+	tiClamp		(UISize, 0, int(UIMode::NumModes)-1);
 	tiClamp		(OverlayCorner, 0, 3);
 	tiClamp		(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
 	tiClamp		(SortKey, 0, 6);
@@ -573,6 +576,7 @@ bool Config::ProfileSettings::Save(tExprWriter& writer) const
 	WriteItem(BackgroundColour);
 	WriteItem(BackgroundExtend);
 	WriteItem(ReticleMode);
+	WriteItem(UISize);
 	WriteItem(ResampleFilter);
 	WriteItem(ResampleEdgeMode);
 	WriteItem(ResampleFilterContactFrame);
