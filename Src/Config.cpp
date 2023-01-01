@@ -387,7 +387,7 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 		ConfirmFileOverwrites		= true;
 		AutoPropertyWindow			= (profile == Profile::Basic) ? false : true;
 		AutoPlayAnimatedImages		= true;
-		DefaultZoomMode				= int(ZoomMode::DownscaleOnly);
+		DefaultZoomMode				= int(ZoomModeEnum::DownscaleOnly);
 	}
 
 	if (categories & Category_Bindings)
@@ -506,7 +506,7 @@ void Config::ProfileSettings::Load(tExpression expr)
 	tiClamp		(ResampleFilterRotateUp, 0, int(tImage::tResampleFilter::NumFilters));				// None allowed, so no -1.
 	tiClamp		(ResampleFilterRotateDown, 0, int(tImage::tResampleFilter::NumFilters));			// None allowed, so no -1.
 	tiClamp		(RotateMode, 0, int(RotateModeEnum::NumModes)-1);
-	tiClamp		(DefaultZoomMode, 0, int(ZoomMode::NumModes)-1);
+	tiClamp		(DefaultZoomMode, 0, int(ZoomModeEnum::NumModes)-1);
 	tiClampMin	(SlideshowPeriod, 1.0/60.0);
 	tiClamp		(BackgroundStyle, 0, int(BackgroundStyleEnum::NumStyles)-1);
 	tiClamp		(BackgroundCheckerboxSize, 2, 256);
@@ -523,7 +523,7 @@ void Config::ProfileSettings::Load(tExpression expr)
 	tiClampMin	(MaxCacheFiles, 200);	
 	tiClamp		(MaxUndoSteps, 1, 32);
 	tiClamp		(MipmapFilter, 0, int(tImage::tResampleFilter::NumFilters));						// None allowed.
-	tiClamp		(SaveAllSizeMode, 0, 3);
+	tiClamp		(SaveAllSizeMode, 0, int(SizeModeEnum::NumModes)-1);
 	tiClamp		(SaveFileJpegQuality, 1, 100);
 	tiClamp		(SaveFileWebpQualComp, 0.0f, 100.0f);
 	tiClamp		(SaveFileGifBPP, 1, 8);

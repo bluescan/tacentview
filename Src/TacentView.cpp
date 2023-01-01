@@ -204,7 +204,7 @@ namespace Viewer
 	float CursorMouseY								= -1.0f;
 	float RotateAnglePreview						= 0.0f;
 
-	Config::ProfileSettings::ZoomMode CurrZoomMode	= Config::ProfileSettings::ZoomMode::DownscaleOnly;
+	Config::ProfileSettings::ZoomModeEnum CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::DownscaleOnly;
 
 	int Dispw										= 1;
 	int Disph										= 1;
@@ -490,7 +490,7 @@ void Viewer::SetCurrentImage(const tString& currFilename)
 
 	if (CurrImage)
 	{
-		CurrZoomMode = Config::ProfileSettings::ZoomMode::DownscaleOnly;
+		CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::DownscaleOnly;
 		LoadCurrImage();
 	}
 }
@@ -513,11 +513,11 @@ void Viewer::LoadCurrImage()
 	if (!CurrImage->IsLoaded())
 		imgJustLoaded = CurrImage->Load();
 
-	if (Config::Current->DefaultZoomMode != int(Config::ProfileSettings::ZoomMode::User))
+	if (Config::Current->GetDefaultZoomMode() != Config::ProfileSettings::ZoomModeEnum::User)
 	{
 		// Removed on purpose.
 		// CurrZoomMode = Config::ProfileSettings::ZoomMode(Config::Current->DefaultZoomMode);
-		if (CurrZoomMode == Config::ProfileSettings::ZoomMode::OneToOne)
+		if (CurrZoomMode == Config::ProfileSettings::ZoomModeEnum::OneToOne)
 			CurrImage->ZoomPercent = 100.0f;
 	}
 
@@ -1050,7 +1050,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		draww = float(workAreaW);
 		drawh = float(workAreaH);
 
-		if (CurrZoomMode == Config::ProfileSettings::ZoomMode::DownscaleOnly)
+		if (CurrZoomMode == Config::ProfileSettings::ZoomModeEnum::DownscaleOnly)
 		{
 			CurrImage->ZoomPercent = 100.0f;
 			float zoomh = draww / iw;
@@ -1058,7 +1058,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			if ((iw > draww) || (ih > drawh))
 				CurrImage->ZoomPercent = 100.0f * tMath::tMin(zoomh, zoomv);
 		}
-		else if (CurrZoomMode == Config::ProfileSettings::ZoomMode::Fit)
+		else if (CurrZoomMode == Config::ProfileSettings::ZoomModeEnum::Fit)
 		{
 			float zoomh = draww / iw;
 			float zoomv = drawh / ih;
@@ -1784,36 +1784,36 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			ImGui::Separator();
 
-			bool userMode = CurrZoomMode == Config::ProfileSettings::ZoomMode::User;
+			bool userMode = CurrZoomMode == Config::ProfileSettings::ZoomModeEnum::User;
 			if (ImGui::MenuItem("Zoom User", nullptr, &userMode))
 			{
 				ResetPan();
-				CurrZoomMode = Config::ProfileSettings::ZoomMode::User;
+				CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::User;
 			}
 
-			bool fitMode = CurrZoomMode == Config::ProfileSettings::ZoomMode::Fit;
+			bool fitMode = CurrZoomMode == Config::ProfileSettings::ZoomModeEnum::Fit;
 			tString zoomFitKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ZoomFit);
 			if (ImGui::MenuItem("Zoom Fit", zoomFitKey.Chz(), &fitMode))
 			{
 				ResetPan();
-				CurrZoomMode = Config::ProfileSettings::ZoomMode::Fit;
+				CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::Fit;
 			}
 
-			bool downscale = CurrZoomMode == Config::ProfileSettings::ZoomMode::DownscaleOnly;
+			bool downscale = CurrZoomMode == Config::ProfileSettings::ZoomModeEnum::DownscaleOnly;
 			tString zoomDSKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ZoomDownscaleOnly);
 			if (ImGui::MenuItem("Zoom Downscale", zoomDSKey.Chz(), &downscale))
 			{
 				ResetPan();
-				CurrZoomMode = Config::ProfileSettings::ZoomMode::DownscaleOnly;
+				CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::DownscaleOnly;
 			}
 
-			bool oneToOne = CurrZoomMode == Config::ProfileSettings::ZoomMode::OneToOne;
+			bool oneToOne = CurrZoomMode == Config::ProfileSettings::ZoomModeEnum::OneToOne;
 			tString zoomOneKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ZoomOneToOne);
 			if (ImGui::MenuItem("Zoom 1:1", zoomOneKey.Chz(), &oneToOne))
 			{
 				if (CurrImage) CurrImage->ZoomPercent = 100.0f;
 				ResetPan();
-				CurrZoomMode = Config::ProfileSettings::ZoomMode::OneToOne;
+				CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::OneToOne;
 			}
 
 			ImGui::PushItemWidth(60);
@@ -2245,7 +2245,7 @@ void Viewer::ApplyZoomDelta(float zoomDelta)
 		return;
 
 	float& zoomPercent = CurrImage->ZoomPercent;
-	CurrZoomMode = Config::ProfileSettings::ZoomMode::User;
+	CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::User;
 	float zoomOrig = zoomPercent;
 	zoomPercent += zoomDelta;
 	if (((zoomOrig < 100.0f) && (zoomPercent > 100.0f)) || ((zoomOrig > 100.0f) && (zoomPercent < 100.0f)))
@@ -2283,14 +2283,14 @@ void Viewer::ChangeProfile(Profile profile)
 void Viewer::ZoomFit()
 {
 	ResetPan();
-	CurrZoomMode = Config::ProfileSettings::ZoomMode::Fit;
+	CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::Fit;
 }
 
 
 void Viewer::ZoomDownscaleOnly()
 {
 	ResetPan();
-	CurrZoomMode = Config::ProfileSettings::ZoomMode::DownscaleOnly;
+	CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::DownscaleOnly;
 }
 
 
@@ -2402,12 +2402,12 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case Bindings::Operation::ZoomFit:
 			ResetPan();
-			CurrZoomMode = Config::ProfileSettings::ZoomMode::Fit;
+			CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::Fit;
 			break;
 
 		case Bindings::Operation::ZoomDownscaleOnly:
 			ResetPan();
-			CurrZoomMode = Config::ProfileSettings::ZoomMode::DownscaleOnly;
+			CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::DownscaleOnly;
 			break;
 
 		case Bindings::Operation::ZoomOneToOne:
@@ -2415,7 +2415,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			{
 				CurrImage->ZoomPercent = 100.0f;
 				ResetPan();
-				CurrZoomMode = Config::ProfileSettings::ZoomMode::OneToOne;
+				CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::OneToOne;
 			}
 			break;
 
@@ -2738,7 +2738,7 @@ void Viewer::ScrollWheelCallback(GLFWwindow* window, double x, double y)
 
 	DisappearCountdown = DisappearDuration;
 
-	CurrZoomMode = Config::ProfileSettings::ZoomMode::User;
+	CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::User;
 	if (CurrImage)
 	{
 		float percentChange = (y > 0.0) ? 0.1f : 1.0f-0.909090909f;

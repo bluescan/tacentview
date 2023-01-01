@@ -79,7 +79,7 @@ namespace Viewer
 	extern Viewer::Image Image_AnchorML;
 	extern Viewer::Image Image_AnchorMM;
 
-	extern Config::ProfileSettings::ZoomMode CurrZoomMode;
+	extern Config::ProfileSettings::ZoomModeEnum CurrZoomMode;
 	extern bool CropMode;
 	extern Anchor Request_PanSnap;
 	extern bool DeleteAllCacheFilesOnExit;

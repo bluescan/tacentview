@@ -23,7 +23,7 @@ namespace Viewer { namespace Config {
 
 
 enum Category
-{
+{ 
 	Category_None,
 
 	Category_Unspecified			= 1 << 0,		// Everything that's not in a category below.
@@ -131,7 +131,7 @@ struct ProfileSettings
 	int RotateMode;
 	RotateModeEnum GetRotateMode() const				{ return RotateModeEnum(RotateMode); }
 
-	enum class ZoomMode
+	enum class ZoomModeEnum
 	{
 		User,
 		Fit,
@@ -140,6 +140,7 @@ struct ProfileSettings
 		NumModes
 	};
 	int DefaultZoomMode;								// Zoom mode to use when opening a new image. User means don't change zoom.
+	ZoomModeEnum GetDefaultZoomMode() const				{ return ZoomModeEnum(DefaultZoomMode); }
 
 	bool ConfirmDeletes;
 	bool ConfirmFileOverwrites;
@@ -176,14 +177,17 @@ struct ProfileSettings
 	int SaveFileGifDurMultiFrame;						// E [0, inf]. In 1/100 seconds.
 	int SaveFileApngDurMultiFrame;						// E [0, 65536]. In ms.
 	int SaveFileTiffDurMultiFrame;						// E [0, inf]. In ms.
-	enum class SizeMode
+	enum class SizeModeEnum
 	{
 		Percent,
 		SetWidthAndHeight,
 		SetWidthRetainAspect,
-		SetHeightRetainAspect
+		SetHeightRetainAspect,
+		NumModes
 	};
 	int SaveAllSizeMode;
+	SizeModeEnum GetSaveAllSizeMode() const				{ return SizeModeEnum(SaveAllSizeMode); }
+
 	int CropAnchor;										// E [-1, 9] with 4 being the default (middle), 0 being top-left, and -1 being 'cursor position'.
 	tColouri FillColour;
 	int ResizeAspectNum;
