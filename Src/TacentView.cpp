@@ -406,7 +406,7 @@ void Viewer::PopulateImages()
 		ImagesLoadTimeSorted.Append(newImg);
 	}
 
-	SortImages(Config::ProfileSettings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
+	SortImages(Config::Current->GetSortKey(), Config::Current->SortAscending);
 	CurrImage = nullptr;
 }
 
@@ -765,12 +765,12 @@ void Viewer::DrawBackground(float l, float r, float b, float t, float drawW, flo
 	if (Config::Global.TransparentWorkArea)
 		return;
 
-	switch (Config::Current->BackgroundStyle)
+	switch (Config::Current->GetBackgroundStyle())
 	{
-		case int(Config::ProfileSettings::BGStyle::None):
+		case Config::ProfileSettings::BackgroundStyleEnum::None:
 			return;
 
-		case int(Config::ProfileSettings::BGStyle::Checkerboard):
+		case Config::ProfileSettings::BackgroundStyleEnum::Checkerboard:
 		{
 			// Semitransparent checkerboard background.
 			float checkSize = float(Config::Current->BackgroundCheckerboxSize);
@@ -850,7 +850,7 @@ void Viewer::DrawBackground(float l, float r, float b, float t, float drawW, flo
 			break;
 		}
 
-		case int(Config::ProfileSettings::BGStyle::SolidColour):
+		case Config::ProfileSettings::BackgroundStyleEnum::SolidColour:
 		{
 			glColor4ubv(Config::Current->BackgroundColour.E);
 			glBegin(GL_QUADS);
@@ -1260,19 +1260,19 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		// Must not be cropping to have a chance at making visible.
 		if (!CropMode)
 		{
-			switch (Config::ProfileSettings::RetMode(Config::Current->ReticleMode))
+			switch (Config::Current->GetReticleMode())
 			{
-				case Config::ProfileSettings::RetMode::AlwaysVisible:
+				case Config::ProfileSettings::ReticleModeEnum::AlwaysVisible:
 					reticleVisible = true;
 
-				case Config::ProfileSettings::RetMode::AlwaysHidden:
+				case Config::ProfileSettings::ReticleModeEnum::AlwaysHidden:
 					break;
 
-				case Config::ProfileSettings::RetMode::OnSelect:
+				case Config::ProfileSettings::ReticleModeEnum::OnSelect:
 					reticleVisible = ReticleVisibleOnSelect;
 					break;
 
-				case Config::ProfileSettings::RetMode::AutoHide:
+				case Config::ProfileSettings::ReticleModeEnum::AutoHide:
 					reticleVisible = (DisappearCountdown > 0.0);
 					break;
 			}

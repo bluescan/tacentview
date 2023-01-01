@@ -72,7 +72,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				ImGui::Combo("Background Style", &Config::Current->BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
 				ImGui::PopItemWidth();
 
-				if (Config::Current->BackgroundStyle == int(Config::ProfileSettings::BGStyle::SolidColour))
+				if (Config::Current->GetBackgroundStyle() == Config::ProfileSettings::BackgroundStyleEnum::SolidColour)
 				{
 					tColourf floatCol(Config::Current->BackgroundColour);
 					if (ImGui::ColorEdit3("Choose Colour", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))
@@ -104,7 +104,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 					ImGui::PopItemWidth();
 				}
 
-				if (Config::Current->BackgroundStyle == int(Config::ProfileSettings::BGStyle::Checkerboard))
+				if (Config::Current->GetBackgroundStyle() == Config::ProfileSettings::BackgroundStyleEnum::Checkerboard)
 				{
 					ImGui::PushItemWidth(110);
 					ImGui::InputInt("Checker Size", &Config::Current->BackgroundCheckerboxSize);
@@ -128,6 +128,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				"Auto Hide: Hides after inactivity timeout."
 			);
 
+//#define WIP_CHANGE_UI_AND_FONT_SIZE 
 #ifdef WIP_CHANGE_UI_AND_FONT_SIZE
 			const char* uiSizeItems[] = { "Small", "Medium", "Large" };
 			ImGui::PushItemWidth(110);

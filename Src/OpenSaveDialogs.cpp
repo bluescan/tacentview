@@ -190,7 +190,7 @@ void Viewer::DoSavePopup()
 				else
 					AddSavedImageIfNecessary(SaveAsFile);
 
-				SortImages(Config::ProfileSettings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
+				SortImages(Config::Current->GetSortKey(), Config::Current->SortAscending);
 				SetCurrentImage(SaveAsFile);
 			}
 			closeThisModal = true;
@@ -218,7 +218,7 @@ void Viewer::DoSavePopup()
 				else
 					AddSavedImageIfNecessary(SaveAsFile);
 
-				SortImages(Config::ProfileSettings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
+				SortImages(Config::Current->GetSortKey(), Config::Current->SortAscending);
 				SetCurrentImage(SaveAsFile);
 			}
 		}
@@ -917,7 +917,7 @@ void Viewer::SaveAllImages(const tString& destDir, const tString& extension, flo
 	// If we saved to the same dir we are currently viewing we need to reload and set the current image again.
 	if (anySaved)
 	{
-		SortImages(Config::ProfileSettings::SortKeyEnum(Config::Current->SortKey), Config::Current->SortAscending);
+		SortImages(Config::Current->GetSortKey(), Config::Current->SortAscending);
 		SetCurrentImage(currFile);
 	}
 }

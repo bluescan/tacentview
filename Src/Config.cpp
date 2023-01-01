@@ -314,7 +314,7 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 		ResampleEdgeModeContactFinal= int(tImage::tResampleEdgeMode::Clamp);
 		ResampleFilterRotateUp		= int(tImage::tResampleFilter::Bilinear);
 		ResampleFilterRotateDown	= int(tImage::tResampleFilter::None);
-		RotateMode					= int(RotMode::Fill);
+		RotateMode					= int(RotateModeEnum::Fill);
 
 		SlideshowLooping			= (profile == Profile::Basic) ? true : false;
 		SaveSubFolder				.Clear();
@@ -354,12 +354,12 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 
 	if (categories & Category_Display)
 	{
-		BackgroundStyle				= (profile == Profile::Basic) ? int(BGStyle::None) : int(BGStyle::Checkerboard);
+		BackgroundStyle				= (profile == Profile::Basic) ? int(BackgroundStyleEnum::None) : int(BackgroundStyleEnum::Checkerboard);
 		BackgroundCheckerboxSize	= 16;
 		BackgroundColour			= tColouri::black;
 		BackgroundExtend			= false;
-		ReticleMode					= (profile == Profile::Basic) ? int(RetMode::AutoHide) : int(RetMode::OnSelect);
-		UISize						= int(UIMode::Small);
+		ReticleMode					= (profile == Profile::Basic) ? int(ReticleModeEnum::AutoHide) : int(ReticleModeEnum::OnSelect);
+		UISize						= int(UISizeEnum::Small);
 	}
 
 	if (categories & Category_Slideshow)
@@ -505,16 +505,16 @@ void Config::ProfileSettings::Load(tExpression expr)
 	tiClamp		(ResampleEdgeModeContactFinal, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);
 	tiClamp		(ResampleFilterRotateUp, 0, int(tImage::tResampleFilter::NumFilters));				// None allowed, so no -1.
 	tiClamp		(ResampleFilterRotateDown, 0, int(tImage::tResampleFilter::NumFilters));			// None allowed, so no -1.
-	tiClamp		(RotateMode, 0, int(RotMode::NumModes)-1);
+	tiClamp		(RotateMode, 0, int(RotateModeEnum::NumModes)-1);
 	tiClamp		(DefaultZoomMode, 0, int(ZoomMode::NumModes)-1);
 	tiClampMin	(SlideshowPeriod, 1.0/60.0);
-	tiClamp		(BackgroundStyle, 0, int(BGStyle::NumStyles)-1);
+	tiClamp		(BackgroundStyle, 0, int(BackgroundStyleEnum::NumStyles)-1);
 	tiClamp		(BackgroundCheckerboxSize, 2, 256);
-	tiClamp		(ReticleMode, 0, int(RetMode::NumModes)-1);
-	tiClamp		(UISize, 0, int(UIMode::NumModes)-1);
+	tiClamp		(ReticleMode, 0, int(ReticleModeEnum::NumModes)-1);
+	tiClamp		(UISize, 0, int(UISizeEnum::NumModes)-1);
 	tiClamp		(OverlayCorner, 0, 3);
 	tiClamp		(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
-	tiClamp		(SortKey, 0, 6);
+	tiClamp		(SortKey, 0, int(SortKeyEnum::NumKeys)-1);
 	tiClamp		(CropAnchor, -1, 9);
 	tiClampMin	(ResizeAspectNum, 1);
 	tiClampMin	(ResizeAspectDen, 1);

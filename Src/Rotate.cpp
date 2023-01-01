@@ -77,7 +77,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 		"degrees on either side. If the rotation is mostly vertical, the reciprical aspect is used."
 	);
 
-	if (Config::Current->RotateMode == int(Config::ProfileSettings::RotMode::Fill))
+	if (Config::Current->GetRotateMode() == Config::ProfileSettings::RotateModeEnum::Fill)
 		DoFillColourInterface();
 
 	ImGui::NewLine();
@@ -109,7 +109,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 			tResampleFilter(Config::Current->ResampleFilterRotateDown)
 		);
 
-		if ((Config::Current->RotateMode == int(Config::ProfileSettings::RotMode::Crop)) || (Config::Current->RotateMode == int(Config::ProfileSettings::RotMode::CropResize)))
+		if ((Config::Current->GetRotateMode() == Config::ProfileSettings::RotateModeEnum::Crop) || (Config::Current->GetRotateMode() == Config::ProfileSettings::RotateModeEnum::CropResize))
 		{
 			// If one of the crop modes is selected we need to crop the edges. Since rectangles are made of lines and there
 			// is symmetry and we can compute the reduced size by subtracting the original size from the rotated size.
@@ -139,7 +139,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 			CurrImage->Crop(newW, newH, tPicture::Anchor::MiddleMiddle);
 		}
 
-		if (Config::Current->RotateMode == int(Config::ProfileSettings::RotMode::CropResize))
+		if (Config::Current->GetRotateMode() == Config::ProfileSettings::RotateModeEnum::CropResize)
 		{
 			// The crop is done. Now resample.
 			tResampleFilter filter = (Config::Current->ResampleFilterRotateUp != int(tResampleFilter::None)) ? tResampleFilter(Config::Current->ResampleFilterRotateUp) : tResampleFilter::Nearest;

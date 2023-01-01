@@ -42,8 +42,8 @@ enum Category
 // different profiles. Currently we only have two profiles: Main and Basic.
 struct ProfileSettings
 {
-	ProfileSettings(Profile profile)				: Name(), InputBindings() { Reset(profile, Category_All); }
-	tString Name;									// The name of the profile.
+	ProfileSettings(Profile profile)					: Name(), InputBindings() { Reset(profile, Category_All); }
+	tString Name;										// The name of the profile.
 
 	bool ShowMenuBar;
 	bool ShowNavBar;
@@ -59,6 +59,7 @@ struct ProfileSettings
 	bool ShowAbout;
 
 	float ThumbnailWidth;
+
 	enum class SortKeyEnum
 	{
 		FileName,
@@ -67,15 +68,17 @@ struct ProfileSettings
 		FileType,
 		ImageArea,
 		ImageWidth,
-		ImageHeight
+		ImageHeight,
+		NumKeys
 	};
-	int SortKey;								// Matches SortKeyEnum values.
-	bool SortAscending;							// Sort direction.
+	int SortKey;										// Matches SortKeyEnum values.
+	SortKeyEnum GetSortKey() const						{ return SortKeyEnum(SortKey); }
+	bool SortAscending;									// Sort direction.
 
 	int OverlayCorner;
 	bool Tile;
 
-	enum class BGStyle
+	enum class BackgroundStyleEnum
 	{
 		None,
 		Checkerboard,
@@ -83,21 +86,23 @@ struct ProfileSettings
 		NumStyles
 	};
 	int BackgroundStyle;
+	BackgroundStyleEnum GetBackgroundStyle() const		{ return BackgroundStyleEnum(BackgroundStyle); }
 	int BackgroundCheckerboxSize;
-	tColouri BackgroundColour;					// Only used if BGStyle is SolidColour.
-	bool BackgroundExtend;						// Extend background past image bounds.
+	tColouri BackgroundColour;							// Only used if BackgroundStyle is SolidColour.
+	bool BackgroundExtend;								// Extend background past image bounds.
 
-	enum class RetMode
+	enum class ReticleModeEnum
 	{
 		AlwaysHidden,
 		AlwaysVisible,
-		OnSelect,								// Click outside = hide. Click inside = show. Image change = hide.
-		AutoHide,								// Hidden at same time as on-screen buttons.
+		OnSelect,										// Click outside = hide. Click inside = show. Image change = hide.
+		AutoHide,										// Hidden at same time as on-screen buttons.
 		NumModes
 	};
 	int ReticleMode;
+	ReticleModeEnum GetReticleMode() const				{ return ReticleModeEnum(ReticleMode); }
 
-	enum class UIMode
+	enum class UISizeEnum
 	{
 		Small,
 		Medium,
@@ -105,17 +110,18 @@ struct ProfileSettings
 		NumModes
 	};
 	int UISize;
+	UISizeEnum GetUISize() const						{ return UISizeEnum(UISize); }
 
-	int ResampleFilter;							// Matches tImage::tResampleFilter. Used for image resize when saving and multiframe saving.
-	int ResampleEdgeMode;						// Matches tImage::tResampleEdgeMode. Used for image resize when saving and multiframe saving.
-	int ResampleFilterContactFrame;				// Matches tImage::tResampleFilter. Used for contact sheet frame resizing.
-	int ResampleEdgeModeContactFrame;			// Matches tImage::tResampleEdgeMode. Used for contact sheet frame resizing.
-	int ResampleFilterContactFinal;				// Matches tImage::tResampleFilter. Used for contact sheet final resizing.
-	int ResampleEdgeModeContactFinal;			// Matches tImage::tResampleEdgeMode. Used for contact sheet final resizing.
-	int ResampleFilterRotateUp;					// Matches tImage::tResampleFilter. Used for image rotations.
-	int ResampleFilterRotateDown;				// Matches tImage::tResampleFilter. Used for image rotations.
+	int ResampleFilter;									// Matches tImage::tResampleFilter. Used for image resize when saving and multiframe saving.
+	int ResampleEdgeMode;								// Matches tImage::tResampleEdgeMode. Used for image resize when saving and multiframe saving.
+	int ResampleFilterContactFrame;						// Matches tImage::tResampleFilter. Used for contact sheet frame resizing.
+	int ResampleEdgeModeContactFrame;					// Matches tImage::tResampleEdgeMode. Used for contact sheet frame resizing.
+	int ResampleFilterContactFinal;						// Matches tImage::tResampleFilter. Used for contact sheet final resizing.
+	int ResampleEdgeModeContactFinal;					// Matches tImage::tResampleEdgeMode. Used for contact sheet final resizing.
+	int ResampleFilterRotateUp;							// Matches tImage::tResampleFilter. Used for image rotations.
+	int ResampleFilterRotateDown;						// Matches tImage::tResampleFilter. Used for image rotations.
 
-	enum class RotMode
+	enum class RotateModeEnum
 	{
 		Fill,
 		Crop,
@@ -123,6 +129,7 @@ struct ProfileSettings
 		NumModes
 	};
 	int RotateMode;
+	RotateModeEnum GetRotateMode() const				{ return RotateModeEnum(RotateMode); }
 
 	enum class ZoomMode
 	{
@@ -132,7 +139,7 @@ struct ProfileSettings
 		OneToOne,
 		NumModes
 	};
-	int DefaultZoomMode;						// Zoom mode to use when opening a new image. User means don't change zoom.
+	int DefaultZoomMode;								// Zoom mode to use when opening a new image. User means don't change zoom.
 
 	bool ConfirmDeletes;
 	bool ConfirmFileOverwrites;
@@ -144,31 +151,31 @@ struct ProfileSettings
 	tString	SaveFileType;
 	tString	SaveFileTypeMultiFrame;
 	bool	SaveFileTargaRLE;
-	int		SaveFilePngDepthMode;				// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
-	int		SaveFileQoiDepthMode;				// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
-	int		SaveFileQoiColourSpace;				// E [0, 1]. 0 = sRGB. 1 = Linear.
-	int		SaveFileBmpDepthMode;				// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
-	int		SaveFileJpegQuality;				// E [1, 100]
+	int		SaveFilePngDepthMode;						// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
+	int		SaveFileQoiDepthMode;						// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
+	int		SaveFileQoiColourSpace;						// E [0, 1]. 0 = sRGB. 1 = Linear.
+	int		SaveFileBmpDepthMode;						// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
+	int		SaveFileJpegQuality;						// E [1, 100]
 	bool	SaveFileWebpLossy;
-	float	SaveFileWebpQualComp;				// E [0.0, 100.0]
+	float	SaveFileWebpQualComp;						// E [0.0, 100.0]
 	bool	SaveFileTiffZLibDeflate;
-	int		SaveFileGifBPP;						// E [1, 8]
-	int		SaveFileGifQuantMethod;				// E [0, 3]
-	int		SaveFileGifLoop;					// E [0, inf]
-	int		SaveFileGifAlphaThreshold;			// E [-1, 255]
-	float	SaveFileGifDitherLevel;				// E [0.0f, inf]
-	int		SaveFileGifFilterSize;				// E [0, 2] Maps to 1, 3, 5.
-	int		SaveFileGifSampleFactor;			// E [1, 10]
+	int		SaveFileGifBPP;								// E [1, 8]
+	int		SaveFileGifQuantMethod;						// E [0, 3]
+	int		SaveFileGifLoop;							// E [0, inf]
+	int		SaveFileGifAlphaThreshold;					// E [-1, 255]
+	float	SaveFileGifDitherLevel;						// E [0.0f, inf]
+	int		SaveFileGifFilterSize;						// E [0, 2] Maps to 1, 3, 5.
+	int		SaveFileGifSampleFactor;					// E [1, 10]
 
-	int SaveFileWebpDurOverride;				// E [-1, inf]. In ms.
-	int SaveFileGifDurOverride;					// E [-1, inf]. In 1/100 seconds.
-	int SaveFileApngDurOverride;				// E [-1, 65535]. In ms.
-	int SaveFileTiffDurOverride;				// E [-1, inf]. In ms.
+	int SaveFileWebpDurOverride;						// E [-1, inf]. In ms.
+	int SaveFileGifDurOverride;							// E [-1, inf]. In 1/100 seconds.
+	int SaveFileApngDurOverride;						// E [-1, 65535]. In ms.
+	int SaveFileTiffDurOverride;						// E [-1, inf]. In ms.
 
-	int SaveFileWebpDurMultiFrame;				// E [0, inf]. In ms.
-	int SaveFileGifDurMultiFrame;				// E [0, inf]. In 1/100 seconds.
-	int SaveFileApngDurMultiFrame;				// E [0, 65536]. In ms.
-	int SaveFileTiffDurMultiFrame;				// E [0, inf]. In ms.
+	int SaveFileWebpDurMultiFrame;						// E [0, inf]. In ms.
+	int SaveFileGifDurMultiFrame;						// E [0, inf]. In 1/100 seconds.
+	int SaveFileApngDurMultiFrame;						// E [0, 65536]. In ms.
+	int SaveFileTiffDurMultiFrame;						// E [0, inf]. In ms.
 	enum class SizeMode
 	{
 		Percent,
@@ -177,26 +184,26 @@ struct ProfileSettings
 		SetHeightRetainAspect
 	};
 	int SaveAllSizeMode;
-	int CropAnchor;								// E [-1, 9] with 4 being the default (middle), 0 being top-left, and -1 being 'cursor position'.
+	int CropAnchor;										// E [-1, 9] with 4 being the default (middle), 0 being top-left, and -1 being 'cursor position'.
 	tColouri FillColour;
 	int ResizeAspectNum;
 	int ResizeAspectDen;
-	int ResizeAspectMode;						// 0 = Crop Mode. 1 = Letterbox Mode.
-	int MaxImageMemMB;							// Max image mem before unloading images.
-	int MaxCacheFiles;							// Max number of cache files before removing oldest.
+	int ResizeAspectMode;								// 0 = Crop Mode. 1 = Letterbox Mode.
+	int MaxImageMemMB;									// Max image mem before unloading images.
+	int MaxCacheFiles;									// Max number of cache files before removing oldest.
 	int MaxUndoSteps;
-	bool StrictLoading;							// No attempt to display ill-formed images.
-	bool ExifOrientLoading;						// Reorient images on load if Exif meta-data contains camera orientation information.
-	bool DetectAPNGInsidePNG;					// Look for APNG data (animated) hidden inside a regular PNG file.
-	int MipmapFilter;							// Matches tImage::tResampleFilter. Use None for no mipmaps.
-	bool MipmapChaining;						// True for faster mipmap generation. False for a lot slower and slightly better results.
-	bool AutoPropertyWindow;					// Auto display property editor window for supported file types.
-	bool AutoPlayAnimatedImages;				// Automatically play animated gifs, apngs, and WebPs.
-	float MonitorGamma;							// Used when displaying HDR formats to do gamma correction.
-	Viewer::Bindings::InputMap InputBindings;	// Each Settings struct (profile) gets its own copy of the InputMap (key bindings).
+	bool StrictLoading;									// No attempt to display ill-formed images.
+	bool ExifOrientLoading;								// Reorient images on load if Exif meta-data contains camera orientation information.
+	bool DetectAPNGInsidePNG;							// Look for APNG data (animated) hidden inside a regular PNG file.
+	int MipmapFilter;									// Matches tImage::tResampleFilter. Use None for no mipmaps.
+	bool MipmapChaining;								// True for faster mipmap generation. False for a lot slower and slightly better results.
+	bool AutoPropertyWindow;							// Auto display property editor window for supported file types.
+	bool AutoPlayAnimatedImages;						// Automatically play animated gifs, apngs, and WebPs.
+	float MonitorGamma;									// Used when displaying HDR formats to do gamma correction.
+	Viewer::Bindings::InputMap InputBindings;			// Each Settings struct (profile) gets its own copy of the InputMap (key bindings).
 
-	bool Save(tExprWriter&) const;				// Writes to the file tExprWriter was constructed with.
-	void Load(tExpr);							// Reads from the expression. Pass in a tExprReader if you want to load from a file directly.
+	bool Save(tExprWriter&) const;						// Writes to the file tExprWriter was constructed with.
+	void Load(tExpr);									// Reads from the expression. Pass in a tExprReader if you want to load from a file directly.
 
 	// Yes, this struct only represents a single profile, but the defaults are different
 	// depending on which profile is chosen, so we need to pass it in.
@@ -206,7 +213,7 @@ struct ProfileSettings
 
 struct GlobalSettings
 {
-	GlobalSettings()					{ Reset(); }
+	GlobalSettings()									{ Reset(); }
 
 	void Save(tExprWriter&);
 	void Load(tExpr);
