@@ -220,15 +220,20 @@ namespace Viewer
 	const tVector4 ColourPressedBG					= tVector4(0.21f, 0.45f, 0.21f, 1.00f);
 	const tVector4 ColourClear						= tVector4(0.10f, 0.10f, 0.12f, 1.00f);
 
-	const int MenuBarHeight							= 30;
 	const float ZoomMin								= 10.0f;
 	const float ZoomMax								= 2500.0f;
 	uint64 FrameNumber								= 0;
-	tVector2 ToolImageSize							(24.0f, 24.0f);
+	tVector2 ToolImageSizeSmall						(24.0f, 24.0f);
+	tVector2 ToolImageSizeMed						(26.0f, 26.0f);
+	tVector2 ToolImageSizeLarge						(28.0f, 28.0f);
+	tVector2 ColourButtonSizeSmall					(26.0f, 26.0f);
+	tVector2 ColourButtonSizeMed					(28.0f, 28.0f);
+	tVector2 ColourButtonSizeLarge					(30.0f, 30.0f);
 
 	void DrawBackground(float l, float r, float b, float t, float drawW, float drawH);
 	void DrawNavBar(float x, float y, float w, float h);
 	int GetNavBarHeight();
+	int GetMenuBarHeight();
 	void PrintRedirectCallback(const char* text, int numChars);
 	void GlfwErrorCallback(int error, const char* description)															{ tPrintf("Glfw Error %d: %s\n", error, description); }
 	void SetWindowIcon(const tString& icoFile);
@@ -319,6 +324,21 @@ int Viewer::GetNavBarHeight()
 		return 0;
 
 	return NavBar.GetShowLog() ? 150 : 30;
+}
+
+
+int Viewer::GetMenuBarHeight()
+{
+	if (!Config::Current->ShowMenuBar)
+		return 0;
+
+	switch (Config::Current->GetUISize())
+	{
+		case Config::ProfileSettings::UISizeEnum::Small:		return 30;
+		case Config::ProfileSettings::UISizeEnum::Medium:		return 32;
+		case Config::ProfileSettings::UISizeEnum::Large:		return 34;
+	}
+	return 30;
 }
 
 
@@ -990,7 +1010,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		glClearColor(ColourClear.x, ColourClear.y, ColourClear.z, ColourClear.w);
 	glClear(GL_COLOR_BUFFER_BIT);
 	int bottomUIHeight	= GetNavBarHeight();
-	int topUIHeight		= !Config::Current->ShowMenuBar ? 0 : MenuBarHeight+1;
+	int topUIHeight		= GetMenuBarHeight();
 
 	ImGui_ImplOpenGL2_NewFrame();		
 	ImGui_ImplGlfw_NewFrame();
@@ -1361,7 +1381,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	
 	// Show the big demo window. You can browse its code to learn more about Dear ImGui.
 	static bool showDemoWindow = false;
-	// static bool showDemoWindow = true;
+	//static bool showDemoWindow = true;
 	if (showDemoWindow)
 		ImGui::ShowDemoWindow(&showDemoWindow);
 
@@ -1853,34 +1873,52 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		//
 		// Toolbar.
 		//
+		tVector2 colourButtonSize;
+		switch (Config::Current->GetUISize())
+		{
+			case Config::ProfileSettings::UISizeEnum::Small:	colourButtonSize = ColourButtonSizeSmall;	break;
+			case Config::ProfileSettings::UISizeEnum::Medium:	colourButtonSize = ColourButtonSizeMed;		break;
+			case Config::ProfileSettings::UISizeEnum::Large:	colourButtonSize = ColourButtonSizeLarge;	break;
+		}
 		tColourf floatCol(PixelColour);
 		tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6.0f);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
-		if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, tVector2(26,26)))
+		if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, colourButtonSize))
 			ImGui::OpenPopup("CopyColourAs");
 
 		if (ImGui::BeginPopup("CopyColourAs"))
 			ColourCopyAs();
 
+		tVector2 toolImageSize;
+		switch (Config::Current->GetUISize())
+		{
+			case Config::ProfileSettings::UISizeEnum::Small:	toolImageSize = ToolImageSizeSmall;		break;
+			case Config::ProfileSettings::UISizeEnum::Medium:	toolImageSize = ToolImageSizeMed;		break;
+			case Config::ProfileSettings::UISizeEnum::Large:	toolImageSize = ToolImageSizeLarge;		break;
+		}
+
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_ChannelFilter.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_ChannelFilter.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			Config::Current->ShowChannelFilter ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	Config::Current->ShowChannelFilter = !Config::Current->ShowChannelFilter;
 		ShowToolTip("Colour Channel Filter");
 
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_ContentView.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_ContentView.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			Config::Current->ShowContentView ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	Config::Current->ShowContentView = !Config::Current->ShowContentView;
 		ShowToolTip("Content Thumbnail View");
 
 		bool tileAvail = CurrImage ? !CropMode : false;
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_Tile.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_Tile.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			Config::Current->Tile ? ColourPressedBG : ColourBG, tileAvail ? ColourEnabledTint : ColourDisabledTint) && tileAvail
 		)
 		{
@@ -1893,9 +1931,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical, 3.0f);
 
 		bool transAvail = CurrImage ? !CurrImage->IsAltPictureEnabled() : false;
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_FlipV.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
+			ImTextureID(Image_FlipV.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
 			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 		)
 		{
@@ -1906,9 +1945,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 		ShowToolTip("Flip Vertically");
 
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_FlipH.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
+			ImTextureID(Image_FlipH.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
 			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 		)
 		{
@@ -1920,9 +1960,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ShowToolTip("Flip Horizontally");
 
 		ImGui::PushID("ToolRotACW");
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_RotCW_RotACW.Bind()), ToolImageSize, tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 1, ColourBG,
+			ImTextureID(Image_RotCW_RotACW.Bind()), toolImageSize, tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 1, ColourBG,
 			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 		)
 		{
@@ -1935,9 +1976,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ShowToolTip("Rotate 90 Anticlockwise");
 
 		ImGui::PushID("ToolRotCW");
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_RotCW_RotACW.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
+			ImTextureID(Image_RotCW_RotACW.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
 			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 		)
 		{
@@ -1949,9 +1991,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::PopID();
 		ShowToolTip("Rotate 90 Clockwise");
 
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_RotateTheta.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
+			ImTextureID(Image_RotateTheta.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
 			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
 		)
 		{
@@ -1960,9 +2003,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ShowToolTip("Rotate Theta");
 
 		bool cropAvail = CurrImage && transAvail && !Config::Current->Tile;
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_Crop.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_Crop.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			CropMode ? ColourPressedBG : ColourBG, cropAvail ? ColourEnabledTint : ColourDisabledTint) && cropAvail
 		)
 		{
@@ -1974,31 +2018,35 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical, 3.0f);
 
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_PropEdit.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_PropEdit.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			Config::Current->ShowPropsWindow ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	Config::Current->ShowPropsWindow = !Config::Current->ShowPropsWindow;
 		ShowToolTip("Image Properties");
 
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_InfoOverlay.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_InfoOverlay.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			Config::Current->ShowImageDetails ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	Config::Current->ShowImageDetails = !Config::Current->ShowImageDetails;
 		ShowToolTip("Image Details Overlay");
 
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_MetaData.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_MetaData.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			Config::Current->ShowImageMetaData ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	Config::Current->ShowImageMetaData = !Config::Current->ShowImageMetaData;
 		ShowToolTip("Image Meta-Data Overlay");
 
 		bool refreshAvail = CurrImage ? true : false;
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_Refresh.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_Refresh.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			ColourBG, refreshAvail ? ColourEnabledTint : ColourDisabledTint) && refreshAvail
 		)
 		{
@@ -2011,25 +2059,28 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ShowToolTip("Refresh/Reload Current File");
 
 		bool recycleAvail = CurrImage ? true : false;
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_Recycle.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_Recycle.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			ColourBG, recycleAvail ? ColourEnabledTint : ColourDisabledTint) && recycleAvail
 		)	Request_DeleteFileModal = true;
 		ShowToolTip("Delete Current File");
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical, 3.0f);
 
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_Help.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_Help.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			Config::Current->ShowCheatSheet ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	Config::Current->ShowCheatSheet = !Config::Current->ShowCheatSheet;
 		ShowToolTip("Help");
 
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_Prefs.Bind()), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(Image_Prefs.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			PrefsWindow ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	PrefsWindow = !PrefsWindow;
 		ShowToolTip("Preferences");

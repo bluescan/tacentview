@@ -523,7 +523,7 @@ void Viewer::NavLogBar::AddLog(const char* fmt, ...)
 
 void Viewer::NavLogBar::Draw()
 {
-	ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 14.0f);
+	ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10.0f);
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
 
 	if
@@ -548,7 +548,14 @@ void Viewer::NavLogBar::Draw()
 	if (ImagesSubDirs.NumItems() > 0)
 	{
 		ImGui::SameLine();
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
+		float offset = 0.0f;
+		switch (Config::Current->GetUISize())
+		{
+			case Config::ProfileSettings::UISizeEnum::Small:	offset = 1.0f;	break;
+			case Config::ProfileSettings::UISizeEnum::Medium:	offset = 0.0f;	break;
+			case Config::ProfileSettings::UISizeEnum::Large:	offset = -1.0f;	break;
+		}
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
 		if (ImGui::BeginCombo("##combo", nullptr, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightLargest | ImGuiComboFlags_NoPreview))
 		{
 			for (tStringItem* subDir = ImagesSubDirs.First(); subDir; subDir = subDir->Next())
