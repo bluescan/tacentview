@@ -158,6 +158,7 @@ namespace Viewer
 	Image Image_DefaultThumbnail;
 
 	GLFWwindow* Window								= nullptr;
+	int CurrentFontIndex							= -1;
 	double DisappearCountdown						= DisappearDuration;
 	double SlideshowCountdown						= 0.0;
 	bool SlideshowPlaying							= false;
@@ -1014,6 +1015,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	ImGui_ImplOpenGL2_NewFrame();		
 	ImGui_ImplGlfw_NewFrame();
+
 	int dispw, disph;
 	glfwGetFramebufferSize(window, &dispw, &disph);
 	if ((dispw != Dispw) || (disph != Disph))
@@ -1378,7 +1380,21 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	}
 
 	ImGui::NewFrame();
-	
+
+	// Did the font change? This may happen if a) the font was changed in the prefs, b) reset was pressed, or c) inc/dec UISize
+	// operation was executed. Note that fontCurrent may be null if ImGui hasn't updated it from last time so instead we track
+	// what was submitted with CurrentFontIndex.
+	if (CurrentFontIndex != Config::Current->UISize)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		tAssert(Config::Current->UISize < io.Fonts->Fonts.Size);
+		ImFont* font = io.Fonts->Fonts[Config::Current->UISize];
+		ImGui::PushID((void*)font);
+		io.FontDefault = font;
+		ImGui::PopID();
+		CurrentFontIndex = Config::Current->UISize;
+	}
+
 	// Show the big demo window. You can browse its code to learn more about Dear ImGui.
 	static bool showDemoWindow = false;
 	//static bool showDemoWindow = true;
@@ -2441,6 +2457,16 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			if (CurrImage) RequestCursorMove = CursorMove_Up;
 			break;
 
+		case Bindings::Operation::UISizeInc:
+			Config::Current->UISize++;
+			tMath::tiClampMax(Config::Current->UISize, int(Config::ProfileSettings::UISizeEnum::NumModes)-1);
+			break;
+
+		case Bindings::Operation::UISizeDec:
+			Config::Current->UISize--;
+			tMath::tiClampMin(Config::Current->UISize, 0);
+			break;
+
 		case Bindings::Operation::ZoomIn:
 			if (CurrImage)
 				ApplyZoomDelta(tMath::tRound(CurrImage->ZoomPercent*0.1f));
@@ -3158,10 +3184,9 @@ int main(int argc, char** argv)
 	io.Fonts->AddFontFromFileTTF(fontFile.Chr(), 16.0f);
 	io.Fonts->AddFontFromFileTTF(fontFile.Chr(), 18.0f);
 	tiClamp(Viewer::Config::Current->UISize, 0, io.Fonts->Fonts.Size - 1);
-	ImFont* fontCurrent = ImGui::GetFont();
 	ImFont* font = io.Fonts->Fonts[Viewer::Config::Current->UISize];
-	if (font != fontCurrent)
-		io.FontDefault = font;
+	io.FontDefault = font;
+	Viewer::CurrentFontIndex = Viewer::Config::Current->UISize;
 
 	Viewer::LoadAppImages(dataDir);
 	Viewer::PopulateImages();

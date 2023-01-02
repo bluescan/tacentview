@@ -128,29 +128,12 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				"Auto Hide: Hides after inactivity timeout."
 			);
 
-//#define WIP_CHANGE_UI_AND_FONT_SIZE 
-#ifdef WIP_CHANGE_UI_AND_FONT_SIZE
 			const char* uiSizeItems[] = { "Small", "Medium", "Large" };
 			ImGui::PushItemWidth(110);
-			if (ImGui::Combo("UI Size", &Config::Current->UISize, uiSizeItems, tNumElements(uiSizeItems)))
-			{
-				// This maybe should be done in the update if currsize != config size, so things like
-				// the reset button just work.
-				ImGuiIO& io = ImGui::GetIO();
-				tiClamp(Config::Current->UISize, 0, io.Fonts->Fonts.Size - 1);
-				ImFont* fontCurrent = ImGui::GetFont();
-				ImFont* font = io.Fonts->Fonts[Config::Current->UISize];
-				if (font != fontCurrent)
-				{
-					ImGui::PushID((void*)font);
-					io.FontDefault = font;
-					ImGui::PopID();
-				}
-			}
+			ImGui::Combo("UI Size", &Config::Current->UISize, uiSizeItems, tNumElements(uiSizeItems));
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Overall size of UI widgets and font.");
-#endif
 
 			ImGui::EndTabItem();
 		}

@@ -190,6 +190,8 @@ const char* Bindings::OperationDescriptions[] =
 	"Open Dir",
 	"Meta Data",
 	"Save",
+	"UI Size Up",
+	"UI Size Down"
 
 	// Add new entries here.
 };
@@ -327,6 +329,8 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 	AssignKey(GLFW_KEY_DOWN,		Modifier_Shift,					Operation::PixelDown,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_UP,			Modifier_Shift,					Operation::PixelUp,					onlyIfUnassigned);
 
+	AssignKey(GLFW_KEY_EQUAL,		Modifier_Shift,					Operation::UISizeInc,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_MINUS,		Modifier_Shift,					Operation::UISizeDec,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_EQUAL,		Modifier_Ctrl,					Operation::ZoomIn,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_MINUS,		Modifier_Ctrl,					Operation::ZoomOut,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_F,			Modifier_None,					Operation::ZoomFit,					onlyIfUnassigned);
