@@ -2,7 +2,7 @@
 //
 // Dialog that allows selection of a file or directory. May be used for opening a file/directory or saving to a file.
 //
-// Copyright (c) 2021, 2022 Tristan Grimmer.
+// Copyright (c) 2021-2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -21,6 +21,7 @@
 #include "FileDialog.h"
 #include "TacentView.h"
 #include "Image.h"
+#include "Config.h"
 using namespace tStd;
 using namespace tMath;
 using namespace tSystem;
@@ -1218,7 +1219,26 @@ FileDialog::DialogState FileDialog::DoPopup()
 		case DialogMode::OpenDir:		label = "Open Directory";	configPath = &ConfigOpenDirPath;	break;
 		case DialogMode::SaveFile:		label = "Save File";		configPath = &ConfigSaveFilePath;	break;
 	}
-	ImGui::SetNextWindowSize(tVector2(660.0f, 400.0f), ImGuiCond_Appearing);
+
+	float nextWinWidth = 660.0f;
+	float nextWinHeight = 400.0f;
+	switch (Viewer::Config::Current->GetUISize())
+	{
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			nextWinWidth = 660.0f;
+			nextWinHeight = 400.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			nextWinWidth = 720.0f;
+			nextWinHeight = 460.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			nextWinWidth = 780.0f;
+			nextWinHeight = 520.0f;
+			break;
+	}
+
+	ImGui::SetNextWindowSize(tVector2(nextWinWidth, nextWinHeight), ImGuiCond_Appearing);
 
 	tStringItem* selectPathItemName = nullptr;
 	bool setYScrollToSel = false;
@@ -1240,10 +1260,45 @@ FileDialog::DialogState FileDialog::DoPopup()
 	DialogState state = DialogState::Open;
 	Result.Clear();
 
+	float menuBarHeight, bottomBarRowA, bottomBarRowB, colWidthIcon, colWidthName, colWidthTime, colWidthType;
+	switch (Viewer::Config::Current->GetUISize())
+	{
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		default:
+			menuBarHeight	= 24.0f;
+			bottomBarRowA	= 20.0f;
+			bottomBarRowB	= 28.0f;
+			colWidthIcon	= 24.0f;
+			colWidthName	= 190.0f;
+			colWidthTime	= 120.0f;
+			colWidthType	= 36.0f;
+			break;
+
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			menuBarHeight	= 26.0f;
+			bottomBarRowA	= 22.0f;
+			bottomBarRowB	= 30.0f;
+			colWidthIcon	= 26.0f;
+			colWidthName	= 205.0f;
+			colWidthTime	= 135.0f;
+			colWidthType	= 41.0f;
+			break;
+
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			menuBarHeight	= 28.0f;
+			bottomBarRowA	= 24.0f;
+			bottomBarRowB	= 32.0f;
+			colWidthIcon	= 28.0f;
+			colWidthName	= 220.0f;
+			colWidthTime	= 150.0f;
+			colWidthType	= 46.0f;
+			break;
+	}
+	float bottomBarHeight = bottomBarRowA + bottomBarRowB;
+
 	//
 	// Begin MenuBar
 	//
-	const float menuBarHeight = 24.0f;
 	if (ImGui::BeginMenuBar())
 	{
 		tVector2 ToolImageSize							(24.0f, menuBarHeight);
@@ -1338,7 +1393,6 @@ FileDialog::DialogState FileDialog::DoPopup()
 	//
 
 	// The left and right panels are cells in a 1 row, 2 column table.
-	float bottomBarHeight = 20.0f + 28.0f;
 	ImGui::PushStyleColor(ImGuiCol_TableBorderStrong, tVector4(0.50f, 0.50f, 0.54f, 1.00f));
 	ImGui::PushStyleColor(ImGuiCol_TableBorderLight, tVector4(0.50f, 0.50f, 0.54f, 1.00f));
 	int outerTableFlags = ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable;
@@ -1462,10 +1516,12 @@ FileDialog::DialogState FileDialog::DoPopup()
 				int iconFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_NoSort;
 				int nameFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_PreferSortAscending | ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_PreferSortAscending | ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_NoReorder;
 				int propFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_PreferSortAscending;
-				ImGui::TableSetupColumn("Icon",		iconFlags,	24.0f,	uint32(ContentItem::FieldID::Invalid)	);
-				ImGui::TableSetupColumn("Name",		nameFlags,	190.0f,	uint32(ContentItem::FieldID::Name)		);
-				ImGui::TableSetupColumn("Modified",	propFlags,	120.0f,	uint32(ContentItem::FieldID::ModTime)	);
-				ImGui::TableSetupColumn("Type",		propFlags,	36.0f,	uint32(ContentItem::FieldID::FileType)	);
+//				if (ImGui::IsWindowAppearing())
+//					nameFlags |= ImGuiTableColumnFlags_NoResize;
+				ImGui::TableSetupColumn("Icon",		iconFlags,	colWidthIcon,	uint32(ContentItem::FieldID::Invalid)	);
+				ImGui::TableSetupColumn("Name",		nameFlags,	colWidthName,	uint32(ContentItem::FieldID::Name)		);
+				ImGui::TableSetupColumn("Modified",	propFlags,	colWidthTime,	uint32(ContentItem::FieldID::ModTime)	);
+				ImGui::TableSetupColumn("Type",		propFlags,	colWidthType,	uint32(ContentItem::FieldID::FileType)	);	
 				ImGui::TableSetupColumn("Size",		propFlags,	0.0f,	uint32(ContentItem::FieldID::FileSize)	);
 				ImGui::TableSetupScrollFreeze(0, 1); // Make this row always visible.
 
@@ -1549,7 +1605,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 			DoFileTypesDropdown(true);
 
 			// Open button and set final Result to be picked up.
-			ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - 20.0f);
+			ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - bottomBarRowA);
 			if (resultAvail)
 			{
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
@@ -1576,7 +1632,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 			tFileType fileType = FileTypes.GetFirstSelectedType();
 
 			// Save button and set final Result to be picked up.
-			ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - 20.0f);
+			ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - bottomBarRowA);
 			if ((fileType != tFileType::Invalid) && (SaveFileResult.length() > 0))
 			{
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
@@ -1610,7 +1666,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 				ImGui::PopStyleColor();
 
 			// Open button and set final Result to be picked up.
-			ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - 20.0f);
+			ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - bottomBarRowA);
 			if (resultAvail)
 			{
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
