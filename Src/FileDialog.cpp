@@ -1260,7 +1260,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 	DialogState state = DialogState::Open;
 	Result.Clear();
 
-	float menuBarHeight, bottomBarRowA, bottomBarRowB, colWidthIcon, colWidthName, colWidthTime, colWidthType;
+	float menuBarHeight, bottomBarRowA, bottomBarRowB, colWidthIcon, colWidthName, colWidthTime, colWidthType, colWidthSize;
 	switch (Viewer::Config::Current->GetUISize())
 	{
 		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
@@ -1272,6 +1272,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 			colWidthName	= 190.0f;
 			colWidthTime	= 120.0f;
 			colWidthType	= 36.0f;
+			colWidthSize	= 60.0;
 			break;
 
 		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
@@ -1279,9 +1280,10 @@ FileDialog::DialogState FileDialog::DoPopup()
 			bottomBarRowA	= 22.0f;
 			bottomBarRowB	= 30.0f;
 			colWidthIcon	= 26.0f;
-			colWidthName	= 205.0f;
+			colWidthName	= 200.0f;
 			colWidthTime	= 135.0f;
 			colWidthType	= 41.0f;
+			colWidthSize	= 65.0;
 			break;
 
 		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
@@ -1289,9 +1291,10 @@ FileDialog::DialogState FileDialog::DoPopup()
 			bottomBarRowA	= 24.0f;
 			bottomBarRowB	= 32.0f;
 			colWidthIcon	= 28.0f;
-			colWidthName	= 220.0f;
+			colWidthName	= 210.0f;
 			colWidthTime	= 150.0f;
 			colWidthType	= 46.0f;
+			colWidthSize	= 70.0;
 			break;
 	}
 	float bottomBarHeight = bottomBarRowA + bottomBarRowB;
@@ -1516,13 +1519,14 @@ FileDialog::DialogState FileDialog::DoPopup()
 				int iconFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_NoSort;
 				int nameFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_PreferSortAscending | ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_PreferSortAscending | ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_NoReorder;
 				int propFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_PreferSortAscending;
-//				if (ImGui::IsWindowAppearing())
-//					nameFlags |= ImGuiTableColumnFlags_NoResize;
+
+				if (ImGui::IsWindowAppearing())
+					nameFlags |= ImGuiTableColumnFlags_NoResize;
 				ImGui::TableSetupColumn("Icon",		iconFlags,	colWidthIcon,	uint32(ContentItem::FieldID::Invalid)	);
 				ImGui::TableSetupColumn("Name",		nameFlags,	colWidthName,	uint32(ContentItem::FieldID::Name)		);
 				ImGui::TableSetupColumn("Modified",	propFlags,	colWidthTime,	uint32(ContentItem::FieldID::ModTime)	);
 				ImGui::TableSetupColumn("Type",		propFlags,	colWidthType,	uint32(ContentItem::FieldID::FileType)	);	
-				ImGui::TableSetupColumn("Size",		propFlags,	0.0f,	uint32(ContentItem::FieldID::FileSize)	);
+				ImGui::TableSetupColumn("Size",		propFlags,	colWidthSize,	uint32(ContentItem::FieldID::FileSize)	);
 				ImGui::TableSetupScrollFreeze(0, 1); // Make this row always visible.
 
 				ImGui::TableHeadersRow();

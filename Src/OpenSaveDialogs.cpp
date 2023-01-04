@@ -137,9 +137,24 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 		ImGui::OpenPopup(label.Chr());
 	}
 
+	float nextWinWidth;
+	switch (Viewer::Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			nextWinWidth = 300.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			nextWinWidth = 325.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			nextWinWidth = 350.0f;
+			break;
+	}
+
 	// The unused isOpenSaveOptions bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isOpenSaveOptions = true;
-	ImGui::SetNextWindowSize(tVector2(300.0f, 0.0f));
+	ImGui::SetNextWindowSize(tVector2(nextWinWidth, 0.0f));
 	if (!ImGui::BeginPopupModal(label.Chr(), &isOpenSaveOptions, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 

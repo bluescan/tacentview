@@ -26,7 +26,7 @@ namespace Viewer
 	// These return true if any UI was drawn.
 	bool DoAltMipmapsDisplay(tString& texTypeName);
 	bool DoAltCubemapDisplay(tString& texTypeName);
-	bool DoChooseDisplayImage(tString& texTypeName);
+	bool DoChooseDisplayImage(tString& texTypeName, float itemWidth);
 }
 
 
@@ -74,7 +74,7 @@ bool Viewer::DoAltCubemapDisplay(tString& texTypeName)
 }
 
 
-bool Viewer::DoChooseDisplayImage(tString& texTypeName)
+bool Viewer::DoChooseDisplayImage(tString& texTypeName, float itemWidth)
 {
 	bool anyDraw = false;
 	int numTextures = CurrImage->GetNumFrames();
@@ -86,7 +86,7 @@ bool Viewer::DoChooseDisplayImage(tString& texTypeName)
 			tsPrintf(imageNumText, "%s (%d)", texTypeName.Chr(), numTextures);
 
 			int oneBasedTextureNum = CurrImage->FrameNum + 1;
-			ImGui::PushItemWidth(110);
+			ImGui::PushItemWidth(itemWidth);
 			if (ImGui::InputInt(imageNumText.Chr(), &oneBasedTextureNum))
 			{
 				CurrImage->FrameNum = oneBasedTextureNum - 1;
@@ -109,7 +109,23 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 	// do it to make the Demo applications a little more welcoming.
 	tVector2 windowPos = GetDialogOrigin(1);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(tVector2(238.0f, -1.0f), ImGuiCond_Always);
+
+	float nextWinWidth;
+	switch (Viewer::Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			nextWinWidth = 238.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			nextWinWidth = 265.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			nextWinWidth = 292.0f;
+			break;
+	}
+
+	ImGui::SetNextWindowSize(tVector2(nextWinWidth, -1.0f), ImGuiCond_Always);
 
 	if (!ImGui::Begin("Properties", popen, windowFlags))
 	{
@@ -124,6 +140,24 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		return;
 	}
 
+	float itemWidth, buttonSize;
+	switch (Viewer::Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			itemWidth = 110.0f;
+			buttonSize = 18.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			itemWidth = 130.0f;
+			buttonSize = 22.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			itemWidth = 150.0f;
+			buttonSize = 26.0f;
+			break;
+	}
+
 	bool fileTypeSectionDisplayed = false;
 	switch (CurrImage->Filetype)
 	{
@@ -136,7 +170,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			tString texTypeName = "Texture";
 			anyUIDisplayed |= DoAltMipmapsDisplay(texTypeName);
 			anyUIDisplayed |= DoAltCubemapDisplay(texTypeName);
-			anyUIDisplayed |= DoChooseDisplayImage(texTypeName);
+			anyUIDisplayed |= DoChooseDisplayImage(texTypeName, itemWidth);
 
 			// If we're here show options when have 1 or more frames.
 			bool altEnabled = CurrImage->IsAltPictureEnabled();
@@ -152,7 +186,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 					gammaMode = 3;
 
 				const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB", "Auto" };
-				ImGui::PushItemWidth(110);
+				ImGui::PushItemWidth(itemWidth);
 				if (ImGui::Combo("Gamma Correct", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
 				{
 					CurrImage->LoadParams_DDS.Flags &= ~(tImageDDS::LoadFlag_GammaCompression | tImageDDS::LoadFlag_SRGBCompression | tImageDDS::LoadFlag_AutoGamma);
@@ -179,7 +213,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 
 				if (gammaMode == 1)
 				{
-					ImGui::PushItemWidth(110);
+					ImGui::PushItemWidth(itemWidth);
 					if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_DDS.Gamma, 0.01f, 0.1f, "%.3f"))
 						reloadChanges = true;
 					ImGui::PopItemWidth();
@@ -189,7 +223,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				}
 
 				bool expEnabled = (CurrImage->LoadParams_DDS.Flags & tImageDDS::LoadFlag_ToneMapExposure);
-				ImGui::PushItemWidth(110);
+				ImGui::PushItemWidth(itemWidth);
 				if (ImGui::InputFloat("Exposure", &CurrImage->LoadParams_DDS.Exposure, 0.001f, 0.05f, "%.4f", expEnabled ? 0 : ImGuiInputTextFlags_ReadOnly))
 					reloadChanges = true;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
 				ImGui::PopItemWidth();
@@ -262,7 +296,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			tString texTypeName = "Texture";
 			anyUIDisplayed |= DoAltMipmapsDisplay(texTypeName);
 			anyUIDisplayed |= DoAltCubemapDisplay(texTypeName);
-			anyUIDisplayed |= DoChooseDisplayImage(texTypeName);
+			anyUIDisplayed |= DoChooseDisplayImage(texTypeName, itemWidth);
 
 			// If we're here show options when have 1 or more frames.
 			bool altEnabled = CurrImage->IsAltPictureEnabled();
@@ -278,7 +312,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 					gammaMode = 3;
 
 				const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB", "Auto" };
-				ImGui::PushItemWidth(110);
+				ImGui::PushItemWidth(itemWidth);
 				if (ImGui::Combo("Gamma Correct", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
 				{
 					CurrImage->LoadParams_KTX.Flags &= ~(tImageKTX::LoadFlag_GammaCompression | tImageKTX::LoadFlag_SRGBCompression | tImageKTX::LoadFlag_AutoGamma);
@@ -305,7 +339,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 
 				if (gammaMode == 1)
 				{
-					ImGui::PushItemWidth(110);
+					ImGui::PushItemWidth(itemWidth);
 					if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_KTX.Gamma, 0.01f, 0.1f, "%.3f"))
 						reloadChanges = true;
 					ImGui::PopItemWidth();
@@ -319,7 +353,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || (CurrImage->Info.SrcColourSpace == tColourSpace::Linear))
 			{
 				bool expEnabled = (CurrImage->LoadParams_KTX.Flags & tImageKTX::LoadFlag_ToneMapExposure);
-				ImGui::PushItemWidth(110);
+				ImGui::PushItemWidth(itemWidth);
 				if (ImGui::InputFloat("Exposure", &CurrImage->LoadParams_KTX.Exposure, 0.001f, 0.05f, "%.4f", expEnabled ? 0 : ImGuiInputTextFlags_ReadOnly))
 					reloadChanges = true;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
 				ImGui::PopItemWidth();
@@ -389,7 +423,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			// Colour Profile.
 			int colourProfile = int(CurrImage->LoadParams_ASTC.Profile);
 			const char* colourProfileItems[] = { "LDR", "LDR FULL", "HDR", "HDR FULL" };
-			ImGui::PushItemWidth(110);
+			ImGui::PushItemWidth(itemWidth);
 			if (ImGui::Combo("Colour Profile", &colourProfile, colourProfileItems, tNumElements(colourProfileItems)))
 			{
 				CurrImage->LoadParams_ASTC.Profile = tImageASTC::ColourProfile(colourProfile);
@@ -422,7 +456,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				gammaMode = 2;
 
 			const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB" };
-			ImGui::PushItemWidth(110);
+			ImGui::PushItemWidth(itemWidth);
 			if (ImGui::Combo("Gamma Correct", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
 			{
 				CurrImage->LoadParams_ASTC.Flags &= ~(tImageASTC::LoadFlag_GammaCompression | tImageASTC::LoadFlag_SRGBCompression);
@@ -447,7 +481,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 
 			if (gammaMode == 1)
 			{
-				ImGui::PushItemWidth(110);
+				ImGui::PushItemWidth(itemWidth);
 				if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_ASTC.Gamma, 0.01f, 0.1f, "%.3f"))
 					reloadChanges = true;
 				ImGui::PopItemWidth();
@@ -456,12 +490,12 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				tMath::tiClamp(CurrImage->LoadParams_KTX.Gamma, 0.5f, 4.0f);
 			}
 
-			// WIP Add detection of HDR blocks to tIageASTC.
+			// WIP Add detection of HDR blocks to tImageASTC.
 			//if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || (CurrImage->Info.SrcColourSpace == tColourSpace::Linear))
 			if (1)
 			{
 				bool expEnabled = (CurrImage->LoadParams_ASTC.Flags & tImageASTC::LoadFlag_ToneMapExposure);
-				ImGui::PushItemWidth(110);
+				ImGui::PushItemWidth(itemWidth);
 				if (ImGui::InputFloat("Exposure", &CurrImage->LoadParams_ASTC.Exposure, 0.001f, 0.05f, "%.4f", expEnabled ? 0 : ImGuiInputTextFlags_ReadOnly))
 					reloadChanges = true;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
 				ImGui::PopItemWidth();
@@ -496,7 +530,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ImGui::Text("Radiance HDR");
 			bool reloadChanges = false;
 
-			ImGui::PushItemWidth(110);
+			ImGui::PushItemWidth(itemWidth);
 			if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_HDR.Gamma, 0.01f, 0.1f, "%.3f"))
 				reloadChanges = true;
 			ImGui::PopItemWidth();
@@ -504,7 +538,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ShowHelpMark("Gamma to use [0.6, 3.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
 			tMath::tiClamp(CurrImage->LoadParams_HDR.Gamma, 0.6f, 3.0f);
 
-			ImGui::PushItemWidth(110);
+			ImGui::PushItemWidth(itemWidth);
 			if (ImGui::InputInt("Exposure", &CurrImage->LoadParams_HDR.Exposure))
 				reloadChanges = true;
 			ImGui::PopItemWidth();
@@ -534,7 +568,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ImGui::Text("Open EXR");
 			bool reloadChanges = false;
 
-			ImGui::PushItemWidth(110);
+			ImGui::PushItemWidth(itemWidth);
 			if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_EXR.Gamma, 0.01f, 0.1f, "%.3f"))
 				reloadChanges = true;
 			ImGui::PopItemWidth();
@@ -542,7 +576,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ShowHelpMark("Gamma to use [0.6, 3.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
 			tMath::tiClamp(CurrImage->LoadParams_EXR.Gamma, 0.6f, 3.0f);
 
-			ImGui::PushItemWidth(110);
+			ImGui::PushItemWidth(itemWidth);
 			if (ImGui::InputFloat("Exposure", &CurrImage->LoadParams_EXR.Exposure, 0.01f, 0.1f, "%.3f"))
 				reloadChanges = true;
 			ImGui::PopItemWidth();
@@ -550,7 +584,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ShowHelpMark("Exposure adjustment [-10.0, 10.0]. Hold Ctrl to speedup.");
 			tMath::tiClamp(CurrImage->LoadParams_EXR.Exposure, -10.0f, 10.0f);
 
-			ImGui::PushItemWidth(110);
+			ImGui::PushItemWidth(itemWidth);
 			if (ImGui::InputFloat("Defog", &CurrImage->LoadParams_EXR.Defog, 0.001f, 0.01f, "%.3f"))
 				reloadChanges = true;
 			ImGui::PopItemWidth();
@@ -558,7 +592,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ShowHelpMark("Remove fog strength [0.0, 0.1]. Hold Ctrl to speedup. Try to keep under 0.01");
 			tMath::tiClamp(CurrImage->LoadParams_EXR.Defog, 0.0f, 0.1f);
 
-			ImGui::PushItemWidth(110);
+			ImGui::PushItemWidth(itemWidth);
 			if (ImGui::InputFloat("Knee Low", &CurrImage->LoadParams_EXR.KneeLow, 0.01f, 0.1f, "%.3f"))
 				reloadChanges = true;
 			ImGui::PopItemWidth();
@@ -566,7 +600,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ShowHelpMark("Lower bound knee taper [-3.0, 3.0]. Hold Ctrl to speedup.");
 			tMath::tiClamp(CurrImage->LoadParams_EXR.KneeLow, -3.0f, 3.0f);
 
-			ImGui::PushItemWidth(110);
+			ImGui::PushItemWidth(itemWidth);
 			if (ImGui::InputFloat("Knee High", &CurrImage->LoadParams_EXR.KneeHigh, 0.01f, 0.1f, "%.3f"))
 				reloadChanges = true;
 			ImGui::PopItemWidth();
@@ -604,7 +638,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		ImGui::Text("Frames (%d)", CurrImage->GetNumFrames());
 
 		int oneBasedFrameNum = CurrImage->FrameNum + 1;
-		ImGui::PushItemWidth(110);
+		ImGui::PushItemWidth(itemWidth);
 		if (ImGui::InputInt("Frame", &oneBasedFrameNum))
 		{
 			CurrImage->FrameNum = oneBasedFrameNum - 1;
@@ -615,7 +649,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 
 		if (CurrImage->FrameDurationPreviewEnabled)
 		{
-			ImGui::PushItemWidth(110);
+			ImGui::PushItemWidth(itemWidth);
 			ImGui::InputFloat("Period", &CurrImage->FrameDurationPreview, 0.01f, 0.1f, "%.4f");
 			ImGui::PopItemWidth();
 
@@ -641,7 +675,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			tPicture* currFramePic = CurrImage->GetCurrentPic();
 			float duration = currFramePic->Duration;
 			char frameDurText[64];
-			ImGui::PushItemWidth(110);
+			ImGui::PushItemWidth(itemWidth);
 			if (ImGui::InputFloat("Period", &duration, 0.01f, 0.1f, "%.4f", ImGuiInputTextFlags_EnterReturnsTrue))
 			{
 				tMath::tiClamp(duration, 0.0f, 60.0f);
@@ -667,8 +701,10 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
 
+		tVector2 imgButtonSize(buttonSize, buttonSize);
+
 		uint64 loopImageID = CurrImage->FramePlayLooping ? Image_PlayOnce.Bind() : Image_PlayLoop.Bind();
-		if (ImGui::ImageButton(ImTextureID(loopImageID), tVector2(18.0f, 18.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2, ColourBG, ColourEnabledTint))
+		if (ImGui::ImageButton(ImTextureID(loopImageID), imgButtonSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2, ColourBG, ColourEnabledTint))
 			CurrImage->FramePlayLooping = !CurrImage->FramePlayLooping;
 		ImGui::SameLine();
 
@@ -676,7 +712,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		ImGui::PushID("PropSkipBegin");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_SkipEnd_SkipBegin.Bind()), tVector2(18.0f, 18.0f), tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 2,
+			ImTextureID(Image_SkipEnd_SkipBegin.Bind()), imgButtonSize, tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 2,
 			ColourBG, prevEnabled ? ColourEnabledTint : ColourDisabledTint) && prevEnabled
 		)	CurrImage->FrameNum = 0;
 		ImGui::PopID();
@@ -685,7 +721,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		ImGui::PushID("PropPrev");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_Next_Prev.Bind()), tVector2(18.0f, 18.0f), tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 2,
+			ImTextureID(Image_Next_Prev.Bind()), imgButtonSize, tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 2,
 			ColourBG, prevEnabled ? ColourEnabledTint : ColourDisabledTint) && prevEnabled
 		)	CurrImage->FrameNum = tClampMin(CurrImage->FrameNum-1, 0);
 		ImGui::PopID();
@@ -696,7 +732,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		ImGui::PushID("PropPlayRev");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(playRevImageID), tVector2(18.0f, 18.0f), tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 2,
+			ImTextureID(playRevImageID), imgButtonSize, tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 2,
 			ColourBG, playRevEnabled ? ColourEnabledTint : ColourDisabledTint) && playRevEnabled
 		)
 		{
@@ -711,7 +747,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		ImGui::PushID("PropPlayFwd");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(playImageID), tVector2(18.0f, 18.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2,
+			ImTextureID(playImageID), imgButtonSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2,
 			ColourBG, playFwdEnabled ? ColourEnabledTint : ColourDisabledTint) && playFwdEnabled
 		)
 		{
@@ -725,7 +761,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		ImGui::PushID("PropNext");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_Next_Prev.Bind()), tVector2(18.0f, 18.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2,
+			ImTextureID(Image_Next_Prev.Bind()), imgButtonSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2,
 			ColourBG, nextEnabled ? ColourEnabledTint : ColourDisabledTint) && nextEnabled
 		)	CurrImage->FrameNum = tClampMax(CurrImage->FrameNum+1, numFrames-1);
 		ImGui::PopID();
@@ -734,7 +770,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		ImGui::PushID("PropSkipEnd");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_SkipEnd_SkipBegin.Bind()), tVector2(18.0f, 18.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2,
+			ImTextureID(Image_SkipEnd_SkipBegin.Bind()), imgButtonSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2,
 			ColourBG, nextEnabled ? ColourEnabledTint : ColourDisabledTint) && nextEnabled
 		)	CurrImage->FrameNum = numFrames-1;
 		ImGui::PopID();
