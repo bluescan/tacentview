@@ -359,7 +359,7 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 		BackgroundColour			= tColouri::black;
 		BackgroundExtend			= false;
 		ReticleMode					= (profile == Profile::Basic) ? int(ReticleModeEnum::AutoHide) : int(ReticleModeEnum::OnSelect);
-		UISize						= int(UISizeEnum::Small);
+		UISize						= int(UISizeEnum::Medium);
 	}
 
 	if (categories & Category_Slideshow)

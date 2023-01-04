@@ -1496,60 +1496,83 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		((DisappearCountdown > 0.0) || hitAreaControlButtons.IsPointInside(mousePos))
 	)
 	{
+		float mainButtonImgDim, mainButtonDim, escButtonHeight;
+		switch (Config::Current->GetUISize())
+		{
+			default:
+			case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+				mainButtonImgDim	= 24.0f;
+				mainButtonDim		= 40.0f;
+				escButtonHeight		= 28.0f;
+				break;
+			case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+				mainButtonImgDim	= 26.0f;
+				mainButtonDim		= 42.0f;
+				escButtonHeight		= 30.0f;
+				break;
+			case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+				mainButtonImgDim	= 28.0f;
+				mainButtonDim		= 44.0f;
+				escButtonHeight		= 32.0f;
+				break;
+		}
+		tVector2 mainButtonImgSize(mainButtonImgDim, mainButtonImgDim);
+		tVector2 mainButtonSize(mainButtonDim, mainButtonDim);
+
 		// Center pan button.
 		if (GetPanX() || GetPanY())
 		{
-			ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-160.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
-			ImGui::SetNextWindowSize(tVector2(40.0f, 40.0f), ImGuiCond_Always);
+			ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-mainButtonDim*4.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
+			ImGui::SetNextWindowSize(mainButtonSize, ImGuiCond_Always);
 			ImGui::Begin("CenterPan", nullptr, flagsImgButton);
-			if (ImGui::ImageButton(ImTextureID(Image_AnchorMM.Bind()), tVector2(24.0f, 24.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
+			if (ImGui::ImageButton(ImTextureID(Image_AnchorMM.Bind()), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
 				ResetPan();
 			ImGui::End();
 		}
 
 		// Looping button.
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-120.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
-		ImGui::SetNextWindowSize(tVector2(40.0f, 40.0f), ImGuiCond_Always);
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-mainButtonDim*3.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
+		ImGui::SetNextWindowSize(mainButtonSize, ImGuiCond_Always);
 		ImGui::Begin("Repeat", nullptr, flagsImgButton);
 		uint64 playModeImageID = Config::Current->SlideshowLooping ? Image_PlayOnce.Bind() : Image_PlayLoop.Bind();
-		if (ImGui::ImageButton(ImTextureID(playModeImageID), tVector2(24.0f, 24.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
+		if (ImGui::ImageButton(ImTextureID(playModeImageID), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
 			Config::Current->SlideshowLooping = !Config::Current->SlideshowLooping;
 		ImGui::End();
 
 		// Skip to beginning button.
 		bool prevAvail = (CurrImage != Images.First()) || SlideshowPlaying;
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-80.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
-		ImGui::SetNextWindowSize(tVector2(40.0f, 40.0f), ImGuiCond_Always);
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-mainButtonDim*2.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
+		ImGui::SetNextWindowSize(mainButtonSize, ImGuiCond_Always);
 		ImGui::Begin("SkipBegin", nullptr, flagsImgButton);
 		ImGui::PushID("MainSkipBegin");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_SkipEnd_SkipBegin.Bind()), tVector2(24.0f, 24.0f), tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 2,
+			ImTextureID(Image_SkipEnd_SkipBegin.Bind()), mainButtonImgSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 2,
 			ColourBG, prevAvail ? ColourEnabledTint : ColourDisabledTint) && prevAvail
 		)	OnSkipBegin();
 		ImGui::PopID();
 		ImGui::End();
 
 		// Prev button.
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-40.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
-		ImGui::SetNextWindowSize(tVector2(40.0f, 40.0f), ImGuiCond_Always);
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-mainButtonDim*1.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
+		ImGui::SetNextWindowSize(mainButtonSize, ImGuiCond_Always);
 		ImGui::Begin("Prev", nullptr, flagsImgButton);
 		ImGui::PushID("MainPrev");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_Next_Prev.Bind()), tVector2(24.0f, 24.0f), tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 2,
+			ImTextureID(Image_Next_Prev.Bind()), mainButtonImgSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 2,
 			ColourBG, prevAvail ? ColourEnabledTint : ColourDisabledTint) && prevAvail
 		)	OnPrevious();
 		ImGui::PopID();
 		ImGui::End();
 
 		// Slideshow Play/Stop button.
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+0.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
-		ImGui::SetNextWindowSize(tVector2(40.0f, 40.0f), ImGuiCond_Always);
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+mainButtonDim*0.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
+		ImGui::SetNextWindowSize(mainButtonSize, ImGuiCond_Always);
 		ImGui::Begin("Slideshow", nullptr, flagsImgButton);
 		uint64 psImageID = SlideshowPlaying ? Image_Stop.Bind() : Image_Play_PlayRev.Bind();
 		ImGui::PushID("MainPlayStop");
-		if (ImGui::ImageButton(ImTextureID(psImageID), tVector2(24.0f, 24.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0,0,0,0), tVector4(1,1,1,1)))
+		if (ImGui::ImageButton(ImTextureID(psImageID), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0,0,0,0), tVector4(1,1,1,1)))
 		{
 			SlideshowPlaying = !SlideshowPlaying;
 			SlideshowCountdown = Config::Current->SlideshowPeriod;
@@ -1559,47 +1582,47 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		// Next button.
 		bool nextAvail = (CurrImage != Images.Last()) || SlideshowPlaying;
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+40.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
-		ImGui::SetNextWindowSize(tVector2(40.0f, 40.0f), ImGuiCond_Always);
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+mainButtonDim*1.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
+		ImGui::SetNextWindowSize(mainButtonSize, ImGuiCond_Always);
 		ImGui::Begin("Next", nullptr, flagsImgButton);
 		ImGui::PushID("MainNext");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_Next_Prev.Bind()), tVector2(24.0f, 24.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2,
+			ImTextureID(Image_Next_Prev.Bind()), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2,
 			ColourBG, nextAvail ? ColourEnabledTint : ColourDisabledTint) && nextAvail
 		)	OnNext();
 		ImGui::PopID();
 		ImGui::End();
 
 		// Skip to end button.
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+80.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
-		ImGui::SetNextWindowSize(tVector2(40.0f, 40.0f), ImGuiCond_Always);
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+mainButtonDim*2.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
+		ImGui::SetNextWindowSize(mainButtonSize, ImGuiCond_Always);
 		ImGui::Begin("SkipEnd", nullptr, flagsImgButton);
 		ImGui::PushID("MainSkipEnd");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_SkipEnd_SkipBegin.Bind()), tVector2(24.0f, 24.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2,
+			ImTextureID(Image_SkipEnd_SkipBegin.Bind()), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2,
 			ColourBG, nextAvail ? ColourEnabledTint : ColourDisabledTint) && nextAvail
 		)	OnSkipEnd();
 		ImGui::PopID();
 		ImGui::End();
 
 		// Fullscreen / Windowed button.
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+120.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
-		ImGui::SetNextWindowSize(tVector2(40.0f, 40.0f), ImGuiCond_Always);
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+mainButtonDim*3.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
+		ImGui::SetNextWindowSize(mainButtonSize, ImGuiCond_Always);
 		ImGui::Begin("Fullscreen", nullptr, flagsImgButton);
 		uint64 fsImageID = Config::Global.FullscreenMode ? Image_Windowed.Bind() : Image_Fullscreen.Bind();
-		if (ImGui::ImageButton(ImTextureID(fsImageID), tVector2(24.0f, 24.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0,0,0,0), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
+		if (ImGui::ImageButton(ImTextureID(fsImageID), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0,0,0,0), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
 			ChangeScreenMode(!Config::Global.FullscreenMode);
 		ImGui::End();
 
 		// Exit basic profile.
 		if (Config::GetProfile() == Profile::Basic)
 		{
-			ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+160.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
-			ImGui::SetNextWindowSize(tVector2(120.0f, 40.0f), ImGuiCond_Always);
+			ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+mainButtonDim*4.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
+			ImGui::SetNextWindowSize(tVector2(120.0f, mainButtonDim), ImGuiCond_Always);
 			ImGui::Begin("ExitBasic", nullptr, flagsImgButton);
-			if (ImGui::Button("ESC", tVector2(50.0f, 28.0f)))
+			if (ImGui::Button("ESC", tVector2(50.0f, escButtonHeight)))
 				ChangeProfile(Profile::Main);
 			ImGui::End();
 		}
