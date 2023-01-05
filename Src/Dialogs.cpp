@@ -28,7 +28,7 @@ using namespace tMath;
 
 void Viewer::ShowPixelEditorOverlay(bool* popen)
 {
-	tVector2 windowPos = GetDialogOrigin(4);
+	tVector2 windowPos = GetDialogOrigin(DialogID::PixelEditor);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
@@ -119,7 +119,7 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 
 void Viewer::ShowChannelFilterOverlay(bool* popen)
 {
-	tVector2 windowPos = GetDialogOrigin(6);
+	tVector2 windowPos = GetDialogOrigin(DialogID::ChannelFilter);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
@@ -250,7 +250,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 
 void Viewer::ShowAboutPopup(bool* popen)
 {
-	tVector2 windowPos = GetDialogOrigin(3);
+	tVector2 windowPos = GetDialogOrigin(DialogID::About);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|

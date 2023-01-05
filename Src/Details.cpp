@@ -169,7 +169,7 @@ namespace ViewerMetaData
 
 void Viewer::ShowImageMetaDataOverlay(bool* popen)
 {
-	tVector2 windowPos = GetDialogOrigin(6);
+	tVector2 windowPos = GetDialogOrigin(DialogID::MetaData);
 	ImGui::SetNextWindowBgAlpha(0.90f);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Appearing);
 	ImGuiWindowFlags flags = 

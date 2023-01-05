@@ -100,9 +100,6 @@ namespace Viewer
 	extern const tMath::tVector4 ColourPressedBG;
 	extern const tMath::tVector4 ColourClear;
 
-	const int TopUIHeight			= 26;
-	const float DialogOrigin		= 12.0f;
-	const float DialogDelta			= 19.0f;
 	const double DisappearDuration	= 4.0;
 
 	// Helper to display a little (?) mark which shows a tooltip when hovered.
@@ -122,7 +119,21 @@ namespace Viewer
 	void ResetPan(bool resetX = true, bool resetY = true);
 	int GetPanX();
 	int GetPanY();
-	tMath::tVector2 GetDialogOrigin(float index);
+
+	enum class DialogID
+	{
+		ContentView,
+		Properties,
+		PixelEditor,
+		Preferences,
+		Bindings,
+		MetaData,
+		CheatSheet,
+		About,
+		ChannelFilter,
+		NumIDs
+	};
+	tMath::tVector2 GetDialogOrigin(DialogID);
 
 	void Undo();
 	void Redo();

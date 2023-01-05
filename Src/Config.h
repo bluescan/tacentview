@@ -50,6 +50,7 @@ struct ProfileSettings
 	bool ShowImageDetails;
 	bool ShowImageMetaData;
 	bool ShowPixelEditor;
+	bool ShowPreferences;
 	bool ShowChannelFilter;
 	bool ShowFrameScrubber;
 	bool ShowContentView;

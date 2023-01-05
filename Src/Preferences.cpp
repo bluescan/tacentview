@@ -29,7 +29,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
 	// do it to make the Demo applications a little more welcoming.
-	tVector2 windowPos = GetDialogOrigin(2);
+	tVector2 windowPos = GetDialogOrigin(DialogID::Preferences);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	tString title;

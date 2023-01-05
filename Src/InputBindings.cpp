@@ -476,7 +476,7 @@ void Bindings::InputMap::Write(tExprWriter& writer) const
 
 void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 {
-	tVector2 windowPos = GetDialogOrigin(7);
+	tVector2 windowPos = GetDialogOrigin(DialogID::Bindings);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(tVector2(440.0f, 600.0f), ImGuiCond_FirstUseEver);
 	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize;
@@ -797,7 +797,7 @@ void Bindings::ShowAddBindingSection(Config::ProfileSettings& settings)
 
 void Bindings::ShowCheatSheetWindow(bool* popen)
 {
-	tVector2 windowPos = GetDialogOrigin(5);
+	tVector2 windowPos = GetDialogOrigin(DialogID::CheatSheet);
 	ImGui::SetNextWindowBgAlpha(0.80f);
 	ImGui::SetNextWindowSize(tVector2(350.0f, 600.0f), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);

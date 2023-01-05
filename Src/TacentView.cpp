@@ -183,7 +183,6 @@ namespace Viewer
 	bool Request_Quit								= false;
 	bool Request_CropLineConstrain					= false;
 	Anchor Request_PanSnap							= Anchor::Invalid;
-	bool PrefsWindow								= false;
 	bool BindingsWindowJustOpened					= false;
 	bool CropMode									= false;
 	bool LMBDown									= false;
@@ -301,21 +300,36 @@ void Viewer::PrintRedirectCallback(const char* text, int numChars)
 }
 
 
-tVector2 Viewer::GetDialogOrigin(float index)
+tVector2 Viewer::GetDialogOrigin(DialogID dialogID)
 {
-	if (index == 2)
-		return tVector2(DialogOrigin + DialogDelta, DialogOrigin + TopUIHeight + 250.0f);
+	int hindex = int(dialogID) % 4;
+	int vindex = int(dialogID) / 4;
 
-	else if (index == 5)
-		return tVector2(DialogOrigin + 416.0f, DialogOrigin + TopUIHeight + DialogDelta*1.0f);
+	float topOffset, leftOffset, heightDelta;
+	switch (Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			topOffset	= 64.0f;
+			leftOffset	= 30.0f;
+			heightDelta = 22.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			topOffset	= 66.0f;
+			leftOffset	= 32.0f;
+			heightDelta = 24.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			topOffset	= 68.0f;
+			leftOffset	= 34.0f;
+			heightDelta = 26.0f;
+			break;
+	}
 
-	else if (index == 6)
-		return tVector2(DialogOrigin + 300.0f, DialogOrigin + TopUIHeight + DialogDelta*1.0f);
-
-	else if (index == 7)
-		return tVector2(DialogOrigin + 388.0f, TopUIHeight + 12.0f);
-
-	return tVector2(DialogOrigin + DialogDelta*float(index), DialogOrigin + TopUIHeight + DialogDelta*float(index));
+	float widthDelta = 200.0f;
+	float x = leftOffset + widthDelta*float(hindex);
+	float y = topOffset + heightDelta*float(vindex);
+	return tVector2(x, y);
 }
 
 
@@ -1420,7 +1434,23 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		DisappearCountdown -= dt;
 	tVector2 mousePos(mouseX, mouseY);
 
+	tVector2 mainArrowSize;
+	switch (Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			mainArrowSize.Set(16.0f, 56.0f);
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			mainArrowSize.Set(18.0f, 63.0f);
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			mainArrowSize.Set(20.0f, 70.0f);
+			break;
+	}
+
 	tVector2 rectCenterPrevArrow(0.0f, float(workAreaH)*0.5f);
+	tVector2 mainArrowWindowSize = mainArrowSize + tVector2(18.0f, 14.0f);
 	tARect2 hitAreaPrevArrow(rectCenterPrevArrow, 160.0f);
 	if
 	(
@@ -1430,12 +1460,13 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	)
 	{
 		// Previous arrow.
-		ImGui::SetNextWindowPos(tVector2(0.0f, float(topUIHeight) + float(workAreaH)*0.5f - 33.0f));
-		ImGui::SetNextWindowSize(tVector2(16, 70), ImGuiCond_Always);
+		ImGui::SetNextWindowPos(tVector2(-4.0f, float(topUIHeight) + float(workAreaH)*0.5f - mainArrowWindowSize.y/2.0f - 4.0f));
+		ImGui::SetNextWindowSize(mainArrowWindowSize, ImGuiCond_Always);
 		ImGui::Begin("PrevArrow", nullptr, flagsImgButton);
-		ImGui::SetCursorPos(tVector2(6, 2));
+		// Originally was doing the SetCursor instead of the -4.
+		// ImGui::SetCursorPos(tVector2(6, 2));
 		ImGui::PushID("MainPrevArrow");
-		if (ImGui::ImageButton(ImTextureID(Image_NextSide_PrevSide.Bind()), tVector2(15.0f, 56.0f), tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 3, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
+		if (ImGui::ImageButton(ImTextureID(Image_NextSide_PrevSide.Bind()), mainArrowSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 3, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
 			OnPrevious();
 		ImGui::PopID();
 		ImGui::End();
@@ -1451,12 +1482,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	)
 	{
 		// Next arrow.
-		ImGui::SetNextWindowPos(tVector2(workAreaW - 33.0f, float(topUIHeight) + float(workAreaH) * 0.5f - 33.0f));
-		ImGui::SetNextWindowSize(tVector2(16, 70), ImGuiCond_Always);
+		ImGui::SetNextWindowPos(tVector2(workAreaW - mainArrowWindowSize.x, float(topUIHeight) + float(workAreaH) * 0.5f - mainArrowWindowSize.y/2.0f - 4.0f));
+		ImGui::SetNextWindowSize(mainArrowWindowSize, ImGuiCond_Always);
 		ImGui::Begin("NextArrow", nullptr, flagsImgButton);
-		ImGui::SetCursorPos(tVector2(6, 2));
 		ImGui::PushID("MainNextArrow");
-		if (ImGui::ImageButton(ImTextureID(Image_NextSide_PrevSide.Bind()), tVector2(15.0f, 56.0f), tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 3, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
+		if (ImGui::ImageButton(ImTextureID(Image_NextSide_PrevSide.Bind()), mainArrowSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 3, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
 			OnNext();
 		ImGui::PopID();
 		ImGui::End();
@@ -1706,7 +1736,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 					BindingsWindowJustOpened = true;
 
 			tString prefsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Preferences);
-			ImGui::MenuItem("Preferences...", prefsKey.Chz(), &PrefsWindow);
+			ImGui::MenuItem("Preferences...", prefsKey.Chz(), &Config::Current->ShowPreferences);
 
 			tString quitKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Quit);
 			if (ImGui::MenuItem("Quit", quitKey.Chz()))
@@ -2120,8 +2150,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton
 		(
 			ImTextureID(Image_Prefs.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
-			PrefsWindow ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	PrefsWindow = !PrefsWindow;
+			Config::Current->ShowPreferences ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	Config::Current->ShowPreferences = !Config::Current->ShowPreferences;
 		ShowToolTip("Preferences");
 
 		ImGui::EndMainMenuBar();
@@ -2155,17 +2185,35 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	DoResizeCanvasModal				(resizeCanvasPressed);
 	DoRotateImageModal				(rotateImagePressed);
 
-	if (PrefsWindow)
-		ShowPreferencesWindow(&PrefsWindow);
+	if (Config::Current->ShowContentView)
+		ShowContentViewDialog(&Config::Current->ShowContentView);
 
 	if (Config::Current->ShowPropsWindow)
 		ShowPropertiesWindow(&Config::Current->ShowPropsWindow);
+
+	if (Config::Current->ShowPixelEditor)
+		ShowPixelEditorOverlay(&Config::Current->ShowPixelEditor);
+
+	if (Config::Current->ShowPreferences)
+		ShowPreferencesWindow(&Config::Current->ShowPreferences);
 
 	if (Config::Current->ShowBindingsWindow)
 	{
 		Bindings::ShowBindingsWindow(&Config::Current->ShowBindingsWindow, BindingsWindowJustOpened);
 		BindingsWindowJustOpened = false;
 	}
+
+	if (Config::Current->ShowImageMetaData)
+		ShowImageMetaDataOverlay(&Config::Current->ShowImageMetaData);
+
+	if (Config::Current->ShowCheatSheet)
+		Bindings::ShowCheatSheetWindow(&Config::Current->ShowCheatSheet);
+
+	if (Config::Current->ShowAbout)
+		ShowAboutPopup(&Config::Current->ShowAbout);
+
+	if (Config::Current->ShowChannelFilter)
+		ShowChannelFilterOverlay(&Config::Current->ShowChannelFilter);
 
 	ImGui::PopStyleVar();
 
@@ -2177,24 +2225,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		float zoomPercent = CurrImage ? CurrImage->ZoomPercent : 100.0f;
 		ShowImageDetailsOverlay(&Config::Current->ShowImageDetails, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), CursorX, CursorY, zoomPercent);
 	}
-
-	if (Config::Current->ShowImageMetaData)
-		ShowImageMetaDataOverlay(&Config::Current->ShowImageMetaData);
-
-	if (Config::Current->ShowPixelEditor)
-		ShowPixelEditorOverlay(&Config::Current->ShowPixelEditor);
-
-	if (Config::Current->ShowChannelFilter)
-		ShowChannelFilterOverlay(&Config::Current->ShowChannelFilter);
-
-	if (Config::Current->ShowContentView)
-		ShowContentViewDialog(&Config::Current->ShowContentView);
-
-	if (Config::Current->ShowCheatSheet)
-		Bindings::ShowCheatSheetWindow(&Config::Current->ShowCheatSheet);
-
-	if (Config::Current->ShowAbout)
-		ShowAboutPopup(&Config::Current->ShowAbout);
 
 	ShowCropPopup(tVector4(left, right, top, bottom), tVector2(uoff, voff));
 
@@ -2722,7 +2752,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::Preferences:
-			PrefsWindow = !PrefsWindow;
+			Config::Current->ShowPreferences = !Config::Current->ShowPreferences;
 			break;
 
 		case Bindings::Operation::KeyBindings:

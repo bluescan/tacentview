@@ -61,8 +61,8 @@ tString Viewer::MakeImageTooltipString(Viewer::Image* image, const tString& file
 void Viewer::ShowContentViewDialog(bool* popen)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar;
-	tVector2 windowPos = GetDialogOrigin(0);
-	
+	tVector2 windowPos = GetDialogOrigin(DialogID::ContentView);
+
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(tVector2(640, 374), ImGuiCond_FirstUseEver);
 
