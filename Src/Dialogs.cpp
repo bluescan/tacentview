@@ -120,21 +120,6 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 void Viewer::ShowChannelFilterOverlay(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(DialogID::ChannelFilter);
-
-/////////////////
-/*
-	tVector2 windowSize;
-	switch (Config::Current->GetUISize())
-	{
-		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:	windowSize.Set(240, 500);	break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:	windowSize.Set(280, 533);	break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Large:	windowSize.Set(320, 531);	break;
-	}
-*/
-/////////////////
-
-
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|

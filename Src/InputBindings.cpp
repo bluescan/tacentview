@@ -799,7 +799,31 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(DialogID::CheatSheet);
 	ImGui::SetNextWindowBgAlpha(0.80f);
-	ImGui::SetNextWindowSize(tVector2(350.0f, 600.0f), ImGuiCond_FirstUseEver);
+
+	tVector2 windowSize;
+	float actionWidth;
+	float operatWidth;
+	switch (Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			actionWidth = 106.0f;
+			operatWidth = 238.0f;
+			windowSize.Set(actionWidth+operatWidth, 438.0f);
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			actionWidth = 114.0f;
+			operatWidth = 262.0f;
+			windowSize.Set(actionWidth+operatWidth, 442.0f);
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			actionWidth = 130.0f;
+			operatWidth = 286.0f;
+			windowSize.Set(actionWidth+operatWidth, 446.0f);
+			break;
+	}
+
+	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
 
@@ -807,14 +831,14 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 	{
 		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
 		const float rowHeight = 18.0f;
-		const int maxRowsToDisplay = 18;
+		const int maxRowsToDisplay = 20;
 		int totalAssigned = Config::Current->InputBindings.GetTotalAssigned();
 		const int numRowsToDisplay = tMin(maxRowsToDisplay, totalAssigned);
 		tVector2 outerSize = ImVec2(0.0f, rowHeight + rowHeight * float(numRowsToDisplay));
 		if (ImGui::BeginTable("CheatSheetTable", 2, tableFlags, outerSize))
 		{
-			ImGui::TableSetupColumn("Action", ImGuiTableColumnFlags_WidthFixed, 110);
-			ImGui::TableSetupColumn("Operation", ImGuiTableColumnFlags_WidthFixed, 240);
+			ImGui::TableSetupColumn("Action", ImGuiTableColumnFlags_WidthFixed, actionWidth);
+			ImGui::TableSetupColumn("Operation", ImGuiTableColumnFlags_WidthFixed, operatWidth);
 			ImGui::TableSetupScrollFreeze(0, 1); // Top row fixed.
 			ImGui::TableHeadersRow();
 
