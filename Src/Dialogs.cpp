@@ -120,6 +120,21 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 void Viewer::ShowChannelFilterOverlay(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(DialogID::ChannelFilter);
+
+/////////////////
+/*
+	tVector2 windowSize;
+	switch (Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:	windowSize.Set(240, 500);	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:	windowSize.Set(280, 533);	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:	windowSize.Set(320, 531);	break;
+	}
+*/
+/////////////////
+
+
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
@@ -210,7 +225,8 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 
 		ImGui::Text("Modify");
 
-		if (ImGui::Button("Blend Background", tVector2(112.0f, 0.0f)))
+		float buttonWidth = 134.0f;
+		if (ImGui::Button("Blend Background", tVector2(buttonWidth, 0.0f)))
 		{
 			CurrImage->Unbind();
 			CurrImage->AlphaBlendColour(Config::Current->BackgroundColour, true);
@@ -221,7 +237,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 		ShowHelpMark("Blend background colour into RGB of image based on alpha. Sets alphas to full when done.");
 
 		tcomps channels = (Viewer::DrawChannel_R ? tComp_R : 0) | (Viewer::DrawChannel_G ? tComp_G : 0) | (Viewer::DrawChannel_B ? tComp_B : 0) | (Viewer::DrawChannel_A ? tComp_A : 0);
-		if (ImGui::Button("Max Selected", tVector2(112.0f, 0.0f)))
+		if (ImGui::Button("Max Selected", tVector2(buttonWidth, 0.0f)))
 		{
 			CurrImage->Unbind();
 			tColouri full(255, 255, 255, 255);
@@ -232,7 +248,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 		ImGui::SameLine();
 		ShowHelpMark("Sets selected channel(s) to their maximum value (255).");
 
-		if (ImGui::Button("Zero Selected", tVector2(112.0f, 0.0f)))
+		if (ImGui::Button("Zero Selected", tVector2(buttonWidth, 0.0f)))
 		{
 			CurrImage->Unbind();
 			tColouri zero(0, 0, 0, 0);
@@ -251,11 +267,18 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 void Viewer::ShowAboutPopup(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(DialogID::About);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	ImGuiWindowFlags flags =
-		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
-		ImGuiWindowFlags_NoFocusOnAppearing	|	ImGuiWindowFlags_NoNav;
+	tVector2 windowSize;
+	switch (Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:	windowSize.Set(240, 500);	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:	windowSize.Set(280, 533);	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:	windowSize.Set(320, 531);	break;
+	}
 
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
+	ImGuiWindowFlags flags = ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
 	if (ImGui::Begin("About", popen, flags))
 	{
 		int glfwMajor = 0; int glfwMinor = 0; int glfwRev = 0;
