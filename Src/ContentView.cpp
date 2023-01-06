@@ -64,7 +64,7 @@ void Viewer::ShowContentViewDialog(bool* popen)
 	tVector2 windowPos = GetDialogOrigin(DialogID::ContentView);
 
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(tVector2(640, 374), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(tVector2(510, 490), ImGuiCond_FirstUseEver);
 
 	if (!ImGui::Begin("Content View", popen, windowFlags))
 	{
