@@ -100,9 +100,24 @@ void Viewer::DoSaveModal(bool savePressed)
 		ImGui::OpenPopup(label.Chr());
 	}
 
+	float nextWinWidth;
+	switch (Viewer::Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			nextWinWidth = 300.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			nextWinWidth = 325.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			nextWinWidth = 350.0f;
+			break;
+	}
+
 	// The unused isOpenSaveOptions bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isOpenSaveOptions = true;
-	ImGui::SetNextWindowSize(tVector2(300.0f, 0.0f));
+	ImGui::SetNextWindowSize(tVector2(nextWinWidth, 0.0f));
 	if (!ImGui::BeginPopupModal(label.Chr(), &isOpenSaveOptions, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 
@@ -119,12 +134,13 @@ void Viewer::DoSaveModal(bool savePressed)
 void Viewer::DoSaveAsModal(bool saveAsPressed)
 {
 	static tString label;
+	if (!CurrImage)
+		return;
 
 	if (saveAsPressed)
 	{
 		tString baseName;
-		if (CurrImage)
-			baseName = tSystem::tGetFileBaseName(CurrImage->Filename);
+		baseName = tSystem::tGetFileBaseName(CurrImage->Filename);
 		SaveAsDialog.OpenPopup(ImagesDir, baseName);
 	}
 	FileDialog::DialogState state = SaveAsDialog.DoPopup();
@@ -252,11 +268,15 @@ void Viewer::DoSaveUnsupportedTypePopup()
 	ImGui::Text("Saving of %s files is not supported.", saveTypeName.Chr());
 
 	tString support;
-	tsPrintf(support, "Supported: ");
+	tsPrintf(support, "Tacent View supports:\n\n");
+
+	int ln = 1;
 	for (tFileTypes::tFileTypeItem* i = FileTypes_Save.First(); i; i = i->Next())
 	{
 		tString line;
 		tsPrintf(line, "%s ", tGetFileTypeName(i->FileType).Chr());
+		if ((ln++ % 5) == 0)
+			line += "\n";
 		support += line;
 	}
 
@@ -483,6 +503,7 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 		}
 
 		case tFileType::JPG:
+			ImGui::SetNextItemWidth(166);
 			ImGui::SliderInt("Quality", &Config::Current->SaveFileJpegQuality, 1, 100, "%d");
 			break;
 
