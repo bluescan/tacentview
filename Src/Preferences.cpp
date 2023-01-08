@@ -1,8 +1,8 @@
 // Preferences.h
 //
-// Priferences window.
+// Preferences window.
 //
-// Copyright (c) 2019, 2020, 2021, 2022 Tristan Grimmer.
+// Copyright (c) 2019-2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -40,6 +40,24 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		return;
 	}
 
+	float buttonOffset, comboWidth;
+	switch (Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			buttonOffset	= 141.0f;
+			comboWidth		= 110.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			buttonOffset	= 170.0f;
+			comboWidth		= 132.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			buttonOffset	= 191.0f;
+			comboWidth		= 146.0f;
+			break;
+	}
+
 	bool tab = false;
 	uint32 category = Config::Category_None;
 	if (ImGui::BeginTabBar("PreferencesTabBar", ImGuiTabBarFlags_None))
@@ -68,14 +86,14 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			if (!Config::Global.TransparentWorkArea)
 			{
 				const char* backgroundItems[] = { "None", "Checker", "Solid" };
-				ImGui::PushItemWidth(110);
+				ImGui::PushItemWidth(comboWidth);
 				ImGui::Combo("Background Style", &Config::Current->BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
 				ImGui::PopItemWidth();
 
 				if (Config::Current->GetBackgroundStyle() == Config::ProfileSettings::BackgroundStyleEnum::SolidColour)
 				{
 					tColourf floatCol(Config::Current->BackgroundColour);
-					if (ImGui::ColorEdit3("Choose Colour", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))
+					if (ImGui::ColorEdit3("Solid Colour", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))
 					{
 						Config::Current->BackgroundColour.Set(floatCol);
 						Config::Current->BackgroundColour.A = 0xFF;
@@ -91,7 +109,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 					ImGui::SameLine();
 					const char* presetColours[] = { "Custom", "Black", "Grey", "White" };
-					ImGui::PushItemWidth(68);
+					ImGui::PushItemWidth(comboWidth*0.64f);
 					if (ImGui::Combo("Preset", &preset, presetColours, tNumElements(presetColours)))
 					{
 						switch (preset)
@@ -115,7 +133,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 			// Reticle mode.
 			const char* reticleModeItems[] = { "Always Hidden", "Always Visible", "On Select", "Auto Hide" };
-			ImGui::PushItemWidth(110);
+			ImGui::PushItemWidth(comboWidth);
 			ImGui::Combo("Reticle Mode", &Config::Current->ReticleMode, reticleModeItems, tNumElements(reticleModeItems));
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
@@ -129,7 +147,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			);
 
 			const char* uiSizeItems[] = { "Small", "Medium", "Large" };
-			ImGui::PushItemWidth(110);
+			ImGui::PushItemWidth(comboWidth);
 			ImGui::Combo("UI Size", &Config::Current->UISize, uiSizeItems, tNumElements(uiSizeItems));
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
@@ -168,19 +186,19 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				Viewer::SlideshowCountdown = Config::Current->SlideshowPeriod;
 			}
 			ImGui::SameLine();
-			if (ImGui::Button("10 fps"))
+			if (ImGui::Button("10fps"))
 			{
 				Config::Current->SlideshowPeriod = 1.0/10.0;
 				Viewer::SlideshowCountdown = Config::Current->SlideshowPeriod;
 			}
 			ImGui::SameLine();
-			if (ImGui::Button("30 fps"))
+			if (ImGui::Button("30fps"))
 			{
 				Config::Current->SlideshowPeriod = 1.0/30.0;
 				Viewer::SlideshowCountdown = Config::Current->SlideshowPeriod;
 			}
 			ImGui::SameLine();
-			if (ImGui::Button("60 fps"))
+			if (ImGui::Button("60fps"))
 			{
 				Config::Current->SlideshowPeriod = 1.0/60.0;
 				Viewer::SlideshowCountdown = Config::Current->SlideshowPeriod;
@@ -257,7 +275,9 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::Checkbox("Mipmap Chaining", &Config::Current->MipmapChaining); ImGui::SameLine();
 			ShowHelpMark("Chaining generates mipmaps faster. No chaining gives slightly\nbetter results at cost of large generation time.");
 
-			ImGui::Combo("Mipmap Filter", &Config::Current->MipmapFilter, tImage::tResampleFilterNames, 1+int(tImage::tResampleFilter::NumFilters), 1+int(tImage::tResampleFilter::NumFilters));
+			ImGui::PushItemWidth(comboWidth*1.22f);
+			ImGui::Combo("Mip Filter", &Config::Current->MipmapFilter, tImage::tResampleFilterNames, 1+int(tImage::tResampleFilter::NumFilters), 1+int(tImage::tResampleFilter::NumFilters));
+			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Filtering method to use when generating minification mipmaps.\nUse None for no mipmapping.");
 	
@@ -271,11 +291,11 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::NewLine();
 			ImGui::Checkbox("Confirm Deletes", &Config::Current->ConfirmDeletes);
 			ImGui::Checkbox("Confirm File Overwrites", &Config::Current->ConfirmFileOverwrites);
-			ImGui::Checkbox("Auto Propery Window", &Config::Current->AutoPropertyWindow);
+			ImGui::Checkbox("Auto Property Window", &Config::Current->AutoPropertyWindow);
 			ImGui::Checkbox("Auto Play Anims", &Config::Current->AutoPlayAnimatedImages);
 
 			const char* zoomModes[] = { "Keep", "Fit", "Downscale", "OneToOne" };
-			ImGui::PushItemWidth(86);
+			ImGui::PushItemWidth(comboWidth*0.9f);
 			ImGui::Combo("Zoom Mode", &Config::Current->DefaultZoomMode, zoomModes, tNumElements(zoomModes));
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
@@ -304,12 +324,12 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	}
 	ShowToolTip
 	(
-		"Resets the current profile (excluding key bindings) to defaults.\n"
-		"Keybindings may be reset from the Key Bindings window."
+		"Resets the current profile (excluding key-bindings) to defaults.\n"
+		"Key-bindings may be reset from the Key Bindings window."
 	);
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	ImGui::SetCursorPosX(buttonOffset);
 	if (ImGui::Button("Reset Tab", tVector2(100.0f, 0.0f)))
 	{
 		Config::ResetProfile(category);
@@ -336,8 +356,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	);
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-
+	ImGui::SetCursorPosX(buttonOffset);
 	if (ImGui::Button("Close", tVector2(100.0f, 0.0f)))
 	{
 		if (popen)
