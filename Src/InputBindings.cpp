@@ -478,7 +478,17 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 {
 	tVector2 windowPos = GetDialogOrigin(DialogID::Bindings);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(tVector2(440.0f, 600.0f), ImGuiCond_FirstUseEver);
+
+	tVector2 windowSize;
+	switch (Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:	windowSize.Set(440.0f, 600.0f);		break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:	windowSize.Set(440.0f, 600.0f);		break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:	windowSize.Set(580.0f, 600.0f);		break;
+	}
+
+//	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
 	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize;
 
 	if (ImGui::Begin("Keyboard Bindings", popen, flags))
@@ -487,17 +497,41 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		if (justOpened)
 			profile = int(Config::GetProfile());
 
-		ImGui::SetNextItemWidth(104);
+		float profileWidth, keyWidth, operationWidth, buttonWidth;
+		switch (Config::Current->GetUISize())
+		{
+			default:
+			case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+				profileWidth	= 104.0f;
+				keyWidth		= 120.0f;
+				operationWidth	= 240.0f;
+				buttonWidth		= 72.0f;
+				break;
+			case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+				profileWidth	= 104.0f;
+				keyWidth		= 120.0f;
+				operationWidth	= 240.0f;
+				buttonWidth		= 72.0f;
+				break;
+			case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+				profileWidth	= 130.0f;
+				keyWidth		= 140.0f;
+				operationWidth	= 284.0f;
+				buttonWidth		= 82.0f;
+				break;
+		}
+
+		ImGui::SetNextItemWidth(profileWidth);
 		ImGui::Combo("##ProfileToEdit", &profile, ProfileNamesLong, int(Profile::NumProfiles));
 		Config::ProfileSettings& settings = (profile == 0) ? Config::MainProfileSettings : Config::BasicProfileSettings;
 
 		ImGui::SameLine();
-		if (ImGui::Button("Reset", tVector2(72.0f, 0.0f)))
+		if (ImGui::Button("Reset", tVector2(buttonWidth, 0.0f)))
 			settings.InputBindings.Reset(Viewer::Profile(profile));
 		ShowToolTip("Resets the key bindings to default for the chosen profile.");
 
 		ImGui::SameLine();
-		if (ImGui::Button("Reset All", tVector2(72.0f, 0.0f)))
+		if (ImGui::Button("Reset All", tVector2(buttonWidth, 0.0f)))
 		{
 			Config::MainProfileSettings.InputBindings.Reset(Profile::Main);
 			Config::BasicProfileSettings.InputBindings.Reset(Profile::Basic);
@@ -505,7 +539,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		ShowToolTip("Resets the key bindings to default for all profiles.");
 
 		ImGui::SameLine();
-		if (ImGui::Button("Set All", tVector2(72.0f, 0.0f)))
+		if (ImGui::Button("Set All", tVector2(buttonWidth, 0.0f)))
 		{
 			// Operator= deals with the object being the same one, so just copy them both over indescriminately.
 			Config::MainProfileSettings.InputBindings = settings.InputBindings;
@@ -514,8 +548,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		ShowToolTip("Copies the keybindings to all profiles. Useful if you want them all the same.");
 
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 72.0f);
-		if (ImGui::Button("Close", tVector2(72.0f, 0.0f)))
+		if (ImGui::Button("Close", tVector2(buttonWidth, 0.0f)))
 		{
 			if (popen)
 				*popen = false;
@@ -531,8 +564,8 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		tVector2 outerSize = ImVec2(0.0f, rowHeight + rowHeight * float(numRowsToDisplay));
 		if (ImGui::BeginTable("KeyBindingTable", 3, tableFlags, outerSize))
 		{
-			ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed, 120);//ImGuiTableColumnFlags_WidthStretch);
-			ImGui::TableSetupColumn("Operation", ImGuiTableColumnFlags_WidthFixed, 240);
+			ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed, keyWidth);//ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("Operation", ImGuiTableColumnFlags_WidthFixed, operationWidth);
 			ImGui::TableSetupColumn("##Remove", ImGuiTableColumnFlags_WidthFixed, 20.0f);
 			ImGui::TableSetupScrollFreeze(0, 1); // Top row fixed.
 			ImGui::TableHeadersRow();
@@ -577,7 +610,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 					char oplabel[64]; tsPrintf(oplabel, "##op%d_%d", k, m);
 					const char* opCurrDesc = GetOperationDesc(opCurr);
 					tAssert(opCurrDesc);
-					ImGui::SetNextItemWidth(240);
+					ImGui::SetNextItemWidth(operationWidth);
 
 					bool permanent = IsPermanentBinding(k, m);
 					if (!permanent)
