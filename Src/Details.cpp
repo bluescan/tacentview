@@ -171,6 +171,32 @@ void Viewer::ShowImageMetaDataOverlay(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(DialogID::MetaData);
 	ImGui::SetNextWindowBgAlpha(0.90f);
+
+	float rowHeight, tagWidth, valWidth;
+	int maxRowsToDisplay;
+	switch (Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			rowHeight			= 18.0f;
+			tagWidth			= 116.0f;
+			valWidth			= 200.0f;
+			maxRowsToDisplay	= 26;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			rowHeight			= 19.0f;
+			tagWidth			= 128.0f;
+			valWidth			= 230.0f;
+			maxRowsToDisplay	= 25;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			rowHeight			= 21.0f;
+			tagWidth			= 140.0f;
+			valWidth			= 260.0f;
+			maxRowsToDisplay	= 22;
+			break;
+	}
+
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Appearing);
 	ImGuiWindowFlags flags = 
 		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
@@ -181,8 +207,6 @@ void Viewer::ShowImageMetaDataOverlay(bool* popen)
 		// Get meta data from current image.
 		const tMetaData* metaData = CurrImage ? &CurrImage->Cached_MetaData : nullptr;
 		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
-		const float rowHeight = 18.0f;
-		const int maxRowsToDisplay = 28;
 		int numDataRows = 1;
 		if (metaData && metaData->IsValid())
 			numDataRows = metaData->GetNumValidTags();
@@ -190,8 +214,8 @@ void Viewer::ShowImageMetaDataOverlay(bool* popen)
 		tVector2 outerSize = ImVec2(0.0f, rowHeight + rowHeight * float(numRowsToDisplay));
 		if (ImGui::BeginTable("MetaDataTable", 2, tableFlags, outerSize))
 		{
-			ImGui::TableSetupColumn("Tag", ImGuiTableColumnFlags_WidthFixed, 120);
-			ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthFixed, 200);
+			ImGui::TableSetupColumn("Tag", ImGuiTableColumnFlags_WidthFixed, tagWidth);
+			ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthFixed, valWidth);
 			ImGui::TableSetupScrollFreeze(0, 1); // Top row fixed.
 			ImGui::TableHeadersRow();
 
@@ -241,7 +265,7 @@ void Viewer::ShowImageMetaDataOverlay(bool* popen)
 
 					tVector2 rect = ImGui::GetItemRectSize();
 					// If the value was truncated, show it all in a tooltip.
-					if (rect.x > 188)
+					if (rect.x > (valWidth-16.0f))
 						ShowToolTip(value.Chr());
 
 					if (ImGui::IsMouseReleased(1) && colHovered  && (ImGui::GetMousePos().y >= ImGui::GetItemRectMin().y) && (ImGui::GetMousePos().y <= ImGui::GetItemRectMax().y))
