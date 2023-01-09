@@ -2,7 +2,7 @@
 //
 // Allows you to set key bindings for all TacentView operations.
 //
-// Copyright (c) 2022 Tristan Grimmer.
+// Copyright (c) 2022-2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -26,7 +26,7 @@ namespace Viewer
 
 namespace Bindings
 {
-	void ShowAddBindingSection(Config::ProfileSettings& settings);
+	void ShowAddBindingSection(Config::ProfileSettings& settings, float keyWidth, float operationWidth, float removeAddSize);
 	void InitKeyNameTables();
 
 	const int MaxKeyNameLength = 16;
@@ -479,25 +479,14 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 	tVector2 windowPos = GetDialogOrigin(DialogID::Bindings);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
-	tVector2 windowSize;
-	switch (Config::Current->GetUISize())
-	{
-		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:	windowSize.Set(440.0f, 600.0f);		break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:	windowSize.Set(440.0f, 600.0f);		break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Large:	windowSize.Set(580.0f, 600.0f);		break;
-	}
-
-//	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
 	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize;
-
 	if (ImGui::Begin("Keyboard Bindings", popen, flags))
 	{
 		static int profile = 0;
 		if (justOpened)
 			profile = int(Config::GetProfile());
 
-		float profileWidth, keyWidth, operationWidth, buttonWidth;
+		float profileWidth, keyWidth, operationWidth, buttonWidth, removeAddSize;
 		switch (Config::Current->GetUISize())
 		{
 			default:
@@ -506,18 +495,21 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 				keyWidth		= 120.0f;
 				operationWidth	= 240.0f;
 				buttonWidth		= 72.0f;
+				removeAddSize	= 21.0f;
 				break;
 			case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
-				profileWidth	= 104.0f;
-				keyWidth		= 120.0f;
-				operationWidth	= 240.0f;
-				buttonWidth		= 72.0f;
+				profileWidth	= 117.0f;
+				keyWidth		= 137.0f;
+				operationWidth	= 261.0f;
+				buttonWidth		= 79.0f;
+				removeAddSize	= 22.5f;
 				break;
 			case Viewer::Config::ProfileSettings::UISizeEnum::Large:
 				profileWidth	= 130.0f;
-				keyWidth		= 140.0f;
-				operationWidth	= 284.0f;
-				buttonWidth		= 82.0f;
+				keyWidth		= 154.0f;
+				operationWidth	= 282.0f;
+				buttonWidth		= 86.0f;
+				removeAddSize	= 24.0f;
 				break;
 		}
 
@@ -659,7 +651,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 					{
 						char blabel[64];
 						tsPrintf(blabel, " - ##b%d_%d", k, m);
-						if (ImGui::Button(blabel, tVector2(21.0f, 21.0f)))
+						if (ImGui::Button(blabel, tVector2(removeAddSize, removeAddSize)))
 							keyops.Operations[m] = Operation::None;
 					}
 				}
@@ -668,21 +660,21 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		}
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
-		ShowAddBindingSection(settings);
+		ShowAddBindingSection(settings, keyWidth, operationWidth, removeAddSize);
 	}
 	ImGui::End();
 }
 
 
-void Bindings::ShowAddBindingSection(Config::ProfileSettings& settings)
+void Bindings::ShowAddBindingSection(Config::ProfileSettings& settings, float keyWidth, float operationWidth, float removeAddSize)
 {
 	uint32 tableFlags = ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
 	const float rowHeight = 25.0f;
 	tVector2 outerSize = ImVec2(0.0f, rowHeight);
 	if (ImGui::BeginTable("KeyAssignTable", 3, tableFlags, outerSize))
 	{
-		ImGui::TableSetupColumn("##AssignKey", ImGuiTableColumnFlags_WidthFixed, 120);
-		ImGui::TableSetupColumn("##AssignOperation", ImGuiTableColumnFlags_WidthFixed, 240);
+		ImGui::TableSetupColumn("##AssignKey", ImGuiTableColumnFlags_WidthFixed, keyWidth);
+		ImGui::TableSetupColumn("##AssignOperation", ImGuiTableColumnFlags_WidthFixed, operationWidth);
 		ImGui::TableSetupColumn("##Assign", ImGuiTableColumnFlags_WidthFixed, 20.0f);
 
 		ImGui::TableNextRow();
@@ -692,7 +684,7 @@ void Bindings::ShowAddBindingSection(Config::ProfileSettings& settings)
 		const char* addModsName = GetModifiersText(addMods);
 		if (!addModsName)
 			addModsName = "No Mods";
-		ImGui::SetNextItemWidth(71);
+		ImGui::SetNextItemWidth(keyWidth*0.59);
 		if (ImGui::BeginCombo("##Modifiers", addModsName, comboFlags))
 		{
 			for (uint32 mods = 0; mods < Modifier_NumCombinations; mods++)
@@ -717,7 +709,7 @@ void Bindings::ShowAddBindingSection(Config::ProfileSettings& settings)
 		static int addKey = GLFW_KEY_SPACE;
 		const char* addKeyName = GetKeyName(addKey);
 		tAssert(addKeyName);
-		ImGui::SetNextItemWidth(41);
+		ImGui::SetNextItemWidth(keyWidth*0.34f);
 		if (ImGui::BeginCombo("##AddKey", addKeyName, comboFlags))
 		{
 			for (int key = 0; key <= GLFW_KEY_LAST; key++)
@@ -740,7 +732,7 @@ void Bindings::ShowAddBindingSection(Config::ProfileSettings& settings)
 		static Operation addOp = Operation::NextImage;
 		const char* addOpDesc = GetOperationDesc(addOp);
 		tAssert(addOpDesc);
-		ImGui::SetNextItemWidth(240);
+		ImGui::SetNextItemWidth(operationWidth);
 		if (ImGui::BeginCombo("##AddOperation", addOpDesc, comboFlags))
 		{
 			for (int oper = int(Operation::First); oper < int(Operation::NumOperations); oper++)
@@ -763,7 +755,7 @@ void Bindings::ShowAddBindingSection(Config::ProfileSettings& settings)
 
 		// This binding is considered permanent/unchangeable.
 		bool permanent = IsPermanentBinding(addKey, addMods);
-		if (ImGui::Button(" + ##AddBinding", tVector2(21.0f, 21.0f)))
+		if (ImGui::Button(" + ##AddBinding", tVector2(removeAddSize, removeAddSize)))
 		{
 			if (addOp != Operation::None)
 			{
