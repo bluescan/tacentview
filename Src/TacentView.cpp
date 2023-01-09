@@ -1905,12 +1905,14 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 				CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::OneToOne;
 			}
 
-			ImGui::PushItemWidth(60);
+			ImGui::PushItemWidth(70);
 			const char* zoomItems[] = { "Zoom", "20%", "50%", "100%", "150%", "200%", "400%", "800%", "1200%", "1800%", "2500%"};
 			float zoomVals[] = { -1.0f, 20.0f, 50.0f, 100.0f, 150.0f, 200.0f, 400.0f, 800.0f, 1200.0f, 1800.0f, 2500.0f };
 			float zoomPercent = CurrImage ? CurrImage->ZoomPercent : 100.0f;
 			tString currZoomStr;
 			tsPrintf(currZoomStr, "%0.0f%%", zoomPercent);
+
+			// We use the zoom combo only as a chooser. It always displays index 0 (Zoom) when not expanded.
 			int zoomIdx = 0;
 			if (ImGui::Combo(currZoomStr.Chr(), &zoomIdx, zoomItems, tNumElements(zoomItems)) && (zoomIdx > 0))
 				ApplyZoomDelta(zoomVals[zoomIdx]-zoomPercent);
