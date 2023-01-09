@@ -447,7 +447,6 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 	else
 		ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
-	ImGui::SetNextWindowSize(tVector2(180.0f, 280.0f), ImGuiCond_Appearing);
 	ImGui::SetNextWindowBgAlpha(0.70f);
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
@@ -456,6 +455,27 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 
 	if (ImGui::Begin("Crop", &CropMode, flags))
 	{
+		float buttonWidth, panNavLeft, anchorSize;
+		switch (Config::Current->GetUISize())
+		{
+			default:
+			case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+				buttonWidth	= 55.0f;
+				panNavLeft	= 58.0f;
+				anchorSize	= 24.0f;
+				break;
+			case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+				buttonWidth	= 61.0f;
+				panNavLeft	= 64.0f;
+				anchorSize	= 26.0f;
+				break;
+			case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+				buttonWidth	= 66.0f;
+				panNavLeft	= 68.0f;
+				anchorSize	= 28.0f;
+				break;
+		}
+
 		tVector2 scrCropMin(CropGizmo.LineL.GetScreenVal(), CropGizmo.LineB.GetScreenVal());
 		tVector2 scrCropMax(CropGizmo.LineR.GetScreenVal(), CropGizmo.LineT.GetScreenVal());
 		int minX, minY;
@@ -473,7 +493,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		int margB = minY;
 		int margT = origH - maxY - 1;
 
-		float col = ImGui::GetCursorPosX() + 76.0f;
+		float col = ImGui::GetCursorPosX() + 86.0f;
 		ImGui::Text("Bot Left");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("X:%d Y:%d", minX, minY);
 		ImGui::Text("Top Right");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("X:%d Y:%d", maxX, maxY);
 		ImGui::Text("H Margins");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("L:%d R:%d", margL, margR);
@@ -508,9 +528,8 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		);
 		ShowHelpMark(toolTipText.Chr());
 
-		tVector2 ancImageSize(24.0f, 24.0f);
+		tVector2 ancImageSize(anchorSize, anchorSize);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 7.0f);
-		float panNavLeft = 48.0f;
 		float panNavSpace = 6.0f;
 
 		// Top Row
@@ -584,11 +603,11 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 
 		// Buttons.
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 7.0f);
-		if (ImGui::Button("Cancel", tVector2(50, 0)))
+		if (ImGui::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 			CropMode = false;
 
 		ImGui::SameLine();
-		if (ImGui::Button("Reset", tVector2(50, 0)))
+		if (ImGui::Button("Reset", tVector2(buttonWidth, 0.0f)))
 		{
 			// For now we only reset the crop lines, not the zoom or pan. Pan-reset can be done by the anchor widget.
 			// ResetPan();
@@ -597,9 +616,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		}
 
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 50.0f);
-
-		if (ImGui::Button("Apply", tVector2(50, 0)))
+		if (ImGui::Button("Apply", tVector2(buttonWidth, 0.0f)))
 		{
 			newW = tClampMin(newW, CropMin);
 			newH = tClampMin(newH, CropMin);
