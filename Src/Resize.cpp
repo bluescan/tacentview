@@ -41,20 +41,42 @@ void Viewer::DoResizeWidthHeightInterface(int srcW, int srcH, int& dstW, int& ds
 	float aspect = float(srcW) / float(srcH);
 	static bool lockAspect = true;
 
-	ImGui::PushItemWidth(100);
+	float dimWidth, dimOffset, powButtonWidth;
+	switch (Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			dimWidth		= 90.0f;
+			dimOffset		= 140.0f;
+			powButtonWidth	= 44.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			dimWidth		= 100.0f;
+			dimOffset		= 156.0f;
+			powButtonWidth	= 47.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			dimWidth		= 110.0f;
+			dimOffset		= 172.0f;
+			powButtonWidth	= 50.0f;
+			break;
+	}
+	static char lo[32];
+	static char hi[32];
+
+	ImGui::PushItemWidth(dimWidth);
 	if (ImGui::InputInt("Width", &dstW) && lockAspect)
 		dstH = int( float(dstW) / aspect );
 	ImGui::PopItemWidth();
-	tiClampMin(dstW, 4); tiClampMin(dstH, 4);
-
-	static char lo[32];
-	static char hi[32];
-	int loP2W = tNextLowerPower2(dstW);		tiClampMin(loP2W, 4);	tsPrintf(lo, "w%d", loP2W);
-	int hiP2W = tNextHigherPower2(dstW);							tsPrintf(hi, "w%d", hiP2W);
-	ImGui::SameLine(); if (ImGui::Button(lo))
-		{ dstW = loP2W; if (lockAspect) dstH = int( float(dstW) / aspect ); }
-	ImGui::SameLine(); if (ImGui::Button(hi))
-		{ dstW = hiP2W; if (lockAspect) dstH = int( float(dstW) / aspect ); }
+	tiClamp(dstW, 4, 32768); tiClamp(dstH, 4, 32768);
+	int loP2W = tNextLowerPower2(dstW);		tiClampMin(loP2W, 4);	tsPrintf(lo, "%d##Wlo", loP2W);
+	int hiP2W = tNextHigherPower2(dstW);							tsPrintf(hi, "%d##Whi", hiP2W);
+	ImGui::SetCursorPosX(dimOffset);
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(dimOffset);
+	if (ImGui::Button(lo, tVector2(powButtonWidth, 0.0f)))			{ dstW = loP2W; if (lockAspect) dstH = int( float(dstW) / aspect ); }
+	ImGui::SameLine();
+	if (ImGui::Button(hi, tVector2(powButtonWidth, 0.0f)))			{ dstW = hiP2W; if (lockAspect) dstH = int( float(dstW) / aspect ); }
 	ImGui::SameLine(); ShowHelpMark("Final output width in pixels.\nIf dimensions match current no scaling.");
 
 	if (ImGui::Checkbox("Lock Aspect", &lockAspect) && lockAspect)
@@ -63,18 +85,19 @@ void Viewer::DoResizeWidthHeightInterface(int srcW, int srcH, int& dstW, int& ds
 		dstH = srcH;
 	}
 
-	ImGui::PushItemWidth(100);
+	ImGui::PushItemWidth(dimWidth);
 	if (ImGui::InputInt("Height", &dstH) && lockAspect)
 		dstW = int( float(dstH) * aspect );
-	ImGui::PopItemWidth();
-	tiClampMin(dstW, 4); tiClampMin(dstH, 4);
+	tiClamp(dstW, 4, 32768); tiClamp(dstH, 4, 32768);
+	ImGui::SetCursorPosX(dimOffset);
+	int loP2H = tNextLowerPower2(dstH);		tiClampMin(loP2H, 4);	tsPrintf(lo, "%d##Hlo", loP2H);
+	int hiP2H = tNextHigherPower2(dstH);							tsPrintf(hi, "%d##Hhi", hiP2H);
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(dimOffset);
+	if (ImGui::Button(lo, tVector2(powButtonWidth, 0.0f)))			{ dstH = loP2H; if (lockAspect) dstW = int( float(dstH) * aspect ); }
+	ImGui::SameLine();
+	if (ImGui::Button(hi, tVector2(powButtonWidth, 0.0f)))			{ dstH = hiP2H; if (lockAspect) dstW = int( float(dstH) * aspect ); }
 
-	int loP2H = tNextLowerPower2(dstH);		tiClampMin(loP2H, 4);	tsPrintf(lo, "h%d", loP2H);
-	int hiP2H = tNextHigherPower2(dstH);							tsPrintf(hi, "h%d", hiP2H);
-	ImGui::SameLine(); if (ImGui::Button(lo))
-		{ dstH = loP2H; if (lockAspect) dstW = int( float(dstH) * aspect ); }
-	ImGui::SameLine(); if (ImGui::Button(hi))
-		{ dstH = hiP2H; if (lockAspect) dstW = int( float(dstH) * aspect ); }
 	ImGui::SameLine(); ShowHelpMark("Final output height in pixels.\nIf dimensions match current no scaling.");
 }
 
@@ -83,12 +106,13 @@ void Viewer::DoResizeFilterInterface(int srcW, int srcH, int dstW, int dstH)
 {
 	if ((dstW == srcW) && (dstH == srcH))
 		return;
-
+	ImGui::SetNextItemWidth(168.0f);
 	ImGui::Combo("Filter", &Config::Current->ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 	ImGui::SameLine();
 	ShowHelpMark("Filtering method to use when resizing images.");
 
-	ImGui::Combo("Filter Edge Mode", &Config::Current->ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
+	ImGui::SetNextItemWidth(168.0f);
+	ImGui::Combo("Edges", &Config::Current->ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
 	ImGui::SameLine();
 	ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");	
 }
@@ -104,9 +128,26 @@ void Viewer::DoResizeAnchorInterface()
 	ImGui::SameLine();
 	ShowHelpMark("Choose an anchor below. To use the cursor position, deselect the current anchor.");
 
-	tVector2 imgSize(24.0f, 24.0f);
+	float ancLeft, ancImgSize;
+	switch (Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			ancLeft		= 92.0f;
+			ancImgSize	= 24.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			ancLeft		= 100.0f;
+			ancImgSize	= 26.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			ancLeft		= 109.0f;
+			ancImgSize	= 28.0f;
+			break;
+	}
+
+	tVector2 imgSize(ancImgSize, ancImgSize);
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 7.0f);
-	float ancLeft = 98.0f;
 	float ancSpace = 6.0f;
 
 	// Top Row
@@ -247,6 +288,21 @@ void Viewer::DoResizeImageModal(bool resizeImagePressed)
 	if (!ImGui::BeginPopupModal("Resize Image", &isOpenResizeImage, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 
+	float buttonWidth;
+	switch (Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			buttonWidth		= 78.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			buttonWidth		= 86.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			buttonWidth		= 94.0f;
+			break;
+	}
+
 	tAssert(CurrImage);		tPicture* picture = CurrImage->GetCurrentPic();		tAssert(picture);
 	int srcW				= picture->GetWidth();
 	int srcH				= picture->GetHeight();
@@ -261,17 +317,18 @@ void Viewer::DoResizeImageModal(bool resizeImagePressed)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	if (ImGui::Button("Reset", tVector2(100.0f, 0.0f)))
+	if (ImGui::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		dstW = srcW;
 		dstH = srcH;
 	}
-	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
+
+	ImGui::SameLine();
+	if (ImGui::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("Resize", tVector2(100.0f, 0.0f)))
+	if (ImGui::Button("Resize", tVector2(buttonWidth, 0.0f)))
 	{
 		if ((dstW != srcW) || (dstH != srcH))
 		{
@@ -369,7 +426,22 @@ void Viewer::DoResizeCanvasAnchorTab(bool justOpened)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	if (ImGui::Button("Reset", tVector2(100.0f, 0.0f)))
+	float buttonWidth;
+	switch (Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			buttonWidth		= 78.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			buttonWidth		= 86.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			buttonWidth		= 94.0f;
+			break;
+	}
+
+	if (ImGui::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		Config::Current->CropAnchor		= 4;
 		Config::Current->FillColour		= tColouri::black;
@@ -377,12 +449,12 @@ void Viewer::DoResizeCanvasAnchorTab(bool justOpened)
 		dstH							= srcH;
 	}
 
-	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
+	ImGui::SameLine();
+	if (ImGui::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("Resize", tVector2(100.0f, 0.0f)))
+	if (ImGui::Button("Resize", tVector2(buttonWidth, 0.0f)))
 	{
 		DoResizeCrop(srcW, srcH, dstW, dstH);
 		ImGui::CloseCurrentPopup();
@@ -420,7 +492,22 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool justOpened)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	if (ImGui::Button("Reset", tVector2(100.0f, 0.0f)))
+	float buttonWidth;
+	switch (Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			buttonWidth		= 78.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			buttonWidth		= 86.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			buttonWidth		= 94.0f;
+			break;
+	}
+
+	if (ImGui::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		Config::Current->FillColour.Set(Viewer::PixelColour);
 		channelR = true;
@@ -429,12 +516,12 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool justOpened)
 		channelA = true;
 	}
 
-	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
+	ImGui::SameLine();
+	if (ImGui::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("Crop Borders", tVector2(100.0f, 0.0f)))
+	if (ImGui::Button("Remove", tVector2(buttonWidth, 0.0f)))
 	{
 		uint32 channels =
 			(channelR ? tComp_R : 0) |
@@ -466,6 +553,8 @@ void Viewer::DoResizeCanvasAspectTab(bool justOpened)
 	ImGui::InputInt("Den", &Config::Current->ResizeAspectDen);
 	ImGui::PopItemWidth();
 	tiClampMin(Config::Current->ResizeAspectNum, 1); tiClampMin(Config::Current->ResizeAspectDen, 1);
+
+	ImGui::PushItemWidth(160);
 
 	int presetIndex = 0;
 	if      ((Config::Current->ResizeAspectNum == 2 ) && (Config::Current->ResizeAspectDen == 1 ))	presetIndex = 1;
@@ -501,6 +590,8 @@ void Viewer::DoResizeCanvasAspectTab(bool justOpened)
 
 	const char* resizeAspectModes[] = { "Crop", "Letterbox" };
 	ImGui::Combo("Mode", &Config::Current->ResizeAspectMode, resizeAspectModes, tNumElements(resizeAspectModes), tNumElements(resizeAspectModes));
+	ImGui::PopItemWidth();
+
 	ImGui::SameLine();
 	ShowHelpMark("Crop mode cuts off sides resulting in a filled image.\nLetterbox mode adds coloured borders resulting in whole image being visible.");
 
@@ -513,21 +604,36 @@ void Viewer::DoResizeCanvasAspectTab(bool justOpened)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	if (ImGui::Button("Reset", tVector2(100.0f, 0.0f)))
+	float buttonWidth;
+	switch (Config::Current->GetUISize())
 	{
-		Config::Current->CropAnchor		= 4;
-		Config::Current->FillColour		= tColouri::black;
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			buttonWidth		= 78.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			buttonWidth		= 86.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			buttonWidth		= 94.0f;
+			break;
+	}
+
+	if (ImGui::Button("Reset", tVector2(buttonWidth, 0.0f)))
+	{
+		Config::Current->CropAnchor			= 4;
+		Config::Current->FillColour			= tColouri::black;
 		Config::Current->ResizeAspectNum	= 16;
 		Config::Current->ResizeAspectDen	= 9;
 		Config::Current->ResizeAspectMode	= 0;
 	}
 
-	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
+	ImGui::SameLine();
+	if (ImGui::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("Resize", tVector2(100.0f, 0.0f)))
+	if (ImGui::Button("Resize", tVector2(buttonWidth, 0.0f)))
 	{
 		int dstH = srcH;
 		int dstW = srcW;
