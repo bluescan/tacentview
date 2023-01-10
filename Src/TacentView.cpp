@@ -3036,6 +3036,9 @@ void Viewer::UnloadAppImages()
 }
 
 
+#include "RobotoFontBase85.cpp"
+
+
 int main(int argc, char** argv)
 {
 	#ifdef PLATFORM_WINDOWS
@@ -3234,10 +3237,22 @@ int main(int argc, char** argv)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Fonts must be added from smallest to largest and number of adds needs to match UIMode::NumModes.
+	// I'm leaving the original AddFont calls here because they work and I haven't profiled which gives faster
+	// bootup times. I imagine add font from memory is faster since 3 fewer files to open, but the exe load
+	// for the in-memory method will be a bit slower plus it has to decode. In any case, pretty sure it will
+	// still be faster.
+	#define USE_IN_MEMORY_FONT_LOAD
+	#ifdef USE_IN_MEMORY_FONT_LOAD
+	io.Fonts->AddFontFromMemoryCompressedBase85TTF(RobotoFont_compressed_data_base85, 14.0f);
+	io.Fonts->AddFontFromMemoryCompressedBase85TTF(RobotoFont_compressed_data_base85, 16.0f);
+	io.Fonts->AddFontFromMemoryCompressedBase85TTF(RobotoFont_compressed_data_base85, 18.0f);
+	#else
 	tString fontFile = dataDir + "Roboto-Medium.ttf";
 	io.Fonts->AddFontFromFileTTF(fontFile.Chr(), 14.0f);
 	io.Fonts->AddFontFromFileTTF(fontFile.Chr(), 16.0f);
 	io.Fonts->AddFontFromFileTTF(fontFile.Chr(), 18.0f);
+	#endif
+
 	tiClamp(Viewer::Config::Current->UISize, 0, io.Fonts->Fonts.Size - 1);
 	ImFont* font = io.Fonts->Fonts[Viewer::Config::Current->UISize];
 	io.FontDefault = font;
