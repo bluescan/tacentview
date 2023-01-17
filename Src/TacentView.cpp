@@ -148,6 +148,7 @@ namespace Viewer
 	Image Image_PlayLoop;
 	Image Image_PlayOnce;
 	Image Image_ChannelFilter;
+	Image Image_Levels;
 	Image Image_ContentView;
 	Image Image_UpFolder;
 	Image Image_Crop;
@@ -1853,6 +1854,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			tString chanFiltKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ChannelFilter);
 			ImGui::MenuItem("Channel Filter...", chanFiltKey.Chz(), &Config::Current->ShowChannelFilter);
 
+			tString levelsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Levels);
+			ImGui::MenuItem("Levels...", levelsKey.Chz(), &Config::Current->ShowLevels);
+
 			tString propsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::PropertyEdit);
 			ImGui::MenuItem("Image Properties...", propsKey.Chz(), &Config::Current->ShowPropsWindow);
 
@@ -1998,6 +2002,14 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			Config::Current->ShowChannelFilter ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	Config::Current->ShowChannelFilter = !Config::Current->ShowChannelFilter;
 		ShowToolTip("Colour Channel Filter");
+
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
+		if (ImGui::ImageButton
+		(
+			ImTextureID(Image_Levels.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			Config::Current->ShowLevels ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	Config::Current->ShowLevels = !Config::Current->ShowLevels;
+		ShowToolTip("Image Levels");
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
@@ -2238,6 +2250,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	if (Config::Current->ShowChannelFilter)
 		ShowChannelFilterOverlay(&Config::Current->ShowChannelFilter);
+
+	if (Config::Current->ShowLevels)
+		ShowLevelsOverlay(&Config::Current->ShowLevels);
 
 	ImGui::PopStyleVar();
 
@@ -2637,6 +2652,10 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			Config::Current->ShowChannelFilter = !Config::Current->ShowChannelFilter;
 			break;
 
+		case Bindings::Operation::Levels:
+			Config::Current->ShowLevels = !Config::Current->ShowLevels;
+			break;
+
 		case Bindings::Operation::RedChannel:
 			if (DrawChannel_AsIntensity)
 				{ DrawChannel_R = true; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = false; }
@@ -3016,6 +3035,7 @@ void Viewer::LoadAppImages(const tString& dataDir)
 	Image_PlayLoop			.Load(dataDir + "PlayLoop.png");
 	Image_PlayOnce			.Load(dataDir + "PlayOnce.png");
 	Image_ChannelFilter		.Load(dataDir + "ChannelFilter.png");
+	Image_Levels			.Load(dataDir + "Levels.png");
 	Image_ContentView		.Load(dataDir + "ContentView.png");
 	Image_UpFolder			.Load(dataDir + "UpFolder.png");
 	Image_Crop				.Load(dataDir + "Crop.png");
@@ -3055,6 +3075,7 @@ void Viewer::UnloadAppImages()
 	Image_PlayLoop			.Unload();
 	Image_PlayOnce			.Unload();
 	Image_ChannelFilter		.Unload();
+	Image_Levels			.Unload();
 	Image_ContentView		.Unload();
 	Image_UpFolder			.Unload();
 	Image_Crop				.Unload();

@@ -192,7 +192,8 @@ const char* Bindings::OperationDescriptions[] =
 	"Save",
 	"UI Size Up",
 	"UI Size Down",
-	"Zoom Per Image"
+	"Zoom Per Image",
+	"Levels"
 
 	// Add new entries here.
 };
@@ -357,6 +358,7 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 	AssignKey(GLFW_KEY_3,			Modifier_None,					Operation::BlueChannel,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_4,			Modifier_None,					Operation::AlphaChannel,			onlyIfUnassigned);
 	AssignKey(GLFW_KEY_5,			Modifier_None,					Operation::ChannelAsIntensity,		onlyIfUnassigned);
+	AssignKey(GLFW_KEY_L,			Modifier_None,					Operation::Levels,					onlyIfUnassigned);
 
 	AssignKey(GLFW_KEY_I,			Modifier_None,					Operation::Details,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_X,			Modifier_None,					Operation::MetaData,				onlyIfUnassigned);	// Update enum pending.
@@ -383,7 +385,7 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 	AssignKey(GLFW_KEY_ENTER,		Modifier_None,					Operation::FileBrowser,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_S,			Modifier_None,					Operation::SlideshowTimer,			onlyIfUnassigned);
 	AssignKey(GLFW_KEY_F1,			Modifier_None,					Operation::CheatSheet,				onlyIfUnassigned);
-	AssignKey(GLFW_KEY_L,			Modifier_None,					Operation::DebugLog,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_L,			Modifier_Ctrl,					Operation::DebugLog,				onlyIfUnassigned);
 
 	AssignKey(GLFW_KEY_B,			Modifier_None,					Operation::Profile,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_P,			Modifier_None,					Operation::Preferences,				onlyIfUnassigned);

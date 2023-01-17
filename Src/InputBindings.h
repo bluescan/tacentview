@@ -107,6 +107,7 @@ namespace Bindings
 		UISizeInc,				// Increment the UI (font and button) size one step bigger.
 		UISizeDec,				// Decrement the UI (font and button) size one step smaller.
 		ZoomPerImage,			// Toggle storing zoom settings globally vs with each image separately.
+		Levels,					// Toggle levels popup.
 		//
 		// Add new operations here. Adding above will invalidate save file keybindings.
 		//

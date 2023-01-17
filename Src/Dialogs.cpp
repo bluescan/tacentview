@@ -249,6 +249,139 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 }
 
 
+// WIP. This is just a copy of the channel filetrs popup for now.
+void Viewer::ShowLevelsOverlay(bool* popen)
+{
+	tVector2 windowPos = GetDialogOrigin(DialogID::ChannelFilter);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+	ImGuiWindowFlags flags =
+		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
+		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoNav;
+
+	if (ImGui::Begin("Levels", popen, flags))
+	{
+		ImGui::Text("Display");
+		if (ImGui::Checkbox("Channel Intensity", &Viewer::DrawChannel_AsIntensity))
+		{
+			if (Viewer::DrawChannel_AsIntensity)
+			{
+				Viewer::DrawChannel_R = true;
+				Viewer::DrawChannel_G = false;
+				Viewer::DrawChannel_B = false;
+				Viewer::DrawChannel_A = false;
+			}
+			else
+			{
+				Viewer::DrawChannel_R = true;
+				Viewer::DrawChannel_G = true;
+				Viewer::DrawChannel_B = true;
+				Viewer::DrawChannel_A = true;
+			}
+		}
+		if (Viewer::DrawChannel_AsIntensity)
+		{
+			if (ImGui::RadioButton("Red", Viewer::DrawChannel_R))
+			{
+				Viewer::DrawChannel_R = true;
+				Viewer::DrawChannel_G = false;
+				Viewer::DrawChannel_B = false;
+				Viewer::DrawChannel_A = false;
+			}
+			if (ImGui::RadioButton("Green", Viewer::DrawChannel_G))
+			{
+				Viewer::DrawChannel_R = false;
+				Viewer::DrawChannel_G = true;
+				Viewer::DrawChannel_B = false;
+				Viewer::DrawChannel_A = false;
+			}
+			if (ImGui::RadioButton("Blue", Viewer::DrawChannel_B))
+			{
+				Viewer::DrawChannel_R = false;
+				Viewer::DrawChannel_G = false;
+				Viewer::DrawChannel_B = true;
+				Viewer::DrawChannel_A = false;
+			}
+			if (ImGui::RadioButton("Alpha", Viewer::DrawChannel_A))
+			{
+				Viewer::DrawChannel_R = false;
+				Viewer::DrawChannel_G = false;
+				Viewer::DrawChannel_B = false;
+				Viewer::DrawChannel_A = true;
+			}
+		}
+		else
+		{
+			ImGui::Checkbox("Red", &Viewer::DrawChannel_R);
+			ImGui::Checkbox("Green", &Viewer::DrawChannel_G);
+			ImGui::Checkbox("Blue", &Viewer::DrawChannel_B);
+			ImGui::Checkbox("Alpha", &Viewer::DrawChannel_A);
+			ImGui::SameLine(); ShowHelpMark
+			(
+				"Alpha is interprested as blending opacity. When this channel is set to false full alpha is used and"
+				"image is drawn opaque. When true it blends whatever colour channels are selected with the current background."
+			);
+		}
+
+		tColourf floatCol(Config::Current->BackgroundColour);
+		if (ImGui::ColorEdit3("##Background", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))
+		{
+			Config::Current->BackgroundColour.Set(floatCol);
+			Config::Current->BackgroundColour.A = 0xFF;
+		}
+
+		ImGui::SameLine();
+		const char* backgroundItems[] = { "None", "Checker", "Solid" };
+		ImGui::PushItemWidth(83);
+		ImGui::Combo("##Background Style", &Config::Current->BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ShowHelpMark("Background colour and style.\nThe blend-background button uses the colour regardless of style.");
+
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+		ImGui::Separator();
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+
+		ImGui::Text("Modify");
+
+		float buttonWidth = 134.0f;
+		if (ImGui::Button("Blend Background", tVector2(buttonWidth, 0.0f)))
+		{
+			CurrImage->Unbind();
+			CurrImage->AlphaBlendColour(Config::Current->BackgroundColour, true);
+			CurrImage->Bind();
+			Viewer::SetWindowTitle();
+		}
+		ImGui::SameLine();
+		ShowHelpMark("Blend background colour into RGB of image based on alpha. Sets alphas to full when done.");
+
+		tcomps channels = (Viewer::DrawChannel_R ? tComp_R : 0) | (Viewer::DrawChannel_G ? tComp_G : 0) | (Viewer::DrawChannel_B ? tComp_B : 0) | (Viewer::DrawChannel_A ? tComp_A : 0);
+		if (ImGui::Button("Max Selected", tVector2(buttonWidth, 0.0f)))
+		{
+			CurrImage->Unbind();
+			tColouri full(255, 255, 255, 255);
+			CurrImage->SetAllPixels(full, channels);
+			CurrImage->Bind();
+			Viewer::SetWindowTitle();
+		}
+		ImGui::SameLine();
+		ShowHelpMark("Sets selected channel(s) to their maximum value (255).");
+
+		if (ImGui::Button("Zero Selected", tVector2(buttonWidth, 0.0f)))
+		{
+			CurrImage->Unbind();
+			tColouri zero(0, 0, 0, 0);
+			CurrImage->SetAllPixels(zero, channels);
+			CurrImage->Bind();
+			Viewer::SetWindowTitle();
+		}
+		ImGui::SameLine();
+		ShowHelpMark("Sets selected channel(s) to zero.");
+	}
+
+	ImGui::End();
+}
+
+
 void Viewer::ShowAboutPopup(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(DialogID::About);
