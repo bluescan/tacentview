@@ -294,21 +294,47 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::Checkbox("Auto Property Window", &Config::Current->AutoPropertyWindow);
 			ImGui::Checkbox("Auto Play Anims", &Config::Current->AutoPlayAnimatedImages);
 
-			const char* zoomModes[] = { "Keep", "Fit", "Downscale", "OneToOne" };
-			ImGui::PushItemWidth(comboWidth*0.9f);
-			ImGui::Combo("Zoom Mode", &Config::Current->DefaultZoomMode, zoomModes, tNumElements(zoomModes));
-			ImGui::PopItemWidth();
-			ImGui::SameLine();
-			ShowHelpMark
-			(
-				"Controls what zoom to use when displaying a new image.\n"
-				"Keep: No change. Use the zoom last used with the image. \n"
-				"Fit: Image is zoomed to fit display area no matter its size.\n"
-				"Downscale: Shows it at 100% zoom unless image is too big and needs downscaling.\n"
-				"OneToOne: One image pixel takes up one screen pixel."
-			);
-			
+			ImGui::Checkbox("Zoom Per Image", &Config::Current->ZoomPerImage);
 			ImGui::EndTabItem();
+
+			if (!Config::Current->ZoomPerImage)
+			{
+				const char* zoomModes[] = { "User", "Fit", "Downscale", "OneToOne" };
+				ImGui::PushItemWidth(comboWidth*0.9f);
+				int zoomMode = int(GetZoomMode());
+				if (ImGui::Combo("Zoom Mode", &zoomMode, zoomModes, tNumElements(zoomModes)))
+				{
+					switch (Config::ProfileSettings::ZoomModeEnum(zoomMode))
+					{
+						case Config::ProfileSettings::ZoomModeEnum::Fit:
+						case Config::ProfileSettings::ZoomModeEnum::DownscaleOnly:
+							ResetPan();
+							break;
+						case Config::ProfileSettings::ZoomModeEnum::OneToOne:
+							SetZoomPercent(100.0f);
+							ResetPan();
+							break;
+					}
+					SetZoomMode( Config::ProfileSettings::ZoomModeEnum(zoomMode) );
+				}
+				ImGui::PopItemWidth();
+				ImGui::SameLine();
+				ShowHelpMark
+				(
+					"Controls what zoom to use when displaying images.\n"
+					"User: User-specified. This mode is automatically turned on when zooming in/out.\n"
+					"Fit: Image is zoomed to fit display area no matter its size.\n"
+					"Downscale: Shows it at 100% zoom unless image is too big and needs downscaling.\n"
+					"  This is the default. It keeps the full image always visible.\n"
+					"OneToOne: One image pixel takes up one screen pixel."
+				);
+
+				float zoom = Viewer::GetZoomPercent();
+				ImGui::PushItemWidth(comboWidth*0.9f);
+				if (ImGui::InputFloat("Zoom Percent", &zoom, 0.01f, 0.1f, "%.3f"))
+					Viewer::SetZoomPercent(zoom);
+				ImGui::PopItemWidth();
+			}
 		}
 		ImGui::EndTabBar();
 	}

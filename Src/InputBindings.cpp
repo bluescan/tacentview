@@ -191,7 +191,8 @@ const char* Bindings::OperationDescriptions[] =
 	"Meta Data",
 	"Save",
 	"UI Size Up",
-	"UI Size Down"
+	"UI Size Down",
+	"Zoom Per Image"
 
 	// Add new entries here.
 };
@@ -336,6 +337,7 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 	AssignKey(GLFW_KEY_F,			Modifier_None,					Operation::ZoomFit,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_D,			Modifier_None,					Operation::ZoomDownscaleOnly,		onlyIfUnassigned);
 	AssignKey(GLFW_KEY_Z,			Modifier_None,					Operation::ZoomOneToOne,			onlyIfUnassigned);
+	AssignKey(GLFW_KEY_Z,			Modifier_Shift,					Operation::ZoomPerImage,			onlyIfUnassigned);
 	AssignKey(GLFW_KEY_P,			Modifier_Ctrl,					Operation::ResetPan,				onlyIfUnassigned);
 
 	AssignKey(GLFW_KEY_COMMA,		Modifier_Ctrl,					Operation::FlipVertically,			onlyIfUnassigned);
@@ -385,6 +387,7 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 
 	AssignKey(GLFW_KEY_B,			Modifier_None,					Operation::Profile,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_P,			Modifier_None,					Operation::Preferences,				onlyIfUnassigned);
+
 	// This one is special and can't be reassigned or removed. This is because the user _could_ turn off the menu,
 	// and remove all bindings to ToggleKeyBindings. The user would have to way of getting back to the bindings screen.
 	// Having a guaranteed key combo for it solves these issues.

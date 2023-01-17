@@ -2,7 +2,7 @@
 //
 // Viewer settings stored as human-readable symbolic expressions.
 //
-// Copyright (c) 2019-2022 Tristan Grimmer.
+// Copyright (c) 2019-2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -388,7 +388,9 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 		ConfirmFileOverwrites		= true;
 		AutoPropertyWindow			= (profile == Profile::Basic) ? false : true;
 		AutoPlayAnimatedImages		= true;
-		DefaultZoomMode				= int(ZoomModeEnum::DownscaleOnly);
+		ZoomMode					= int(ZoomModeEnum::DownscaleOnly);
+		ZoomPercent					= 100.0f;
+		ZoomPerImage				= true;
 	}
 
 	if (categories & Category_Bindings)
@@ -437,7 +439,9 @@ void Config::ProfileSettings::Load(tExpression expr)
 			ReadItem(ResampleFilterRotateUp);
 			ReadItem(ResampleFilterRotateDown);
 			ReadItem(RotateMode);
-			ReadItem(DefaultZoomMode);
+			ReadItem(ZoomMode);
+			ReadItem(ZoomPercent);
+			ReadItem(ZoomPerImage);
 			ReadItem(ConfirmDeletes);
 			ReadItem(ConfirmFileOverwrites);
 			ReadItem(SlideshowLooping);
@@ -508,7 +512,8 @@ void Config::ProfileSettings::Load(tExpression expr)
 	tiClamp		(ResampleFilterRotateUp, 0, int(tImage::tResampleFilter::NumFilters));				// None allowed, so no -1.
 	tiClamp		(ResampleFilterRotateDown, 0, int(tImage::tResampleFilter::NumFilters));			// None allowed, so no -1.
 	tiClamp		(RotateMode, 0, int(RotateModeEnum::NumModes)-1);
-	tiClamp		(DefaultZoomMode, 0, int(ZoomModeEnum::NumModes)-1);
+	tiClamp		(ZoomMode, 0, int(ZoomModeEnum::NumModes)-1);
+	tiClamp		(ZoomPercent, Config::ZoomMin, Config::ZoomMax);
 	tiClampMin	(SlideshowPeriod, 1.0/60.0);
 	tiClamp		(BackgroundStyle, 0, int(BackgroundStyleEnum::NumStyles)-1);
 	tiClamp		(BackgroundCheckerboxSize, 2, 256);
@@ -589,7 +594,9 @@ bool Config::ProfileSettings::Save(tExprWriter& writer) const
 	WriteItem(ResampleFilterRotateUp);
 	WriteItem(ResampleFilterRotateDown);
 	WriteItem(RotateMode);
-	WriteItem(DefaultZoomMode);
+	WriteItem(ZoomMode);
+	WriteItem(ZoomPercent);
+	WriteItem(ZoomPerImage);
 	WriteItem(ConfirmDeletes);
 	WriteItem(ConfirmFileOverwrites);
 	WriteItem(SlideshowLooping);

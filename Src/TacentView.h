@@ -79,7 +79,6 @@ namespace Viewer
 	extern Viewer::Image Image_AnchorML;
 	extern Viewer::Image Image_AnchorMM;
 
-	extern Config::ProfileSettings::ZoomModeEnum CurrZoomMode;
 	extern bool CropMode;
 	extern Anchor Request_PanSnap;
 	extern bool DeleteAllCacheFilesOnExit;
@@ -114,8 +113,14 @@ namespace Viewer
 	void SortImages(Config::ProfileSettings::SortKeyEnum, bool ascending);
 	bool DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin);
 	void SetWindowTitle();
+
+	Config::ProfileSettings::ZoomModeEnum GetZoomMode();		// Reads the ZoomModePerImage setting to see where to get the zoom mode.
+	void SetZoomMode(Config::ProfileSettings::ZoomModeEnum);	// Reads the ZoomModePerImage setting to see where to set the zoom mode.
+	float GetZoomPercent();										// Reads the ZoomModePerImage setting to see where to get the zoom percent.
+	void SetZoomPercent(float);									// Reads the ZoomModePerImage setting to see where to set the zoom percent.
 	void ZoomFit();
 	void ZoomDownscaleOnly();
+
 	void ResetPan(bool resetX = true, bool resetY = true);
 	int GetPanX();
 	int GetPanY();

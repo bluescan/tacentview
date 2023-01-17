@@ -204,8 +204,6 @@ namespace Viewer
 	float CursorMouseY								= -1.0f;
 	float RotateAnglePreview						= 0.0f;
 
-	Config::ProfileSettings::ZoomModeEnum CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::DownscaleOnly;
-
 	int Dispw										= 1;
 	int Disph										= 1;
 	int PanOffsetX									= 0;
@@ -220,8 +218,6 @@ namespace Viewer
 	const tVector4 ColourPressedBG					= tVector4(0.21f, 0.45f, 0.21f, 1.00f);
 	const tVector4 ColourClear						= tVector4(0.10f, 0.10f, 0.12f, 1.00f);
 
-	const float ZoomMin								= 10.0f;
-	const float ZoomMax								= 2500.0f;
 	uint64 FrameNumber								= 0;
 	tVector2 ToolImageSizeSmall						(24.0f, 24.0f);
 	tVector2 ToolImageSizeMed						(26.0f, 26.0f);
@@ -284,8 +280,43 @@ namespace Viewer
 	void FocusCallback(GLFWwindow*, int gotFocus);
 	void IconifyCallback(GLFWwindow*, int iconified);
 	void ProgressArc(float radius, float percent, const ImVec4& colour, const ImVec4& colourbg, float thickness = 4.0f, int segments = 32);
-
 	void ChangeProfile(Viewer::Profile);
+}
+
+
+Viewer::Config::ProfileSettings::ZoomModeEnum Viewer::GetZoomMode()
+{
+	if (Config::Current->ZoomPerImage && CurrImage)
+		return CurrImage->ZoomMode;
+	else
+		return Config::Current->GetZoomMode();
+}
+
+
+void Viewer::SetZoomMode(Config::ProfileSettings::ZoomModeEnum mode)
+{
+	if (Config::Current->ZoomPerImage && CurrImage)
+		CurrImage->ZoomMode = mode;
+	else
+		Config::Current->SetZoomMode(mode);
+}
+
+
+float Viewer::GetZoomPercent()
+{
+	if (Config::Current->ZoomPerImage && CurrImage)
+		return CurrImage->ZoomPercent;
+	else
+		return Config::Current->ZoomPercent;
+}
+
+
+void Viewer::SetZoomPercent(float zoom)
+{
+	if (Config::Current->ZoomPerImage && CurrImage)
+		CurrImage->ZoomPercent = zoom;
+	else
+		Config::Current->ZoomPercent = zoom;
 }
 
 
@@ -506,7 +537,6 @@ void Viewer::SetCurrentImage(const tString& currFilename)
 	{
 		tString siName = tSystem::tGetFileName(si->Filename);
 		tString imgName = tSystem::tGetFileName(currFilename);
-
 		if (tStricmp(siName.Chars(), imgName.Chars()) == 0)
 		{
 			CurrImage = si;
@@ -524,10 +554,7 @@ void Viewer::SetCurrentImage(const tString& currFilename)
 	}
 
 	if (CurrImage)
-	{
-		CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::DownscaleOnly;
 		LoadCurrImage();
-	}
 }
 
 
@@ -547,14 +574,6 @@ void Viewer::LoadCurrImage()
 	bool imgJustLoaded = false;
 	if (!CurrImage->IsLoaded())
 		imgJustLoaded = CurrImage->Load();
-
-	if (Config::Current->GetDefaultZoomMode() != Config::ProfileSettings::ZoomModeEnum::User)
-	{
-		// Removed on purpose.
-		// CurrZoomMode = Config::ProfileSettings::ZoomMode(Config::Current->DefaultZoomMode);
-		if (CurrZoomMode == Config::ProfileSettings::ZoomModeEnum::OneToOne)
-			CurrImage->ZoomPercent = 100.0f;
-	}
 
 	AutoPropertyWindow();
 	if
@@ -1068,9 +1087,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	float workH = float(Disph - GetNavBarHeight());
 	float mouseX = float(mouseXd);
 	float mouseY = workH - float(mouseYd);
-
 	int mouseXi = int(mouseX);
 	int mouseYi = int(mouseY);
+	Config::ProfileSettings::ZoomModeEnum zoomMode = GetZoomMode();
 
 	if (CurrImage)
 	{
@@ -1086,23 +1105,23 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		draww = float(workAreaW);
 		drawh = float(workAreaH);
 
-		if (CurrZoomMode == Config::ProfileSettings::ZoomModeEnum::DownscaleOnly)
+		if (zoomMode == Config::ProfileSettings::ZoomModeEnum::DownscaleOnly)
 		{
-			CurrImage->ZoomPercent = 100.0f;
+			SetZoomPercent(100.0f);
 			float zoomh = draww / iw;
 			float zoomv = drawh / ih;
 			if ((iw > draww) || (ih > drawh))
-				CurrImage->ZoomPercent = 100.0f * tMath::tMin(zoomh, zoomv);
+				SetZoomPercent(100.0f * tMath::tMin(zoomh, zoomv));
 		}
-		else if (CurrZoomMode == Config::ProfileSettings::ZoomModeEnum::Fit)
+		else if (zoomMode == Config::ProfileSettings::ZoomModeEnum::Fit)
 		{
 			float zoomh = draww / iw;
 			float zoomv = drawh / ih;
-			CurrImage->ZoomPercent = 100.0f * tMath::tMin(zoomh, zoomv);
+			SetZoomPercent(100.0f * tMath::tMin(zoomh, zoomv));
 		}
 
-		float w = iw * CurrImage->ZoomPercent/100.0f;
-		float h = ih * CurrImage->ZoomPercent/100.0f;
+		float w = iw * GetZoomPercent()/100.0f;
+		float h = ih * GetZoomPercent()/100.0f;
 
 		if (!Config::Current->Tile)
 		{
@@ -1873,42 +1892,42 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			ImGui::Separator();
 
-			bool userMode = CurrZoomMode == Config::ProfileSettings::ZoomModeEnum::User;
+			bool userMode = (zoomMode == Config::ProfileSettings::ZoomModeEnum::User);
 			if (ImGui::MenuItem("Zoom User", nullptr, &userMode))
 			{
 				ResetPan();
-				CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::User;
+				SetZoomMode(Config::ProfileSettings::ZoomModeEnum::User);
 			}
 
-			bool fitMode = CurrZoomMode == Config::ProfileSettings::ZoomModeEnum::Fit;
+			bool fitMode = (zoomMode == Config::ProfileSettings::ZoomModeEnum::Fit);
 			tString zoomFitKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ZoomFit);
 			if (ImGui::MenuItem("Zoom Fit", zoomFitKey.Chz(), &fitMode))
 			{
 				ResetPan();
-				CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::Fit;
+				SetZoomMode(Config::ProfileSettings::ZoomModeEnum::Fit);
 			}
 
-			bool downscale = CurrZoomMode == Config::ProfileSettings::ZoomModeEnum::DownscaleOnly;
+			bool downscale = (zoomMode == Config::ProfileSettings::ZoomModeEnum::DownscaleOnly);
 			tString zoomDSKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ZoomDownscaleOnly);
 			if (ImGui::MenuItem("Zoom Downscale", zoomDSKey.Chz(), &downscale))
 			{
 				ResetPan();
-				CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::DownscaleOnly;
+				SetZoomMode(Config::ProfileSettings::ZoomModeEnum::DownscaleOnly);
 			}
 
-			bool oneToOne = CurrZoomMode == Config::ProfileSettings::ZoomModeEnum::OneToOne;
+			bool oneToOne = (zoomMode == Config::ProfileSettings::ZoomModeEnum::OneToOne);
 			tString zoomOneKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ZoomOneToOne);
 			if (ImGui::MenuItem("Zoom 1:1", zoomOneKey.Chz(), &oneToOne))
 			{
-				if (CurrImage) CurrImage->ZoomPercent = 100.0f;
+				SetZoomPercent(100.0f);
 				ResetPan();
-				CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::OneToOne;
+				SetZoomMode(Config::ProfileSettings::ZoomModeEnum::OneToOne);
 			}
 
 			ImGui::PushItemWidth(70);
 			const char* zoomItems[] = { "Zoom", "20%", "50%", "100%", "150%", "200%", "400%", "800%", "1200%", "1800%", "2500%"};
 			float zoomVals[] = { -1.0f, 20.0f, 50.0f, 100.0f, 150.0f, 200.0f, 400.0f, 800.0f, 1200.0f, 1800.0f, 2500.0f };
-			float zoomPercent = CurrImage ? CurrImage->ZoomPercent : 100.0f;
+			float zoomPercent = GetZoomPercent();
 			tString currZoomStr;
 			tsPrintf(currZoomStr, "%0.0f%%", zoomPercent);
 
@@ -1917,6 +1936,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::Combo(currZoomStr.Chr(), &zoomIdx, zoomItems, tNumElements(zoomItems)) && (zoomIdx > 0))
 				ApplyZoomDelta(zoomVals[zoomIdx]-zoomPercent);
 			ImGui::PopItemWidth();
+
+			tString zoomPerImageKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ZoomPerImage);
+			ImGui::MenuItem("Zoom Per Image", zoomPerImageKey.Chz(), &Config::Current->ZoomPerImage);
 
 			tString panKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ResetPan);
 			if (ImGui::MenuItem("Reset Pan", panKey.Chz()))
@@ -2224,7 +2246,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	if (Config::Current->ShowImageDetails)
 	{
-		float zoomPercent = CurrImage ? CurrImage->ZoomPercent : 100.0f;
+		float zoomPercent = GetZoomPercent();
 		ShowImageDetailsOverlay(&Config::Current->ShowImageDetails, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), CursorX, CursorY, zoomPercent);
 	}
 
@@ -2366,14 +2388,18 @@ void Viewer::ApplyZoomDelta(float zoomDelta)
 	if (!CurrImage)
 		return;
 
-	float& zoomPercent = CurrImage->ZoomPercent;
-	CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::User;
-	float zoomOrig = zoomPercent;
-	zoomPercent += zoomDelta;
+	float zoomOrig = GetZoomPercent();
+
+	// Any manual zoom adjustment causes the zoom mode to switch to User.
+	SetZoomMode(Config::ProfileSettings::ZoomModeEnum::User);
+	float zoomPercent = zoomOrig + zoomDelta;
+
+	// Make sure the zoom percent always hits 100 exactly.
 	if (((zoomOrig < 100.0f) && (zoomPercent > 100.0f)) || ((zoomOrig > 100.0f) && (zoomPercent < 100.0f)))
 		zoomPercent = 100.0f;
 
-	tMath::tiClamp(zoomPercent, ZoomMin, ZoomMax);
+	tiClamp(zoomPercent, Config::ZoomMin, Config::ZoomMax);
+	SetZoomPercent(zoomPercent);
 
 	PanOffsetX += PanDragDownOffsetX; PanDragDownOffsetX = 0;
 	PanOffsetY += PanDragDownOffsetY; PanDragDownOffsetY = 0;
@@ -2405,14 +2431,14 @@ void Viewer::ChangeProfile(Profile profile)
 void Viewer::ZoomFit()
 {
 	ResetPan();
-	CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::Fit;
+	SetZoomMode(Config::ProfileSettings::ZoomModeEnum::Fit);
 }
 
 
 void Viewer::ZoomDownscaleOnly()
 {
 	ResetPan();
-	CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::DownscaleOnly;
+	SetZoomMode(Config::ProfileSettings::ZoomModeEnum::DownscaleOnly);
 }
 
 
@@ -2524,31 +2550,35 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case Bindings::Operation::ZoomIn:
 			if (CurrImage)
-				ApplyZoomDelta(tMath::tRound(CurrImage->ZoomPercent*0.1f));
+				ApplyZoomDelta(tMath::tRound(GetZoomPercent()*0.1f));
 			break;
 
 		case Bindings::Operation::ZoomOut:
 			if (CurrImage)
-				ApplyZoomDelta(tMath::tRound(CurrImage->ZoomPercent*(0.909090909f - 1.0f)));
+				ApplyZoomDelta(tMath::tRound(GetZoomPercent()*(0.909090909f - 1.0f)));
 			break;
 
 		case Bindings::Operation::ZoomFit:
 			ResetPan();
-			CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::Fit;
+			SetZoomMode(Config::ProfileSettings::ZoomModeEnum::Fit);
 			break;
 
 		case Bindings::Operation::ZoomDownscaleOnly:
 			ResetPan();
-			CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::DownscaleOnly;
+			SetZoomMode(Config::ProfileSettings::ZoomModeEnum::DownscaleOnly);
 			break;
 
 		case Bindings::Operation::ZoomOneToOne:
 			if (CurrImage)
 			{
-				CurrImage->ZoomPercent = 100.0f;
+				SetZoomPercent(100.0f);
 				ResetPan();
-				CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::OneToOne;
+				SetZoomMode(Config::ProfileSettings::ZoomModeEnum::OneToOne);
 			}
+			break;
+
+		case Bindings::Operation::ZoomPerImage:
+			Config::Current->ZoomPerImage = !Config::Current->ZoomPerImage;
 			break;
 
 		case Bindings::Operation::ResetPan:
@@ -2870,11 +2900,11 @@ void Viewer::ScrollWheelCallback(GLFWwindow* window, double x, double y)
 
 	DisappearCountdown = DisappearDuration;
 
-	CurrZoomMode = Config::ProfileSettings::ZoomModeEnum::User;
+	SetZoomMode(Config::ProfileSettings::ZoomModeEnum::User);
 	if (CurrImage)
 	{
 		float percentChange = (y > 0.0) ? 0.1f : 1.0f-0.909090909f;
-		float zoomDelta = CurrImage->ZoomPercent * percentChange * float(y);
+		float zoomDelta = GetZoomPercent() * percentChange * float(y);
 		ApplyZoomDelta(zoomDelta);
 	}
 }

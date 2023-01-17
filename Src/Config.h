@@ -2,7 +2,7 @@
 //
 // Viewer settings stored as human-readable symbolic expressions.
 //
-// Copyright (c) 2019-2022 Tristan Grimmer.
+// Copyright (c) 2019-2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -20,6 +20,10 @@
 
 
 namespace Viewer { namespace Config {
+
+
+const float ZoomMin					= 10.0f;
+const float ZoomMax					= 2500.0f;
 
 
 enum Category
@@ -140,8 +144,11 @@ struct ProfileSettings
 		OneToOne,
 		NumModes
 	};
-	int DefaultZoomMode;								// Zoom mode to use when opening a new image. User means don't change zoom.
-	ZoomModeEnum GetDefaultZoomMode() const				{ return ZoomModeEnum(DefaultZoomMode); }
+	int ZoomMode;
+	ZoomModeEnum GetZoomMode() const					{ return ZoomModeEnum(ZoomMode); }
+	void SetZoomMode(ZoomModeEnum mode)					{ ZoomMode = int(mode); }
+	float ZoomPercent;									// E [10,2500].
+	bool ZoomPerImage;									// If true the zoom mode and zoom percent is stored separately for each image in the directory. 
 
 	bool ConfirmDeletes;
 	bool ConfirmFileOverwrites;

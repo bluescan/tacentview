@@ -167,7 +167,8 @@ public:
 
 	bool TypeSupportsProperties() const;
 
-	// Zoom is stored per-image so we can flip between images without losing the setting.
+	// Zoom can be stored per-image so we can flip between images without losing the setting.
+	Config::ProfileSettings::ZoomModeEnum ZoomMode = Config::ProfileSettings::ZoomModeEnum::DownscaleOnly;
 	float ZoomPercent = 100.0f;
 
 private:

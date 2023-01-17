@@ -106,6 +106,7 @@ namespace Bindings
 		Save,					// A save that does not ask for a new filename.
 		UISizeInc,				// Increment the UI (font and button) size one step bigger.
 		UISizeDec,				// Decrement the UI (font and button) size one step smaller.
+		ZoomPerImage,			// Toggle storing zoom settings globally vs with each image separately.
 		//
 		// Add new operations here. Adding above will invalidate save file keybindings.
 		//
