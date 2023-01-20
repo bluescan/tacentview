@@ -249,7 +249,123 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 }
 
 
+void Viewer::DoLevelsModal(bool levelsPressed)
+{
+	static bool popupOpened = false;
+	if (levelsPressed)
+	{
+		ImGui::OpenPopup("Adjust Levels");
+		popupOpened = true;
+		//CurrImage->
+		// This gets called whenever the levels dialog gets opened.
+	}
+
+	bool isOpenLevels = true;
+
+	if (!ImGui::BeginPopupModal("Adjust Levels", &isOpenLevels, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		if (popupOpened)
+		{
+			// This gets called whenever the levels dialog gets closed.
+		}
+		popupOpened = false;
+		return;
+	}
+
+	struct CompareFunctionObject
+	{
+		CompareFunctionObject(void* specs) : myData(specs) { }
+		void* myData;
+		float operator() (void* data, int index) { return 0.0f; }
+	};
+
+	
+	//ImGui::PlotHistogram("Histogram", func, NULL, display_count, 0, NULL, -1.0f, 1.0f, ImVec2(0, 80));
+
+
+	ImGui::InputFloat("Edit Angle", &RotateAnglePreview, 0.01f, 0.1f, "%.3f");
+	ImGui::SliderFloat("Angle", &RotateAnglePreview, -180.0f, 180.0f);
+	ImGui::DragFloat("Fine Tune Drag", &RotateAnglePreview, 0.01f);
+	ImGui::NewLine();
+
+	ImGui::NewLine();
+	ImGui::Separator();
+	ImGui::NewLine();
+
+	if (ImGui::Button("Reset", tVector2(100.0f, 0.0f)))
+		RotateAnglePreview = 0.0f;
+
+	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
+	{
+		RotateAnglePreview = 0.0f;
+		ImGui::CloseCurrentPopup();
+	}
+
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	if (ImGui::Button("Rotate", tVector2(100.0f, 0.0f)))
+	{
+		/*
+		tPicture* picture = CurrImage->GetCurrentPic(); tAssert(picture);
+		int origW = picture->GetWidth();
+		int origH = picture->GetHeight();
+
+		CurrImage->Unbind();
+		CurrImage->Rotate
+		(
+			tDegToRad(RotateAnglePreview), Config::Current->FillColour,
+			tResampleFilter(Config::Current->ResampleFilterRotateUp),
+			tResampleFilter(Config::Current->ResampleFilterRotateDown)
+		);
+
+		if ((Config::Current->GetRotateMode() == Config::ProfileSettings::RotateModeEnum::Crop) || (Config::Current->GetRotateMode() == Config::ProfileSettings::RotateModeEnum::CropResize))
+		{
+			// If one of the crop modes is selected we need to crop the edges. Since rectangles are made of lines and there
+			// is symmetry and we can compute the reduced size by subtracting the original size from the rotated size.
+			int rotW = picture->GetWidth();
+			int rotH = picture->GetHeight();
+			bool aspectFlip = ((origW > origH) && (rotW < rotH)) || ((origW < origH) && (rotW > rotH));
+			if (aspectFlip)
+				tSwap(origW, origH);
+
+			int dx = rotW - origW;
+			int dy = rotH - origH;
+			int newW = origW - dx;
+			int newH = origH - dy;
+
+			if (dx > origW/2)
+			{
+				newW = origW - origW/2;
+				newH = (newW*origH)/origW;
+			}
+			else if (dy > origH/2)
+			{
+				newH = origH - origH/2;
+				newW = (newH*origW)/origH;
+			}
+
+			// The above code has been tested with a 1x1 input and (newH,newW) result correcty as (1,1). 
+			CurrImage->Crop(newW, newH, tPicture::Anchor::MiddleMiddle);
+		}
+
+		if (Config::Current->GetRotateMode() == Config::ProfileSettings::RotateModeEnum::CropResize)
+		{
+			// The crop is done. Now resample.
+			tResampleFilter filter = (Config::Current->ResampleFilterRotateUp != int(tResampleFilter::None)) ? tResampleFilter(Config::Current->ResampleFilterRotateUp) : tResampleFilter::Nearest;
+			CurrImage->Resample(origW, origH, filter, tResampleEdgeMode::Clamp);
+		}
+
+		CurrImage->Bind();
+		RotateAnglePreview = 0.0f;
+		Viewer::SetWindowTitle();
+		ImGui::CloseCurrentPopup();
+	*/
+	}
+	ImGui::EndPopup();
+}
+
 // WIP. This is just a copy of the channel filetrs popup for now.
+/*
 void Viewer::ShowLevelsOverlay(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(DialogID::ChannelFilter);
@@ -380,6 +496,7 @@ void Viewer::ShowLevelsOverlay(bool* popen)
 
 	ImGui::End();
 }
+*/
 
 
 void Viewer::ShowAboutPopup(bool* popen)

@@ -90,6 +90,16 @@ public:
 	// Functions that edit and cause dirty flag to be set.
 	void Rotate90(bool antiClockWise);
 	void Rotate(float angle, const tColouri& fill, tImage::tResampleFilter upFilter, tImage::tResampleFilter downFilter);
+
+#ifdef LEVELS_ADJUSTMENTS
+	tPixel* AdjustmentBegin();
+	bool AdjustBrightness(float brightness);
+	bool AdjustContrast(float contrast);
+
+	bool AdjustLevels(float blackPoint, float midPoint, float whitePoint, float blackOut, float whiteOut, bool powerMidGamma = true);
+	bool AdjustmentEnd(bool commit);
+#endif
+
 	void Flip(bool horizontal);
 	void Crop(int newWidth, int newHeight, int originX, int originY, const tColouri& fillColour = tColour::black);
 	void Crop(int newWidth, int newHeight, tImage::tPicture::Anchor, const tColouri& fillColour = tColour::black);

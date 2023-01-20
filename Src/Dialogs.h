@@ -19,7 +19,7 @@ namespace Viewer
 {
 	void ShowPixelEditorOverlay(bool* popen);
 	void ShowChannelFilterOverlay(bool* popen);
-	void ShowLevelsOverlay(bool* popen);
+	void DoLevelsModal(bool levelsPressed);
 	void ShowAboutPopup(bool* popen);
 	void DoDeleteFileModal();
 	void DoDeleteFileNoRecycleModal();

@@ -295,7 +295,6 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 		ShowPixelEditor				= false;
 		ShowPreferences				= false;
 		ShowChannelFilter			= false;
-		ShowLevels					= false;
 		ShowFrameScrubber			= (profile == Profile::Basic) ? false : true;
 		ShowContentView				= false;
 		ShowPropsWindow				= false;
@@ -414,7 +413,6 @@ void Config::ProfileSettings::Load(tExpression expr)
 			ReadItem(ShowPixelEditor);
 			ReadItem(ShowPreferences);
 			ReadItem(ShowChannelFilter);
-			ReadItem(ShowLevels);
 			ReadItem(ShowFrameScrubber);
 			ReadItem(ShowContentView);
 			ReadItem(ShowPropsWindow);
@@ -570,7 +568,6 @@ bool Config::ProfileSettings::Save(tExprWriter& writer) const
 	WriteItem(ShowPixelEditor);
 	WriteItem(ShowPreferences);
 	WriteItem(ShowChannelFilter);
-	WriteItem(ShowLevels);
 	WriteItem(ShowFrameScrubber);
 	WriteItem(ShowContentView);
 	WriteItem(ShowPropsWindow);

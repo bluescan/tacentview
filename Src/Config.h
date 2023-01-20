@@ -56,7 +56,6 @@ struct ProfileSettings
 	bool ShowPixelEditor;
 	bool ShowPreferences;
 	bool ShowChannelFilter;
-	bool ShowLevels;
 	bool ShowFrameScrubber;
 	bool ShowContentView;
 	bool ShowPropsWindow;

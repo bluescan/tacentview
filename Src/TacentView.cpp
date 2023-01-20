@@ -174,6 +174,7 @@ namespace Viewer
 	bool Request_ResizeImageModal					= false;
 	bool Request_ResizeCanvasModal					= false;
 	bool Request_RotateImageModal					= false;
+	bool Request_LevelsModal						= false;
 	bool Request_ContactSheetModal					= false;
 	bool Request_MultiFrameModal					= false;
 	bool Request_DeleteFileModal					= false;
@@ -1693,6 +1694,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	bool resizeImagePressed			= Request_ResizeImageModal;			Request_ResizeImageModal			= false;
 	bool resizeCanvasPressed		= Request_ResizeCanvasModal;		Request_ResizeCanvasModal			= false;
 	bool rotateImagePressed			= Request_RotateImageModal;			Request_RotateImageModal			= false;
+	bool levelsPressed				= Request_LevelsModal;				Request_LevelsModal					= false;
 
 	if (Config::Current->ShowMenuBar)
 	{
@@ -1773,6 +1775,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4.0f, 3.0f));
 
+			bool imgAvail = CurrImage && !CurrImage->IsAltPictureEnabled();
 			bool undoEnabled = CurrImage && CurrImage->IsUndoAvailable();
 			tString undoDesc = undoEnabled ? CurrImage->GetUndoDesc() : tString();
 			tString undoStr; tsPrintf(undoStr, "Undo %s", undoDesc.Chr());
@@ -1790,7 +1793,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::Separator();
 
 			tString flipVKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::FlipVertically);
-			if (ImGui::MenuItem("Flip Vertically", flipVKey.Chz(), false, CurrImage && !CurrImage->IsAltPictureEnabled()))
+			if (ImGui::MenuItem("Flip Vertically", flipVKey.Chz(), false, imgAvail ))
 			{
 				CurrImage->Unbind();
 				CurrImage->Flip(false);
@@ -1799,7 +1802,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 
 			tString flipHKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::FlipHorizontally);
-			if (ImGui::MenuItem("Flip Horizontally", flipHKey.Chz(), false, CurrImage && !CurrImage->IsAltPictureEnabled()))
+			if (ImGui::MenuItem("Flip Horizontally", flipHKey.Chz(), false, imgAvail))
 			{
 				CurrImage->Unbind();
 				CurrImage->Flip(true);
@@ -1808,7 +1811,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 
 			tString rotACWKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Rotate90Anticlockwise);
-			if (ImGui::MenuItem("Rotate Anti-Clockwise", rotACWKey.Chz(), false, CurrImage && !CurrImage->IsAltPictureEnabled()))
+			if (ImGui::MenuItem("Rotate Anti-Clockwise", rotACWKey.Chz(), false, imgAvail))
 			{
 				CurrImage->Unbind();
 				CurrImage->Rotate90(true);
@@ -1817,7 +1820,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 
 			tString rotCWKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Rotate90Clockwise);
-			if (ImGui::MenuItem("Rotate Clockwise", rotCWKey.Chz(), false, CurrImage && !CurrImage->IsAltPictureEnabled()))
+			if (ImGui::MenuItem("Rotate Clockwise", rotCWKey.Chz(), false, imgAvail))
 			{
 				CurrImage->Unbind();
 				CurrImage->Rotate90(false);
@@ -1826,36 +1829,37 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 
 			tString rotateImgKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::RotateImage);
-			if (ImGui::MenuItem("Rotate Image...", rotateImgKey.Chz()) && CurrImage)
+			if (ImGui::MenuItem("Rotate Image...", rotateImgKey.Chz(), false, imgAvail))
 				rotateImagePressed = true;
 
 			ImGui::Separator();
 
 			tString cropKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Crop);
-			if (ImGui::MenuItem("Crop...", cropKey.Chz(), &CropMode))
+			if (ImGui::MenuItem("Crop...", cropKey.Chz(), &CropMode, imgAvail))
 			{
 				if (CropMode)
 					Config::Current->Tile = false;
 			}
 
 			tString resizeImgKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ResizeImage);
-			if (ImGui::MenuItem("Resize Image...", resizeImgKey.Chz()) && CurrImage)
+			if (ImGui::MenuItem("Resize Image...", resizeImgKey.Chz(), false, imgAvail))
 				resizeImagePressed = true;
 
 			tString resizeCanvasKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ResizeCanvas);
-			if (ImGui::MenuItem("Resize Canvas...", resizeCanvasKey.Chz()) && CurrImage)
+			if (ImGui::MenuItem("Resize Canvas...", resizeCanvasKey.Chz(), false, imgAvail))
 				resizeCanvasPressed = true;
 
 			ImGui::Separator();
 
 			tString editPixelKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::PixelEdit);
-			ImGui::MenuItem("Edit Pixel", editPixelKey.Chz(), &Config::Current->ShowPixelEditor);
+			ImGui::MenuItem("Edit Pixel", editPixelKey.Chz(), &Config::Current->ShowPixelEditor, imgAvail);
 
 			tString chanFiltKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ChannelFilter);
 			ImGui::MenuItem("Channel Filter...", chanFiltKey.Chz(), &Config::Current->ShowChannelFilter);
 
 			tString levelsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Levels);
-			ImGui::MenuItem("Levels...", levelsKey.Chz(), &Config::Current->ShowLevels);
+			if (ImGui::MenuItem("Levels...", levelsKey.Chz(), false, imgAvail))
+				levelsPressed = true;
 
 			tString propsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::PropertyEdit);
 			ImGui::MenuItem("Image Properties...", propsKey.Chz(), &Config::Current->ShowPropsWindow);
@@ -1970,6 +1974,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		//
 		// Toolbar.
 		//
+		bool imgAvail = CurrImage ? !CurrImage->IsAltPictureEnabled() : false;
 		tVector2 colourButtonSize;
 		switch (Config::Current->GetUISize())
 		{
@@ -2006,9 +2011,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_Levels.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
-			Config::Current->ShowLevels ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	Config::Current->ShowLevels = !Config::Current->ShowLevels;
+			ImTextureID(Image_Levels.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
+			imgAvail ? ColourEnabledTint : ColourDisabledTint) && imgAvail
+		)
+		{
+			Request_LevelsModal = true;
+		}
 		ShowToolTip("Image Levels");
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
@@ -2035,12 +2043,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical, 3.0f);
 
-		bool transAvail = CurrImage ? !CurrImage->IsAltPictureEnabled() : false;
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
 			ImTextureID(Image_FlipV.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
-			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
+			imgAvail ? ColourEnabledTint : ColourDisabledTint) && imgAvail
 		)
 		{
 			CurrImage->Unbind();
@@ -2054,7 +2061,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton
 		(
 			ImTextureID(Image_FlipH.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
-			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
+			imgAvail ? ColourEnabledTint : ColourDisabledTint) && imgAvail
 		)
 		{
 			CurrImage->Unbind();
@@ -2069,7 +2076,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton
 		(
 			ImTextureID(Image_RotCW_RotACW.Bind()), toolImageSize, tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 1, ColourBG,
-			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
+			imgAvail ? ColourEnabledTint : ColourDisabledTint) && imgAvail
 		)
 		{
 			CurrImage->Unbind();
@@ -2085,7 +2092,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton
 		(
 			ImTextureID(Image_RotCW_RotACW.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
-			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
+			imgAvail ? ColourEnabledTint : ColourDisabledTint) && imgAvail
 		)
 		{
 			CurrImage->Unbind();
@@ -2100,14 +2107,14 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton
 		(
 			ImTextureID(Image_RotateTheta.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
-			transAvail ? ColourEnabledTint : ColourDisabledTint) && transAvail
+			imgAvail ? ColourEnabledTint : ColourDisabledTint) && imgAvail
 		)
 		{
 			Request_RotateImageModal = true;
 		}
 		ShowToolTip("Rotate Theta");
 
-		bool cropAvail = CurrImage && transAvail && !Config::Current->Tile;
+		bool cropAvail = CurrImage && imgAvail && !Config::Current->Tile;
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
@@ -2220,6 +2227,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	DoResizeImageModal				(resizeImagePressed);
 	DoResizeCanvasModal				(resizeCanvasPressed);
 	DoRotateImageModal				(rotateImagePressed);
+	DoLevelsModal					(levelsPressed);
 
 	if (Config::Current->ShowContentView)
 		ShowContentViewDialog(&Config::Current->ShowContentView);
@@ -2250,9 +2258,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	if (Config::Current->ShowChannelFilter)
 		ShowChannelFilterOverlay(&Config::Current->ShowChannelFilter);
-
-	if (Config::Current->ShowLevels)
-		ShowLevelsOverlay(&Config::Current->ShowLevels);
 
 	ImGui::PopStyleVar();
 
@@ -2653,7 +2658,8 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::Levels:
-			Config::Current->ShowLevels = !Config::Current->ShowLevels;
+			// @todo Should these be checking that no alt image like imgAvail?
+			if (CurrImage) Request_LevelsModal = true;
 			break;
 
 		case Bindings::Operation::RedChannel:
