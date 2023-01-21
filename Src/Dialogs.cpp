@@ -254,6 +254,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	static bool popupOpen = false;
 	enum class TabEnum { Levels, Contrast, Brightness };
 	static TabEnum currTab = TabEnum::Levels;
+	static bool okPressed = false;
 
 	static float brightness = 0.5f;
 	static float contrast = 0.5f;
@@ -271,9 +272,9 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 		popupOpen = true;
 
 		// This gets called whenever the levels dialog gets opened.
-		brightness = 0.5f;
-		contrast = 0.5f;
 		CurrImage->AdjustmentBegin();
+		CurrImage->AdjustGetDefaults(brightness, contrast, levelsBlack, levelsMid, levelsWhite, levelsOutBlack, levelsOutWhite);
+		okPressed = false;
 	}
 
 	bool isOpenLevels = true;
@@ -282,6 +283,12 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 		if (popupOpen)
 		{
 			// This gets called whenever the levels dialog gets closed.
+			if (!okPressed)
+			{
+				CurrImage->Unbind();
+				CurrImage->AdjustRestoreOriginal();
+				CurrImage->Bind();
+			}
 			CurrImage->AdjustmentEnd();
 		}
 		popupOpen = false;
@@ -302,16 +309,9 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			// Just switched to this tab?
 			if (currTab != TabEnum::Levels)
 			{
-				brightness = 0.5f;
-				contrast = 0.5f;
-				levelsBlack = 0.0f;
-				levelsMid = 0.5f;
-				levelsWhite = 1.0f;
-				levelsOutBlack = 0.0f;
-				levelsOutWhite = 1.0f;
-
+				CurrImage->AdjustGetDefaults(brightness, contrast, levelsBlack, levelsMid, levelsWhite, levelsOutBlack, levelsOutWhite);
 				CurrImage->Unbind();
-				CurrImage->RestoreOriginal();
+				CurrImage->AdjustRestoreOriginal();
 				CurrImage->Bind();
 				currTab = TabEnum::Levels;
 			}
@@ -371,15 +371,9 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			// Just switched to this tab?
 			if (currTab != TabEnum::Contrast)
 			{
-				brightness = 0.5f;
-				contrast = 0.5f;
-				levelsBlack = 0.0f;
-				levelsMid = 0.5f;
-				levelsWhite = 1.0f;
-				levelsOutBlack = 0.0f;
-				levelsOutWhite = 1.0f;
+				CurrImage->AdjustGetDefaults(brightness, contrast, levelsBlack, levelsMid, levelsWhite, levelsOutBlack, levelsOutWhite);
 				CurrImage->Unbind();
-				CurrImage->RestoreOriginal();
+				CurrImage->AdjustRestoreOriginal();
 				CurrImage->Bind();
 				currTab = TabEnum::Contrast;
 			}
@@ -399,15 +393,9 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			// Just switched to this tab?
 			if (currTab != TabEnum::Brightness)
 			{
-				brightness = 0.5f;
-				contrast = 0.5f;
-				levelsBlack = 0.0f;
-				levelsMid = 0.5f;
-				levelsWhite = 1.0f;
-				levelsOutBlack = 0.0f;
-				levelsOutWhite = 1.0f;
+				CurrImage->AdjustGetDefaults(brightness, contrast, levelsBlack, levelsMid, levelsWhite, levelsOutBlack, levelsOutWhite);
 				CurrImage->Unbind();
-				CurrImage->RestoreOriginal();
+				CurrImage->AdjustRestoreOriginal();
 				CurrImage->Bind();
 				currTab = TabEnum::Brightness;
 			}
@@ -429,24 +417,15 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 
 	if (ImGui::Button("Reset", tVector2(100.0f, 0.0f)))
 	{
-		brightness = 0.5f;
-		contrast = 0.5f;
-		levelsBlack = 0.0f;
-		levelsMid = 0.5f;
-		levelsWhite = 1.0f;
-		levelsOutBlack = 0.0f;
-		levelsOutWhite = 1.0f;
+		CurrImage->AdjustGetDefaults(brightness, contrast, levelsBlack, levelsMid, levelsWhite, levelsOutBlack, levelsOutWhite);
 		powerMidGamma = true;
 		CurrImage->Unbind();
-		CurrImage->RestoreOriginal();
+		CurrImage->AdjustRestoreOriginal();
 		CurrImage->Bind();
 	}
 
 	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
 	{
-		CurrImage->Unbind();
-		CurrImage->RestoreOriginal(true);
-		CurrImage->Bind();
 		Viewer::SetWindowTitle();
 		ImGui::CloseCurrentPopup();
 	}
@@ -455,6 +434,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
 	{
+		okPressed = true;
 		Viewer::SetWindowTitle();
 		ImGui::CloseCurrentPopup();
 	}

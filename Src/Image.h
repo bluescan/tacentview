@@ -95,7 +95,13 @@ public:
 	void AdjustBrightness(float brightness);
 	void AdjustContrast(float contrast);
 	void AdjustLevels(float blackPoint, float midPoint, float whitePoint, float blackOut, float whiteOut, bool powerMidGamma = true);
-	void RestoreOriginal(bool popUndo = false);
+	void AdjustRestoreOriginal(bool popUndo = false);
+
+	// Some of the adjustment defaults are a function of the image properties. In particular the brightness range is
+	// computed so that the full [0,1] range is used and no more. If the image doesn't have pixels that are both full
+	// white and full black, the default (no modification) brightness may not be exactly in the middle (0.5). This
+	// function must be called between begin/end and gets all the defaults at once.
+	void AdjustGetDefaults(float& brightness, float& contrast, float& blackPoint, float& midPoint, float& whitePoint, float& blackOut, float& whiteOut) const;
 	bool AdjustmentEnd();
 
 	void Flip(bool horizontal);

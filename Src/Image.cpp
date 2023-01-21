@@ -896,15 +896,6 @@ bool Image::AdjustmentBegin()
 }
 
 
-bool Image::AdjustmentEnd()
-{
-	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
-		picture->AdjustmentEnd();
-
-	return true;
-}
-
-
 void Image::AdjustBrightness(float brightness)
 {
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
@@ -932,7 +923,7 @@ void Image::AdjustLevels(float blackPoint, float midPoint, float whitePoint, flo
 }
 
 
-void Image::RestoreOriginal(bool popUndo)
+void Image::AdjustRestoreOriginal(bool popUndo)
 {
 	if (popUndo)
 		PopUndo();
@@ -941,6 +932,26 @@ void Image::RestoreOriginal(bool popUndo)
 		picture->RestoreOriginal();
 
 	Dirty = false;
+}
+
+
+void Image::AdjustGetDefaults(float& brightness, float& contrast, float& blackPoint, float& midPoint, float& whitePoint, float& blackOut, float& whiteOut) const
+{
+	tPicture* pic = GetCurrentPic();
+	if (!pic)
+		return;
+	pic->GetDefaultBrightness(brightness);
+	pic->GetDefaultContrast(contrast);
+	pic->GetDefaultLevels(blackPoint, midPoint, whitePoint, blackOut, whiteOut);
+}
+
+
+bool Image::AdjustmentEnd()
+{
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->AdjustmentEnd();
+
+	return true;
 }
 
 
