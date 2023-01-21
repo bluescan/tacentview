@@ -3,7 +3,7 @@
 // An undo stack object that each image can use. Undo::Step is the type of object that may be pushed onto the
 // stack. Undo namespace functions provide an overall interface for setting and querying things like memory use.
 //
-// Copyright (c) 2021 Tristan Grimmer.
+// Copyright (c) 2021, 2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -51,6 +51,9 @@ class Stack
 public:
 	// Call push before doing whatever op you are doing.
 	void Push(tList<tImage::tPicture>& preOpState, const tString& desc, bool dirty);
+
+	// If you want to undo the last push you can call Pop.
+	void Pop();
 
 	void Undo(tList<tImage::tPicture>& currPics, bool& dirty);
 	void Redo(tList<tImage::tPicture>& currPics, bool& dirty);

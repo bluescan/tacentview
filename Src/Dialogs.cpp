@@ -2,7 +2,7 @@
 //
 // Various dialogs and helpers including a log window, info overlay, help window, and about window.
 //
-// Copyright (c) 2019, 2020, 2021, 2022 Tristan Grimmer.
+// Copyright (c) 2019-2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -252,21 +252,27 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 void Viewer::DoLevelsModal(bool levelsPressed)
 {
 	static bool popupOpened = false;
+	static float brightness = 0.5f;
+	static float contrast = 0.5f;
+
 	if (levelsPressed)
 	{
 		ImGui::OpenPopup("Adjust Levels");
 		popupOpened = true;
-		//CurrImage->
+
 		// This gets called whenever the levels dialog gets opened.
+		brightness = 0.5f;
+		contrast = 0.5f;
+		CurrImage->AdjustmentBegin();
 	}
 
 	bool isOpenLevels = true;
-
 	if (!ImGui::BeginPopupModal("Adjust Levels", &isOpenLevels, ImGuiWindowFlags_AlwaysAutoResize))
 	{
 		if (popupOpened)
 		{
 			// This gets called whenever the levels dialog gets closed.
+			CurrImage->AdjustmentEnd();
 		}
 		popupOpened = false;
 		return;
@@ -279,224 +285,53 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 		float operator() (void* data, int index) { return 0.0f; }
 	};
 
-	
 	//ImGui::PlotHistogram("Histogram", func, NULL, display_count, 0, NULL, -1.0f, 1.0f, ImVec2(0, 80));
 
+	if (ImGui::SliderFloat("Brightness", &brightness, 0.0f, 1.0f))
+	{
+		CurrImage->Unbind();
+		CurrImage->AdjustBrightness(brightness);
+		CurrImage->Bind();
+	}
 
-	ImGui::InputFloat("Edit Angle", &RotateAnglePreview, 0.01f, 0.1f, "%.3f");
-	ImGui::SliderFloat("Angle", &RotateAnglePreview, -180.0f, 180.0f);
-	ImGui::DragFloat("Fine Tune Drag", &RotateAnglePreview, 0.01f);
-	ImGui::NewLine();
+	if (ImGui::SliderFloat("Contrast", &contrast, 0.0f, 1.0f))
+	{
+		CurrImage->Unbind();
+		CurrImage->AdjustContrast(contrast);
+		CurrImage->Bind();
+	}
 
 	ImGui::NewLine();
 	ImGui::Separator();
 	ImGui::NewLine();
 
 	if (ImGui::Button("Reset", tVector2(100.0f, 0.0f)))
-		RotateAnglePreview = 0.0f;
+	{
+		brightness = 0.5f;
+		contrast = 0.5f;
+		CurrImage->Unbind();
+		CurrImage->RestoreOriginal();
+		CurrImage->Bind();
+	}
 
 	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
 	{
-		RotateAnglePreview = 0.0f;
+		CurrImage->Unbind();
+		CurrImage->RestoreOriginal(true);
+		CurrImage->Bind();
+		Viewer::SetWindowTitle();
 		ImGui::CloseCurrentPopup();
 	}
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("Rotate", tVector2(100.0f, 0.0f)))
+	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
 	{
-		/*
-		tPicture* picture = CurrImage->GetCurrentPic(); tAssert(picture);
-		int origW = picture->GetWidth();
-		int origH = picture->GetHeight();
-
-		CurrImage->Unbind();
-		CurrImage->Rotate
-		(
-			tDegToRad(RotateAnglePreview), Config::Current->FillColour,
-			tResampleFilter(Config::Current->ResampleFilterRotateUp),
-			tResampleFilter(Config::Current->ResampleFilterRotateDown)
-		);
-
-		if ((Config::Current->GetRotateMode() == Config::ProfileSettings::RotateModeEnum::Crop) || (Config::Current->GetRotateMode() == Config::ProfileSettings::RotateModeEnum::CropResize))
-		{
-			// If one of the crop modes is selected we need to crop the edges. Since rectangles are made of lines and there
-			// is symmetry and we can compute the reduced size by subtracting the original size from the rotated size.
-			int rotW = picture->GetWidth();
-			int rotH = picture->GetHeight();
-			bool aspectFlip = ((origW > origH) && (rotW < rotH)) || ((origW < origH) && (rotW > rotH));
-			if (aspectFlip)
-				tSwap(origW, origH);
-
-			int dx = rotW - origW;
-			int dy = rotH - origH;
-			int newW = origW - dx;
-			int newH = origH - dy;
-
-			if (dx > origW/2)
-			{
-				newW = origW - origW/2;
-				newH = (newW*origH)/origW;
-			}
-			else if (dy > origH/2)
-			{
-				newH = origH - origH/2;
-				newW = (newH*origW)/origH;
-			}
-
-			// The above code has been tested with a 1x1 input and (newH,newW) result correcty as (1,1). 
-			CurrImage->Crop(newW, newH, tPicture::Anchor::MiddleMiddle);
-		}
-
-		if (Config::Current->GetRotateMode() == Config::ProfileSettings::RotateModeEnum::CropResize)
-		{
-			// The crop is done. Now resample.
-			tResampleFilter filter = (Config::Current->ResampleFilterRotateUp != int(tResampleFilter::None)) ? tResampleFilter(Config::Current->ResampleFilterRotateUp) : tResampleFilter::Nearest;
-			CurrImage->Resample(origW, origH, filter, tResampleEdgeMode::Clamp);
-		}
-
-		CurrImage->Bind();
-		RotateAnglePreview = 0.0f;
 		Viewer::SetWindowTitle();
 		ImGui::CloseCurrentPopup();
-	*/
 	}
 	ImGui::EndPopup();
 }
-
-// WIP. This is just a copy of the channel filetrs popup for now.
-/*
-void Viewer::ShowLevelsOverlay(bool* popen)
-{
-	tVector2 windowPos = GetDialogOrigin(DialogID::ChannelFilter);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	ImGuiWindowFlags flags =
-		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
-		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoNav;
-
-	if (ImGui::Begin("Levels", popen, flags))
-	{
-		ImGui::Text("Display");
-		if (ImGui::Checkbox("Channel Intensity", &Viewer::DrawChannel_AsIntensity))
-		{
-			if (Viewer::DrawChannel_AsIntensity)
-			{
-				Viewer::DrawChannel_R = true;
-				Viewer::DrawChannel_G = false;
-				Viewer::DrawChannel_B = false;
-				Viewer::DrawChannel_A = false;
-			}
-			else
-			{
-				Viewer::DrawChannel_R = true;
-				Viewer::DrawChannel_G = true;
-				Viewer::DrawChannel_B = true;
-				Viewer::DrawChannel_A = true;
-			}
-		}
-		if (Viewer::DrawChannel_AsIntensity)
-		{
-			if (ImGui::RadioButton("Red", Viewer::DrawChannel_R))
-			{
-				Viewer::DrawChannel_R = true;
-				Viewer::DrawChannel_G = false;
-				Viewer::DrawChannel_B = false;
-				Viewer::DrawChannel_A = false;
-			}
-			if (ImGui::RadioButton("Green", Viewer::DrawChannel_G))
-			{
-				Viewer::DrawChannel_R = false;
-				Viewer::DrawChannel_G = true;
-				Viewer::DrawChannel_B = false;
-				Viewer::DrawChannel_A = false;
-			}
-			if (ImGui::RadioButton("Blue", Viewer::DrawChannel_B))
-			{
-				Viewer::DrawChannel_R = false;
-				Viewer::DrawChannel_G = false;
-				Viewer::DrawChannel_B = true;
-				Viewer::DrawChannel_A = false;
-			}
-			if (ImGui::RadioButton("Alpha", Viewer::DrawChannel_A))
-			{
-				Viewer::DrawChannel_R = false;
-				Viewer::DrawChannel_G = false;
-				Viewer::DrawChannel_B = false;
-				Viewer::DrawChannel_A = true;
-			}
-		}
-		else
-		{
-			ImGui::Checkbox("Red", &Viewer::DrawChannel_R);
-			ImGui::Checkbox("Green", &Viewer::DrawChannel_G);
-			ImGui::Checkbox("Blue", &Viewer::DrawChannel_B);
-			ImGui::Checkbox("Alpha", &Viewer::DrawChannel_A);
-			ImGui::SameLine(); ShowHelpMark
-			(
-				"Alpha is interprested as blending opacity. When this channel is set to false full alpha is used and"
-				"image is drawn opaque. When true it blends whatever colour channels are selected with the current background."
-			);
-		}
-
-		tColourf floatCol(Config::Current->BackgroundColour);
-		if (ImGui::ColorEdit3("##Background", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))
-		{
-			Config::Current->BackgroundColour.Set(floatCol);
-			Config::Current->BackgroundColour.A = 0xFF;
-		}
-
-		ImGui::SameLine();
-		const char* backgroundItems[] = { "None", "Checker", "Solid" };
-		ImGui::PushItemWidth(83);
-		ImGui::Combo("##Background Style", &Config::Current->BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
-		ImGui::PopItemWidth();
-		ImGui::SameLine();
-		ShowHelpMark("Background colour and style.\nThe blend-background button uses the colour regardless of style.");
-
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-		ImGui::Separator();
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-
-		ImGui::Text("Modify");
-
-		float buttonWidth = 134.0f;
-		if (ImGui::Button("Blend Background", tVector2(buttonWidth, 0.0f)))
-		{
-			CurrImage->Unbind();
-			CurrImage->AlphaBlendColour(Config::Current->BackgroundColour, true);
-			CurrImage->Bind();
-			Viewer::SetWindowTitle();
-		}
-		ImGui::SameLine();
-		ShowHelpMark("Blend background colour into RGB of image based on alpha. Sets alphas to full when done.");
-
-		tcomps channels = (Viewer::DrawChannel_R ? tComp_R : 0) | (Viewer::DrawChannel_G ? tComp_G : 0) | (Viewer::DrawChannel_B ? tComp_B : 0) | (Viewer::DrawChannel_A ? tComp_A : 0);
-		if (ImGui::Button("Max Selected", tVector2(buttonWidth, 0.0f)))
-		{
-			CurrImage->Unbind();
-			tColouri full(255, 255, 255, 255);
-			CurrImage->SetAllPixels(full, channels);
-			CurrImage->Bind();
-			Viewer::SetWindowTitle();
-		}
-		ImGui::SameLine();
-		ShowHelpMark("Sets selected channel(s) to their maximum value (255).");
-
-		if (ImGui::Button("Zero Selected", tVector2(buttonWidth, 0.0f)))
-		{
-			CurrImage->Unbind();
-			tColouri zero(0, 0, 0, 0);
-			CurrImage->SetAllPixels(zero, channels);
-			CurrImage->Bind();
-			Viewer::SetWindowTitle();
-		}
-		ImGui::SameLine();
-		ShowHelpMark("Sets selected channel(s) to zero.");
-	}
-
-	ImGui::End();
-}
-*/
 
 
 void Viewer::ShowAboutPopup(bool* popen)

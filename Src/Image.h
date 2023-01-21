@@ -92,10 +92,10 @@ public:
 	void Rotate(float angle, const tColouri& fill, tImage::tResampleFilter upFilter, tImage::tResampleFilter downFilter);
 
 	bool AdjustmentBegin();
-	bool AdjustBrightness(float brightness);
-	bool AdjustContrast(float contrast);
-
+	void AdjustBrightness(float brightness);
+	void AdjustContrast(float contrast);
 	bool AdjustLevels(float blackPoint, float midPoint, float whitePoint, float blackOut, float whiteOut, bool powerMidGamma = true);
+	void RestoreOriginal(bool popUndo = false);
 	bool AdjustmentEnd();
 
 	void Flip(bool horizontal);
@@ -181,6 +181,7 @@ public:
 
 private:
 	void PushUndo(const tString& desc)																					{ UndoStack.Push(Pictures, desc, Dirty); }
+	void PopUndo()																										{ UndoStack.Pop(); }
 
 	// If the image is from a DDS file, we keep the DDS around so we have access to the iage data in its original pixel
 	// format. This will allow us to do things like cropping without a decode/recode step.
@@ -193,9 +194,6 @@ private:
 	// @todo Yes, currently no way 
 	// second to store the  
 	tList<tImage::tPicture> Pictures;
-
-	// Tha 'adjustment' picture may be used while editing adjustments like contrast, brightness, and levels.
-	//tImage::tPicture AdjPicture;
 
 	// The 'alternative' picture is valid when there is another valid way of displaying the image.
 	// Specifically for cubemaps and dds files with mipmaps this offers an alternative view.
@@ -222,7 +220,6 @@ private:
 	void GenerateThumbnail();
 
 	// Zero is invalid and means texture has never been bound and loaded into VRAM.
-//	uint TexIDAdj			= 0;
 	uint TexIDAlt			= 0;
 	uint TexIDThumbnail		= 0;
 

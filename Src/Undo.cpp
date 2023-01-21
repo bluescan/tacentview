@@ -3,7 +3,7 @@
 // An undo stack object that each image can use. Undo::Step is the type of object that may be pushed onto the
 // stack. Undo namespace functions provide an overall interface for setting and querying things like memory use.
 //
-// Copyright (c) 2021, 2022 Tristan Grimmer.
+// Copyright (c) 2021-2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -48,6 +48,15 @@ void Undo::Stack::Push(tList<tImage::tPicture>& preOpState, const tString& desc,
 	int numUndoSteps = UndoSteps.Count();
 	if (numUndoSteps > Viewer::Config::Current->MaxUndoSteps)
 		delete UndoSteps.Drop();
+}
+
+
+void Undo::Stack::Pop()
+{
+	if (UndoSteps.IsEmpty())
+		return;
+
+	delete UndoSteps.Remove();
 }
 
 

@@ -2,7 +2,7 @@
 //
 // An image class that can load a file from disk into main memory and to VRAM.
 //
-// Copyright (c) 2019-2022 Tristan Grimmer.
+// Copyright (c) 2019-2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -18,7 +18,6 @@
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL definitions.
 #include <Foundation/tHash.h>
 #include <Foundation/tFundamentals.h>
-//#include <Image/tTexture.h>
 #include <System/tFile.h>
 #include <System/tTime.h>
 #include <System/tMachine.h>
@@ -794,9 +793,6 @@ bool Image::Unload(bool force)
 
 bool Image::IsOpaque() const
 {
-//	if (AdjPicture.IsValid())
-//		return AdjPicture.IsOpaque();
-
 	if (AltPicture.IsValid() && AltPictureEnabled)
 		return AltPicture.IsOpaque();
 
@@ -810,9 +806,6 @@ bool Image::IsOpaque() const
 
 int Image::GetWidth() const
 {
-//	if (AdjPicture.IsValid())
-//		return AdjPicture.GetWidth();
-
 	if (AltPicture.IsValid() && AltPictureEnabled)
 		return AltPicture.GetWidth();
 
@@ -826,9 +819,6 @@ int Image::GetWidth() const
 
 int Image::GetHeight() const
 {
-//	if (AdjPicture.IsValid())
-//		return AdjPicture.GetHeight();
-
 	if (AltPicture.IsValid() && AltPictureEnabled)
 		return AltPicture.GetHeight();
 
@@ -842,9 +832,6 @@ int Image::GetHeight() const
 
 int Image::GetArea() const
 {
-//	if (AdjPicture.IsValid())
-//		return AdjPicture.GetArea();
-
 	if (AltPicture.IsValid() && AltPictureEnabled)
 		return AltPicture.GetArea();
 
@@ -858,9 +845,6 @@ int Image::GetArea() const
 
 tColouri Image::GetPixel(int x, int y) const
 {
-//	if (AdjPicture.IsValid())
-//		return AdjPicture.GetPixel(x, y);
-
 	if (AltPicture.IsValid() && AltPictureEnabled)
 		return AltPicture.GetPixel(x, y);
 
@@ -896,21 +880,18 @@ void Image::Rotate(float angle, const tColouri& fill, tResampleFilter upFilter, 
 }
 
 
-/////////////////
 bool Image::AdjustmentBegin()
 {
-	// We need to make the adjustment picture valid.
-//	AdjPicture.Clear();
 	tPicture* currPic = GetCurrentPic();
 	if (!currPic || !currPic->IsValid())
 		return false;
 
-	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
-		picture->AdjustmentBegin();//(angle, fill, upFilter, downFilter);
+	tString desc; tsPrintf(desc, "Adjustment");
+	PushUndo(desc);
 
-	
-//	tPixel* adjPixels = currPic->AdjustmentBegin();
-//	AdjPicture.SetExt(currPic->GetWidth(), currPic->GetHeight(), adjPixels);
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->AdjustmentBegin();
+
 	return true;
 }
 
@@ -920,23 +901,39 @@ bool Image::AdjustmentEnd()
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->AdjustmentEnd();
 
-//	if (!AdjPicture.IsValid())
-//		return false;
-
-//	if (commit)
-//	{
-//		tString desc; tsPrintf(desc, "Adj");
-//		PushUndo(desc);
-//
-//	}		
-//	tString desc; tsPrintf(desc, "Adjustment");
-//	PushUndo(desc);
-
 	return true;
 }
 
 
-/////////////////
+void Image::AdjustBrightness(float brightness)
+{
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->AdjustBrightness(brightness);
+
+	Dirty = true;
+}
+
+
+void Image::AdjustContrast(float contrast)
+{
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->AdjustContrast(contrast);
+
+	Dirty = true;
+}
+
+
+void Image::RestoreOriginal(bool popUndo)
+{
+	if (popUndo)
+		PopUndo();
+
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->RestoreOriginal();
+
+	Dirty = false;
+}
+
 
 void Image::Flip(bool horizontal)
 {
@@ -1058,28 +1055,8 @@ void Image::SetFrameDuration(float duration, bool allFrames)
 
 uint64 Image::Bind()
 {
-	// We bind in a particular order. First adjustment picture if calid. Next alternate picture is enabled and valid.
-	// Then current picture. In all cases if the texture ID is already valid, we use it right away and early exit.
-	/*
-	if (AdjPicture.IsValid())
-	{
-		if (TexIDAdj != 0)
-		{
-			glBindTexture(GL_TEXTURE_2D, TexIDAdj);
-			return TexIDAdj;
-		}
-
-		glGenTextures(1, &TexIDAdj);
-		if (TexIDAdj == 0)
-			return 0;
-
-		tList<tLayer> layers;
-		AdjPicture.GenerateLayers(layers, tResampleFilter(Config::Current->MipmapFilter), tResampleEdgeMode::Clamp, Config::Current->MipmapChaining);
-		BindLayers(layers, TexIDAdj);
-		return TexIDAdj;
-	}
-	*/
-
+	// We bind in a particular order starting with alternate picture if enabled and valid and
+	// then current picture. In all cases if the texture ID is already valid, we use it right away and early exit.
 	if (AltPictureEnabled && AltPicture.IsValid())
 	{
 		if (TexIDAlt != 0)
