@@ -929,7 +929,7 @@ void Image::AdjustRestoreOriginal(bool popUndo)
 		PopUndo();
 
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
-		picture->RestoreOriginal();
+		picture->AdjustRestoreOriginal();
 
 	Dirty = false;
 }
@@ -940,9 +940,9 @@ void Image::AdjustGetDefaults(float& brightness, float& contrast, float& blackPo
 	tPicture* pic = GetCurrentPic();
 	if (!pic)
 		return;
-	pic->GetDefaultBrightness(brightness);
-	pic->GetDefaultContrast(contrast);
-	pic->GetDefaultLevels(blackPoint, midPoint, whitePoint, blackOut, whiteOut);
+	pic->AdjustGetDefaultBrightness(brightness);
+	pic->AdjustGetDefaultContrast(contrast);
+	pic->AdjustGetDefaultLevels(blackPoint, midPoint, whitePoint, blackOut, whiteOut);
 }
 
 
