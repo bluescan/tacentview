@@ -792,27 +792,11 @@ bool Image::Unload(bool force)
 }
 
 
-void Image::Unbind()
-{
-	for (tPicture* pic = Pictures.First(); pic; pic = pic->Next())
-	{
-		if (pic->TextureID != 0)
-		{
-			glDeleteTextures(1, &pic->TextureID);
-			pic->TextureID = 0;
-		}
-	}
-
-	if (TexIDAlt != 0)
-	{
-		glDeleteTextures(1, &TexIDAlt);
-		TexIDAlt = 0;
-	}
-}
-
-
 bool Image::IsOpaque() const
 {
+//	if (AdjPicture.IsValid())
+//		return AdjPicture.IsOpaque();
+
 	if (AltPicture.IsValid() && AltPictureEnabled)
 		return AltPicture.IsOpaque();
 
@@ -826,6 +810,9 @@ bool Image::IsOpaque() const
 
 int Image::GetWidth() const
 {
+//	if (AdjPicture.IsValid())
+//		return AdjPicture.GetWidth();
+
 	if (AltPicture.IsValid() && AltPictureEnabled)
 		return AltPicture.GetWidth();
 
@@ -839,6 +826,9 @@ int Image::GetWidth() const
 
 int Image::GetHeight() const
 {
+//	if (AdjPicture.IsValid())
+//		return AdjPicture.GetHeight();
+
 	if (AltPicture.IsValid() && AltPictureEnabled)
 		return AltPicture.GetHeight();
 
@@ -852,6 +842,9 @@ int Image::GetHeight() const
 
 int Image::GetArea() const
 {
+//	if (AdjPicture.IsValid())
+//		return AdjPicture.GetArea();
+
 	if (AltPicture.IsValid() && AltPictureEnabled)
 		return AltPicture.GetArea();
 
@@ -865,6 +858,9 @@ int Image::GetArea() const
 
 tColouri Image::GetPixel(int x, int y) const
 {
+//	if (AdjPicture.IsValid())
+//		return AdjPicture.GetPixel(x, y);
+
 	if (AltPicture.IsValid() && AltPictureEnabled)
 		return AltPicture.GetPixel(x, y);
 
@@ -899,6 +895,48 @@ void Image::Rotate(float angle, const tColouri& fill, tResampleFilter upFilter, 
 	Dirty = true;
 }
 
+
+/////////////////
+bool Image::AdjustmentBegin()
+{
+	// We need to make the adjustment picture valid.
+//	AdjPicture.Clear();
+	tPicture* currPic = GetCurrentPic();
+	if (!currPic || !currPic->IsValid())
+		return false;
+
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->AdjustmentBegin();//(angle, fill, upFilter, downFilter);
+
+	
+//	tPixel* adjPixels = currPic->AdjustmentBegin();
+//	AdjPicture.SetExt(currPic->GetWidth(), currPic->GetHeight(), adjPixels);
+	return true;
+}
+
+
+bool Image::AdjustmentEnd()
+{
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->AdjustmentEnd();
+
+//	if (!AdjPicture.IsValid())
+//		return false;
+
+//	if (commit)
+//	{
+//		tString desc; tsPrintf(desc, "Adj");
+//		PushUndo(desc);
+//
+//	}		
+//	tString desc; tsPrintf(desc, "Adjustment");
+//	PushUndo(desc);
+
+	return true;
+}
+
+
+/////////////////
 
 void Image::Flip(bool horizontal)
 {
@@ -1020,6 +1058,28 @@ void Image::SetFrameDuration(float duration, bool allFrames)
 
 uint64 Image::Bind()
 {
+	// We bind in a particular order. First adjustment picture if calid. Next alternate picture is enabled and valid.
+	// Then current picture. In all cases if the texture ID is already valid, we use it right away and early exit.
+	/*
+	if (AdjPicture.IsValid())
+	{
+		if (TexIDAdj != 0)
+		{
+			glBindTexture(GL_TEXTURE_2D, TexIDAdj);
+			return TexIDAdj;
+		}
+
+		glGenTextures(1, &TexIDAdj);
+		if (TexIDAdj == 0)
+			return 0;
+
+		tList<tLayer> layers;
+		AdjPicture.GenerateLayers(layers, tResampleFilter(Config::Current->MipmapFilter), tResampleEdgeMode::Clamp, Config::Current->MipmapChaining);
+		BindLayers(layers, TexIDAdj);
+		return TexIDAdj;
+	}
+	*/
+
 	if (AltPictureEnabled && AltPicture.IsValid())
 	{
 		if (TexIDAlt != 0)
@@ -1056,6 +1116,7 @@ uint64 Image::Bind()
 		if (!picture->IsValid())
 			continue;
 
+		tAssert(picture->TextureID == 0);
 		glGenTextures(1, &picture->TextureID);
 
 		tList<tLayer> layers;
@@ -1063,6 +1124,31 @@ uint64 Image::Bind()
 		BindLayers(layers, picture->TextureID);
 	}
 	return GetCurrentPic()->TextureID;
+}
+
+
+void Image::Unbind()
+{
+	for (tPicture* pic = Pictures.First(); pic; pic = pic->Next())
+	{
+		if (pic->TextureID != 0)
+		{
+			glDeleteTextures(1, &pic->TextureID);
+			pic->TextureID = 0;
+		}
+	}
+
+	if (TexIDAlt != 0)
+	{
+		glDeleteTextures(1, &TexIDAlt);
+		TexIDAlt = 0;
+	}
+
+//	if (TexIDAdj != 0)
+//	{
+//		glDeleteTextures(1, &TexIDAdj);
+//		TexIDAdj = 0;
+//	}
 }
 
 

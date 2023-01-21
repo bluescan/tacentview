@@ -91,14 +91,12 @@ public:
 	void Rotate90(bool antiClockWise);
 	void Rotate(float angle, const tColouri& fill, tImage::tResampleFilter upFilter, tImage::tResampleFilter downFilter);
 
-#ifdef LEVELS_ADJUSTMENTS
-	tPixel* AdjustmentBegin();
+	bool AdjustmentBegin();
 	bool AdjustBrightness(float brightness);
 	bool AdjustContrast(float contrast);
 
 	bool AdjustLevels(float blackPoint, float midPoint, float whitePoint, float blackOut, float whiteOut, bool powerMidGamma = true);
-	bool AdjustmentEnd(bool commit);
-#endif
+	bool AdjustmentEnd();
 
 	void Flip(bool horizontal);
 	void Crop(int newWidth, int newHeight, int originX, int originY, const tColouri& fillColour = tColour::black);
@@ -196,6 +194,9 @@ private:
 	// second to store the  
 	tList<tImage::tPicture> Pictures;
 
+	// Tha 'adjustment' picture may be used while editing adjustments like contrast, brightness, and levels.
+	//tImage::tPicture AdjPicture;
+
 	// The 'alternative' picture is valid when there is another valid way of displaying the image.
 	// Specifically for cubemaps and dds files with mipmaps this offers an alternative view.
 	bool AltPictureEnabled = false;
@@ -221,6 +222,7 @@ private:
 	void GenerateThumbnail();
 
 	// Zero is invalid and means texture has never been bound and loaded into VRAM.
+//	uint TexIDAdj			= 0;
 	uint TexIDAlt			= 0;
 	uint TexIDThumbnail		= 0;
 
