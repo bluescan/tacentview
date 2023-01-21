@@ -94,7 +94,7 @@ public:
 	bool AdjustmentBegin();
 	void AdjustBrightness(float brightness);
 	void AdjustContrast(float contrast);
-	bool AdjustLevels(float blackPoint, float midPoint, float whitePoint, float blackOut, float whiteOut, bool powerMidGamma = true);
+	void AdjustLevels(float blackPoint, float midPoint, float whitePoint, float blackOut, float whiteOut, bool powerMidGamma = true);
 	void RestoreOriginal(bool popUndo = false);
 	bool AdjustmentEnd();
 

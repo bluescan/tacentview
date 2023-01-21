@@ -923,6 +923,15 @@ void Image::AdjustContrast(float contrast)
 }
 
 
+void Image::AdjustLevels(float blackPoint, float midPoint, float whitePoint, float blackOut, float whiteOut, bool powerMidGamma)
+{
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->AdjustLevels(blackPoint, midPoint, whitePoint, blackOut, whiteOut, powerMidGamma);
+
+	Dirty = true;
+}
+
+
 void Image::RestoreOriginal(bool popUndo)
 {
 	if (popUndo)

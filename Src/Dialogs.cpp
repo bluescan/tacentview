@@ -251,14 +251,24 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 
 void Viewer::DoLevelsModal(bool levelsPressed)
 {
-	static bool popupOpened = false;
+	static bool popupOpen = false;
+	enum class TabEnum { Levels, Contrast, Brightness };
+	static TabEnum currTab = TabEnum::Levels;
+
 	static float brightness = 0.5f;
 	static float contrast = 0.5f;
+	static float levelsBlack = 0.0f;
+	static float levelsMid = 0.5f;
+	static float levelsWhite = 1.0f;
+	static float levelsOutBlack = 0.0f;
+	static float levelsOutWhite = 1.0f;
+	static bool powerMidGamma = true;
+	static bool autoMidPoint = false;
 
 	if (levelsPressed)
 	{
 		ImGui::OpenPopup("Adjust Levels");
-		popupOpened = true;
+		popupOpen = true;
 
 		// This gets called whenever the levels dialog gets opened.
 		brightness = 0.5f;
@@ -269,12 +279,12 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	bool isOpenLevels = true;
 	if (!ImGui::BeginPopupModal("Adjust Levels", &isOpenLevels, ImGuiWindowFlags_AlwaysAutoResize))
 	{
-		if (popupOpened)
+		if (popupOpen)
 		{
 			// This gets called whenever the levels dialog gets closed.
 			CurrImage->AdjustmentEnd();
 		}
-		popupOpened = false;
+		popupOpen = false;
 		return;
 	}
 
@@ -285,20 +295,132 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 		float operator() (void* data, int index) { return 0.0f; }
 	};
 
-	//ImGui::PlotHistogram("Histogram", func, NULL, display_count, 0, NULL, -1.0f, 1.0f, ImVec2(0, 80));
-
-	if (ImGui::SliderFloat("Brightness", &brightness, 0.0f, 1.0f))
+	if (ImGui::BeginTabBar("LevelsTabBar", ImGuiTabBarFlags_None))
 	{
-		CurrImage->Unbind();
-		CurrImage->AdjustBrightness(brightness);
-		CurrImage->Bind();
-	}
+		if (ImGui::BeginTabItem("Levels", nullptr, ImGuiTabItemFlags_NoTooltip))
+		{
+			// Just switched to this tab?
+			if (currTab != TabEnum::Levels)
+			{
+				brightness = 0.5f;
+				contrast = 0.5f;
+				levelsBlack = 0.0f;
+				levelsMid = 0.5f;
+				levelsWhite = 1.0f;
+				levelsOutBlack = 0.0f;
+				levelsOutWhite = 1.0f;
 
-	if (ImGui::SliderFloat("Contrast", &contrast, 0.0f, 1.0f))
-	{
-		CurrImage->Unbind();
-		CurrImage->AdjustContrast(contrast);
-		CurrImage->Bind();
+				CurrImage->Unbind();
+				CurrImage->RestoreOriginal();
+				CurrImage->Bind();
+				currTab = TabEnum::Levels;
+			}
+
+			//ImGui::PlotHistogram("Histogram", func, NULL, display_count, 0, NULL, -1.0f, 1.0f, ImVec2(0, 80));
+
+			bool modified = false;
+			modified = ImGui::Checkbox("Continuous Mid Gamma", &powerMidGamma)			|| modified;
+			ImGui::SameLine();
+			ShowHelpMark
+			(
+				"Continuous-midpoint-gamma lets you decide between 2 algorithms to determine the curve on the mid-tone gamma.\n"
+				"\n"
+				"If false it tries to mimic Photoshop where there is a C1 discontinuity at gamma = 1.\n"
+				"The gamma range is [0.01, 9.99] where 1.0 is linear. This approximates PS.\n"
+				"\n"
+				"If true uses a continuous base-10 power curve that smoothly transitions the full range.\n"
+				"The gamma range is [0.1, 10.0] where 1.0 is linear. This approximates GIMP."
+			);
+
+			modified = ImGui::Checkbox("Auto Mid Point", &autoMidPoint)					|| modified;
+			ImGui::SameLine();
+			ShowHelpMark("If true forces the midpoint to be half way between the black and white points.");
+
+			modified = ImGui::SliderFloat("Black Point", &levelsBlack, 0.0f, 1.0f)		|| modified;
+			if (!autoMidPoint)
+				modified = ImGui::SliderFloat("Mid Point", &levelsMid, 0.0f, 1.0f)		|| modified;
+			modified = ImGui::SliderFloat("White Point", &levelsWhite, 0.0f, 1.0f)		|| modified;
+			modified = ImGui::SliderFloat("Black Out", &levelsOutBlack, 0.0f, 1.0f)		|| modified;
+			modified = ImGui::SliderFloat("White Out", &levelsOutWhite, 0.0f, 1.0f)		|| modified;
+
+			if (modified)
+			{
+				// Constrain.
+				if (autoMidPoint)
+				{
+					tiClampMin(levelsWhite, levelsBlack);
+					levelsMid = (levelsWhite+levelsBlack)/2.0f;
+				}
+				else
+				{
+					tiClampMin(levelsMid, levelsBlack);
+					tiClampMin(levelsWhite, levelsMid);
+				}
+				tiClampMin(levelsOutWhite, levelsOutBlack);
+
+				CurrImage->Unbind();
+				CurrImage->AdjustLevels(levelsBlack, levelsMid, levelsWhite, levelsOutBlack, levelsOutWhite, powerMidGamma);
+				CurrImage->Bind();
+			}
+
+			ImGui::EndTabItem();
+		}
+
+		if (ImGui::BeginTabItem("Contrast", nullptr, ImGuiTabItemFlags_NoTooltip))
+		{
+			// Just switched to this tab?
+			if (currTab != TabEnum::Contrast)
+			{
+				brightness = 0.5f;
+				contrast = 0.5f;
+				levelsBlack = 0.0f;
+				levelsMid = 0.5f;
+				levelsWhite = 1.0f;
+				levelsOutBlack = 0.0f;
+				levelsOutWhite = 1.0f;
+				CurrImage->Unbind();
+				CurrImage->RestoreOriginal();
+				CurrImage->Bind();
+				currTab = TabEnum::Contrast;
+			}
+
+			if (ImGui::SliderFloat("Contrast", &contrast, 0.0f, 1.0f))
+			{
+				CurrImage->Unbind();
+				CurrImage->AdjustContrast(contrast);
+				CurrImage->Bind();
+			}
+
+			ImGui::EndTabItem();
+		}
+
+		if (ImGui::BeginTabItem("Brightness", nullptr, ImGuiTabItemFlags_NoTooltip))
+		{
+			// Just switched to this tab?
+			if (currTab != TabEnum::Brightness)
+			{
+				brightness = 0.5f;
+				contrast = 0.5f;
+				levelsBlack = 0.0f;
+				levelsMid = 0.5f;
+				levelsWhite = 1.0f;
+				levelsOutBlack = 0.0f;
+				levelsOutWhite = 1.0f;
+				CurrImage->Unbind();
+				CurrImage->RestoreOriginal();
+				CurrImage->Bind();
+				currTab = TabEnum::Brightness;
+			}
+
+			if (ImGui::SliderFloat("Brightness", &brightness, 0.0f, 1.0f))
+			{
+				CurrImage->Unbind();
+				CurrImage->AdjustBrightness(brightness);
+				CurrImage->Bind();
+			}
+
+			ImGui::EndTabItem();
+		}
 	}
 
 	ImGui::NewLine();
@@ -309,6 +431,12 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	{
 		brightness = 0.5f;
 		contrast = 0.5f;
+		levelsBlack = 0.0f;
+		levelsMid = 0.5f;
+		levelsWhite = 1.0f;
+		levelsOutBlack = 0.0f;
+		levelsOutWhite = 1.0f;
+		powerMidGamma = true;
 		CurrImage->Unbind();
 		CurrImage->RestoreOriginal();
 		CurrImage->Bind();
