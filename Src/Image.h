@@ -92,9 +92,17 @@ public:
 	void Rotate(float angle, const tColouri& fill, tImage::tResampleFilter upFilter, tImage::tResampleFilter downFilter);
 
 	bool AdjustmentBegin();
-	void AdjustBrightness(float brightness);
-	void AdjustContrast(float contrast);
-	void AdjustLevels(float blackPoint, float midPoint, float whitePoint, float blackOut, float whiteOut, bool powerMidGamma = true);
+	enum class AdjChan { RGB, R, G, B, A };	// Adjustment is to individual RGBA channels or RGB/Intensity (default).
+	static tcomps ComponentBits(AdjChan);	// Converts to tChannels.
+
+	void AdjustBrightness(float brightness, AdjChan = AdjChan::RGB);
+	void AdjustContrast(float contrast, AdjChan = AdjChan::RGB);
+	void AdjustLevels
+	(
+		float blackPoint, float midPoint, float whitePoint,
+		float blackOut, float whiteOut,
+		bool powerMidGamma = true, AdjChan = AdjChan::RGB
+	);
 	void AdjustRestoreOriginal(bool popUndo = false);
 
 	// Some of the adjustment defaults are a function of the image properties. In particular the brightness range is
@@ -263,6 +271,20 @@ inline bool Image::TypeSupportsProperties() const
 		(Filetype == tSystem::tFileType::KTX2) ||
 		(Filetype == tSystem::tFileType::ASTC)
 	);
+}
+
+
+inline tcomps Image::ComponentBits(AdjChan channels)
+{
+	switch (channels)
+	{
+		case AdjChan::RGB:	return tComp_RGB;
+		case AdjChan::R:	return tComp_R;
+		case AdjChan::G:	return tComp_G;
+		case AdjChan::B:	return tComp_B;
+		case AdjChan::A:	return tComp_A;
+	}
+	return 0;
 }
 
 

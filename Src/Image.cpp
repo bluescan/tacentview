@@ -896,28 +896,28 @@ bool Image::AdjustmentBegin()
 }
 
 
-void Image::AdjustBrightness(float brightness)
+void Image::AdjustBrightness(float brightness, AdjChan channels)
 {
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
-		picture->AdjustBrightness(brightness);
+		picture->AdjustBrightness(brightness, ComponentBits(channels));
 
 	Dirty = true;
 }
 
 
-void Image::AdjustContrast(float contrast)
+void Image::AdjustContrast(float contrast, AdjChan channels)
 {
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
-		picture->AdjustContrast(contrast);
+		picture->AdjustContrast(contrast, ComponentBits(channels));
 
 	Dirty = true;
 }
 
 
-void Image::AdjustLevels(float blackPoint, float midPoint, float whitePoint, float blackOut, float whiteOut, bool powerMidGamma)
+void Image::AdjustLevels(float blackPoint, float midPoint, float whitePoint, float blackOut, float whiteOut, bool powerMidGamma, AdjChan channels)
 {
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
-		picture->AdjustLevels(blackPoint, midPoint, whitePoint, blackOut, whiteOut, powerMidGamma);
+		picture->AdjustLevels(blackPoint, midPoint, whitePoint, blackOut, whiteOut, powerMidGamma, ComponentBits(channels));
 
 	Dirty = true;
 }

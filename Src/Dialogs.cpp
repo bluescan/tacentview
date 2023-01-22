@@ -26,6 +26,20 @@
 using namespace tMath;
 
 
+namespace Viewer
+{
+	float HistogramCallbackBridge(void* data, int index);
+	struct HistogramCallback
+	{
+		HistogramCallback(Image::AdjChan channels, bool logarithmic, tImage::tPicture* picture) : Channels(channels), Logarithmic(logarithmic), Picture(picture) { }
+		float GetCount(int index) const;
+		Image::AdjChan Channels;
+		bool Logarithmic;
+		tImage::tPicture* Picture;
+	};
+}
+
+
 void Viewer::ShowPixelEditorOverlay(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(DialogID::PixelEditor);
@@ -249,6 +263,33 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 }
 
 
+float Viewer::HistogramCallbackBridge(void* data, int index)
+{
+	HistogramCallback* callback = (HistogramCallback*)data;
+	if (!callback)
+		return 0.0f;
+	return callback->GetCount(index);
+}
+
+
+float Viewer::HistogramCallback::GetCount(int index) const
+{
+	if (!Picture || (index >= tImage::tPicture::NumGroups))
+		return 0.0f;
+	float* table = nullptr;
+	switch (Channels)
+	{
+		case Image::AdjChan::RGB:	table = Picture->HistogramI;	break;
+		case Image::AdjChan::R:		table = Picture->HistogramR;	break;
+		case Image::AdjChan::G:		table = Picture->HistogramG;	break;
+		case Image::AdjChan::B:		table = Picture->HistogramB;	break;
+		case Image::AdjChan::A:		table = Picture->HistogramA;	break;
+	}
+	float count = table[index];
+	return (Logarithmic && (count > 0)) ? tMath::tLog(count) : count;
+}
+
+
 void Viewer::DoLevelsModal(bool levelsPressed)
 {
 	static bool popupOpen = false;
@@ -265,6 +306,8 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	static float levelsOutWhite = 1.0f;
 	static bool powerMidGamma = true;
 	static bool autoMidPoint = false;
+	static bool logarithmicHisto = true;
+	static int channels = int(Image::AdjChan::RGB);
 
 	if (levelsPressed)
 	{
@@ -295,12 +338,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 		return;
 	}
 
-	struct CompareFunctionObject
-	{
-		CompareFunctionObject(void* specs) : myData(specs) { }
-		void* myData;
-		float operator() (void* data, int index) { return 0.0f; }
-	};
+	const char* channelItems[] = { "RGB", "Red", "Green", "Blue", "Alpha" };
 
 	if (ImGui::BeginTabBar("LevelsTabBar", ImGuiTabBarFlags_None))
 	{
@@ -315,8 +353,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 				CurrImage->Bind();
 				currTab = TabEnum::Levels;
 			}
-
-			//ImGui::PlotHistogram("Histogram", func, NULL, display_count, 0, NULL, -1.0f, 1.0f, ImVec2(0, 80));
+			ImGui::NewLine();
 
 			bool modified = false;
 			modified = ImGui::Checkbox("Continuous Mid Gamma", &powerMidGamma)			|| modified;
@@ -333,8 +370,31 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			);
 
 			modified = ImGui::Checkbox("Auto Mid Point", &autoMidPoint)					|| modified;
-			ImGui::SameLine();
-			ShowHelpMark("If true forces the midpoint to be half way between the black and white points.");
+			ImGui::SameLine(); ShowHelpMark("If true forces the midpoint to be half way between the black and white points.");
+
+			ImGui::Checkbox("Logarithmic Historgram", &logarithmicHisto);
+			ImGui::SameLine(); ShowHelpMark("Logarithmic scale is useful when you have a 'clumpy' intensity distribution.\nTurning this on uses the natural logarithm to scale the histogram counts.");
+			ImGui::NewLine();
+
+			// The intensity histogram.
+			tImage::tPicture* pic = CurrImage->GetCurrentPic();
+			float max = 0.0f;
+			switch (channels)
+			{
+				case int(Image::AdjChan::RGB):	max = pic->MaxICount;	break;
+				case int(Image::AdjChan::R):	max = pic->MaxRCount;	break;
+				case int(Image::AdjChan::G):	max = pic->MaxGCount;	break;
+				case int(Image::AdjChan::B):	max = pic->MaxBCount;	break;
+				case int(Image::AdjChan::A):	max = pic->MaxACount;	break;
+			}
+			tString histName;
+			tsPrintf(histName, "%s Intensity (Max %d)", channelItems[channels], int(max));
+			HistogramCallback histoCB(Image::AdjChan(channels), logarithmicHisto, pic);
+			if (logarithmicHisto)
+				max = tMath::tLog(max);
+			// Why the +1 to NumGroups? It may be a an out-by-1 mistake in PlotHistogram. I can't hover the last group with my mouse without the +1.
+			// ImGui::PlotHistogram("Histogram", HistogramCallbackBridge, &histoCB, tImage::tPicture::NumGroups+1, 0, histName.Chr(), 0.0f, max, ImVec2(0, 80));
+			ImGui::PlotHistogram("Histogram", HistogramCallbackBridge, &histoCB, tImage::tPicture::NumGroups+1, 0, histName.Chr(), 0.0f, max, ImVec2(256, 80));
 
 			modified = ImGui::SliderFloat("Black Point", &levelsBlack, 0.0f, 1.0f)		|| modified;
 			if (!autoMidPoint)
@@ -342,6 +402,9 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			modified = ImGui::SliderFloat("White Point", &levelsWhite, 0.0f, 1.0f)		|| modified;
 			modified = ImGui::SliderFloat("Black Out", &levelsOutBlack, 0.0f, 1.0f)		|| modified;
 			modified = ImGui::SliderFloat("White Out", &levelsOutWhite, 0.0f, 1.0f)		|| modified;
+
+			modified = ImGui::Combo("Channel##Levels", &channels, channelItems, tNumElements(channelItems)) || modified;
+			ImGui::SameLine(); ShowHelpMark("Which channel(s) to apply adjustments to.");
 
 			if (modified)
 			{
@@ -359,7 +422,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 				tiClampMin(levelsOutWhite, levelsOutBlack);
 
 				CurrImage->Unbind();
-				CurrImage->AdjustLevels(levelsBlack, levelsMid, levelsWhite, levelsOutBlack, levelsOutWhite, powerMidGamma);
+				CurrImage->AdjustLevels(levelsBlack, levelsMid, levelsWhite, levelsOutBlack, levelsOutWhite, powerMidGamma, Image::AdjChan(channels));
 				CurrImage->Bind();
 			}
 
@@ -377,11 +440,18 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 				CurrImage->Bind();
 				currTab = TabEnum::Contrast;
 			}
+			ImGui::NewLine();
 
-			if (ImGui::SliderFloat("Contrast", &contrast, 0.0f, 1.0f))
+			bool modified = false;
+			modified = ImGui::SliderFloat("Contrast", &contrast, 0.0f, 1.0f) || modified;
+
+			modified = ImGui::Combo("Channel##Contrast", &channels, channelItems, tNumElements(channelItems)) || modified;
+			ImGui::SameLine(); ShowHelpMark("Which channel(s) to apply adjustments to.");
+
+			if (modified)
 			{
 				CurrImage->Unbind();
-				CurrImage->AdjustContrast(contrast);
+				CurrImage->AdjustContrast(contrast, Image::AdjChan(channels));
 				CurrImage->Bind();
 			}
 
@@ -399,16 +469,24 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 				CurrImage->Bind();
 				currTab = TabEnum::Brightness;
 			}
+			ImGui::NewLine();
 
-			if (ImGui::SliderFloat("Brightness", &brightness, 0.0f, 1.0f))
+			bool modified = false;
+			modified = ImGui::SliderFloat("Brightness", &brightness, 0.0f, 1.0f) || modified;
+
+			modified = ImGui::Combo("Channel##Brightness", &channels, channelItems, tNumElements(channelItems)) || modified;
+			ImGui::SameLine(); ShowHelpMark("Which channel(s) to apply adjustments to.");
+
+			if (modified)
 			{
 				CurrImage->Unbind();
-				CurrImage->AdjustBrightness(brightness);
+				CurrImage->AdjustBrightness(brightness, Image::AdjChan(channels));
 				CurrImage->Bind();
 			}
 
 			ImGui::EndTabItem();
 		}
+		ImGui::EndTabBar();
 	}
 
 	ImGui::NewLine();
@@ -419,6 +497,10 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	{
 		CurrImage->AdjustGetDefaults(brightness, contrast, levelsBlack, levelsMid, levelsWhite, levelsOutBlack, levelsOutWhite);
 		powerMidGamma = true;
+		autoMidPoint = false;
+		logarithmicHisto = true;
+		channels = int(Image::AdjChan::RGB);
+
 		CurrImage->Unbind();
 		CurrImage->AdjustRestoreOriginal();
 		CurrImage->Bind();
