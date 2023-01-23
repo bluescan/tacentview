@@ -415,14 +415,13 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 				case int(Image::AdjChan::B):	max = pic->MaxBCount;	break;
 				case int(Image::AdjChan::A):	max = pic->MaxACount;	break;
 			}
-			tString histName;
-			tsPrintf(histName, "%s Intensity (Max %d)", channelItems[channels], int(max));
+			tString histName;  tsPrintf(histName,  "%s Intensity", channelItems[channels]);
+			tString histLabel; tsPrintf(histLabel, "Max %d\n\nHistogram", int(max));
 			HistogramCallback histoCB(Image::AdjChan(channels), logarithmicHisto, pic);
 			if (logarithmicHisto)
 				max = tMath::tLog(max);
 			// Why the +1 to NumGroups? It may be a an out-by-1 mistake in PlotHistogram. I can't hover the last group with my mouse without the +1.
-			// ImGui::PlotHistogram("Histogram", HistogramCallbackBridge, &histoCB, tImage::tPicture::NumGroups+1, 0, histName.Chr(), 0.0f, max, ImVec2(0, 80));
-			ImGui::PlotHistogram("Histogram", HistogramCallbackBridge, &histoCB, tImage::tPicture::NumGroups+1, 0, histName.Chr(), 0.0f, max, ImVec2(256, 80));
+			ImGui::PlotHistogram(histLabel.Chr(), HistogramCallbackBridge, &histoCB, tImage::tPicture::NumGroups+1, 0, histName.Chr(), 0.0f, max, ImVec2(256, 80));
 
 			//
 			// Black/mid/white point sliders.
