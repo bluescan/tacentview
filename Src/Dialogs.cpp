@@ -407,31 +407,39 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			//
 			tImage::tPicture* pic = CurrImage->GetCurrentPic();
 			float max = 0.0f;
+			tVector4 colour = tVector4::one;
 			switch (channels)
 			{
-				case int(Image::AdjChan::RGB):	max = pic->MaxICount;	break;
-				case int(Image::AdjChan::R):	max = pic->MaxRCount;	break;
-				case int(Image::AdjChan::G):	max = pic->MaxGCount;	break;
-				case int(Image::AdjChan::B):	max = pic->MaxBCount;	break;
-				case int(Image::AdjChan::A):	max = pic->MaxACount;	break;
+				case int(Image::AdjChan::RGB):	max = pic->MaxICount;	colour.Set(0.9f, 0.9f, 0.9f, 1.8f);		break;
+				case int(Image::AdjChan::R):	max = pic->MaxRCount;	colour.Set(1.0f, 0.2f, 0.2f, 1.0f);		break;
+				case int(Image::AdjChan::G):	max = pic->MaxGCount;	colour.Set(0.2f, 1.0f, 0.2f, 1.0f);		break;
+				case int(Image::AdjChan::B):	max = pic->MaxBCount;	colour.Set(0.3f, 0.3f, 1.0f, 1.0f);		break;
+				case int(Image::AdjChan::A):	max = pic->MaxACount;	colour.Set(0.6f, 0.6f, 0.6f, 1.0f);		break;
 			}
 			tString histName;  tsPrintf(histName,  "%s Intensity", channelItems[channels]);
 			tString histLabel; tsPrintf(histLabel, "Max %d\n\nHistogram", int(max));
 			HistogramCallback histoCB(Image::AdjChan(channels), logarithmicHisto, pic);
 			if (logarithmicHisto)
 				max = tMath::tLog(max);
+
+			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colour);
 			// Why the +1 to NumGroups? It may be a an out-by-1 mistake in PlotHistogram. I can't hover the last group with my mouse without the +1.
 			ImGui::PlotHistogram(histLabel.Chr(), HistogramCallbackBridge, &histoCB, tImage::tPicture::NumGroups+1, 0, histName.Chr(), 0.0f, max, ImVec2(256, 80));
+			ImGui::PopStyleColor();
 
 			//
 			// Black/mid/white point sliders.
 			//
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(6.0f, 1.0f));
+			ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, 8.0);
 			modified = ImGui::SliderFloat("Black Point", &levelsBlack, 0.0f, 1.0f)		|| modified;
 			if (!autoMidPoint)
 				modified = ImGui::SliderFloat("Mid Point", &levelsMid, 0.0f, 1.0f)		|| modified;
 			modified = ImGui::SliderFloat("White Point", &levelsWhite, 0.0f, 1.0f)		|| modified;
 			modified = ImGui::SliderFloat("Black Out", &levelsOutBlack, 0.0f, 1.0f)		|| modified;
 			modified = ImGui::SliderFloat("White Out", &levelsOutWhite, 0.0f, 1.0f)		|| modified;
+			ImGui::PopStyleVar();
+			ImGui::PopStyleVar();
 
 			//
 			// Channels combo.
