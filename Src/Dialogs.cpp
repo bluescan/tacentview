@@ -339,8 +339,19 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 		return;
 	}
 
-	const char* channelItems[] = { "RGB", "Red", "Green", "Blue", "Alpha" };
+	//
+	// UI size parameters.
+	//
+	float okOffset = 140.0f;
+	switch (Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:	okOffset = 135.0f;	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:	okOffset = 146.0f;	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:	okOffset = 158.0f;	break;
+	}
 
+	const char* channelItems[] = { "RGB", "Red", "Green", "Blue", "Alpha" };
 	if (ImGui::BeginTabBar("LevelsTabBar", ImGuiTabBarFlags_None))
 	{
 		if (ImGui::BeginTabItem("Levels", nullptr, ImGuiTabItemFlags_NoTooltip))
@@ -423,6 +434,8 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 				max = tMath::tLog(max);
 
 			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colour);
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 2);
+
 			// Why the +1 to NumGroups? It may be a an out-by-1 mistake in PlotHistogram. I can't hover the last group with my mouse without the +1.
 			ImGui::PlotHistogram(histLabel.Chr(), HistogramCallbackBridge, &histoCB, tImage::tPicture::NumGroups+1, 0, histName.Chr(), 0.0f, max, ImVec2(256, 80));
 			ImGui::PopStyleColor();
@@ -430,6 +443,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			//
 			// Black/mid/white point sliders.
 			//
+			ImGui::PushItemWidth(258);
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(6.0f, 1.0f));
 			ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, 8.0);
 			modified = ImGui::SliderFloat("Black Point", &levelsBlack, 0.0f, 1.0f)		|| modified;
@@ -446,6 +460,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			//
 			modified = ImGui::Combo("Channel##Levels", &channels, channelItems, tNumElements(channelItems)) || modified;
 			ImGui::SameLine(); ShowHelpMark("Which channel(s) to apply adjustments to.");
+			ImGui::PopItemWidth();
 
 			//
 			// Adjust the image.
@@ -506,6 +521,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			//
 			// Contrast slider.
 			//
+			ImGui::PushItemWidth(258);
 			modified = ImGui::SliderFloat("Contrast", &contrast, 0.0f, 1.0f) || modified;
 
 			//
@@ -513,6 +529,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			//
 			modified = ImGui::Combo("Channel##Contrast", &channels, channelItems, tNumElements(channelItems)) || modified;
 			ImGui::SameLine(); ShowHelpMark("Which channel(s) to apply adjustments to.");
+			ImGui::PopItemWidth();
 
 			//
 			// Adjust the image.
@@ -560,6 +577,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			//
 			// Brightness slider.
 			//
+			ImGui::PushItemWidth(258);
 			modified = ImGui::SliderFloat("Brightness", &brightness, 0.0f, 1.0f) || modified;
 
 			//
@@ -567,6 +585,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			//
 			modified = ImGui::Combo("Channel##Brightness", &channels, channelItems, tNumElements(channelItems)) || modified;
 			ImGui::SameLine(); ShowHelpMark("Which channel(s) to apply adjustments to.");
+			ImGui::PopItemWidth();
 
 			//
 			// Adjust the image.
@@ -607,7 +626,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	}
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	ImGui::SetCursorPosX(ImGui::GetCursorPosX() + okOffset);
 	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
 	{
 		okPressed = true;
