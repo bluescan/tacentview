@@ -882,13 +882,10 @@ void Image::Rotate(float angle, const tColouri& fill, tResampleFilter upFilter, 
 
 bool Image::AdjustmentBegin()
 {
-	tPicture* currPic = GetCurrentPic();
-	if (!currPic || !currPic->IsValid())
+	if (!IsLoaded())
 		return false;
 
-	tString desc; tsPrintf(desc, "Adjustment");
-	PushUndo(desc);
-
+	PushUndo("Levels");
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->AdjustmentBegin();
 
@@ -896,29 +893,53 @@ bool Image::AdjustmentBegin()
 }
 
 
-void Image::AdjustBrightness(float brightness, AdjChan channels)
+void Image::AdjustBrightness(float brightness, AdjChan channels, bool allFrames)
 {
-	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
-		picture->AdjustBrightness(brightness, ComponentBits(channels));
-
+	if (allFrames)
+	{
+		for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+			picture->AdjustBrightness(brightness, ComponentBits(channels));
+	}
+	else
+	{
+		tPicture* picture = GetCurrentPic();
+		if (picture)
+			picture->AdjustBrightness(brightness, ComponentBits(channels));
+	}
 	Dirty = true;
 }
 
 
-void Image::AdjustContrast(float contrast, AdjChan channels)
+void Image::AdjustContrast(float contrast, AdjChan channels, bool allFrames)
 {
-	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
-		picture->AdjustContrast(contrast, ComponentBits(channels));
-
+	if (allFrames)
+	{
+		for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+			picture->AdjustContrast(contrast, ComponentBits(channels));
+	}
+	else
+	{
+		tPicture* picture = GetCurrentPic();
+		if (picture)
+			picture->AdjustContrast(contrast, ComponentBits(channels));
+	}
 	Dirty = true;
 }
 
 
-void Image::AdjustLevels(float blackPoint, float midPoint, float whitePoint, float blackOut, float whiteOut, bool powerMidGamma, AdjChan channels)
+void Image::AdjustLevels(float blackPoint, float midPoint, float whitePoint, float blackOut, float whiteOut, bool powerMidGamma, AdjChan channels, bool allFrames)
 {
-	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
-		picture->AdjustLevels(blackPoint, midPoint, whitePoint, blackOut, whiteOut, powerMidGamma, ComponentBits(channels));
-
+	if (allFrames)
+	{
+		for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+			picture->AdjustLevels(blackPoint, midPoint, whitePoint, blackOut, whiteOut, powerMidGamma, ComponentBits(channels));
+	}
+	else
+	{
+		tPicture* picture = GetCurrentPic();
+		if (picture)
+			picture->AdjustLevels(blackPoint, midPoint, whitePoint, blackOut, whiteOut, powerMidGamma, ComponentBits(channels));
+	}
 	Dirty = true;
 }
 

@@ -95,13 +95,12 @@ public:
 	enum class AdjChan { RGB, R, G, B, A };	// Adjustment is to individual RGBA channels or RGB/Intensity (default).
 	static tcomps ComponentBits(AdjChan);	// Converts to tChannels.
 
-	void AdjustBrightness(float brightness, AdjChan = AdjChan::RGB);
-	void AdjustContrast(float contrast, AdjChan = AdjChan::RGB);
+	void AdjustBrightness(float brightness, AdjChan = AdjChan::RGB, bool allFrames = true);
+	void AdjustContrast(float contrast, AdjChan = AdjChan::RGB, bool allFrames = true);
 	void AdjustLevels
 	(
-		float blackPoint, float midPoint, float whitePoint,
-		float blackOut, float whiteOut,
-		bool powerMidGamma = true, AdjChan = AdjChan::RGB
+		float blackPoint, float midPoint, float whitePoint, float blackOut, float whiteOut,
+		bool powerMidGamma = true, AdjChan = AdjChan::RGB, bool allFrames = true
 	);
 	void AdjustRestoreOriginal(bool popUndo = false);
 

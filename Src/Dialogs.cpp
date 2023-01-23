@@ -304,6 +304,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	static float levelsWhite = 1.0f;
 	static float levelsOutBlack = 0.0f;
 	static float levelsOutWhite = 1.0f;
+	static bool allFrames = true;
 	static bool powerMidGamma = true;
 	static bool autoMidPoint = false;
 	static bool logarithmicHisto = true;
@@ -344,7 +345,9 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	{
 		if (ImGui::BeginTabItem("Levels", nullptr, ImGuiTabItemFlags_NoTooltip))
 		{
+			//
 			// Just switched to this tab?
+			//
 			if (currTab != TabEnum::Levels)
 			{
 				CurrImage->AdjustGetDefaults(brightness, contrast, levelsBlack, levelsMid, levelsWhite, levelsOutBlack, levelsOutWhite);
@@ -354,8 +357,25 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 				currTab = TabEnum::Levels;
 			}
 			ImGui::NewLine();
-
 			bool modified = false;
+
+			//
+			// All frames or just current?
+			//
+			if (CurrImage->GetNumFrames() > 1)
+			{
+				if (ImGui::Checkbox("All Frames", &allFrames))
+				{
+					// We need to undo anything that may have either applied to all or one frame. No need to Unbind/Bind as modified true deals with that.
+					CurrImage->AdjustRestoreOriginal();
+					modified = true;
+				}
+				ImGui::SameLine(); ShowHelpMark("If image is animated or otherwise has more than one frame\nsetting this to false allows only the single current frames to be adjusted.\nMake sure the image is stopped on the frame you want before opening the levels dialog.");
+			}
+
+			//
+			// Mid-tones algorithm.
+			//
 			modified = ImGui::Checkbox("Continuous Mid Gamma", &powerMidGamma)			|| modified;
 			ImGui::SameLine();
 			ShowHelpMark
@@ -369,14 +389,22 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 				"The gamma range is [0.1, 10.0] where 1.0 is linear. This approximates GIMP."
 			);
 
+			//
+			// Auto-set mid-point between black/white point?
+			//
 			modified = ImGui::Checkbox("Auto Mid Point", &autoMidPoint)					|| modified;
 			ImGui::SameLine(); ShowHelpMark("If true forces the midpoint to be half way between the black and white points.");
 
+			//
+			// Logarithmic histogram?
+			//
 			ImGui::Checkbox("Logarithmic Historgram", &logarithmicHisto);
 			ImGui::SameLine(); ShowHelpMark("Logarithmic scale is useful when you have a 'clumpy' intensity distribution.\nTurning this on uses the natural logarithm to scale the histogram counts.");
 			ImGui::NewLine();
 
-			// The intensity histogram.
+			//
+			// The histogram itself.
+			//
 			tImage::tPicture* pic = CurrImage->GetCurrentPic();
 			float max = 0.0f;
 			switch (channels)
@@ -396,6 +424,9 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			// ImGui::PlotHistogram("Histogram", HistogramCallbackBridge, &histoCB, tImage::tPicture::NumGroups+1, 0, histName.Chr(), 0.0f, max, ImVec2(0, 80));
 			ImGui::PlotHistogram("Histogram", HistogramCallbackBridge, &histoCB, tImage::tPicture::NumGroups+1, 0, histName.Chr(), 0.0f, max, ImVec2(256, 80));
 
+			//
+			// Black/mid/white point sliders.
+			//
 			modified = ImGui::SliderFloat("Black Point", &levelsBlack, 0.0f, 1.0f)		|| modified;
 			if (!autoMidPoint)
 				modified = ImGui::SliderFloat("Mid Point", &levelsMid, 0.0f, 1.0f)		|| modified;
@@ -403,9 +434,15 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			modified = ImGui::SliderFloat("Black Out", &levelsOutBlack, 0.0f, 1.0f)		|| modified;
 			modified = ImGui::SliderFloat("White Out", &levelsOutWhite, 0.0f, 1.0f)		|| modified;
 
+			//
+			// Channels combo.
+			//
 			modified = ImGui::Combo("Channel##Levels", &channels, channelItems, tNumElements(channelItems)) || modified;
 			ImGui::SameLine(); ShowHelpMark("Which channel(s) to apply adjustments to.");
 
+			//
+			// Adjust the image.
+			//
 			if (modified)
 			{
 				// Constrain.
@@ -422,7 +459,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 				tiClampMin(levelsOutWhite, levelsOutBlack);
 
 				CurrImage->Unbind();
-				CurrImage->AdjustLevels(levelsBlack, levelsMid, levelsWhite, levelsOutBlack, levelsOutWhite, powerMidGamma, Image::AdjChan(channels));
+				CurrImage->AdjustLevels(levelsBlack, levelsMid, levelsWhite, levelsOutBlack, levelsOutWhite, powerMidGamma, Image::AdjChan(channels), allFrames);
 				CurrImage->Bind();
 			}
 
@@ -431,7 +468,9 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 
 		if (ImGui::BeginTabItem("Contrast", nullptr, ImGuiTabItemFlags_NoTooltip))
 		{
+			//
 			// Just switched to this tab?
+			//
 			if (currTab != TabEnum::Contrast)
 			{
 				CurrImage->AdjustGetDefaults(brightness, contrast, levelsBlack, levelsMid, levelsWhite, levelsOutBlack, levelsOutWhite);
@@ -441,13 +480,36 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 				currTab = TabEnum::Contrast;
 			}
 			ImGui::NewLine();
-
 			bool modified = false;
+
+			//
+			// All frames or just current?
+			//
+			if (CurrImage->GetNumFrames() > 1)
+			{
+				if (ImGui::Checkbox("All Frames", &allFrames))
+				{
+					// We need to undo anything that may have either applied to all or one frame. No need to Unbind/Bind as modified true deals with that.
+					CurrImage->AdjustRestoreOriginal();
+					modified = true;
+				}
+				ImGui::SameLine(); ShowHelpMark("If image is animated or otherwise has more than one frame\nsetting this to false allows only the single current frames to be adjusted.\nMake sure the image is stopped on the frame you want before opening the levels dialog.");
+			}
+
+			//
+			// Contrast slider.
+			//
 			modified = ImGui::SliderFloat("Contrast", &contrast, 0.0f, 1.0f) || modified;
 
+			//
+			// Channels combo.
+			//
 			modified = ImGui::Combo("Channel##Contrast", &channels, channelItems, tNumElements(channelItems)) || modified;
 			ImGui::SameLine(); ShowHelpMark("Which channel(s) to apply adjustments to.");
 
+			//
+			// Adjust the image.
+			//
 			if (modified)
 			{
 				CurrImage->Unbind();
@@ -460,7 +522,9 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 
 		if (ImGui::BeginTabItem("Brightness", nullptr, ImGuiTabItemFlags_NoTooltip))
 		{
+			//
 			// Just switched to this tab?
+			//
 			if (currTab != TabEnum::Brightness)
 			{
 				CurrImage->AdjustGetDefaults(brightness, contrast, levelsBlack, levelsMid, levelsWhite, levelsOutBlack, levelsOutWhite);
@@ -470,13 +534,36 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 				currTab = TabEnum::Brightness;
 			}
 			ImGui::NewLine();
-
 			bool modified = false;
+
+			//
+			// All frames or just current?
+			//
+			if (CurrImage->GetNumFrames() > 1)
+			{
+				if (ImGui::Checkbox("All Frames", &allFrames))
+				{
+					// We need to undo anything that may have either applied to all or one frame. No need to Unbind/Bind as modified true deals with that.
+					CurrImage->AdjustRestoreOriginal();
+					modified = true;
+				}
+				ImGui::SameLine(); ShowHelpMark("If image is animated or otherwise has more than one frame\nsetting this to false allows only the single current frames to be adjusted.\nMake sure the image is stopped on the frame you want before opening the levels dialog.");
+			}
+
+			//
+			// Brightness slider.
+			//
 			modified = ImGui::SliderFloat("Brightness", &brightness, 0.0f, 1.0f) || modified;
 
+			//
+			// Channels combo.
+			//
 			modified = ImGui::Combo("Channel##Brightness", &channels, channelItems, tNumElements(channelItems)) || modified;
 			ImGui::SameLine(); ShowHelpMark("Which channel(s) to apply adjustments to.");
 
+			//
+			// Adjust the image.
+			//
 			if (modified)
 			{
 				CurrImage->Unbind();
