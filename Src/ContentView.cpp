@@ -63,8 +63,17 @@ void Viewer::ShowContentViewDialog(bool* popen)
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar;
 	tVector2 windowPos = GetDialogOrigin(DialogID::ContentView);
 
+	tVector2 initialSize;
+	switch (Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:	initialSize.Set(586.0f, 480.0f);	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:	initialSize.Set(602.0f, 488.0f);	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:	initialSize.Set(610.0f, 494.0f);	break;
+	}
+
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(tVector2(510, 490), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(initialSize, ImGuiCond_FirstUseEver);
 
 	if (!ImGui::Begin("Content View", popen, windowFlags))
 	{
@@ -72,8 +81,31 @@ void Viewer::ShowContentViewDialog(bool* popen)
 		return;
 	}
 
+	float viewOptionsHeight;
+	float viewOptionsOffset;
+	float progressTextOffset;
+	switch (Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			viewOptionsHeight	= 61.0f;
+			viewOptionsOffset	= 4.0f;
+			progressTextOffset	= 460.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			viewOptionsHeight	= 65.0f;
+			viewOptionsOffset	= 4.0f;
+			progressTextOffset	= 475.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			viewOptionsHeight	= 70.0f;
+			viewOptionsOffset	= 5.0f;
+			progressTextOffset	= 490.0f;
+			break;
+	}
+
 	ImGuiWindowFlags thumbWindowFlags = 0;
-	ImGui::BeginChild("Thumbnails", tVector2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight()-61.0f), false, thumbWindowFlags);
+	ImGui::BeginChild("Thumbnails", tVector2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight()-viewOptionsHeight), false, thumbWindowFlags);
 	
 	ImGuiStyle& style = ImGui::GetStyle();
 	float visibleW = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
@@ -155,7 +187,7 @@ void Viewer::ShowContentViewDialog(bool* popen)
 
 	ImGuiWindowFlags viewOptionsWindowFlags = ImGuiWindowFlags_NoScrollbar;
 	ImGui::BeginChild("ViewOptions", tVector2(ImGui::GetWindowContentRegionWidth(), 40), false, viewOptionsWindowFlags);
-	ImGui::SetCursorPos(tVector2(0.0f, 3.0f));
+	ImGui::SetCursorPos(tVector2(0.0f, viewOptionsOffset));
 
 	ImGui::PushItemWidth(200);
 	ImGui::SliderFloat("Size", &Config::Current->ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth), "%.0f");
@@ -188,14 +220,14 @@ void Viewer::ShowContentViewDialog(bool* popen)
 		tVector2 textSize = ImGui::CalcTextSize(progText.Chr());
 		float rightx = ImGui::GetWindowContentRegionMax().x - 4.0f;
 		float textx = rightx - textSize.x;
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY()+1.0f);
-		if (textx > 470)
+
+		if (textx > progressTextOffset)
 		{
 			ImGui::SameLine();
 			ImGui::SetCursorPosX(textx);
 			ImGui::Text(progText.Chr());
-			ImGui::ProgressBar(float(numGeneratedThumbs)/float(Images.GetNumItems()), tVector2(rightx, 0));
 		}
+		ImGui::ProgressBar(float(numGeneratedThumbs)/float(Images.GetNumItems()), tVector2(rightx, 4), "");
 	}
 
 	ImGui::PopItemWidth();
