@@ -409,7 +409,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			//
 			// Logarithmic histogram?
 			//
-			ImGui::Checkbox("Logarithmic Historgram", &logarithmicHisto);
+			ImGui::Checkbox("Logarithmic Histogram", &logarithmicHisto);
 			ImGui::SameLine(); ShowHelpMark("Logarithmic scale is useful when you have a 'clumpy' intensity distribution.\nTurning this on uses the natural logarithm to scale the histogram counts.");
 			ImGui::NewLine();
 

@@ -19,12 +19,11 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL declarations.
-
 #ifdef PLATFORM_WINDOWS
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #endif
-
+#include <clip.h>					// This is the cross-platform clipboard library.
 #include <Foundation/tVersion.cmake.h>
 #include <Foundation/tHash.h>
 #include <System/tCmdLine.h>
@@ -283,6 +282,8 @@ namespace Viewer
 	void IconifyCallback(GLFWwindow*, int iconified);
 	void ProgressArc(float radius, float percent, const ImVec4& colour, const ImVec4& colourbg, float thickness = 4.0f, int segments = 32);
 	void ChangeProfile(Viewer::Profile);
+	bool CopyImage();
+	bool PasteImage();
 }
 
 
@@ -2482,6 +2483,43 @@ void Viewer::Redo()
 }
 
 
+bool Viewer::CopyImage()
+{
+	if (!CurrImage)
+		return false;
+
+	tImage::tPicture* pic = CurrImage->GetPrimaryPic();
+	if (!pic || !pic->IsValid())
+		return false;
+
+	clip::image_spec spec;
+	spec.width			= pic->GetWidth();
+	spec.height			= pic->GetHeight();
+	spec.bits_per_pixel	= 32;
+	spec.bytes_per_row	= spec.width*4;
+	spec.red_mask		= 0x000000FF;
+	spec.green_mask		= 0x0000FF00;
+	spec.blue_mask		= 0x00FF0000;
+	spec.alpha_mask		= 0xFF000000;
+	spec.red_shift		= 0;
+	spec.green_shift	= 8;
+	spec.blue_shift		= 16;
+	spec.alpha_shift	= 24;
+	clip::image img(pic->GetPixels(), spec);
+	bool success = clip::set_image(img);
+
+	// tPrintf("COPY IMAGE TO CLIPBOARD RESULT: %B\n", success);
+	return success;
+}
+
+
+bool Viewer::PasteImage()
+{
+	// tPrintf("PASTE IMAGE FROM CLIPBOARD\n");
+	return false;
+}
+
+
 void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int modifiers)
 {
 	if ((action != GLFW_PRESS) && (action != GLFW_REPEAT))
@@ -2721,6 +2759,14 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case Bindings::Operation::Redo:
 			if (CurrImage && CurrImage->IsRedoAvailable()) Redo();
+			break;
+
+		case Bindings::Operation::Copy:
+			CopyImage();
+			break;
+
+		case Bindings::Operation::Paste:
+			PasteImage();
 			break;
 
 		case Bindings::Operation::Refresh:

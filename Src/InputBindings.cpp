@@ -193,7 +193,9 @@ const char* Bindings::OperationDescriptions[] =
 	"UI Size Up",
 	"UI Size Down",
 	"Zoom Per Image",
-	"Levels"
+	"Levels",
+	"Copy",
+	"Paste"
 
 	// Add new entries here.
 };
@@ -365,6 +367,8 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 	AssignKey(GLFW_KEY_T,			Modifier_None,					Operation::Tile,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_Z,			Modifier_Ctrl,					Operation::Undo,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_Y,			Modifier_Ctrl,					Operation::Redo,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_C,			Modifier_Ctrl,					Operation::Copy,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_V,			Modifier_Ctrl,					Operation::Paste,					onlyIfUnassigned);
 
 	AssignKey(GLFW_KEY_F5,			Modifier_None,					Operation::Refresh,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_F2,			Modifier_None,					Operation::Rename,					onlyIfUnassigned);

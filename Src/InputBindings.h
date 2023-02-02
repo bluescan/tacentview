@@ -108,6 +108,8 @@ namespace Bindings
 		UISizeDec,				// Decrement the UI (font and button) size one step smaller.
 		ZoomPerImage,			// Toggle storing zoom settings globally vs with each image separately.
 		Levels,					// Toggle levels popup.
+		Copy,					// Copies current image to clipboard.
+		Paste,					// Pastes image in clipboard.
 		//
 		// Add new operations here. Adding above will invalidate save file keybindings.
 		//

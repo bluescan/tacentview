@@ -47,7 +47,7 @@ FetchContent_Declare(
 	tacent
 	GIT_REPOSITORY https://github.com/bluescan/tacent.git
 	# GIT_TAG v0.8.15
-	GIT_TAG 4444fa91ec03c56f923383518092a6ef5d7c8708
+	# GIT_TAG 4444fa91ec03c56f923383518092a6ef5d7c8708
 )
 FetchContent_MakeAvailable(tacent)
 
@@ -99,7 +99,7 @@ add_executable(
 	Src/Undo.h
 	Src/Version.cmake.h
 	Src/Version.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/Windows/TacentView.rc
+	$<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/Windows/TacentView.rc>
 
 	Contrib/imgui/imgui.cpp
 	Contrib/imgui/imgui_demo.cpp
@@ -109,7 +109,13 @@ add_executable(
 	Contrib/imgui/misc/cpp/imgui_stdlib.cpp
 	Contrib/imgui/backends/imgui_impl_glfw.cpp
 	Contrib/imgui/backends/imgui_impl_opengl2.cpp
+
 	Contrib/glad/src/glad.c
+
+	Contrib/clip/clip.cpp
+	$<$<PLATFORM_ID:Windows>:Contrib/clip/clip_win.cpp>
+	$<$<PLATFORM_ID:Linux>:Contrib/clip/clip_x11.cpp>
+	Contrib/clip/image.cpp
 )
 
 # Include directories needed to build.
@@ -122,6 +128,7 @@ target_include_directories(
 		${CMAKE_CURRENT_SOURCE_DIR}/Contrib/imgui/backends
 		${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glad/include
 		${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glfw/include
+		${CMAKE_CURRENT_SOURCE_DIR}/Contrib/clip
 )
 
 target_compile_definitions(
@@ -211,6 +218,7 @@ target_link_libraries(
 		$<$<PLATFORM_ID:Linux>:stdc++>
 		$<$<PLATFORM_ID:Linux>:dl>
 		$<$<PLATFORM_ID:Linux>:X11>
+		$<$<PLATFORM_ID:Linux>:xcb>		# For clipboard support.
 )
 
 if (MSVC)
