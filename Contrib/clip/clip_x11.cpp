@@ -23,6 +23,9 @@
 #include <thread>
 #include <vector>
 
+// @tacentview
+#define HAVE_PNG_H
+
 #ifdef HAVE_PNG_H
   #include "clip_x11_png.h"
 #endif

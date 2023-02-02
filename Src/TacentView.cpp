@@ -2488,13 +2488,19 @@ bool Viewer::CopyImage()
 	if (!CurrImage)
 		return false;
 
-	tImage::tPicture* pic = CurrImage->GetPrimaryPic();
+	tImage::tPicture* pic = CurrImage->GetCurrentPic();
+	if (!pic)
+		pic = CurrImage->GetPrimaryPic();
 	if (!pic || !pic->IsValid())
 		return false;
 
+	// We need to give the data to the clip system with first row at top.
+	tImage::tPicture pict(*pic);
+	pict.Flip(false);
+
 	clip::image_spec spec;
-	spec.width			= pic->GetWidth();
-	spec.height			= pic->GetHeight();
+	spec.width			= pict.GetWidth();
+	spec.height			= pict.GetHeight();
 	spec.bits_per_pixel	= 32;
 	spec.bytes_per_row	= spec.width*4;
 	spec.red_mask		= 0x000000FF;
@@ -2505,10 +2511,10 @@ bool Viewer::CopyImage()
 	spec.green_shift	= 8;
 	spec.blue_shift		= 16;
 	spec.alpha_shift	= 24;
-	clip::image img(pic->GetPixels(), spec);
+	clip::image img(pict.GetPixels(), spec);
 	bool success = clip::set_image(img);
 
-	// tPrintf("COPY IMAGE TO CLIPBOARD RESULT: %B\n", success);
+	tPrintf("Copy Frame to Clipboard Result: %B\n", success);
 	return success;
 }
 
