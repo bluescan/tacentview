@@ -5,69 +5,58 @@ An image and texture viewer for tga, png, apng, exr, dds, ktx, ktx2, astc, qoi, 
 
 Tacent View runs on Windows (10 or 11) and Linux (Kubuntu etc). Browse the releases to grab a zip (Windows) or deb (Linux) package -- or install from the [Snap Store](https://snapcraft.io/tacentview).
 
+Here is an example of adjusting levels using Tacent View. All frames of animated images can be adjusted at once, or each frame can be done individually. All operations support a per-image undo/redo stack.
+![Tacent View Levels](https://user-images.githubusercontent.com/19311462/216225745-0ea91c61-6b07-40fc-a1b7-bd327cdded4c.gif)
+
+And grabbling the exact pixel colour value to the clipboard.
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_CopyColourAs.png)
 
-
 Left/right direction keys show previous and next images, semi-transparent images are displayed with an optional checkerboard background, and images may be converted to different formats easily.
-
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_SaveAs.png)
 
-
 Use 'Save All As..." to batch convert all the images in a folder.
-
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_BatchSaveAll.png)
 
-
 Viewing as thumbnails is supported by the 'Content View' window. Thumbnail generation and cache retrieval are extremely fast. Tacent View can easily handle thousands of photos in a single folder.
-
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_Thumbnails.png)
 
 
 Contact sheet (AKA flipbook) textures may be generated. Images may be 'played' in succession to see what they look like animated. The alpha-channel is interpreted as opacity and is properly processed if the source images have semi-transparency.
-
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_ContactSheet.png) 
 
 
 Flip, rotate-by-90-degrees, rotate-arbitrarily (with live preview), cropping, and viewing textures in tiled mode is supported. There are also some powerful tools to resize images either by resampling or adjusting the canvas size. The 'aspect' mode in resize-canvas is useful for changing a photo's aspect ratio without any non-uniform scale. You get to set the anchor and choose whether you want the image letter-boxed or cropped. The border removal tool finds all matching pixels around the edges of an image and crops them. All edit operations are backed by a full undo (ctrl-z) and redo (ctrl-y) stack.
-
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_Crop.png)
 
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_Tiled.png)
 
 
 When viewing dds, ktx, or ktx2 files, you can view any present mipmaps and see cubemaps in a 'T' layout.
-
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_Cubemap.png)
 
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_Mipmaps.png)
 
 
 Users may zoom using Ctrl+/- and pan using the right mouse button. Several zoom modes are availabe in the view-menu including Fit, Downscale, and One-to-One pixel mapping. On extreme zooms the selected pixel is drawn with an outline.
-
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_Zoom.png)
 
 
 High Definition Image loading is supported for exr, hdr (rgbe), dds, ktx and ktx2 files. For hdr/rgbe files the loading code is based on, and is functionally equivalent to, the reference code from the Radiance imaging toolset. Adjustments to gamma correction and exposure are supported when loading any HDR file. The images below (Copyright Rafal Mantiuk under Creative Commons 3.0) show an image that loads over-exposed and is subsequentially adjusted to yield a more balanced result.
-
 ![HDR Loading](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_HDR.png)
 
 
 EXR support uses reference code from OpenEXR and should be able to load most exr files, including multi-frame (AKA multi-part) files. There is control for various exr parameters including the ability to de-fog. The screenshot below ('desk' image courtesy OpenEXR and under their licence) shows similar successive exposure adjustments.
-
 ![EXR Loading](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_EXR.png)
 
 
 Other formats store multiple images inside a single file. A dds or ktx may be a cubemap with 6 sides or a BC/ASTC compressed image with mipmaps. A tiff may also include multiple 'pages'. Webp and png/apng files may be animated. For these formats the property-editor window allows you to display which frame you see. The hypercube below (courtesy [Jason Hise](https://blog.wikimedia.org/2016/09/22/math-gifs/) under CC0) shows the options and play controls for a multi-frame animated gif. In Tacent View the duration of any individual frame may be edited and the file resaved. This works whether a gif, apng or webp is being edited.
-
 ![AnimGif](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_Anim.png)
 
 
 Alt-Enter toggles fullscreen mode. In this mode the bottom navigation bar and top menu are invisible. If at any point you want to reset the UI or other settings like the default resample algorithm or preferred file save format, you may do so from the preferences dialog.
-
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_Prefs.png)
 
 The 'transparent work area' option in the preferences allows you to see right through to your desktop -- interpreting the alpha channel in the image, if present, as opacity. If you set the viewer to basic-mode (B-key, no UI widgets), and enter fullscreen mode (Alt-Enter), you can do things like play animated semitransparent webp file right over your desktop. The screenshot below shows transparent-work-area turned on while in windowed (non-fullscreen) mode. This works in both Linux and Windows. For Linux, the snap system disables this feature so you will need to install the deb file or build from source.
-
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_TransparentWorkArea.png)
 
 # building from source
@@ -132,7 +121,7 @@ This project relies on myriad 3rd-party libraries. In the Data folder you will f
 * OpenEXR
 * ZLib
 * GIF Load
-* GIF Save
+* gifenc
 * WebP Reference Library
 * LibPNG
 * LibKTX (KTX-Software)
@@ -147,7 +136,7 @@ This project relies on myriad 3rd-party libraries. In the Data folder you will f
 
 Various development tools available for open source projects bear mentioning:
 * CMake
-* Ubuntu
+* Kubuntu
 * VS Code Editor
 * Visual Studio Community
 * GCC, Clang, and the MSVC Compiler
