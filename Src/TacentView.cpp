@@ -1744,25 +1744,43 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (ImGui::MenuItem("Open Dir...", openDirKey.Chz()))
 				openDirPressed = true;
 
+			ImGui::Separator();
+
 			tString saveKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Save);
-			if (ImGui::MenuItem("Save...", saveKey.Chz()) && CurrImage)
+			bool saveEnabled = CurrImage ? true : false;
+			if (ImGui::MenuItem("Save...", saveKey.Chz(), false, saveEnabled))
 				savePressed = true;
 
 			tString saveAsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SaveAs);
-			if (ImGui::MenuItem("Save As...", saveAsKey.Chz()) && CurrImage)
+			bool saveAsEnabled = CurrImage ? true : false;
+			if (ImGui::MenuItem("Save As...", saveAsKey.Chz(), false, saveAsEnabled))
 				saveAsPressed = true;
 
 			tString saveAllKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SaveAll);
-			if (ImGui::MenuItem("Save All...", saveAllKey.Chz()) && CurrImage)
+			bool saveAllEnabled = CurrImage ? true : false;
+			if (ImGui::MenuItem("Save All...", saveAllKey.Chz(), false, saveAllEnabled))
 				saveAllPressed = true;
 
 			tString saveCSKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SaveContactSheet);
-			if (ImGui::MenuItem("Save Contact Sheet...", saveCSKey.Chz()) && (Images.GetNumItems() > 1))
+			bool saveCSEnabled = (Images.GetNumItems() > 1);
+			if (ImGui::MenuItem("Save Contact Sheet...", saveCSKey.Chz(), false, saveCSEnabled))
 				saveContactSheetPressed = true;
 
 			tString saveMultiKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SaveMultiFrameImage);
-			if (ImGui::MenuItem("Save Multi-Frame...", saveMultiKey.Chz()) && (Images.GetNumItems() > 1))
+			bool saveMultiEnabled = (Images.GetNumItems() > 1);
+			if (ImGui::MenuItem("Save Multi-Frame...", saveMultiKey.Chz(), false, saveMultiEnabled))
 				saveMultiFramePressed = true;
+
+			ImGui::Separator();
+
+			tString copyKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Copy);
+			bool copyEnabled = CurrImage ? true : false;
+			if (ImGui::MenuItem("Copy Image", copyKey.Chz(), false, copyEnabled))
+				Viewer::CopyImage();
+
+			tString pasteKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Paste);
+			if (ImGui::MenuItem("Paste Image", pasteKey.Chz()))
+				Viewer::PasteImage();
 
 			ImGui::Separator();
 
