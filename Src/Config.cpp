@@ -379,6 +379,7 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 		DetectAPNGInsidePNG			= true;
 		MipmapFilter				= int(tImage::tResampleFilter::Bilinear);
 		MipmapChaining				= true;
+		ClipboardPasteFileType		.Set(tSystem::tGetFileTypeName(tSystem::tFileType::PNG));
 		MonitorGamma				= tMath::DefaultGamma;
 	}
 
@@ -447,6 +448,7 @@ void Config::ProfileSettings::Load(tExpression expr)
 			ReadItem(SlideshowLooping);
 			ReadItem(SlideshowProgressArc);
 			ReadItem(SlideshowPeriod);
+			ReadItem(ClipboardPasteFileType);
 
 			ReadItem(SaveSubFolder);
 			ReadItem(SaveFileType);
@@ -602,6 +604,7 @@ bool Config::ProfileSettings::Save(tExprWriter& writer) const
 	WriteItem(SlideshowLooping);
 	WriteItem(SlideshowProgressArc);
 	WriteItem(SlideshowPeriod);
+	WriteItem(ClipboardPasteFileType);
 
 	WriteItem(SaveSubFolder);
 	WriteItem(SaveFileType);

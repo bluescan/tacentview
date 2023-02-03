@@ -29,6 +29,12 @@
 #include <System/tCmdLine.h>
 #include <Image/tPicture.h>
 #include <Image/tImageICO.h>
+#include <Image/tImageTGA.h>		// For paste from clipboard.
+#include <Image/tImagePNG.h>		// For paste from clipboard.
+#include <Image/tImageWEBP.h>		// For paste from clipboard.
+#include <Image/tImageQOI.h>		// For paste from clipboard.
+#include <Image/tImageBMP.h>		// For paste from clipboard.
+#include <Image/tImageTIFF.h>		// For paste from clipboard.
 #include <System/tFile.h>
 #include <System/tTime.h>
 #include <System/tScript.h>
@@ -103,6 +109,19 @@ namespace Viewer
 		tFileType::GIF,
 		tFileType::WEBP,
 		tFileType::APNG,
+		tFileType::TIFF,
+		tFileType::EOL
+	);
+
+	// When a paste happens the file that gets created must not be lossy. These formats either
+	// only support lossless or have it as an option like webp.
+	tFileTypes FileTypes_ClipboardPaste
+	(
+		tFileType::TGA,
+		tFileType::PNG,
+		tFileType::WEBP,
+		tFileType::QOI,
+		tFileType::BMP,
 		tFileType::TIFF,
 		tFileType::EOL
 	);
@@ -540,7 +559,13 @@ void Viewer::SetCurrentImage(const tString& currFilename)
 	{
 		tString siName = tSystem::tGetFileName(si->Filename);
 		tString imgName = tSystem::tGetFileName(currFilename);
+
+		// We want a case-sensitive compare on Linux.
+		#ifdef PLATFORM_LINUX
+		if (tStrcmp(siName.Chars(), imgName.Chars()) == 0)
+		#else
 		if (tStricmp(siName.Chars(), imgName.Chars()) == 0)
+		#endif
 		{
 			CurrImage = si;
 			break;
@@ -2521,8 +2546,143 @@ bool Viewer::CopyImage()
 
 bool Viewer::PasteImage()
 {
-	// tPrintf("PASTE IMAGE FROM CLIPBOARD\n");
-	return false;
+	using namespace tImage;
+
+	// The viewer currently requires an image file when you paste (so the filetype is known etc). Essentially what we
+	// do is create a new image file (in a lossless/saveable image format as specified by the user config), and then
+	// add a new Image based on it to the list, and finally set the current image to it. The filename needs to be unique
+	// for the current directory.
+	bool ok = false;
+	ok = clip::has(clip::image_format());
+	if (!ok)
+		return false;
+
+	clip::image img;
+    ok = clip::get_image(img);
+	if (!ok)
+		return false;
+
+	//
+	// Step 1. Get the data in the necessary tPixel RGBA format with rows starting at bottom.
+	//
+	const clip::image_spec& spec = img.spec();
+	int width = spec.width;
+	int height = spec.height;
+	uint32* srcData = (uint32*)img.data();
+	tPixel* dstData = new tPixel[width*height];
+
+	int bytesPerRow = width*sizeof(tPixel);
+	for (int y = height-1; y >= 0; y--)
+		tStd::tMemcpy((uint8*)dstData + ((height-1)-y)*bytesPerRow, (uint8*)srcData + y*bytesPerRow, bytesPerRow);
+
+	for (int p = 0; p < width*height; p++)
+	{
+		uint32 orig = dstData[p].BP;
+		uint32 newc =
+			(( orig & spec.red_mask  ) >> spec.red_shift  )        |
+			(((orig & spec.green_mask) >> spec.green_shift) << 8)  |
+			(((orig & spec.blue_mask ) >> spec.blue_shift ) << 16) |
+			(((orig & spec.alpha_mask) >> spec.alpha_shift) << 24);
+		dstData[p].BP = newc;
+	}
+
+	// We are done with the img. We might as well clean it up now instead of waiting for scope to end.
+	img.reset();
+
+	//
+	// Step 2. Determine filename.
+	//
+	tFileType pasteType = tGetFileTypeFromName(Config::Current->ClipboardPasteFileType);
+	tString filename;
+	tsPrintf
+	(
+		filename, "%sClipboardImage_%s.%s",
+		Viewer::ImagesDir.Chr(),
+		tConvertTimeToString(tGetTimeLocal(), tTimeFormat::Filename).Chr(),
+		tGetExtension(pasteType).Chr()
+	);
+
+	//
+	// Step 3. Save the file in the correct format losslessly. The dstData is given to the tImage. It will delete it.
+	//
+	bool saved = false;
+	switch (pasteType)
+	{
+		case tFileType::TGA:
+		{
+			tImageTGA tga;
+			tga.Set(dstData, width, height, true);
+			tImageTGA::tFormat fmt = tga.Save(filename, tImageTGA::tFormat::Auto, tImageTGA::tCompression::None);
+			saved = (fmt != tImageTGA::tFormat::Invalid);
+			break;
+		}
+
+		case tFileType::PNG:
+		{
+			tImage::tImagePNG png;
+			png.Set(dstData, width, height, true);
+			tImagePNG::tFormat fmt = png.Save(filename, tImagePNG::tFormat::Auto);
+			saved = (fmt != tImagePNG::tFormat::Invalid);
+			break;
+		}
+
+		case tFileType::WEBP:
+		{
+			tImage::tImageWEBP webp;
+			webp.Set(dstData, width, height, true);
+			saved = webp.Save(filename, false);
+			break;
+		}
+
+		case tFileType::QOI:
+		{
+			tImage::tImageQOI qoi;
+			qoi.Set(dstData, width, height, true);
+			tImageQOI::tFormat fmt = qoi.Save(filename, tImageQOI::tFormat::Auto);
+			saved = (fmt != tImageQOI::tFormat::Invalid);
+			break;
+		}
+
+		case tFileType::BMP:
+		{
+			tImage::tImageBMP bmp;
+			bmp.Set(dstData, width, height, true);
+			tImageBMP::tFormat fmt = bmp.Save(filename, tImageBMP::tFormat::Auto);
+			saved = (fmt != tImageBMP::tFormat::Invalid);
+			break;
+		}
+
+		case tFileType::TIFF:
+		{
+			tImage::tImageTIFF tif;
+			tif.Set(dstData, width, height, true);
+			saved = tif.Save(filename, true);
+			break;
+		}
+
+		default:
+		{
+			delete[] dstData;
+			return false;
+		}
+	}
+
+	if (!saved)
+		return false;
+
+	tPrintf("Pasted Filename: %s\n", filename.Chr());
+
+	//
+	// Step 4. Make image current. Add to images list, sort, and make current.
+	//
+	Image* newImg = new Image(filename);
+	Images.Append(newImg);
+	ImagesLoadTimeSorted.Append(newImg);
+	SortImages(Config::Current->GetSortKey(), Config::Current->SortAscending);
+	SetCurrentImage(filename);
+
+	// In the clip sample code the clipboard is clear()-ed. I don't think we'd want to do that.
+	return true;
 }
 
 

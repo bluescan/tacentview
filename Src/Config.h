@@ -155,6 +155,7 @@ struct ProfileSettings
 	bool SlideshowLooping;
 	bool SlideshowProgressArc;
 	double SlideshowPeriod;
+	tString ClipboardPasteFileType;
 
 	tString	SaveSubFolder;
 	tString	SaveFileType;

@@ -124,7 +124,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 				if (Config::Current->GetBackgroundStyle() == Config::ProfileSettings::BackgroundStyleEnum::Checkerboard)
 				{
-					ImGui::PushItemWidth(110);
+					ImGui::PushItemWidth(comboWidth);
 					ImGui::InputInt("Checker Size", &Config::Current->BackgroundCheckerboxSize);
 					ImGui::PopItemWidth();
 					tMath::tiClamp(Config::Current->BackgroundCheckerboxSize, 2, 256);
@@ -280,6 +280,34 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Filtering method to use when generating minification mipmaps.\nUse None for no mipmapping.");
+
+			tString pasteTypeName = Config::Current->ClipboardPasteFileType;
+			tSystem::tFileType pasteType = tSystem::tGetFileTypeFromName(pasteTypeName);
+			ImGui::PushItemWidth(comboWidth*1.22f);
+			if (ImGui::BeginCombo("Paste Type", pasteTypeName.Chr()))
+			{
+				for (tSystem::tFileTypes::tFileTypeItem* item = FileTypes_ClipboardPaste.First(); item; item = item->Next())
+				{
+					tSystem::tFileType ft = item->FileType;
+					bool selected = (ft == pasteType);
+
+					tString ftName = tGetFileTypeName(ft);
+					if (ImGui::Selectable(ftName.Chr(), &selected))
+						Config::Current->ClipboardPasteFileType = ftName;
+
+					if (selected)
+						ImGui::SetItemDefaultFocus();
+				}				
+				ImGui::EndCombo();
+			}
+			ImGui::PopItemWidth();
+			ImGui::SameLine();
+			ShowHelpMark
+			(
+				"When an image is pasted from the clipboard it creates a new image of this type.\n"
+				"Valid types are ones that are lossless or support lossless encoding like webp.\n"
+				"Pasted images support alpha channel. If no alpha it saves the image without it." 
+			);
 	
 			ImGui::EndTabItem();
 		}

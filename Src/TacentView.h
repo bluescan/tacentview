@@ -50,6 +50,7 @@ namespace Viewer
 	extern tSystem::tFileTypes FileTypes_Load;
 	extern tSystem::tFileTypes FileTypes_Save;
 	extern tSystem::tFileTypes FileTypes_SaveMultiFrame;
+	extern tSystem::tFileTypes FileTypes_ClipboardPaste;
 	extern tFileDialog::FileDialog OpenFileDialog;
 	extern tFileDialog::FileDialog OpenDirDialog;
 	extern tFileDialog::FileDialog SaveAsDialog;

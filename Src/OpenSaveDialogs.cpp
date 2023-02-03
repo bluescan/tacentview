@@ -1037,7 +1037,8 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile, tFileType fileType)
 				case 1: saveFormat = tImagePNG::tFormat::BPP24;		break;
 				case 2: saveFormat = tImagePNG::tFormat::BPP32;		break;
 			}
-			success = png.Save(outFile, saveFormat);
+			tImagePNG::tFormat savedFmt = png.Save(outFile, saveFormat);
+			success = (savedFmt != tImagePNG::tFormat::Invalid);
 			break;
 		}
 
@@ -1117,8 +1118,8 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile, tFileType fileType)
 			tImageQOI::tFormat saveFormat = tImageQOI::tFormat::Auto;
 			switch (Config::Current->SaveFileQoiDepthMode)
 			{
-				case 1: saveFormat = tImageQOI::tFormat::Bit24;		break;
-				case 2: saveFormat = tImageQOI::tFormat::Bit32;		break;
+				case 1: saveFormat = tImageQOI::tFormat::BPP24;		break;
+				case 2: saveFormat = tImageQOI::tFormat::BPP32;		break;
 			}
 
 			tImageQOI::tSpace saveSpace = tImageQOI::tSpace::sRGB;
@@ -1228,7 +1229,8 @@ bool Viewer::SavePictureAs(tImage::tPicture& picture, const tString& outFile, tF
 				case 1: saveFormat = tImagePNG::tFormat::BPP24;		break;
 				case 2: saveFormat = tImagePNG::tFormat::BPP32;		break;
 			}
-			success = png.Save(outFile, saveFormat);
+			tImagePNG::tFormat savedFmt = png.Save(outFile, saveFormat);
+			success = (savedFmt != tImagePNG::tFormat::Invalid);
 			break;
 		}
 
@@ -1268,8 +1270,8 @@ bool Viewer::SavePictureAs(tImage::tPicture& picture, const tString& outFile, tF
 			tImageQOI::tFormat saveFormat = tImageQOI::tFormat::Auto;
 			switch (Config::Current->SaveFileQoiDepthMode)
 			{
-				case 1: saveFormat = tImageQOI::tFormat::Bit24;		break;
-				case 2: saveFormat = tImageQOI::tFormat::Bit32;		break;
+				case 1: saveFormat = tImageQOI::tFormat::BPP24;		break;
+				case 2: saveFormat = tImageQOI::tFormat::BPP32;		break;
 			}
 
 			tImageQOI::tSpace saveSpace = tImageQOI::tSpace::sRGB;
