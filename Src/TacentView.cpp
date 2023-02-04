@@ -214,6 +214,7 @@ namespace Viewer
 	bool DrawChannel_G								= true;
 	bool DrawChannel_B								= true;
 	bool DrawChannel_A								= true;
+	float ShutterFXCountdown						= 0.0f;				// Used when copying image to clipboard.
 	int DragAnchorX									= 0;
 	int DragAnchorY									= 0;
 
@@ -1255,9 +1256,19 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (DrawChannel_A) { swizzle[0] = GL_ALPHA;	swizzle[1] = GL_ALPHA;	swizzle[2] = GL_ALPHA;	swizzle[3] = GL_ONE; }
 		}
 
-		bool modifiedSwizzle = !DrawChannel_R || !DrawChannel_G || !DrawChannel_B || !DrawChannel_A;
-		if (modifiedSwizzle)
+		bool swizzleModified = false;
+		if (ShutterFXCountdown > 0.0f)
+		{
+			ShutterFXCountdown -= dt;
+			int swizzleWhite[4] = { GL_ONE, GL_ONE, GL_ONE, GL_ONE };
+			glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleWhite);
+			swizzleModified = true;
+		}
+		else if (!DrawChannel_R || !DrawChannel_G || !DrawChannel_B || !DrawChannel_A)
+		{
 			glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
+			swizzleModified = true;
+		}
 	
 		if (!Config::Current->Tile)
 		{
@@ -1289,7 +1300,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 
 		// Restore swizzle to normal if it was modified.
-		if (modifiedSwizzle)
+		if (swizzleModified)
 		{
 			int defaultSwizzle[] = { GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA };
 			glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, defaultSwizzle);
@@ -2558,6 +2569,8 @@ bool Viewer::CopyImage()
 	bool success = clip::set_image(img);
 
 	tPrintf("Copy Frame to Clipboard Result: %B\n", success);
+	ShutterFXCountdown	= 0.12f;
+
 	return success;
 }
 
