@@ -137,6 +137,7 @@ namespace Viewer
 	tItList<Image> ImagesLoadTimeSorted(tListMode::External);		// We don't need static here cuz the list is only used after main().
 	tuint256 ImagesHash												= 0;
 	Image* CurrImage												= nullptr;
+	tString CurrImageFile;
 
 	void LoadAppImages(const tString& dataDir);
 	void UnloadAppImages();
@@ -432,8 +433,8 @@ void Viewer::DrawNavBar(float x, float y, float w, float h)
 tString Viewer::FindImageFilesInCurrentFolder(tList<tSystem::tFileInfo>& foundFiles)
 {
 	tString imagesDir = tSystem::tGetCurrentDir();
-	if (ImageFileParam.IsPresent() && tSystem::tIsAbsolutePath(ImageFileParam.Get()))
-		imagesDir = tSystem::tGetDir(ImageFileParam.Get());
+	if (!CurrImageFile.IsEmpty() && tSystem::tIsAbsolutePath(CurrImageFile))
+		imagesDir = tSystem::tGetDir(CurrImageFile);
 
 	tPrintf("Finding image files in %s\n", imagesDir.Chr());
 	tSystem::tExtensions extensions(FileTypes_Load);
@@ -2400,7 +2401,7 @@ bool Viewer::DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin)
 		
 	if (deleted)
 	{
-		ImageFileParam.Param = nextImgFile;		// We set this so if we lose and gain focus, we go back to the current image.
+		CurrImageFile = nextImgFile;		// We set this so if we lose and gain focus, we go back to the current image.
 		PopulateImages();
 		SetCurrentImage(nextImgFile);
 	}
@@ -3184,7 +3185,7 @@ void Viewer::FileDropCallback(GLFWwindow* window, int count, const char** files)
 		return;
 
 	tString file = tString(files[0]);
-	ImageFileParam.Param = file;
+	CurrImageFile = file;
 	PopulateImages();
 	SetCurrentImage(file);
 }
@@ -3211,8 +3212,8 @@ void Viewer::FocusCallback(GLFWwindow* window, int gotFocus)
 	{
 		tPrintf("Hash mismatch. Dir contents changed. Resynching.\n");
 		PopulateImages();
-		if (ImageFileParam.IsPresent())
-			SetCurrentImage(Viewer::ImageFileParam.Get());
+		if (!CurrImageFile.IsEmpty())
+			SetCurrentImage(CurrImageFile);
 		else
 			SetCurrentImage();
 	}
@@ -3352,12 +3353,12 @@ int main(int argc, char** argv)
 	#ifdef PLATFORM_WINDOWS
 	if (Viewer::ImageFileParam.IsPresent())
 	{
+		Viewer::CurrImageFile = Viewer::ImageFileParam.Get();
 		tString dest(MAX_PATH);
-		int numchars = GetLongPathNameA(Viewer::ImageFileParam.Param.Chr(), dest.Txt(), MAX_PATH);
+		int numchars = GetLongPathNameA(Viewer::CurrImageFile.Chr(), dest.Txt(), MAX_PATH);
 		if (numchars > 0)
-			Viewer::ImageFileParam.Param = dest;
+			Viewer::CurrImageFile = dest;
 		dest.SetLength( tStd::tStrlen(dest.Text()) );
-
 		tPrintf("LongPath:%s\n", dest.Chr());
 	}
 	#endif
@@ -3417,8 +3418,8 @@ int main(int argc, char** argv)
 	Viewer::Config::Load(cfgFile);
 
 	// If no file from commandline, see if there is one set in the config.
-	if (!Viewer::ImageFileParam.IsPresent() && Viewer::Config::Global.LastOpenPath.IsValid())
-		Viewer::ImageFileParam.Param = Viewer::Config::Global.LastOpenPath;
+	if (Viewer::CurrImageFile.IsEmpty() && Viewer::Config::Global.LastOpenPath.IsValid())
+		Viewer::CurrImageFile = Viewer::Config::Global.LastOpenPath;
 
 	Viewer::PendingTransparentWorkArea = Viewer::Config::Global.TransparentWorkArea;
 
@@ -3560,8 +3561,8 @@ int main(int argc, char** argv)
 
 	Viewer::LoadAppImages(dataDir);
 	Viewer::PopulateImages();
-	if (Viewer::ImageFileParam.IsPresent())
-		Viewer::SetCurrentImage(Viewer::ImageFileParam.Get());
+	if (!Viewer::CurrImageFile.IsEmpty())
+		Viewer::SetCurrentImage(Viewer::CurrImageFile);
 	else
 		Viewer::SetCurrentImage();
 

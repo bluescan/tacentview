@@ -60,7 +60,7 @@ void Viewer::DoOpenFileModal(bool openFilePressed)
 	{
 		tString chosenFile = OpenFileDialog.GetResult();
 		tPrintf("Opening file: %s\n", chosenFile.Chr());
-		ImageFileParam.Param = chosenFile;
+		CurrImageFile = chosenFile;
 		PopulateImages();
 		SetCurrentImage(chosenFile);
 		SetWindowTitle();
@@ -77,7 +77,7 @@ void Viewer::DoOpenDirModal(bool openDirPressed)
 	if (state == FileDialog::DialogState::OK)
 	{
 		tString chosenDir = OpenDirDialog.GetResult();
-		ImageFileParam.Param = chosenDir + "dummyfile.txt";
+		CurrImageFile = chosenDir + "dummyfile.txt";
 		PopulateImages();
 		SetCurrentImage();
 		SetWindowTitle();

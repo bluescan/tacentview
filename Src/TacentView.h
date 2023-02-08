@@ -56,11 +56,11 @@ namespace Viewer
 	extern tFileDialog::FileDialog SaveAsDialog;
 
 	extern Image* CurrImage;
+	extern tString CurrImageFile;
 	extern tString ImagesDir;
 	extern tList<tStringItem> ImagesSubDirs;
 	extern tList<Viewer::Image> Images;
 	extern tItList<Viewer::Image> ImagesLoadTimeSorted;
-	extern tCmdLine::tParam ImageFileParam;
 	extern tColouri PixelColour;
 	extern Viewer::Image Image_DefaultThumbnail;
 	extern Viewer::Image Image_File;

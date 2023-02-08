@@ -931,7 +931,7 @@ void Viewer::NavLogBar::Draw()
 		tString upDir = tSystem::tGetUpDir(ImagesDir);
 		if (!upDir.IsEmpty())
 		{
-			ImageFileParam.Param = upDir + "dummyfile.txt";
+			CurrImageFile = upDir + "dummyfile.txt";
 			PopulateImages();
 			SetCurrentImage();
 			SetWindowTitle();
@@ -960,7 +960,7 @@ void Viewer::NavLogBar::Draw()
 				if (ImGui::Selectable(subDir->Chr(), isSelected))
 				{
 					// Selection made. This only runs once.
-					ImageFileParam.Param = ImagesDir + *subDir + "/" + "dummyfile.txt";
+					CurrImageFile = ImagesDir + *subDir + "/" + "dummyfile.txt";
 					PopulateImages();
 					SetCurrentImage();
 					SetWindowTitle();
