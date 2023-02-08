@@ -61,6 +61,8 @@ message(STATUS "Viewer -- tacent_SOURCE_DIR: ${tacent_SOURCE_DIR}")
 add_executable(
 	${PROJECT_NAME}
 	WIN32
+	Src/Command.cpp
+	Src/Command.h
 	Src/Config.cpp
 	Src/Config.h
 	Src/ContactSheet.cpp
