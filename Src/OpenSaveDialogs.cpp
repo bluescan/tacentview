@@ -121,6 +121,9 @@ void Viewer::DoSaveModal(bool savePressed)
 	if (!ImGui::BeginPopupModal(label.Chr(), &isOpenSaveOptions, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags = ImGuiConfigFlags_NavEnableKeyboard;
+
 	tFileType saveType = tGetFileType(SaveAsFile);
 	if (FileTypes_Save.Contains(saveType))
 		DoSavePopup();
@@ -192,13 +195,16 @@ void Viewer::DoSavePopup()
 	DoSaveFiletypeOptions(saveType);
 
 	ImGui::NewLine();
-	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 	ImGui::SameLine();
 	
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 	bool closeThisModal = false;
-	if (ImGui::Button("Save", tVector2(100.0f, 0.0f)))
+
+	if (ImGui::IsWindowAppearing())
+		ImGui::SetKeyboardFocusHere();
+	if (Viewer::Button("Save", tVector2(100.0f, 0.0f)))
 	{
 		if (tFileExists(SaveAsFile) && Config::Current->ConfirmFileOverwrites)
 		{
@@ -990,7 +996,7 @@ void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool&
 	ImGui::Checkbox("Confirm file overwrites in the future?", &Config::Current->ConfirmFileOverwrites);
 	ImGui::NewLine();
 
-	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
 	{
 		pressedCancel = true;
 		ImGui::CloseCurrentPopup();
@@ -998,7 +1004,10 @@ void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool&
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
+
+	if (ImGui::IsWindowAppearing())
+		ImGui::SetKeyboardFocusHere();
+	if (Viewer::Button("OK", tVector2(100.0f, 0.0f)))
 	{
 		pressedOK = true;
 		ImGui::CloseCurrentPopup();

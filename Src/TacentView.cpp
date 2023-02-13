@@ -2259,6 +2259,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4.0f, 3.0f));
 
+	// @todo This needs cleaning up. We need a consistent single place where CobfigFlags is
+	// set and keyboard nav is enabled / disabled. Ideally all modal dialogs would be wrapped
+	// inside an enable/disable pair.
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags = 0;
+
 	// Process any actions. Either from keyboard requests or from the menubar. The ones here are for ImGui windows
 	// that require an update every frame. This could be reorganized so that when the operation is executed (in the
 	// big keybindings switch) the call to open the popup is performed, but we'd still need the dialog updates here,
@@ -2268,6 +2274,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	//
 	DoOpenFileModal					(openFilePressed);
 	DoOpenDirModal					(openDirPressed);
+
 	DoSaveModal						(savePressed);
 	DoSaveAsModal					(saveAsPressed);
 
@@ -2328,9 +2335,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	ShowCropPopup(tVector4(left, right, top, bottom), tVector2(uoff, voff));
 
-	ImGuiIO& io = ImGui::GetIO();
-	io.ConfigFlags = 0;
-
+	// These should be done like the modals above so we can clean up the focus / NavEnableKeyboard behaviour.
 	if (Request_DeleteFileModal)
 	{
 		Request_DeleteFileModal = false;
