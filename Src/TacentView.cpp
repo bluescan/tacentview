@@ -3359,18 +3359,19 @@ int main(int argc, char** argv)
 	tSystem::tSetStdoutRedirectCallback(Viewer::PrintRedirectCallback);
 	tCmdLine::tParse(argc, argv);
 
-	#ifdef PLATFORM_WINDOWS
 	if (Viewer::ImageFileParam.IsPresent())
 	{
 		Viewer::CurrImageFile = Viewer::ImageFileParam.Get();
+
+		#ifdef PLATFORM_WINDOWS
 		tString dest(MAX_PATH);
 		int numchars = GetLongPathNameA(Viewer::CurrImageFile.Chr(), dest.Txt(), MAX_PATH);
 		if (numchars > 0)
 			Viewer::CurrImageFile = dest;
-		dest.SetLength( tStd::tStrlen(dest.Text()) );
-		tPrintf("LongPath:%s\n", dest.Chr());
+		#endif
+
+		tPrintf("ImageFile:%s\n", Viewer::CurrImageFile.Chr());
 	}
-	#endif
 
 	#ifdef PACKAGE_SNAP
 	// SNAP_USER_DATA is common to all revisions and is backed up. Used for viewer user-configuration file.
