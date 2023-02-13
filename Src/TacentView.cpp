@@ -2328,6 +2328,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	ShowCropPopup(tVector4(left, right, top, bottom), tVector2(uoff, voff));
 
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags = 0;
+
 	if (Request_DeleteFileModal)
 	{
 		Request_DeleteFileModal = false;
@@ -2339,7 +2342,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	// The unused isOpenDeleteFile bool is just so we get a close button in ImGui.
 	bool isOpenDeleteFile = true;
 	if (ImGui::BeginPopupModal("Delete File", &isOpenDeleteFile, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		io.ConfigFlags = ImGuiConfigFlags_NavEnableKeyboard;
 		DoDeleteFileModal();
+	}
 
 	if (Request_DeleteFileNoRecycleModal)
 	{
@@ -2349,7 +2355,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	// The unused isOpenPerm bool is just so we get a close button in ImGui.
 	bool isOpenPerm = true;
 	if (ImGui::BeginPopupModal("Delete File Permanently", &isOpenPerm, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		io.ConfigFlags = ImGuiConfigFlags_NavEnableKeyboard;
 		DoDeleteFileNoRecycleModal();
+	}
 
 	bool renameJustOpened = false;
 	if (Request_RenameModal)
@@ -3520,12 +3529,10 @@ int main(int argc, char** argv)
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
-
 	io.IniFilename = nullptr;
 	io.ConfigFlags = 0;
-
 	// io.NavActive = false;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	// io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	// io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
 	// Setup Dear ImGui style.

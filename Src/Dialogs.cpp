@@ -731,8 +731,6 @@ void Viewer::DoDeleteFileModal()
 	ImGui::Checkbox("Confirm file deletions in the future?", &Config::Current->ConfirmDeletes);
 	ImGui::NewLine();
 
-	ImGui::SetItemDefaultFocus();
-
 	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
@@ -767,14 +765,16 @@ void Viewer::DoDeleteFileNoRecycleModal()
 	ImGui::Text("This operation cannot be undone. The file\nwill be deleted permanently.");
 	ImGui::NewLine();
 
-	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SetItemDefaultFocus();
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 
-	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
+	if (ImGui::IsWindowAppearing())
+		ImGui::SetKeyboardFocusHere();
+	if (Viewer::Button("OK", tVector2(100.0f, 0.0f)))
 	{
 		DeleteImageFile(fullname, false);
 		ImGui::CloseCurrentPopup();
