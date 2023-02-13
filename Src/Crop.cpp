@@ -455,24 +455,27 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 
 	if (ImGui::Begin("Crop", &CropMode, flags))
 	{
-		float buttonWidth, panNavLeft, anchorSize;
+		float buttonWidth, shortcutNavLeft, shortcutTxtLeft, anchorSize;
 		switch (Config::Current->GetUISize())
 		{
 			default:
 			case Viewer::Config::ProfileSettings::UISizeEnum::Small:
-				buttonWidth	= 55.0f;
-				panNavLeft	= 58.0f;
-				anchorSize	= 24.0f;
+				buttonWidth		= 55.0f;
+				shortcutTxtLeft	= 57.0f;
+				shortcutNavLeft	= 58.0f;
+				anchorSize		= 24.0f;
 				break;
 			case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
-				buttonWidth	= 61.0f;
-				panNavLeft	= 64.0f;
-				anchorSize	= 26.0f;
+				buttonWidth		= 61.0f;
+				shortcutTxtLeft	= 61.0f;
+				shortcutNavLeft	= 64.0f;
+				anchorSize		= 26.0f;
 				break;
 			case Viewer::Config::ProfileSettings::UISizeEnum::Large:
-				buttonWidth	= 66.0f;
-				panNavLeft	= 68.0f;
-				anchorSize	= 28.0f;
+				buttonWidth		= 66.0f;
+				shortcutTxtLeft	= 62.0f;
+				shortcutNavLeft	= 68.0f;
+				anchorSize		= 28.0f;
 				break;
 		}
 
@@ -528,73 +531,77 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		);
 		ShowHelpMark(toolTipText.Chr());
 
-		tVector2 ancImageSize(anchorSize, anchorSize);
+		ImGui::SetCursorPosX(shortcutTxtLeft);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 7.0f);
+		ImGui::Text("View Shortcuts");
+
+		tVector2 shortcutImageSize(anchorSize, anchorSize);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
 		float panNavSpace = 6.0f;
 
 		// Top Row
-		ImGui::SetCursorPosX(panNavLeft);
+		ImGui::SetCursorPosX(shortcutNavLeft);
 
 		ImGui::PushID("TL");
-		if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), ancImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
+		if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), shortcutImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::TL;
 		ImGui::PopID();
 
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
 		ImGui::PushID("TM");
-		if (ImGui::ImageButton(ImTextureID(Image_AnchorBM.Bind()), ancImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
+		if (ImGui::ImageButton(ImTextureID(Image_AnchorBM.Bind()), shortcutImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::TM;
 		ImGui::PopID();
 
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
 		ImGui::PushID("TR");
-		if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), ancImageSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
+		if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), shortcutImageSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::TR;	
 		ImGui::PopID();
 
 		// Middle Row
-		ImGui::SetCursorPosX(panNavLeft);
+		ImGui::SetCursorPosX(shortcutNavLeft);
 
 		ImGui::PushID("ML");
-		if (ImGui::ImageButton(ImTextureID(Image_AnchorML.Bind()), ancImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
+		if (ImGui::ImageButton(ImTextureID(Image_AnchorML.Bind()), shortcutImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::ML;
 		ImGui::PopID();
 
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
 		ImGui::PushID("MM");
-		if (ImGui::ImageButton(ImTextureID(Image_AnchorMM.Bind()), ancImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
+		if (ImGui::ImageButton(ImTextureID(Image_AnchorMM.Bind()), shortcutImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::MM;
 		ImGui::PopID();
 
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
 		ImGui::PushID("MR");
-		if (ImGui::ImageButton(ImTextureID(Image_AnchorML.Bind()), ancImageSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
+		if (ImGui::ImageButton(ImTextureID(Image_AnchorML.Bind()), shortcutImageSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::MR;
 		ImGui::PopID();
 
 		// Bottom Row.
-		ImGui::SetCursorPosX(panNavLeft);
+		ImGui::SetCursorPosX(shortcutNavLeft);
 
 		ImGui::PushID("BL");
-		if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), ancImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, ColourEnabledTint))
+		if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), shortcutImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::BL;
 		ImGui::PopID();
 
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
 		ImGui::PushID("BM");
-		if (ImGui::ImageButton(ImTextureID(Image_AnchorBM.Bind()), ancImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, ColourEnabledTint))
+		if (ImGui::ImageButton(ImTextureID(Image_AnchorBM.Bind()), shortcutImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::BM;
 		ImGui::PopID();
 
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
 		ImGui::PushID("BR");
-		if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), ancImageSize, tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 1, ColourBG, ColourEnabledTint))
+		if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), shortcutImageSize, tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::BR;
 		ImGui::PopID();
 
