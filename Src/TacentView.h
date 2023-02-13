@@ -126,6 +126,9 @@ namespace Viewer
 	int GetPanX();
 	int GetPanY();
 
+	// This is a wrapper for ImGui::Button that also returns true if enter pressed.
+	bool Button(const char* label, const tMath::tVector2& size = tMath::tVector2::zero);
+
 	enum class DialogID
 	{
 		ContentView,
@@ -155,4 +158,13 @@ namespace Viewer
 		tMath::tVector2& scrPos, int imgX, int imgY, const tMath::tVector4& lrtb,
 		const tMath::tVector2& uvOff, bool centerPixel = false
 	);
+}
+
+
+// Implementation below this line.
+
+
+inline bool Viewer::Button(const char* label, const tMath::tVector2& size)
+{
+    return ImGui::Button(label, size) || (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter));
 }

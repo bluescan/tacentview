@@ -3523,8 +3523,9 @@ int main(int argc, char** argv)
 
 	io.IniFilename = nullptr;
 	io.ConfigFlags = 0;
+
 	// io.NavActive = false;
-	// io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	// io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
 	// Setup Dear ImGui style.

@@ -731,18 +731,22 @@ void Viewer::DoDeleteFileModal()
 	ImGui::Checkbox("Confirm file deletions in the future?", &Config::Current->ConfirmDeletes);
 	ImGui::NewLine();
 
-	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
+	ImGui::SetItemDefaultFocus();
+
+	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 
-	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
+	if (ImGui::IsWindowAppearing())
+		ImGui::SetKeyboardFocusHere();
+	if (Viewer::Button("OK", tVector2(100.0f, 0.0f)))
 	{
 		DeleteImageFile(fullname, true);
 		ImGui::CloseCurrentPopup();
 	}
-	ImGui::SetItemDefaultFocus();
+
 	ImGui::EndPopup();
 }
 
