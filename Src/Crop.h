@@ -63,16 +63,18 @@ public:
 	CropLine LineR;
 	CropLine LineT;
 	CropLine LineB;
-	Anchor LastSelectedHandle = Anchor::TopRight;
+	CropLine LineV;		// Middle vertical line.
+	CropLine LineH;		// Middle horizontal line.
+	Anchor LastSelectedHandle = Anchor::Middle;
 
 private:
 	void DrawMatt(const tMath::tVector4& imgext, const tMath::tVector2& uvoffset);
 	void DrawLines();
 	void DrawHandles();
 
-	void MouseHovered(CropLine&, const tMath::tVector2& mouse, const tMath::tVector2& ends, bool horizontal);
-	bool MouseButton(CropLine&, bool down, float mouse);
-	void ConstrainCropLines(const tMath::tVector4& imgext, bool forceAll = true);
+	void TestSetHovered(CropLine&, const tMath::tVector2& mouse, const tMath::tVector2& ends, bool horizontal);
+	bool MouseButton(CropLine&, bool down, float mouse, bool force = false);
+	void ConstrainCropLines(const tMath::tVector4& imgext, bool excludeImageExtents);
 };
 
 

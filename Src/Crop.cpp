@@ -28,14 +28,14 @@ namespace Viewer
 {
 	CropWidget CropGizmo;
 
-	tColour CropHovCol		(0.15f, 0.45f, 1.00f, 1.00f);
-	tColour CropCol			(0.72f, 0.72f, 0.72f, 1.00f);
-	tColour CropSelCol		(0.97f, 0.97f, 0.97f, 1.00f);
+	tColour CropHovCol		(0.25f, 0.48f, 1.00f, 1.00f);
+	tColour CropCol			(0.24f, 0.24f, 0.24f, 1.00f);
+	tColour CropSelCol		(0.98f, 0.98f, 0.98f, 1.00f);
 	const int CropMin		= 4;
 }
 
 
-bool Viewer::CropWidget::MouseButton(CropLine& line, bool down, float mouse)
+bool Viewer::CropWidget::MouseButton(CropLine& line, bool down, float mouse, bool force)
 {
 	// Up or down.
 	line.ScreenVal += line.PressedDelta;
@@ -44,7 +44,7 @@ bool Viewer::CropWidget::MouseButton(CropLine& line, bool down, float mouse)
 
 	if (down)
 	{
-		if (line.Hovered && !line.Pressed)
+		if ((!force && (line.Hovered && !line.Pressed)) || (force && !line.Pressed))
 		{
 			line.PressedAnchor = mouse;
 			line.Pressed = true;
@@ -60,7 +60,7 @@ bool Viewer::CropWidget::MouseButton(CropLine& line, bool down, float mouse)
 }
 
 
-void Viewer::CropWidget::MouseHovered(CropLine& line, const tVector2& mouse, const tVector2& ends, bool horizontal)
+void Viewer::CropWidget::TestSetHovered(CropLine& line, const tVector2& mouse, const tVector2& ends, bool horizontal)
 {
 	tARect2 hitBox;
 	if (horizontal)
@@ -78,8 +78,22 @@ void Viewer::CropWidget::MouseButton(bool down, const tVector2& mouse)
 	bool downT = MouseButton(LineT, down, mouse.y);
 	bool downL = MouseButton(LineL, down, mouse.x);
 	bool downR = MouseButton(LineR, down, mouse.x);
+	bool downV = MouseButton(LineV, down, mouse.x);
+	bool downH = MouseButton(LineH, down, mouse.y);
 
-	if (downT && downL)
+	if (downV && downH)
+	{
+		MouseButton(LineB, down, mouse.y, true);
+		MouseButton(LineT, down, mouse.y, true);
+		MouseButton(LineL, down, mouse.x, true);
+		MouseButton(LineR, down, mouse.x, true);
+		MouseButton(LineV, down, mouse.x, true);
+		MouseButton(LineH, down, mouse.y, true);
+	}
+
+	if (downV && downH)
+		LastSelectedHandle = Anchor::Middle;
+	else if (downT && downL)
 		LastSelectedHandle = Anchor::TopLeft;
 	else if (downT && !downL && !downR)
 		LastSelectedHandle = Anchor::TopMiddle;
@@ -116,12 +130,15 @@ void Viewer::CropWidget::Update(const tVector4& imgext, const tVector2& mouse, c
 	float b = LineB.GetScreenVal();
 	float t = LineT.GetScreenVal();
 
-	MouseHovered(LineB, mouse, tVector2(l, r), true);
-	MouseHovered(LineT, mouse, tVector2(l, r), true);
-	MouseHovered(LineL, mouse, tVector2(b, t), false);
-	MouseHovered(LineR, mouse, tVector2(b, t), false);
+	TestSetHovered(LineB, mouse, tVector2(l, r), true);
+	TestSetHovered(LineT, mouse, tVector2(l, r), true);
+	TestSetHovered(LineL, mouse, tVector2(b, t), false);
+	TestSetHovered(LineR, mouse, tVector2(b, t), false);
+	TestSetHovered(LineV, mouse, tVector2(b, t), false);
+	TestSetHovered(LineH, mouse, tVector2(l, r), true);
 
-	ConstrainCropLines(imgext, true);
+	bool excludeImageExtents = LineB.Pressed && LineT.Pressed && LineL.Pressed && LineR.Pressed && LineV.Pressed && LineH.Pressed;
+	ConstrainCropLines(imgext, excludeImageExtents);
 
 	if (LineL.Pressed || LineR.Pressed || LineT.Pressed || LineB.Pressed)
 	{
@@ -129,6 +146,11 @@ void Viewer::CropWidget::Update(const tVector4& imgext, const tVector2& mouse, c
 		ConvertScreenPosToImagePos(LineL.ImageVal, LineB.ImageVal, scrPosMin, imgext, uvoffset);
 		tVector2 scrPosMax(LineR.GetScreenVal(), LineT.GetScreenVal());
 		ConvertScreenPosToImagePos(LineR.ImageVal, LineT.ImageVal, scrPosMax, imgext, uvoffset);
+
+		LineV.ImageVal = (LineL.ImageVal+LineR.ImageVal)/2;
+		LineH.ImageVal = (LineB.ImageVal+LineT.ImageVal)/2;
+		LineV.ScreenVal = (scrPosMin.x+scrPosMax.x)/2.0f;
+		LineH.ScreenVal = (scrPosMin.y+scrPosMax.y)/2.0f;
 	}
 	else
 	{
@@ -148,35 +170,72 @@ void Viewer::CropWidget::MoveDirection(Viewer::CursorMove moveDir, const tMath::
 	int top = LineT.ImageVal;
 	int bottom = LineB.ImageVal;
 	Anchor hnd = LastSelectedHandle;
-	switch (moveDir)
+
+	if (hnd == Anchor::MM)
 	{
-		case CursorMove_Left:
-			if 		(((hnd == Anchor::TL) || (hnd == Anchor::ML) || (hnd == Anchor::BL)) && (left > 0))
-				left--;
-			else if	(((hnd == Anchor::TR) || (hnd == Anchor::MR) || (hnd == Anchor::BR)) && (right >= left+CropMin))
-				right--;
-			break;
+		switch (moveDir)
+		{
+			case CursorMove_Left:
+				if (left > 0)
+					left--;
+				if	(right >= left+CropMin)
+					right--;
+				break;
 
-		case CursorMove_Right:
-			if		(((hnd == Anchor::TL) || (hnd == Anchor::ML) || (hnd == Anchor::BL)) && (left <= right-CropMin))
-				left++;
-			else if	(((hnd == Anchor::TR) || (hnd == Anchor::MR) || (hnd == Anchor::BR)) && (right < imgW-1))
-				right++;
-			break;
+			case CursorMove_Right:
+				if	(right < imgW-1)
+					right++;
+				if (left <= right-CropMin)
+					left++;
+				break;
 
-		case CursorMove_Up:
-			if		(((hnd == Anchor::TL) || (hnd == Anchor::TM) || (hnd == Anchor::TR)) && (top < imgH-1))
-				top++;
-			else if	(((hnd == Anchor::BL) || (hnd == Anchor::BM) || (hnd == Anchor::BR)) && (bottom <= top-CropMin))
-				bottom++;
-			break;
+			case CursorMove_Up:
+				if (top < imgH-1)
+					top++;
+				if	(bottom <= top-CropMin)
+					bottom++;
+				break;
 
-		case CursorMove_Down:
-			if		(((hnd == Anchor::TL) || (hnd == Anchor::TM) || (hnd == Anchor::TR)) && (top >= bottom+CropMin))
-				top--;
-			else if	(((hnd == Anchor::BL) || (hnd == Anchor::BM) || (hnd == Anchor::BR)) && (bottom > 0))
-				bottom--;
-			break;
+			case CursorMove_Down:
+				if	(bottom > 0)
+					bottom--;
+				if (top >= bottom+CropMin)
+					top--;
+				break;
+		}
+	}
+	else
+	{
+		switch (moveDir)
+		{
+			case CursorMove_Left:
+				if 		(((hnd == Anchor::TL) || (hnd == Anchor::ML) || (hnd == Anchor::BL)) && (left > 0))
+					left--;
+				else if	(((hnd == Anchor::TR) || (hnd == Anchor::MR) || (hnd == Anchor::BR)) && (right >= left+CropMin))
+					right--;
+				break;
+
+			case CursorMove_Right:
+				if		(((hnd == Anchor::TL) || (hnd == Anchor::ML) || (hnd == Anchor::BL)) && (left <= right-CropMin))
+					left++;
+				else if	(((hnd == Anchor::TR) || (hnd == Anchor::MR) || (hnd == Anchor::BR)) && (right < imgW-1))
+					right++;
+				break;
+
+			case CursorMove_Up:
+				if		(((hnd == Anchor::TL) || (hnd == Anchor::TM) || (hnd == Anchor::TR)) && (top < imgH-1))
+					top++;
+				else if	(((hnd == Anchor::BL) || (hnd == Anchor::BM) || (hnd == Anchor::BR)) && (bottom <= top-CropMin))
+					bottom++;
+				break;
+
+			case CursorMove_Down:
+				if		(((hnd == Anchor::TL) || (hnd == Anchor::TM) || (hnd == Anchor::TR)) && (top >= bottom+CropMin))
+					top--;
+				else if	(((hnd == Anchor::BL) || (hnd == Anchor::BM) || (hnd == Anchor::BR)) && (bottom > 0))
+					bottom--;
+				break;
+		}
 	}
 
 	SetLines(left, right, top, bottom, imgext, uvoffset);
@@ -194,11 +253,15 @@ void Viewer::CropWidget::SetLines(int left, int right, int top, int bottom, cons
 	LineR.ImageVal = right;
 	LineT.ImageVal = top;
 	LineB.ImageVal = bottom;
+	LineV.ImageVal = (left+right)/2;
+	LineH.ImageVal = (bottom+top)/2;
 
 	LineL.ScreenVal = min.x;	LineL.PressedDelta = 0.0f;
 	LineR.ScreenVal = max.x;	LineR.PressedDelta = 0.0f;
 	LineT.ScreenVal = max.y;	LineT.PressedDelta = 0.0f;
 	LineB.ScreenVal = min.y;	LineB.PressedDelta = 0.0f;
+	LineV.ScreenVal = (min.x+max.x)/2.0f;	LineV.PressedDelta = 0.0f;
+	LineH.ScreenVal = (min.y+max.y)/2.0f;	LineH.PressedDelta = 0.0f;
 }
 
 
@@ -225,41 +288,41 @@ void Viewer::CropWidget::ConstrainLines(int l, int r, int t, int b, const tMath:
 }
 
 
-void Viewer::CropWidget::ConstrainCropLines(const tVector4& imgext, bool forceAll)
+void Viewer::CropWidget::ConstrainCropLines(const tVector4& imgext, bool excludeImage)
 {
 	float scrPixelsPerImgPixelW = (imgext.R-imgext.L)/CurrImage->GetWidth();
 	float scrPixelsPerImgPixelH = (imgext.T-imgext.B)/CurrImage->GetHeight();
 
 	float cropMin = float(CropMin -1);
-	if (LineL.Pressed || forceAll)
+	if (LineL.Pressed)
 	{
 		if (LineL.GetScreenVal() + cropMin*scrPixelsPerImgPixelW > LineR.GetScreenVal())
 			LineL.PressedDelta = LineR.GetScreenVal() - LineL.ScreenVal - cropMin*scrPixelsPerImgPixelW;
-		if (LineL.GetScreenVal() < imgext.L)
+		if (!excludeImage && (LineL.GetScreenVal() < imgext.L))
 			LineL.PressedDelta = imgext.L - LineL.ScreenVal;
 	}
 
-	if (LineR.Pressed || forceAll)
+	if (LineR.Pressed)
 	{
-		if (LineR.GetScreenVal()- cropMin*scrPixelsPerImgPixelW < LineL.GetScreenVal())
+		if (LineR.GetScreenVal() - cropMin*scrPixelsPerImgPixelW < LineL.GetScreenVal())
 			LineR.PressedDelta = LineL.GetScreenVal() - LineR.ScreenVal + cropMin*scrPixelsPerImgPixelW;
-		if (LineR.GetScreenVal() > imgext.R)
+		if (!excludeImage && (LineR.GetScreenVal() > imgext.R))
 			LineR.PressedDelta = imgext.R - LineR.ScreenVal;
 	}
 
-	if (LineB.Pressed || forceAll)
+	if (LineB.Pressed)
 	{
 		if (LineB.GetScreenVal() + cropMin*scrPixelsPerImgPixelH > LineT.GetScreenVal())
 			LineB.PressedDelta = LineT.GetScreenVal() - LineB.ScreenVal - cropMin*scrPixelsPerImgPixelH;
-		if (LineB.GetScreenVal() < imgext.B)
+		if (!excludeImage && (LineB.GetScreenVal() < imgext.B))
 			LineB.PressedDelta = imgext.B - LineB.ScreenVal;
 	}
 
-	if (LineT.Pressed || forceAll)
+	if (LineT.Pressed)
 	{
 		if (LineT.GetScreenVal() - cropMin*scrPixelsPerImgPixelH < LineB.GetScreenVal())
 			LineT.PressedDelta = LineB.GetScreenVal() - LineT.ScreenVal + cropMin*scrPixelsPerImgPixelH;
-		if (LineT.GetScreenVal() > imgext.T)
+		if (!excludeImage && (LineT.GetScreenVal() > imgext.T))
 			LineT.PressedDelta = imgext.T - LineT.ScreenVal;
 	}
 }
@@ -311,7 +374,9 @@ void Viewer::CropWidget::DrawLines()
 	float r = (LineR.GetScreenVal()) - 1.0f;
 	float b = (LineB.GetScreenVal());
 	float t = (LineT.GetScreenVal()) - 1.0f;
-	bool anyPressed = LineL.Pressed || LineR.Pressed || LineB.Pressed || LineT.Pressed;
+	float v = (LineV.GetScreenVal());
+	float h = (LineH.GetScreenVal());
+	bool anyPressed = LineL.Pressed || LineR.Pressed || LineB.Pressed || LineT.Pressed || LineV.Pressed || LineH.Pressed;
 	glBegin(GL_LINES);
 
 	glColor4fv((!anyPressed && LineB.Hovered) || LineB.Pressed ? CropHovCol.E : CropCol.E);
@@ -329,6 +394,14 @@ void Viewer::CropWidget::DrawLines()
 	glColor4fv((!anyPressed && LineL.Hovered) || LineL.Pressed ? CropHovCol.E : CropCol.E);
 	glVertex2f(l,	t);
 	glVertex2f(l,	b);
+
+	glColor4fv((!anyPressed && LineV.Hovered) || LineV.Pressed ? CropHovCol.E : CropCol.E);
+	glVertex2f(v,	t);
+	glVertex2f(v,	b);
+
+	glColor4fv((!anyPressed && LineH.Hovered) || LineH.Pressed ? CropHovCol.E : CropCol.E);
+	glVertex2f(l,	h);
+	glVertex2f(r,	h);
 
 	glColor4fv(tColourf::white.E);
 	glEnd();
@@ -348,8 +421,9 @@ void Viewer::CropWidget::DrawHandles()
 	glBegin(GL_QUADS);
 
 	// TL
-	col = (!anyPressed && LineL.Hovered && LineT.Hovered) || (LineL.Pressed && LineT.Pressed) ? CropHovCol :
-	((LastSelectedHandle == Anchor::TL) ? CropSelCol : CropCol);
+	col		= CropCol;
+	if		(LastSelectedHandle == Anchor::TL)														col = CropSelCol;
+	else if	((!anyPressed && LineL.Hovered && LineT.Hovered) || (LineL.Pressed && LineT.Pressed))	col = CropHovCol;
 	glColor4fv(col.E);
 	glVertex2f(l-4,		t-4);
 	glVertex2f(l+4,		t-4);
@@ -357,8 +431,9 @@ void Viewer::CropWidget::DrawHandles()
 	glVertex2f(l-4,		t+4);
 
 	// TM
-	col = (!anyPressed && LineT.Hovered && !LineL.Hovered && !LineR.Hovered) || (LineT.Pressed) ? CropHovCol :
-	((LastSelectedHandle == Anchor::TM) ? CropSelCol : CropCol);
+	col		= CropCol;
+	if		(LastSelectedHandle == Anchor::TM)														col = CropSelCol;
+	else if ((!anyPressed && LineT.Hovered && !LineL.Hovered && !LineR.Hovered) || LineT.Pressed)	col = CropHovCol;
 	glColor4fv(col.E);
 	glVertex2f(h-4,		t-4);
 	glVertex2f(h+4,		t-4);
@@ -366,8 +441,9 @@ void Viewer::CropWidget::DrawHandles()
 	glVertex2f(h-4,		t+4);
 
 	// TR
-	col = (!anyPressed && LineR.Hovered && LineT.Hovered) || (LineR.Pressed && LineT.Pressed) ? CropHovCol :
-	((LastSelectedHandle == Anchor::TR) ? CropSelCol : CropCol);
+	col		= CropCol;
+	if		(LastSelectedHandle == Anchor::TR)														col = CropSelCol;
+	else if	((!anyPressed && LineR.Hovered && LineT.Hovered) || (LineR.Pressed && LineT.Pressed))	col = CropHovCol;
 	glColor4fv(col.E);
 	glVertex2f(r-4,		t-4);
 	glVertex2f(r+4,		t-4);
@@ -375,8 +451,9 @@ void Viewer::CropWidget::DrawHandles()
 	glVertex2f(r-4,		t+4);
 
 	// ML
-	col = (!anyPressed && LineL.Hovered && !LineT.Hovered && !LineB.Hovered) || (LineL.Pressed) ? CropHovCol :
-	((LastSelectedHandle == Anchor::ML) ? CropSelCol : CropCol);
+	col		= CropCol;
+	if		(LastSelectedHandle == Anchor::ML)														col = CropSelCol;
+	else if	((!anyPressed && LineL.Hovered && !LineT.Hovered && !LineB.Hovered) || LineL.Pressed)	col = CropHovCol;
 	glColor4fv(col.E);
 	glVertex2f(l-4,		v-4);
 	glVertex2f(l+4,		v-4);
@@ -384,8 +461,9 @@ void Viewer::CropWidget::DrawHandles()
 	glVertex2f(l-4,		v+4);
 
 	// MR
-	col = (!anyPressed && LineR.Hovered && !LineT.Hovered && !LineB.Hovered) || (LineR.Pressed) ? CropHovCol :
-	((LastSelectedHandle == Anchor::MR) ? CropSelCol : CropCol);
+	col		= CropCol;
+	if		(LastSelectedHandle == Anchor::MR)														col = CropSelCol;
+	else if	((!anyPressed && LineR.Hovered && !LineT.Hovered && !LineB.Hovered) || LineR.Pressed)	col = CropHovCol;
 	glColor4fv(col.E);
 	glVertex2f(r-4,		v-4);
 	glVertex2f(r+4,		v-4);
@@ -393,8 +471,9 @@ void Viewer::CropWidget::DrawHandles()
 	glVertex2f(r-4,		v+4);
 
 	// BL
-	col = (!anyPressed && LineL.Hovered && LineB.Hovered) || (LineL.Pressed && LineB.Pressed) ? CropHovCol :
-	((LastSelectedHandle == Anchor::BL) ? CropSelCol : CropCol);
+	col		= CropCol;
+	if		(LastSelectedHandle == Anchor::BL)														col = CropSelCol;
+	else if ((!anyPressed && LineL.Hovered && LineB.Hovered) || (LineL.Pressed && LineB.Pressed))	col = CropHovCol;
 	glColor4fv(col.E);
 	glVertex2f(l-4,		b-4);
 	glVertex2f(l+4,		b-4);
@@ -402,8 +481,9 @@ void Viewer::CropWidget::DrawHandles()
 	glVertex2f(l-4,		b+4);
 
 	// BM
-	col = (!anyPressed && LineB.Hovered && !LineL.Hovered && !LineR.Hovered) || (LineB.Pressed) ? CropHovCol :
-	((LastSelectedHandle == Anchor::BM) ? CropSelCol : CropCol);
+	col		= CropCol;
+	if		(LastSelectedHandle == Anchor::BM)														col = CropSelCol;
+	else if ((!anyPressed && LineB.Hovered && !LineL.Hovered && !LineR.Hovered) || LineB.Pressed)	col = CropHovCol;
 	glColor4fv(col.E);
 	glVertex2f(h-4,		b-4);
 	glVertex2f(h+4,		b-4);
@@ -411,13 +491,24 @@ void Viewer::CropWidget::DrawHandles()
 	glVertex2f(h-4,		b+4);
 
 	// BR
-	col = (!anyPressed && LineR.Hovered && LineB.Hovered) || (LineR.Pressed && LineB.Pressed) ? CropHovCol :
-	((LastSelectedHandle == Anchor::BR) ? CropSelCol : CropCol);
+	col		= CropCol;
+	if		(LastSelectedHandle == Anchor::BR)														col = CropSelCol;
+	else if	((!anyPressed && LineR.Hovered && LineB.Hovered) || (LineR.Pressed && LineB.Pressed))	col = CropHovCol;
 	glColor4fv(col.E);
 	glVertex2f(r-4,		b-4);
 	glVertex2f(r+4,		b-4);
 	glVertex2f(r+4,		b+4);
 	glVertex2f(r-4,		b+4);
+
+	// MM
+	col		= CropCol;
+	if		(LastSelectedHandle == Anchor::MM)														col = CropSelCol;
+	else if	((!anyPressed && LineV.Hovered && LineH.Hovered) || (LineV.Pressed && LineH.Pressed))	col = CropHovCol;
+	glColor4fv(col.E);
+	glVertex2f(h-4,		v-4);
+	glVertex2f(h+4,		v-4);
+	glVertex2f(h+4,		v+4);
+	glVertex2f(h-4,		v+4);
 
 	glColor4fv(tColourf::white.E);
 	glEnd();
