@@ -715,8 +715,21 @@ void Viewer::ShowAboutPopup(bool* popen)
 }
 
 
-void Viewer::DoDeleteFileModal()
+void Viewer::DoDeleteFileModal(bool deleteFilePressed)
 {
+	if (deleteFilePressed)
+	{
+		if (!Config::Current->ConfirmDeletes)
+			DeleteImageFile(CurrImage->Filename, true);
+		else
+			ImGui::OpenPopup("Delete File");
+	}
+
+	// The unused isOpenDeleteFile bool is just so we get a close button in ImGui.
+	bool isOpenDeleteFile = true;
+	if (!ImGui::BeginPopupModal("Delete File", &isOpenDeleteFile, ImGuiWindowFlags_AlwaysAutoResize))
+		return;
+
 	tString fullname = CurrImage->Filename;
 	tString file = tSystem::tGetFileName(fullname);
 	tString dir = tSystem::tGetDir(fullname);
@@ -749,8 +762,16 @@ void Viewer::DoDeleteFileModal()
 }
 
 
-void Viewer::DoDeleteFileNoRecycleModal()
+void Viewer::DoDeleteFileNoRecycleModal(bool deleteFileNoRecycPressed)
 {
+	if (deleteFileNoRecycPressed)
+		ImGui::OpenPopup("Delete File Permanently");
+
+	// The unused isOpenPerm bool is just so we get a close button in ImGui.
+	bool isOpenPerm = true;
+	if (!ImGui::BeginPopupModal("Delete File Permanently", &isOpenPerm, ImGuiWindowFlags_AlwaysAutoResize))
+		return;
+
 	tString fullname = CurrImage->Filename;
 	tString file = tSystem::tGetFileName(fullname);
 	tString dir = tSystem::tGetDir(fullname);
@@ -784,28 +805,37 @@ void Viewer::DoDeleteFileNoRecycleModal()
 }
 
 
-void Viewer::DoRenameModal(bool justOpened)
+void Viewer::DoRenameModal(bool renamePressed)
 {
+	if (renamePressed)
+		ImGui::OpenPopup("Rename File");
+
+	// The unused isOpenRen bool is just so we get a close button in ImGui.
+	bool isOpenRen = true;
+	if (!ImGui::BeginPopupModal("Rename File", &isOpenRen, ImGuiWindowFlags_AlwaysAutoResize))
+		return;
+
 	tString fullname = CurrImage->Filename;
 	tString origname = tSystem::tGetFileName(fullname);
 
 	static char newname[128] = "Filename";
-	if (justOpened)
+	if (renamePressed)
 		tStd::tStrcpy(newname, origname.Chr());
 
 	bool nameChanged = false;
-	if (ImGui::InputText("", newname, tNumElements(newname), ImGuiInputTextFlags_EnterReturnsTrue))
+	if (ImGui::InputText("##NewNameText", newname, tNumElements(newname), ImGuiInputTextFlags_EnterReturnsTrue))
 		nameChanged = true;
 	ImGui::NewLine();
 
-	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
-	ImGui::SetItemDefaultFocus();
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 
-	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)) || nameChanged)
+	if (ImGui::IsWindowAppearing())
+		ImGui::SetKeyboardFocusHere();
+	if (Viewer::Button("OK", tVector2(100.0f, 0.0f)) || nameChanged)
 	{
 		if (origname != newname)
 		{

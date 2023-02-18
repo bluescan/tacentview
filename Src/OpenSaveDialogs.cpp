@@ -121,9 +121,6 @@ void Viewer::DoSaveModal(bool savePressed)
 	if (!ImGui::BeginPopupModal(label.Chr(), &isOpenSaveOptions, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 
-	ImGuiIO& io = ImGui::GetIO();
-	io.ConfigFlags = ImGuiConfigFlags_NavEnableKeyboard;
-
 	tFileType saveType = tGetFileType(SaveAsFile);
 	if (FileTypes_Save.Contains(saveType))
 		DoSavePopup();
@@ -291,7 +288,11 @@ void Viewer::DoSaveUnsupportedTypePopup()
 	
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 	bool closeThisModal = false;
-	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
+
+	if (ImGui::IsWindowAppearing())
+		ImGui::SetKeyboardFocusHere();
+
+	if (Viewer::Button("OK", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 }
 

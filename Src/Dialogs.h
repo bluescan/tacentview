@@ -21,9 +21,9 @@ namespace Viewer
 	void ShowChannelFilterOverlay(bool* popen);
 	void DoLevelsModal(bool levelsPressed);
 	void ShowAboutPopup(bool* popen);
-	void DoDeleteFileModal();
-	void DoDeleteFileNoRecycleModal();
-	void DoRenameModal(bool justOpened);
+	void DoDeleteFileModal(bool deleteFilePressed);
+	void DoDeleteFileNoRecycleModal(bool deleteFileNoRecycPressed);
+	void DoRenameModal(bool renamePressed);
 	void DoSnapMessageNoFileBrowseModal(bool justOpened);
 	void DoSnapMessageNoFrameTransModal(bool justOpened);
 

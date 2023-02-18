@@ -1727,6 +1727,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	bool saveMultiFramePressed		= Request_MultiFrameModal;			Request_MultiFrameModal				= false;
 	bool snapMessageNoFileBrowse	= Request_SnapMessage_NoFileBrowse;	Request_SnapMessage_NoFileBrowse	= false;
 	bool snapMessageNoFrameTrans	= Request_SnapMessage_NoFrameTrans;	Request_SnapMessage_NoFrameTrans	= false;
+	bool deleteFilePressed			= Request_DeleteFileModal;			Request_DeleteFileModal				= false;
+	bool deleteFileNoRecycPressed	= Request_DeleteFileNoRecycleModal;	Request_DeleteFileNoRecycleModal	= false;
+	bool renamePressed				= Request_RenameModal;				Request_RenameModal					= false;
 
 	// Edit requests.
 	bool resizeImagePressed			= Request_ResizeImageModal;			Request_ResizeImageModal			= false;
@@ -2257,18 +2260,17 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::PopStyleVar();
 	}
 
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4.0f, 3.0f));
-
-	// @todo This needs cleaning up. We need a consistent single place where CobfigFlags is
-	// set and keyboard nav is enabled / disabled. Ideally all modal dialogs would be wrapped
-	// inside an enable/disable pair.
-	ImGuiIO& io = ImGui::GetIO();
-	io.ConfigFlags = 0;
-
 	// Process any actions. Either from keyboard requests or from the menubar. The ones here are for ImGui windows
 	// that require an update every frame. This could be reorganized so that when the operation is executed (in the
 	// big keybindings switch) the call to open the popup is performed, but we'd still need the dialog updates here,
 	// so this gives better encapsulation.
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4.0f, 3.0f));
+
+	// We deal with all the modals in a single place. Modals are slightly special as we allow keyboard nav during
+	// modals but not otherwise as it would interfere with the viewer's keyboard bindings. We start setting nav off.
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags = 0;
+
 	//
 	// File requests.
 	//
@@ -2284,6 +2286,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	DoSnapMessageNoFileBrowseModal	(snapMessageNoFileBrowse);
 	DoSnapMessageNoFrameTransModal	(snapMessageNoFrameTrans);
 
+	DoDeleteFileModal				(deleteFilePressed);
+	DoDeleteFileNoRecycleModal		(deleteFileNoRecycPressed);
+	DoRenameModal					(renamePressed);
+
 	//
 	// Edit requests.
 	//
@@ -2291,6 +2297,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	DoResizeCanvasModal				(resizeCanvasPressed);
 	DoRotateImageModal				(rotateImagePressed);
 	DoLevelsModal					(levelsPressed);
+
+	// If any modal is open we allow keyboard navigation. For non-modal we do not as we need the keyboard
+	// to control the viewer itself.
+	if (ImGui::IsPopupOpen(0u, ImGuiPopupFlags_AnyPopup))
+		io.ConfigFlags = ImGuiConfigFlags_NavEnableKeyboard;
 
 	if (Config::Current->ShowContentView)
 		ShowContentViewDialog(&Config::Current->ShowContentView);
@@ -2334,49 +2345,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	}
 
 	ShowCropPopup(tVector4(left, right, top, bottom), tVector2(uoff, voff));
-
-	// These should be done like the modals above so we can clean up the focus / NavEnableKeyboard behaviour.
-	if (Request_DeleteFileModal)
-	{
-		Request_DeleteFileModal = false;
-		if (!Config::Current->ConfirmDeletes)
-			DeleteImageFile(CurrImage->Filename, true);
-		else
-			ImGui::OpenPopup("Delete File");
-	}
-	// The unused isOpenDeleteFile bool is just so we get a close button in ImGui.
-	bool isOpenDeleteFile = true;
-	if (ImGui::BeginPopupModal("Delete File", &isOpenDeleteFile, ImGuiWindowFlags_AlwaysAutoResize))
-	{
-		io.ConfigFlags = ImGuiConfigFlags_NavEnableKeyboard;
-		DoDeleteFileModal();
-	}
-
-	if (Request_DeleteFileNoRecycleModal)
-	{
-		Request_DeleteFileNoRecycleModal = false;
-		ImGui::OpenPopup("Delete File Permanently");
-	}
-	// The unused isOpenPerm bool is just so we get a close button in ImGui.
-	bool isOpenPerm = true;
-	if (ImGui::BeginPopupModal("Delete File Permanently", &isOpenPerm, ImGuiWindowFlags_AlwaysAutoResize))
-	{
-		io.ConfigFlags = ImGuiConfigFlags_NavEnableKeyboard;
-		DoDeleteFileNoRecycleModal();
-	}
-
-	bool renameJustOpened = false;
-	if (Request_RenameModal)
-	{
-		renameJustOpened = true;
-		Request_RenameModal = false;
-	}
-	if (renameJustOpened)
-		ImGui::OpenPopup("Rename File");	
-	// The unused isOpenRen bool is just so we get a close button in ImGui.
-	bool isOpenRen = true;
-	if (ImGui::BeginPopupModal("Rename File", &isOpenRen, ImGuiWindowFlags_AlwaysAutoResize))
-		DoRenameModal(renameJustOpened);
 
 	ImGui::Render();
 	glViewport(0, 0, dispw, disph);

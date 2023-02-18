@@ -1613,7 +1613,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 			if (resultAvail)
 			{
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
-				if (ImGui::Button("Open", tVector2(70.0f, 0.0f)))
+				if (Viewer::Button("Open", tVector2(70.0f, 0.0f)))
 				{
 					Result = NodeToDir(SelectedNode) + selItem->Name;
 					state = DialogState::OK;
@@ -1640,7 +1640,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 			if ((fileType != tFileType::Invalid) && (SaveFileResult.length() > 0))
 			{
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
-				if (ImGui::Button("Save", tVector2(70.0f, 0.0f)))
+				if (Viewer::Button("Save", tVector2(70.0f, 0.0f)))
 				{
 					tString extension = tSystem::tGetExtension(fileType);
 					Result = NodeToDir(SelectedNode) + tString(SaveFileResult.c_str()) + "." + extension;
@@ -1674,7 +1674,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 			if (resultAvail)
 			{
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
-				if (ImGui::Button("Open", tVector2(70.0f, 0.0f)))
+				if (Viewer::Button("Open", tVector2(70.0f, 0.0f)))
 				{
 					Result = NodeToDir(SelectedNode);
 					state = DialogState::OK;
@@ -1687,7 +1687,11 @@ FileDialog::DialogState FileDialog::DoPopup()
 
 	// The cancel button is the same for all modes.
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 70.0f);
-	if (ImGui::Button("Cancel", tVector2(70.0f, 0.0f)))
+
+	if (ImGui::IsWindowAppearing())
+		ImGui::SetKeyboardFocusHere();
+
+	if (Viewer::Button("Cancel", tVector2(70.0f, 0.0f)))
 		state = DialogState::Cancel;
 
 	if (state != DialogState::Open)
