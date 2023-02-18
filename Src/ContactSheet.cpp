@@ -206,7 +206,7 @@ void Viewer::DoContactSheetModal(bool saveContactSheetPressed)
 	ImGui::Text(genMsg.Chr());
 
 	ImGui::NewLine();
-	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 	ImGui::SameLine();
 	
@@ -214,7 +214,9 @@ void Viewer::DoContactSheetModal(bool saveContactSheetPressed)
 
 	tString outFile = destDir + tString(filename) + extensionWithDot;
 	bool closeThisModal = false;
-	if (ImGui::Button("Generate", tVector2(100.0f, 0.0f)) && (numImg >= 2))
+	if (ImGui::IsWindowAppearing())
+		ImGui::SetKeyboardFocusHere();
+	if (Viewer::Button("Generate", tVector2(100.0f, 0.0f)) && (numImg >= 2))
 	{
 		bool dirExists = tDirExists(destDir);
 		if (!dirExists)
