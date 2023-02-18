@@ -135,6 +135,7 @@ struct ProfileSettings
 	};
 	int RotateMode;
 	RotateModeEnum GetRotateMode() const				{ return RotateModeEnum(RotateMode); }
+	void SetRotateMode(RotateModeEnum mode)				{ RotateMode = int(mode); }
 
 	enum class ZoomModeEnum
 	{

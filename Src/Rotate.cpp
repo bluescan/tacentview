@@ -2,7 +2,7 @@
 //
 // Modal for rotating an image.
 //
-// Copyright (c) 2020-2022 Tristan Grimmer.
+// Copyright (c) 2020-2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -84,10 +84,13 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	if (ImGui::Button("Reset", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Reset", tVector2(100.0f, 0.0f)))
+	{
 		RotateAnglePreview = 0.0f;
+		Config::Current->SetRotateMode(Config::ProfileSettings::RotateModeEnum::Fill);
+	}
 
-	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
 	{
 		RotateAnglePreview = 0.0f;
 		ImGui::CloseCurrentPopup();
@@ -95,7 +98,9 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("Rotate", tVector2(100.0f, 0.0f)))
+	if (ImGui::IsWindowAppearing())
+		ImGui::SetKeyboardFocusHere();
+	if (Viewer::Button("Rotate", tVector2(100.0f, 0.0f)))
 	{
 		tPicture* picture = CurrImage->GetCurrentPic(); tAssert(picture);
 		int origW = picture->GetWidth();
