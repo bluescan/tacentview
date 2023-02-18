@@ -2,7 +2,7 @@
 //
 // Dialog that generates multiframe images from all image files in the directory.
 //
-// Copyright (c) 2021-2022 Tristan Grimmer.
+// Copyright (c) 2021-2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -148,14 +148,16 @@ void Viewer::DoMultiFrameModal(bool saveMultiFramePressed)
 	ImGui::Text(genMsg.Chr());
 
 	ImGui::NewLine();
-	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 	ImGui::SameLine();
 
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 	tString outFile = destDir + tString(filename) + "." + extension;
 	bool closeThisModal = false;
-	if (ImGui::Button("Generate", tVector2(100.0f, 0.0f)) && (numImg >= 2))
+	if (ImGui::IsWindowAppearing())
+		ImGui::SetKeyboardFocusHere();
+	if (Viewer::Button("Generate", tVector2(100.0f, 0.0f)) && (numImg >= 2))
 	{
 		bool dirExists = tDirExists(destDir);
 		if (!dirExists)
