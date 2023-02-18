@@ -317,18 +317,20 @@ void Viewer::DoResizeImageModal(bool resizeImagePressed)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	if (ImGui::Button("Reset", tVector2(buttonWidth, 0.0f)))
+	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		dstW = srcW;
 		dstH = srcH;
 	}
 
 	ImGui::SameLine();
-	if (ImGui::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
-	if (ImGui::Button("Resize", tVector2(buttonWidth, 0.0f)))
+	if (ImGui::IsWindowAppearing())
+		ImGui::SetKeyboardFocusHere();
+	if (Viewer::Button("Resize", tVector2(buttonWidth, 0.0f)))
 	{
 		if ((dstW != srcW) || (dstH != srcH))
 		{
