@@ -30,9 +30,9 @@ namespace Viewer
 	void DoFillColourInterface(const char* tootTipText = nullptr);
 	void DoResizeCrop(int srcW, int srcH, int dstW, int dstH);
 
-	void DoResizeCanvasAnchorTab(bool justOpened);
-	void DoResizeCanvasRemoveBordersTab(bool justOpened);
-	void DoResizeCanvasAspectTab(bool justOpened);
+	void DoResizeCanvasAnchorTab(bool firstOpen);
+	void DoResizeCanvasRemoveBordersTab(bool firstOpen);
+	void DoResizeCanvasAspectTab(bool firstOpen);
 }
 
 
@@ -354,14 +354,14 @@ void Viewer::DoResizeCanvasModal(bool resizeCanvasPressed)
 	if (!ImGui::BeginPopupModal("Resize Canvas", &isOpenResizeCanvas, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 
-	static bool justOpenedAnchor = false;
-	static bool justOpenedBorder = false;
-	static bool justOpenedAspect = false;
+	static bool firstOpenAnchor = false;
+	static bool firstOpenBorder = false;
+	static bool firstOpenAspect = false;
 	if (resizeCanvasPressed)
 	{
-		justOpenedAnchor = true;
-		justOpenedBorder = true;
-		justOpenedAspect = true;
+		firstOpenAnchor = true;
+		firstOpenBorder = true;
+		firstOpenAspect = true;
 	}
 
 	// There are 3 resize canvas modes: Anchor, Border, Aspect. Each gets its own tab.
@@ -372,8 +372,8 @@ void Viewer::DoResizeCanvasModal(bool resizeCanvasPressed)
 		ShowToolTip("Choose an anchor and new dimensions.");
 		if (tab)
 		{
-			DoResizeCanvasAnchorTab(justOpenedAnchor);
-			justOpenedAnchor = false;
+			DoResizeCanvasAnchorTab(firstOpenAnchor);
+			firstOpenAnchor = false;
 			ImGui::EndTabItem();
 		}
 
@@ -381,8 +381,8 @@ void Viewer::DoResizeCanvasModal(bool resizeCanvasPressed)
 		ShowToolTip("Remove same-coloured border from image.");
 		if (tab)
 		{
-			DoResizeCanvasRemoveBordersTab(justOpenedBorder);
-			justOpenedBorder = false;
+			DoResizeCanvasRemoveBordersTab(firstOpenBorder);
+			firstOpenBorder = false;
 			ImGui::EndTabItem();
 		}
 
@@ -390,8 +390,8 @@ void Viewer::DoResizeCanvasModal(bool resizeCanvasPressed)
 		ShowToolTip("Choose the new aspect ratio.");
 		if (tab)
 		{
-			DoResizeCanvasAspectTab(justOpenedAspect);
-			justOpenedAspect = false;
+			DoResizeCanvasAspectTab(firstOpenAspect);
+			firstOpenAspect = false;
 			ImGui::EndTabItem();
 		}
 		ImGui::EndTabBar();
@@ -401,7 +401,7 @@ void Viewer::DoResizeCanvasModal(bool resizeCanvasPressed)
 }
 
 
-void Viewer::DoResizeCanvasAnchorTab(bool justOpened)
+void Viewer::DoResizeCanvasAnchorTab(bool firstOpen)
 {
 	tAssert(CurrImage);
 	tPicture* picture = CurrImage->GetCurrentPic();
@@ -411,7 +411,7 @@ void Viewer::DoResizeCanvasAnchorTab(bool justOpened)
 	int srcH					= picture->GetHeight();
 	static int dstW				= 512;
 	static int dstH				= 512;
-	if (justOpened)
+	if (firstOpen)
 	{
 		dstW = srcW;
 		dstH = srcH;
@@ -443,7 +443,7 @@ void Viewer::DoResizeCanvasAnchorTab(bool justOpened)
 			break;
 	}
 
-	if (ImGui::Button("Reset", tVector2(buttonWidth, 0.0f)))
+	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		Config::Current->CropAnchor		= 4;
 		Config::Current->FillColour		= tColouri::black;
@@ -452,11 +452,13 @@ void Viewer::DoResizeCanvasAnchorTab(bool justOpened)
 	}
 
 	ImGui::SameLine();
-	if (ImGui::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
-	if (ImGui::Button("Resize", tVector2(buttonWidth, 0.0f)))
+	if (ImGui::IsWindowAppearing())
+		ImGui::SetKeyboardFocusHere();
+	if (Viewer::Button("Resize", tVector2(buttonWidth, 0.0f)))
 	{
 		DoResizeCrop(srcW, srcH, dstW, dstH);
 		ImGui::CloseCurrentPopup();
@@ -464,7 +466,7 @@ void Viewer::DoResizeCanvasAnchorTab(bool justOpened)
 }
 
 
-void Viewer::DoResizeCanvasRemoveBordersTab(bool justOpened)
+void Viewer::DoResizeCanvasRemoveBordersTab(bool firstOpen)
 {
 	static bool channelR		= true;
 	static bool channelG		= true;
@@ -509,7 +511,7 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool justOpened)
 			break;
 	}
 
-	if (ImGui::Button("Reset", tVector2(buttonWidth, 0.0f)))
+	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		Config::Current->FillColour.Set(Viewer::PixelColour);
 		channelR = true;
@@ -519,11 +521,13 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool justOpened)
 	}
 
 	ImGui::SameLine();
-	if (ImGui::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
-	if (ImGui::Button("Remove", tVector2(buttonWidth, 0.0f)))
+	if (ImGui::IsWindowAppearing())
+		ImGui::SetKeyboardFocusHere();
+	if (Viewer::Button("Remove", tVector2(buttonWidth, 0.0f)))
 	{
 		uint32 channels =
 			(channelR ? tComp_R : 0) |
@@ -541,7 +545,7 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool justOpened)
 }
 
 
-void Viewer::DoResizeCanvasAspectTab(bool justOpened)
+void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 {
 	tAssert(CurrImage);
 	tPicture* picture = CurrImage->GetCurrentPic();
@@ -621,7 +625,7 @@ void Viewer::DoResizeCanvasAspectTab(bool justOpened)
 			break;
 	}
 
-	if (ImGui::Button("Reset", tVector2(buttonWidth, 0.0f)))
+	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		Config::Current->CropAnchor			= 4;
 		Config::Current->FillColour			= tColouri::black;
@@ -631,11 +635,13 @@ void Viewer::DoResizeCanvasAspectTab(bool justOpened)
 	}
 
 	ImGui::SameLine();
-	if (ImGui::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
-	if (ImGui::Button("Resize", tVector2(buttonWidth, 0.0f)))
+	if (ImGui::IsWindowAppearing())
+		ImGui::SetKeyboardFocusHere();
+	if (Viewer::Button("Resize", tVector2(buttonWidth, 0.0f)))
 	{
 		int dstH = srcH;
 		int dstW = srcW;
