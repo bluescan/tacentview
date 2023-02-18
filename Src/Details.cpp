@@ -2,7 +2,7 @@
 //
 // Image details overlay and a meta-data inspector.
 //
-// Copyright (c) 2022 Tristan Grimmer.
+// Copyright (c) 2022, 2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -181,19 +181,19 @@ void Viewer::ShowImageMetaDataOverlay(bool* popen)
 			rowHeight			= 18.0f;
 			tagWidth			= 116.0f;
 			valWidth			= 200.0f;
-			maxRowsToDisplay	= 26;
-			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
-			rowHeight			= 19.0f;
-			tagWidth			= 128.0f;
-			valWidth			= 230.0f;
 			maxRowsToDisplay	= 25;
 			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			rowHeight			= 20.0f;
+			tagWidth			= 128.0f;
+			valWidth			= 230.0f;
+			maxRowsToDisplay	= 23;
+			break;
 		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
-			rowHeight			= 21.0f;
+			rowHeight			= 22.0f;
 			tagWidth			= 140.0f;
 			valWidth			= 260.0f;
-			maxRowsToDisplay	= 22;
+			maxRowsToDisplay	= 21;
 			break;
 	}
 
