@@ -606,7 +606,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	if (ImGui::Button("Reset", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Reset", tVector2(100.0f, 0.0f)))
 	{
 		CurrImage->AdjustGetDefaults(brightness, contrast, levelsBlack, levelsMid, levelsWhite, levelsOutBlack, levelsOutWhite);
 		powerMidGamma = true;
@@ -619,7 +619,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 		CurrImage->Bind();
 	}
 
-	if (ImGui::Button("Cancel", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
 	{
 		Viewer::SetWindowTitle();
 		ImGui::CloseCurrentPopup();
@@ -627,7 +627,9 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetCursorPosX() + okOffset);
-	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
+	if (ImGui::IsWindowAppearing())
+		ImGui::SetKeyboardFocusHere();
+	if (Viewer::Button("OK", tVector2(100.0f, 0.0f)))
 	{
 		okPressed = true;
 		Viewer::SetWindowTitle();
