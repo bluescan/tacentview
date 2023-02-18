@@ -647,13 +647,13 @@ void Viewer::ShowAboutPopup(bool* popen)
 	{
 		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Small:	windowSize.Set(240, 500);	break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:	windowSize.Set(280, 533);	break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Large:	windowSize.Set(320, 531);	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:	windowSize.Set(280, 501);	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:	windowSize.Set(320, 515);	break;
 	}
 
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
-	ImGuiWindowFlags flags = ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+	ImGuiWindowFlags flags = ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize;
 	if (ImGui::Begin("About", popen, flags))
 	{
 		int glfwMajor = 0; int glfwMinor = 0; int glfwRev = 0;
