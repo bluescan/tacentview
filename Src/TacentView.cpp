@@ -59,6 +59,7 @@
 #include "OpenSaveDialogs.h"
 #include "Config.h"
 #include "InputBindings.h"
+#include "Command.h"
 #include "Version.cmake.h"
 using namespace tStd;
 using namespace tSystem;
@@ -67,7 +68,9 @@ using namespace tMath;
 
 namespace Viewer
 {
-	tCmdLine::tParam ImageFileParam(1, "ImageFile", "File to open.");
+	tCmdLine::tParam  ParamImageFiles	("Files to open",												"ImageFiles",			0,	true	);
+	tCmdLine::tOption OptionCLI			("Use command line mode (required for CLI image processing)",	"cli",			'c'					);
+	tCmdLine::tOption OptionHelp		("Help on usage",												"help",			'h',	0,	true	);
 
 	tFileTypes FileTypes_Load
 	(
@@ -305,6 +308,12 @@ namespace Viewer
 	void ChangeProfile(Viewer::Profile);
 	bool CopyImage();
 	bool PasteImage();
+}
+
+
+bool Viewer::Button(const char* label, const tMath::tVector2& size)
+{
+    return ImGui::Button(label, size) || (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter));
 }
 
 
@@ -3328,13 +3337,19 @@ int main(int argc, char** argv)
 	setlocale(LC_ALL, ".UTF8");
 	#endif
 	
-	tSystem::tSetSupplementaryDebuggerOutput();
-	tSystem::tSetStdoutRedirectCallback(Viewer::PrintRedirectCallback);
 	tCmdLine::tParse(argc, argv);
 
-	if (Viewer::ImageFileParam.IsPresent())
+	// To run in CLI mode you must set the cli option from the command line.
+	// You can do this with --cli or -c
+	if (Viewer::OptionCLI || Viewer::OptionHelp)
+		return Command::Process();
+
+	tSystem::tSetSupplementaryDebuggerOutput();
+	tSystem::tSetStdoutRedirectCallback(Viewer::PrintRedirectCallback);
+
+	if (Viewer::ParamImageFiles.IsPresent())
 	{
-		Viewer::CurrImageFile = Viewer::ImageFileParam.Get();
+		Viewer::CurrImageFile = Viewer::ParamImageFiles.Get();
 
 		#ifdef PLATFORM_WINDOWS
 		tString dest(MAX_PATH);
@@ -3342,8 +3357,6 @@ int main(int argc, char** argv)
 		if (numchars > 0)
 			Viewer::CurrImageFile = dest;
 		#endif
-
-		tPrintf("ImageFile:%s\n", Viewer::CurrImageFile.Chr());
 	}
 
 	#ifdef PACKAGE_SNAP
@@ -3369,6 +3382,7 @@ int main(int argc, char** argv)
 	tPrintf("Tacent Library V %d.%d.%d\n", tVersion::Major, tVersion::Minor, tVersion::Revision);
 	tPrintf("Dear ImGui V %s\n", IMGUI_VERSION);
 	tPrintf("GLFW V %d.%d.%d\n", glfwMajor, glfwMinor, glfwRev);
+	tPrintf("For CLI Mode: tacentview.exe --cli --help\n");
 
 	#ifdef PLATFORM_WINDOWS
 	tString dataDir = tSystem::tGetProgramDir() + "Data/";

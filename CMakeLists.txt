@@ -224,9 +224,19 @@ target_link_libraries(
 )
 
 if (MSVC)
-	target_link_options(${PROJECT_NAME} PRIVATE "/ENTRY:mainCRTStartup")
+	target_link_options(
+		${PROJECT_NAME}
+		PRIVATE
+			"/ENTRY:mainCRTStartup"
+			#"/SUBSYSTEM:CONSOLE"
+			#"/SUBSYSTEM:WINDOWS"
+	)
 	if (CMAKE_BUILD_TYPE MATCHES Debug)
-		target_link_options(${PROJECT_NAME} PRIVATE "/NODEFAULTLIB:LIBCMT.lib")
+		target_link_options(
+			${PROJECT_NAME}
+			PRIVATE
+				"/NODEFAULTLIB:LIBCMT.lib"
+	)
 	endif()
 endif()
 

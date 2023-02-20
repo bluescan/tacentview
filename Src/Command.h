@@ -16,3 +16,8 @@
 
 #pragma once
 
+
+namespace Command
+{	
+	int Process();
+}

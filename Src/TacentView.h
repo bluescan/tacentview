@@ -159,12 +159,3 @@ namespace Viewer
 		const tMath::tVector2& uvOff, bool centerPixel = false
 	);
 }
-
-
-// Implementation below this line.
-
-
-inline bool Viewer::Button(const char* label, const tMath::tVector2& size)
-{
-    return ImGui::Button(label, size) || (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter));
-}
