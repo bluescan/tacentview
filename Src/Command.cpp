@@ -47,7 +47,12 @@ namespace Command
 		~ConsoleOutputScoped()			{ EndConsoleOutput(); }
 	};
 
-	tList<tStringItem> InputFiles;
+	tSystem::tFileTypes InputTypes;
+	tList<tSystem::tFileInfo> InputFiles;
+
+	void DetermineInputTypes();											// Step 1.
+	void InputFilesAddUnique(const tSystem::tFileInfo&);
+	void DetermineInputFiles();											// Step 2.
 }
 
 
@@ -134,6 +139,96 @@ void Command::EndConsoleOutput()
 }
 
 
+void Command::DetermineInputTypes()
+{
+	if (OptionInType)
+	{
+		tList<tStringItem> types;
+		OptionInType.GetArgs(types);
+		for (tStringItem* typ = types.First(); typ; typ = typ->Next())
+		{
+			tSystem::tFileType ft = tSystem::tGetFileTypeFromName(*typ);
+			InputTypes.Add(ft);
+		}
+	}
+	else
+	{
+		InputTypes.Add(Viewer::FileTypes_Load);
+	}
+	tPrintf("Input types:");
+	for (tSystem::tFileTypes::tFileTypeItem* typ = InputTypes.First(); typ; typ = typ->Next())
+		tPrintf(" %s", tSystem::tGetFileTypeName(typ->FileType).Chr());
+	tPrintf("\n");
+}
+
+
+void Command::InputFilesAddUnique(const tSystem::tFileInfo& infoToAdd)
+{
+	bool alreadyAdded = false;
+	for (tSystem::tFileInfo* info = InputFiles.First(); info; info = info->Next())
+	{
+		#ifdef PLAYFORM_WINDOWS
+		if (info->FileName.IsEqualCI(infoToAdd.FileName))
+		#else
+		if (info->FileName.IsEqual(infoToAdd.FileName))
+		#endif
+		{
+			alreadyAdded = true;
+			break;
+		}
+	}
+
+	if (!alreadyAdded)
+		InputFiles.Append(new tSystem::tFileInfo(infoToAdd));
+}
+
+
+void Command::DetermineInputFiles()
+{
+	tList<tSystem::tFileInfo> inputFiles;
+
+	if (!ParamInputFiles)
+		tSystem::tFindFiles(inputFiles, "", InputTypes);
+
+	for (tStringItem* fileItem = ParamInputFiles.Values.First(); fileItem; fileItem = fileItem->Next())
+	{
+		tSystem::tFileInfo info;
+		bool found = tSystem::tGetFileInfo(info, *fileItem);
+		if (!found)
+			continue;
+
+		if (info.Directory)
+		{
+			if (*fileItem == ".")
+				tSystem::tFindFiles(inputFiles, "", InputTypes);
+			else
+				tSystem::tFindFiles(inputFiles, *fileItem, InputTypes);
+		}
+		else
+		{
+			// Convert to simple full absolute path.
+			info.FileName = tSystem::tGetAbsolutePath(info.FileName);
+
+			// Only add existing files that are of a globally supported filetype.
+			tSystem::tFileType typ = tSystem::tGetFileType(*fileItem);
+			if (Viewer::FileTypes_Load.Contains(typ))
+				inputFiles.Append(new tSystem::tFileInfo(info));
+		}
+	}
+
+	for (tSystem::tFileInfo* info = inputFiles.First(); info; info = info->Next())
+	{
+		InputFilesAddUnique(*info);
+	}
+
+	tPrintf("Input Files:\n");
+	for (tSystem::tFileInfo* info = InputFiles.First(); info; info = info->Next())
+	{
+		tPrintf("Input File: %s\n", info->FileName.Chr());
+	}
+}
+
+
 int Command::Process()
 {
 	ConsoleOutputScoped scopedConsoleOutput;
@@ -200,59 +295,11 @@ If no input types are specified, all supported types are processed.
 		return 0;
 	}
 
-	// Determine what input types are being processed.
-	tSystem::tFileTypes inputTypes;
-	if (OptionInType)
-	{
-		tList<tStringItem> types;
-		OptionInType.GetArgs(types);
-		for (tStringItem* typ = types.First(); typ; typ = typ->Next())
-		{
-			tSystem::tFileType ft = tSystem::tGetFileTypeFromName(*typ);
-			inputTypes.Add(ft);
-		}
-	}
-	else
-	{
-		inputTypes.Add(Viewer::FileTypes_Load);
-	}
-	tPrintf("Input types:");
-	for (tSystem::tFileTypes::tFileTypeItem* typ = inputTypes.First(); typ; typ = typ->Next())
-		tPrintf(" %s", tSystem::tGetFileTypeName(typ->FileType).Chr());
-	tPrintf("\n");
+	// Determine what input types will be processed when specifying a directory.
+	DetermineInputTypes();
 
-	tList<tSystem::tFileInfo> foundFiles;
-	if (!ParamInputFiles)
-	{
-		tPrintf("No input files specified. Using contents of current directory.\n");
-		tSystem::tFindFiles(foundFiles, "", inputTypes);
-	}
-
-	for (tStringItem* fileItem = ParamInputFiles.Values.First(); fileItem; fileItem = fileItem->Next())
-	{
-		tSystem::tFileInfo info;
-		bool found = tSystem::tGetFileInfo(info, *fileItem);
-		if (!found)
-			continue;
-
-		if (info.Directory)
-		{
-			tSystem::tFindFiles(foundFiles, *fileItem, inputTypes);
-		}
-		else
-		{
-			// Only add existing files that are of a globally supported filetype.
-			tSystem::tFileType typ = tSystem::tGetFileType(*fileItem);
-			if (Viewer::FileTypes_Load.Contains(typ))
-				foundFiles.Append(new tSystem::tFileInfo(info));
-		}
-	}
-
-	tPrintf("Input Files:\n");
-	for (tSystem::tFileInfo* info = foundFiles.First(); info; info = info->Next())
-	{
-		tPrintf("Input File: %s\n", info->FileName.Chr());
-	}
+	// Collect all input files into a single list.
+	DetermineInputFiles();
 
 	return 0;
 }
