@@ -37,6 +37,8 @@ namespace Command
 	tCmdLine::tOption OptionInType		("Input file type(s)",					"intype",		'i',	1	);
 	tCmdLine::tOption OptionHelp		("Print help/usage information",		"help",			'h'			);
 	tCmdLine::tOption OptionSyntax		("Print syntax help",					"syntax",		's'			);
+	tCmdLine::tOption OptionOverwrite	("Overwrite existing output files",		"overwrite",	'w'			);
+	tCmdLine::tOption OptionAutoName	("Autogenerate output file names",		"autonames",	'a'			);
 
 	void BeginConsoleOutput();
 	void EndConsoleOutput();
@@ -49,10 +51,12 @@ namespace Command
 		~ConsoleOutputScoped()			{ EndConsoleOutput(); }
 	};
 
-	void DetermineInputTypes();											// Step 1.
+	void DetermineInputTypes();															// Step 1.
 	void InputFilesAddUnique(const tSystem::tFileInfo&);
-	void DetermineInputFiles();											// Step 2.
-	void PopulateImages();												// Step 3.
+	void DetermineInputFiles();															// Step 2.
+	void PopulateImages();																// Step 3.
+	tSystem::tFileType DetermineOutType();
+	tString DetermineOutputFilename(const tString& inName, tSystem::tFileType outType);
 
 	tSystem::tFileTypes InputTypes;
 	tList<tSystem::tFileInfo> InputFiles;
@@ -243,6 +247,46 @@ void Command::PopulateImages()
 }
 
 
+tSystem::tFileType Command::DetermineOutType()
+{
+	tSystem::tFileType outType = tSystem::tFileType::TGA;
+	if (OptionOutType)
+	{
+		outType = tSystem::tGetFileTypeFromName(OptionOutType.Arg1());
+		if (outType == tSystem::tFileType::Invalid)
+		{
+			tPrintf("Invalid output file type specified. Defaulting to tga.\n");
+			outType = tSystem::tFileType::TGA;
+		}
+	}
+	return outType;
+}
+
+
+tString Command::DetermineOutputFilename(const tString& inName, tSystem::tFileType outType)
+{
+	tString outExt = tSystem::tGetExtension(outType);
+	tString nonAutoName = tSystem::tGetDir(inName) + tSystem::tGetFileBaseName(inName) + "." + outExt;
+	if (!OptionAutoName)
+		return nonAutoName;
+
+	// Autoname is true. Test up to 100 consecutive filenames.
+	for (int nameIter = 0; nameIter < 100; nameIter++)
+	{
+		tString contender;
+		if (nameIter == 0)
+			contender = nonAutoName;
+		else
+			tsPrintf(contender, "%s%s_%02d.%s", tSystem::tGetDir(inName).Chr(), tSystem::tGetFileBaseName(inName).Chr(), nameIter, outExt.Chr());
+
+		if (!tSystem::tFileExists(contender))
+			return contender;
+	}
+
+	return nonAutoName;
+}
+
+
 int Command::Process()
 {
 	ConsoleOutputScoped scopedConsoleOutput;
@@ -318,20 +362,9 @@ If no input types are specified, all supported types are processed.
 	// Populates the Images list. Does not load the images.
 	PopulateImages();
 
+	tSystem::tFileType outType = DetermineOutType();
+
 	// Processing. We process and save images individually to save memory.
-
-	tSystem::tFileType outType = tSystem::tFileType::TGA;
-	if (OptionOutType)
-	{
-		outType = tSystem::tGetFileTypeFromName(OptionOutType.Arg1());
-		if (outType == tSystem::tFileType::Invalid)
-		{
-			tPrintf("Invalid output file type specified. Defaulting to tga.\n");
-			outType = tSystem::tFileType::TGA;
-		}
-	}
-	tString outExt = tSystem::tGetExtension(outType);
-
 	for (Viewer::Image* image = Images.First(); image; image = image->Next())
 	{
 		image->Load();
@@ -339,19 +372,26 @@ If no input types are specified, all supported types are processed.
 		// Process.
 
 		// Determine out filename,
-		tString outFilename = tSystem::tGetDir(image->Filename) + tSystem::tGetFileBaseName(image->Filename) + "." + outExt;
+		tString outFilename = DetermineOutputFilename(image->Filename, outType);
+		bool doSave = true;
+		if (tSystem::tFileExists(outFilename) && !OptionOverwrite)
+		{
+			tPrintf("File %s exists. Not overwriting.\n", tSystem::tGetFileName(outFilename).Chr());
+			doSave = false;
+		}
 
 		// Save.
-		bool success = Viewer::SaveImageAs(*image, outFilename, outType);
-		if (success)
-			tPrintf("Saved File: %s\n", outFilename.Chr());
-		else
-			tPrintf("Failed Save: %s\n", outFilename.Chr());
+		if (doSave)
+		{
+			bool success = Viewer::SaveImageAs(*image, outFilename, outType);
+			if (success)
+				tPrintf("Saved File: %s\n", outFilename.Chr());
+			else
+				tPrintf("Failed Save: %s\n", outFilename.Chr());
+		}
 
 		image->Unload();
 	}
-
-
 
 	return 0;
 }
