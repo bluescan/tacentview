@@ -24,6 +24,8 @@
 #include "Version.cmake.h"
 #include "Command.h"
 #include "TacentView.h"
+#include "Image.h"
+#include "OpenSaveDialogs.h"
 
 
 namespace Command
@@ -47,12 +49,14 @@ namespace Command
 		~ConsoleOutputScoped()			{ EndConsoleOutput(); }
 	};
 
-	tSystem::tFileTypes InputTypes;
-	tList<tSystem::tFileInfo> InputFiles;
-
 	void DetermineInputTypes();											// Step 1.
 	void InputFilesAddUnique(const tSystem::tFileInfo&);
 	void DetermineInputFiles();											// Step 2.
+	void PopulateImages();												// Step 3.
+
+	tSystem::tFileTypes InputTypes;
+	tList<tSystem::tFileInfo> InputFiles;
+	tList<Viewer::Image> Images;
 }
 
 
@@ -229,6 +233,16 @@ void Command::DetermineInputFiles()
 }
 
 
+void Command::PopulateImages()
+{
+	// This doesn't actually load the images. Just prepares them on the Images list.
+	for (tSystem::tFileInfo* info = InputFiles.First(); info; info = info->Next())
+	{
+		Images.Append(new Viewer::Image(*info));
+	}
+}
+
+
 int Command::Process()
 {
 	ConsoleOutputScoped scopedConsoleOutput;
@@ -300,6 +314,44 @@ If no input types are specified, all supported types are processed.
 
 	// Collect all input files into a single list.
 	DetermineInputFiles();
+
+	// Populates the Images list. Does not load the images.
+	PopulateImages();
+
+	// Processing. We process and save images individually to save memory.
+
+	tSystem::tFileType outType = tSystem::tFileType::TGA;
+	if (OptionOutType)
+	{
+		outType = tSystem::tGetFileTypeFromName(OptionOutType.Arg1());
+		if (outType == tSystem::tFileType::Invalid)
+		{
+			tPrintf("Invalid output file type specified. Defaulting to tga.\n");
+			outType = tSystem::tFileType::TGA;
+		}
+	}
+	tString outExt = tSystem::tGetExtension(outType);
+
+	for (Viewer::Image* image = Images.First(); image; image = image->Next())
+	{
+		image->Load();
+
+		// Process.
+
+		// Determine out filename,
+		tString outFilename = tSystem::tGetDir(image->Filename) + tSystem::tGetFileBaseName(image->Filename) + "." + outExt;
+
+		// Save.
+		bool success = Viewer::SaveImageAs(*image, outFilename, outType);
+		if (success)
+			tPrintf("Saved File: %s\n", outFilename.Chr());
+		else
+			tPrintf("Failed Save: %s\n", outFilename.Chr());
+
+		image->Unload();
+	}
+
+
 
 	return 0;
 }
