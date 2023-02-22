@@ -2,7 +2,7 @@
 //
 // Modal dialogs open-file, open-dir, save-as and save-all.
 //
-// Copyright (c) 2019-2022 Tristan Grimmer.
+// Copyright (c) 2019-2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -1178,7 +1178,10 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile, tFileType fileType)
 			}
 
 			tImageAPNG apng(frames, true);
-			success = apng.Save(outFile, Config::Current->SaveFileApngDurOverride);
+			tImageAPNG::SaveParams params;
+			params.OverrideFrameDuration = Config::Current->SaveFileApngDurOverride;
+			tImageAPNG::tFormat savedFormat = apng.Save(outFile, params);
+			success = (savedFormat != tImageAPNG::tFormat::Invalid);
 			break;
 		}
 
@@ -1219,7 +1222,10 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile, tFileType fileType)
 			}
 
 			tImageTIFF tiff(frames, true);
-			success = tiff.Save(outFile, Config::Current->SaveFileTiffZLibDeflate, Config::Current->SaveFileTiffDurOverride);
+			tImageTIFF::SaveParams params;
+			params.UseZLibCompression = Config::Current->SaveFileTiffZLibDeflate;
+			params.OverrideFrameDuration = Config::Current->SaveFileTiffDurOverride;
+			success = tiff.Save(outFile, params);
 			break;
 		}
 	}
@@ -1314,7 +1320,11 @@ bool Viewer::SavePictureAs(tImage::tPicture& picture, const tString& outFile, tF
 		case tFileType::APNG:
 		{
 			tImageAPNG apng(picture, steal);
-			success = apng.Save(outFile, Config::Current->SaveFileApngDurOverride);
+
+			tImageAPNG::SaveParams params;
+			params.OverrideFrameDuration = Config::Current->SaveFileApngDurOverride;
+			tImageAPNG::tFormat savedFormat = apng.Save(outFile, params);
+			success = (savedFormat != tImageAPNG::tFormat::Invalid);
 			break;
 		}
 
@@ -1335,7 +1345,10 @@ bool Viewer::SavePictureAs(tImage::tPicture& picture, const tString& outFile, tF
 		case tFileType::TIFF:
 		{
 			tImageTIFF tiff(picture, steal);
-			success = tiff.Save(outFile, Config::Current->SaveFileTiffZLibDeflate, Config::Current->SaveFileTiffDurOverride);
+			tImageTIFF::SaveParams params;
+			params.UseZLibCompression = Config::Current->SaveFileTiffZLibDeflate;
+			params.OverrideFrameDuration = Config::Current->SaveFileTiffDurOverride;
+			success = tiff.Save(outFile, params);
 			break;
 		}
 	}

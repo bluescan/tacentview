@@ -2677,9 +2677,11 @@ bool Viewer::PasteImage()
 
 		case tFileType::TIFF:
 		{
-			tImage::tImageTIFF tif;
-			tif.Set(dstData, width, height, true);
-			saved = tif.Save(filename, true);
+			tImage::tImageTIFF tiff;
+			tiff.Set(dstData, width, height, true);
+			tImageTIFF::SaveParams params;
+			params.UseZLibCompression = true;
+			saved = tiff.Save(filename, params);
 			break;
 		}
 

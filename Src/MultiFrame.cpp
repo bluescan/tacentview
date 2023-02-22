@@ -252,14 +252,20 @@ void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeigh
 		case tFileType::APNG:
 		{
 			tImageAPNG apng(frames, true);
-			success = apng.Save(outFile, Config::Current->SaveFileApngDurMultiFrame);
+			tImageAPNG::SaveParams params;
+			params.OverrideFrameDuration = Config::Current->SaveFileApngDurMultiFrame;
+			tImageAPNG::tFormat savedFormat = apng.Save(outFile, params);
+			success = (savedFormat != tImageAPNG::tFormat::Invalid);
 			break;
 		}
 
 		case tFileType::TIFF:
 		{
 			tImageTIFF tiff(frames, true);
-			success = tiff.Save(outFile, Config::Current->SaveFileTiffZLibDeflate, Config::Current->SaveFileTiffDurMultiFrame);
+			tImageTIFF::SaveParams params;
+			params.UseZLibCompression = Config::Current->SaveFileTiffZLibDeflate;
+			params.OverrideFrameDuration = Config::Current->SaveFileTiffDurMultiFrame;
+			success = tiff.Save(outFile, params);
 			break;
 		}
 	}
