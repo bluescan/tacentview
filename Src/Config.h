@@ -164,7 +164,7 @@ struct ProfileSettings
 	bool	SaveFileTargaRLE;
 	int		SaveFilePngDepthMode;						// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
 	int		SaveFileQoiDepthMode;						// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
-	int		SaveFileQoiColourSpace;						// E [0, 1]. 0 = sRGB. 1 = Linear.
+	int		SaveFileQoiColourSpace;						// E [0, 2]. 0 = Auto. 1 = sRGB.  2 = Linear.
 	int		SaveFileBmpDepthMode;						// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
 	int		SaveFileJpegQuality;						// E [1, 100]
 	bool	SaveFileWebpLossy;

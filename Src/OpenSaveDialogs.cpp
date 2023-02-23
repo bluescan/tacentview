@@ -548,12 +548,11 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			ImGui::SameLine();
 			ShowHelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.");
 
-			const char* qoiSpaceItems[] = { "sRGB", "Linear" };
+			const char* qoiSpaceItems[] = { "Auto", "sRGB", "Linear" };
 			ImGui::SetNextItemWidth(80);
 			ImGui::Combo("Colour Space", &Config::Current->SaveFileQoiColourSpace , qoiSpaceItems, tNumElements(qoiSpaceItems));
 			ImGui::SameLine();
-			ShowHelpMark("Colour space stored in file. sRGB: The default for most images. Linear: Used when doing lighting calculations.");
-
+			ShowHelpMark("Colour space to store in the saved file.\nAuto: Use current colour space as it was loaded.\nsRGB: The default for most images.\nLinear: For images used in lighting calculations.");
 			break;
 		}
 
@@ -1101,13 +1100,12 @@ bool Viewer::SavePictureAs(tImage::tPicture& picture, const tString& outFile, tF
 				case 2: saveFormat = tImageQOI::tFormat::BPP32;		break;
 			}
 
-			tImageQOI::tSpace saveSpace = tImageQOI::tSpace::sRGB;
+			tImageQOI::tSpace saveSpace = tImageQOI::tSpace::Auto;
 			switch (Config::Current->SaveFileQoiColourSpace)
 			{
-				case 0: saveSpace = tImageQOI::tSpace::sRGB;		break;
-				case 1: saveSpace = tImageQOI::tSpace::Linear;		break;
+				case 1: saveSpace = tImageQOI::tSpace::sRGB;		break;
+				case 2: saveSpace = tImageQOI::tSpace::Linear;		break;
 			}
-			qoi.SetColourSpace(saveSpace);
 
 			tImageQOI::tFormat savedFormat = qoi.Save(outFile, saveFormat);
 			success = (savedFormat != tImageQOI::tFormat::Invalid);

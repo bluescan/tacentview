@@ -2,7 +2,7 @@
 //
 // An image class that can load a file from disk into main memory and to VRAM.
 //
-// Copyright (c) 2019-2022 Tristan Grimmer.
+// Copyright (c) 2019-2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -23,6 +23,18 @@
 #include <Image/tTexture.h>
 #include <Image/tCubemap.h>
 #include <Image/tMetaData.h>
+
+// For save params.
+#include <Image/tImageAPNG.h>
+#include <Image/tImageBMP.h>
+#include <Image/tImageGIF.h>
+#include <Image/tImageJPG.h>
+#include <Image/tImagePNG.h>
+#include <Image/tImageQOI.h>
+#include <Image/tImageTGA.h>
+#include <Image/tImageTIFF.h>
+#include <Image/tImageWEBP.h>
+
 #include <Image/tImageASTC.h>
 #include <Image/tImageDDS.h>
 #include <Image/tImageEXR.h>
@@ -66,9 +78,25 @@ public:
 	bool Load();													// Load into main memory.
 	bool IsLoaded() const																								{ return (Pictures.Count() > 0); }
 
-	// Not all fileTypes are supported for save. Reads config for each types save parameters. Handles single and
-	// multi-frame images. Returns success.
-	bool Save(const tString& outFile, tSystem::tFileType fileType) const;
+	// These are structs used for specifying parameters when saving. Different image types support different
+	// features and therefore each needs a unique set of parameters. When calling Save you can optionally ask for these
+	// structures to be used to grab the parameters from. If they are not used, then the settings in the config
+	// file are used.
+	tImage::tImageAPNG::SaveParams SaveParamsAPNG;
+	tImage::tImageBMP::SaveParams  SaveParamsBMP;
+	tImage::tImageGIF::SaveParams  SaveParamsGIF;
+	tImage::tImageJPG::SaveParams  SaveParamsJPG;
+	tImage::tImagePNG::SaveParams  SaveParamsPNG;
+	tImage::tImageQOI::SaveParams  SaveParamsQOI;
+	tImage::tImageTGA::SaveParams  SaveParamsTGA;
+	tImage::tImageTIFF::SaveParams SaveParamsTIFF;
+	tImage::tImageWEBP::SaveParams SaveParamsWEBP;
+
+	// Not all fileTypes are supported for save. Handles single and multi-frame images. If useConfigSaveParams is true
+	// any paramteres used for saving that are stored in the viewer config file will override the setting in the save
+	// param structures above. Parameters not in the config will use whatever is in the structs. If useConfigSaveParams
+	// is false, the parameter structs above are used exclusively. Returns success.
+	bool Save(const tString& outFile, tSystem::tFileType fileType, bool useConfigSaveParams = true) const;
 
 	int GetNumFrames() const																							{ return Pictures.Count(); }
 	bool IsOpaque() const;

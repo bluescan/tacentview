@@ -497,7 +497,7 @@ bool Image::Load()
 }
 
 
-bool Image::Save(const tString& outFile, tFileType fileType) const
+bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveParams) const
 {
 	bool success = false;
 	switch (fileType)
@@ -508,8 +508,11 @@ bool Image::Save(const tString& outFile, tFileType fileType) const
 			if (!picture || !picture->IsValid())
 				return false;
 			tImageTGA tga(*picture, true);
+			tImageTGA::SaveParams params(SaveParamsTGA);
+			if (useConfigSaveParams)
+				params.Compression = Config::Current->SaveFileTargaRLE ? tImageTGA::tCompression::RLE : tImageTGA::tCompression::None;
 
-			tImageTGA::tFormat savedFmt = tga.Save(outFile, tImageTGA::tFormat::Auto, Config::Current->SaveFileTargaRLE ? tImageTGA::tCompression::RLE : tImageTGA::tCompression::None);
+			tImageTGA::tFormat savedFmt = tga.Save(outFile, params);
 			success = (savedFmt != tImageTGA::tFormat::Invalid);
 			break;
 		}
@@ -521,13 +524,17 @@ bool Image::Save(const tString& outFile, tFileType fileType) const
 				return false;
 
 			tImagePNG png(*picture, false);
-			tImagePNG::tFormat saveFormat = tImagePNG::tFormat::Auto;
-			switch (Config::Current->SaveFilePngDepthMode)
+			tImagePNG::SaveParams params(SaveParamsPNG);
+			if (useConfigSaveParams)
 			{
-				case 1: saveFormat = tImagePNG::tFormat::BPP24;		break;
-				case 2: saveFormat = tImagePNG::tFormat::BPP32;		break;
+				params.Format = tImagePNG::tFormat::Auto;
+				switch (Config::Current->SaveFilePngDepthMode)
+				{
+					case 1: params.Format = tImagePNG::tFormat::BPP24;		break;
+					case 2: params.Format = tImagePNG::tFormat::BPP32;		break;
+				}
 			}
-			tImagePNG::tFormat savedFmt = png.Save(outFile, saveFormat);
+			tImagePNG::tFormat savedFmt = png.Save(outFile, params);
 			success = (savedFmt != tImagePNG::tFormat::Invalid);
 			break;
 		}
@@ -539,7 +546,11 @@ bool Image::Save(const tString& outFile, tFileType fileType) const
 				return false;
 
 			tImageJPG jpg(*picture, false);
-			success = jpg.Save(outFile, Config::Current->SaveFileJpegQuality);
+			tImageJPG::SaveParams params(SaveParamsJPG);
+			if (useConfigSaveParams)
+				params.Quality = Config::Current->SaveFileJpegQuality;
+
+			success = jpg.Save(outFile, params);
 			break;
 		}
 
@@ -562,15 +573,18 @@ bool Image::Save(const tString& outFile, tFileType fileType) const
 			}
 
 			tImageGIF gif(frames, true);
-			tImageGIF::SaveParams params;
-			params.Format = tPixelFormat(int(tPixelFormat::FirstPalette) + Config::Current->SaveFileGifBPP - 1);
-			params.Method = tQuantize::Method(Config::Current->SaveFileGifQuantMethod);
-			params.Loop = Config::Current->SaveFileGifLoop;
-			params.AlphaThreshold = Config::Current->SaveFileGifAlphaThreshold;
-			params.OverrideFrameDuration = Config::Current->SaveFileGifDurOverride;
-			params.DitherLevel = double(Config::Current->SaveFileGifDitherLevel);
-			params.FilterSize = (Config::Current->SaveFileGifFilterSize * 2) + 1;
-			params.SampleFactor = Config::Current->SaveFileGifSampleFactor;
+			tImageGIF::SaveParams params(SaveParamsGIF);
+			if (useConfigSaveParams)
+			{
+				params.Format					= tPixelFormat(int(tPixelFormat::FirstPalette) + Config::Current->SaveFileGifBPP - 1);
+				params.Method					= tQuantize::Method(Config::Current->SaveFileGifQuantMethod);
+				params.Loop						= Config::Current->SaveFileGifLoop;
+				params.AlphaThreshold			= Config::Current->SaveFileGifAlphaThreshold;
+				params.OverrideFrameDuration	= Config::Current->SaveFileGifDurOverride;
+				params.DitherLevel				= double(Config::Current->SaveFileGifDitherLevel);
+				params.FilterSize				= (Config::Current->SaveFileGifFilterSize * 2) + 1;
+				params.SampleFactor				= Config::Current->SaveFileGifSampleFactor;
+			}
 			success = gif.Save(outFile, params);
 			break;
 		}
@@ -594,7 +608,14 @@ bool Image::Save(const tString& outFile, tFileType fileType) const
 			}
 
 			tImageWEBP webp(frames, true);
-			success = webp.Save(outFile, Config::Current->SaveFileWebpLossy, Config::Current->SaveFileWebpQualComp, Config::Current->SaveFileWebpDurOverride);
+			tImageWEBP::SaveParams params(SaveParamsWEBP);
+			if (useConfigSaveParams)
+			{
+				params.Lossy = Config::Current->SaveFileWebpLossy;
+				params.QualityCompstr = Config::Current->SaveFileWebpQualComp;
+				params.OverrideFrameDuration = Config::Current->SaveFileWebpDurOverride;
+			}
+			success = webp.Save(outFile, params);
 			break;
 		}
 
@@ -605,22 +626,25 @@ bool Image::Save(const tString& outFile, tFileType fileType) const
 				return false;
 
 			tImageQOI qoi(*picture, false);
-			tImageQOI::tFormat saveFormat = tImageQOI::tFormat::Auto;
-			switch (Config::Current->SaveFileQoiDepthMode)
+			tImageQOI::SaveParams params(SaveParamsQOI);
+			if (useConfigSaveParams)
 			{
-				case 1: saveFormat = tImageQOI::tFormat::BPP24;		break;
-				case 2: saveFormat = tImageQOI::tFormat::BPP32;		break;
+				params.Format = tImageQOI::tFormat::Auto;
+				switch (Config::Current->SaveFileQoiDepthMode)
+				{
+					case 1: params.Format = tImageQOI::tFormat::BPP24;		break;
+					case 2: params.Format = tImageQOI::tFormat::BPP32;		break;
+				}
+
+				params.Space = tImageQOI::tSpace::Auto;
+				switch (Config::Current->SaveFileQoiColourSpace)
+				{
+					case 1: params.Space = tImageQOI::tSpace::sRGB;			break;
+					case 2: params.Space = tImageQOI::tSpace::Linear;		break;
+				}
 			}
 
-			tImageQOI::tSpace saveSpace = tImageQOI::tSpace::sRGB;
-			switch (Config::Current->SaveFileQoiColourSpace)
-			{
-				case 0: saveSpace = tImageQOI::tSpace::sRGB;		break;
-				case 1: saveSpace = tImageQOI::tSpace::Linear;		break;
-			}
-			qoi.SetColourSpace(saveSpace);
-
-			tImageQOI::tFormat savedFormat = qoi.Save(outFile, saveFormat);
+			tImageQOI::tFormat savedFormat = qoi.Save(outFile, params);
 			success = (savedFormat != tImageQOI::tFormat::Invalid);
 			break;
 		}
@@ -644,8 +668,9 @@ bool Image::Save(const tString& outFile, tFileType fileType) const
 			}
 
 			tImageAPNG apng(frames, true);
-			tImageAPNG::SaveParams params;
-			params.OverrideFrameDuration = Config::Current->SaveFileApngDurOverride;
+			tImageAPNG::SaveParams params(SaveParamsAPNG);
+			if (useConfigSaveParams)
+				params.OverrideFrameDuration = Config::Current->SaveFileApngDurOverride;
 			tImageAPNG::tFormat savedFormat = apng.Save(outFile, params);
 			success = (savedFormat != tImageAPNG::tFormat::Invalid);
 			break;
@@ -658,13 +683,17 @@ bool Image::Save(const tString& outFile, tFileType fileType) const
 				return false;
 
 			tImageBMP bmp(*picture, false);
-			tImageBMP::tFormat saveFormat = tImageBMP::tFormat::Auto;
-			switch (Config::Current->SaveFileBmpDepthMode)
+			tImageBMP::SaveParams params(SaveParamsBMP);
+			if (useConfigSaveParams)
 			{
-				case 1: saveFormat = tImageBMP::tFormat::BPP24;		break;
-				case 2: saveFormat = tImageBMP::tFormat::BPP32;		break;
+				params.Format = tImageBMP::tFormat::Auto;
+				switch (Config::Current->SaveFileBmpDepthMode)
+				{
+					case 1: params.Format = tImageBMP::tFormat::BPP24;		break;
+					case 2: params.Format = tImageBMP::tFormat::BPP32;		break;
+				}
 			}
-			tImageBMP::tFormat savedFormat = bmp.Save(outFile, saveFormat);
+			tImageBMP::tFormat savedFormat = bmp.Save(outFile, params);
 			success = (savedFormat != tImageBMP::tFormat::Invalid);
 			break;
 		}
@@ -688,9 +717,12 @@ bool Image::Save(const tString& outFile, tFileType fileType) const
 			}
 
 			tImageTIFF tiff(frames, true);
-			tImageTIFF::SaveParams params;
-			params.UseZLibCompression = Config::Current->SaveFileTiffZLibDeflate;
-			params.OverrideFrameDuration = Config::Current->SaveFileTiffDurOverride;
+			tImageTIFF::SaveParams params(SaveParamsTIFF);
+			if (useConfigSaveParams)
+			{
+				params.UseZLibCompression = Config::Current->SaveFileTiffZLibDeflate;
+				params.OverrideFrameDuration = Config::Current->SaveFileTiffDurOverride;
+			}
 			success = tiff.Save(outFile, params);
 			break;
 		}
@@ -698,7 +730,7 @@ bool Image::Save(const tString& outFile, tFileType fileType) const
 
 	return success;
 }
-//////////////////////////
+
 
 int Image::GetMemSizeBytes() const
 {
