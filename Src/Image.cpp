@@ -546,8 +546,8 @@ bool Image::Save(const tString& outFile, tFileType fileType) const
 		case tFileType::GIF:
 		{
 			tList<tFrame> frames;
-			tList<tImage::tPicture>& pics = GetPictures();
-			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
+			const tList<tImage::tPicture>& pics = GetPictures();
+			for (const tPicture* picture = pics.First(); picture; picture = picture->Next())
 			{
 				frames.Append
 				(
@@ -578,7 +578,7 @@ bool Image::Save(const tString& outFile, tFileType fileType) const
 		case tFileType::WEBP:
 		{
 			tList<tFrame> frames;
-			tList<tImage::tPicture>& pics = GetPictures();
+			const tList<tImage::tPicture>& pics = GetPictures();
 			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
 			{
 				frames.Append
@@ -628,7 +628,7 @@ bool Image::Save(const tString& outFile, tFileType fileType) const
 		case tFileType::APNG:
 		{
 			tList<tFrame> frames;
-			tList<tImage::tPicture>& pics = GetPictures();
+			const tList<tImage::tPicture>& pics = GetPictures();
 			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
 			{
 				frames.Append
@@ -672,7 +672,7 @@ bool Image::Save(const tString& outFile, tFileType fileType) const
 		case tFileType::TIFF:
 		{
 			tList<tFrame> frames;
-			tList<tImage::tPicture>& pics = GetPictures();
+			const tList<tImage::tPicture>& pics = GetPictures();
 			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
 			{
 				frames.Append

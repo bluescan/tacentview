@@ -89,7 +89,7 @@ public:
 	// The primary one is the first one.
 	tImage::tPicture* GetPrimaryPic() const																				{ return Pictures.First(); }
 	tImage::tPicture* GetCurrentPic() const																				{ tImage::tPicture* pic = Pictures.First(); for (int i = 0; i < FrameNum; i++) pic = pic ? pic->Next() : nullptr; return pic; }
-	tList<tImage::tPicture>& GetPictures()																				{ return Pictures; }
+	const tList<tImage::tPicture>& GetPictures() const																	{ return Pictures; }
 
 	// Functions that edit and cause dirty flag to be set.
 	void Rotate90(bool antiClockWise);
