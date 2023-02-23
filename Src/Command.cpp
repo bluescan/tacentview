@@ -40,6 +40,8 @@ namespace Command
 	tCmdLine::tOption OptionOverwrite	("Overwrite existing output files",		"overwrite",	'w'			);
 	tCmdLine::tOption OptionAutoName	("Autogenerate output file names",		"autonames",	'a'			);
 
+	tCmdLine::tOption OptionParamsAPNG	("Save parameters for APNG files",		"paramsAPNG",	2			);
+
 	void BeginConsoleOutput();
 	void EndConsoleOutput();
 	#ifdef PLATFORM_WINDOWS
@@ -55,8 +57,15 @@ namespace Command
 	void InputFilesAddUnique(const tSystem::tFileInfo&);
 	void DetermineInputFiles();															// Step 2.
 	void PopulateImages();																// Step 3.
-	tSystem::tFileType DetermineOutType();
+
+	tSystem::tFileType DetermineOutType();												// Step 4.
+
+	void DetermineOutSaveParameters(tSystem::tFileType);								// Step 5.
+	void ParseSaveParametersAPNG();
+
 	tString DetermineOutputFilename(const tString& inName, tSystem::tFileType outType);
+
+	tImage::tImageAPNG::SaveParams SaveParamsAPNG;
 
 	tSystem::tFileTypes InputTypes;
 	tList<tSystem::tFileInfo> InputFiles;
@@ -263,6 +272,34 @@ tSystem::tFileType Command::DetermineOutType()
 }
 
 
+void Command::DetermineOutSaveParameters(tSystem::tFileType fileType)
+{
+	// We only bother reading save parameter options for the type of files we will be saving.
+	switch (fileType)
+	{
+		case tSystem::tFileType::APNG: ParseSaveParametersAPNG(); break;
+	}
+}
+
+
+void Command::ParseSaveParametersAPNG()
+{
+	if (!OptionParamsAPNG)
+		return;
+
+	tString formatStr					= OptionParamsAPNG.Arg1();
+	switch (tHash::tHashString(formatStr.Chr()))
+	{
+		case tHash::tHashCT("24"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::BPP24;			break;
+		case tHash::tHashCT("32"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::BPP32;			break;
+		case tHash::tHashCT("auto"):	SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::Auto;			break;
+	}
+
+	tString overrideFrameDurationStr		= OptionParamsAPNG.Arg2();
+	SaveParamsAPNG.OverrideFrameDuration	= overrideFrameDurationStr.AsInt32();
+}
+
+
 tString Command::DetermineOutputFilename(const tString& inName, tSystem::tFileType outType)
 {
 	tString outExt = tSystem::tGetExtension(outType);
@@ -363,6 +400,7 @@ If no input types are specified, all supported types are processed.
 	PopulateImages();
 
 	tSystem::tFileType outType = DetermineOutType();
+	DetermineOutSaveParameters(outType);
 
 	// Processing. We process and save images individually to save memory.
 	for (Viewer::Image* image = Images.First(); image; image = image->Next())
@@ -383,7 +421,9 @@ If no input types are specified, all supported types are processed.
 		// Save.
 		if (doSave)
 		{
-			bool success = image->Save(outFilename, outType);
+			// Set the image save parameters correctly. The user may have modified them from the command line.
+			image->SaveParamsAPNG = SaveParamsAPNG;
+			bool success = image->Save(outFilename, outType, false);
 			if (success)
 				tPrintf("Saved File: %s\n", outFilename.Chr());
 			else

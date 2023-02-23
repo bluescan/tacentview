@@ -69,7 +69,7 @@ using namespace tMath;
 namespace Viewer
 {
 	tCmdLine::tParam  ParamImageFiles	("Files to open",												"ImageFiles",			0,	true	);
-	tCmdLine::tOption OptionCLI			("Use command line mode (required for CLI image processing)",	"cli",			'c'					);
+	tCmdLine::tOption OptionCLI			("Use command line mode (required when using CLI)",				"cli",			'c'					);
 	tCmdLine::tOption OptionHelp		("Help on usage",												"help",			'h',	0,	true	);
 
 	tFileTypes FileTypes_Load
