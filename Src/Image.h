@@ -65,8 +65,12 @@ public:
 	bool Load(const tString& filename);
 	bool Load();													// Load into main memory.
 	bool IsLoaded() const																								{ return (Pictures.Count() > 0); }
-	int GetNumFrames() const																							{ return Pictures.Count(); }
 
+	// Not all fileTypes are supported for save. Reads config for each types save parameters. Handles single and
+	// multi-frame images. Returns success.
+	bool Save(const tString& outFile, tSystem::tFileType fileType) const;
+
+	int GetNumFrames() const																							{ return Pictures.Count(); }
 	bool IsOpaque() const;
 	bool Unload(bool force = false);
 	float GetLoadedTime() const																							{ return LoadedTime; }

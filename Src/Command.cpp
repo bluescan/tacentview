@@ -383,7 +383,7 @@ If no input types are specified, all supported types are processed.
 		// Save.
 		if (doSave)
 		{
-			bool success = Viewer::SaveImageAs(*image, outFilename, outType);
+			bool success = image->Save(outFilename, outType);
 			if (success)
 				tPrintf("Saved File: %s\n", outFilename.Chr());
 			else

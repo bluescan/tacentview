@@ -44,8 +44,4 @@ namespace Viewer
 	// you are indicating you don't mind if picture is modified and the pixels are stolen from it. It's more efficient
 	// to do this if possible. Returns success.
 	bool SavePictureAs(tImage::tPicture& picture, const tString& outFile, tSystem::tFileType fileType, bool steal);
-
-	// Not all fileTypes are supported for save. Reads config for each types save parameters. When saving a
-	// Viewer::Image the pixels are never stolen from it. Handles single and multi-frame images. Returns success.
-	bool SaveImageAs(Viewer::Image& image, const tString& outFile, tSystem::tFileType fileType);
 }
