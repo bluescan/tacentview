@@ -41,6 +41,7 @@ namespace Command
 	tCmdLine::tOption OptionAutoName	("Autogenerate output file names",		"autoname",		'a'			);
 
 	tCmdLine::tOption OptionParamsAPNG	("Save parameters for APNG files",		"paramsAPNG",	2			);
+	tCmdLine::tOption OptionParamsBMP	("Save parameters for BMP  files",		"paramsBMP",	1			);
 
 	void BeginConsoleOutput();
 	void EndConsoleOutput();
@@ -66,10 +67,12 @@ namespace Command
 
 	void DetermineOutSaveParameters(tSystem::tFileType);										// Step 5.
 	void ParseSaveParametersAPNG();
+	void ParseSaveParametersBMP();
 
 	tString DetermineOutputFilename(const tString& inName, tSystem::tFileType outType);
 
 	tImage::tImageAPNG::SaveParams SaveParamsAPNG;
+	tImage::tImageBMP::SaveParams  SaveParamsBMP;
 
 	tSystem::tFileTypes InputTypes;
 	tList<tSystem::tFileInfo> InputFiles;
@@ -335,6 +338,7 @@ void Command::DetermineOutSaveParameters(tSystem::tFileType fileType)
 	switch (fileType)
 	{
 		case tSystem::tFileType::APNG: ParseSaveParametersAPNG(); break;
+		case tSystem::tFileType::BMP:  ParseSaveParametersBMP();  break;
 	}
 }
 
@@ -349,11 +353,31 @@ void Command::ParseSaveParametersAPNG()
 	{
 		case tHash::tHashCT("24"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::BPP24;			break;
 		case tHash::tHashCT("32"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::BPP32;			break;
-		case tHash::tHashCT("auto"):	SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::Auto;			break;
+		case tHash::tHashCT("auto"):
+		case tHash::tHashCT("*"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::Auto;			break;
 	}
 
-	tString overrideFrameDurationStr		= OptionParamsAPNG.Arg2();
-	SaveParamsAPNG.OverrideFrameDuration	= overrideFrameDurationStr.AsInt32();
+	tString overrideFrameDurationStr	= OptionParamsAPNG.Arg2();
+	if (overrideFrameDurationStr == "*")
+		SaveParamsAPNG.OverrideFrameDuration = -1;
+	else
+		SaveParamsAPNG.OverrideFrameDuration = overrideFrameDurationStr.AsInt32();
+}
+
+
+void Command::ParseSaveParametersBMP()
+{
+	if (!OptionParamsBMP)
+		return;
+
+	tString formatStr					= OptionParamsBMP.Arg1();
+	switch (tHash::tHashString(formatStr.Chr()))
+	{
+		case tHash::tHashCT("24"):		SaveParamsBMP.Format = tImage::tImageBMP::tFormat::BPP24;			break;
+		case tHash::tHashCT("32"):		SaveParamsBMP.Format = tImage::tImageBMP::tFormat::BPP32;			break;
+		case tHash::tHashCT("auto"):
+		case tHash::tHashCT("*"):		SaveParamsBMP.Format = tImage::tImageBMP::tFormat::Auto;			break;
+	}
 }
 
 
@@ -418,15 +442,18 @@ int Command::Process()
 		}
 
 		tCmdLine::tPrintUsage(u8"Tristan Grimmer", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
+
+		// In editor the column num at EOL (after last character) should be 80 or less.
 		tPrintf
 		(
 R"U5AG3(MODE
-01234567890123456789012345678901234567890123456789012345678901234567890123456789
-You MUST call with -c or --cli to use this program in CLI mode. Even if you
-just want to print syntax usage you would need -cs in the command line.
+You MUST call with -c or --cli to use this program in CLI mode.
+
+Use the --help (-h) flag to print this help. To view generic command-line
+syntax help use the --syntax (-s) flag. For example, to print syntax usage you
+could call tacentview.exe -cs which expands to tacentview.exe -c -s
 
 INPUT IMAGES
-01234567890123456789012345678901234567890123456789012345678901234567890123456789
 Each parameter of the command line shoud be a file or directory to process. You
 may enter as many as you need. If no input files are specified, the current
 directory is processed. You may also specify a manifest file containing images
@@ -446,7 +473,6 @@ one -i to process multiple types. No -i means all supported types.
 %s
 
 OUTPUT IMAGES
-01234567890123456789012345678901234567890123456789012345678901234567890123456789
 The output files are generated based on the input files and chosen operations.
 The extract, flipbook, and combine operations consume the current set of input
 images when they create their output images. Extract creates one or more new
@@ -459,13 +485,25 @@ outtype is specified the default is tga.
 
 In cases where the input images are processed and not consumed, the output
 filename matches the input filename except that the extension/type may be
-different. Eg. Landscape.jpg would save as Landscape.tga if the outtype was tga.
+different. Eg. Seascape.jpg would save as Seascape.tga if the outtype was tga.
 
 By default if an output file already exists, it is not overwritten. To allow
 overwrite use the --overwrite (-w) flag. To have the tool try a different
 filename if it aready exists, use the --autoname (-a) flag. It will append the
 string _NN to the name where NN is a number that keeps incrementing until no
 existing file is found.
+
+OUTPUT PARAMETERS
+Different output image types have different features and may support different
+parameters when saving. The following options cover setting these parameters.
+These options do not have single-letter short forms. In all cases entering an
+asterisk (*) means use the default value. In the desriptions below the *
+indicates which is the default.
+
+--paramsAPNG bpp dur
+  bpp: Bits per pixel. 24, 32, or auto(*). Auto means decide based on opacity.
+  dur: Frame duration override in milliseconds. -1(*) means use current frame
+       duration. 0 or more means override all frames to supplied value.
 )U5AG3",
 			intypes.Chr(), inexts.Chr(), outtypes.Chr()
 		);
@@ -512,6 +550,8 @@ existing file is found.
 		{
 			// Set the image save parameters correctly. The user may have modified them from the command line.
 			image->SaveParamsAPNG = SaveParamsAPNG;
+			image->SaveParamsBMP  = SaveParamsBMP;
+
 			bool success = image->Save(outFilename, outType, false);
 			if (success)
 				tPrintf("Saved File: %s\n", outFilename.Chr());
