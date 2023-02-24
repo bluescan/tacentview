@@ -53,14 +53,18 @@ namespace Command
 		~ConsoleOutputScoped()			{ EndConsoleOutput(); }
 	};
 
-	void DetermineInputTypes();															// Step 1.
+	void DetermineInputTypes();																	// Step 1.
 	void InputFilesAddUnique(const tSystem::tFileInfo&);
-	void DetermineInputFiles();															// Step 2.
-	void PopulateImages();																// Step 3.
 
-	tSystem::tFileType DetermineOutType();												// Step 4.
+	void DetermineInputFiles();																	// Step 2.
+	void GetItemsFromManifest(tList<tStringItem>& manifestItems, const tString& manifestFile);
+	void ProcessInputItem(tList<tSystem::tFileInfo>& inputFiles, const tString& item);
 
-	void DetermineOutSaveParameters(tSystem::tFileType);								// Step 5.
+	void PopulateImages();																		// Step 3.
+
+	tSystem::tFileType DetermineOutType();														// Step 4.
+
+	void DetermineOutSaveParameters(tSystem::tFileType);										// Step 5.
 	void ParseSaveParametersAPNG();
 
 	tString DetermineOutputFilename(const tString& inName, tSystem::tFileType outType);
@@ -200,36 +204,89 @@ void Command::InputFilesAddUnique(const tSystem::tFileInfo& infoToAdd)
 }
 
 
+void Command::GetItemsFromManifest(tList<tStringItem>& manifestItems, const tString& manifestFile)
+{
+	// The manifest file still has the @ symbol in it.
+	tString manFile = manifestFile;
+	manFile.ExtractLeft(1);
+	if (!tSystem::tFileExists(manFile))
+		return;
+
+	tString manifest;
+	bool loaded = tSystem::tLoadFile(manFile, manifest);
+	if (!loaded)
+		return;
+
+	manifest.Remove('\r');
+
+	tList<tStringItem> lines;
+	int numLines = tStd::tExplode(lines, manifest, '\n');
+	if (numLines <= 0)
+		return;
+
+	for (tStringItem* line = lines.First(); line; line = line->Next())
+	{
+		if (line->IsEmpty())
+			continue;
+
+		// Line comments in manifest files start with a semicolon.
+		if (line->Left(1) == ";")
+			continue;
+
+		manifestItems.Append(new tStringItem(*line));
+	}
+}
+
+
+void Command::ProcessInputItem(tList<tSystem::tFileInfo>& inputFiles, const tString& item)
+{
+	tSystem::tFileInfo info;
+	bool found = tSystem::tGetFileInfo(info, item);
+	if (!found)
+		return;
+
+	if (info.Directory)
+	{
+		if (item == ".")
+			tSystem::tFindFiles(inputFiles, "", InputTypes);
+		else
+			tSystem::tFindFiles(inputFiles, item, InputTypes);
+	}
+	else
+	{
+		// Convert to simple full absolute path.
+		info.FileName = tSystem::tGetAbsolutePath(info.FileName);
+
+		// Add existing files that are of a globally supported filetype. Note we ignore InputTypes
+		// here because the user explicitely specified the file, so it must be what they want.
+		tSystem::tFileType typ = tSystem::tGetFileType(item);
+		if (Viewer::FileTypes_Load.Contains(typ))
+			inputFiles.Append(new tSystem::tFileInfo(info));
+	}
+}
+
+
 void Command::DetermineInputFiles()
 {
 	tList<tSystem::tFileInfo> inputFiles;
 
+	// If no input files specified, use the current directory.
 	if (!ParamInputFiles)
 		tSystem::tFindFiles(inputFiles, "", InputTypes);
 
 	for (tStringItem* fileItem = ParamInputFiles.Values.First(); fileItem; fileItem = fileItem->Next())
 	{
-		tSystem::tFileInfo info;
-		bool found = tSystem::tGetFileInfo(info, *fileItem);
-		if (!found)
-			continue;
-
-		if (info.Directory)
+		// If the fileItem starts with an 'at' symbol (@), we interpret it as a manifest file.
+		if (fileItem->Left(1) == "@")
 		{
-			if (*fileItem == ".")
-				tSystem::tFindFiles(inputFiles, "", InputTypes);
-			else
-				tSystem::tFindFiles(inputFiles, *fileItem, InputTypes);
+			tList<tStringItem> manifestItems;
+			GetItemsFromManifest(manifestItems, *fileItem);
+			for (tStringItem* manifestItem = manifestItems.First(); manifestItem; manifestItem = manifestItem->Next())
+				ProcessInputItem(inputFiles, *manifestItem);
 		}
 		else
 		{
-			// Convert to simple full absolute path.
-			info.FileName = tSystem::tGetAbsolutePath(info.FileName);
-
-			// Only add existing files that are of a globally supported filetype.
-			tSystem::tFileType typ = tSystem::tGetFileType(*fileItem);
-			if (Viewer::FileTypes_Load.Contains(typ))
-				inputFiles.Append(new tSystem::tFileInfo(info));
+			ProcessInputItem(inputFiles, *fileItem);
 		}
 	}
 
@@ -337,7 +394,7 @@ int Command::Process()
 R"U5AG3(Additional Notes:
 01234567890123456789012345678901234567890123456789012345678901234567890123456789
 You MUST call with -c or --cli to use this program in CLI mode. Even if you
-just want to print syntax usage you would need -c -s in the command line.
+just want to print syntax usage you would need -cs in the command line.
 
 Specify a manifest file containing images to process using the @ symbol.
 eg. @list.txt will load files from a manifest file called list.txt
