@@ -388,56 +388,58 @@ int Command::Process()
 	tPrintf("\nTacent View %d.%d.%d in CLI Mode.\nCall with --help for instructions.\n", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
 	if (OptionHelp)
 	{
-		tCmdLine::tPrintUsage(u8"Tristan Grimmer", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
-		tPrintf
-		(
-R"U5AG3(Additional Notes:
-01234567890123456789012345678901234567890123456789012345678901234567890123456789
-You MUST call with -c or --cli to use this program in CLI mode. Even if you
-just want to print syntax usage you would need -cs in the command line.
-
-Specify a manifest file containing images to process using the @ symbol.
-eg. @list.txt will load files from a manifest file called list.txt
-
-When processing an entire directory of images you may specify what types of
-input files to process. A type like 'tif' may have more than one accepted
-extension (like tiff). You don't specify the extension, you specify the type.
-
-If no input files are specified, the current directory is processed.
-If no input types are specified, all supported types are processed.
-)U5AG3"
-		);
-
-		tPrintf("Supported input file types:");
-		int col = 27;
+		tString ftypes;
+		ftypes += tsPrintf("Supported input file types: ");
 		for (tSystem::tFileTypes::tFileTypeItem* typ = Viewer::FileTypes_Load.First(); typ; typ = typ->Next())
 		{
-			col += tPrintf(" %s", tSystem::tGetFileTypeName(typ->FileType).Chr());
-			if (col > 80-4)
-			{
-				tPrintf("\n");
-				col = 0;
-			}
+			ftypes += tsPrintf("%s ", tSystem::tGetFileTypeName(typ->FileType).Chr());
+			if (ftypes.Length()%80 > 80-4)
+				ftypes += tsPrintf("\n");
 		}
-		tPrintf("\n");
 
-		tPrintf("Supported input file extensions:");
-		col = 32;
+		tString fexts;
+		fexts += tsPrintf("These cover file extensions: ");
 		for (tSystem::tFileTypes::tFileTypeItem* typ = Viewer::FileTypes_Load.First(); typ; typ = typ->Next())
 		{
 			tList<tStringItem> extensions;
 			tSystem::tGetExtensions(extensions, typ->FileType);
 			for (tStringItem* ext = extensions.First(); ext; ext = ext->Next())
 			{
-				tPrintf(" %s", ext->Chr());
-				if (col > 80-4)
-				{
-					tPrintf("\n");
-					col = 0;
-				}
+				fexts += tsPrintf("%s ", ext->Chr());
+				if (fexts.Length()%80 > 80-5)
+					fexts += tsPrintf("\n");
 			}
 		}
-		tPrintf("\n");
+
+		tCmdLine::tPrintUsage(u8"Tristan Grimmer", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
+		tPrintf
+		(
+R"U5AG3(Input Details:
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+You MUST call with -c or --cli to use this program in CLI mode. Even if you
+just want to print syntax usage you would need -cs in the command line.
+
+Each parameter of the command line shoud be a file or directory to process. You
+may enter as many as you need. If no input files are specified, the current
+directory is processed. You may also specify a manifest file containing images
+to process using the @ symbol.
+
+eg. @list.txt will load files from a manifest file called list.txt. Each line
+of a manifest file should be the name of a file to process, the name of a dir
+to process, start with a line-comment semicolon, or simply be empty.
+
+When processing an entire directory of images you may specify what types of
+input files to process. A type like 'tif' may have more than one accepted
+extension (tif and tiff). The extension is not specified, the type is.
+Use the --intype (-i) option to specify an input type. You may have more than
+one -i to process multiple types. No -i means all supported types.
+
+%s
+%s
+)U5AG3",
+			ftypes.Chr(), fexts.Chr()
+		);
+
 		return 0;
 	}
 
