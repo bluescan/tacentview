@@ -38,7 +38,7 @@ namespace Command
 	tCmdLine::tOption OptionHelp		("Print help/usage information",		"help",			'h'			);
 	tCmdLine::tOption OptionSyntax		("Print syntax help",					"syntax",		's'			);
 	tCmdLine::tOption OptionOverwrite	("Overwrite existing output files",		"overwrite",	'w'			);
-	tCmdLine::tOption OptionAutoName	("Autogenerate output file names",		"autonames",	'a'			);
+	tCmdLine::tOption OptionAutoName	("Autogenerate output file names",		"autoname",		'a'			);
 
 	tCmdLine::tOption OptionParamsAPNG	("Save parameters for APNG files",		"paramsAPNG",	2			);
 
@@ -388,37 +388,45 @@ int Command::Process()
 	tPrintf("\nTacent View %d.%d.%d in CLI Mode.\nCall with --help for instructions.\n", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
 	if (OptionHelp)
 	{
-		tString ftypes;
-		ftypes += tsPrintf("Supported input file types: ");
+		tString intypes("Supported input file types: ");
 		for (tSystem::tFileTypes::tFileTypeItem* typ = Viewer::FileTypes_Load.First(); typ; typ = typ->Next())
 		{
-			ftypes += tsPrintf("%s ", tSystem::tGetFileTypeName(typ->FileType).Chr());
-			if (ftypes.Length()%80 > 80-4)
-				ftypes += tsPrintf("\n");
+			intypes += tsPrintf("%s ", tSystem::tGetFileTypeName(typ->FileType).Chr());
+			if (intypes.Length()%80 > 80-5)
+				intypes += tsPrintf("\n");
 		}
 
-		tString fexts;
-		fexts += tsPrintf("These cover file extensions: ");
+		tString inexts("These cover file extensions: ");
 		for (tSystem::tFileTypes::tFileTypeItem* typ = Viewer::FileTypes_Load.First(); typ; typ = typ->Next())
 		{
 			tList<tStringItem> extensions;
 			tSystem::tGetExtensions(extensions, typ->FileType);
 			for (tStringItem* ext = extensions.First(); ext; ext = ext->Next())
 			{
-				fexts += tsPrintf("%s ", ext->Chr());
-				if (fexts.Length()%80 > 80-5)
-					fexts += tsPrintf("\n");
+				inexts += tsPrintf("%s ", ext->Chr());
+				if (inexts.Length()%80 > 80-5)
+					inexts += tsPrintf("\n");
 			}
+		}
+
+		tString outtypes("Supported output file types: ");
+		for (tSystem::tFileTypes::tFileTypeItem* typ = Viewer::FileTypes_Save.First(); typ; typ = typ->Next())
+		{
+			outtypes += tsPrintf("%s ", tSystem::tGetFileTypeName(typ->FileType).Chr());
+			if (outtypes.Length()%80 > 80-5)
+				outtypes += tsPrintf("\n");
 		}
 
 		tCmdLine::tPrintUsage(u8"Tristan Grimmer", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
 		tPrintf
 		(
-R"U5AG3(Input Details:
+R"U5AG3(MODE
 01234567890123456789012345678901234567890123456789012345678901234567890123456789
 You MUST call with -c or --cli to use this program in CLI mode. Even if you
 just want to print syntax usage you would need -cs in the command line.
 
+INPUT IMAGES
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
 Each parameter of the command line shoud be a file or directory to process. You
 may enter as many as you need. If no input files are specified, the current
 directory is processed. You may also specify a manifest file containing images
@@ -436,8 +444,30 @@ one -i to process multiple types. No -i means all supported types.
 
 %s
 %s
+
+OUTPUT IMAGES
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
+The output files are generated based on the input files and chosen operations.
+The extract, flipbook, and combine operations consume the current set of input
+images when they create their output images. Extract creates one or more new
+images. Flipbook and combine create a single new image. All other operations
+work on each image separately.
+
+The type of the output images is specified with the --outtype option. If no
+outtype is specified the default is tga.
+%s
+
+In cases where the input images are processed and not consumed, the output
+filename matches the input filename except that the extension/type may be
+different. Eg. Landscape.jpg would save as Landscape.tga if the outtype was tga.
+
+By default if an output file already exists, it is not overwritten. To allow
+overwrite use the --overwrite (-w) flag. To have the tool try a different
+filename if it aready exists, use the --autoname (-a) flag. It will append the
+string _NN to the name where NN is a number that keeps incrementing until no
+existing file is found.
 )U5AG3",
-			ftypes.Chr(), fexts.Chr()
+			intypes.Chr(), inexts.Chr(), outtypes.Chr()
 		);
 
 		return 0;
