@@ -559,6 +559,23 @@ void Command::ParseSaveParametersTGA()
 {
 	if (!OptionParamsTGA)
 		return;
+
+	tString formatStr					= OptionParamsTGA.Arg1();
+	switch (tHash::tHashString			(formatStr.Chr()))
+	{
+		case tHash::tHashCT("24"):		SaveParamsTGA.Format = tImage::tImageTGA::tFormat::BPP24;		break;
+		case tHash::tHashCT("32"):		SaveParamsTGA.Format = tImage::tImageTGA::tFormat::BPP32;		break;
+		case tHash::tHashCT("auto"):
+		case tHash::tHashCT("*"):		SaveParamsTGA.Format = tImage::tImageTGA::tFormat::Auto;		break;
+	}
+
+	tString compStr						= OptionParamsTGA.Arg2();
+	switch (tHash::tHashString			(compStr.Chr()))
+	{
+		case tHash::tHashCT("rle"):		SaveParamsTGA.Compression = tImage::tImageTGA::tCompression::RLE;	break;
+		case tHash::tHashCT("none"):
+		case tHash::tHashCT("*"):		SaveParamsTGA.Compression = tImage::tImageTGA::tCompression::None;	break;
+	}
 }
 
 
@@ -729,6 +746,10 @@ indicates which is the default.
   bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
   spc:  Colour space. srgb, lin, or auto*. Auto means keep the currenly loaded
         space. Use srgb for the sRGB space. Use lin for linear.
+
+--paramsTGA bpp comp
+  bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
+  comp: Compression. none* or rle. Use rle for run-length encoded.
 )U5AG3",
 			intypes.Chr(), inexts.Chr(), outtypes.Chr()
 		);
