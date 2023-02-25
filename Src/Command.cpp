@@ -44,6 +44,11 @@ namespace Command
 	tCmdLine::tOption OptionParamsBMP	("Save parameters for BMP  files",		"paramsBMP",	1			);
 	tCmdLine::tOption OptionParamsGIF	("Save parameters for GIF  files",		"paramsGIF",	8			);
 	tCmdLine::tOption OptionParamsJPG	("Save parameters for JPG  files",		"paramsJPG",	1			);
+	tCmdLine::tOption OptionParamsPNG	("Save parameters for PNG  files",		"paramsPNG",	1			);
+	tCmdLine::tOption OptionParamsQOI	("Save parameters for QOI  files",		"paramsQOI",	2			);
+	tCmdLine::tOption OptionParamsTGA	("Save parameters for TGA  files",		"paramsTGA",	2			);
+	tCmdLine::tOption OptionParamsTIFF	("Save parameters for TIFF files",		"paramsTIFF",	3			);
+	tCmdLine::tOption OptionParamsWEBP	("Save parameters for WEBP files",		"paramsWEBP",	3			);
 
 	void BeginConsoleOutput();
 	void EndConsoleOutput();
@@ -72,6 +77,12 @@ namespace Command
 	void ParseSaveParametersBMP();
 	void ParseSaveParametersGIF();
 	void ParseSaveParametersJPG();
+	void ParseSaveParametersPNG();
+	void ParseSaveParametersQOI();
+	void ParseSaveParametersTGA();
+	void ParseSaveParametersTIFF();
+	void ParseSaveParametersWEBP();
+	void SetImageSaveParameters(Viewer::Image&, tSystem::tFileType);
 
 	tString DetermineOutputFilename(const tString& inName, tSystem::tFileType outType);
 
@@ -79,6 +90,11 @@ namespace Command
 	tImage::tImageBMP::SaveParams  SaveParamsBMP;
 	tImage::tImageGIF::SaveParams  SaveParamsGIF;
 	tImage::tImageJPG::SaveParams  SaveParamsJPG;
+	tImage::tImagePNG::SaveParams  SaveParamsPNG;
+	tImage::tImageQOI::SaveParams  SaveParamsQOI;
+	tImage::tImageTGA::SaveParams  SaveParamsTGA;
+	tImage::tImageTIFF::SaveParams SaveParamsTIFF;
+	tImage::tImageWEBP::SaveParams SaveParamsWEBP;
 
 	tSystem::tFileTypes InputTypes;
 	tList<tSystem::tFileInfo> InputFiles;
@@ -347,6 +363,29 @@ void Command::DetermineOutSaveParameters(tSystem::tFileType fileType)
 		case tSystem::tFileType::BMP:  ParseSaveParametersBMP();  break;
 		case tSystem::tFileType::GIF:  ParseSaveParametersGIF();  break;
 		case tSystem::tFileType::JPG:  ParseSaveParametersJPG();  break;
+		case tSystem::tFileType::PNG:  ParseSaveParametersPNG();  break;
+		case tSystem::tFileType::QOI:  ParseSaveParametersQOI();  break;
+		case tSystem::tFileType::TGA:  ParseSaveParametersTGA();  break;
+		case tSystem::tFileType::TIFF: ParseSaveParametersTIFF(); break;
+		case tSystem::tFileType::WEBP: ParseSaveParametersWEBP(); break;
+	}
+}
+
+
+void Command::SetImageSaveParameters(Viewer::Image& image, tSystem::tFileType fileType)
+{
+	// We only bother setting save parameter options for the type of file requested.
+	switch (fileType)
+	{
+		case tSystem::tFileType::APNG: image.SaveParamsAPNG = SaveParamsAPNG; break;
+		case tSystem::tFileType::BMP:  image.SaveParamsBMP  = SaveParamsBMP;  break;
+		case tSystem::tFileType::GIF:  image.SaveParamsGIF  = SaveParamsGIF;  break;
+		case tSystem::tFileType::JPG:  image.SaveParamsJPG  = SaveParamsJPG;  break;
+		case tSystem::tFileType::PNG:  image.SaveParamsPNG  = SaveParamsPNG;  break;
+		case tSystem::tFileType::QOI:  image.SaveParamsQOI  = SaveParamsQOI;  break;
+		case tSystem::tFileType::TGA:  image.SaveParamsTGA  = SaveParamsTGA;  break;
+		case tSystem::tFileType::TIFF: image.SaveParamsTIFF = SaveParamsTIFF; break;
+		case tSystem::tFileType::WEBP: image.SaveParamsWEBP = SaveParamsWEBP; break;
 	}
 }
 
@@ -357,7 +396,7 @@ void Command::ParseSaveParametersAPNG()
 		return;
 
 	tString formatStr					= OptionParamsAPNG.Arg1();
-	switch (tHash::tHashString(formatStr.Chr()))
+	switch (tHash::tHashString			(formatStr.Chr()))
 	{
 		case tHash::tHashCT("24"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::BPP24;			break;
 		case tHash::tHashCT("32"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::BPP32;			break;
@@ -379,7 +418,7 @@ void Command::ParseSaveParametersBMP()
 		return;
 
 	tString formatStr					= OptionParamsBMP.Arg1();
-	switch (tHash::tHashString(formatStr.Chr()))
+	switch (tHash::tHashString			(formatStr.Chr()))
 	{
 		case tHash::tHashCT("24"):		SaveParamsBMP.Format = tImage::tImageBMP::tFormat::BPP24;			break;
 		case tHash::tHashCT("32"):		SaveParamsBMP.Format = tImage::tImageBMP::tFormat::BPP32;			break;
@@ -472,6 +511,50 @@ void Command::ParseSaveParametersJPG()
 		tMath::tiClamp(quality, 1, 100);
 		SaveParamsJPG.Quality = quality;
 	}
+}
+
+
+void Command::ParseSaveParametersPNG()
+{
+	if (!OptionParamsPNG)
+		return;
+
+	tString formatStr					= OptionParamsPNG.Arg1();
+	switch (tHash::tHashString			(formatStr.Chr()))
+	{
+		case tHash::tHashCT("24"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::BPP24;			break;
+		case tHash::tHashCT("32"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::BPP32;			break;
+		case tHash::tHashCT("auto"):
+		case tHash::tHashCT("*"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::Auto;			break;
+	}
+}
+
+
+void Command::ParseSaveParametersQOI()
+{
+	if (!OptionParamsQOI)
+		return;
+}
+
+
+void Command::ParseSaveParametersTGA()
+{
+	if (!OptionParamsTGA)
+		return;
+}
+
+
+void Command::ParseSaveParametersTIFF()
+{
+	if (!OptionParamsTIFF)
+		return;
+}
+
+
+void Command::ParseSaveParametersWEBP()
+{
+	if (!OptionParamsWEBP)
+		return;
 }
 
 
@@ -620,6 +703,9 @@ indicates which is the default.
 
 --paramsJPG qual
   qual: Quality of jpeg as integer from 1 to 100. Default is 95*
+
+--paramsPNG bpp
+  bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
 )U5AG3",
 			intypes.Chr(), inexts.Chr(), outtypes.Chr()
 		);
@@ -665,11 +751,7 @@ indicates which is the default.
 		if (doSave)
 		{
 			// Set the image save parameters correctly. The user may have modified them from the command line.
-			image->SaveParamsAPNG = SaveParamsAPNG;
-			image->SaveParamsBMP  = SaveParamsBMP;
-			image->SaveParamsGIF  = SaveParamsGIF;
-			image->SaveParamsJPG  = SaveParamsJPG;
-
+			SetImageSaveParameters(*image, outType);
 			bool success = image->Save(outFilename, outType, false);
 			if (success)
 				tPrintf("Saved File: %s\n", outFilename.Chr());
