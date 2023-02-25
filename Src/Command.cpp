@@ -593,13 +593,11 @@ void Command::ParseSaveParametersTIFF()
 		case tHash::tHashCT("*"):		SaveParamsTIFF.Format = tImage::tImageTIFF::tFormat::Auto;		break;
 	}
 
-	// Case insensitive. Interprets "true", "t", "yes", "y", "on", "enable", "enabled", "1", "+", and strings that
-	// represent non-zero integers as boolean true. Otherwise false.
 	tString zlibCompStr = OptionParamsTIFF.Arg2();
 	if (zlibCompStr == "*")
 		SaveParamsTIFF.UseZLibCompression = true;
 	else
-		SaveParamsTIFF.UseZLibCompression = zlibCompStr.AsBool();;
+		SaveParamsTIFF.UseZLibCompression = zlibCompStr.AsBool();
 
 	tString overrideFrameDurStr = OptionParamsTIFF.Arg3();
 	if (overrideFrameDurStr == "*")
@@ -613,6 +611,24 @@ void Command::ParseSaveParametersWEBP()
 {
 	if (!OptionParamsWEBP)
 		return;
+
+	tString lossyStr = OptionParamsWEBP.Arg1();
+	if (lossyStr == "*")
+		SaveParamsWEBP.Lossy = false;
+	else
+		SaveParamsWEBP.Lossy = lossyStr.AsBool();
+
+	tString qualStr = OptionParamsWEBP.Arg2();
+	if (qualStr == "*")
+		SaveParamsWEBP.QualityCompstr = 90.0f;
+	else
+		SaveParamsWEBP.QualityCompstr = qualStr.AsFloat();
+
+	tString overrideFrameDurStr = OptionParamsWEBP.Arg3();
+	if (overrideFrameDurStr == "*")
+		SaveParamsWEBP.OverrideFrameDuration = -1;
+	else
+		SaveParamsWEBP.OverrideFrameDuration = overrideFrameDurStr.AsInt32();
 }
 
 
@@ -753,8 +769,12 @@ indicates which is the default.
   loop: Times to loop for animated GIFs. Choose 0* to loop forever. 
   alp:  Alpha threshold. Choose -1 for opaque(*). Otherwise in [0, 255] and
         if pixel alpha <= threshold the pixel is transparent.
-  dur:  Frame duration override, -1 means no override. Otherwise in 1/100 s.
-  dith: Dither level. Only applies to spatial quantization. 0.0 means auto(*).
+  dur:  Frame duration override, -1* means no override. Otherwise in 1/100 s.
+  dith: Dither level. Value in range 0.0 to 2.0+. Only applies to spatial
+        quantization. 0.0* means auto-determine a good value for the current
+        image based on its dimensions. Greater than zero means manually set the
+        amount. A dither value of 0.1 results in no dithering. 2.0 results in
+        significant dithering.
   filt: Filter size. Only applies to spatial quantization. Must be 1, 3*, or 5.
   samp: Sample factor. Only applies to neu quantization. 1* means whole image
         learning. 10 means 1/10 of image only. Max value is 30 (fastest).
@@ -777,7 +797,15 @@ indicates which is the default.
 --paramsTIFF bpp zlib dur
   bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
   zlib: Use Zlib Compression. T* or F. This is a boolean. See note below.
-  dur:  Frame duration override, -1 means no override. Otherwise units are ms.
+  dur:  Frame duration override, -1* means no override. Otherwise units are ms.
+
+--paramsWEBP loss qual dur
+  loss: Generate lossy image. T or F*. This is a boolean. See note below.
+  qual: Quality or compression amount in range 0.0 to 100.0. Default is 90.0*.
+        Interpreted as quality for lossy images. Larger looks better but bigger
+        files. Interpreted as compression strength for non-lossy. Larger values
+        compress more but images take longer to generate.
+  dur:  Frame duration override, -1* means no override. Otherwise units are ms.
 
 For boolean arguments you may use "true", "t", "yes", "y", "on", "enable",
 "enabled", "1", "+", and strings that represent non-zero integers as true.
