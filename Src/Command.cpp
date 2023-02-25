@@ -572,11 +572,28 @@ asterisk (*) means use the default value. In the desriptions below the *
 indicates which is the default.
 
 --paramsAPNG bpp dur
-  bpp: Bits per pixel. 24, 32, or auto(*). Auto means decide based on opacity.
-  dur: Frame duration override in milliseconds. -1(*) means use current frame
-       duration. 0 or more means override all frames to supplied value.
+  bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
+  dur:  Frame duration override in milliseconds. -1* means use current frame
+        duration. 0 or more means override all frames to supplied value.
+
 --paramsBMP bpp
-  bpp: Bits per pixel. 24, 32, or auto(*). Auto means decide based on opacity.
+  bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
+
+--paramsGIF bpp qan loop alp dur dith filt samp
+  bpp:  Bits per pixel from 1 to 8*. Results in palette colours from 2 to 256.
+  qan:  Quantization method for palette generation.
+        fixed:   Use a fixed colour palette for the chosen bpp. Low quality.
+        spatial: Use scolorq algorithm. Slow but good for 32 colours or fewer.
+        neu:     Use neuquant algorithm. Good for 64 colours or more.
+        wu*:     Use XiaolinWu algorithm. Good for 64 colours or more.
+  loop: Times to loop for animated GIFs. Choose 0* to loop forever. 
+  alp:  Alpha threshold. Choose -1 for opaque(*). Otherwise in [0, 255] and
+        if pixel alpha <= threshold the pixel is transparent.
+  dur:  Frame duration override, -1 means no override. Otherwise in 1/100 s.
+  dith: Dither level. Only applies to spatial quantization. 0.0 means auto(*).
+  filt: Filter size. Only applies to spatial quantization. Must be 1, 3*, or 5.
+  samp: Sample factor. Only applies to neu quantization. 1* means whole image
+        learning. 10 means 1/10 of image only. Max value is 30 (fastest).
 )U5AG3",
 			intypes.Chr(), inexts.Chr(), outtypes.Chr()
 		);
