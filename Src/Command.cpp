@@ -43,6 +43,7 @@ namespace Command
 	tCmdLine::tOption OptionParamsAPNG	("Save parameters for APNG files",		"paramsAPNG",	2			);
 	tCmdLine::tOption OptionParamsBMP	("Save parameters for BMP  files",		"paramsBMP",	1			);
 	tCmdLine::tOption OptionParamsGIF	("Save parameters for GIF  files",		"paramsGIF",	8			);
+	tCmdLine::tOption OptionParamsJPG	("Save parameters for JPG  files",		"paramsJPG",	1			);
 
 	void BeginConsoleOutput();
 	void EndConsoleOutput();
@@ -70,12 +71,14 @@ namespace Command
 	void ParseSaveParametersAPNG();
 	void ParseSaveParametersBMP();
 	void ParseSaveParametersGIF();
+	void ParseSaveParametersJPG();
 
 	tString DetermineOutputFilename(const tString& inName, tSystem::tFileType outType);
 
 	tImage::tImageAPNG::SaveParams SaveParamsAPNG;
 	tImage::tImageBMP::SaveParams  SaveParamsBMP;
 	tImage::tImageGIF::SaveParams  SaveParamsGIF;
+	tImage::tImageJPG::SaveParams  SaveParamsJPG;
 
 	tSystem::tFileTypes InputTypes;
 	tList<tSystem::tFileInfo> InputFiles;
@@ -343,6 +346,7 @@ void Command::DetermineOutSaveParameters(tSystem::tFileType fileType)
 		case tSystem::tFileType::APNG: ParseSaveParametersAPNG(); break;
 		case tSystem::tFileType::BMP:  ParseSaveParametersBMP();  break;
 		case tSystem::tFileType::GIF:  ParseSaveParametersGIF();  break;
+		case tSystem::tFileType::JPG:  ParseSaveParametersJPG();  break;
 	}
 }
 
@@ -449,6 +453,25 @@ void Command::ParseSaveParametersGIF()
 		SaveParamsGIF.SampleFactor = 1;
 	else
 		SaveParamsGIF.SampleFactor = sampleFactorStr.AsInt32();
+}
+
+
+void Command::ParseSaveParametersJPG()
+{
+	if (!OptionParamsJPG)
+		return;
+
+	tString qualityStr					= OptionParamsJPG.Arg1();
+	if (qualityStr == "*")
+	{
+		SaveParamsJPG.Quality = 95;
+	}
+	else
+	{
+		int quality = qualityStr.AsInt32();
+		tMath::tiClamp(quality, 1, 100);
+		SaveParamsJPG.Quality = quality;
+	}
 }
 
 
@@ -594,6 +617,9 @@ indicates which is the default.
   filt: Filter size. Only applies to spatial quantization. Must be 1, 3*, or 5.
   samp: Sample factor. Only applies to neu quantization. 1* means whole image
         learning. 10 means 1/10 of image only. Max value is 30 (fastest).
+
+--paramsJPG qual
+  qual: Quality of jpeg as integer from 1 to 100. Default is 95*
 )U5AG3",
 			intypes.Chr(), inexts.Chr(), outtypes.Chr()
 		);
@@ -642,6 +668,7 @@ indicates which is the default.
 			image->SaveParamsAPNG = SaveParamsAPNG;
 			image->SaveParamsBMP  = SaveParamsBMP;
 			image->SaveParamsGIF  = SaveParamsGIF;
+			image->SaveParamsJPG  = SaveParamsJPG;
 
 			bool success = image->Save(outFilename, outType, false);
 			if (success)
