@@ -398,10 +398,10 @@ void Command::ParseSaveParametersAPNG()
 	tString formatStr					= OptionParamsAPNG.Arg1();
 	switch (tHash::tHashString			(formatStr.Chr()))
 	{
-		case tHash::tHashCT("24"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::BPP24;			break;
-		case tHash::tHashCT("32"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::BPP32;			break;
+		case tHash::tHashCT("24"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::BPP24;		break;
+		case tHash::tHashCT("32"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::BPP32;		break;
 		case tHash::tHashCT("auto"):
-		case tHash::tHashCT("*"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::Auto;			break;
+		case tHash::tHashCT("*"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::Auto;		break;
 	}
 
 	tString overrideFrameDurationStr	= OptionParamsAPNG.Arg2();
@@ -420,10 +420,10 @@ void Command::ParseSaveParametersBMP()
 	tString formatStr					= OptionParamsBMP.Arg1();
 	switch (tHash::tHashString			(formatStr.Chr()))
 	{
-		case tHash::tHashCT("24"):		SaveParamsBMP.Format = tImage::tImageBMP::tFormat::BPP24;			break;
-		case tHash::tHashCT("32"):		SaveParamsBMP.Format = tImage::tImageBMP::tFormat::BPP32;			break;
+		case tHash::tHashCT("24"):		SaveParamsBMP.Format = tImage::tImageBMP::tFormat::BPP24;		break;
+		case tHash::tHashCT("32"):		SaveParamsBMP.Format = tImage::tImageBMP::tFormat::BPP32;		break;
 		case tHash::tHashCT("auto"):
-		case tHash::tHashCT("*"):		SaveParamsBMP.Format = tImage::tImageBMP::tFormat::Auto;			break;
+		case tHash::tHashCT("*"):		SaveParamsBMP.Format = tImage::tImageBMP::tFormat::Auto;		break;
 	}
 }
 
@@ -522,10 +522,10 @@ void Command::ParseSaveParametersPNG()
 	tString formatStr					= OptionParamsPNG.Arg1();
 	switch (tHash::tHashString			(formatStr.Chr()))
 	{
-		case tHash::tHashCT("24"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::BPP24;			break;
-		case tHash::tHashCT("32"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::BPP32;			break;
+		case tHash::tHashCT("24"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::BPP24;		break;
+		case tHash::tHashCT("32"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::BPP32;		break;
 		case tHash::tHashCT("auto"):
-		case tHash::tHashCT("*"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::Auto;			break;
+		case tHash::tHashCT("*"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::Auto;		break;
 	}
 }
 
@@ -534,6 +534,24 @@ void Command::ParseSaveParametersQOI()
 {
 	if (!OptionParamsQOI)
 		return;
+
+	tString formatStr					= OptionParamsQOI.Arg1();
+	switch (tHash::tHashString			(formatStr.Chr()))
+	{
+		case tHash::tHashCT("24"):		SaveParamsQOI.Format = tImage::tImageQOI::tFormat::BPP24;		break;
+		case tHash::tHashCT("32"):		SaveParamsQOI.Format = tImage::tImageQOI::tFormat::BPP32;		break;
+		case tHash::tHashCT("auto"):
+		case tHash::tHashCT("*"):		SaveParamsQOI.Format = tImage::tImageQOI::tFormat::Auto;		break;
+	}
+
+	tString spaceStr					= OptionParamsQOI.Arg2();
+	switch (tHash::tHashString			(spaceStr.Chr()))
+	{
+		case tHash::tHashCT("srgb"):	SaveParamsQOI.Space = tImage::tImageQOI::tSpace::sRGB;			break;
+		case tHash::tHashCT("lin"):		SaveParamsQOI.Space = tImage::tImageQOI::tSpace::Linear;		break;
+		case tHash::tHashCT("auto"):
+		case tHash::tHashCT("*"):		SaveParamsQOI.Space = tImage::tImageQOI::tSpace::Auto;			break;
+	}
 }
 
 
@@ -706,6 +724,11 @@ indicates which is the default.
 
 --paramsPNG bpp
   bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
+
+--paramsQOI bpp spc
+  bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
+  spc:  Colour space. srgb, lin, or auto*. Auto means keep the currenly loaded
+        space. Use srgb for the sRGB space. Use lin for linear.
 )U5AG3",
 			intypes.Chr(), inexts.Chr(), outtypes.Chr()
 		);
