@@ -583,6 +583,29 @@ void Command::ParseSaveParametersTIFF()
 {
 	if (!OptionParamsTIFF)
 		return;
+
+	tString formatStr					= OptionParamsTIFF.Arg1();
+	switch (tHash::tHashString			(formatStr.Chr()))
+	{
+		case tHash::tHashCT("24"):		SaveParamsTIFF.Format = tImage::tImageTIFF::tFormat::BPP24;		break;
+		case tHash::tHashCT("32"):		SaveParamsTIFF.Format = tImage::tImageTIFF::tFormat::BPP32;		break;
+		case tHash::tHashCT("auto"):
+		case tHash::tHashCT("*"):		SaveParamsTIFF.Format = tImage::tImageTIFF::tFormat::Auto;		break;
+	}
+
+	// Case insensitive. Interprets "true", "t", "yes", "y", "on", "enable", "enabled", "1", "+", and strings that
+	// represent non-zero integers as boolean true. Otherwise false.
+	tString zlibCompStr = OptionParamsTIFF.Arg2();
+	if (zlibCompStr == "*")
+		SaveParamsTIFF.UseZLibCompression = true;
+	else
+		SaveParamsTIFF.UseZLibCompression = zlibCompStr.AsBool();;
+
+	tString overrideFrameDurStr = OptionParamsTIFF.Arg3();
+	if (overrideFrameDurStr == "*")
+		SaveParamsTIFF.OverrideFrameDuration = -1;
+	else
+		SaveParamsTIFF.OverrideFrameDuration = overrideFrameDurStr.AsInt32();
 }
 
 
@@ -750,6 +773,15 @@ indicates which is the default.
 --paramsTGA bpp comp
   bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
   comp: Compression. none* or rle. Use rle for run-length encoded.
+
+--paramsTIFF bpp zlib dur
+  bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
+  zlib: Use Zlib Compression. T* or F. This is a boolean. See note below.
+  dur:  Frame duration override, -1 means no override. Otherwise units are ms.
+
+For boolean arguments you may use "true", "t", "yes", "y", "on", "enable",
+"enabled", "1", "+", and strings that represent non-zero integers as true.
+These are case-insensitive. False is the result otherwise.
 )U5AG3",
 			intypes.Chr(), inexts.Chr(), outtypes.Chr()
 		);
