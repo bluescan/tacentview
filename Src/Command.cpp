@@ -33,13 +33,15 @@ namespace Command
 	tCmdLine::tParam  ParamInputFiles	("Input image files",					"inputfiles",	0			);
 
 	// Note, -c and --cli are reserved.
-	tCmdLine::tOption OptionOutType		("Output file type",					"outtype",		'o',	1	);
-	tCmdLine::tOption OptionInType		("Input file type(s)",					"intype",		'i',	1	);
 	tCmdLine::tOption OptionHelp		("Print help/usage information",		"help",			'h'			);
 	tCmdLine::tOption OptionSyntax		("Print syntax help",					"syntax",		's'			);
+
+	tCmdLine::tOption OptionInType		("Input file type(s)",					"intype",		'i',	1	);
+	tCmdLine::tOption OptionOperation	("Operation",							"op",					1	);
+
+	tCmdLine::tOption OptionOutType		("Output file type",					"outtype",		'o',	1	);
 	tCmdLine::tOption OptionOverwrite	("Overwrite existing output files",		"overwrite",	'w'			);
 	tCmdLine::tOption OptionAutoName	("Autogenerate output file names",		"autoname",		'a'			);
-
 	tCmdLine::tOption OptionParamsAPNG	("Save parameters for APNG files",		"paramsAPNG",	2			);
 	tCmdLine::tOption OptionParamsBMP	("Save parameters for BMP  files",		"paramsBMP",	1			);
 	tCmdLine::tOption OptionParamsGIF	("Save parameters for GIF  files",		"paramsGIF",	8			);
@@ -66,9 +68,11 @@ namespace Command
 
 	void DetermineInputFiles();																	// Step 2.
 	void GetItemsFromManifest(tList<tStringItem>& manifestItems, const tString& manifestFile);
-	void ProcessInputItem(tList<tSystem::tFileInfo>& inputFiles, const tString& item);
+	void ParseInputItem(tList<tSystem::tFileInfo>& inputFiles, const tString& item);
 
-	void PopulateImages();																		// Step 3.
+	void PopulateOperations();
+	void PopulateImagesList();																	// Step 3.
+	bool ProcessOperationsOnImage(Viewer::Image&);												// Applies all the operations (in order) to the supplied image.
 
 	tSystem::tFileType DetermineOutType();														// Step 4.
 
@@ -99,6 +103,44 @@ namespace Command
 	tSystem::tFileTypes InputTypes;
 	tList<tSystem::tFileInfo> InputFiles;
 	tList<Viewer::Image> Images;
+
+	enum class OpType
+	{
+		Invalid,
+		Resize,			// Resize image width/height by resampling.
+		Canvas,			// Modify width height of image by adjusting canvas size and specifying an anchor.
+		Crop,			// Similar to Canvas but only can make image smaller and more control over crop area.
+		Flip,			// Horizontal or vertical flips.
+		Rotate,			// Rotate an arbitrary number of degrees about a center point.
+		Levels,			// Adjust image levels. Blackoint, mids, whitepoint etc.
+		Contrast,		// Adjust contrast.
+		Brightness,		// Adjust brightness.
+		Quantize,		// Quantize (reduce) the number of colours used in an image.
+		Multalpha		// Remove the alpha channel by multiplying RGB against A and adding (1-A) * a specific colour.
+	};
+
+	struct Operation : public tLink<Operation>
+	{
+		virtual bool Apply(Viewer::Image&)					= 0;
+		OpType Op											= OpType::Invalid;
+	};
+
+	struct OperationResize : public Operation
+	{
+		OperationResize(const tString& args);
+		int Width;
+		int Height;
+		bool Apply(Viewer::Image&) override;
+	};
+
+	struct OperationRotate : public Operation
+	{
+		OperationRotate(const tString& args);
+		float Angle;
+		bool Apply(Viewer::Image&) override;
+	};
+
+	tList<Operation> Operations;
 }
 
 
@@ -263,7 +305,7 @@ void Command::GetItemsFromManifest(tList<tStringItem>& manifestItems, const tStr
 }
 
 
-void Command::ProcessInputItem(tList<tSystem::tFileInfo>& inputFiles, const tString& item)
+void Command::ParseInputItem(tList<tSystem::tFileInfo>& inputFiles, const tString& item)
 {
 	tSystem::tFileInfo info;
 	bool found = tSystem::tGetFileInfo(info, item);
@@ -307,11 +349,11 @@ void Command::DetermineInputFiles()
 			tList<tStringItem> manifestItems;
 			GetItemsFromManifest(manifestItems, *fileItem);
 			for (tStringItem* manifestItem = manifestItems.First(); manifestItem; manifestItem = manifestItem->Next())
-				ProcessInputItem(inputFiles, *manifestItem);
+				ParseInputItem(inputFiles, *manifestItem);
 		}
 		else
 		{
-			ProcessInputItem(inputFiles, *fileItem);
+			ParseInputItem(inputFiles, *fileItem);
 		}
 	}
 
@@ -328,13 +370,122 @@ void Command::DetermineInputFiles()
 }
 
 
-void Command::PopulateImages()
+void Command::PopulateImagesList()
 {
 	// This doesn't actually load the images. Just prepares them on the Images list.
 	for (tSystem::tFileInfo* info = InputFiles.First(); info; info = info->Next())
 	{
 		Images.Append(new Viewer::Image(*info));
 	}
+}
+
+
+void Command::PopulateOperations()
+{
+	if (!OptionOperation)
+		return;
+
+	tList<tStringItem> opstrings;
+	OptionOperation.GetArgs(opstrings);
+	for (tStringItem* opstr = opstrings.First(); opstr; opstr = opstr->Next())
+	{
+		// Now we need to parse something of the form: resize(640,*) or rotate(45)
+		tString str = *opstr;
+		tString op = str.ExtractLeft('(');
+		tString args = str.ExtractLeft(')');
+
+		switch (tHash::tHashString(op))
+		{
+			case tHash::tHashCT("resize"):
+			{
+				Operations.Append(new OperationResize(args));
+				break;
+			}
+
+			case tHash::tHashCT("rotate"):
+			{
+				Operations.Append(new OperationRotate(args));
+				break;
+			}
+		}
+	}
+}
+
+
+Command::OperationResize::OperationResize(const tString& argsStr)
+{
+	tList<tStringItem> args;
+	int numArgs = tStd::tExplode(args, argsStr, ',');
+	if (numArgs != 2)
+	{
+		Op = OpType::Invalid;
+		return;
+	}
+
+	// The AsInt calls return 0 if * is entered.
+	tStringItem* currArg = args.First();
+	Width = currArg->AsInt32();
+
+	currArg = currArg->Next();
+	Height = currArg->AsInt32();
+	tPrintf("Operation Resize. Width:%d Height:%d\n", Width, Height);
+
+	// @todo handle either width or height not being set to use aspect-preserve mode. Right now only accepting
+	// positive widths and heights.
+	if ((Width <= 0) || (Height <= 0))
+	{
+		Op = OpType::Invalid;
+		return;
+	}
+
+	Op = OpType::Resize;
+}
+
+
+bool Command::OperationResize::Apply(Viewer::Image& image)
+{
+	image.Resample(Width, Height, tImage::tResampleFilter::Bicubic, tImage::tResampleEdgeMode::Clamp);
+	return true;
+}
+
+
+Command::OperationRotate::OperationRotate(const tString& argsStr)
+{
+	tList<tStringItem> args;
+	int numArgs = tStd::tExplode(args, argsStr, ',');
+	if (numArgs != 1)
+	{
+		Op = OpType::Invalid;
+		return;
+	}
+	tStringItem* currArg = args.First();
+	Angle = currArg->AsFloat();
+
+	tPrintf("Operation Rotate. Angle:%f\n", Angle);
+	Op = OpType::Rotate;
+}
+
+
+bool Command::OperationRotate::Apply(Viewer::Image& image)
+{
+	float angleRadians = tMath::tDegToRad(Angle);
+	image.Rotate(angleRadians, tColouri::black, tImage::tResampleFilter::Bicubic, tImage::tResampleFilter::Box);
+	return true;
+}
+
+
+bool Command::ProcessOperationsOnImage(Viewer::Image& image)
+{
+	bool somethingFailed = false;
+	for (Operation* operation = Operations.First(); operation; operation = operation->Next())
+	{
+		if (operation->Op == OpType::Invalid)
+			continue;
+		bool success = operation->Apply(image);
+		if (!success)
+			somethingFailed = true;
+	}
+	return !somethingFailed;
 }
 
 
@@ -830,17 +981,29 @@ These are case-insensitive. False is the result otherwise.
 	DetermineInputFiles();
 
 	// Populates the Images list. Does not load the images.
-	PopulateImages();
+	PopulateImagesList();
+
+	// Populates the Operations list.
+	PopulateOperations();
 
 	tSystem::tFileType outType = DetermineOutType();
 	DetermineOutSaveParameters(outType);
 
-	// Processing. We process and save images individually to save memory.
+	// Process standard operations.
+	// We do the images one at a time to save memory. That is, we only need to load one image in at a time.
+	bool somethingFailed = false;
 	for (Viewer::Image* image = Images.First(); image; image = image->Next())
 	{
 		image->Load();
 
-		// Process.
+		// Process the standard operations on the current image.
+		bool processed = ProcessOperationsOnImage(*image);
+		if (!processed)
+		{
+			image->Unload();
+			somethingFailed = true;
+			continue;
+		}
 
 		// Determine out filename,
 		tString outFilename = DetermineOutputFilename(image->Filename, outType);
@@ -858,13 +1021,18 @@ These are case-insensitive. False is the result otherwise.
 			SetImageSaveParameters(*image, outType);
 			bool success = image->Save(outFilename, outType, false);
 			if (success)
+			{
 				tPrintf("Saved File: %s\n", outFilename.Chr());
+			}
 			else
+			{
 				tPrintf("Failed Save: %s\n", outFilename.Chr());
+				somethingFailed = true;
+			}
 		}
 
 		image->Unload();
 	}
 
-	return 0;
+	return somethingFailed ? 1 : 0;
 }
