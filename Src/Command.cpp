@@ -399,7 +399,7 @@ void Command::ParseSaveParametersGIF()
 	{
 		int bpp = bppStr.AsInt32();
 		tMath::tiClamp(bpp, 1, 8);
-		SaveParamsGIF.Format = tImage::tPixelFormat::PAL8BIT + bpp - 1;
+		SaveParamsGIF.Format = tImage::tPixelFormat(int(tImage::tPixelFormat::PAL8BIT) + bpp - 1);
 	}
 
 	tString quantStr = OptionParamsGIF.Arg2();
@@ -424,22 +424,33 @@ void Command::ParseSaveParametersGIF()
 	else
 		SaveParamsGIF.AlphaThreshold = alphaThresholdStr.AsInt32();
 
-	
+	tString overrideFrameDurStr = OptionParamsGIF.Arg5();
+	if (overrideFrameDurStr == "*")
+		SaveParamsGIF.OverrideFrameDuration = -1;
+	else
+		SaveParamsGIF.OverrideFrameDuration = overrideFrameDurStr.AsInt32();
+
+	tString ditherStr = OptionParamsGIF.Arg6();
+	if (ditherStr == "*")
+		SaveParamsGIF.DitherLevel = 0.0;
+	else
+		SaveParamsGIF.DitherLevel = ditherStr.AsDouble();
+
+	tString filterSizeStr = OptionParamsGIF.Arg7();
+	if (filterSizeStr == "*")
+		SaveParamsGIF.FilterSize = 3;
+	else
+		SaveParamsGIF.FilterSize = filterSizeStr.AsInt32();
+	if ((SaveParamsGIF.FilterSize != 1) && (SaveParamsGIF.FilterSize != 3) && (SaveParamsGIF.FilterSize != 5))
+		SaveParamsGIF.FilterSize = 3;
+
+	tString sampleFactorStr = OptionParamsGIF.Arg8();
+	if (sampleFactorStr == "*")
+		SaveParamsGIF.SampleFactor = 1;
+	else
+		SaveParamsGIF.SampleFactor = sampleFactorStr.AsInt32();
 }
 
-
-/////////////
-		tPixelFormat Format;		// See comment above. Must be one of the PALNBIT formats wher N is E [1, 8].
-		tQuantize::Method Method;	// See comment above. Choose one of the 4 available colour quantization methods.
-		int Loop;					// See comment above. Animated only. 0 = infinite (default). >0 = that many times.
-		int AlphaThreshold;			// See comment above. -1 = opaque. Otherwise A <= threshold meant transparent pixel.
-		int OverrideFrameDuration;	// See comment above. -1 = use frame duration. >=0 = Set all to this many 1/100 sec.
-
-		double DitherLevel;			// For Method::Spatial only. 0.0 = auto. >0.0 = manual dither amount.
-		int FilterSize;				// For Method::Spatial only. Must be 1, 3, or 5. Default is 3.
-
-		int SampleFactor;			// For Method::Neu only. 1 = whole image learning. 10 = 1/10th image used.
-/////////////
 
 tString Command::DetermineOutputFilename(const tString& inName, tSystem::tFileType outType)
 {
