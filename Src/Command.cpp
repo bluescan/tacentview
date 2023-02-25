@@ -42,6 +42,7 @@ namespace Command
 
 	tCmdLine::tOption OptionParamsAPNG	("Save parameters for APNG files",		"paramsAPNG",	2			);
 	tCmdLine::tOption OptionParamsBMP	("Save parameters for BMP  files",		"paramsBMP",	1			);
+	tCmdLine::tOption OptionParamsGIF	("Save parameters for GIF  files",		"paramsGIF",	8			);
 
 	void BeginConsoleOutput();
 	void EndConsoleOutput();
@@ -68,11 +69,13 @@ namespace Command
 	void DetermineOutSaveParameters(tSystem::tFileType);										// Step 5.
 	void ParseSaveParametersAPNG();
 	void ParseSaveParametersBMP();
+	void ParseSaveParametersGIF();
 
 	tString DetermineOutputFilename(const tString& inName, tSystem::tFileType outType);
 
 	tImage::tImageAPNG::SaveParams SaveParamsAPNG;
 	tImage::tImageBMP::SaveParams  SaveParamsBMP;
+	tImage::tImageGIF::SaveParams  SaveParamsGIF;
 
 	tSystem::tFileTypes InputTypes;
 	tList<tSystem::tFileInfo> InputFiles;
@@ -339,6 +342,7 @@ void Command::DetermineOutSaveParameters(tSystem::tFileType fileType)
 	{
 		case tSystem::tFileType::APNG: ParseSaveParametersAPNG(); break;
 		case tSystem::tFileType::BMP:  ParseSaveParametersBMP();  break;
+		case tSystem::tFileType::GIF:  ParseSaveParametersGIF();  break;
 	}
 }
 
@@ -380,6 +384,62 @@ void Command::ParseSaveParametersBMP()
 	}
 }
 
+
+void Command::ParseSaveParametersGIF()
+{
+	if (!OptionParamsGIF)
+		return;
+
+	tString bppStr = OptionParamsGIF.Arg1();
+	if (bppStr == "*")
+	{
+		SaveParamsGIF.Format = tImage::tPixelFormat::PAL8BIT;
+	}
+	else
+	{
+		int bpp = bppStr.AsInt32();
+		tMath::tiClamp(bpp, 1, 8);
+		SaveParamsGIF.Format = tImage::tPixelFormat::PAL8BIT + bpp - 1;
+	}
+
+	tString quantStr = OptionParamsGIF.Arg2();
+	switch (tHash::tHashString(quantStr.Chr()))
+	{
+		case tHash::tHashCT("fixed"):	SaveParamsGIF.Method = tImage::tQuantize::Method::Fixed;		break;
+		case tHash::tHashCT("spatial"):	SaveParamsGIF.Method = tImage::tQuantize::Method::Spatial;		break;
+		case tHash::tHashCT("neu"):		SaveParamsGIF.Method = tImage::tQuantize::Method::Neu;			break;
+		case tHash::tHashCT("wu"):
+		case tHash::tHashCT("*"):		SaveParamsGIF.Method = tImage::tQuantize::Method::Wu;			break;
+	}
+
+	tString loopStr = OptionParamsGIF.Arg3();
+	if (loopStr == "*")
+		SaveParamsGIF.Loop = 0;
+	else
+		SaveParamsGIF.Loop = loopStr.AsInt32();
+
+	tString alphaThresholdStr = OptionParamsGIF.Arg4();
+	if (alphaThresholdStr == "*")
+		SaveParamsGIF.AlphaThreshold = -1;
+	else
+		SaveParamsGIF.AlphaThreshold = alphaThresholdStr.AsInt32();
+
+	
+}
+
+
+/////////////
+		tPixelFormat Format;		// See comment above. Must be one of the PALNBIT formats wher N is E [1, 8].
+		tQuantize::Method Method;	// See comment above. Choose one of the 4 available colour quantization methods.
+		int Loop;					// See comment above. Animated only. 0 = infinite (default). >0 = that many times.
+		int AlphaThreshold;			// See comment above. -1 = opaque. Otherwise A <= threshold meant transparent pixel.
+		int OverrideFrameDuration;	// See comment above. -1 = use frame duration. >=0 = Set all to this many 1/100 sec.
+
+		double DitherLevel;			// For Method::Spatial only. 0.0 = auto. >0.0 = manual dither amount.
+		int FilterSize;				// For Method::Spatial only. Must be 1, 3, or 5. Default is 3.
+
+		int SampleFactor;			// For Method::Neu only. 1 = whole image learning. 10 = 1/10th image used.
+/////////////
 
 tString Command::DetermineOutputFilename(const tString& inName, tSystem::tFileType outType)
 {
@@ -504,6 +564,8 @@ indicates which is the default.
   bpp: Bits per pixel. 24, 32, or auto(*). Auto means decide based on opacity.
   dur: Frame duration override in milliseconds. -1(*) means use current frame
        duration. 0 or more means override all frames to supplied value.
+--paramsBMP bpp
+  bpp: Bits per pixel. 24, 32, or auto(*). Auto means decide based on opacity.
 )U5AG3",
 			intypes.Chr(), inexts.Chr(), outtypes.Chr()
 		);
@@ -551,6 +613,7 @@ indicates which is the default.
 			// Set the image save parameters correctly. The user may have modified them from the command line.
 			image->SaveParamsAPNG = SaveParamsAPNG;
 			image->SaveParamsBMP  = SaveParamsBMP;
+			image->SaveParamsGIF  = SaveParamsGIF;
 
 			bool success = image->Save(outFilename, outType, false);
 			if (success)
