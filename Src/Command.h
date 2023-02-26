@@ -15,9 +15,38 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #pragma once
+#include <System/tPrint.h>
 
 
 namespace Command
 {	
 	int Process();
+
+	// There are 3 levels of print verbosity that may be controlled from the CLI:
+	// 0 (none): No print output whatsoever.
+	// 1 (norm): Normal/moderate print output.
+	// 2 (full): Full verbose print output.
+	// Using regular always prints. Useful for debugging and when a command line option was explicitly asked to print
+	// some output, like when --help or --syntax is used.
+	int tPrintfNorm(const char* format, ...);		// Appears for verbosity level 1.
+	int tPrintfFull(const char* format, ...);		// Appears for verbosily level 1 and 2.
+}
+
+
+// Implementation only below this line.
+
+
+inline int Command::tPrintfNorm(const char* f, ...)
+{
+	va_list l;			va_start(l, f);
+	int n = tvPrintf	(tSystem::tChannel_Verbosity0, f, l);
+	va_end(l);			return n;
+}
+
+
+inline int Command::tPrintfFull(const char* f, ...)
+{
+	va_list l;			va_start(l, f);
+	int n = tvPrintf	(tSystem::tChannel_Verbosity1, f, l);
+	va_end(l);			return n;
 }

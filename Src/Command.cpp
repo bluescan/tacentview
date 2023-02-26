@@ -35,6 +35,7 @@ namespace Command
 	// Note, -c and --cli are reserved.
 	tCmdLine::tOption OptionHelp		("Print help/usage information",		"help",			'h'			);
 	tCmdLine::tOption OptionSyntax		("Print syntax help",					"syntax",		's'			);
+	tCmdLine::tOption OptionVerbosity	("Verbosity from 0 to 2",				"verbosity",	'v',	1	);
 
 	tCmdLine::tOption OptionInType		("Input file type(s)",					"intype",		'i',	1	);
 	tCmdLine::tOption OptionOperation	("Operation",							"op",					1	);
@@ -243,10 +244,11 @@ void Command::DetermineInputTypes()
 	{
 		InputTypes.Add(Viewer::FileTypes_Load);
 	}
-	tPrintf("Input types:");
+
+	tPrintfFull("Input types:");
 	for (tSystem::tFileTypes::tFileTypeItem* typ = InputTypes.First(); typ; typ = typ->Next())
-		tPrintf(" %s", tSystem::tGetFileTypeName(typ->FileType).Chr());
-	tPrintf("\n");
+		tPrintfFull(" %s", tSystem::tGetFileTypeName(typ->FileType).Chr());
+	tPrintfFull("\n");
 }
 
 
@@ -362,11 +364,9 @@ void Command::DetermineInputFiles()
 		InputFilesAddUnique(*info);
 	}
 
-	tPrintf("Input Files:\n");
+	tPrintfFull("Input Files:\n");
 	for (tSystem::tFileInfo* info = InputFiles.First(); info; info = info->Next())
-	{
-		tPrintf("Input File: %s\n", info->FileName.Chr());
-	}
+		tPrintfFull("Input File: %s\n", info->FileName.Chr());
 }
 
 
@@ -428,7 +428,7 @@ Command::OperationResize::OperationResize(const tString& argsStr)
 
 	currArg = currArg->Next();
 	Height = currArg->AsInt32();
-	tPrintf("Operation Resize. Width:%d Height:%d\n", Width, Height);
+	tPrintfFull("Operation Resize. Width:%d Height:%d\n", Width, Height);
 
 	// @todo handle either width or height not being set to use aspect-preserve mode. Right now only accepting
 	// positive widths and heights.
@@ -461,7 +461,7 @@ Command::OperationRotate::OperationRotate(const tString& argsStr)
 	tStringItem* currArg = args.First();
 	Angle = currArg->AsFloat();
 
-	tPrintf("Operation Rotate. Angle:%f\n", Angle);
+	tPrintfFull("Operation Rotate. Angle:%f\n", Angle);
 	Op = OpType::Rotate;
 }
 
@@ -497,7 +497,7 @@ tSystem::tFileType Command::DetermineOutType()
 		outType = tSystem::tGetFileTypeFromName(OptionOutType.Arg1());
 		if (outType == tSystem::tFileType::Invalid)
 		{
-			tPrintf("Invalid output file type specified. Defaulting to tga.\n");
+			tPrintfNorm("Invalid output file type specified. Defaulting to tga.\n");
 			outType = tSystem::tFileType::TGA;
 		}
 	}
@@ -810,8 +810,30 @@ tString Command::DetermineOutputFilename(const tString& inName, tSystem::tFileTy
 int Command::Process()
 {
 	ConsoleOutputScoped scopedConsoleOutput;
-	
-	tPrintf("\nTacent View %d.%d.%d in CLI Mode.\nCall with --help for instructions.\n", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
+
+	// Default is normal (1) verbosity.
+	int verbLevel = 1;
+	if (OptionVerbosity)
+	{
+		tString verbStr = OptionVerbosity.Arg1();
+		if (verbStr == "*")
+			verbLevel = 1;
+		else
+			verbLevel = tMath::tClamp(verbStr.AsInt(), 0, 2);
+	}
+
+	// Uncomment to debug force verbosity level.
+	// verbLevel = 2;
+	switch (verbLevel)
+	{
+		case 0: tSystem::tSetChannels(tSystem::tChannel_Default);																break;
+		case 1: tSystem::tSetChannels(tSystem::tChannel_Default | tSystem::tChannel_Verbosity0);								break;
+		case 2: tSystem::tSetChannels(tSystem::tChannel_Default | tSystem::tChannel_Verbosity0 | tSystem::tChannel_Verbosity1);	break;
+	}
+
+	tPrintf("\n");
+	tPrintfNorm("Tacent View %d.%d.%d in CLI Mode. Call with --help for instructions.\n", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
+
 	if (OptionHelp)
 	{
 		tString intypes("Supported input file types: ");
@@ -854,6 +876,9 @@ You MUST call with -c or --cli to use this program in CLI mode.
 Use the --help (-h) flag to print this help. To view generic command-line
 syntax help use the --syntax (-s) flag. For example, to print syntax usage you
 could call tacentview.exe -cs which expands to tacentview.exe -c -s
+
+Set output verbosity with --verbosity (-v) and a single integer value after it
+from 0 to 2. 0 means no text output, 1* is normal, and 2 is full/detailed.
 
 INPUT IMAGES
 Each parameter of the command line shoud be a file or directory to process. You
@@ -997,6 +1022,7 @@ These are case-insensitive. False is the result otherwise.
 		image->Load();
 
 		// Process the standard operations on the current image.
+		tPrintfNorm("Processing: %s\n", image->Filename.Chr());
 		bool processed = ProcessOperationsOnImage(*image);
 		if (!processed)
 		{
@@ -1006,11 +1032,12 @@ These are case-insensitive. False is the result otherwise.
 		}
 
 		// Determine out filename,
+
 		tString outFilename = DetermineOutputFilename(image->Filename, outType);
 		bool doSave = true;
 		if (tSystem::tFileExists(outFilename) && !OptionOverwrite)
 		{
-			tPrintf("File %s exists. Not overwriting.\n", tSystem::tGetFileName(outFilename).Chr());
+			tPrintfNorm("File %s exists. Not overwriting.\n", tSystem::tGetFileName(outFilename).Chr());
 			doSave = false;
 		}
 
@@ -1022,11 +1049,11 @@ These are case-insensitive. False is the result otherwise.
 			bool success = image->Save(outFilename, outType, false);
 			if (success)
 			{
-				tPrintf("Saved File: %s\n", outFilename.Chr());
+				tPrintfFull("Saved File: %s\n", outFilename.Chr());
 			}
 			else
 			{
-				tPrintf("Failed Save: %s\n", outFilename.Chr());
+				tPrintfNorm("Failed Save: %s\n", outFilename.Chr());
 				somethingFailed = true;
 			}
 		}
