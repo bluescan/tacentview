@@ -430,9 +430,8 @@ Command::OperationResize::OperationResize(const tString& argsStr)
 	Height = currArg->AsInt32();
 	tPrintfFull("Operation Resize. Width:%d Height:%d\n", Width, Height);
 
-	// @todo handle either width or height not being set to use aspect-preserve mode. Right now only accepting
-	// positive widths and heights.
-	if ((Width <= 0) || (Height <= 0))
+	// Either width or height needs to be specified. If only one is present it uses aspect preserve.
+	if ((Width <= 0) && (Height <= 0))
 	{
 		Op = OpType::Invalid;
 		return;
@@ -444,7 +443,30 @@ Command::OperationResize::OperationResize(const tString& argsStr)
 
 bool Command::OperationResize::Apply(Viewer::Image& image)
 {
-	image.Resample(Width, Height, tImage::tResampleFilter::Bicubic, tImage::tResampleEdgeMode::Clamp);
+	int srcW = image.GetWidth();
+	int srcH = image.GetHeight();
+	if ((srcW <= 0) || (srcH <= 0))
+		return false;
+
+	float aspect = float(srcW) / float(srcH);
+
+	int dstW = Width;
+	int dstH = Height;
+	if (dstW <= 0)
+		dstW = int( float(dstH) * aspect );
+	else if (dstH <= 0)
+		dstH = int( float(dstW) / aspect );
+
+	tMath::tiClamp(dstW, 4, 32768);
+	tMath::tiClamp(dstH, 4, 32768);
+
+	if ((srcW == dstW) && (srcH == dstH))
+	{
+		tPrintfFull("Resize not applied. Image already has correct dimensions.\n");
+		return true;
+	}
+
+	image.Resample(dstW, dstH, tImage::tResampleFilter::Bicubic, tImage::tResampleEdgeMode::Clamp);
 	return true;
 }
 
@@ -476,6 +498,9 @@ bool Command::OperationRotate::Apply(Viewer::Image& image)
 
 bool Command::ProcessOperationsOnImage(Viewer::Image& image)
 {
+	if (!image.IsLoaded())
+		return false;
+
 	bool somethingFailed = false;
 	for (Operation* operation = Operations.First(); operation; operation = operation->Next())
 	{
@@ -898,6 +923,18 @@ one -i to process multiple types. No -i means all supported types.
 
 %s
 %s
+
+OPERATIONS
+Operations are specified using --op opname(arg1,arg2)
+There most be no spaces between arguments. The operations get applied in the
+order they were specified on the command line. Default argument values are
+specified with an asterisk.
+
+--op resize(wid,hgt)
+  wid:  Width. An int in range [4, 32768], 0*, or -1. If set to 0 or -1 it
+        preserves the aspect ratio by using the height and original aspect.
+  hgt:  Height. An int in range [4, 32768], 0*, or -1. If set to 0 or -1 it
+        preserves the aspect ratio by using the width and original aspect.
 
 OUTPUT IMAGES
 The output files are generated based on the input files and chosen operations.
