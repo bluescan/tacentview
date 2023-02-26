@@ -438,6 +438,7 @@ Command::OperationResize::OperationResize(const tString& argsStr)
 	// Either width or height needs to be specified. If only one is present it uses aspect preserve.
 	if ((Width <= 0) && (Height <= 0))
 	{
+		tPrintfNorm("Operation resize invalid. Width or Height or both must be specified.\n");
 		Op = OpType::Invalid;
 		return;
 	}
