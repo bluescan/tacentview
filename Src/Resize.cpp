@@ -26,6 +26,8 @@ namespace Viewer
 {
 	void DoResizeWidthHeightInterface(int srcW, int srcH, int& dstW, int& dstH);
 	void DoResizeFilterInterface(int srcW, int srcH, int dstW, int dstH);
+
+	// These are used when resizing canvas.
 	void DoResizeAnchorInterface();
 	void DoFillColourInterface(const char* tootTipText = nullptr);
 	void DoResizeCrop(int srcW, int srcH, int dstW, int dstH);

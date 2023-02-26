@@ -129,8 +129,13 @@ namespace Command
 	struct OperationResize : public Operation
 	{
 		OperationResize(const tString& args);
-		int Width;
-		int Height;
+		int Width											= 0;
+		int Height											= 0;
+
+		// WIP Parse these and implement.
+		tImage::tResampleFilter ResampleFilter				= tImage::tResampleFilter::Bilinear;
+		tImage::tResampleEdgeMode EdgeMode					= tImage::tResampleEdgeMode::Clamp;
+
 		bool Apply(Viewer::Image&) override;
 	};
 
@@ -416,7 +421,7 @@ Command::OperationResize::OperationResize(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
-	if (numArgs != 2)
+	if (numArgs < 2)
 	{
 		Op = OpType::Invalid;
 		return;
@@ -435,6 +440,26 @@ Command::OperationResize::OperationResize(const tString& argsStr)
 	{
 		Op = OpType::Invalid;
 		return;
+	}
+
+	// WIP We need to parse optional arguments ResampleFilter and EdgeMode.
+	// WIP We need to enter the shortnames into Tacent so we can print them in the --help.
+	if (numArgs >= 3)
+	{
+		currArg = currArg->Next();
+		switch (tHash::tHashString(currArg->Chars()))
+		{
+			case tHash::tHashCT("nearest"):
+			case tHash::tHashCT("box"):
+			case tHash::tHashCT("bilinear"):
+			case tHash::tHashCT("bicubic_catmullrom"):
+			case tHash::tHashCT("bicubic_mitchell"):
+			case tHash::tHashCT("bicubic_cardinal"):
+			case tHash::tHashCT("bicubic_bspline"):
+				break;
+		}
+//		if (currArg->IsEqual("bilinear"))
+//			ResampleFilter = tImage::tResampleFilter
 	}
 
 	Op = OpType::Resize;
@@ -466,7 +491,7 @@ bool Command::OperationResize::Apply(Viewer::Image& image)
 		return true;
 	}
 
-	image.Resample(dstW, dstH, tImage::tResampleFilter::Bicubic, tImage::tResampleEdgeMode::Clamp);
+	image.Resample(dstW, dstH, ResampleFilter, EdgeMode);
 	return true;
 }
 
