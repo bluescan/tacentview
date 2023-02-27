@@ -23,9 +23,8 @@
 #include <System/tFile.h>
 #include "Version.cmake.h"
 #include "Command.h"
+#include "CommandOps.h"
 #include "TacentView.h"
-#include "Image.h"
-#include "OpenSaveDialogs.h"
 
 
 namespace Command
@@ -104,48 +103,6 @@ namespace Command
 	tSystem::tFileTypes InputTypes;
 	tList<tSystem::tFileInfo> InputFiles;
 	tList<Viewer::Image> Images;
-
-	enum class OpType
-	{
-		Invalid,
-		Resize,			// Resize image width/height by resampling.
-		Canvas,			// Modify width height of image by adjusting canvas size and specifying an anchor.
-		Crop,			// Similar to Canvas but only can make image smaller and more control over crop area.
-		Flip,			// Horizontal or vertical flips.
-		Rotate,			// Rotate an arbitrary number of degrees about a center point.
-		Levels,			// Adjust image levels. Blackoint, mids, whitepoint etc.
-		Contrast,		// Adjust contrast.
-		Brightness,		// Adjust brightness.
-		Quantize,		// Quantize (reduce) the number of colours used in an image.
-		Multalpha		// Remove the alpha channel by multiplying RGB against A and adding (1-A) * a specific colour.
-	};
-
-	struct Operation : public tLink<Operation>
-	{
-		virtual bool Apply(Viewer::Image&)					= 0;
-		OpType Op											= OpType::Invalid;
-	};
-
-	struct OperationResize : public Operation
-	{
-		OperationResize(const tString& args);
-		int Width											= 0;
-		int Height											= 0;
-
-		// WIP Parse these and implement.
-		tImage::tResampleFilter ResampleFilter				= tImage::tResampleFilter::Bilinear;
-		tImage::tResampleEdgeMode EdgeMode					= tImage::tResampleEdgeMode::Clamp;
-
-		bool Apply(Viewer::Image&) override;
-	};
-
-	struct OperationRotate : public Operation
-	{
-		OperationRotate(const tString& args);
-		float Angle;
-		bool Apply(Viewer::Image&) override;
-	};
-
 	tList<Operation> Operations;
 }
 
@@ -407,6 +364,24 @@ void Command::PopulateOperations()
 				break;
 			}
 
+			case tHash::tHashCT("canvas"):
+			{
+				Operations.Append(new OperationCanvas(args));
+				break;
+			}
+
+			case tHash::tHashCT("aspect"):
+			{
+				Operations.Append(new OperationAspect(args));
+				break;
+			}
+
+			case tHash::tHashCT("deborder"):
+			{
+				Operations.Append(new OperationDeborder(args));
+				break;
+			}
+
 			case tHash::tHashCT("rotate"):
 			{
 				Operations.Append(new OperationRotate(args));
@@ -414,123 +389,6 @@ void Command::PopulateOperations()
 			}
 		}
 	}
-}
-
-
-Command::OperationResize::OperationResize(const tString& argsStr)
-{
-	tList<tStringItem> args;
-	int numArgs = tStd::tExplode(args, argsStr, ',');
-	if (numArgs < 2)
-	{
-		Op = OpType::Invalid;
-		return;
-	}
-
-	// The AsInt calls return 0 if * is entered.
-	tStringItem* currArg = args.First();
-	Width = currArg->AsInt32();
-
-	currArg = currArg->Next();
-	Height = currArg->AsInt32();
-	tPrintfFull("Operation Resize. Width:%d Height:%d\n", Width, Height);
-
-	// Either width or height needs to be specified. If only one is present it uses aspect preserve.
-	if ((Width <= 0) && (Height <= 0))
-	{
-		tPrintfNorm("Operation resize invalid. Width or Height or both must be specified.\n");
-		Op = OpType::Invalid;
-		return;
-	}
-
-	if (numArgs >= 3)
-	{
-		currArg = currArg->Next();
-		ResampleFilter = tImage::tResampleFilter::Bilinear;
-		for (int f = 0; f < int(tImage::tResampleFilter::NumFilters); f++)
-		{
-			if (currArg->IsEqualCI(tImage::tResampleFilterNamesSimple[f]))
-			{
-				ResampleFilter = tImage::tResampleFilter(f);
-				break;
-			}
-		}
-	}
-
-	if (numArgs >= 4)
-	{
-		currArg = currArg->Next();
-		EdgeMode = tImage::tResampleEdgeMode::Clamp;
-		for (int e = 0; e < int(tImage::tResampleEdgeMode::NumEdgeModes); e++)
-		{
-			if (currArg->IsEqualCI(tImage::tResampleEdgeModeNamesSimple[e]))
-			{
-				EdgeMode = tImage::tResampleEdgeMode(e);
-				break;
-			}
-		}
-	}
-
-	Op = OpType::Resize;
-}
-
-
-bool Command::OperationResize::Apply(Viewer::Image& image)
-{
-	int srcW = image.GetWidth();
-	int srcH = image.GetHeight();
-	if ((srcW <= 0) || (srcH <= 0))
-		return false;
-
-	float aspect = float(srcW) / float(srcH);
-
-	int dstW = Width;
-	int dstH = Height;
-	if (dstW <= 0)
-		dstW = int( float(dstH) * aspect );
-	else if (dstH <= 0)
-		dstH = int( float(dstW) / aspect );
-
-	tMath::tiClamp(dstW, 4, 32768);
-	tMath::tiClamp(dstH, 4, 32768);
-
-	if ((srcW == dstW) && (srcH == dstH))
-	{
-		tPrintfFull("Resize not applied. Image already has correct dimensions.\n");
-		return true;
-	}
-
-	tPrintfFull("Resample. Dim:%dx%d Filter:%s EdgeMode:%s\n", dstW, dstH,
-	tImage::tResampleFilterNamesSimple[int(ResampleFilter)],
-	tImage::tResampleEdgeModeNamesSimple[int(EdgeMode)]);
-
-	image.Resample(dstW, dstH, ResampleFilter, EdgeMode);
-	return true;
-}
-
-
-Command::OperationRotate::OperationRotate(const tString& argsStr)
-{
-	tList<tStringItem> args;
-	int numArgs = tStd::tExplode(args, argsStr, ',');
-	if (numArgs != 1)
-	{
-		Op = OpType::Invalid;
-		return;
-	}
-	tStringItem* currArg = args.First();
-	Angle = currArg->AsFloat();
-
-	tPrintfFull("Operation Rotate. Angle:%f\n", Angle);
-	Op = OpType::Rotate;
-}
-
-
-bool Command::OperationRotate::Apply(Viewer::Image& image)
-{
-	float angleRadians = tMath::tDegToRad(Angle);
-	image.Rotate(angleRadians, tColouri::black, tImage::tResampleFilter::Bicubic, tImage::tResampleFilter::Box);
-	return true;
 }
 
 

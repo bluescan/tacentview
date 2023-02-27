@@ -63,6 +63,8 @@ add_executable(
 	WIN32
 	Src/Command.cpp
 	Src/Command.h
+	Src/CommandOps.cpp
+	Src/CommandOps.h
 	Src/Config.cpp
 	Src/Config.h
 	Src/ContactSheet.cpp
