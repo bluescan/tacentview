@@ -15,75 +15,88 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #pragma once
+#include <Image/tPicture.h>
 #include "Image.h"
-
-
 namespace Command
 {
-	enum class OpType
-	{
-		Invalid,
-		Resize,			// Resize image width/height by resampling.
-		Canvas,			// Modify width height of image by adjusting canvas size and specifying an anchor.
-		Aspect,			// Change aspect ratio of image without stretching.
-		DeBorder,		// Detect and remove borders from image.
-		Crop,			// Similar to Canvas but only can make image smaller and more control over crop area.
-		Flip,			// Horizontal or vertical flips.
-		Rotate,			// Rotate an arbitrary number of degrees about a center point.
-		Levels,			// Adjust image levels. Blackoint, mids, whitepoint etc.
-		Contrast,		// Adjust contrast.
-		Brightness,		// Adjust brightness.
-		Quantize,		// Quantize (reduce) the number of colours used in an image.
-		Multalpha		// Remove the alpha channel by multiplying RGB against A and adding (1-A) * a specific colour.
-	};
 
-	struct Operation : public tLink<Operation>
-	{
-		virtual bool Apply(Viewer::Image&)					= 0;
-		OpType Op											= OpType::Invalid;
-	};
 
-	struct OperationResize : public Operation
-	{
-		OperationResize(const tString& args);
-		int Width											= 0;
-		int Height											= 0;
-		tImage::tResampleFilter ResampleFilter				= tImage::tResampleFilter::Bilinear;
-		tImage::tResampleEdgeMode EdgeMode					= tImage::tResampleEdgeMode::Clamp;
+enum class OpType
+{
+	Invalid,
+	Resize,			// Resize image width/height by resampling.
+	Canvas,			// Modify width height of image by adjusting canvas size and specifying an anchor.
+	Aspect,			// Change aspect ratio of image without stretching.
+	DeBorder,		// Detect and remove borders from image.
+	Crop,			// Similar to Canvas but only can make image smaller and more control over crop area.
+	Flip,			// Horizontal or vertical flips.
+	Rotate,			// Rotate an arbitrary number of degrees about a center point.
+	Levels,			// Adjust image levels. Blackoint, mids, whitepoint etc.
+	Contrast,		// Adjust contrast.
+	Brightness,		// Adjust brightness.
+	Quantize,		// Quantize (reduce) the number of colours used in an image.
+	Multalpha		// Remove the alpha channel by multiplying RGB against A and adding (1-A) * a specific colour.
+};
 
-		bool Apply(Viewer::Image&) override;
-	};
 
-	struct OperationCanvas : public Operation
-	{
-		OperationCanvas(const tString& args);
-		int Width											= 0;
-		int Height											= 0;
+struct Operation : public tLink<Operation>
+{
+	virtual bool Apply(Viewer::Image&)					= 0;
+	OpType Op											= OpType::Invalid;
+};
 
-		bool Apply(Viewer::Image&) override;
-	};
 
-	struct OperationAspect : public Operation
-	{
-		OperationAspect(const tString& args);
-		int Num												= 1;
-		int Den												= 1;
+struct OperationResize : public Operation
+{
+	OperationResize(const tString& args);
+	int Width											= 0;
+	int Height											= 0;
+	tImage::tResampleFilter ResampleFilter				= tImage::tResampleFilter::Bilinear;		// Optional.
+	tImage::tResampleEdgeMode EdgeMode					= tImage::tResampleEdgeMode::Clamp;			// Optional.
 
-		bool Apply(Viewer::Image&) override;
-	};
+	bool Apply(Viewer::Image&) override;
+};
 
-	struct OperationDeborder : public Operation
-	{
-		OperationDeborder(const tString& args);
-		// Colour.
 
-		bool Apply(Viewer::Image&) override;
-	};
+struct OperationCanvas : public Operation
+{
+	OperationCanvas(const tString& args);
+	int Width											= 0;
+	int Height											= 0;
+	tImage::tPicture::Anchor Anchor						= tImage::tPicture::Anchor::MiddleMiddle;	// Optional.
+	tColour4i FillColour								= tColour4i::black;							// Optional.
+	int AnchorX											= -1;										// Optional.
+	int AnchorY											= -1;										// Optional.
 
-	struct OperationRotate : public Operation
-	{
-		OperationRotate(const tString& args);
-		float Angle;
-		bool Apply(Viewer::Image&) override;
-	};
+	bool Apply(Viewer::Image&) override;
+};
+
+
+struct OperationAspect : public Operation
+{
+	OperationAspect(const tString& args);
+	int Num												= 1;
+	int Den												= 1;
+
+	bool Apply(Viewer::Image&) override;
+};
+
+
+struct OperationDeborder : public Operation
+{
+	OperationDeborder(const tString& args);
+	// Colour.
+
+	bool Apply(Viewer::Image&) override;
+};
+
+
+struct OperationRotate : public Operation
+{
+	OperationRotate(const tString& args);
+	float Angle;
+	bool Apply(Viewer::Image&) override;
+};
+
+
 }

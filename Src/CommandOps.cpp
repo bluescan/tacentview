@@ -34,7 +34,6 @@ Command::OperationResize::OperationResize(const tString& argsStr)
 
 	currArg = currArg->Next();
 	Height = currArg->AsInt32();
-	tPrintfFull("Operation Resize. Width:%d Height:%d\n", Width, Height);
 
 	// Either width or height needs to be specified. If only one is present it uses aspect preserve.
 	if ((Width <= 0) && (Height <= 0))
@@ -114,12 +113,132 @@ Command::OperationCanvas::OperationCanvas(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
+	if (numArgs < 2)
+	{
+		Op = OpType::Invalid;
+		return;
+	}
+
+	// The AsInt calls return 0 if * is entered.
+	tStringItem* currArg = args.First();
+	Width = currArg->AsInt32();
+
+	currArg = currArg->Next();
+	Height = currArg->AsInt32();
+
+	// Either width or height needs to be specified. If only one is present it uses aspect preserve.
+	if ((Width <= 0) && (Height <= 0))
+	{
+		tPrintfNorm("Operation canvas invalid. Width or Height or both must be specified.\n");
+		Op = OpType::Invalid;
+		return;
+	}
+
+	// Anchor.
+	if (numArgs >= 3)
+	{
+		currArg = currArg->Next();
+		Anchor = tImage::tPicture::Anchor::MiddleMiddle;
+		switch (tHash::tHashString(currArg->Chr()))
+		{
+			case tHash::tHashCT("tl"):	Anchor = tImage::tPicture::Anchor::LeftTop;			break;
+			case tHash::tHashCT("tm"):	Anchor = tImage::tPicture::Anchor::MiddleTop;		break;
+			case tHash::tHashCT("tr"):	Anchor = tImage::tPicture::Anchor::RightTop;		break;
+			case tHash::tHashCT("ml"):	Anchor = tImage::tPicture::Anchor::LeftMiddle;		break;
+			case tHash::tHashCT("mm"):	Anchor = tImage::tPicture::Anchor::MiddleMiddle;	break;
+			case tHash::tHashCT("mr"):	Anchor = tImage::tPicture::Anchor::RightMiddle;		break;
+			case tHash::tHashCT("bl"):	Anchor = tImage::tPicture::Anchor::LeftBottom;		break;
+			case tHash::tHashCT("bm"):	Anchor = tImage::tPicture::Anchor::MiddleBottom;	break;
+			case tHash::tHashCT("br"):	Anchor = tImage::tPicture::Anchor::RightBottom;		break;
+		}
+	}
+
+	// Fill colour.
+	if (numArgs >= 4)
+	{
+		currArg = currArg->Next();
+		tString colStr = *currArg;
+		if (colStr[0] == '#')
+		{
+			uint32 hex = colStr.AsUInt32(16);
+			FillColour.Set( uint8((hex >> 24) & 0xFF), uint8((hex >> 16) & 0xFF), uint8((hex >> 8) & 0xFF), uint8((hex >> 0) & 0xFF) );
+		}
+		else
+		{
+			switch (tHash::tHashString(colStr.Chr()))
+			{
+				case tHash::tHashCT("black"):	FillColour = tColour4i::black;		break;
+				case tHash::tHashCT("white"):	FillColour = tColour4i::white;		break;
+				case tHash::tHashCT("grey"):	FillColour = tColour4i::grey;		break;
+				case tHash::tHashCT("red"):		FillColour = tColour4i::red;		break;
+				case tHash::tHashCT("green"):	FillColour = tColour4i::red;		break;
+				case tHash::tHashCT("blue"):	FillColour = tColour4i::red;		break;
+				case tHash::tHashCT("yellow"):	FillColour = tColour4i::yellow;		break;
+				case tHash::tHashCT("cyan"):	FillColour = tColour4i::cyan;		break;
+				case tHash::tHashCT("magenta"):	FillColour = tColour4i::magenta;	break;
+			}
+		}
+	}
+
+	// Anchor X.
+	if (numArgs >= 5)
+	{
+		currArg = currArg->Next();
+		tString xstr = *currArg;
+		if (!xstr.IsEmpty() && (xstr[0] != '*'))
+			AnchorX = xstr.AsInt32();
+	}
+
+	// Anchor Y.
+	if (numArgs >= 6)
+	{
+		currArg = currArg->Next();
+		tString ystr = *currArg;
+		if (!ystr.IsEmpty() && (ystr[0] != '*'))
+			AnchorY = ystr.AsInt32();
+	}
+
 	Op = OpType::Canvas;
 }
 
 
 bool Command::OperationCanvas::Apply(Viewer::Image& image)
 {
+	int srcW = image.GetWidth();
+	int srcH = image.GetHeight();
+	if ((srcW <= 0) || (srcH <= 0))
+		return false;
+
+	float aspect = float(srcW) / float(srcH);
+
+	int dstW = Width;
+	int dstH = Height;
+	if (dstW <= 0)
+		dstW = int( float(dstH) * aspect );
+	else if (dstH <= 0)
+		dstH = int( float(dstW) / aspect );
+
+	tMath::tiClamp(dstW, 4, 32768);
+	tMath::tiClamp(dstH, 4, 32768);
+
+	// Use the specified anchor pos if it was specified.
+	if ((AnchorX >= 0) && (AnchorY >= 0))
+	{
+		// Honestly can't quite remember what this does. I believe it has something to do with
+		// the coordinate system of the crop position. In any case, it works in the GUI properly
+		// so we need to keep it.
+		int originX = (AnchorX * (srcW - dstW)) / srcW;
+		int originY = (AnchorY * (srcH - dstH)) / srcH;
+
+		tPrintfFull("Crop Dim:%dx%d Anchor:%d,%d Fill:%02x,%02x,%02x,%02x\n", Width, Height, AnchorX, AnchorY, FillColour.R, FillColour.G, FillColour.B, FillColour.A);
+		image.Crop(dstW, dstH, originX, originY, FillColour);
+	}
+	else
+	{
+		tPrintfFull("Crop Dim:%dx%d Anchor(TL0,TM1,TR2...):%d Fill:%02x,%02x,%02x,%02x\n", Width, Height, int(Anchor), FillColour.R, FillColour.G, FillColour.B, FillColour.A);
+		image.Crop(dstW, dstH, Anchor, FillColour);
+	}
+
 	return true;
 }
 

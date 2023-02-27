@@ -358,35 +358,11 @@ void Command::PopulateOperations()
 
 		switch (tHash::tHashString(op))
 		{
-			case tHash::tHashCT("resize"):
-			{
-				Operations.Append(new OperationResize(args));
-				break;
-			}
-
-			case tHash::tHashCT("canvas"):
-			{
-				Operations.Append(new OperationCanvas(args));
-				break;
-			}
-
-			case tHash::tHashCT("aspect"):
-			{
-				Operations.Append(new OperationAspect(args));
-				break;
-			}
-
-			case tHash::tHashCT("deborder"):
-			{
-				Operations.Append(new OperationDeborder(args));
-				break;
-			}
-
-			case tHash::tHashCT("rotate"):
-			{
-				Operations.Append(new OperationRotate(args));
-				break;
-			}
+			case tHash::tHashCT("resize"):		Operations.Append(new OperationResize(args));		break;
+			case tHash::tHashCT("canvas"):		Operations.Append(new OperationCanvas(args));		break;
+			case tHash::tHashCT("aspect"):		Operations.Append(new OperationAspect(args));		break;
+			case tHash::tHashCT("deborder"):	Operations.Append(new OperationDeborder(args));		break;
+			case tHash::tHashCT("rotate"):		Operations.Append(new OperationRotate(args));		break;
 		}
 	}
 }
@@ -856,6 +832,7 @@ value is used. eg. --op zap(a,b,c*,d*) may be called with --op zap(a,b) which
 would do the same thing as --op zap(a,b,*,*).
 
 --op resize(wid,hgt,filt*,edge*)
+  Resizes image by resampling. Allows non-uniform scale.
   wid:  Width. An int in range [4, 32768], 0*, or -1. If set to 0 or -1 it
         preserves the aspect ratio by using the height and original aspect.
   hgt:  Height. An int in range [4, 32768], 0*, or -1. If set to 0 or -1 it
@@ -864,6 +841,23 @@ would do the same thing as --op zap(a,b,*,*).
         for the image being processed. See below for valid filter names.
   edge: Edge mode. Default is clamp*. Only used if dimensions changed for the
         image being processed. See note below for valid edge mode names.
+
+--op canvas(wid,hgt,anc*,fill*,ancx*,ancy*)
+  Resizes image by modifying the canvas area of the image. Vertical or
+  horizontal letterboxes may be needed.
+  wid:  Width. An int in range [4, 32768], 0*, or -1. If set to 0 or -1 it
+        preserves the aspect ratio by using the height and original aspect.
+  hgt:  Height. An int in range [4, 32768], 0*, or -1. If set to 0 or -1 it
+        preserves the aspect ratio by using the width and original aspect.
+  anc:  Anchor. One of tl, tm, tr, ml, mm*, mr, bl, bm. br. These are
+        abbreviations for top-left, top-middle, top-right, etc.
+  fill: Fill colour. Either specify with a hex in form #RRGGBBAA or use one of
+        the predefined colours: black*, white, grey, red, green, blue, yellow
+        cyan, or magenta.
+  ancx: Explicit anchor X position. An int in range [-1*, 32768]. If -1 used
+        the anc argument above takes priority.
+  ancy: Explicit anchor Y position. An int in range [-1*, 32768]. If -1 used
+        the anc argument above takes priority.
 
 %s
 %s
