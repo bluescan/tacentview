@@ -443,24 +443,32 @@ Command::OperationResize::OperationResize(const tString& argsStr)
 		return;
 	}
 
-	// WIP We need to parse optional arguments ResampleFilter and EdgeMode.
-	// WIP We need to enter the shortnames into Tacent so we can print them in the --help.
 	if (numArgs >= 3)
 	{
 		currArg = currArg->Next();
-		switch (tHash::tHashString(currArg->Chars()))
+		ResampleFilter = tImage::tResampleFilter::Bilinear;
+		for (int f = 0; f < int(tImage::tResampleFilter::NumFilters); f++)
 		{
-			case tHash::tHashCT("nearest"):
-			case tHash::tHashCT("box"):
-			case tHash::tHashCT("bilinear"):
-			case tHash::tHashCT("bicubic_catmullrom"):
-			case tHash::tHashCT("bicubic_mitchell"):
-			case tHash::tHashCT("bicubic_cardinal"):
-			case tHash::tHashCT("bicubic_bspline"):
+			if (currArg->IsEqualCI(tImage::tResampleFilterNamesSimple[f]))
+			{
+				ResampleFilter = tImage::tResampleFilter(f);
 				break;
+			}
 		}
-//		if (currArg->IsEqual("bilinear"))
-//			ResampleFilter = tImage::tResampleFilter
+	}
+
+	if (numArgs >= 4)
+	{
+		currArg = currArg->Next();
+		EdgeMode = tImage::tResampleEdgeMode::Clamp;
+		for (int e = 0; e < int(tImage::tResampleEdgeMode::NumEdgeModes); e++)
+		{
+			if (currArg->IsEqualCI(tImage::tResampleEdgeModeNamesSimple[e]))
+			{
+				EdgeMode = tImage::tResampleEdgeMode(e);
+				break;
+			}
+		}
 	}
 
 	Op = OpType::Resize;
@@ -491,6 +499,10 @@ bool Command::OperationResize::Apply(Viewer::Image& image)
 		tPrintfFull("Resize not applied. Image already has correct dimensions.\n");
 		return true;
 	}
+
+	tPrintfFull("Resample. Dim:%dx%d Filter:%s EdgeMode:%s\n", dstW, dstH,
+	tImage::tResampleFilterNamesSimple[int(ResampleFilter)],
+	tImage::tResampleEdgeModeNamesSimple[int(EdgeMode)]);
 
 	image.Resample(dstW, dstH, ResampleFilter, EdgeMode);
 	return true;
@@ -887,12 +899,15 @@ int Command::Process()
 
 	if (OptionHelp)
 	{
+		const int maxCols = 80;
+		// The +1 on the FindChar calls deals with not found as well as incrementing 1 passed the newline.
 		tString intypes("Supported input file types: ");
 		for (tSystem::tFileTypes::tFileTypeItem* typ = Viewer::FileTypes_Load.First(); typ; typ = typ->Next())
 		{
-			intypes += tsPrintf("%s ", tSystem::tGetFileTypeName(typ->FileType).Chr());
-			if (intypes.Length()%80 > 80-5)
+			int lineStart = intypes.FindChar('\n', true) + 1;
+			if ( (tStd::tStrlen(intypes.Chr()+lineStart)%maxCols) >= (maxCols-tSystem::tGetFileTypeName(typ->FileType).Length()) )
 				intypes += tsPrintf("\n");
+			intypes += tsPrintf("%s ", tSystem::tGetFileTypeName(typ->FileType).Chr());
 		}
 
 		tString inexts("These cover file extensions: ");
@@ -902,18 +917,38 @@ int Command::Process()
 			tSystem::tGetExtensions(extensions, typ->FileType);
 			for (tStringItem* ext = extensions.First(); ext; ext = ext->Next())
 			{
-				inexts += tsPrintf("%s ", ext->Chr());
-				if (inexts.Length()%80 > 80-5)
+				int lineStart = inexts.FindChar('\n', true) + 1;
+				if ( (tStd::tStrlen(inexts.Chr()+lineStart)%maxCols) >= (maxCols-ext->Length()) )
 					inexts += tsPrintf("\n");
+				inexts += tsPrintf("%s ", ext->Chr());
 			}
 		}
 
 		tString outtypes("Supported output file types: ");
 		for (tSystem::tFileTypes::tFileTypeItem* typ = Viewer::FileTypes_Save.First(); typ; typ = typ->Next())
 		{
-			outtypes += tsPrintf("%s ", tSystem::tGetFileTypeName(typ->FileType).Chr());
-			if (outtypes.Length()%80 > 80-5)
+			int lineStart = outtypes.FindChar('\n', true) + 1;
+			if ( (tStd::tStrlen(outtypes.Chr()+lineStart)%maxCols) >= (maxCols-tSystem::tGetFileTypeName(typ->FileType).Length()) )
 				outtypes += tsPrintf("\n");
+			outtypes += tsPrintf("%s ", tSystem::tGetFileTypeName(typ->FileType).Chr());
+		}
+
+		tString filters("Supported filters: ");
+		for (int f = 0; f < int(tImage::tResampleFilter::NumFilters); f++)
+		{
+			int lineStart = filters.FindChar('\n', true) + 1;
+			if ( (tStd::tStrlen(filters.Chr()+lineStart)%maxCols) >= (maxCols-tStd::tStrlen(tImage::tResampleFilterNamesSimple[f])) )
+				filters += tsPrintf("\n");
+			filters += tsPrintf("%s ", tImage::tResampleFilterNamesSimple[f]);
+		}
+
+		tString edgemodes("Supported edge modes: ");
+		for (int e = 0; e < int(tImage::tResampleEdgeMode::NumEdgeModes); e++)
+		{
+			int lineStart = edgemodes.FindChar('\n', true) + 1;
+			if ( (tStd::tStrlen(edgemodes.Chr()+lineStart)%maxCols) >= (maxCols-tStd::tStrlen(tImage::tResampleEdgeModeNamesSimple[e])) )
+				edgemodes += tsPrintf("\n");
+			edgemodes += tsPrintf("%s ", tImage::tResampleEdgeModeNamesSimple[e]);
 		}
 
 		tCmdLine::tPrintUsage(u8"Tristan Grimmer", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
@@ -922,6 +957,7 @@ int Command::Process()
 		tPrintf
 		(
 R"U5AG3(MODE
+----
 You MUST call with -c or --cli to use this program in CLI mode.
 
 Use the --help (-h) flag to print this help. To view generic command-line
@@ -932,6 +968,7 @@ Set output verbosity with --verbosity (-v) and a single integer value after it
 from 0 to 2. 0 means no text output, 1* is normal, and 2 is full/detailed.
 
 INPUT IMAGES
+------------
 Each parameter of the command line shoud be a file or directory to process. You
 may enter as many as you need. If no input files are specified, the current
 directory is processed. You may also specify a manifest file containing images
@@ -951,18 +988,30 @@ one -i to process multiple types. No -i means all supported types.
 %s
 
 OPERATIONS
+----------
 Operations are specified using --op opname(arg1,arg2)
 There most be no spaces between arguments. The operations get applied in the
 order they were specified on the command line. Default argument values are
-specified with an asterisk.
+specified with an asterisk. Optional argumets are marked with an asterisk.
+When either optional arguments are not provided or * is entered, the default
+value is used. eg. --op zap(a,b,c*,d*) may be called with --op zap(a,b) which
+would do the same thing as --op zap(a,b,*,*).
 
---op resize(wid,hgt)
+--op resize(wid,hgt,filt*,edge*)
   wid:  Width. An int in range [4, 32768], 0*, or -1. If set to 0 or -1 it
         preserves the aspect ratio by using the height and original aspect.
   hgt:  Height. An int in range [4, 32768], 0*, or -1. If set to 0 or -1 it
         preserves the aspect ratio by using the width and original aspect.
+  filt: Resample filter. Default is bilinear*. Only used if dimensions changed
+        for the image being processed. See below for valid filter names.
+  edge: Edge mode. Default is clamp*. Only used if dimensions changed for the
+        image being processed. See note below for valid edge mode names.
+
+%s
+%s
 
 OUTPUT IMAGES
+-------------
 The output files are generated based on the input files and chosen operations.
 The extract, flipbook, and combine operations consume the current set of input
 images when they create their output images. Extract creates one or more new
@@ -984,6 +1033,7 @@ string _NN to the name where NN is a number that keeps incrementing until no
 existing file is found.
 
 OUTPUT PARAMETERS
+-----------------
 Different output image types have different features and may support different
 parameters when saving. The following options cover setting these parameters.
 These options do not have single-letter short forms. In all cases entering an
@@ -1050,7 +1100,7 @@ For boolean arguments you may use "true", "t", "yes", "y", "on", "enable",
 "enabled", "1", "+", and strings that represent non-zero integers as true.
 These are case-insensitive. False is the result otherwise.
 )U5AG3",
-			intypes.Chr(), inexts.Chr(), outtypes.Chr()
+			intypes.Chr(), inexts.Chr(), filters.Chr(), edgemodes.Chr(), outtypes.Chr()
 		);
 
 		return 0;

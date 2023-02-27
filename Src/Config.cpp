@@ -506,13 +506,13 @@ void Config::ProfileSettings::Load(tExpression expr)
 	}
 
 	tiClamp		(ResampleFilter, 0, int(tImage::tResampleFilter::NumFilters)-1);					// No None allowed.
-	tiClamp		(ResampleEdgeMode, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);
+	tiClamp		(ResampleEdgeMode, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);				// No none allowed.
 	tiClamp		(ResampleFilterContactFrame, 0, int(tImage::tResampleFilter::NumFilters)-1);		// No None allowed.
-	tiClamp		(ResampleEdgeModeContactFrame, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);
+	tiClamp		(ResampleEdgeModeContactFrame, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);	// No None allowed.
 	tiClamp		(ResampleFilterContactFinal, 0, int(tImage::tResampleFilter::NumFilters)-1);		// No None allowed.
-	tiClamp		(ResampleEdgeModeContactFinal, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);
-	tiClamp		(ResampleFilterRotateUp, 0, int(tImage::tResampleFilter::NumFilters));				// None allowed, so no -1.
-	tiClamp		(ResampleFilterRotateDown, 0, int(tImage::tResampleFilter::NumFilters));			// None allowed, so no -1.
+	tiClamp		(ResampleEdgeModeContactFinal, 0, int(tImage::tResampleEdgeMode::NumEdgeModes)-1);	// No None allowed.
+	tiClamp		(ResampleFilterRotateUp, 0, int(tImage::tResampleFilter::NumFilters));				// None allowed, so 1 bigger.
+	tiClamp		(ResampleFilterRotateDown, 0, int(tImage::tResampleFilter::NumFilters));			// None allowed, so 1 bigger.
 	tiClamp		(RotateMode, 0, int(RotateModeEnum::NumModes)-1);
 	tiClamp		(ZoomMode, 0, int(ZoomModeEnum::NumModes)-1);
 	tiClamp		(ZoomPercent, Config::ZoomMin, Config::ZoomMax);
