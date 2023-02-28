@@ -351,10 +351,10 @@ void Command::PopulateOperations()
 	OptionOperation.GetArgs(opstrings);
 	for (tStringItem* opstr = opstrings.First(); opstr; opstr = opstr->Next())
 	{
-		// Now we need to parse something of the form: resize(640,*) or rotate(45)
+		// Now we need to parse something of the form: resize[640,*] or rotate[45]
 		tString str = *opstr;
-		tString op = str.ExtractLeft('(');
-		tString args = str.ExtractLeft(')');
+		tString op = str.ExtractLeft('[');
+		tString args = str.ExtractLeft(']');
 
 		switch (tHash::tHashString(op))
 		{
@@ -740,8 +740,8 @@ int Command::Process()
 		{
 			int lineStart = intypes.FindChar('\n', true) + 1;
 			if ( (tStd::tStrlen(intypes.Chr()+lineStart)%maxCols) >= (maxCols-tSystem::tGetFileTypeName(typ->FileType).Length()) )
-				intypes += tsPrintf("\n");
-			intypes += tsPrintf("%s ", tSystem::tGetFileTypeName(typ->FileType).Chr());
+				tsaPrintf(intypes, "\n");
+			tsaPrintf(intypes, "%s ", tSystem::tGetFileTypeName(typ->FileType).Chr());
 		}
 
 		tString inexts("These cover file extensions: ");
@@ -753,8 +753,8 @@ int Command::Process()
 			{
 				int lineStart = inexts.FindChar('\n', true) + 1;
 				if ( (tStd::tStrlen(inexts.Chr()+lineStart)%maxCols) >= (maxCols-ext->Length()) )
-					inexts += tsPrintf("\n");
-				inexts += tsPrintf("%s ", ext->Chr());
+					tsaPrintf(inexts, "\n");
+				tsaPrintf(inexts, "%s ", ext->Chr());
 			}
 		}
 
@@ -763,8 +763,8 @@ int Command::Process()
 		{
 			int lineStart = outtypes.FindChar('\n', true) + 1;
 			if ( (tStd::tStrlen(outtypes.Chr()+lineStart)%maxCols) >= (maxCols-tSystem::tGetFileTypeName(typ->FileType).Length()) )
-				outtypes += tsPrintf("\n");
-			outtypes += tsPrintf("%s ", tSystem::tGetFileTypeName(typ->FileType).Chr());
+				tsaPrintf(outtypes, "\n");
+			tsaPrintf(outtypes, "%s ", tSystem::tGetFileTypeName(typ->FileType).Chr());
 		}
 
 		tString filters("Supported filters: ");
@@ -772,8 +772,8 @@ int Command::Process()
 		{
 			int lineStart = filters.FindChar('\n', true) + 1;
 			if ( (tStd::tStrlen(filters.Chr()+lineStart)%maxCols) >= (maxCols-tStd::tStrlen(tImage::tResampleFilterNamesSimple[f])) )
-				filters += tsPrintf("\n");
-			filters += tsPrintf("%s ", tImage::tResampleFilterNamesSimple[f]);
+				tsaPrintf(filters, "\n");
+			tsaPrintf(filters, "%s ", tImage::tResampleFilterNamesSimple[f]);
 		}
 
 		tString edgemodes("Supported edge modes: ");
@@ -781,8 +781,8 @@ int Command::Process()
 		{
 			int lineStart = edgemodes.FindChar('\n', true) + 1;
 			if ( (tStd::tStrlen(edgemodes.Chr()+lineStart)%maxCols) >= (maxCols-tStd::tStrlen(tImage::tResampleEdgeModeNamesSimple[e])) )
-				edgemodes += tsPrintf("\n");
-			edgemodes += tsPrintf("%s ", tImage::tResampleEdgeModeNamesSimple[e]);
+				tsaPrintf(edgemodes, "\n");
+			tsaPrintf(edgemodes, "%s ", tImage::tResampleEdgeModeNamesSimple[e]);
 		}
 
 		tCmdLine::tPrintUsage(u8"Tristan Grimmer", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
@@ -823,15 +823,15 @@ one -i to process multiple types. No -i means all supported types.
 
 OPERATIONS
 ----------
-Operations are specified using --op opname(arg1,arg2)
+Operations are specified using --op opname[arg1,arg2]
 There most be no spaces between arguments. The operations get applied in the
 order they were specified on the command line. Default argument values are
 specified with an asterisk. Optional argumets are marked with an asterisk.
 When either optional arguments are not provided or * is entered, the default
-value is used. eg. --op zap(a,b,c*,d*) may be called with --op zap(a,b) which
-would do the same thing as --op zap(a,b,*,*).
+value is used. eg. --op zap[a,b,c*,d*] may be called with --op zap[a,b] which
+would do the same thing as --op zap[a,b,*,*].
 
---op resize(wid,hgt,filt*,edge*)
+--op resize[wid,hgt,filt*,edge*]
   Resizes image by resampling. Allows non-uniform scale.
   wid:  Width. An int in range [4, 32768], 0*, or -1. If set to 0 or -1 it
         preserves the aspect ratio by using the height and original aspect.
@@ -842,7 +842,7 @@ would do the same thing as --op zap(a,b,*,*).
   edge: Edge mode. Default is clamp*. Only used if dimensions changed for the
         image being processed. See note below for valid edge mode names.
 
---op canvas(wid,hgt,anc*,fill*,ancx*,ancy*)
+--op canvas[wid,hgt,anc*,fill*,ancx*,ancy*]
   Resizes image by modifying the canvas area of the image. You specify the new
   width and height. Vertical or horizontal letterboxes may be needed. This
   operation does not perform resampling.
@@ -860,7 +860,7 @@ would do the same thing as --op zap(a,b,*,*).
   ancy: Explicit anchor Y position. An int in range [-1*, 32768]. If -1 used
         the anc argument above takes priority.
 
---op aspect(asp,mode,anc*,fill*,ancx*,ancy*)
+--op aspect[asp,mode,anc*,fill*,ancx*,ancy*]
   Resizes image by modifying the canvas area of the image. You specify the new
   aspect ratio in the form NUM:DEN. Vertical or horizontal letterboxes may be
   needed. This operation does not perform resampling.
