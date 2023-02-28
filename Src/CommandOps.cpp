@@ -100,10 +100,7 @@ bool Command::OperationResize::Apply(Viewer::Image& image)
 		return true;
 	}
 
-	tPrintfFull("Resample. Dim:%dx%d Filter:%s EdgeMode:%s\n", dstW, dstH,
-		tImage::tResampleFilterNamesSimple[int(ResampleFilter)],
-		tImage::tResampleEdgeModeNamesSimple[int(EdgeMode)]);
-
+	tPrintfFull("Resize | Resample[Dim:%dx%d Filter:%s EdgeMode:%s]\n", dstW, dstH, tImage::tResampleFilterNamesSimple[int(ResampleFilter)], tImage::tResampleEdgeModeNamesSimple[int(EdgeMode)]);
 	image.Resample(dstW, dstH, ResampleFilter, EdgeMode);
 	return true;
 }
@@ -221,6 +218,12 @@ bool Command::OperationCanvas::Apply(Viewer::Image& image)
 	tMath::tiClamp(dstW, 4, 32768);
 	tMath::tiClamp(dstH, 4, 32768);
 
+	if ((srcW == dstW) && (srcH == dstH))
+	{
+		tPrintfFull("Canvas not applied. Image has same dimensions.\n");
+		return true;
+	}
+
 	// Use the specified anchor pos if it was specified.
 	if ((AnchorX >= 0) && (AnchorY >= 0))
 	{
@@ -230,12 +233,12 @@ bool Command::OperationCanvas::Apply(Viewer::Image& image)
 		int originX = (AnchorX * (srcW - dstW)) / srcW;
 		int originY = (AnchorY * (srcH - dstH)) / srcH;
 
-		tPrintfFull("Crop Dim:%dx%d Anchor:%d,%d Fill:%02x,%02x,%02x,%02x\n", Width, Height, AnchorX, AnchorY, FillColour.R, FillColour.G, FillColour.B, FillColour.A);
+		tPrintfFull("Canvas | Crop[Dim:%dx%d Origin:%d,%d Fill:%02x,%02x,%02x,%02x]\n", dstW, dstH, originX, originY, FillColour.R, FillColour.G, FillColour.B, FillColour.A);
 		image.Crop(dstW, dstH, originX, originY, FillColour);
 	}
 	else
 	{
-		tPrintfFull("Crop Dim:%dx%d Anchor(TL0,TM1,TR2...):%d Fill:%02x,%02x,%02x,%02x\n", Width, Height, int(Anchor), FillColour.R, FillColour.G, FillColour.B, FillColour.A);
+		tPrintfFull("Canvas | Crop[Dim:%dx%d Anchor:%d Fill:%02x,%02x,%02x,%02x]\n", dstW, dstH, int(Anchor), FillColour.R, FillColour.G, FillColour.B, FillColour.A);
 		image.Crop(dstW, dstH, Anchor, FillColour);
 	}
 
@@ -247,12 +250,148 @@ Command::OperationAspect::OperationAspect(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
+	if (numArgs < 2)
+	{
+		Op = OpType::Invalid;
+		return;
+	}
+
+	tStringItem* currArg = args.First();
+	tList<tStringItem> aspectArgs;
+	int numAspectArgs = tStd::tExplode(aspectArgs, *currArg, ':');
+	if (numAspectArgs == 2)
+	{
+		// The AsInt calls return 0 if * is entered.
+		Num = aspectArgs.First()->AsInt32();	if (Num<=0) Num = 16;
+		Den = aspectArgs.Last()->AsInt32();		if (Den<=0) Den = 9;
+	}
+
+	currArg = currArg->Next();
+	switch (tHash::tHashString(currArg->Chr()))
+	{
+		case tHash::tHashCT("crop"):		Mode = AspectMode::Crop;		break;
+		case tHash::tHashCT("letter"):		Mode = AspectMode::Letterbox;	break;
+	}
+
+	// Anchor.
+	if (numArgs >= 3)
+	{
+		currArg = currArg->Next();
+		Anchor = tImage::tPicture::Anchor::MiddleMiddle;
+		switch (tHash::tHashString(currArg->Chr()))
+		{
+			case tHash::tHashCT("tl"):	Anchor = tImage::tPicture::Anchor::LeftTop;			break;
+			case tHash::tHashCT("tm"):	Anchor = tImage::tPicture::Anchor::MiddleTop;		break;
+			case tHash::tHashCT("tr"):	Anchor = tImage::tPicture::Anchor::RightTop;		break;
+			case tHash::tHashCT("ml"):	Anchor = tImage::tPicture::Anchor::LeftMiddle;		break;
+			case tHash::tHashCT("mm"):	Anchor = tImage::tPicture::Anchor::MiddleMiddle;	break;
+			case tHash::tHashCT("mr"):	Anchor = tImage::tPicture::Anchor::RightMiddle;		break;
+			case tHash::tHashCT("bl"):	Anchor = tImage::tPicture::Anchor::LeftBottom;		break;
+			case tHash::tHashCT("bm"):	Anchor = tImage::tPicture::Anchor::MiddleBottom;	break;
+			case tHash::tHashCT("br"):	Anchor = tImage::tPicture::Anchor::RightBottom;		break;
+		}
+	}
+
+	// Fill colour.
+	if (numArgs >= 4)
+	{
+		currArg = currArg->Next();
+		tString colStr = *currArg;
+		if (colStr[0] == '#')
+		{
+			uint32 hex = colStr.AsUInt32(16);
+			FillColour.Set( uint8((hex >> 24) & 0xFF), uint8((hex >> 16) & 0xFF), uint8((hex >> 8) & 0xFF), uint8((hex >> 0) & 0xFF) );
+		}
+		else
+		{
+			switch (tHash::tHashString(colStr.Chr()))
+			{
+				case tHash::tHashCT("black"):	FillColour = tColour4i::black;		break;
+				case tHash::tHashCT("white"):	FillColour = tColour4i::white;		break;
+				case tHash::tHashCT("grey"):	FillColour = tColour4i::grey;		break;
+				case tHash::tHashCT("red"):		FillColour = tColour4i::red;		break;
+				case tHash::tHashCT("green"):	FillColour = tColour4i::red;		break;
+				case tHash::tHashCT("blue"):	FillColour = tColour4i::red;		break;
+				case tHash::tHashCT("yellow"):	FillColour = tColour4i::yellow;		break;
+				case tHash::tHashCT("cyan"):	FillColour = tColour4i::cyan;		break;
+				case tHash::tHashCT("magenta"):	FillColour = tColour4i::magenta;	break;
+			}
+		}
+	}
+
+	// Anchor X.
+	if (numArgs >= 5)
+	{
+		currArg = currArg->Next();
+		tString xstr = *currArg;
+		if (!xstr.IsEmpty() && (xstr[0] != '*'))
+			AnchorX = xstr.AsInt32();
+	}
+
+	// Anchor Y.
+	if (numArgs >= 6)
+	{
+		currArg = currArg->Next();
+		tString ystr = *currArg;
+		if (!ystr.IsEmpty() && (ystr[0] != '*'))
+			AnchorY = ystr.AsInt32();
+	}
+
 	Op = OpType::Aspect;
 }
 
 
 bool Command::OperationAspect::Apply(Viewer::Image& image)
 {
+	int srcW = image.GetWidth();
+	int srcH = image.GetHeight();
+	if ((srcW <= 0) || (srcH <= 0))
+		return false;
+
+	int dstH = srcH;
+	int dstW = srcW;
+	float srcAspect = float(srcW)/float(srcH);
+	float dstAspect = float(Num)/float(Den);
+	switch (Mode)
+	{
+		case AspectMode::Crop:
+			if (dstAspect > srcAspect)
+				dstH = tMath::tFloatToInt(float(dstW) / dstAspect);
+			else if (dstAspect < srcAspect)
+				dstW = tMath::tFloatToInt(float(dstH) * dstAspect);
+			break;
+		
+		case AspectMode::Letterbox:
+			if (dstAspect > srcAspect)
+				dstW = tMath::tFloatToInt(float(dstH) * dstAspect);
+			else if (dstAspect < srcAspect)
+				dstH = tMath::tFloatToInt(float(dstW) / dstAspect);
+	}
+
+	if ((srcW == dstW) && (srcH == dstH))
+	{
+		tPrintfFull("Aspect not applied. Image has same dimensions.\n");
+		return true;
+	}
+
+	// Use the specified anchor pos if it was specified.
+	if ((AnchorX >= 0) && (AnchorY >= 0))
+	{
+		// Honestly can't quite remember what this does. I believe it has something to do with
+		// the coordinate system of the crop position. In any case, it works in the GUI properly
+		// so we need to keep it.
+		int originX = (AnchorX * (srcW - dstW)) / srcW;
+		int originY = (AnchorY * (srcH - dstH)) / srcH;
+
+		tPrintfFull("Aspect | Crop[Dim:%dx%d Origin:%d,%d Fill:%02x,%02x,%02x,%02x]\n", dstW, dstH, originX, originY, FillColour.R, FillColour.G, FillColour.B, FillColour.A);
+		image.Crop(dstW, dstH, originX, originY, FillColour);
+	}
+	else
+	{
+		tPrintfFull("Aspect | Crop[Dim:%dx%d Anchor:%d Fill:%02x,%02x,%02x,%02x]\n", dstW, dstH, int(Anchor), FillColour.R, FillColour.G, FillColour.B, FillColour.A);
+		image.Crop(dstW, dstH, Anchor, FillColour);
+	}
+
 	return true;
 }
 

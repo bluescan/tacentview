@@ -75,8 +75,14 @@ struct OperationCanvas : public Operation
 struct OperationAspect : public Operation
 {
 	OperationAspect(const tString& args);
-	int Num												= 1;
-	int Den												= 1;
+	int Num												= 16;
+	int Den												= 9;
+	enum class AspectMode { Crop, Letterbox };
+	AspectMode Mode										= AspectMode::Crop;
+	tImage::tPicture::Anchor Anchor						= tImage::tPicture::Anchor::MiddleMiddle;	// Optional.
+	tColour4i FillColour								= tColour4i::black;							// Optional.
+	int AnchorX											= -1;										// Optional.
+	int AnchorY											= -1;										// Optional.
 
 	bool Apply(Viewer::Image&) override;
 };

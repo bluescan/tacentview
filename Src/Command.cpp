@@ -843,17 +843,39 @@ would do the same thing as --op zap(a,b,*,*).
         image being processed. See note below for valid edge mode names.
 
 --op canvas(wid,hgt,anc*,fill*,ancx*,ancy*)
-  Resizes image by modifying the canvas area of the image. Vertical or
-  horizontal letterboxes may be needed.
+  Resizes image by modifying the canvas area of the image. You specify the new
+  width and height. Vertical or horizontal letterboxes may be needed. This
+  operation does not perform resampling.
   wid:  Width. An int in range [4, 32768], 0*, or -1. If set to 0 or -1 it
         preserves the aspect ratio by using the height and original aspect.
   hgt:  Height. An int in range [4, 32768], 0*, or -1. If set to 0 or -1 it
         preserves the aspect ratio by using the width and original aspect.
   anc:  Anchor. One of tl, tm, tr, ml, mm*, mr, bl, bm. br. These are
         abbreviations for top-left, top-middle, top-right, etc.
-  fill: Fill colour. Either specify with a hex in form #RRGGBBAA or use one of
-        the predefined colours: black*, white, grey, red, green, blue, yellow
-        cyan, or magenta.
+  fill: Fill colour. If letterboxes needed this is their colour. Either specify
+        with a hex in form #RRGGBBAA or use one of the predefined colours:
+        black*, white, grey, red, green, blue, yellow, cyan, or magenta.
+  ancx: Explicit anchor X position. An int in range [-1*, 32768]. If -1 used
+        the anc argument above takes priority.
+  ancy: Explicit anchor Y position. An int in range [-1*, 32768]. If -1 used
+        the anc argument above takes priority.
+
+--op aspect(asp,mode,anc*,fill*,ancx*,ancy*)
+  Resizes image by modifying the canvas area of the image. You specify the new
+  aspect ratio in the form NUM:DEN. Vertical or horizontal letterboxes may be
+  needed. This operation does not perform resampling.
+  asp:  Aspect ratio specified in form MM:NN where MM and NN are natural
+        numbers. Default* for whole argument yields 16:9. Defaults for
+        components are 16*:9*. These are also used if numbers <= 0 are input.
+  mode: Mode when resizing. Accepts crop* or letter. In crop mode some of the
+        image pixels may be cropped to get the correct aspect. In letterbox
+        mode al the image pixels are guaranteed to be kept, but it may be
+        necessary to add either horizontal or vertical letterboxes (not both).
+  anc:  Anchor. One of tl, tm, tr, ml, mm*, mr, bl, bm. br. These are
+        abbreviations for top-left, top-middle, top-right, etc.
+  fill: Fill colour. If letterboxes needed this is their colour. Either specify
+        with a hex in form #RRGGBBAA or use one of the predefined colours:
+        black*, white, grey, red, green, blue, yellow, cyan, or magenta.
   ancx: Explicit anchor X position. An int in range [-1*, 32768]. If -1 used
         the anc argument above takes priority.
   ancy: Explicit anchor Y position. An int in range [-1*, 32768]. If -1 used
