@@ -383,7 +383,7 @@ bool Command::ProcessOperationsOnImage(Viewer::Image& image)
 	bool somethingFailed = false;
 	for (Operation* operation = Operations.First(); operation; operation = operation->Next())
 	{
-		if (operation->Op == OpType::Invalid)
+		if (!operation->Valid)
 			continue;
 		bool success = operation->Apply(image);
 		if (!success)
@@ -836,7 +836,9 @@ order they were specified on the command line. Default argument values are
 specified with an asterisk. Optional argumets are marked with an asterisk.
 When either optional arguments are not provided or * is entered, the default
 value is used. eg. --op zap[a,b,c*,d*] may be called with --op zap[a,b] which
-would do the same thing as --op zap[a,b,*,*].
+would do the same thing as --op zap[a,b,*,*]. If the operation has all optional
+arguments you may include an empty arg list with [] or leave it out. For
+example if zap[*a,b*] you may call with --op zap[] or just --op zap as well.
 
 --op resize[wid,hgt,filt*,edge*]
   Resizes image by resampling. Allows non-uniform scale.
@@ -887,6 +889,21 @@ would do the same thing as --op zap[a,b,*,*].
         the anc argument above takes priority.
   ancy: Explicit anchor Y position. An int in range [-1*, 32768]. If -1 used
         the anc argument above takes priority.
+
+--op deborder[col*,chan*]
+  Removes same-colour borders from images. Looks around the perimeter of the
+  image to see if all rows or columns have the same test-colour and decides
+  whether to remove or not. You may check any combination of RGBA colour
+  channels. You may retrieve the test-colour from the image itself.
+  col:  Test colour. Either specify with a hex in form #RRGGBBAA or use one of
+        the predefined colours: black*, white, grey, red, green, blue, yellow,
+        cyan, or magenta. The default* is to get the colour from the origin of
+        the image being processed. This is the bottom-left pixel.
+  chan: Colour channels to test. You may test the border by looking only for
+        matches in particular colour channels. These are specified with any
+        combination of the letters RGBA or rgba. Default is RGBA*. At least one
+        valid channel should be specified otherwise the default is used. Eg. RG
+        tests the red and green channels. abG tests alpha, blue, and green.
 
 %s
 %s
@@ -1015,6 +1032,13 @@ These are case-insensitive. False is the result otherwise.
 	{
 		image->Load();
 
+		if (!image->IsLoaded())
+		{
+			tString inNameShort = tSystem::tGetFileName(image->Filename);
+			tPrintfNorm("Failed Load: %s. Skipping.\n", inNameShort.Chr());
+			continue;
+		}
+
 		// Process the standard operations on the current image.
 		tPrintfNorm("Processing: %s\n", image->Filename.Chr());
 		bool processed = ProcessOperationsOnImage(*image);
@@ -1028,10 +1052,11 @@ These are case-insensitive. False is the result otherwise.
 		// Determine out filename,
 
 		tString outFilename = DetermineOutputFilename(image->Filename, outType);
+		tString outNameShort = tSystem::tGetFileName(outFilename);
 		bool doSave = true;
 		if (tSystem::tFileExists(outFilename) && !OptionOverwrite)
 		{
-			tPrintfNorm("File %s exists. Not overwriting.\n", tSystem::tGetFileName(outFilename).Chr());
+			tPrintfNorm("File %s exists. Not overwriting.\n", outNameShort.Chr());
 			doSave = false;
 		}
 
@@ -1043,11 +1068,11 @@ These are case-insensitive. False is the result otherwise.
 			bool success = image->Save(outFilename, outType, false);
 			if (success)
 			{
-				tPrintfFull("Saved File: %s\n", outFilename.Chr());
+				tPrintfFull("Saved File: %s\n", outNameShort.Chr());
 			}
 			else
 			{
-				tPrintfNorm("Failed Save: %s\n", outFilename.Chr());
+				tPrintfNorm("Failed Save: %s\n", outNameShort.Chr());
 				somethingFailed = true;
 			}
 		}

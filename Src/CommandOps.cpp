@@ -24,7 +24,7 @@ Command::OperationResize::OperationResize(const tString& argsStr)
 	int numArgs = tStd::tExplode(args, argsStr, ',');
 	if (numArgs < 2)
 	{
-		Op = OpType::Invalid;
+		tPrintfNorm("Operation Resize Invalid. At least 2 arguments required.\n");
 		return;
 	}
 
@@ -38,8 +38,7 @@ Command::OperationResize::OperationResize(const tString& argsStr)
 	// Either width or height needs to be specified. If only one is present it uses aspect preserve.
 	if ((Width <= 0) && (Height <= 0))
 	{
-		tPrintfNorm("Operation resize invalid. Width or Height or both must be specified.\n");
-		Op = OpType::Invalid;
+		tPrintfNorm("Operation Resize Invalid. Width or Height or both must be specified.\n");
 		return;
 	}
 
@@ -71,12 +70,14 @@ Command::OperationResize::OperationResize(const tString& argsStr)
 		}
 	}
 
-	Op = OpType::Resize;
+	Valid = true;
 }
 
 
 bool Command::OperationResize::Apply(Viewer::Image& image)
 {
+	tAssert(Valid);
+
 	int srcW = image.GetWidth();
 	int srcH = image.GetHeight();
 	if ((srcW <= 0) || (srcH <= 0))
@@ -112,7 +113,7 @@ Command::OperationCanvas::OperationCanvas(const tString& argsStr)
 	int numArgs = tStd::tExplode(args, argsStr, ',');
 	if (numArgs < 2)
 	{
-		Op = OpType::Invalid;
+		tPrintfNorm("Operation Canvas Invalid. At least 2 arguments required.\n");
 		return;
 	}
 
@@ -126,8 +127,7 @@ Command::OperationCanvas::OperationCanvas(const tString& argsStr)
 	// Either width or height needs to be specified. If only one is present it uses aspect preserve.
 	if ((Width <= 0) && (Height <= 0))
 	{
-		tPrintfNorm("Operation canvas invalid. Width or Height or both must be specified.\n");
-		Op = OpType::Invalid;
+		tPrintfNorm("Operation Canvas Invalid. Width or Height or both must be specified.\n");
 		return;
 	}
 
@@ -195,12 +195,14 @@ Command::OperationCanvas::OperationCanvas(const tString& argsStr)
 			AnchorY = ystr.AsInt32();
 	}
 
-	Op = OpType::Canvas;
+	Valid = true;
 }
 
 
 bool Command::OperationCanvas::Apply(Viewer::Image& image)
 {
+	tAssert(Valid);
+
 	int srcW = image.GetWidth();
 	int srcH = image.GetHeight();
 	if ((srcW <= 0) || (srcH <= 0))
@@ -252,7 +254,7 @@ Command::OperationAspect::OperationAspect(const tString& argsStr)
 	int numArgs = tStd::tExplode(args, argsStr, ',');
 	if (numArgs < 2)
 	{
-		Op = OpType::Invalid;
+		tPrintfNorm("Operation Aspect Invalid. At least 2 arguments required.\n");
 		return;
 	}
 
@@ -271,6 +273,7 @@ Command::OperationAspect::OperationAspect(const tString& argsStr)
 	{
 		case tHash::tHashCT("crop"):		Mode = AspectMode::Crop;		break;
 		case tHash::tHashCT("letter"):		Mode = AspectMode::Letterbox;	break;
+		// Mode is already at default if not found.
 	}
 
 	// Anchor.
@@ -337,12 +340,14 @@ Command::OperationAspect::OperationAspect(const tString& argsStr)
 			AnchorY = ystr.AsInt32();
 	}
 
-	Op = OpType::Aspect;
+	Valid = true;
 }
 
 
 bool Command::OperationAspect::Apply(Viewer::Image& image)
 {
+	tAssert(Valid);
+
 	int srcW = image.GetWidth();
 	int srcH = image.GetHeight();
 	if ((srcW <= 0) || (srcH <= 0))
@@ -400,7 +405,6 @@ Command::OperationDeborder::OperationDeborder(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
-
 	tStringItem* currArg = nullptr;
 
 	// Test colour.
@@ -433,14 +437,35 @@ Command::OperationDeborder::OperationDeborder(const tString& argsStr)
 		}
 	}
 
-	//////////WIP CHANNELS.
+	// Channels to test.
+	if (numArgs >= 2)
+	{
+		currArg = currArg->Next();
+		tString chanStr = *currArg;
+		Channels = 0;
+		if (chanStr.FindChar('*') != -1)	Channels = tComp_RGBA;
+		if (chanStr.FindAny("rR") != -1)	Channels |= tComp_R;
+		if (chanStr.FindAny("gG") != -1)	Channels |= tComp_G;
+		if (chanStr.FindAny("bB") != -1)	Channels |= tComp_B;
+		if (chanStr.FindAny("aA") != -1)	Channels |= tComp_A;
+		if (!Channels)						Channels = tComp_RGBA;
+	}
 
-	Op = OpType::DeBorder;
+	Valid = true;
 }
 
 
 bool Command::OperationDeborder::Apply(Viewer::Image& image)
 {
+	tAssert(Valid);
+	tColour4i testCol = TestColour;
+
+	// Do we need to retrieve test colour from the origin (bottom-left 0,0) of the image?
+	if (!UseTestColour)
+		testCol = image.GetPixel(0, 0);
+
+	tPrintfFull("Deborder | Crop[Col:%02x,%02x,%02x,%02x Channels:%08x]\n", testCol.R, testCol.G, testCol.B, testCol.A, Channels);
+	image.Crop(testCol, Channels);
 	return true;
 }
 
@@ -449,7 +474,8 @@ Command::OperationCrop::OperationCrop(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
-	Op = OpType::Crop;
+	
+	Valid = true;
 }
 
 
@@ -463,12 +489,14 @@ Command::OperationFlip::OperationFlip(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
-	Op = OpType::Flip;
+	
+	Valid = true;
 }
 
 
 bool Command::OperationFlip::Apply(Viewer::Image& image)
 {
+	tAssert(Valid);
 	return true;
 }
 
@@ -479,20 +507,23 @@ Command::OperationRotate::OperationRotate(const tString& argsStr)
 	int numArgs = tStd::tExplode(args, argsStr, ',');
 	if (numArgs != 1)
 	{
-		Op = OpType::Invalid;
+		tPrintfNorm("Operation Rotate Invalid. At least 1 argument required.\n");
 		return;
 	}
+
 	tStringItem* currArg = args.First();
 	Angle = currArg->AsFloat();
 
-	tPrintfFull("Operation Rotate. Angle:%f\n", Angle);
-	Op = OpType::Rotate;
+	Valid = true;
 }
 
 
 bool Command::OperationRotate::Apply(Viewer::Image& image)
 {
+	tAssert(Valid);
 	float angleRadians = tMath::tDegToRad(Angle);
+
+	tPrintfFull("Rotate | Rotate[Angle:%f]\n", angleRadians);
 	image.Rotate(angleRadians, tColouri::black, tImage::tResampleFilter::Bicubic, tImage::tResampleFilter::Box);
 	return true;
 }
@@ -502,12 +533,14 @@ Command::OperationLevels::OperationLevels(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
-	Op = OpType::Levels;
+	
+	Valid = true;
 }
 
 
 bool Command::OperationLevels::Apply(Viewer::Image& image)
 {
+	tAssert(Valid);
 	return true;
 }
 
@@ -516,12 +549,14 @@ Command::OperationContrast::OperationContrast(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
-	Op = OpType::Contrast;
+	
+	Valid = true;
 }
 
 
 bool Command::OperationContrast::Apply(Viewer::Image& image)
 {
+	tAssert(Valid);
 	return true;
 }
 
@@ -530,12 +565,14 @@ Command::OperationBrightness::OperationBrightness(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
-	Op = OpType::Brightness;
+	
+	Valid = true;
 }
 
 
 bool Command::OperationBrightness::Apply(Viewer::Image& image)
 {
+	tAssert(Valid);
 	return true;
 }
 
@@ -544,12 +581,14 @@ Command::OperationQuantize::OperationQuantize(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
-	Op = OpType::Quantize;
+	
+	Valid = true;
 }
 
 
 bool Command::OperationQuantize::Apply(Viewer::Image& image)
 {
+	tAssert(Valid);
 	return true;
 }
 
@@ -558,11 +597,13 @@ Command::OperationAlpha::OperationAlpha(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
-	Op = OpType::Alpha;
+	
+	Valid = true;
 }
 
 
 bool Command::OperationAlpha::Apply(Viewer::Image& image)
 {
+	tAssert(Valid);
 	return true;
 }

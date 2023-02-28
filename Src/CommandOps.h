@@ -21,28 +21,10 @@ namespace Command
 {
 
 
-enum class OpType
-{
-	Invalid,
-	Resize,			// Resize image width/height by resampling.
-	Canvas,			// Modify width height of image by adjusting canvas size and specifying an anchor.
-	Aspect,			// Change aspect ratio of image without stretching.
-	DeBorder,		// Detect and remove borders from image.
-	Crop,			// Similar to Canvas but only can make image smaller and more control over crop area.
-	Flip,			// Horizontal or vertical flips.
-	Rotate,			// Rotate an arbitrary number of degrees about a center point.
-	Levels,			// Adjust image levels. Blackoint, mids, whitepoint etc.
-	Contrast,		// Adjust contrast.
-	Brightness,		// Adjust brightness.
-	Quantize,		// Quantize (reduce) the number of colours used in an image.
-	Alpha			// Set alpha channel to specific value. Able to remove the alpha channel by multiplying RGB against A and adding (1-A) * a specific colour.
-};
-
-
 struct Operation : public tLink<Operation>
 {
 	virtual bool Apply(Viewer::Image&)					= 0;
-	OpType Op											= OpType::Invalid;
+	bool Valid											= false;
 };
 
 
@@ -93,7 +75,7 @@ struct OperationDeborder : public Operation
 	OperationDeborder(const tString& args);
 	bool UseTestColour									= false;
 	tColour4i TestColour								= tColour4i::black;							// Optional.
-	tcomps Channels										= 0;										// Optional.
+	tcomps Channels										= tComp_RGBA;								// Optional.
 
 	bool Apply(Viewer::Image&) override;
 };
@@ -116,7 +98,8 @@ struct OperationFlip : public Operation
 struct OperationRotate : public Operation
 {
 	OperationRotate(const tString& args);
-	float Angle;
+	float Angle											= 0.0f;
+
 	bool Apply(Viewer::Image&) override;
 };
 
