@@ -863,7 +863,7 @@ example if zap[*a,b*] you may call with --op zap[] or just --op zap as well.
         abbreviations for top-left, top-middle, top-right, etc.
   fill: Fill colour. If letterboxes needed this is their colour. Either specify
         with a hex in form #RRGGBBAA or use one of the predefined colours:
-        black*, white, grey, red, green, blue, yellow, cyan, or magenta.
+        black*, white, grey, red, green, blue, yellow, cyan, magenta, or trans.
   ancx: Explicit anchor X position. An int in range [-1*, 32768]. If -1 used
         the anc argument above takes priority.
   ancy: Explicit anchor Y position. An int in range [-1*, 32768]. If -1 used
@@ -884,7 +884,7 @@ example if zap[*a,b*] you may call with --op zap[] or just --op zap as well.
         abbreviations for top-left, top-middle, top-right, etc.
   fill: Fill colour. If letterboxes needed this is their colour. Either specify
         with a hex in form #RRGGBBAA or use one of the predefined colours:
-        black*, white, grey, red, green, blue, yellow, cyan, or magenta.
+        black*, white, grey, red, green, blue, yellow, cyan, magenta, or trans.
   ancx: Explicit anchor X position. An int in range [-1*, 32768]. If -1 used
         the anc argument above takes priority.
   ancy: Explicit anchor Y position. An int in range [-1*, 32768]. If -1 used
@@ -897,13 +897,36 @@ example if zap[*a,b*] you may call with --op zap[] or just --op zap as well.
   channels. You may retrieve the test-colour from the image itself.
   col:  Test colour. Either specify with a hex in form #RRGGBBAA or use one of
         the predefined colours: black*, white, grey, red, green, blue, yellow,
-        cyan, or magenta. The default* is to get the colour from the origin of
-        the image being processed. This is the bottom-left pixel.
+        cyan, magenta, or trans. The default* is to get the colour from the
+        origin of the image being processed. This is the bottom-left pixel.
   chan: Colour channels to test. You may test the border by looking only for
         matches in particular colour channels. These are specified with any
         combination of the letters RGBA or rgba. Default is RGBA*. At least one
         valid channel should be specified otherwise the default is used. Eg. RG
         tests the red and green channels. abG tests alpha, blue, and green.
+
+--op crop[mode,x,y,mw,mh,fill*]
+  Crops an image. You get to specify the lower-left origin and either a new
+  width/height or the top-right corner. The values are pixels starting at 0.
+  If the crop area you specify goes outside the image being processed, the fill
+  colour is used. The resultant image must be at least 4x4.
+  mode: Coordinate mode. Either abs* or rel. In absolute mode mw and mh are the
+        position of the top right extent of the crop area. Pixels outside of
+        this are cropped. In relative mode mw and mh are the new width and
+        height of the cropped image.
+  x:    The x of the lower-left origin of the crop area. Included in final pixels.
+        Defaults to 0*.
+  y:    The y of the lower-left origin of the crop area. Included in final pixels.
+        Defaults to 0*.
+  mw:   The max x of the upper-right extent of the crop area OR the new image
+        width if in rel mode. Included in final pixels. Defaults to 3* in
+        absolute mode or 4* in relative mode. Both defaults result in a 4x4.
+  mh:   The max y of the upper-right extent of the crop area OR the new image
+        height if in rel mode. Included in final pixels. Defaults to 3* in
+        absolute mode or 4* in relative mode. Both defaults result in a 4x4.
+  fill: Fill colour. Either specify with a hex in form #RRGGBBAA or use one of
+        the predefined colours: black, white, grey, red, green, blue, yellow,
+        cyan, magenta, or trans*. Trans is transparent-black.
 
 %s
 %s

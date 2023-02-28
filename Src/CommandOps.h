@@ -84,6 +84,14 @@ struct OperationDeborder : public Operation
 struct OperationCrop : public Operation
 {
 	OperationCrop(const tString& args);
+	enum class CropMode { Absolute, Relative };
+	CropMode Mode										= CropMode::Absolute;						// Optional.
+	int OriginX											= 0;
+	int OriginY											= 0;
+	int WidthOrMaxX										= 4;
+	int HeightOrMaxY									= 4;
+	tColour4i FillColour								= tColour4i::transparent;					// Optional.
+
 	bool Apply(Viewer::Image&) override;
 };
 

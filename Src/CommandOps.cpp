@@ -173,6 +173,7 @@ Command::OperationCanvas::OperationCanvas(const tString& argsStr)
 				case tHash::tHashCT("yellow"):	FillColour = tColour4i::yellow;		break;
 				case tHash::tHashCT("cyan"):	FillColour = tColour4i::cyan;		break;
 				case tHash::tHashCT("magenta"):	FillColour = tColour4i::magenta;	break;
+				case tHash::tHashCT("trans"):	FillColour = tColour4i::transparent;break;
 			}
 		}
 	}
@@ -318,6 +319,7 @@ Command::OperationAspect::OperationAspect(const tString& argsStr)
 				case tHash::tHashCT("yellow"):	FillColour = tColour4i::yellow;		break;
 				case tHash::tHashCT("cyan"):	FillColour = tColour4i::cyan;		break;
 				case tHash::tHashCT("magenta"):	FillColour = tColour4i::magenta;	break;
+				case tHash::tHashCT("trans"):	FillColour = tColour4i::transparent;break;
 			}
 		}
 	}
@@ -432,6 +434,7 @@ Command::OperationDeborder::OperationDeborder(const tString& argsStr)
 				case tHash::tHashCT("yellow"):	TestColour = tColour4i::yellow;		break;
 				case tHash::tHashCT("cyan"):	TestColour = tColour4i::cyan;		break;
 				case tHash::tHashCT("magenta"):	TestColour = tColour4i::magenta;	break;
+				case tHash::tHashCT("trans"):	TestColour = tColour4i::transparent;break;
 				default:						UseTestColour = false;				break;
 			}
 		}
@@ -474,13 +477,112 @@ Command::OperationCrop::OperationCrop(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
-	
+	if (numArgs < 5)
+	{
+		tPrintfNorm("Operation Crop Invalid. At least 5 arguments required.\n");
+		return;
+	}
+
+	tStringItem* currArg = args.First();
+	switch (tHash::tHashString(currArg->Chr()))
+	{
+		case tHash::tHashCT("abs"):		Mode = CropMode::Absolute;		break;
+		case tHash::tHashCT("rel"):		Mode = CropMode::Relative;		break;
+		// Mode is already at default if not found.
+	}
+
+	// The AsInt calls return 0 if * is entered. This is the acceptable default for origin.
+	currArg = currArg->Next();
+	OriginX = currArg->AsInt32();
+
+	currArg = currArg->Next();
+	OriginY = currArg->AsInt32();
+
+	currArg = currArg->Next();
+	WidthOrMaxX = currArg->AsInt32();
+	if ((WidthOrMaxX <= 0) && (Mode == CropMode::Absolute))
+		WidthOrMaxX = 3;
+	if ((WidthOrMaxX <= 0) && (Mode == CropMode::Relative))
+		WidthOrMaxX = 4;
+
+	currArg = currArg->Next();
+	HeightOrMaxY = currArg->AsInt32();
+	if ((HeightOrMaxY <= 0) && (Mode == CropMode::Absolute))
+		HeightOrMaxY = 3;
+	if ((HeightOrMaxY <= 0) && (Mode == CropMode::Relative))
+		HeightOrMaxY = 4;
+
+	if ((OriginX < 0) || (OriginY < 0))
+	{
+		tPrintfNorm("Operation Crop Invalid. OriginX and OriginY must be >= 0.\n");
+		return;
+	}
+
+	switch (Mode)
+	{
+		case CropMode::Absolute:
+			if (((WidthOrMaxX+1 - OriginX) < 4) || ((HeightOrMaxY+1 - OriginY) < 4))
+			{
+				tPrintfNorm("Operation Crop Invalid. MaxX and MaxY must be at least 3 bigger than origin.\n");
+				return;
+			}
+			break;
+
+		case CropMode::Relative:
+			if ((WidthOrMaxX < 4) || (HeightOrMaxY < 4))
+			{
+				tPrintfNorm("Operation Crop Invalid. Width and Height must be >= 4\n");
+				return;
+			}
+			break;
+	}
+
+	// Fill colour.
+	if (numArgs >= 6)
+	{
+		currArg = currArg->Next();
+		tString colStr = *currArg;
+		if (colStr[0] == '#')
+		{
+			uint32 hex = colStr.AsUInt32(16);
+			FillColour.Set( uint8((hex >> 24) & 0xFF), uint8((hex >> 16) & 0xFF), uint8((hex >> 8) & 0xFF), uint8((hex >> 0) & 0xFF) );
+		}
+		else
+		{
+			switch (tHash::tHashString(colStr.Chr()))
+			{
+				case tHash::tHashCT("black"):	FillColour = tColour4i::black;		break;
+				case tHash::tHashCT("white"):	FillColour = tColour4i::white;		break;
+				case tHash::tHashCT("grey"):	FillColour = tColour4i::grey;		break;
+				case tHash::tHashCT("red"):		FillColour = tColour4i::red;		break;
+				case tHash::tHashCT("green"):	FillColour = tColour4i::red;		break;
+				case tHash::tHashCT("blue"):	FillColour = tColour4i::red;		break;
+				case tHash::tHashCT("yellow"):	FillColour = tColour4i::yellow;		break;
+				case tHash::tHashCT("cyan"):	FillColour = tColour4i::cyan;		break;
+				case tHash::tHashCT("magenta"):	FillColour = tColour4i::magenta;	break;
+				case tHash::tHashCT("trans"):	FillColour = tColour4i::transparent;break;
+			}
+		}
+	}
+
 	Valid = true;
 }
 
 
 bool Command::OperationCrop::Apply(Viewer::Image& image)
 {
+	tAssert(Valid);
+
+	int newW = WidthOrMaxX;
+	int newH = HeightOrMaxY;
+	if (Mode == CropMode::Absolute)
+	{
+		newW = WidthOrMaxX+1 - OriginX;
+		newH = HeightOrMaxY+1 - OriginY;
+	}
+	tPrintfFull("Crop | Crop[w:%d h:%d x:%d y:%d fill:%02x,%02x,%02x,%02x]\n", newW, newH, OriginX, OriginY, FillColour.R, FillColour.G, FillColour.B, FillColour.A);
+	image.Crop(newW, newH, OriginX, OriginY, FillColour);
+
 	return true;
 }
 
