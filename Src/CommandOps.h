@@ -35,7 +35,7 @@ enum class OpType
 	Contrast,		// Adjust contrast.
 	Brightness,		// Adjust brightness.
 	Quantize,		// Quantize (reduce) the number of colours used in an image.
-	Multalpha		// Remove the alpha channel by multiplying RGB against A and adding (1-A) * a specific colour.
+	Alpha			// Set alpha channel to specific value. Able to remove the alpha channel by multiplying RGB against A and adding (1-A) * a specific colour.
 };
 
 
@@ -91,8 +91,24 @@ struct OperationAspect : public Operation
 struct OperationDeborder : public Operation
 {
 	OperationDeborder(const tString& args);
-	// Colour.
+	bool UseTestColour									= false;
+	tColour4i TestColour								= tColour4i::black;							// Optional.
+	tcomps Channels										= 0;										// Optional.
 
+	bool Apply(Viewer::Image&) override;
+};
+
+
+struct OperationCrop : public Operation
+{
+	OperationCrop(const tString& args);
+	bool Apply(Viewer::Image&) override;
+};
+
+
+struct OperationFlip : public Operation
+{
+	OperationFlip(const tString& args);
 	bool Apply(Viewer::Image&) override;
 };
 
@@ -101,6 +117,41 @@ struct OperationRotate : public Operation
 {
 	OperationRotate(const tString& args);
 	float Angle;
+	bool Apply(Viewer::Image&) override;
+};
+
+
+struct OperationLevels : public Operation
+{
+	OperationLevels(const tString& args);
+	bool Apply(Viewer::Image&) override;
+};
+
+
+struct OperationContrast : public Operation
+{
+	OperationContrast(const tString& args);
+	bool Apply(Viewer::Image&) override;
+};
+
+
+struct OperationBrightness : public Operation
+{
+	OperationBrightness(const tString& args);
+	bool Apply(Viewer::Image&) override;
+};
+
+
+struct OperationQuantize : public Operation
+{
+	OperationQuantize(const tString& args);
+	bool Apply(Viewer::Image&) override;
+};
+
+
+struct OperationAlpha : public Operation
+{
+	OperationAlpha(const tString& args);
 	bool Apply(Viewer::Image&) override;
 };
 

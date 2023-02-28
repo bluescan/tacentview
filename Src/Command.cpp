@@ -362,7 +362,14 @@ void Command::PopulateOperations()
 			case tHash::tHashCT("canvas"):		Operations.Append(new OperationCanvas(args));		break;
 			case tHash::tHashCT("aspect"):		Operations.Append(new OperationAspect(args));		break;
 			case tHash::tHashCT("deborder"):	Operations.Append(new OperationDeborder(args));		break;
+			case tHash::tHashCT("crop"):		Operations.Append(new OperationCrop(args));			break;
+			case tHash::tHashCT("flip"):		Operations.Append(new OperationFlip(args));			break;
 			case tHash::tHashCT("rotate"):		Operations.Append(new OperationRotate(args));		break;
+			case tHash::tHashCT("levels"):		Operations.Append(new OperationLevels(args));		break;
+			case tHash::tHashCT("contrast"):	Operations.Append(new OperationContrast(args));		break;
+			case tHash::tHashCT("brightness"):	Operations.Append(new OperationBrightness(args));	break;
+			case tHash::tHashCT("quantize"):	Operations.Append(new OperationQuantize(args));		break;
+			case tHash::tHashCT("alpha"):		Operations.Append(new OperationAlpha(args));		break;
 		}
 	}
 }

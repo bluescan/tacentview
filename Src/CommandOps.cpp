@@ -400,11 +400,74 @@ Command::OperationDeborder::OperationDeborder(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
+
+	tStringItem* currArg = nullptr;
+
+	// Test colour.
+	if (numArgs >= 1)
+	{
+		currArg = args.First();
+		tString colStr = *currArg;
+		if (colStr[0] == '#')
+		{
+			uint32 hex = colStr.AsUInt32(16);
+			TestColour.Set( uint8((hex >> 24) & 0xFF), uint8((hex >> 16) & 0xFF), uint8((hex >> 8) & 0xFF), uint8((hex >> 0) & 0xFF) );
+			UseTestColour = true;
+		}
+		else
+		{
+			UseTestColour = true;
+			switch (tHash::tHashString(colStr.Chr()))
+			{
+				case tHash::tHashCT("black"):	TestColour = tColour4i::black;		break;
+				case tHash::tHashCT("white"):	TestColour = tColour4i::white;		break;
+				case tHash::tHashCT("grey"):	TestColour = tColour4i::grey;		break;
+				case tHash::tHashCT("red"):		TestColour = tColour4i::red;		break;
+				case tHash::tHashCT("green"):	TestColour = tColour4i::red;		break;
+				case tHash::tHashCT("blue"):	TestColour = tColour4i::red;		break;
+				case tHash::tHashCT("yellow"):	TestColour = tColour4i::yellow;		break;
+				case tHash::tHashCT("cyan"):	TestColour = tColour4i::cyan;		break;
+				case tHash::tHashCT("magenta"):	TestColour = tColour4i::magenta;	break;
+				default:						UseTestColour = false;				break;
+			}
+		}
+	}
+
+	//////////WIP CHANNELS.
+
 	Op = OpType::DeBorder;
 }
 
 
 bool Command::OperationDeborder::Apply(Viewer::Image& image)
+{
+	return true;
+}
+
+
+Command::OperationCrop::OperationCrop(const tString& argsStr)
+{
+	tList<tStringItem> args;
+	int numArgs = tStd::tExplode(args, argsStr, ',');
+	Op = OpType::Crop;
+}
+
+
+bool Command::OperationCrop::Apply(Viewer::Image& image)
+{
+	return true;
+}
+
+
+Command::OperationFlip::OperationFlip(const tString& argsStr)
+{
+	tList<tStringItem> args;
+	int numArgs = tStd::tExplode(args, argsStr, ',');
+	Op = OpType::Flip;
+}
+
+
+bool Command::OperationFlip::Apply(Viewer::Image& image)
 {
 	return true;
 }
@@ -431,5 +494,75 @@ bool Command::OperationRotate::Apply(Viewer::Image& image)
 {
 	float angleRadians = tMath::tDegToRad(Angle);
 	image.Rotate(angleRadians, tColouri::black, tImage::tResampleFilter::Bicubic, tImage::tResampleFilter::Box);
+	return true;
+}
+
+
+Command::OperationLevels::OperationLevels(const tString& argsStr)
+{
+	tList<tStringItem> args;
+	int numArgs = tStd::tExplode(args, argsStr, ',');
+	Op = OpType::Levels;
+}
+
+
+bool Command::OperationLevels::Apply(Viewer::Image& image)
+{
+	return true;
+}
+
+
+Command::OperationContrast::OperationContrast(const tString& argsStr)
+{
+	tList<tStringItem> args;
+	int numArgs = tStd::tExplode(args, argsStr, ',');
+	Op = OpType::Contrast;
+}
+
+
+bool Command::OperationContrast::Apply(Viewer::Image& image)
+{
+	return true;
+}
+
+
+Command::OperationBrightness::OperationBrightness(const tString& argsStr)
+{
+	tList<tStringItem> args;
+	int numArgs = tStd::tExplode(args, argsStr, ',');
+	Op = OpType::Brightness;
+}
+
+
+bool Command::OperationBrightness::Apply(Viewer::Image& image)
+{
+	return true;
+}
+
+
+Command::OperationQuantize::OperationQuantize(const tString& argsStr)
+{
+	tList<tStringItem> args;
+	int numArgs = tStd::tExplode(args, argsStr, ',');
+	Op = OpType::Quantize;
+}
+
+
+bool Command::OperationQuantize::Apply(Viewer::Image& image)
+{
+	return true;
+}
+
+
+Command::OperationAlpha::OperationAlpha(const tString& argsStr)
+{
+	tList<tStringItem> args;
+	int numArgs = tStd::tExplode(args, argsStr, ',');
+	Op = OpType::Alpha;
+}
+
+
+bool Command::OperationAlpha::Apply(Viewer::Image& image)
+{
 	return true;
 }
