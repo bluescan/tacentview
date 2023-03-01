@@ -132,6 +132,15 @@ struct OperationRotate : public Operation
 struct OperationLevels : public Operation
 {
 	OperationLevels(const tString& args);
+	float BlackPoint									= 0.0f;
+	float MidPoint										= -1.0f;	// -1 = Auto. Halfway between black and white.
+	float WhitePoint									= 1.0f;
+	float OutBlackPoint									= 0.0f;
+	float OutWhitePoint									= 1.0f;
+	int FrameNumber										= -1;		// -1 = All Frames.
+	bool PowerMidGamma									= true;
+	Viewer::Image::AdjChan Channels						= Viewer::Image::AdjChan::RGB;
+
 	bool Apply(Viewer::Image&) override;
 };
 

@@ -807,7 +807,7 @@ bool Command::OperationRotate::Apply(Viewer::Image& image)
 
 	tPrintfFull
 	(
-		"Rotate | Rotate[rad:%f deg:%f upfilt:%s dnfilt:%s fill:%02x,%02x,%02x,%02x]\n",
+		"Rotate | Rotate\n[\n  rad:%f deg:%f\n  upfilt:%s dnfilt:%s\n  fill:%02x,%02x,%02x,%02x\n]\n",
 		Angle, tMath::tRadToDeg(Angle),
 		tImage::tResampleFilterNamesSimple[int(FilterUp)],
 		tImage::tResampleFilterNamesSimple[int(FilterDown)],
