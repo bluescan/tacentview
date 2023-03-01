@@ -634,14 +634,135 @@ Command::OperationRotate::OperationRotate(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
-	if (numArgs != 1)
+	if (numArgs < 1)
 	{
 		tPrintfNorm("Operation Rotate Invalid. At least 1 argument required.\n");
 		return;
 	}
 
+	// Get angle. The argument is assumed to be in degrees. If an 'r' is present it uses radians. There are some
+	// special strings for exact mode where we call a faster (possibly more accurate) rotate call. The 'exact'
+	// strings are:
+	// "90" "90.0" "acw" "ccw" : For an exact 90 degree anti-clockwise rotation.
+	// "-90" "-90.0" "cw'      : For an exact 90 degree clockwise rotaion.
+	// "180" "180.0"           : For an exact 180 degree rotation. Clockness doesn't matter.
+	// "*"                     : Default. Results in an exact Zero rotation (does nothing).
 	tStringItem* currArg = args.First();
-	Angle = currArg->AsFloat();
+	tString angleStr = *currArg;
+
+	// Look for the special 'exact' strings first. No other argument is needed if we are in
+	// an exact mode -- other than Off, which is the result if no special exact string found.
+	switch (tHash::tHashString(angleStr.Chr()))
+	{
+		case tHash::tHashCT("90"):
+		case tHash::tHashCT("90.0"):
+		case tHash::tHashCT("acw"):
+		case tHash::tHashCT("ccw"):
+			Exact = ExactMode::ACW90;	Valid = true;	return;
+
+		case tHash::tHashCT("-90"):
+		case tHash::tHashCT("-90.0"):
+		case tHash::tHashCT("cw"):
+			Exact = ExactMode::CW90;	Valid = true;	return;
+
+		case tHash::tHashCT("180"):
+		case tHash::tHashCT("180.0"):
+			Exact = ExactMode::R180;	Valid = true;	return;
+
+		case tHash::tHashCT("*"):
+			Exact = ExactMode::Zero;	Valid = true;	return;
+	}
+	Exact = ExactMode::Off;
+
+	bool degrees = true;
+	if (angleStr.FindChar('r') != -1)
+	{
+		angleStr.Remove('r');
+		degrees = false;
+	}
+	
+	// If the angle converted to a float is 0.0, we also go into exact-zero mode.
+	float angle = angleStr.AsFloat();
+	if (angle == 0.0f)
+	{
+		Exact = ExactMode::Zero;
+		Valid = true;
+		return;
+	}
+	Angle = degrees ? tMath::tDegToRad(angle) : angle;
+
+	// Get mode: fill, crop*, or cropresize.
+	if (numArgs >= 2)
+	{
+		currArg = currArg->Next();
+		switch (tHash::tHashString(currArg->Chr()))
+		{
+			case tHash::tHashCT("fill"):		Mode = RotateMode::Fill;		break;
+			case tHash::tHashCT("crop"):		Mode = RotateMode::Crop;		break;
+			case tHash::tHashCT("cropresize"):	Mode = RotateMode::CropResize;	break;
+			// Mode is already at default if not found.
+		}
+	}
+
+	// Get upfilter.
+	if (numArgs >= 3)
+	{
+		currArg = currArg->Next();
+
+		// The +1 allows "none" to be considered. No match uses default.
+		for (int f = 0; f < int(tImage::tResampleFilter::NumFilters)+1; f++)
+		{
+			if (currArg->IsEqualCI(tImage::tResampleFilterNamesSimple[f]))
+			{
+				FilterUp = tImage::tResampleFilter(f);
+				break;
+			}
+		}
+	}
+
+	// Get downfilter.
+	if (numArgs >= 4)
+	{
+		currArg = currArg->Next();
+
+		// The +1 allows "none" to be considered. No match uses default.
+		for (int f = 0; f < int(tImage::tResampleFilter::NumFilters)+1; f++)
+		{
+			if (currArg->IsEqualCI(tImage::tResampleFilterNamesSimple[f]))
+			{
+				FilterDown = tImage::tResampleFilter(f);
+				break;
+			}
+		}
+	}
+
+	// Fill colour.
+	if (numArgs >= 5)
+	{
+		currArg = currArg->Next();
+		tString colStr = *currArg;
+		if (colStr[0] == '#')
+		{
+			uint32 hex = colStr.AsUInt32(16);
+			FillColour.Set( uint8((hex >> 24) & 0xFF), uint8((hex >> 16) & 0xFF), uint8((hex >> 8) & 0xFF), uint8((hex >> 0) & 0xFF) );
+		}
+		else
+		{
+			switch (tHash::tHashString(colStr.Chr()))
+			{
+				case tHash::tHashCT("black"):	FillColour = tColour4i::black;		break;
+				case tHash::tHashCT("white"):	FillColour = tColour4i::white;		break;
+				case tHash::tHashCT("grey"):	FillColour = tColour4i::grey;		break;
+				case tHash::tHashCT("red"):		FillColour = tColour4i::red;		break;
+				case tHash::tHashCT("green"):	FillColour = tColour4i::red;		break;
+				case tHash::tHashCT("blue"):	FillColour = tColour4i::red;		break;
+				case tHash::tHashCT("yellow"):	FillColour = tColour4i::yellow;		break;
+				case tHash::tHashCT("cyan"):	FillColour = tColour4i::cyan;		break;
+				case tHash::tHashCT("magenta"):	FillColour = tColour4i::magenta;	break;
+				case tHash::tHashCT("trans"):	FillColour = tColour4i::transparent;break;
+			}
+		}
+	}
 
 	Valid = true;
 }
@@ -650,10 +771,90 @@ Command::OperationRotate::OperationRotate(const tString& argsStr)
 bool Command::OperationRotate::Apply(Viewer::Image& image)
 {
 	tAssert(Valid);
-	float angleRadians = tMath::tDegToRad(Angle);
 
-	tPrintfFull("Rotate | Rotate[Angle:%f]\n", angleRadians);
-	image.Rotate(angleRadians, tColouri::black, tImage::tResampleFilter::Bicubic, tImage::tResampleFilter::Box);
+	// First we deal with exact mode rotations.
+	switch (Exact)
+	{
+		case ExactMode::Zero:
+			tPrintfFull("Rotate not applied. Zero rotation specified.\n");
+			return true;
+		
+		case ExactMode::ACW90:
+			tPrintfFull("Rotate | Rotate90[Anticlockwise:true]\n");
+			image.Rotate90(true);
+			return true;
+
+		case ExactMode::CW90:
+			tPrintfFull("Rotate | Rotate90[Anticlockwise:false]\n");
+			image.Rotate90(false);
+			return true;
+
+		case ExactMode::R180:
+			tPrintfFull("Rotate | 2X Rotate90[Anticlockwise:true]\n");
+			image.Rotate90(true);
+			image.Rotate90(true);
+			return true;
+
+		case ExactMode::Off:
+		default:
+			break;
+	};
+
+	// Not an exact rotation. Rotate the image.
+	//tPicture* picture = CurrImage->GetCurrentPic(); tAssert(picture);
+	int origW = image.GetWidth();
+	int origH = image.GetHeight();
+
+	tPrintfFull
+	(
+		"Rotate | Rotate[rad:%f deg:%f upfilt:%s dnfilt:%s fill:%02x,%02x,%02x,%02x]\n",
+		Angle, tMath::tRadToDeg(Angle),
+		tImage::tResampleFilterNamesSimple[int(FilterUp)],
+		tImage::tResampleFilterNamesSimple[int(FilterDown)],
+		FillColour.R, FillColour.G, FillColour.B, FillColour.A
+	);
+	image.Rotate(Angle, FillColour, FilterUp, FilterDown);
+
+	if ((Mode == RotateMode::Crop) || (Mode == RotateMode::CropResize))
+	{
+		// If one of the crop modes is selected we need to crop the edges. Since rectangles are made of lines and there
+		// is symmetry and we can compute the reduced size by subtracting the original size from the rotated size.
+		int rotW = image.GetWidth();
+		int rotH = image.GetHeight();
+		bool aspectFlip = ((origW > origH) && (rotW < rotH)) || ((origW < origH) && (rotW > rotH));
+		if (aspectFlip)
+			tStd::tSwap(origW, origH);
+
+		int dx = rotW - origW;
+		int dy = rotH - origH;
+		int newW = origW - dx;
+		int newH = origH - dy;
+
+		if (dx > origW/2)
+		{
+			newW = origW - origW/2;
+			newH = (newW*origH)/origW;
+		}
+		else if (dy > origH/2)
+		{
+			newH = origH - origH/2;
+			newW = (newH*origW)/origH;
+		}
+
+		// The above code has been tested with a 1x1 input and (newH,newW) result correcty as (1,1).
+		tPrintfFull("Rotate | Crop[w:%d h:%d anc:mm]\n", newW, newH);
+		image.Crop(newW, newH, tImage::tPicture::Anchor::MiddleMiddle);
+	}
+
+	if (Mode == RotateMode::CropResize)
+	{
+		// The crop is done. Now resample. We use nearest neighbour if no up-filter specified so as to preserve colours.
+		tImage::tResampleFilter filter = (FilterUp != tImage::tResampleFilter::None) ? FilterUp : tImage::tResampleFilter::Nearest;
+
+		tPrintfFull("Rotate | Resample[w:%d h:%d filt:%s edge:clamp]\n", origW, origH, tImage::tResampleFilterNamesSimple[int(filter)]);
+		image.Resample(origW, origH, filter, tImage::tResampleEdgeMode::Clamp);
+	}
+
 	return true;
 }
 

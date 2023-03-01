@@ -109,7 +109,21 @@ struct OperationFlip : public Operation
 struct OperationRotate : public Operation
 {
 	OperationRotate(const tString& args);
-	float Angle											= 0.0f;
+
+	float Angle											= 0.0f;		// Radians.
+	enum class ExactMode { Off, Zero, ACW90, CW90, R180 };
+	ExactMode Exact										= ExactMode::Zero;
+
+	enum class RotateMode { Fill, Crop, CropResize };
+	RotateMode Mode										= RotateMode::Crop;							// Optional.
+
+	// UpFilter		DownFilter		Description
+	// None			NA				No up/down scaling. Preserves colours. Nearest Neighbour. Fast. Good for pixel art.
+	// Valid		Valid			Up/down scaling. Smooth. Good results with up=bilinear, down=box.
+	// Valid		None			Up/down scaling. Use alternate (sharper) downscaling scheme (possibe pad + 2X ScaleHalf).
+	tImage::tResampleFilter FilterUp					= tImage::tResampleFilter::Bilinear;		// Optional.
+	tImage::tResampleFilter FilterDown					= tImage::tResampleFilter::None;			// Optional.
+	tColour4i FillColour								= tColour4i::black;							// Optional.
 
 	bool Apply(Viewer::Image&) override;
 };
