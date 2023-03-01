@@ -928,6 +928,13 @@ example if zap[*a,b*] you may call with --op zap[] or just --op zap as well.
         the predefined colours: black, white, grey, red, green, blue, yellow,
         cyan, magenta, or trans*. Trans is transparent-black.
 
+--op flip[mode*]
+  Flips an image either horizontally or vertically.
+  mode: Either horizontal or vertical. Synonyms include h, v, H, V, Horizontal
+        and Vertical. If mode not specified or specified as *, default is
+        horizontal* which is about the vertical axis (left becomes right and
+        vica-versa.
+
 %s
 %s
 

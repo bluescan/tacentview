@@ -99,6 +99,9 @@ struct OperationCrop : public Operation
 struct OperationFlip : public Operation
 {
 	OperationFlip(const tString& args);
+	enum class FlipMode { Horizontal, Vertical };
+	FlipMode Mode										= FlipMode::Horizontal;						// Optional.
+
 	bool Apply(Viewer::Image&) override;
 };
 

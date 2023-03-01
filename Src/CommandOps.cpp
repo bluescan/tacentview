@@ -591,6 +591,28 @@ Command::OperationFlip::OperationFlip(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
+
+	// Flip mode.
+	if (numArgs >= 1)
+	{
+		tStringItem* currArg = args.First();
+		switch (tHash::tHashString(currArg->Chr()))
+		{
+			case tHash::tHashCT("h"):
+			case tHash::tHashCT("H"):
+			case tHash::tHashCT("horizontal"):
+			case tHash::tHashCT("Horizontal"):
+				Mode = FlipMode::Horizontal;
+				break;
+
+			case tHash::tHashCT("v"):
+			case tHash::tHashCT("V"):
+			case tHash::tHashCT("vertical"):
+			case tHash::tHashCT("Vertical"):
+				Mode = FlipMode::Vertical;
+				break;
+		}
+	}
 	
 	Valid = true;
 }
@@ -599,6 +621,11 @@ Command::OperationFlip::OperationFlip(const tString& argsStr)
 bool Command::OperationFlip::Apply(Viewer::Image& image)
 {
 	tAssert(Valid);
+
+	bool horizontal = (Mode == FlipMode::Horizontal);
+	tPrintfFull("Flip | Flip[horizontal:%B\n", horizontal);
+	image.Flip(horizontal);
+
 	return true;
 }
 
