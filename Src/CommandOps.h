@@ -114,7 +114,7 @@ struct OperationRotate : public Operation
 	enum class ExactMode { Off, Zero, ACW90, CW90, R180 };
 	ExactMode Exact										= ExactMode::Zero;
 
-	enum class RotateMode { Fill, Crop, CropResize };
+	enum class RotateMode { Fill, Crop, Resize };
 	RotateMode Mode										= RotateMode::Crop;							// Optional.
 
 	// UpFilter		DownFilter		Description

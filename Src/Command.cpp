@@ -775,7 +775,7 @@ int Command::Process()
 		}
 
 		tString filters("Supported filters: ");
-		for (int f = 0; f < int(tImage::tResampleFilter::NumFilters); f++)
+		for (int f = 0; f < int(tImage::tResampleFilter::NumFilters)+1; f++)
 		{
 			int lineStart = filters.FindChar('\n', true) + 1;
 			if ( (tStd::tStrlen(filters.Chr()+lineStart)%maxCols) >= (maxCols-tStd::tStrlen(tImage::tResampleFilterNamesSimple[f])) )
@@ -934,6 +934,43 @@ example if zap[*a,b*] you may call with --op zap[] or just --op zap as well.
         and Vertical. If mode not specified or specified as *, default is
         horizontal* which is about the vertical axis (left becomes right and
         vica-versa.
+
+--op rotate[ang,mode*,upft*,dnft*,fill*]
+  Rotates an image. Use negative angles for clockwise rotations. At a minimum
+  you must supply the rotation angle in degrees or radians. There is also the
+  ability to specify different sampling filters to get quality results, or
+  preserve original colours for pixel art. After rotation is complete the areas
+  not containing image pixels may be filled with a specified colour, or the
+  image may be cropped and possibly resized back to original dimensions.
+  ang:  Rotation angle. Specified in degrees. Defaults to 0.0* degrees. To
+        specify in radians include the letter 'r' after the value. eg. -1.2r.
+        Negatives rotate clockwise. For exact 90 and 180 degree rotations the
+        following strings should be used so it uses a faster exact algorithm:
+          For 90 Degree Anticlockwise :  90  90.0 acw ccw
+          For 90 Degree Clockwise     : -90 -90.0 cw
+          For 180 Degree Rotation     : 180 180.0
+  mode: Rotation mode. One of fill, crop*, or resize. Fill mode will result in
+        larger images and the fill-colour is used because the image bounds get
+        rotated outside of the original area. Preserves all image content. Crop
+        mode does the rotation and then crops anywhere that went outside. This
+        may crop a little of the image depending on angle, but no fill is used.
+        Resize mode does the same as crop but then proceeds to resample the
+        image back to the original dimensions. Resampling does lose a little
+        quality so this is not the default. Use resize mode when it is
+        desireable to preserve the image size.
+  upft: Upsample filter. See below for filter names. Default is bilinear*.
+        Upsampling is used to create a larger image before rotation to give
+        much better results. It is also valid to enter 'none' in which case no
+        scaling-up of the image is performed. In this case all original pixel
+        colours are preserved by using nearest neighbour colours. This is fast
+        and a good choice for pixel-art and sprites.
+  dnft: Downsample filter. Only used if up-filter is not none. This filter is
+        used to restore image size after rotation. Specifying none* here uses
+        a special upsample method that produces sharper results. Using box
+        filter here is also a good choice. See below for valid filter names.
+  fill: Fill colour. Only used if mode was fill. Either specify with a hex in
+        form #RRGGBBAA or use one of the predefined colours: black*, white,
+        grey, red, green, blue, yellow, cyan, magenta, or trans.
 
 %s
 %s

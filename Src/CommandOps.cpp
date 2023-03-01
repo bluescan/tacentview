@@ -697,9 +697,9 @@ Command::OperationRotate::OperationRotate(const tString& argsStr)
 		currArg = currArg->Next();
 		switch (tHash::tHashString(currArg->Chr()))
 		{
-			case tHash::tHashCT("fill"):		Mode = RotateMode::Fill;		break;
-			case tHash::tHashCT("crop"):		Mode = RotateMode::Crop;		break;
-			case tHash::tHashCT("cropresize"):	Mode = RotateMode::CropResize;	break;
+			case tHash::tHashCT("fill"):		Mode = RotateMode::Fill;	break;
+			case tHash::tHashCT("crop"):		Mode = RotateMode::Crop;	break;
+			case tHash::tHashCT("resize"):		Mode = RotateMode::Resize;	break;
 			// Mode is already at default if not found.
 		}
 	}
@@ -815,7 +815,7 @@ bool Command::OperationRotate::Apply(Viewer::Image& image)
 	);
 	image.Rotate(Angle, FillColour, FilterUp, FilterDown);
 
-	if ((Mode == RotateMode::Crop) || (Mode == RotateMode::CropResize))
+	if ((Mode == RotateMode::Crop) || (Mode == RotateMode::Resize))
 	{
 		// If one of the crop modes is selected we need to crop the edges. Since rectangles are made of lines and there
 		// is symmetry and we can compute the reduced size by subtracting the original size from the rotated size.
@@ -846,7 +846,7 @@ bool Command::OperationRotate::Apply(Viewer::Image& image)
 		image.Crop(newW, newH, tImage::tPicture::Anchor::MiddleMiddle);
 	}
 
-	if (Mode == RotateMode::CropResize)
+	if (Mode == RotateMode::Resize)
 	{
 		// The crop is done. Now resample. We use nearest neighbour if no up-filter specified so as to preserve colours.
 		tImage::tResampleFilter filter = (FilterUp != tImage::tResampleFilter::None) ? FilterUp : tImage::tResampleFilter::Nearest;
