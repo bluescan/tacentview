@@ -972,8 +972,39 @@ example if zap[*a,b*] you may call with --op zap[] or just --op zap as well.
         form #RRGGBBAA or use one of the predefined colours: black*, white,
         grey, red, green, blue, yellow, cyan, magenta, or trans.
 
+--op levels[bp,mp,wp,obp,owp,fram*,chan*,alg*]
+  Adjusts image levels in a manner similar to photo-editing software. You
+  specify black, mid, and white points, whether to operate on all frames or a
+  simgle frame, which channel to use, and the gamma algorithm to use. At a
+  minimum you must specify the 5 black, mid, and white points.
+  bp:   Black point. Value must be between 0.0* and 1.0.
+  mp:   Mid point. Value must be between blackpoint and whitepoint. If set to *
+        or -1.0 the midpoint is computed automatically as the halfway point
+        between the blackpoint and whitepoint.
+  wp:   White point. Value must be between midpoint and 1.0*.
+  obp:  Output black point. Value must be between 0.0* and 1.0.
+  owp:  Output white point. Value must be between 0.0 and 1.0* and bigger than
+        the output black point.
+  fram: Frame number. This is the 0-based frame number to apply the levels
+        adjustments to. If set to -1* all frames are adjusted. If frame number
+        is too big campared to the number of frames in the current image, it
+        will get clamped to the number available (last frame).
+  chan: The channels the level adjustments should be made to. Choices are RGB*,
+        R, G, B, and A. Lower-case also works.
+  alg:  Power midpoint gamma algorithm. Boolean defaulting to true*. Lets you
+        decide between 2 algorithms for the curve on the mid-tone gamma. If
+        true uses a continuous base-10 power curve that smoothly transitions
+        the full range. For this algo the gamma range is [0.1, 10.0] where 1.0
+        is linear. This approximates GIMP. If false it tries to mimic Photoshop
+        where there is a C1 discontinuity at gamma = 1. In this mode the gamma
+        range is [0.01, 9.99] where 1.0 is linear. See below for valid
+        arguments to supply boolean true or false.
+
 %s
 %s
+For boolean arguments you may use "true", "t", "yes", "y", "on", "enable",
+"enabled", "1", "+", and strings that represent non-zero integers as true.
+These are case-insensitive. False is the result otherwise.
 
 OUTPUT IMAGES
 -------------
@@ -996,7 +1027,13 @@ overwrite use the --overwrite (-w) flag. To have the tool try a different
 filename if it aready exists, use the --autoname (-a) flag. It will append the
 string _NN to the name where NN is a number that keeps incrementing until no
 existing file is found.
+)U5AG3",
+			intypes.Chr(), inexts.Chr(), filters.Chr(), edgemodes.Chr(), outtypes.Chr()
+		);
 
+		tPrintf
+		(
+R"OU7PMS(
 OUTPUT PARAMETERS
 -----------------
 Different output image types have different features and may support different
@@ -1060,13 +1097,9 @@ indicates which is the default.
         files. Interpreted as compression strength for non-lossy. Larger values
         compress more but images take longer to generate.
   dur:  Frame duration override, -1* means no override. Otherwise units are ms.
-
-For boolean arguments you may use "true", "t", "yes", "y", "on", "enable",
-"enabled", "1", "+", and strings that represent non-zero integers as true.
-These are case-insensitive. False is the result otherwise.
-)U5AG3",
-			intypes.Chr(), inexts.Chr(), filters.Chr(), edgemodes.Chr(), outtypes.Chr()
+)OU7PMS"
 		);
+
 
 		return 0;
 	}

@@ -138,8 +138,8 @@ struct OperationLevels : public Operation
 	float OutBlackPoint									= 0.0f;
 	float OutWhitePoint									= 1.0f;
 	int FrameNumber										= -1;		// -1 = All Frames.
-	bool PowerMidGamma									= true;
 	Viewer::Image::AdjChan Channels						= Viewer::Image::AdjChan::RGB;
+	bool PowerMidGamma									= true;
 
 	bool Apply(Viewer::Image&) override;
 };

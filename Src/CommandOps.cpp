@@ -863,7 +863,112 @@ Command::OperationLevels::OperationLevels(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
-	
+
+	// BlackPoint.
+	tStringItem* currArg = args.First();
+	BlackPoint = currArg->AsFloat();
+	tMath::tiSaturate(BlackPoint);
+
+	// MidPoint.
+	currArg = currArg->Next();
+	tString mpstr = *currArg;
+	if (mpstr == "*")
+		MidPoint = -1.0f;
+	else
+		MidPoint = mpstr.AsFloat();
+
+	// WhitePoint.
+	currArg = currArg->Next();
+	WhitePoint = currArg->AsFloat();
+	tMath::tiSaturate(WhitePoint);
+
+	// If auto-mid-point adjust midpoint here.
+	if (MidPoint < 0.0f)
+	{
+		tMath::tiClampMin(WhitePoint, BlackPoint);
+		MidPoint = (WhitePoint+BlackPoint)/2.0f;
+	}
+	else
+	{
+		tMath::tiSaturate(MidPoint);
+		tMath::tiClampMin(MidPoint, BlackPoint);
+		tMath::tiClampMin(WhitePoint, MidPoint);
+	}
+
+	// OutBlackPoint.
+	if (numArgs >= 4)
+	{
+		currArg = currArg->Next();
+		OutBlackPoint = currArg->AsFloat();
+	}
+
+	// OutWhitePoint.
+	if (numArgs >= 5)
+	{
+		currArg = currArg->Next();
+		OutWhitePoint = currArg->AsFloat();
+		tMath::tiClampMin(OutWhitePoint, OutBlackPoint);
+	}
+
+	tMath::tiClampMin(OutWhitePoint, OutBlackPoint);
+
+	// FrameNumber.
+	if (numArgs >= 6)
+	{
+		currArg = currArg->Next();
+		tString frameStr = *currArg;
+		if (frameStr == "*")
+			FrameNumber = -1;
+		else
+			FrameNumber = frameStr.AsInt32();
+	}
+
+	// Channels.
+	if (numArgs >= 7)
+	{
+		currArg = currArg->Next();
+		switch (tHash::tHashString(currArg->Chr()))
+		{
+			case tHash::tHashCT("*"):
+			case tHash::tHashCT("rgb"):
+			case tHash::tHashCT("RGB"):
+				Channels = Viewer::Image::AdjChan::RGB;
+				break;
+
+			case tHash::tHashCT("r"):
+			case tHash::tHashCT("R"):
+				Channels = Viewer::Image::AdjChan::R;
+				break;
+
+			case tHash::tHashCT("g"):
+			case tHash::tHashCT("G"):
+				Channels = Viewer::Image::AdjChan::G;
+				break;
+
+			case tHash::tHashCT("b"):
+			case tHash::tHashCT("B"):
+				Channels = Viewer::Image::AdjChan::B;
+				break;
+
+			case tHash::tHashCT("a"):
+			case tHash::tHashCT("A"):
+				Channels = Viewer::Image::AdjChan::A;
+				break;
+			// Mode is already at default if not found.
+		}
+	}
+
+	// PowerMidGamma.
+	if (numArgs >= 8)
+	{
+		currArg = currArg->Next();
+		tString powerMid = *currArg;
+		if (powerMid == "*")
+			PowerMidGamma = true;
+		else
+			PowerMidGamma = powerMid.AsBool();
+	}
+
 	Valid = true;
 }
 
@@ -871,6 +976,37 @@ Command::OperationLevels::OperationLevels(const tString& argsStr)
 bool Command::OperationLevels::Apply(Viewer::Image& image)
 {
 	tAssert(Valid);
+
+	int origFrameNum = image.FrameNum;
+	bool allFrames = true;
+	if (FrameNumber > -1)
+	{
+		image.FrameNum = tMath::tClampMax(FrameNumber, image.GetNumFrames()-1);
+		allFrames = false;
+	}
+
+	tString chanStr;
+	switch (Channels)
+	{
+		case Viewer::Image::AdjChan::RGB:	chanStr = "rgb";	break;
+		case Viewer::Image::AdjChan::R:		chanStr = "r";		break;
+		case Viewer::Image::AdjChan::G:		chanStr = "g";		break;
+		case Viewer::Image::AdjChan::B:		chanStr = "b";		break;
+		case Viewer::Image::AdjChan::A:		chanStr = "a";		break;
+	};
+	tPrintfFull
+	(
+		"Levels | AdjustLevels\n[\n  blackpoint:%4.2f\n  midpoint:%4.2f\n  whitepoint:%4.2f\n  outblackpoint:%4.2f\n  outwhitepoint:%4.2f\n  powermidgamma:%B\n  channels:%s\n  allframes:%B\n]\n",
+		BlackPoint, MidPoint, WhitePoint,
+		OutBlackPoint, OutWhitePoint,
+		PowerMidGamma, chanStr.Chr(), allFrames
+	);
+
+	image.AdjustmentBegin();
+	image.AdjustLevels(BlackPoint, MidPoint, WhitePoint, OutBlackPoint, OutWhitePoint, PowerMidGamma, Channels, allFrames);
+	image.AdjustmentEnd();
+
+	image.FrameNum = origFrameNum;
 	return true;
 }
 
