@@ -24,6 +24,7 @@ namespace Command
 struct Operation : public tLink<Operation>
 {
 	virtual bool Apply(Viewer::Image&)					= 0;
+	virtual ~Operation()								{ }
 	bool Valid											= false;
 };
 
