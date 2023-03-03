@@ -16,6 +16,7 @@
 
 #pragma once
 #include <Image/tPicture.h>
+#include <Image/tQuantize.h>
 #include "Image.h"
 namespace Command
 {
@@ -171,6 +172,12 @@ struct OperationBrightness : public Operation
 struct OperationQuantize : public Operation
 {
 	OperationQuantize(const tString& args);
+	tImage::tQuantize::Method Method					= tImage::tQuantize::Method::Fixed;		// Required.
+	int NumColours										= 256;							// Required.
+	bool CheckExact										= true;							// Optional.
+	int SampFilt										= 0;							// Optional. 0 is invalid.
+	double Dither										= 0.0;							// Optional, 0.0 is auto.
+
 	bool Apply(Viewer::Image&) override;
 };
 

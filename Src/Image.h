@@ -123,6 +123,23 @@ public:
 	void Rotate90(bool antiClockWise);
 	void Rotate(float angle, const tColouri& fill, tImage::tResampleFilter upFilter, tImage::tResampleFilter downFilter);
 
+	// Quantize image colours based on a fixed palette. numColours must be 256 or less. checkExact means no change to
+	// the image will be made if it already contains fewer colours than numColours already. This may or may not be
+	// desireable as the computed or fixed palette would not be used.
+	void QuantizeFixed(int numColours, bool checkExact = true);
+
+	// Similar to above but uses spatial quantization to generate the palette. If ditherLevel is 0.0 it will compute a
+	// good dither amount for you based on the image dimensions and number of colours. Filter size must be 1, 3, or 5.
+	void QuantizeSpatial(int numColours, bool checkExact = true, double ditherLevel = 0.0, int filterSize = 3);
+
+	// Similar to above but uses neuquant algorighm to generate the palette. With a sampling factor of 1 the entire
+	// image is used in the learning phase. With a factor of 10, a pseudo-random subset of 1/10 of the pixels are used
+	// in the learning phase. sampleFactor must be in [1, 30]. Bigger values are faster but lower quality.
+	void QuantizeNeu(int numColours, bool checkExact = true, int sampleFactor = 1);
+
+	// Similar to above but uses Wu algorighm to generate the palette.
+	void QuantizeWu(int numColours, bool checkExact = true);
+
 	bool AdjustmentBegin();
 	enum class AdjChan { RGB, R, G, B, A };	// Adjustment is to individual RGBA channels or RGB/Intensity (default).
 	static tcomps ComponentBits(AdjChan);	// Converts to tChannels.

@@ -1115,6 +1115,50 @@ void Image::Rotate(float angle, const tColouri& fill, tResampleFilter upFilter, 
 }
 
 
+void Image::QuantizeFixed(int numColours, bool checkExact)
+{
+	tString desc; tsPrintf(desc, "Quantize %d", numColours);
+	PushUndo(desc);
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->QuantizeFixed(numColours, checkExact);
+
+	Dirty = true;
+}
+
+
+void Image::QuantizeSpatial(int numColours, bool checkExact, double ditherLevel, int filterSize)
+{
+	tString desc; tsPrintf(desc, "Quantize %d", numColours);
+	PushUndo(desc);
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->QuantizeSpatial(numColours, checkExact, ditherLevel, filterSize);
+
+	Dirty = true;
+}
+
+
+void Image::QuantizeNeu(int numColours, bool checkExact, int sampleFactor)
+{
+	tString desc; tsPrintf(desc, "Quantize %d", numColours);
+	PushUndo(desc);
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->QuantizeNeu(numColours, checkExact, sampleFactor);
+
+	Dirty = true;
+}
+
+
+void Image::QuantizeWu(int numColours, bool checkExact)
+{
+	tString desc; tsPrintf(desc, "Quantize %d", numColours);
+	PushUndo(desc);
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->QuantizeWu(numColours, checkExact);
+
+	Dirty = true;
+}
+
+
 bool Image::AdjustmentBegin()
 {
 	if (!IsLoaded())
