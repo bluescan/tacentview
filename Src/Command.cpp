@@ -975,7 +975,7 @@ example if zap[*a,b*] you may call with --op zap[] or just --op zap as well.
 --op levels[bp,mp,wp,obp,owp,fram*,chan*,alg*]
   Adjusts image levels in a manner similar to photo-editing software. You
   specify black, mid, and white points, whether to operate on all frames or a
-  simgle frame, which channel to use, and the gamma algorithm to use. At a
+  single frame, which channel to use, and the gamma algorithm to use. At a
   minimum you must specify the 5 black, mid, and white points.
   bp:   Black point. Value must be between 0.0* and 1.0.
   mp:   Mid point. Value must be between blackpoint and whitepoint. If set to *
@@ -999,6 +999,30 @@ example if zap[*a,b*] you may call with --op zap[] or just --op zap as well.
         where there is a C1 discontinuity at gamma = 1. In this mode the gamma
         range is [0.01, 9.99] where 1.0 is linear. See below for valid
         arguments to supply boolean true or false.
+
+--op contrast[cont,fram*,chan*]
+  Adjusts contrast. Specify the contrast, whether to operate on all frames or a
+  single frame, and which channel(s) to use.
+  cont: Contrast value from 0.0 (none) to 1.0 (full contrast). A value of 0.5*
+        leaves the image unmodified.
+  fram: Frame number. This is the 0-based frame number to apply the contrast
+        adjustment to. If set to -1* all frames are adjusted. If frame number
+        is too big campared to the number of frames in the current image, it
+        will get clamped to the number available (last frame).
+  chan: The channels the contrast adjustment should be made to. Choices are
+        RGB*, R, G, B, and A. Lower-case also works.
+
+--op brightness[brit,fram*,chan*]
+  Adjusts brightness. Specify the brightness, whether to operate on all frames
+  or a single frame, and which channel(s) to use.
+  brit: Brightness value from 0.0 (black) to 1.0 (white). A value of 0.5*
+        leaves the image unmodified.
+  fram: Frame number. This is the 0-based frame number to apply the brightness
+        adjustment to. If set to -1* all frames are adjusted. If frame number
+        is too big campared to the number of frames in the current image, it
+        will get clamped to the number available (last frame).
+  chan: The channels the brightness adjustment should be made to. Choices are
+        RGB*, R, G, B, and A. Lower-case also works.
 
 %s
 %s

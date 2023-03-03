@@ -801,7 +801,6 @@ bool Command::OperationRotate::Apply(Viewer::Image& image)
 	};
 
 	// Not an exact rotation. Rotate the image.
-	//tPicture* picture = CurrImage->GetCurrentPic(); tAssert(picture);
 	int origW = image.GetWidth();
 	int origH = image.GetHeight();
 
@@ -976,6 +975,11 @@ Command::OperationLevels::OperationLevels(const tString& argsStr)
 bool Command::OperationLevels::Apply(Viewer::Image& image)
 {
 	tAssert(Valid);
+	if ((BlackPoint == 0.0f) && (MidPoint == 0.5f) && (WhitePoint == 1.0) && (OutBlackPoint == 0.0f) && (OutWhitePoint == 1.0f))
+	{
+		tPrintfFull("Levels not applied. All point levels at default.\n");
+		return true;
+	}
 
 	int origFrameNum = image.FrameNum;
 	bool allFrames = true;
@@ -1015,7 +1019,62 @@ Command::OperationContrast::OperationContrast(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
-	
+
+	// Contrast.
+	tStringItem* currArg = args.First();
+	tString contStr = *currArg;
+	if (contStr == "*")
+		Contrast = 0.5f;
+	else
+		Contrast = contStr.AsFloat();
+	tMath::tiSaturate(Contrast);
+
+	// FrameNumber.
+	if (numArgs >= 2)
+	{
+		currArg = currArg->Next();
+		tString frameStr = *currArg;
+		if (frameStr == "*")
+			FrameNumber = -1;
+		else
+			FrameNumber = frameStr.AsInt32();
+	}
+
+	// Channels.
+	if (numArgs >= 3)
+	{
+		currArg = currArg->Next();
+		switch (tHash::tHashString(currArg->Chr()))
+		{
+			case tHash::tHashCT("*"):
+			case tHash::tHashCT("rgb"):
+			case tHash::tHashCT("RGB"):
+				Channels = Viewer::Image::AdjChan::RGB;
+				break;
+
+			case tHash::tHashCT("r"):
+			case tHash::tHashCT("R"):
+				Channels = Viewer::Image::AdjChan::R;
+				break;
+
+			case tHash::tHashCT("g"):
+			case tHash::tHashCT("G"):
+				Channels = Viewer::Image::AdjChan::G;
+				break;
+
+			case tHash::tHashCT("b"):
+			case tHash::tHashCT("B"):
+				Channels = Viewer::Image::AdjChan::B;
+				break;
+
+			case tHash::tHashCT("a"):
+			case tHash::tHashCT("A"):
+				Channels = Viewer::Image::AdjChan::A;
+				break;
+			// Mode is already at default if not found.
+		}
+	}
+
 	Valid = true;
 }
 
@@ -1023,6 +1082,40 @@ Command::OperationContrast::OperationContrast(const tString& argsStr)
 bool Command::OperationContrast::Apply(Viewer::Image& image)
 {
 	tAssert(Valid);
+	if (Contrast == 0.5f)
+	{
+		tPrintfFull("Contrast not applied. Value of 0.5 does not modify image.\n");
+		return true;
+	}
+
+	int origFrameNum = image.FrameNum;
+	bool allFrames = true;
+	if (FrameNumber > -1)
+	{
+		image.FrameNum = tMath::tClampMax(FrameNumber, image.GetNumFrames()-1);
+		allFrames = false;
+	}
+
+	tString chanStr;
+	switch (Channels)
+	{
+		case Viewer::Image::AdjChan::RGB:	chanStr = "rgb";	break;
+		case Viewer::Image::AdjChan::R:		chanStr = "r";		break;
+		case Viewer::Image::AdjChan::G:		chanStr = "g";		break;
+		case Viewer::Image::AdjChan::B:		chanStr = "b";		break;
+		case Viewer::Image::AdjChan::A:		chanStr = "a";		break;
+	};
+	tPrintfFull
+	(
+		"Contrast | AdjustContrast[contrast:%4.2f channels:%s allframes:%B]\n",
+		Contrast, chanStr.Chr(), allFrames
+	);
+
+	image.AdjustmentBegin();
+	image.AdjustContrast(Contrast, Channels, allFrames);
+	image.AdjustmentEnd();
+
+	image.FrameNum = origFrameNum;
 	return true;
 }
 
@@ -1031,7 +1124,62 @@ Command::OperationBrightness::OperationBrightness(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
-	
+
+	// Brightness.
+	tStringItem* currArg = args.First();
+	tString brightStr = *currArg;
+	if (brightStr == "*")
+		Brightness = 0.5f;
+	else
+		Brightness = brightStr.AsFloat();
+	tMath::tiSaturate(Brightness);
+
+	// FrameNumber.
+	if (numArgs >= 2)
+	{
+		currArg = currArg->Next();
+		tString frameStr = *currArg;
+		if (frameStr == "*")
+			FrameNumber = -1;
+		else
+			FrameNumber = frameStr.AsInt32();
+	}
+
+	// Channels.
+	if (numArgs >= 3)
+	{
+		currArg = currArg->Next();
+		switch (tHash::tHashString(currArg->Chr()))
+		{
+			case tHash::tHashCT("*"):
+			case tHash::tHashCT("rgb"):
+			case tHash::tHashCT("RGB"):
+				Channels = Viewer::Image::AdjChan::RGB;
+				break;
+
+			case tHash::tHashCT("r"):
+			case tHash::tHashCT("R"):
+				Channels = Viewer::Image::AdjChan::R;
+				break;
+
+			case tHash::tHashCT("g"):
+			case tHash::tHashCT("G"):
+				Channels = Viewer::Image::AdjChan::G;
+				break;
+
+			case tHash::tHashCT("b"):
+			case tHash::tHashCT("B"):
+				Channels = Viewer::Image::AdjChan::B;
+				break;
+
+			case tHash::tHashCT("a"):
+			case tHash::tHashCT("A"):
+				Channels = Viewer::Image::AdjChan::A;
+				break;
+			// Mode is already at default if not found.
+		}
+	}
+
 	Valid = true;
 }
 
@@ -1039,6 +1187,40 @@ Command::OperationBrightness::OperationBrightness(const tString& argsStr)
 bool Command::OperationBrightness::Apply(Viewer::Image& image)
 {
 	tAssert(Valid);
+	if (Brightness == 0.5f)
+	{
+		tPrintfFull("Brightness not applied. Value of 0.5 does not modify image.\n");
+		return true;
+	}
+
+	int origFrameNum = image.FrameNum;
+	bool allFrames = true;
+	if (FrameNumber > -1)
+	{
+		image.FrameNum = tMath::tClampMax(FrameNumber, image.GetNumFrames()-1);
+		allFrames = false;
+	}
+
+	tString chanStr;
+	switch (Channels)
+	{
+		case Viewer::Image::AdjChan::RGB:	chanStr = "rgb";	break;
+		case Viewer::Image::AdjChan::R:		chanStr = "r";		break;
+		case Viewer::Image::AdjChan::G:		chanStr = "g";		break;
+		case Viewer::Image::AdjChan::B:		chanStr = "b";		break;
+		case Viewer::Image::AdjChan::A:		chanStr = "a";		break;
+	};
+	tPrintfFull
+	(
+		"Brightness | AdjustBrightness[brightness:%4.2f channels:%s allframes:%B]\n",
+		Brightness, chanStr.Chr(), allFrames
+	);
+
+	image.AdjustmentBegin();
+	image.AdjustBrightness(Brightness, Channels, allFrames);
+	image.AdjustmentEnd();
+
+	image.FrameNum = origFrameNum;
 	return true;
 }
 

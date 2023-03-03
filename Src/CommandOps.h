@@ -149,6 +149,10 @@ struct OperationLevels : public Operation
 struct OperationContrast : public Operation
 {
 	OperationContrast(const tString& args);
+	float Contrast										= 0.5f;
+	int FrameNumber										= -1;		// -1 = All Frames.
+	Viewer::Image::AdjChan Channels						= Viewer::Image::AdjChan::RGB;
+
 	bool Apply(Viewer::Image&) override;
 };
 
@@ -156,6 +160,10 @@ struct OperationContrast : public Operation
 struct OperationBrightness : public Operation
 {
 	OperationBrightness(const tString& args);
+	float Brightness									= 0.5f;
+	int FrameNumber										= -1;		// -1 = All Frames.
+	Viewer::Image::AdjChan Channels						= Viewer::Image::AdjChan::RGB;
+
 	bool Apply(Viewer::Image&) override;
 };
 
