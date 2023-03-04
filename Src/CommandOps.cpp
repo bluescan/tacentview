@@ -1323,6 +1323,30 @@ Command::OperationQuantize::OperationQuantize(const tString& argsStr)
 bool Command::OperationQuantize::Apply(Viewer::Image& image)
 {
 	tAssert(Valid);
+
+	switch (Method)
+	{
+		case tImage::tQuantize::Method::Fixed:
+			tPrintfFull("Quantize | QuantizeFixed[numcolours:%d exact:%B]\n", NumColours, CheckExact);
+			image.QuantizeFixed(NumColours, CheckExact);
+			break;
+
+		case tImage::tQuantize::Method::Spatial:
+			tPrintfFull("Quantize | QuantizeSpatial[numcolours:%d exact:%B dith:%f filt:%d]\n", NumColours, CheckExact, Dither, SampFilt);
+			image.QuantizeSpatial(NumColours, CheckExact, Dither, SampFilt);
+			break;
+
+		case tImage::tQuantize::Method::Neu:
+			tPrintfFull("Quantize | QuantizeNeu[numcolours:%d exact:%B samp:%d]\n", NumColours, CheckExact, SampFilt);
+			image.QuantizeNeu(NumColours, CheckExact, SampFilt);
+			break;
+
+		case tImage::tQuantize::Method::Wu:
+			tPrintfFull("Quantize | QuantizeWu[numcolours:%d exact:%B]\n", NumColours, CheckExact);
+			image.QuantizeWu(NumColours, CheckExact);
+			break;
+	};
+
 	return true;
 }
 
