@@ -1235,22 +1235,18 @@ Command::OperationQuantize::OperationQuantize(const tString& argsStr)
 	switch (tHash::tHashString(currArg->Chr()))
 	{
 		case tHash::tHashCT("fix"):
-		case tHash::tHashCT("FIX"):
 			Method = tImage::tQuantize::Method::Fixed;
 			break;
 
 		case tHash::tHashCT("spc"):
-		case tHash::tHashCT("SPC"):
 			Method = tImage::tQuantize::Method::Spatial;
 			break;
 
 		case tHash::tHashCT("neu"):
-		case tHash::tHashCT("NEU"):
 			Method = tImage::tQuantize::Method::Neu;
 			break;
 
 		case tHash::tHashCT("wu"):
-		case tHash::tHashCT("WU"):
 		case tHash::tHashCT("*"):
 			Method = tImage::tQuantize::Method::Wu;
 			break;
@@ -1272,7 +1268,13 @@ Command::OperationQuantize::OperationQuantize(const tString& argsStr)
 		CheckExact = currArg->AsBool();		
 	}
 
-	// SampFilt.
+	// SampFilt. Defaults are different depending on Method.
+	switch (Method)
+	{
+		case tImage::tQuantize::Method::Spatial:	SampFilt = 3;	break;
+		case tImage::tQuantize::Method::Neu:		SampFilt = 1;	break;
+	}
+
 	if (numArgs >= 4)
 	{
 		currArg = currArg->Next();
@@ -1311,7 +1313,7 @@ Command::OperationQuantize::OperationQuantize(const tString& argsStr)
 					Dither = 0.0;
 				else
 					Dither = ditherStr.AsDouble();
-				tMath::tiClampMin(Dither, 0.0);
+				tMath::tiClamp(Dither, 0.0, 30.0);
 				break;
 		}
 	}

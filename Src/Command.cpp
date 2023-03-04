@@ -828,7 +828,12 @@ one -i to process multiple types. No -i means all supported types.
 %s
 %s
 
-OPERATIONS
+)U5AG3", intypes.Chr(), inexts.Chr()
+		);
+
+		tPrintf
+		(
+R"OPERATIONS137(OPERATIONS
 ----------
 Operations are specified using --op opname[arg1,arg2]
 There most be no spaces between arguments. The operations get applied in the
@@ -914,10 +919,10 @@ example if zap[*a,b*] you may call with --op zap[] or just --op zap as well.
         position of the top right extent of the crop area. Pixels outside of
         this are cropped. In relative mode mw and mh are the new width and
         height of the cropped image.
-  x:    The x of the lower-left origin of the crop area. Included in final pixels.
-        Defaults to 0*.
-  y:    The y of the lower-left origin of the crop area. Included in final pixels.
-        Defaults to 0*.
+  x:    The x of the lower-left origin of the crop area. Included in final
+        pixels. Defaults to 0*.
+  y:    The y of the lower-left origin of the crop area. Included in final
+        pixels. Defaults to 0*.
   mw:   The max x of the upper-right extent of the crop area OR the new image
         width if in rel mode. Included in final pixels. Defaults to 3* in
         absolute mode or 4* in relative mode. Both defaults result in a 4x4.
@@ -1024,13 +1029,47 @@ example if zap[*a,b*] you may call with --op zap[] or just --op zap as well.
   chan: The channels the brightness adjustment should be made to. Choices are
         RGB*, R, G, B, and A. Lower-case also works.
 
+--op quantize[algo,ncol,xact*,fsam*,dith*]
+  Quantize the image to a reduced set of colours using various methods. Specify
+  the algorithm, number of colours, and any optional parameters. Quantization
+  is based on the colour (RGB) components. The alpha channel, if present, is
+  preserved/unchanged.
+  algo: The method/algorithm for quantization: fix, wu*, neu, spc.
+        fix: Fixed/predefined palette used. Pure black and white are
+             guaranteed to be present.
+        wu*: The Xiaolin Wu algorithm. Fast and good quality.
+        neu: NeuQuant algorithm. Learning neural-net. The original high-quality
+             quantization method.
+        spc: Scolorq algorithm. Spatial quantiation. Slow but good quality for
+             low numbers of colours (< 32). Only algo to offer dithering.
+  ncol: Number of colours that will be present in image afterwards. Must be
+        between 2 and 256* (both inclusive).
+  xact: Boolean exact. Default is true*. See below for valid boolean arguments.
+        If exact is true and the number of existing colours is less or equal to
+        the requested, then the image will look identical after processing. If
+        exact is false, all pixels get run through the chosen algorithm.
+  fsam: FilterSize or SampleFactor. Only applies to spatial and neu algorithms.
+        For scolorq this is the filter-size and must be 1, 3*, or 5.
+        For neu quant this is the sample-factor from 1* to 30. Smaller values
+        are better quality -- more faithful representation of the original.
+  dith: Dither amount. Only applies to scolorq. Values from 0.0 to 30.0.
+        The default is 0.0* which means auto-determine the dither amount based
+        on the image dimensions and number of colours. Otherwise, a value of
+        0.1 results in essentially no dither, and at around 20.0 there is
+        significant dithering.
+
 %s
 %s
 For boolean arguments you may use "true", "t", "yes", "y", "on", "enable",
 "enabled", "1", "+", and strings that represent non-zero integers as true.
 These are case-insensitive. False is the result otherwise.
 
-OUTPUT IMAGES
+)OPERATIONS137", filters.Chr(), edgemodes.Chr()
+		);
+
+		tPrintf
+		(
+R"OUTIMAGES137(OUTPUT IMAGES
 -------------
 The output files are generated based on the input files and chosen operations.
 The extract, flipbook, and combine operations consume the current set of input
@@ -1051,8 +1090,7 @@ overwrite use the --overwrite (-w) flag. To have the tool try a different
 filename if it aready exists, use the --autoname (-a) flag. It will append the
 string _NN to the name where NN is a number that keeps incrementing until no
 existing file is found.
-)U5AG3",
-			intypes.Chr(), inexts.Chr(), filters.Chr(), edgemodes.Chr(), outtypes.Chr()
+)OUTIMAGES137", outtypes.Chr()
 		);
 
 		tPrintf
@@ -1123,7 +1161,6 @@ indicates which is the default.
   dur:  Frame duration override, -1* means no override. Otherwise units are ms.
 )OU7PMS"
 		);
-
 
 		return 0;
 	}
