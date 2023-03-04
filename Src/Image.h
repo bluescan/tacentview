@@ -167,7 +167,12 @@ public:
 	void Resample(int newWidth, int newHeight, tImage::tResampleFilter filter, tImage::tResampleEdgeMode edgeMode);
 	void SetPixelColour(int x, int y, const tColouri&, bool pushUndo, bool supressDirty = false);
 	void SetAllPixels(const tColouri& colour, tcomps channels = tComp_RGBA);
-	void AlphaBlendColour(const tColouri& blendColour, bool resetAlpha);
+	
+	// Blends blendColour (background) into the RGB channels specified (usually RGB, but any combination of the 3 is
+	// allowed). The new pixel value wil be alpha*component + (1-alpha)*blend_component. FinalAlpha should be in
+	// [-1, 255]. If finalAlpha is >= 0 then the alpha will be set to finalAlpha after the blend is complete. If
+	// finalAlpha is -1, the alpha is left unmodified. By default the finalAlpha is 255 (opaque).
+	void AlphaBlendColour(const tColouri& blendColour, tcomps = tComp_RGB, int finalAlpha = 255);
 	void SetFrameDuration(float duration, bool allFrames = false);
 
 	// Undo and redo functions.

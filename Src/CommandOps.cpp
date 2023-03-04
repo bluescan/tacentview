@@ -1386,7 +1386,16 @@ Command::OperationChannel::OperationChannel(const tString& argsStr)
 		currArg = currArg->Next();
 		tString chanStr = *currArg;
 		Channels = 0;
-		if (chanStr.FindChar('*') != -1)	Channels  = (Mode == ChanMode::Spread) ? tComp_R : tComp_RGB;
+		if (chanStr.FindChar('*') != -1)
+		{
+			switch (Mode)
+			{
+				case ChanMode::Set:			Channels = tComp_RGB;		break;
+				case ChanMode::Blend:		Channels = tComp_RGBA;		break;
+				case ChanMode::Spread:		Channels = tComp_R;			break;
+				case ChanMode::Intensity:	Channels = tComp_RGB;		break;
+			}
+		}
 		if (chanStr.FindAny("rR") != -1)	Channels |= tComp_R;
 		if (chanStr.FindAny("gG") != -1)	Channels |= tComp_G;
 		if (chanStr.FindAny("bB") != -1)	Channels |= tComp_B;
@@ -1451,5 +1460,32 @@ Command::OperationChannel::OperationChannel(const tString& argsStr)
 bool Command::OperationChannel::Apply(Viewer::Image& image)
 {
 	tAssert(Valid);
+	switch (Mode)
+	{
+		case ChanMode::Set:
+			image.SetAllPixels(Colour, Channels);
+			break;
+
+		case ChanMode::Blend:
+		{
+			int finalAlpha = (Channels & tComp_A) ? Colour.A : -1;
+			image.AlphaBlendColour(Colour, Channels, finalAlpha);
+			break;
+		}
+
+		/*
+		// In: chans.         Spreads specified single channel (R*) to RGB channels.
+		Spread,
+
+		// In: chans.         Computes RGB intensity and sets specified channels to that value. Default is RGB.
+		Intensity
+		*/
+		case ChanMode::Spread:
+			break;
+
+		case ChanMode::Intensity:
+			break;
+	}
+
 	return true;
 }

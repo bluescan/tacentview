@@ -188,10 +188,18 @@ struct OperationChannel : public Operation
 
 	enum class ChanMode
 	{
-		Set,			// In: chans. colour. Set specified channels to corresponding channel in colour. RGB default.
-		Blend,			// In: chans. colour. Blends specified channels (RGB*) with A and background Colour. If colour.A > 0, additionally sets alpha to that value, otherwise leaves it unchanged.
-		Spread,			// In: chans.         Spreads specified single channel (R*) to RGB channels.
-		Intensity		// In: chans.         Computes RGB intensity and sets specified channels to that value. Default is RGB.
+		// In: chans. colour. Set specified channels to corresponding channel in colour. RGB* default.
+		Set,
+
+		// In: chans. colour. Blends specified RGB channels with A and background Colour. Additionally sets alpha to
+		// Colour.A once done if A-channel was specified. If it was not specified, alpha channel is left untouched,
+		Blend,
+
+		// In: chans.         Spreads specified single channel (R*) to RGB channels.
+		Spread,
+
+		// In: chans.         Computes RGB intensity and sets specified channels to that value. Default is RGB.
+		Intensity
 	};
 	ChanMode Mode										= ChanMode::Blend;
 

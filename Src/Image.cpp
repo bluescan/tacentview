@@ -1340,13 +1340,13 @@ void Image::SetAllPixels(const tColouri& colour, tcomps channels)
 }
 
 
-void Image::AlphaBlendColour(const tColouri& colour, bool resetAlpha)
+void Image::AlphaBlendColour(const tColouri& colour, tcomps channels, int finalAlpha)
 {
 	tString desc; tsPrintf(desc, "Blend (%d,%d,%d,%d)", colour.R, colour.G, colour.B, colour.A);
 	PushUndo(desc);
 
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
-		picture->AlphaBlendColour(colour, resetAlpha);
+		picture->AlphaBlendColour(colour, channels, finalAlpha);
 
 	Dirty = true;
 }
