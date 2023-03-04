@@ -182,9 +182,22 @@ struct OperationQuantize : public Operation
 };
 
 
-struct OperationAlpha : public Operation
+struct OperationChannel : public Operation
 {
-	OperationAlpha(const tString& args);
+	OperationChannel(const tString& args);
+
+	enum class ChanMode
+	{
+		Set,			// In: chans. colour. Set specified channels to corresponding channel in colour. RGB default.
+		Blend,			// In: chans. colour. Blends specified channels (RGB*) with A and background Colour. If colour.A > 0, additionally sets alpha to that value, otherwise leaves it unchanged.
+		Spread,			// In: chans.         Spreads specified single channel (R*) to RGB channels.
+		Intensity		// In: chans.         Computes RGB intensity and sets specified channels to that value. Default is RGB.
+	};
+	ChanMode Mode										= ChanMode::Blend;
+
+	tcomps Channels										= tComp_RGB;								// Optional.
+	tColour4i Colour									= tColour4i::black;							// Optional.
+
 	bool Apply(Viewer::Image&) override;
 };
 

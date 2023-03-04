@@ -1265,7 +1265,7 @@ Command::OperationQuantize::OperationQuantize(const tString& argsStr)
 	if (numArgs >= 3)
 	{
 		currArg = currArg->Next();
-		CheckExact = currArg->AsBool();		
+		CheckExact = currArg->AsBool();
 	}
 
 	// SampFilt. Defaults are different depending on Method.
@@ -1353,16 +1353,102 @@ bool Command::OperationQuantize::Apply(Viewer::Image& image)
 }
 
 
-Command::OperationAlpha::OperationAlpha(const tString& argsStr)
+Command::OperationChannel::OperationChannel(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
-	
+
+	// Mode.
+	tStringItem* currArg = args.First();
+	switch (tHash::tHashString(currArg->Chr()))
+	{
+		case tHash::tHashCT("set"):
+			Mode = ChanMode::Set;
+			break;
+
+		case tHash::tHashCT("*"):
+		case tHash::tHashCT("blend"):
+			Mode = ChanMode::Blend;
+			break;
+
+		case tHash::tHashCT("spread"):
+			Mode = ChanMode::Spread;
+			break;
+
+		case tHash::tHashCT("intensity"):
+			Mode = ChanMode::Intensity;
+			break;
+	}
+
+	// Channels.
+	if (numArgs >= 2)
+	{
+		currArg = currArg->Next();
+		tString chanStr = *currArg;
+		Channels = 0;
+		if (chanStr.FindChar('*') != -1)	Channels  = (Mode == ChanMode::Spread) ? tComp_R : tComp_RGB;
+		if (chanStr.FindAny("rR") != -1)	Channels |= tComp_R;
+		if (chanStr.FindAny("gG") != -1)	Channels |= tComp_G;
+		if (chanStr.FindAny("bB") != -1)	Channels |= tComp_B;
+		if (chanStr.FindAny("aA") != -1)	Channels |= tComp_A;
+
+		// In all cases at least one channel is necessary.
+		if (!Channels)						Channels  = tComp_R;
+
+		// If mode is spread, only one channel is allowed. We choose first one (LSB first) if multiple.
+		if (Mode == ChanMode::Spread)
+		{
+			int setIdx = tMath::tFindFirstSetBit(Channels);
+			tAssert(setIdx != -1);
+			Channels = 1 << setIdx;
+		}
+	}
+
+	// Colour.
+	if (numArgs >= 3)
+	{
+		currArg = args.First();
+		tString colStr = *currArg;
+		if (colStr[0] == '#')
+		{
+			uint32 hex = colStr.AsUInt32(16);
+			Colour.Set( uint8((hex >> 24) & 0xFF), uint8((hex >> 16) & 0xFF), uint8((hex >> 8) & 0xFF), uint8((hex >> 0) & 0xFF) );
+		}
+		else
+		{
+			if (colStr.IsNumeric())
+			{
+				// We also allow entering a single integer that sets RGBA in Colour.
+				int val = colStr.AsInt();
+				tMath::tiClamp(val, 0, 255);
+				Colour.Set(val, val, val, val);
+			}
+			else
+			{
+				switch (tHash::tHashString(colStr.Chr()))
+				{
+					case tHash::tHashCT("black"):	Colour = tColour4i::black;		break;
+					case tHash::tHashCT("white"):	Colour = tColour4i::white;		break;
+					case tHash::tHashCT("grey"):	Colour = tColour4i::grey;		break;
+					case tHash::tHashCT("red"):		Colour = tColour4i::red;		break;
+					case tHash::tHashCT("green"):	Colour = tColour4i::red;		break;
+					case tHash::tHashCT("blue"):	Colour = tColour4i::red;		break;
+					case tHash::tHashCT("yellow"):	Colour = tColour4i::yellow;		break;
+					case tHash::tHashCT("cyan"):	Colour = tColour4i::cyan;		break;
+					case tHash::tHashCT("magenta"):	Colour = tColour4i::magenta;	break;
+					case tHash::tHashCT("trans"):	Colour = tColour4i::transparent;break;
+				}
+			}
+		}
+
+		// If nothing above set the colour (like "*") then the default of black (0,0,0,255) is used.
+	}
+
 	Valid = true;
 }
 
 
-bool Command::OperationAlpha::Apply(Viewer::Image& image)
+bool Command::OperationChannel::Apply(Viewer::Image& image)
 {
 	tAssert(Valid);
 	return true;

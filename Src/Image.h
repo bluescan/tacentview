@@ -240,10 +240,12 @@ public:
 	// Zoom can be stored per-image so we can flip between images without losing the setting.
 	Config::ProfileSettings::ZoomModeEnum ZoomMode = Config::ProfileSettings::ZoomModeEnum::DownscaleOnly;
 	float ZoomPercent = 100.0f;
+	void SetUndoEnabled(bool enabled)																					{ UndoEnabled = enabled; }
 
 private:
-	void PushUndo(const tString& desc)																					{ UndoStack.Push(Pictures, desc, Dirty); }
-	void PopUndo()																										{ UndoStack.Pop(); }
+	bool UndoEnabled = true;
+	void PushUndo(const tString& desc)																					{ if (UndoEnabled) UndoStack.Push(Pictures, desc, Dirty); }
+	void PopUndo()																										{ if (UndoEnabled) UndoStack.Pop(); }
 
 	// If the image is from a DDS file, we keep the DDS around so we have access to the iage data in its original pixel
 	// format. This will allow us to do things like cropping without a decode/recode step.

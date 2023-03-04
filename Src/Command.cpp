@@ -335,9 +335,12 @@ void Command::DetermineInputFiles()
 void Command::PopulateImagesList()
 {
 	// This doesn't actually load the images. Just prepares them on the Images list.
+	// It also turns off the undo-stack since we don't use that in CLI mode.
 	for (tSystem::tFileInfo* info = InputFiles.First(); info; info = info->Next())
 	{
-		Images.Append(new Viewer::Image(*info));
+		Viewer::Image* newImage = new Viewer::Image(*info);
+		newImage->SetUndoEnabled(false);
+		Images.Append(newImage);
 	}
 }
 
@@ -369,7 +372,7 @@ void Command::PopulateOperations()
 			case tHash::tHashCT("contrast"):	Operations.Append(new OperationContrast(args));		break;
 			case tHash::tHashCT("brightness"):	Operations.Append(new OperationBrightness(args));	break;
 			case tHash::tHashCT("quantize"):	Operations.Append(new OperationQuantize(args));		break;
-			case tHash::tHashCT("alpha"):		Operations.Append(new OperationAlpha(args));		break;
+			case tHash::tHashCT("channel"):		Operations.Append(new OperationChannel(args));		break;
 		}
 	}
 }
