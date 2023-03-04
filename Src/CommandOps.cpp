@@ -1229,7 +1229,93 @@ Command::OperationQuantize::OperationQuantize(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
-	
+
+	// Method.
+	tStringItem* currArg = args.First();
+	switch (tHash::tHashString(currArg->Chr()))
+	{
+		case tHash::tHashCT("fix"):
+		case tHash::tHashCT("FIX"):
+			Method = tImage::tQuantize::Method::Fixed;
+			break;
+
+		case tHash::tHashCT("spc"):
+		case tHash::tHashCT("SPC"):
+			Method = tImage::tQuantize::Method::Spatial;
+			break;
+
+		case tHash::tHashCT("neu"):
+		case tHash::tHashCT("NEU"):
+			Method = tImage::tQuantize::Method::Neu;
+			break;
+
+		case tHash::tHashCT("wu"):
+		case tHash::tHashCT("WU"):
+		case tHash::tHashCT("*"):
+			Method = tImage::tQuantize::Method::Wu;
+			break;
+	}
+
+	// NumColours.
+	currArg = currArg->Next();
+	tString numColsStr = *currArg;
+	if (numColsStr == "*")
+		NumColours = 256;
+	else
+		NumColours = numColsStr.AsInt();
+	tMath::tiClamp(NumColours, 2, 256);
+
+	// CheckExact.
+	if (numArgs >= 3)
+	{
+		currArg = currArg->Next();
+		CheckExact = currArg->AsBool();		
+	}
+
+	// SampFilt.
+	if (numArgs >= 4)
+	{
+		currArg = currArg->Next();
+		tString sampFiltStr = *currArg;
+		switch (Method)
+		{
+			case tImage::tQuantize::Method::Spatial:	// For spatial it's filterSize.
+				if (sampFiltStr == "*")
+					SampFilt = 3;
+				else
+					SampFilt = sampFiltStr.AsInt();
+
+				if ((SampFilt != 1) && (SampFilt != 3) && (SampFilt != 5))
+					SampFilt = 3;
+				break;
+
+			case tImage::tQuantize::Method::Neu:		// For neu it's sampleFactor.
+				if (sampFiltStr == "*")
+					SampFilt = 1;
+				else
+					SampFilt = sampFiltStr.AsInt();
+				tMath::tiClamp(SampFilt, 1, 30);
+				break;
+		}
+	}
+
+	// Dither.
+	if (numArgs >= 5)
+	{
+		currArg = currArg->Next();
+		tString ditherStr = *currArg;
+		switch (Method)
+		{
+			case tImage::tQuantize::Method::Spatial:
+				if (ditherStr == "*")
+					Dither = 0.0;
+				else
+					Dither = ditherStr.AsDouble();
+				tMath::tiClampMin(Dither, 0.0);
+				break;
+		}
+	}
+
 	Valid = true;
 }
 
