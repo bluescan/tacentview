@@ -1357,27 +1357,32 @@ Command::OperationChannel::OperationChannel(const tString& argsStr)
 {
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
+	tStringItem* currArg = nullptr;
 
 	// Mode.
-	tStringItem* currArg = args.First();
-	switch (tHash::tHashString(currArg->Chr()))
+	// Defaults to Blend if not specified.
+	if (numArgs >= 1)
 	{
-		case tHash::tHashCT("set"):
-			Mode = ChanMode::Set;
-			break;
+		currArg = args.First();
+		switch (tHash::tHashString(currArg->Chr()))
+		{
+			case tHash::tHashCT("set"):
+				Mode = ChanMode::Set;
+				break;
 
-		case tHash::tHashCT("*"):
-		case tHash::tHashCT("blend"):
-			Mode = ChanMode::Blend;
-			break;
+			case tHash::tHashCT("*"):
+			case tHash::tHashCT("blend"):
+				Mode = ChanMode::Blend;
+				break;
 
-		case tHash::tHashCT("spread"):
-			Mode = ChanMode::Spread;
-			break;
+			case tHash::tHashCT("spread"):
+				Mode = ChanMode::Spread;
+				break;
 
-		case tHash::tHashCT("intensity"):
-			Mode = ChanMode::Intensity;
-			break;
+			case tHash::tHashCT("intens"):
+				Mode = ChanMode::Intensity;
+				break;
+		}
 	}
 
 	// Channels.

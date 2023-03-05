@@ -979,7 +979,12 @@ example if zap[*a,b*] you may call with --op zap[] or just --op zap as well.
   fill: Fill colour. Only used if mode was fill. Either specify with a hex in
         form #RRGGBBAA or use one of the predefined colours: black*, white,
         grey, red, green, blue, yellow, cyan, magenta, or trans.
+)OPERATIONS137"
+		);
 
+		tPrintf
+		(
+R"OPERATIONS147(
 --op levels[bp,mp,wp,obp,owp,fram*,chan*,alg*]
   Adjusts image levels in a manner similar to photo-editing software. You
   specify black, mid, and white points, whether to operate on all frames or a
@@ -1061,13 +1066,42 @@ example if zap[*a,b*] you may call with --op zap[] or just --op zap as well.
         0.1 results in essentially no dither, and at around 20.0 there is
         significant dithering.
 
+--op channel[mode*,chan*,col*]
+  Channel operations affect components of all pixels. The supported modes
+  support setting channels, blending using alpha, spreading a channel, and
+  writing intensity to channels.
+  mode; The channel operation mode. One of:
+        set:    Sets specified channels to corresponding component in the
+                supplied colour value.
+        blend*: Blends background colour (bg) into the RGB channels specified
+                using the pixel alpha to modulate. The new pixel colour is
+                alpha*srccomp + (1-alpha)*bg_component. This applies to any
+                combination of input RGB channels. The final alpha is left
+                unmodified if A not specified in channels. If A is specified
+                the alpha is set to the A component of the supplied bg colour.
+        spread: Spreads a specific single channel into the RGB chanbels.
+        intens: Computes pixel intensity and sets any combination of RGBA
+                channels to that intensity.
+  chan: Colour channels. For set and intensity modes the default is RGB*. For
+        blend mode default is RGBA*. For spread mode the single-channel default
+        is R. Channels are specified with any combination of the letters RGBA
+        or rgba.
+  col:  Colour. Only used if mode is blend or set. Either specify with a hex in
+        form #RRGGBBAA or use one of the predefined colours: black*, white,
+        grey, red, green, blue, yellow, cyan, magenta, or trans. You can also
+        specify a single integer that gets used for all RGBA components. The
+        default value is black* full alpha.
+  As an example, the command --op channel will create an image with
+  pre-multiplied alphas. The blended in background will be black and the alpha
+  will be 255 for all pixels.
+
 %s
 %s
 For boolean arguments you may use "true", "t", "yes", "y", "on", "enable",
 "enabled", "1", "+", and strings that represent non-zero integers as true.
 These are case-insensitive. False is the result otherwise.
 
-)OPERATIONS137", filters.Chr(), edgemodes.Chr()
+)OPERATIONS147", filters.Chr(), edgemodes.Chr()
 		);
 
 		tPrintf
