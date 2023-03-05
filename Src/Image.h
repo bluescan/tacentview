@@ -167,11 +167,24 @@ public:
 	void Resample(int newWidth, int newHeight, tImage::tResampleFilter filter, tImage::tResampleEdgeMode edgeMode);
 	void SetPixelColour(int x, int y, const tColouri&, bool pushUndo, bool supressDirty = false);
 	void SetAllPixels(const tColouri& colour, tcomps channels = tComp_RGBA);
-	
+
+	// Spreads the specified single channel to all RGB channels.
+	void Spread(tcomps channel = tComp_R);
+
+	// Computes RGB intensity and sets specified channels to that value. Any combination of RGBA allowed.
+	void Intensity(tcomps channels = tComp_RGB);
+
 	// Blends blendColour (background) into the RGB channels specified (usually RGB, but any combination of the 3 is
-	// allowed). The new pixel value wil be alpha*component + (1-alpha)*blend_component. FinalAlpha should be in
-	// [-1, 255]. If finalAlpha is >= 0 then the alpha will be set to finalAlpha after the blend is complete. If
-	// finalAlpha is -1, the alpha is left unmodified. By default the finalAlpha is 255 (opaque).
+	// allowed) using the pixel alpha to modulate. The new pixel colour is alpha*component + (1-alpha)*blend_component.
+	//
+	// Eg. If pixel alpha is 255, then none of the blend colour is used for that pixel. If alpha is 0, all of it is
+	// used. If alpha is 64, then 1/4 of the current pixel colour and 3/4 of the supplied,
+	//
+	// FinalAlpha should be in [-1, 255]. If finalAlpha is >= 0 then the alpha will be set to finalAlpha after the blend
+	// is complete. If finalAlpha is -1, the alpha is left unmodified. By default the finalAlpha is 255 (opaque) which
+	// means the operation essentially creates a premultiplied-alpha opaque image.
+	// Note that the alpha of the supplied colour is ignored (since we use finalAlpha).
+	// Note that unspecified RGB channels are keft unmodified.
 	void AlphaBlendColour(const tColouri& blendColour, tcomps = tComp_RGB, int finalAlpha = 255);
 	void SetFrameDuration(float duration, bool allFrames = false);
 

@@ -1460,30 +1460,37 @@ Command::OperationChannel::OperationChannel(const tString& argsStr)
 bool Command::OperationChannel::Apply(Viewer::Image& image)
 {
 	tAssert(Valid);
+
+	tString channelsStr;
+	if (Channels && tComp_R) channelsStr += "R";
+	if (Channels && tComp_G) channelsStr += "G";
+	if (Channels && tComp_B) channelsStr += "B";
+	if (Channels && tComp_A) channelsStr += "A";
+
 	switch (Mode)
 	{
 		case ChanMode::Set:
+			tPrintfFull("Channel | SetAllPixels[colour:%02x,%02x,%02x,%02x channels:%s]\n", Colour.R, Colour.G, Colour.B, Colour.A, channelsStr.Chr());
 			image.SetAllPixels(Colour, Channels);
 			break;
 
 		case ChanMode::Blend:
 		{
 			int finalAlpha = (Channels & tComp_A) ? Colour.A : -1;
+
+			tPrintfFull("Channel | AlphaBlendColour[colour:%02x,%02x,%02x,%02x channels:%s finalAlpha:%d]\n", Colour.R, Colour.G, Colour.B, Colour.A, channelsStr.Chr(), finalAlpha);
 			image.AlphaBlendColour(Colour, Channels, finalAlpha);
 			break;
 		}
 
-		/*
-		// In: chans.         Spreads specified single channel (R*) to RGB channels.
-		Spread,
-
-		// In: chans.         Computes RGB intensity and sets specified channels to that value. Default is RGB.
-		Intensity
-		*/
 		case ChanMode::Spread:
+			tPrintfFull("Channel | Spread[channel:%s]\n", channelsStr.Chr());
+			image.Spread(Channels);
 			break;
 
 		case ChanMode::Intensity:
+			tPrintfFull("Channel | Intensity[channels:%s]\n", channelsStr.Chr());
+			image.Intensity(Channels);
 			break;
 	}
 

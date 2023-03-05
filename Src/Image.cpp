@@ -1340,6 +1340,44 @@ void Image::SetAllPixels(const tColouri& colour, tcomps channels)
 }
 
 
+void Image::Spread(tcomps channel)
+{
+	channel = tMath::tFindFirstSetBit(channel);
+	tString channelsStr;
+	if (channel && tComp_R) channelsStr += "R";
+	if (channel && tComp_G) channelsStr += "G";
+	if (channel && tComp_B) channelsStr += "B";
+	if (channel && tComp_A) channelsStr += "A";
+
+	tString desc; tsPrintf(desc, "Spread %s", channelsStr.Chr());
+	PushUndo(desc);
+
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->Spread(channel);
+
+	Dirty = true;
+}
+
+
+	// Computes RGB intensity and sets specified channels to that value. Any combination of RGBA allowed.
+void Image::Intensity(tcomps channels)
+{
+	tString channelsStr;
+	if (channels && tComp_R) channelsStr += "R";
+	if (channels && tComp_G) channelsStr += "G";
+	if (channels && tComp_B) channelsStr += "B";
+	if (channels && tComp_A) channelsStr += "A";
+
+	tString desc; tsPrintf(desc, "Intensity %s", channelsStr.Chr());
+	PushUndo(desc);
+
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->Intensity(channels);
+
+	Dirty = true;
+}
+
+
 void Image::AlphaBlendColour(const tColouri& colour, tcomps channels, int finalAlpha)
 {
 	tString desc; tsPrintf(desc, "Blend (%d,%d,%d,%d)", colour.R, colour.G, colour.B, colour.A);
