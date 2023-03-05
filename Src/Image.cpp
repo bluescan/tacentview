@@ -1342,12 +1342,16 @@ void Image::SetAllPixels(const tColouri& colour, tcomps channels)
 
 void Image::Spread(tcomps channel)
 {
-	channel = tMath::tFindFirstSetBit(channel);
+	int setBit = tMath::tFindFirstSetBit(channel);
+	if (setBit == -1)
+		return;
+	channel = 1 << setBit;	
+
 	tString channelsStr;
-	if (channel && tComp_R) channelsStr += "R";
-	if (channel && tComp_G) channelsStr += "G";
-	if (channel && tComp_B) channelsStr += "B";
-	if (channel && tComp_A) channelsStr += "A";
+	if (channel & tComp_R) channelsStr += "R";
+	if (channel & tComp_G) channelsStr += "G";
+	if (channel & tComp_B) channelsStr += "B";
+	if (channel & tComp_A) channelsStr += "A";
 
 	tString desc; tsPrintf(desc, "Spread %s", channelsStr.Chr());
 	PushUndo(desc);
@@ -1363,10 +1367,10 @@ void Image::Spread(tcomps channel)
 void Image::Intensity(tcomps channels)
 {
 	tString channelsStr;
-	if (channels && tComp_R) channelsStr += "R";
-	if (channels && tComp_G) channelsStr += "G";
-	if (channels && tComp_B) channelsStr += "B";
-	if (channels && tComp_A) channelsStr += "A";
+	if (channels & tComp_R) channelsStr += "R";
+	if (channels & tComp_G) channelsStr += "G";
+	if (channels & tComp_B) channelsStr += "B";
+	if (channels & tComp_A) channelsStr += "A";
 
 	tString desc; tsPrintf(desc, "Intensity %s", channelsStr.Chr());
 	PushUndo(desc);

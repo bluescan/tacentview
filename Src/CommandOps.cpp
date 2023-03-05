@@ -1421,7 +1421,7 @@ Command::OperationChannel::OperationChannel(const tString& argsStr)
 	// Colour.
 	if (numArgs >= 3)
 	{
-		currArg = args.First();
+		currArg = currArg->Next();
 		tString colStr = *currArg;
 		if (colStr[0] == '#')
 		{
@@ -1467,10 +1467,10 @@ bool Command::OperationChannel::Apply(Viewer::Image& image)
 	tAssert(Valid);
 
 	tString channelsStr;
-	if (Channels && tComp_R) channelsStr += "R";
-	if (Channels && tComp_G) channelsStr += "G";
-	if (Channels && tComp_B) channelsStr += "B";
-	if (Channels && tComp_A) channelsStr += "A";
+	if (Channels & tComp_R) channelsStr += "R";
+	if (Channels & tComp_G) channelsStr += "G";
+	if (Channels & tComp_B) channelsStr += "B";
+	if (Channels & tComp_A) channelsStr += "A";
 
 	switch (Mode)
 	{
@@ -1482,7 +1482,6 @@ bool Command::OperationChannel::Apply(Viewer::Image& image)
 		case ChanMode::Blend:
 		{
 			int finalAlpha = (Channels & tComp_A) ? Colour.A : -1;
-
 			tPrintfFull("Channel | AlphaBlendColour[colour:%02x,%02x,%02x,%02x channels:%s finalAlpha:%d]\n", Colour.R, Colour.G, Colour.B, Colour.A, channelsStr.Chr(), finalAlpha);
 			image.AlphaBlendColour(Colour, Channels, finalAlpha);
 			break;

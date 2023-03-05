@@ -201,10 +201,9 @@ struct OperationChannel : public Operation
 		// In: chans.         Computes RGB intensity and sets specified channels to that value. Default is RGB.
 		Intensity
 	};
-	ChanMode Mode										= ChanMode::Blend;
-
-	tcomps Channels										= tComp_RGB;								// Optional.
-	tColour4i Colour									= tColour4i::black;							// Optional.
+	ChanMode Mode										= ChanMode::Blend;				// Optional.
+	tcomps Channels										= tComp_RGBA;					// Optional.
+	tColour4i Colour									= tColour4i::black;				// Optional.
 
 	bool Apply(Viewer::Image&) override;
 };

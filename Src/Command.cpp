@@ -1070,12 +1070,12 @@ R"OPERATIONS147(
   Channel operations affect components of all pixels. The supported modes
   support setting channels, blending using alpha, spreading a channel, and
   writing intensity to channels.
-  mode; The channel operation mode. One of:
+  mode: The channel operation mode. One of:
         set:    Sets specified channels to corresponding component in the
                 supplied colour value.
-        blend*: Blends background colour (bg) into the RGB channels specified
-                using the pixel alpha to modulate. The new pixel colour is
-                alpha*srccomp + (1-alpha)*bg_component. This applies to any
+        blend*: Blends background colour (bg) into the specified RGB channels
+                by using the pixel-alpha to modulate. The new pixel colour is
+                alpha*src_comp + (1-alpha)*bg_comp. This applies to any
                 combination of input RGB channels. The final alpha is left
                 unmodified if A not specified in channels. If A is specified
                 the alpha is set to the A component of the supplied bg colour.
@@ -1230,15 +1230,15 @@ indicates which is the default.
 	{
 		image->Load();
 
+		tString inNameShort = tSystem::tGetFileName(image->Filename);
 		if (!image->IsLoaded())
 		{
-			tString inNameShort = tSystem::tGetFileName(image->Filename);
 			tPrintfNorm("Failed Load: %s. Skipping.\n", inNameShort.Chr());
 			continue;
 		}
 
 		// Process the standard operations on the current image.
-		tPrintfNorm("Processing: %s\n", image->Filename.Chr());
+		tPrintfNorm("Processing: %s\n", inNameShort.Chr());
 		bool processed = ProcessOperationsOnImage(*image);
 		if (!processed)
 		{
