@@ -51,6 +51,7 @@ namespace Command
 	tCmdLine::tOption OptionParamsTGA	("Save parameters for TGA  files",		"paramsTGA",	2			);
 	tCmdLine::tOption OptionParamsTIFF	("Save parameters for TIFF files",		"paramsTIFF",	3			);
 	tCmdLine::tOption OptionParamsWEBP	("Save parameters for WEBP files",		"paramsWEBP",	3			);
+	tCmdLine::tOption OptionEarlyExit	("Early exit / no skipping",			"earlyexit",	'e'			);
 
 	void BeginConsoleOutput();
 	void EndConsoleOutput();
@@ -1109,18 +1110,13 @@ These are case-insensitive. False is the result otherwise.
 R"OUTIMAGES137(OUTPUT IMAGES
 -------------
 The output files are generated based on the input files and chosen operations.
-The extract, flipbook, and combine operations consume the current set of input
-images when they create their output images. Extract creates one or more new
-images. Flipbook and combine create a single new image. All other operations
-work on each image separately.
-
-The type of the output images is specified with the --outtype option. If no
-outtype is specified the default is tga.
+The type of the output images is specified with --outtype type. The short
+version -o may also be used. If no outtype is specified the default is tga.
 %s
 
-In cases where the input images are processed and not consumed, the output
-filename matches the input filename except that the extension/type may be
-different. Eg. Seascape.jpg would save as Seascape.tga if the outtype was tga.
+The output filename matches the input filename except that the extension/type
+may be different. Eg. Seascape.jpg would save as Seascape.tga if the outtype
+was tga.
 
 By default if an output file already exists, it is not overwritten. To allow
 overwrite use the --overwrite (-w) flag. To have the tool try a different
@@ -1196,6 +1192,15 @@ indicates which is the default.
         files. Interpreted as compression strength for non-lossy. Larger values
         compress more but images take longer to generate.
   dur:  Frame duration override, -1* means no override. Otherwise units are ms.
+
+EXIT CODE
+---------
+The return error code is 0 for success and 1 for failure. For 0 to be returned
+every specified image must be successfully loaded, processed, and saved. A
+failure in any step for any image results in an error. By default processing
+continues to the next image even on a failure. If the --earlyexit (-e) flag is
+set, processing stops immediately on any failure. Either way, any failure
+returns a non-zero exit code.
 )OU7PMS"
 		);
 
@@ -1234,6 +1239,9 @@ indicates which is the default.
 		if (!image->IsLoaded())
 		{
 			tPrintfNorm("Failed Load: %s. Skipping.\n", inNameShort.Chr());
+			somethingFailed = true;
+			if (OptionEarlyExit)
+				break;
 			continue;
 		}
 
@@ -1244,6 +1252,11 @@ indicates which is the default.
 		{
 			image->Unload();
 			somethingFailed = true;
+			if (OptionEarlyExit)
+			{
+				image->Unload();
+				break;
+			}
 			continue;
 		}
 
@@ -1255,6 +1268,13 @@ indicates which is the default.
 		if (tSystem::tFileExists(outFilename) && !OptionOverwrite)
 		{
 			tPrintfNorm("File %s exists. Not overwriting.\n", outNameShort.Chr());
+			somethingFailed = true;
+			if (OptionEarlyExit)
+			{
+				image->Unload();
+				break;
+			}
+
 			doSave = false;
 		}
 
@@ -1272,6 +1292,11 @@ indicates which is the default.
 			{
 				tPrintfNorm("Failed Save: %s\n", outNameShort.Chr());
 				somethingFailed = true;
+				if (OptionEarlyExit)
+				{
+					image->Unload();
+					break;
+				}
 			}
 		}
 
