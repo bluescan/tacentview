@@ -421,8 +421,14 @@ bool Image::Load()
 
 		case tSystem::tFileType::DDS:
 		{
+			tImageDDS::LoadParams params(LoadParams_DDS);
+			if (Config::Current->StrictLoading && !(params.Flags & tImageDDS::LoadFlag_StrictLoading))
+				params.Flags |= tImageDDS::LoadFlag_StrictLoading;
+			else if (!Config::Current->StrictLoading && (params.Flags & tImageDDS::LoadFlag_StrictLoading))
+				params.Flags &= ~tImageDDS::LoadFlag_StrictLoading;
+
 			tImageDDS dds;
-			bool ok = dds.Load(Filename, LoadParams_DDS);
+			bool ok = dds.Load(Filename, params);
 			if (!ok || !dds.IsValid())
 				break;
 
