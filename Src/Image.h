@@ -34,7 +34,6 @@
 #include <Image/tImageTGA.h>
 #include <Image/tImageTIFF.h>
 #include <Image/tImageWEBP.h>
-
 #include <Image/tImageASTC.h>
 #include <Image/tImageDDS.h>
 #include <Image/tImageEXR.h>

@@ -663,9 +663,14 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 	// so we don't want them all in memory at once by indiscriminantly loading them all.
 	bool imageLoaded = img.IsLoaded();
 	if (!imageLoaded)
-		img.Load();
-	tFileType fileType = tGetFileTypeFromName( Config::Current->SaveFileType );
+		imageLoaded = img.Load();
+	if (!imageLoaded)
+	{
+		tPrintf("Failed to save image %s\n", outFile.Chr());
+		return false;
+	}
 
+	tFileType fileType = tGetFileTypeFromName( Config::Current->SaveFileType );
 	bool success = img.Save(outFile, fileType);
 	if (success)
 		tPrintf("Saved image as %s\n", outFile.Chr());
@@ -682,7 +687,12 @@ bool Viewer::SaveResizeImageAs(Image& img, const tString& outFile, int width, in
 	// so we don't want them all in memory at once by indiscriminantly loading them all.
 	bool imageLoaded = img.IsLoaded();
 	if (!imageLoaded)
-		img.Load();
+		imageLoaded = img.Load();
+	if (!imageLoaded)
+	{
+		tPrintf("Failed to save image %s\n", outFile.Chr());
+		return false;
+	}	
 
 	tPicture* currPic = img.GetCurrentPic();
 	if (!currPic)

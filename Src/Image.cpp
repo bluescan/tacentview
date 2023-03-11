@@ -1738,12 +1738,13 @@ void Image::GenerateThumbnail()
 	int maxLoadAttempts = 5;
 	for (int attempt = 0; attempt < maxLoadAttempts; attempt++)
 	{
-		bool thumbLoaded = thumbLoader.Load(Filename);
-		if (thumbLoaded)
+		if (thumbLoader.Load(Filename))
 			break;
 		else
 			tSystem::tSleep(250);
 	}
+	if (!thumbLoader.IsLoaded())
+		return;
 
 	// Thumbnails are generated from the primary (first) picture in the picture list.
 	tPicture* srcPic = thumbLoader.GetPrimaryPic();

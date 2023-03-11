@@ -546,7 +546,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 
 	if (ImGui::Begin("Crop", &CropMode, flags))
 	{
-		float buttonWidth, shortcutNavLeft, shortcutTxtLeft, anchorSize;
+		float buttonWidth, shortcutNavLeft, shortcutTxtLeft, anchorSize, comboWidth, aspectWidth;
 		switch (Config::Current->GetUISize())
 		{
 			default:
@@ -555,18 +555,24 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 				shortcutTxtLeft	= 57.0f;
 				shortcutNavLeft	= 58.0f;
 				anchorSize		= 24.0f;
+				comboWidth		= 62.0f;
+				aspectWidth		= 24.0f;
 				break;
 			case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
 				buttonWidth		= 61.0f;
 				shortcutTxtLeft	= 61.0f;
 				shortcutNavLeft	= 64.0f;
 				anchorSize		= 26.0f;
+				comboWidth		= 72.0f;
+				aspectWidth		= 25.0f;
 				break;
 			case Viewer::Config::ProfileSettings::UISizeEnum::Large:
 				buttonWidth		= 66.0f;
 				shortcutTxtLeft	= 62.0f;
 				shortcutNavLeft	= 68.0f;
 				anchorSize		= 28.0f;
+				comboWidth		= 80.0f;
+				aspectWidth		= 26.0f;
 				break;
 		}
 
@@ -621,6 +627,60 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 			downDsc.Chr(), downKey.Chr()
 		);
 		ShowHelpMark(toolTipText.Chr());
+
+		ImGui::PushItemWidth(comboWidth);
+		static int presetIndex = 0;
+		/*
+		if      ((Config::Current->ResizeAspectNum == 2 ) && (Config::Current->ResizeAspectDen == 1 ))	presetIndex = 1;
+		else if ((Config::Current->ResizeAspectNum == 16) && (Config::Current->ResizeAspectDen == 9 ))	presetIndex = 2;
+		else if ((Config::Current->ResizeAspectNum == 16) && (Config::Current->ResizeAspectDen == 10))	presetIndex = 3;
+		else if ((Config::Current->ResizeAspectNum == 3 ) && (Config::Current->ResizeAspectDen == 2 ))	presetIndex = 4;
+		else if ((Config::Current->ResizeAspectNum == 4 ) && (Config::Current->ResizeAspectDen == 3 ))	presetIndex = 5;
+		else if ((Config::Current->ResizeAspectNum == 1 ) && (Config::Current->ResizeAspectDen == 1 ))	presetIndex = 6;
+		else if ((Config::Current->ResizeAspectNum == 3 ) && (Config::Current->ResizeAspectDen == 4 ))	presetIndex = 7;
+		else if ((Config::Current->ResizeAspectNum == 2 ) && (Config::Current->ResizeAspectDen == 3 ))	presetIndex = 8;
+		else if ((Config::Current->ResizeAspectNum == 10) && (Config::Current->ResizeAspectDen == 16))	presetIndex = 9;
+		else if ((Config::Current->ResizeAspectNum == 9 ) && (Config::Current->ResizeAspectDen == 16))	presetIndex = 10;
+		else if ((Config::Current->ResizeAspectNum == 1 ) && (Config::Current->ResizeAspectDen == 2 ))	presetIndex = 11;
+		*/
+		const char* presetAspects[] =
+		{ "Free", "2:1", "16:9", "16:10", "3:2", "4:3", "1:1", "3:4", "2:3", "10:16", "9:16", "1:2", "User" };
+		if (ImGui::Combo("Aspect", &presetIndex, presetAspects, tNumElements(presetAspects), tNumElements(presetAspects)))
+		{
+			switch (presetIndex)
+			{
+				case 0:																						break;
+				case 1:		Config::Current->ResizeAspectNum = 2;	Config::Current->ResizeAspectDen = 1;	break;
+				case 2:		Config::Current->ResizeAspectNum = 16;	Config::Current->ResizeAspectDen = 9;	break;
+				case 3:		Config::Current->ResizeAspectNum = 16;	Config::Current->ResizeAspectDen = 10;	break;
+				case 4:		Config::Current->ResizeAspectNum = 3;	Config::Current->ResizeAspectDen = 2;	break;
+				case 5:		Config::Current->ResizeAspectNum = 4;	Config::Current->ResizeAspectDen = 3;	break;
+				case 6:		Config::Current->ResizeAspectNum = 1;	Config::Current->ResizeAspectDen = 1;	break;
+				case 7:		Config::Current->ResizeAspectNum = 3;	Config::Current->ResizeAspectDen = 4;	break;
+				case 8:		Config::Current->ResizeAspectNum = 2;	Config::Current->ResizeAspectDen = 3;	break;
+				case 9:		Config::Current->ResizeAspectNum = 10;	Config::Current->ResizeAspectDen = 16;	break;
+				case 10:	Config::Current->ResizeAspectNum = 9;	Config::Current->ResizeAspectDen = 16;	break;
+				case 11:	Config::Current->ResizeAspectNum = 1;	Config::Current->ResizeAspectDen = 2;	break;
+			}
+		}
+
+		if (presetIndex == 12)
+		{
+			ImGui::SameLine();
+			ImGui::PushItemWidth(aspectWidth);
+			ImGui::InputInt("##Num", &Config::Current->ResizeAspectNum, 0, 0);//, ImGuiInputTextFlags_ReadOnly);
+			ImGui::SameLine(); ImGui::Text(":"); ImGui::SameLine();
+			ImGui::InputInt("##Den", &Config::Current->ResizeAspectDen, 0, 0);
+			ImGui::PopItemWidth();
+			tiClamp(Config::Current->ResizeAspectNum, 1, 99); tiClamp(Config::Current->ResizeAspectDen, 1, 99);
+		}
+		else
+		{
+			ImGui::SameLine();
+			ShowHelpMark("Aspect ratio for crop area.\nFree means aspect is unlocked.\nCustom means enter the aspect ratio manually.\nFor the presets the P means common print sizes.");
+		}
+
+		//////////////
 
 		ImGui::SetCursorPosX(shortcutTxtLeft);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 7.0f);

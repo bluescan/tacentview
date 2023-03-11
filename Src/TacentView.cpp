@@ -615,6 +615,12 @@ void Viewer::LoadCurrImage()
 		imgJustLoaded = CurrImage->Load();
 
 	AutoPropertyWindow();
+	if (!CurrImage->IsLoaded())
+	{
+		tPrintf("Warning: Failed to load [%s]\n", tGetFileName(CurrImage->Filename).Chr());
+		return;
+	}
+
 	if
 	(
 		// @todo We have a list of animated/multi-frame filetypes we should use here.
@@ -706,7 +712,8 @@ bool Viewer::OnNext()
 
 void Viewer::OnPrevImageFrame()
 {
-	if (!CurrImage || (CurrImage->GetNumFrames() <= 1))
+	tAssert(CurrImage);
+	if (CurrImage->GetNumFrames() <= 1)
 		return;
 
 	CurrImage->Stop();
@@ -716,7 +723,8 @@ void Viewer::OnPrevImageFrame()
 
 void Viewer::OnNextImageFrame()
 {
-	if (!CurrImage || (CurrImage->GetNumFrames() <= 1))
+	tAssert(CurrImage);
+	if (CurrImage->GetNumFrames() <= 1)
 		return;
 
 	CurrImage->Stop();
@@ -1129,8 +1137,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	int mouseXi = int(mouseX);
 	int mouseYi = int(mouseY);
 	Config::ProfileSettings::ZoomModeEnum zoomMode = GetZoomMode();
+	bool imgAvail = CurrImage && CurrImage->IsLoaded();
 
-	if (CurrImage)
+	if (imgAvail)
 	{
 		if (!skipUpdatePlaying)
 			CurrImage->UpdatePlaying(float(dt));
@@ -1798,8 +1807,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::Separator();
 
 			tString copyKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Copy);
-			bool copyEnabled = CurrImage ? true : false;
-			if (ImGui::MenuItem("Copy Image", copyKey.Chz(), false, copyEnabled))
+			if (ImGui::MenuItem("Copy Image", copyKey.Chz(), false, imgAvail))
 				Viewer::CopyImage();
 
 			tString pasteKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Paste);
@@ -1843,7 +1851,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4.0f, 3.0f));
 
-			bool imgAvail = CurrImage && !CurrImage->IsAltPictureEnabled();
+			bool imgAvail = CurrImage && CurrImage->IsLoaded() && !CurrImage->IsAltPictureEnabled();
 			bool undoEnabled = CurrImage && CurrImage->IsUndoAvailable();
 			tString undoDesc = undoEnabled ? CurrImage->GetUndoDesc() : tString();
 			tString undoStr; tsPrintf(undoStr, "Undo %s", undoDesc.Chr());
@@ -2009,7 +2017,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			// We use the zoom combo only as a chooser. It always displays index 0 (Zoom) when not expanded.
 			int zoomIdx = 0;
-			if (ImGui::Combo(currZoomStr.Chr(), &zoomIdx, zoomItems, tNumElements(zoomItems)) && (zoomIdx > 0))
+			if (ImGui::Combo(currZoomStr.Chr(), &zoomIdx, zoomItems, tNumElements(zoomItems)) && (zoomIdx > 0) && CurrImage && CurrImage->IsLoaded())
 				ApplyZoomDelta(zoomVals[zoomIdx]-zoomPercent);
 			ImGui::PopItemWidth();
 
@@ -2042,7 +2050,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		//
 		// Toolbar.
 		//
-		bool imgAvail = CurrImage ? !CurrImage->IsAltPictureEnabled() : false;
+		bool imgAvail = (CurrImage && CurrImage->IsLoaded()) ? !CurrImage->IsAltPictureEnabled() : false;
 		tVector2 colourButtonSize;
 		switch (Config::Current->GetUISize())
 		{
@@ -2095,7 +2103,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		)	Config::Current->ShowContentView = !Config::Current->ShowContentView;
 		ShowToolTip("Content Thumbnail View");
 
-		bool tileAvail = CurrImage ? !CropMode : false;
+		bool tileAvail = (CurrImage && CurrImage->IsLoaded()) ? !CropMode : false;
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
@@ -2452,9 +2460,7 @@ bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 
 void Viewer::ApplyZoomDelta(float zoomDelta)
 {
-	if (!CurrImage)
-		return;
-
+	tAssert(CurrImage);
 	float zoomOrig = GetZoomPercent();
 
 	// Any manual zoom adjustment causes the zoom mode to switch to User.
@@ -2531,9 +2537,7 @@ void Viewer::Redo()
 
 bool Viewer::CopyImage()
 {
-	if (!CurrImage)
-		return false;
-
+	tAssert(CurrImage);
 	tImage::tPicture* pic = CurrImage->GetCurrentPic();
 	if (!pic)
 		pic = CurrImage->GetPrimaryPic();
@@ -2745,6 +2749,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 	// with the received key. The current bindings are stored in the current config.
 	uint32 viewerModifiers = Bindings::TranslateModifiers(modifiers);
 	Bindings::Operation operation = Config::Current->InputBindings.GetOperation(key, viewerModifiers);
+	bool imgAvail = CurrImage && CurrImage->IsLoaded();
 	switch (operation)
 	{
 		case Bindings::Operation::NextImage:
@@ -2764,27 +2769,27 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::NextImageFrame:
-			OnNextImageFrame();
+			if (imgAvail) OnNextImageFrame();
 			break;
 
 		case Bindings::Operation::PrevImageFrame:
-			OnPrevImageFrame();
+			if (imgAvail) OnPrevImageFrame();
 			break;
 
 		case Bindings::Operation::PixelRight:
-			if (CurrImage) RequestCursorMove = CursorMove_Right;
+			if (imgAvail) RequestCursorMove = CursorMove_Right;
 			break;
 
 		case Bindings::Operation::PixelLeft:
-			if (CurrImage) RequestCursorMove = CursorMove_Left;
+			if (imgAvail) RequestCursorMove = CursorMove_Left;
 			break;
 
 		case Bindings::Operation::PixelDown:
-			if (CurrImage) RequestCursorMove = CursorMove_Down;
+			if (imgAvail) RequestCursorMove = CursorMove_Down;
 			break;
 
 		case Bindings::Operation::PixelUp:
-			if (CurrImage) RequestCursorMove = CursorMove_Up;
+			if (imgAvail) RequestCursorMove = CursorMove_Up;
 			break;
 
 		case Bindings::Operation::UISizeInc:
@@ -2798,13 +2803,11 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::ZoomIn:
-			if (CurrImage)
-				ApplyZoomDelta(tMath::tRound(GetZoomPercent()*0.1f));
+			if (imgAvail) ApplyZoomDelta(tMath::tRound(GetZoomPercent()*0.1f));
 			break;
 
 		case Bindings::Operation::ZoomOut:
-			if (CurrImage)
-				ApplyZoomDelta(tMath::tRound(GetZoomPercent()*(0.909090909f - 1.0f)));
+			if (imgAvail) ApplyZoomDelta(tMath::tRound(GetZoomPercent()*(0.909090909f - 1.0f)));
 			break;
 
 		case Bindings::Operation::ZoomFit:
@@ -2818,12 +2821,9 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::ZoomOneToOne:
-			if (CurrImage)
-			{
-				SetZoomPercent(100.0f);
-				ResetPan();
-				SetZoomMode(Config::ProfileSettings::ZoomModeEnum::OneToOne);
-			}
+			SetZoomPercent(100.0f);
+			ResetPan();
+			SetZoomMode(Config::ProfileSettings::ZoomModeEnum::OneToOne);
 			break;
 
 		case Bindings::Operation::ZoomPerImage:
@@ -2836,7 +2836,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case Bindings::Operation::FlipVertically:
 		case Bindings::Operation::FlipHorizontally:
-			if (CurrImage && !CurrImage->IsAltPictureEnabled())
+			if (imgAvail && !CurrImage->IsAltPictureEnabled())
 			{
 				CurrImage->Unbind();
 				CurrImage->Flip(operation == Bindings::Operation::FlipHorizontally);
@@ -2847,7 +2847,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case Bindings::Operation::Rotate90Anticlockwise:
 		case Bindings::Operation::Rotate90Clockwise:
-			if (CurrImage && !CurrImage->IsAltPictureEnabled())
+			if (imgAvail && !CurrImage->IsAltPictureEnabled())
 			{
 				CurrImage->Unbind();
 				CurrImage->Rotate90(operation == Bindings::Operation::Rotate90Anticlockwise);
@@ -2857,21 +2857,23 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::RotateImage:
-			if (CurrImage) Request_RotateImageModal = true;
+			if (imgAvail) Request_RotateImageModal = true;
 			break;
 
 		case Bindings::Operation::Crop:
+			if (!CropMode && !imgAvail)
+				break;
 			CropMode = !CropMode;
 			if (CropMode)
 				Config::Current->Tile = false;
 			break;
 
 		case Bindings::Operation::ResizeImage:
-			if (CurrImage) Request_ResizeImageModal = true;
+			if (imgAvail) Request_ResizeImageModal = true;
 			break;
 
 		case Bindings::Operation::ResizeCanvas:
-			if (CurrImage) Request_ResizeCanvasModal = true;
+			if (imgAvail) Request_ResizeCanvasModal = true;
 			break;
 
 		case Bindings::Operation::PixelEdit:
@@ -2888,7 +2890,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case Bindings::Operation::Levels:
 			// @todo Should these be checking that no alt image like imgAvail?
-			if (CurrImage) Request_LevelsModal = true;
+			if (imgAvail) Request_LevelsModal = true;
 			break;
 
 		case Bindings::Operation::RedChannel:
@@ -2945,15 +2947,15 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::Undo:
-			if (CurrImage && CurrImage->IsUndoAvailable()) Undo();
+			if (imgAvail && CurrImage->IsUndoAvailable()) Undo();
 			break;
 
 		case Bindings::Operation::Redo:
-			if (CurrImage && CurrImage->IsRedoAvailable()) Redo();
+			if (imgAvail && CurrImage->IsRedoAvailable()) Redo();
 			break;
 
 		case Bindings::Operation::Copy:
-			CopyImage();
+			if (imgAvail) CopyImage();
 			break;
 
 		case Bindings::Operation::Paste:
@@ -2984,11 +2986,11 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::Save:
-			if (CurrImage) Request_SaveModal = true;
+			if (imgAvail) Request_SaveModal = true;
 			break;
 
 		case Bindings::Operation::SaveAs:
-			if (CurrImage) Request_SaveAsModal = true;
+			if (imgAvail) Request_SaveAsModal = true;
 			break;
 
 		case Bindings::Operation::SaveAll:
@@ -3163,7 +3165,7 @@ void Viewer::ScrollWheelCallback(GLFWwindow* window, double x, double y)
 	DisappearCountdown = DisappearDuration;
 
 	SetZoomMode(Config::ProfileSettings::ZoomModeEnum::User);
-	if (CurrImage)
+	if (CurrImage && CurrImage->IsLoaded())
 	{
 		float percentChange = (y > 0.0) ? 0.1f : 1.0f-0.909090909f;
 		float zoomDelta = GetZoomPercent() * percentChange * float(y);

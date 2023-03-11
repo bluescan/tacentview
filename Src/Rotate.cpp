@@ -100,9 +100,17 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
+
 	if (Viewer::Button("Rotate", tVector2(100.0f, 0.0f)))
 	{
-		tPicture* picture = CurrImage->GetCurrentPic(); tAssert(picture);
+		tPicture* picture = CurrImage->GetCurrentPic();
+		if (!picture)
+		{
+			RotateAnglePreview = 0.0f;
+			ImGui::CloseCurrentPopup();
+			ImGui::EndPopup();
+			return;
+		}
 		int origW = picture->GetWidth();
 		int origH = picture->GetHeight();
 

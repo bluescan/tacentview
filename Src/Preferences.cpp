@@ -254,7 +254,12 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::PopItemWidth();
 
 			ImGui::Checkbox("Strict Loading", &Config::Current->StrictLoading); ImGui::SameLine();
-			ShowHelpMark("Some image files are ill-formed. If strict is true no attempt to display them is made.");
+			ShowHelpMark
+			(
+				"Some image files are ill-formed. If strict is true these files are not loaded.\n"
+				"Ill-formed jpg and dds files have been found in the wild that are ill-formed\n"
+				"but still loadable. If strict is false, these files will still load."
+			);
 
 			// If the orient loading value changes we need to reload any images that have the Orientation tag set in their meta-data.
 			// If the current image ends up not being unloaded, the 'Load' call exits immediately, so it's fast (i.e. it knows).

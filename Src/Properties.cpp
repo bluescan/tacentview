@@ -139,6 +139,12 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		ImGui::End();
 		return;
 	}
+	else if (CurrImage && !CurrImage->IsLoaded())
+	{
+		ImGui::Text("Image Failed to Load");
+		ImGui::End();
+		return;
+	}
 
 	float itemWidth, buttonSize;
 	switch (Viewer::Config::Current->GetUISize())
@@ -280,7 +286,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			// Some DDS files have no available properties. No textures, no properties.
 			// Only one texture and not HDR and no alt images (no mipmaps or cubemap) -> no properties.
 			if (!anyUIDisplayed)
-				ImGui::Text("No Editable Image Properties Available");
+				ImGui::Text("No DDS Properties Available");
 
 			ImGui::End();
 			return;
@@ -410,7 +416,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			// Some KTX/KTX2 files have no available properties. No textures, no properties.
 			// If only one texture and not HDR and no alt images (no mipmaps or cubemap) -> no properties.
 			if (!anyUIDisplayed)
-				ImGui::Text("No Editable Image Properties Available");
+				ImGui::Text("No KTX/KTX2 Properties Available");
 
 			ImGui::End();
 			return;

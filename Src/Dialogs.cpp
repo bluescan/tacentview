@@ -416,16 +416,19 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			//
 			// The histogram itself.
 			//
-			tImage::tPicture* pic = CurrImage->GetCurrentPic();
 			float max = 0.0f;
 			tVector4 colour = tVector4::one;
-			switch (channels)
+			tImage::tPicture* pic = CurrImage->GetCurrentPic();
+			if (pic)
 			{
-				case int(Image::AdjChan::RGB):	max = pic->MaxICount;	colour.Set(0.9f, 0.9f, 0.9f, 1.8f);		break;
-				case int(Image::AdjChan::R):	max = pic->MaxRCount;	colour.Set(1.0f, 0.2f, 0.2f, 1.0f);		break;
-				case int(Image::AdjChan::G):	max = pic->MaxGCount;	colour.Set(0.2f, 1.0f, 0.2f, 1.0f);		break;
-				case int(Image::AdjChan::B):	max = pic->MaxBCount;	colour.Set(0.3f, 0.3f, 1.0f, 1.0f);		break;
-				case int(Image::AdjChan::A):	max = pic->MaxACount;	colour.Set(0.6f, 0.6f, 0.6f, 1.0f);		break;
+				switch (channels)
+				{
+					case int(Image::AdjChan::RGB):	max = pic->MaxICount;	colour.Set(0.9f, 0.9f, 0.9f, 1.8f);		break;
+					case int(Image::AdjChan::R):	max = pic->MaxRCount;	colour.Set(1.0f, 0.2f, 0.2f, 1.0f);		break;
+					case int(Image::AdjChan::G):	max = pic->MaxGCount;	colour.Set(0.2f, 1.0f, 0.2f, 1.0f);		break;
+					case int(Image::AdjChan::B):	max = pic->MaxBCount;	colour.Set(0.3f, 0.3f, 1.0f, 1.0f);		break;
+					case int(Image::AdjChan::A):	max = pic->MaxACount;	colour.Set(0.6f, 0.6f, 0.6f, 1.0f);		break;
+				}
 			}
 			tString histName;  tsPrintf(histName,  "%s Intensity", channelItems[channels]);
 			tString histLabel; tsPrintf(histLabel, "Max %d\n\nHistogram", int(max));

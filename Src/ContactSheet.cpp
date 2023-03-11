@@ -40,19 +40,19 @@ namespace Viewer
 
 bool Viewer::AnyImageNeedsResize(int frameWidth, int frameHeight)
 {
-	Image* checkImg = Images.First();
 	bool anyImageNeedsResize = false;
-	while (checkImg)
+	for (Image* checkImg = Images.First(); checkImg; checkImg = checkImg->Next())
 	{
 		if (!checkImg->IsLoaded())
 			checkImg->Load();
-
+		if (!checkImg->IsLoaded())
+			continue;
+		
 		if ((checkImg->GetWidth() != frameWidth) || (checkImg->GetHeight() != frameHeight))
 		{
 			anyImageNeedsResize = true;
 			break;
 		}
-		checkImg = checkImg->Next();
 	}
 	return anyImageNeedsResize;
 }

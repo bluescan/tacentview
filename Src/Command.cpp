@@ -887,7 +887,7 @@ example if zap[*a,b*] you may call with --op zap[] or just --op zap as well.
         components are 16*:9*. These are also used if numbers <= 0 are input.
   mode: Mode when resizing. Accepts crop* or letter. In crop mode some of the
         image pixels may be cropped to get the correct aspect. In letterbox
-        mode al the image pixels are guaranteed to be kept, but it may be
+        mode all the image pixels are guaranteed to be kept, but it may be
         necessary to add either horizontal or vertical letterboxes (not both).
   anc:  Anchor. One of tl, tm, tr, ml, mm*, mr, bl, bm. br. These are
         abbreviations for top-left, top-middle, top-right, etc.
