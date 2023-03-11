@@ -204,7 +204,9 @@ public:
 		bool IsValid() const							{ return (SrcPixelFormat != tImage::tPixelFormat::Invalid); }
 		tImage::tPixelFormat SrcPixelFormat				= tImage::tPixelFormat::Invalid;
 		tColourSpace SrcColourSpace						= tColourSpace::Unspecified;
-		bool Opaque										= false;
+
+		enum class OpacityType { False, True, Varies };	// Varies is for when there is more than one picture in the image (animated, mipmaps, etc) and they are not set all the same.
+		OpacityType Opacity								= OpacityType::False;
 		int FileSizeBytes								= 0;
 		int MemSizeBytes								= 0;
 	};

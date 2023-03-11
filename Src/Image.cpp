@@ -495,7 +495,20 @@ bool Image::Load()
 	LoadedTime = tSystem::tGetTime();
 
 	// Fill in rest of info struct.
-	Info.Opaque				= IsOpaque();
+	bool foundOpaque = false; bool foundTransparent = false;
+	for (tPicture* pic = Pictures.First(); pic; pic = pic->Next())
+	{
+		if (pic->IsOpaque())
+			foundOpaque = true;
+		else
+			foundTransparent = true;
+	}
+	Info.Opacity = ImgInfo::OpacityType::Varies;
+	if (foundOpaque && !foundTransparent)
+		Info.Opacity = ImgInfo::OpacityType::True;
+	else if (foundTransparent && !foundOpaque)
+		Info.Opacity = ImgInfo::OpacityType::False;
+
 	Info.FileSizeBytes		= tSystem::tGetFileSize(Filename);
 	Info.MemSizeBytes		= GetMemSizeBytes();
 	ClearDirty();
