@@ -261,6 +261,9 @@ public:
 	float ZoomPercent = 100.0f;
 	void SetUndoEnabled(bool enabled)																					{ UndoEnabled = enabled; }
 
+	bool OverrideBackgroundColour = false;
+	tColour4i BackgroundColourOverride = tColour4i::black;
+
 private:
 	bool UndoEnabled = true;
 	void PushUndo(const tString& desc)																					{ if (UndoEnabled) UndoStack.Push(Pictures, desc, Dirty); }
@@ -338,7 +341,8 @@ inline bool Image::TypeSupportsProperties() const
 		(Filetype == tSystem::tFileType::DDS) ||
 		(Filetype == tSystem::tFileType::KTX) ||
 		(Filetype == tSystem::tFileType::KTX2) ||
-		(Filetype == tSystem::tFileType::ASTC)
+		(Filetype == tSystem::tFileType::ASTC) ||
+		(Filetype == tSystem::tFileType::WEBP)
 	);
 }
 

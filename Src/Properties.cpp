@@ -497,7 +497,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			}
 
 			// WIP Add detection of HDR blocks to tImageASTC.
-			//if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || (CurrImage->Info.SrcColourSpace == tColourSpace::Linear))
+			// if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || (CurrImage->Info.SrcColourSpace == tColourSpace::Linear))
 			if (1)
 			{
 				bool expEnabled = (CurrImage->LoadParams_ASTC.Flags & tImageASTC::LoadFlag_ToneMapExposure);
@@ -571,7 +571,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 
 		case tSystem::tFileType::EXR:
 		{
-			ImGui::Text("Open EXR");
+			ImGui::Text("OpenEXR");
 			bool reloadChanges = false;
 
 			ImGui::PushItemWidth(itemWidth);
@@ -630,6 +630,26 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			fileTypeSectionDisplayed = true;
 			break;
 		}
+
+		case tSystem::tFileType::WEBP:
+		{
+			if (CurrImage->Info.Opacity != Image::Image::ImgInfo::OpacityType::True)
+			{
+				ImGui::Checkbox("Override Background", &CurrImage->OverrideBackgroundColour);
+				ImGui::SameLine();
+				ShowHelpMark
+				(
+					"WebP files store a background canvas colour. This canvas colour is present\n"
+					"in animated WebP files and defaults to white for single image WebP files.\n"
+					"If the override checkbox is set the current viewer background settings are\n"
+					"ignored and the WebP background colour is used instead. This only affects\n"
+					"the current image being displayed."
+				);
+
+				fileTypeSectionDisplayed = true;
+			}
+			break;
+		}
 	}
 
 	int numFrames = CurrImage->GetNumFrames();
@@ -641,11 +661,11 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		if (fileTypeSectionDisplayed)
 			ImGui::Separator();
 
-		ImGui::Text("Frames (%d)", CurrImage->GetNumFrames());
-
 		int oneBasedFrameNum = CurrImage->FrameNum + 1;
 		ImGui::PushItemWidth(itemWidth);
-		if (ImGui::InputInt("Frame", &oneBasedFrameNum))
+		tString frameStr;
+		tsPrintf(frameStr, "Frame (%d)##Frame", CurrImage->GetNumFrames());
+		if (ImGui::InputInt(frameStr.Chr(), &oneBasedFrameNum))
 		{
 			CurrImage->FrameNum = oneBasedFrameNum - 1;
 			tMath::tiClamp(CurrImage->FrameNum, 0, CurrImage->GetNumFrames()-1);

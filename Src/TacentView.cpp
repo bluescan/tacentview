@@ -866,7 +866,12 @@ void Viewer::DrawBackground(float l, float r, float b, float t, float drawW, flo
 	if (Config::Global.TransparentWorkArea)
 		return;
 
-	switch (Config::Current->GetBackgroundStyle())
+	Config::ProfileSettings::BackgroundStyleEnum style = Config::Current->GetBackgroundStyle();
+	bool overrideBG = CurrImage && CurrImage->OverrideBackgroundColour;
+	if (overrideBG)
+		style = Config::ProfileSettings::BackgroundStyleEnum::SolidColour;
+
+	switch (style)
 	{
 		case Config::ProfileSettings::BackgroundStyleEnum::None:
 			return;
@@ -953,7 +958,10 @@ void Viewer::DrawBackground(float l, float r, float b, float t, float drawW, flo
 
 		case Config::ProfileSettings::BackgroundStyleEnum::SolidColour:
 		{
-			glColor4ubv(Config::Current->BackgroundColour.E);
+			tColour4i bgCol = Config::Current->BackgroundColour;
+			if (overrideBG)
+				bgCol = CurrImage->BackgroundColourOverride;
+			glColor4ubv(bgCol.E);
 			glBegin(GL_QUADS);
 			glVertex2f(l, b);
 			glVertex2f(l, t);

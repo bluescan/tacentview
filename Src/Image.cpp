@@ -415,6 +415,7 @@ bool Image::Load()
 				Pictures.Append(picture);
 			}
 			Info.SrcPixelFormat = webp.PixelFormatSrc;
+			BackgroundColourOverride = webp.BackgroundColour;
 			success = true;
 			break;
 		}
