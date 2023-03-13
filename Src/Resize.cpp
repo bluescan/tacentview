@@ -556,46 +556,35 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 	int srcH = picture->GetHeight();
 
 	ImGui::NewLine();
-	ImGui::PushItemWidth(100);
-	ImGui::InputInt("Num", &Config::Current->ResizeAspectNum);
-	ImGui::InputInt("Den", &Config::Current->ResizeAspectDen);
+
+	ImGui::PushItemWidth(140);
+	ImGui::Combo
+	(
+		"Aspect",
+		&Config::Current->ResizeAspectRatio,
+		&tImage::tAspectRatioNames[1],
+		int(tImage::tAspectRatio::NumRatios),
+		int(tImage::tAspectRatio::NumRatios)/2
+	);
 	ImGui::PopItemWidth();
-	tiClampMin(Config::Current->ResizeAspectNum, 1); tiClampMin(Config::Current->ResizeAspectDen, 1);
 
-	ImGui::PushItemWidth(160);
-
-	int presetIndex = 0;
-	if      ((Config::Current->ResizeAspectNum == 2 ) && (Config::Current->ResizeAspectDen == 1 ))	presetIndex = 1;
-	else if ((Config::Current->ResizeAspectNum == 16) && (Config::Current->ResizeAspectDen == 9 ))	presetIndex = 2;
-	else if ((Config::Current->ResizeAspectNum == 16) && (Config::Current->ResizeAspectDen == 10))	presetIndex = 3;
-	else if ((Config::Current->ResizeAspectNum == 3 ) && (Config::Current->ResizeAspectDen == 2 ))	presetIndex = 4;
-	else if ((Config::Current->ResizeAspectNum == 4 ) && (Config::Current->ResizeAspectDen == 3 ))	presetIndex = 5;
-	else if ((Config::Current->ResizeAspectNum == 1 ) && (Config::Current->ResizeAspectDen == 1 ))	presetIndex = 6;
-	else if ((Config::Current->ResizeAspectNum == 3 ) && (Config::Current->ResizeAspectDen == 4 ))	presetIndex = 7;
-	else if ((Config::Current->ResizeAspectNum == 2 ) && (Config::Current->ResizeAspectDen == 3 ))	presetIndex = 8;
-	else if ((Config::Current->ResizeAspectNum == 10) && (Config::Current->ResizeAspectDen == 16))	presetIndex = 9;
-	else if ((Config::Current->ResizeAspectNum == 9 ) && (Config::Current->ResizeAspectDen == 16))	presetIndex = 10;
-	else if ((Config::Current->ResizeAspectNum == 1 ) && (Config::Current->ResizeAspectDen == 2 ))	presetIndex = 11;
-	const char* presetAspects[] = { "Custom", "2:1", "16:9", "16:10", "3:2", "4:3", "1:1", "3:4", "2:3", "10:16", "9:16", "1:2" };
-	if (ImGui::Combo("Aspect", &presetIndex, presetAspects, tNumElements(presetAspects), tNumElements(presetAspects)))
+	if (Config::Current->GetResizeAspectRatio() == tAspectRatio::User)
 	{
-		switch (presetIndex)
-		{
-			case 0:																						break;
-			case 1:		Config::Current->ResizeAspectNum = 2;	Config::Current->ResizeAspectDen = 1;	break;
-			case 2:		Config::Current->ResizeAspectNum = 16;	Config::Current->ResizeAspectDen = 9;	break;
-			case 3:		Config::Current->ResizeAspectNum = 16;	Config::Current->ResizeAspectDen = 10;	break;
-			case 4:		Config::Current->ResizeAspectNum = 3;	Config::Current->ResizeAspectDen = 2;	break;
-			case 5:		Config::Current->ResizeAspectNum = 4;	Config::Current->ResizeAspectDen = 3;	break;
-			case 6:		Config::Current->ResizeAspectNum = 1;	Config::Current->ResizeAspectDen = 1;	break;
-			case 7:		Config::Current->ResizeAspectNum = 3;	Config::Current->ResizeAspectDen = 4;	break;
-			case 8:		Config::Current->ResizeAspectNum = 2;	Config::Current->ResizeAspectDen = 3;	break;
-			case 9:		Config::Current->ResizeAspectNum = 10;	Config::Current->ResizeAspectDen = 16;	break;
-			case 10:	Config::Current->ResizeAspectNum = 9;	Config::Current->ResizeAspectDen = 16;	break;
-			case 11:	Config::Current->ResizeAspectNum = 1;	Config::Current->ResizeAspectDen = 2;	break;
-		}
+		ImGui::SameLine();
+		ImGui::PushItemWidth(26.0f);
+		ImGui::InputInt("##Num", &Config::Current->ResizeAspectUserNum, 0, 0);
+		ImGui::SameLine(); ImGui::Text(":"); ImGui::SameLine();
+		ImGui::InputInt("##Den", &Config::Current->ResizeAspectUserDen, 0, 0);
+		ImGui::PopItemWidth();
+		tiClamp(Config::Current->ResizeAspectUserNum, 1, 99); tiClamp(Config::Current->ResizeAspectUserDen, 1, 99);
+	}
+	else
+	{
+		ImGui::SameLine();
+		ShowHelpMark("Aspect ratio for resizing.\nUser means enter the aspect ratio manually.\nFor the print presets the L means Landscape.");
 	}
 
+	ImGui::PushItemWidth(140);
 	const char* resizeAspectModes[] = { "Crop", "Letterbox" };
 	ImGui::Combo("Mode", &Config::Current->ResizeAspectMode, resizeAspectModes, tNumElements(resizeAspectModes), tNumElements(resizeAspectModes));
 	ImGui::PopItemWidth();
@@ -629,11 +618,12 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 
 	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
-		Config::Current->CropAnchor			= 4;
-		Config::Current->FillColour			= tColouri::black;
-		Config::Current->ResizeAspectNum	= 16;
-		Config::Current->ResizeAspectDen	= 9;
-		Config::Current->ResizeAspectMode	= 0;
+		Config::Current->CropAnchor				= 4;
+		Config::Current->FillColour				= tColouri::black;
+		Config::Current->ResizeAspectRatio		= int(tAspectRatio::Screen_16_9);
+		Config::Current->ResizeAspectUserNum	= 16;
+		Config::Current->ResizeAspectUserDen	= 9;
+		Config::Current->ResizeAspectMode		= 0;
 	}
 
 	ImGui::SameLine();
@@ -648,7 +638,7 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 		int dstH = srcH;
 		int dstW = srcW;
 		float srcAspect = float(srcW)/float(srcH);
-		float dstAspect = float(Config::Current->ResizeAspectNum)/float(Config::Current->ResizeAspectDen);
+		float dstAspect = Config::Current->GetResizeAspectRatioFloat();
 		if (Config::Current->ResizeAspectMode == 0)
 		{
 			// Crop Mode.

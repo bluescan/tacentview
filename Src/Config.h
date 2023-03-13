@@ -16,6 +16,7 @@
 #include <Foundation/tString.h>
 #include <Math/tColour.h>
 #include <System/tScript.h>
+#include <Image/tPixelFormat.h>
 #include "InputBindings.h"
 
 
@@ -200,8 +201,13 @@ struct ProfileSettings
 
 	int CropAnchor;										// E [-1, 9] with 4 being the default (middle), 0 being top-left, and -1 being 'cursor position'.
 	tColouri FillColour;
-	int ResizeAspectNum;
-	int ResizeAspectDen;
+
+	int ResizeAspectRatio;								// Zero is first valid in tImage::tAspectRatio.
+	tImage::tAspectRatio GetResizeAspectRatio() const	{ return tImage::tAspectRatio(ResizeAspectRatio+1); }
+	int ResizeAspectUserNum;							// Only used if aspect ratio is 'User'.
+	int ResizeAspectUserDen;							// Only used if aspect ratio is 'User'.
+	float GetResizeAspectRatioFloat() const				{ tImage::tAspectRatio aspect = GetResizeAspectRatio(); return (aspect == tImage::tAspectRatio::User) ? float(ResizeAspectUserNum) / float(ResizeAspectUserDen) : tImage::tGetAspectRatioFloat(aspect); }
+
 	int ResizeAspectMode;								// 0 = Crop Mode. 1 = Letterbox Mode.
 	int MaxImageMemMB;									// Max image mem before unloading images.
 	int MaxCacheFiles;									// Max number of cache files before removing oldest.

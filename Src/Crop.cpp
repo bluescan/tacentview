@@ -628,59 +628,36 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		);
 		ShowHelpMark(toolTipText.Chr());
 
+#if 0
 		ImGui::PushItemWidth(comboWidth);
-		static int presetIndex = 0;
-		/*
-		if      ((Config::Current->ResizeAspectNum == 2 ) && (Config::Current->ResizeAspectDen == 1 ))	presetIndex = 1;
-		else if ((Config::Current->ResizeAspectNum == 16) && (Config::Current->ResizeAspectDen == 9 ))	presetIndex = 2;
-		else if ((Config::Current->ResizeAspectNum == 16) && (Config::Current->ResizeAspectDen == 10))	presetIndex = 3;
-		else if ((Config::Current->ResizeAspectNum == 3 ) && (Config::Current->ResizeAspectDen == 2 ))	presetIndex = 4;
-		else if ((Config::Current->ResizeAspectNum == 4 ) && (Config::Current->ResizeAspectDen == 3 ))	presetIndex = 5;
-		else if ((Config::Current->ResizeAspectNum == 1 ) && (Config::Current->ResizeAspectDen == 1 ))	presetIndex = 6;
-		else if ((Config::Current->ResizeAspectNum == 3 ) && (Config::Current->ResizeAspectDen == 4 ))	presetIndex = 7;
-		else if ((Config::Current->ResizeAspectNum == 2 ) && (Config::Current->ResizeAspectDen == 3 ))	presetIndex = 8;
-		else if ((Config::Current->ResizeAspectNum == 10) && (Config::Current->ResizeAspectDen == 16))	presetIndex = 9;
-		else if ((Config::Current->ResizeAspectNum == 9 ) && (Config::Current->ResizeAspectDen == 16))	presetIndex = 10;
-		else if ((Config::Current->ResizeAspectNum == 1 ) && (Config::Current->ResizeAspectDen == 2 ))	presetIndex = 11;
-		*/
-		const char* presetAspects[] =
-		{ "Free", "2:1", "16:9", "16:10", "3:2", "4:3", "1:1", "3:4", "2:3", "10:16", "9:16", "1:2", "User" };
-		if (ImGui::Combo("Aspect", &presetIndex, presetAspects, tNumElements(presetAspects), tNumElements(presetAspects)))
-		{
-			switch (presetIndex)
-			{
-				case 0:																						break;
-				case 1:		Config::Current->ResizeAspectNum = 2;	Config::Current->ResizeAspectDen = 1;	break;
-				case 2:		Config::Current->ResizeAspectNum = 16;	Config::Current->ResizeAspectDen = 9;	break;
-				case 3:		Config::Current->ResizeAspectNum = 16;	Config::Current->ResizeAspectDen = 10;	break;
-				case 4:		Config::Current->ResizeAspectNum = 3;	Config::Current->ResizeAspectDen = 2;	break;
-				case 5:		Config::Current->ResizeAspectNum = 4;	Config::Current->ResizeAspectDen = 3;	break;
-				case 6:		Config::Current->ResizeAspectNum = 1;	Config::Current->ResizeAspectDen = 1;	break;
-				case 7:		Config::Current->ResizeAspectNum = 3;	Config::Current->ResizeAspectDen = 4;	break;
-				case 8:		Config::Current->ResizeAspectNum = 2;	Config::Current->ResizeAspectDen = 3;	break;
-				case 9:		Config::Current->ResizeAspectNum = 10;	Config::Current->ResizeAspectDen = 16;	break;
-				case 10:	Config::Current->ResizeAspectNum = 9;	Config::Current->ResizeAspectDen = 16;	break;
-				case 11:	Config::Current->ResizeAspectNum = 1;	Config::Current->ResizeAspectDen = 2;	break;
-			}
-		}
+		//ImGui::PushItemWidth(120);
+		ImGui::Combo
+		(
+			"Aspect",
+			&Config::Current->ResizeAspectRatio,
+			&tImage::tAspectRatioNames[1],
+			int(tImage::tAspectRatio::NumRatios),
+			int(tImage::tAspectRatio::NumRatios)/2
+		);
+		ImGui::PopItemWidth();
 
-		if (presetIndex == 12)
+		if (Config::Current->GetResizeAspectRatio() == tAspectRatio::User)
 		{
 			ImGui::SameLine();
-			ImGui::PushItemWidth(aspectWidth);
-			ImGui::InputInt("##Num", &Config::Current->ResizeAspectNum, 0, 0);//, ImGuiInputTextFlags_ReadOnly);
+			ImGui::PushItemWidth(26.0f);
+			ImGui::InputInt("##Num", &Config::Current->ResizeAspectUserNum, 0, 0);
 			ImGui::SameLine(); ImGui::Text(":"); ImGui::SameLine();
-			ImGui::InputInt("##Den", &Config::Current->ResizeAspectDen, 0, 0);
+			ImGui::InputInt("##Den", &Config::Current->ResizeAspectUserDen, 0, 0);
 			ImGui::PopItemWidth();
-			tiClamp(Config::Current->ResizeAspectNum, 1, 99); tiClamp(Config::Current->ResizeAspectDen, 1, 99);
+			tiClamp(Config::Current->ResizeAspectUserNum, 1, 99); tiClamp(Config::Current->ResizeAspectUserDen, 1, 99);
 		}
 		else
 		{
 			ImGui::SameLine();
-			ShowHelpMark("Aspect ratio for crop area.\nFree means aspect is unlocked.\nCustom means enter the aspect ratio manually.\nFor the presets the P means common print sizes.");
+			ShowHelpMark("Aspect ratio for crop area.\nFree means aspect is unlocked.\nUser means enter the aspect ratio manually.\nFor the print presets the L means Landscape.");
 		}
-
-		//////////////
+		ImGui::PopItemWidth();
+#endif
 
 		ImGui::SetCursorPosX(shortcutTxtLeft);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 7.0f);

@@ -348,8 +348,9 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 		SaveAllSizeMode				= 0;
 		CropAnchor					= 4;
 		FillColour					= tColouri::black;
-		ResizeAspectNum				= 16;
-		ResizeAspectDen				= 9;
+		ResizeAspectRatio			= int(tImage::tAspectRatio::Screen_16_9);
+		ResizeAspectUserNum			= 16;
+		ResizeAspectUserDen			= 9;
 		ResizeAspectMode			= 0;
 	}
 
@@ -488,8 +489,9 @@ void Config::ProfileSettings::Load(tExpression expr)
 
 			ReadItem(CropAnchor);
 			ReadItem(FillColour);
-			ReadItem(ResizeAspectNum);
-			ReadItem(ResizeAspectDen);
+			ReadItem(ResizeAspectRatio);
+			ReadItem(ResizeAspectUserNum);
+			ReadItem(ResizeAspectUserDen);
 			ReadItem(ResizeAspectMode);
 			ReadItem(MaxImageMemMB);
 			ReadItem(MaxCacheFiles);
@@ -525,8 +527,9 @@ void Config::ProfileSettings::Load(tExpression expr)
 	tiClamp		(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
 	tiClamp		(SortKey, 0, int(SortKeyEnum::NumKeys)-1);
 	tiClamp		(CropAnchor, -1, 9);
-	tiClampMin	(ResizeAspectNum, 1);
-	tiClampMin	(ResizeAspectDen, 1);
+	tiClamp		(ResizeAspectRatio, 0, int(tImage::tAspectRatio::User)-1);
+	tiClamp		(ResizeAspectUserNum, 1, 99);
+	tiClamp		(ResizeAspectUserDen, 1, 99);
 	tiClamp		(ResizeAspectMode, 0, 1);
 	tiClampMin	(MaxImageMemMB, 256);
 	tiClampMin	(MaxCacheFiles, 200);	
@@ -642,8 +645,9 @@ bool Config::ProfileSettings::Save(tExprWriter& writer) const
 
 	WriteItem(CropAnchor);
 	WriteItem(FillColour);
-	WriteItem(ResizeAspectNum);
-	WriteItem(ResizeAspectDen);
+	WriteItem(ResizeAspectRatio);
+	WriteItem(ResizeAspectUserNum);
+	WriteItem(ResizeAspectUserDen);
 	WriteItem(ResizeAspectMode);
 	WriteItem(MaxImageMemMB);
 	WriteItem(MaxCacheFiles);
