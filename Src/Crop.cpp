@@ -555,7 +555,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 				shortcutTxtLeft	= 57.0f;
 				shortcutNavLeft	= 58.0f;
 				anchorSize		= 24.0f;
-				comboWidth		= 62.0f;
+				comboWidth		= 102.0f;
 				aspectWidth		= 24.0f;
 				break;
 			case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
@@ -563,15 +563,15 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 				shortcutTxtLeft	= 61.0f;
 				shortcutNavLeft	= 64.0f;
 				anchorSize		= 26.0f;
-				comboWidth		= 72.0f;
+				comboWidth		= 124.0f;
 				aspectWidth		= 25.0f;
 				break;
 			case Viewer::Config::ProfileSettings::UISizeEnum::Large:
 				buttonWidth		= 66.0f;
-				shortcutTxtLeft	= 62.0f;
+				shortcutTxtLeft	= 61.0f;
 				shortcutNavLeft	= 68.0f;
 				anchorSize		= 28.0f;
-				comboWidth		= 80.0f;
+				comboWidth		= 132.0f;
 				aspectWidth		= 26.0f;
 				break;
 		}
@@ -600,8 +600,38 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		ImGui::Text("V Margins");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("B:%d T:%d", margB, margT);
 		ImGui::Text("Orig Size");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("W:%d H:%d", origW, origH);
 		ImGui::Text("New Size");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("W:%d H:%d", newW, newH);
-		ImGui::SameLine();
 
+		ImGui::PushItemWidth(comboWidth);
+		ImGui::Combo
+		(
+			"Aspect",
+			&Config::Current->CropAspectRatio,
+			tImage::tAspectRatioNames,
+			int(tImage::tAspectRatio::NumRatios) + 1,
+			int(tImage::tAspectRatio::NumRatios)/2
+		);
+		ImGui::PopItemWidth();
+
+		if (Config::Current->GetCropAspectRatio() == tImage::tAspectRatio::User)
+		{
+			ImGui::PushItemWidth(26.0f);
+			ImGui::InputInt("##Num", &Config::Current->CropAspectUserNum, 0, 0);
+			ImGui::SameLine(); ImGui::Text(":"); ImGui::SameLine();
+			ImGui::InputInt("##Den", &Config::Current->CropAspectUserDen, 0, 0);
+			ImGui::PopItemWidth();
+			tiClamp(Config::Current->CropAspectUserNum, 1, 99); tiClamp(Config::Current->CropAspectUserDen, 1, 99);
+		}
+		else
+		{
+			ImGui::SameLine();
+			ShowHelpMark("Aspect ratio for crop area.\nFree means aspect is unlocked.\nUser means enter the aspect ratio manually.\nFor the print presets the L means Landscape.");
+		}
+
+		ImGui::SetCursorPosX(shortcutTxtLeft);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 7.0f);
+		ImGui::Text("View Shortcuts");
+
+		ImGui::SameLine();
 		tString leftKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::PixelLeft);
 		tString leftDsc = Bindings::GetOperationDesc(Bindings::Operation::PixelLeft);
 		tString rghtKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::PixelRight);
@@ -627,41 +657,6 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 			downDsc.Chr(), downKey.Chr()
 		);
 		ShowHelpMark(toolTipText.Chr());
-
-#if 0
-		ImGui::PushItemWidth(comboWidth);
-		//ImGui::PushItemWidth(120);
-		ImGui::Combo
-		(
-			"Aspect",
-			&Config::Current->ResizeAspectRatio,
-			&tImage::tAspectRatioNames[1],
-			int(tImage::tAspectRatio::NumRatios),
-			int(tImage::tAspectRatio::NumRatios)/2
-		);
-		ImGui::PopItemWidth();
-
-		if (Config::Current->GetResizeAspectRatio() == tAspectRatio::User)
-		{
-			ImGui::SameLine();
-			ImGui::PushItemWidth(26.0f);
-			ImGui::InputInt("##Num", &Config::Current->ResizeAspectUserNum, 0, 0);
-			ImGui::SameLine(); ImGui::Text(":"); ImGui::SameLine();
-			ImGui::InputInt("##Den", &Config::Current->ResizeAspectUserDen, 0, 0);
-			ImGui::PopItemWidth();
-			tiClamp(Config::Current->ResizeAspectUserNum, 1, 99); tiClamp(Config::Current->ResizeAspectUserDen, 1, 99);
-		}
-		else
-		{
-			ImGui::SameLine();
-			ShowHelpMark("Aspect ratio for crop area.\nFree means aspect is unlocked.\nUser means enter the aspect ratio manually.\nFor the print presets the L means Landscape.");
-		}
-		ImGui::PopItemWidth();
-#endif
-
-		ImGui::SetCursorPosX(shortcutTxtLeft);
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 7.0f);
-		ImGui::Text("View Shortcuts");
 
 		tVector2 shortcutImageSize(anchorSize, anchorSize);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);

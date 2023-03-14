@@ -851,9 +851,9 @@ example if zap[*a,b*] you may call with --op zap[] or just --op zap as well.
 
 --op resize[wid,hgt,filt*,edge*]
   Resizes image by resampling. Allows non-uniform scale.
-  wid:  Width. An int in range [4, 32768], 0*, or -1. If set to 0 or -1 it
+  wid:  Width. An int in range [4, 65536], 0*, or -1. If set to 0 or -1 it
         preserves the aspect ratio by using the height and original aspect.
-  hgt:  Height. An int in range [4, 32768], 0*, or -1. If set to 0 or -1 it
+  hgt:  Height. An int in range [4, 65536], 0*, or -1. If set to 0 or -1 it
         preserves the aspect ratio by using the width and original aspect.
   filt: Resample filter. Default is bilinear*. Only used if dimensions changed
         for the image being processed. See below for valid filter names.
@@ -864,18 +864,18 @@ example if zap[*a,b*] you may call with --op zap[] or just --op zap as well.
   Resizes image by modifying the canvas area of the image. You specify the new
   width and height. Vertical or horizontal letterboxes may be needed. This
   operation does not perform resampling.
-  wid:  Width. An int in range [4, 32768], 0*, or -1. If set to 0 or -1 it
+  wid:  Width. An int in range [4, 65536], 0*, or -1. If set to 0 or -1 it
         preserves the aspect ratio by using the height and original aspect.
-  hgt:  Height. An int in range [4, 32768], 0*, or -1. If set to 0 or -1 it
+  hgt:  Height. An int in range [4, 65536], 0*, or -1. If set to 0 or -1 it
         preserves the aspect ratio by using the width and original aspect.
   anc:  Anchor. One of tl, tm, tr, ml, mm*, mr, bl, bm. br. These are
         abbreviations for top-left, top-middle, top-right, etc.
   fill: Fill colour. If letterboxes needed this is their colour. Either specify
         with a hex in form #RRGGBBAA or use one of the predefined colours:
         black*, white, grey, red, green, blue, yellow, cyan, magenta, or trans.
-  ancx: Explicit anchor X position. An int in range [-1*, 32768]. If -1 used
+  ancx: Explicit anchor X position. An int in range [-1*, 65536]. If -1 used
         the anc argument above takes priority.
-  ancy: Explicit anchor Y position. An int in range [-1*, 32768]. If -1 used
+  ancy: Explicit anchor Y position. An int in range [-1*, 65536]. If -1 used
         the anc argument above takes priority.
 
 --op aspect[asp,mode,anc*,fill*,ancx*,ancy*]
@@ -894,9 +894,9 @@ example if zap[*a,b*] you may call with --op zap[] or just --op zap as well.
   fill: Fill colour. If letterboxes needed this is their colour. Either specify
         with a hex in form #RRGGBBAA or use one of the predefined colours:
         black*, white, grey, red, green, blue, yellow, cyan, magenta, or trans.
-  ancx: Explicit anchor X position. An int in range [-1*, 32768]. If -1 used
+  ancx: Explicit anchor X position. An int in range [-1*, 65536]. If -1 used
         the anc argument above takes priority.
-  ancy: Explicit anchor Y position. An int in range [-1*, 32768]. If -1 used
+  ancy: Explicit anchor Y position. An int in range [-1*, 65536]. If -1 used
         the anc argument above takes priority.
 
 --op deborder[col*,chan*]

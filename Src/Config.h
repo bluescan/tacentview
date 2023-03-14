@@ -202,7 +202,13 @@ struct ProfileSettings
 	int CropAnchor;										// E [-1, 9] with 4 being the default (middle), 0 being top-left, and -1 being 'cursor position'.
 	tColouri FillColour;
 
-	int ResizeAspectRatio;								// Zero is first valid in tImage::tAspectRatio.
+	int CropAspectRatio;								// Matches tImage::tAspectRatio.
+	tImage::tAspectRatio GetCropAspectRatio() const		{ return tImage::tAspectRatio(CropAspectRatio); }
+	int CropAspectUserNum;								// Only used if aspect ratio is 'User'.
+	int CropAspectUserDen;								// Only used if aspect ratio is 'User'.
+	float GetCropAspectRatioFloat() const				{ tImage::tAspectRatio aspect = GetCropAspectRatio(); return (aspect == tImage::tAspectRatio::User) ? float(CropAspectUserNum) / float(CropAspectUserDen) : tImage::tGetAspectRatioFloat(aspect); }
+
+	int ResizeAspectRatio;								// Zero is first valid (1) in tImage::tAspectRatio.
 	tImage::tAspectRatio GetResizeAspectRatio() const	{ return tImage::tAspectRatio(ResizeAspectRatio+1); }
 	int ResizeAspectUserNum;							// Only used if aspect ratio is 'User'.
 	int ResizeAspectUserDen;							// Only used if aspect ratio is 'User'.

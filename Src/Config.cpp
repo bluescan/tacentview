@@ -347,8 +347,11 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 		SaveFileTiffDurMultiFrame	= 33;
 		SaveAllSizeMode				= 0;
 		CropAnchor					= 4;
+		CropAspectRatio				= int(tImage::tAspectRatio::Free);
+		CropAspectUserNum			= 16;
+		CropAspectUserDen			= 9;
 		FillColour					= tColouri::black;
-		ResizeAspectRatio			= int(tImage::tAspectRatio::Screen_16_9);
+		ResizeAspectRatio			= int(tImage::tAspectRatio::Screen_16_9) - 1;
 		ResizeAspectUserNum			= 16;
 		ResizeAspectUserDen			= 9;
 		ResizeAspectMode			= 0;
@@ -488,6 +491,9 @@ void Config::ProfileSettings::Load(tExpression expr)
 				break;
 
 			ReadItem(CropAnchor);
+			ReadItem(CropAspectRatio);
+			ReadItem(CropAspectUserNum);
+			ReadItem(CropAspectUserDen);
 			ReadItem(FillColour);
 			ReadItem(ResizeAspectRatio);
 			ReadItem(ResizeAspectUserNum);
@@ -527,6 +533,9 @@ void Config::ProfileSettings::Load(tExpression expr)
 	tiClamp		(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
 	tiClamp		(SortKey, 0, int(SortKeyEnum::NumKeys)-1);
 	tiClamp		(CropAnchor, -1, 9);
+	tiClamp		(CropAspectRatio, int(tImage::tAspectRatio::Free), int(tImage::tAspectRatio::User));
+	tiClamp		(CropAspectUserNum, 1, 99);
+	tiClamp		(CropAspectUserDen, 1, 99);
 	tiClamp		(ResizeAspectRatio, 0, int(tImage::tAspectRatio::User)-1);
 	tiClamp		(ResizeAspectUserNum, 1, 99);
 	tiClamp		(ResizeAspectUserDen, 1, 99);

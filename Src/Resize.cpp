@@ -70,7 +70,7 @@ void Viewer::DoResizeWidthHeightInterface(int srcW, int srcH, int& dstW, int& ds
 	if (ImGui::InputInt("Width", &dstW) && lockAspect)
 		dstH = int( float(dstW) / aspect );
 	ImGui::PopItemWidth();
-	tiClamp(dstW, 4, 32768); tiClamp(dstH, 4, 32768);
+	tiClamp(dstW, 4, 65536); tiClamp(dstH, 4, 65536);
 	int loP2W = tNextLowerPower2(dstW);		tiClampMin(loP2W, 4);	tsPrintf(lo, "%d##Wlo", loP2W);
 	int hiP2W = tNextHigherPower2(dstW);							tsPrintf(hi, "%d##Whi", hiP2W);
 	ImGui::SetCursorPosX(dimOffset);
@@ -90,7 +90,7 @@ void Viewer::DoResizeWidthHeightInterface(int srcW, int srcH, int& dstW, int& ds
 	ImGui::PushItemWidth(dimWidth);
 	if (ImGui::InputInt("Height", &dstH) && lockAspect)
 		dstW = int( float(dstH) * aspect );
-	tiClamp(dstW, 4, 32768); tiClamp(dstH, 4, 32768);
+	tiClamp(dstW, 4, 65536); tiClamp(dstH, 4, 65536);
 	ImGui::SetCursorPosX(dimOffset);
 	int loP2H = tNextLowerPower2(dstH);		tiClampMin(loP2H, 4);	tsPrintf(lo, "%d##Hlo", loP2H);
 	int hiP2H = tNextHigherPower2(dstH);							tsPrintf(hi, "%d##Hhi", hiP2H);
@@ -620,7 +620,7 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 	{
 		Config::Current->CropAnchor				= 4;
 		Config::Current->FillColour				= tColouri::black;
-		Config::Current->ResizeAspectRatio		= int(tAspectRatio::Screen_16_9);
+		Config::Current->ResizeAspectRatio		= int(tAspectRatio::Screen_16_9) - 1;
 		Config::Current->ResizeAspectUserNum	= 16;
 		Config::Current->ResizeAspectUserDen	= 9;
 		Config::Current->ResizeAspectMode		= 0;

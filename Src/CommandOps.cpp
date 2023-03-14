@@ -92,8 +92,8 @@ bool Command::OperationResize::Apply(Viewer::Image& image)
 	else if (dstH <= 0)
 		dstH = int( float(dstW) / aspect );
 
-	tMath::tiClamp(dstW, 4, 32768);
-	tMath::tiClamp(dstH, 4, 32768);
+	tMath::tiClamp(dstW, 4, 65536);
+	tMath::tiClamp(dstH, 4, 65536);
 
 	if ((srcW == dstW) && (srcH == dstH))
 	{
@@ -218,8 +218,8 @@ bool Command::OperationCanvas::Apply(Viewer::Image& image)
 	else if (dstH <= 0)
 		dstH = int( float(dstW) / aspect );
 
-	tMath::tiClamp(dstW, 4, 32768);
-	tMath::tiClamp(dstH, 4, 32768);
+	tMath::tiClamp(dstW, 4, 65536);
+	tMath::tiClamp(dstH, 4, 65536);
 
 	if ((srcW == dstW) && (srcH == dstH))
 	{
