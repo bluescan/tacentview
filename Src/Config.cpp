@@ -653,6 +653,9 @@ bool Config::ProfileSettings::Save(tExprWriter& writer) const
 	InputBindings.Write(writer);
 
 	WriteItem(CropAnchor);
+	WriteItem(CropAspectRatio);
+	WriteItem(CropAspectUserNum);
+	WriteItem(CropAspectUserDen);
 	WriteItem(FillColour);
 	WriteItem(ResizeAspectRatio);
 	WriteItem(ResizeAspectUserNum);

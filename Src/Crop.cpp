@@ -67,7 +67,7 @@ void Viewer::CropWidget::TestSetHovered(CropLine& line, const tVector2& mouse, c
 		hitBox.Set(tVector2(ends.x, line.GetScreenVal()), tVector2(ends.y, line.GetScreenVal()));
 	else
 		hitBox.Set(tVector2(line.GetScreenVal(), ends.x), tVector2(line.GetScreenVal(), ends.y));
-	hitBox.Expand(4);
+	hitBox.Expand(6);
 	line.Hovered = hitBox.IsPointInside(mouse);
 }
 
@@ -136,6 +136,115 @@ void Viewer::CropWidget::Update(const tVector4& imgext, const tVector2& mouse, c
 	TestSetHovered(LineR, mouse, tVector2(b, t), false);
 	TestSetHovered(LineV, mouse, tVector2(b, t), false);
 	TestSetHovered(LineH, mouse, tVector2(l, r), true);
+
+	if (Config::Current->GetCropAspectRatio() != tImage::tAspectRatio::Free)
+	{
+		float aspect = Config::Current->GetCropAspectRatioFloat();
+
+		// Top Left.
+		if (LineT.Pressed && LineL.Pressed)
+		{
+			float nheight = LineT.GetScreenVal() - LineB.GetScreenVal();
+			float reqwidth = nheight * aspect;
+			LineL.PressedDelta = (LineR.GetScreenVal() - reqwidth) - LineL.ScreenVal;
+
+			float nwidth = LineR.GetScreenVal() - LineL.GetScreenVal();
+			float reqheight = nwidth / aspect;
+			LineT.PressedDelta = (LineB.GetScreenVal() + reqheight) - LineT.ScreenVal;
+		}
+
+		// Top Right.
+		else if (LineT.Pressed && LineR.Pressed)
+		{
+			float nheight = LineT.GetScreenVal() - LineB.GetScreenVal();
+			float reqwidth = nheight * aspect;
+			LineR.PressedDelta = (LineL.GetScreenVal() + reqwidth) - LineR.ScreenVal;
+
+			float nwidth = LineR.GetScreenVal() - LineL.GetScreenVal();
+			float reqheight = nwidth / aspect;
+			LineT.PressedDelta = (LineB.GetScreenVal() + reqheight) - LineT.ScreenVal;
+		}
+
+		// Top Middle.
+		else if (LineT.Pressed && (mouse.y < imgext.T-1.0f))
+		{
+			float nheight = LineT.GetScreenVal() - LineB.GetScreenVal();
+			float xcent = (LineL.GetScreenVal() + LineR.GetScreenVal()) / 2.0f;
+			float reqwidth = nheight * aspect;
+			LineL.PressedDelta = (xcent - reqwidth*0.5f) - LineL.ScreenVal;
+			LineR.PressedDelta = (xcent + reqwidth*0.5f) - LineR.ScreenVal;
+
+			float nwidth = LineR.GetScreenVal() - LineL.GetScreenVal();
+			float reqheight = nwidth / aspect;
+			LineT.PressedDelta = (LineB.GetScreenVal() + reqheight) - LineT.ScreenVal;
+		}
+
+		// Bottom Right.
+		else if (LineB.Pressed && LineR.Pressed)
+		{
+			float nheight = LineT.GetScreenVal() - LineB.GetScreenVal();
+			float reqwidth = nheight * aspect;
+			LineR.PressedDelta = (LineL.GetScreenVal() + reqwidth) - LineR.ScreenVal;
+
+			float nwidth = LineR.GetScreenVal() - LineL.GetScreenVal();
+			float reqheight = nwidth / aspect;
+			LineB.PressedDelta = (LineT.GetScreenVal() - reqheight) - LineB.ScreenVal;
+		}
+
+		// Right Middle.
+		else if (LineR.Pressed)
+		{
+			float nwidth = LineR.GetScreenVal() - LineL.GetScreenVal();
+			float ycent = (LineB.GetScreenVal() + LineT.GetScreenVal()) / 2.0f;
+			float reqheight = nwidth / aspect;
+			LineT.PressedDelta = (ycent + reqheight*0.5f) - LineT.ScreenVal;
+			LineB.PressedDelta = (ycent - reqheight*0.5f) - LineB.ScreenVal;
+
+			float nheight = LineT.GetScreenVal() - LineB.GetScreenVal();
+			float reqwidth = nheight * aspect;
+			LineR.PressedDelta = (LineL.GetScreenVal() + reqwidth) - LineR.ScreenVal;
+		}
+
+		// Bottom left.
+		else if (LineB.Pressed && LineL.Pressed)
+		{
+			float nheight = LineT.GetScreenVal() - LineB.GetScreenVal();
+			float reqwidth = nheight * aspect;
+			LineL.PressedDelta = (LineR.GetScreenVal() - reqwidth) - LineL.ScreenVal;
+
+			float nwidth = LineR.GetScreenVal() - LineL.GetScreenVal();
+			float reqheight = nwidth / aspect;
+			LineB.PressedDelta = (LineT.GetScreenVal() - reqheight) - LineB.ScreenVal;
+		}
+
+		// Bottom middle.
+		else if (LineB.Pressed)
+		{
+			float nheight = LineT.GetScreenVal() - LineB.GetScreenVal();
+			float xcent = (LineL.GetScreenVal() + LineR.GetScreenVal()) / 2.0f;
+			float reqwidth = nheight * aspect;
+			LineL.PressedDelta = (xcent - reqwidth*0.5f) - LineL.ScreenVal;
+			LineR.PressedDelta = (xcent + reqwidth*0.5f) - LineR.ScreenVal;
+
+			float nwidth = LineR.GetScreenVal() - LineL.GetScreenVal();
+			float reqheight = nwidth / aspect;
+			LineB.PressedDelta = (LineT.GetScreenVal() - reqheight) - LineB.ScreenVal;
+		}
+
+		// Left middle.
+		else if (LineL.Pressed)
+		{
+			float nwidth = LineR.GetScreenVal() - LineL.GetScreenVal();
+			float ycent = (LineB.GetScreenVal() + LineT.GetScreenVal()) / 2.0f;
+			float reqheight = nwidth / aspect;
+			LineT.PressedDelta = (ycent + reqheight*0.5f) - LineT.ScreenVal;
+			LineB.PressedDelta = (ycent - reqheight*0.5f) - LineB.ScreenVal;
+
+			float nheight = LineT.GetScreenVal() - LineB.GetScreenVal();
+			float reqwidth = nheight * aspect;
+			LineL.PressedDelta = (LineR.GetScreenVal() - reqwidth * 1.0f) - LineL.ScreenVal;
+		}
+	}
 
 	bool excludeImageExtents = LineB.Pressed && LineT.Pressed && LineL.Pressed && LineR.Pressed && LineV.Pressed && LineH.Pressed;
 	ConstrainCropLines(imgext, excludeImageExtents);
@@ -292,38 +401,169 @@ void Viewer::CropWidget::ConstrainCropLines(const tVector4& imgext, bool exclude
 {
 	float scrPixelsPerImgPixelW = (imgext.R-imgext.L)/CurrImage->GetWidth();
 	float scrPixelsPerImgPixelH = (imgext.T-imgext.B)/CurrImage->GetHeight();
-
 	float cropMin = float(CropMin -1);
-	if (LineL.Pressed)
-	{
-		if (LineL.GetScreenVal() + cropMin*scrPixelsPerImgPixelW > LineR.GetScreenVal())
-			LineL.PressedDelta = LineR.GetScreenVal() - LineL.ScreenVal - cropMin*scrPixelsPerImgPixelW;
-		if (!excludeImage && (LineL.GetScreenVal() < imgext.L))
-			LineL.PressedDelta = imgext.L - LineL.ScreenVal;
-	}
 
-	if (LineR.Pressed)
-	{
-		if (LineR.GetScreenVal() - cropMin*scrPixelsPerImgPixelW < LineL.GetScreenVal())
-			LineR.PressedDelta = LineL.GetScreenVal() - LineR.ScreenVal + cropMin*scrPixelsPerImgPixelW;
-		if (!excludeImage && (LineR.GetScreenVal() > imgext.R))
-			LineR.PressedDelta = imgext.R - LineR.ScreenVal;
-	}
+	// Left.
+	if (LineL.GetScreenVal() + cropMin*scrPixelsPerImgPixelW > LineR.GetScreenVal())
+		LineL.PressedDelta = LineR.GetScreenVal() - LineL.ScreenVal - cropMin*scrPixelsPerImgPixelW;
+	if (!excludeImage && (LineL.GetScreenVal() < imgext.L))
+		LineL.PressedDelta = imgext.L - LineL.ScreenVal;
 
-	if (LineB.Pressed)
-	{
-		if (LineB.GetScreenVal() + cropMin*scrPixelsPerImgPixelH > LineT.GetScreenVal())
-			LineB.PressedDelta = LineT.GetScreenVal() - LineB.ScreenVal - cropMin*scrPixelsPerImgPixelH;
-		if (!excludeImage && (LineB.GetScreenVal() < imgext.B))
-			LineB.PressedDelta = imgext.B - LineB.ScreenVal;
-	}
+	// Right.
+	if (LineR.GetScreenVal() - cropMin*scrPixelsPerImgPixelW < LineL.GetScreenVal())
+		LineR.PressedDelta = LineL.GetScreenVal() - LineR.ScreenVal + cropMin*scrPixelsPerImgPixelW;
+	if (!excludeImage && (LineR.GetScreenVal() > imgext.R))
+		LineR.PressedDelta = imgext.R - LineR.ScreenVal;
 
-	if (LineT.Pressed)
+	// Bottom.
+	if (LineB.GetScreenVal() + cropMin*scrPixelsPerImgPixelH > LineT.GetScreenVal())
+		LineB.PressedDelta = LineT.GetScreenVal() - LineB.ScreenVal - cropMin*scrPixelsPerImgPixelH;
+	if (!excludeImage && (LineB.GetScreenVal() < imgext.B))
+		LineB.PressedDelta = imgext.B - LineB.ScreenVal;
+
+	// Top.
+	if (LineT.GetScreenVal() - cropMin*scrPixelsPerImgPixelH < LineB.GetScreenVal())
+		LineT.PressedDelta = LineB.GetScreenVal() - LineT.ScreenVal + cropMin*scrPixelsPerImgPixelH;
+	if (!excludeImage && (LineT.GetScreenVal() > imgext.T))
+		LineT.PressedDelta = imgext.T - LineT.ScreenVal;
+
+	// Aspect constrain.
+	if (Config::Current->GetCropAspectRatio() != tImage::tAspectRatio::Free)
 	{
-		if (LineT.GetScreenVal() - cropMin*scrPixelsPerImgPixelH < LineB.GetScreenVal())
-			LineT.PressedDelta = LineB.GetScreenVal() - LineT.ScreenVal + cropMin*scrPixelsPerImgPixelH;
-		if (!excludeImage && (LineT.GetScreenVal() > imgext.T))
-			LineT.PressedDelta = imgext.T - LineT.ScreenVal;
+		float aspect = Config::Current->GetCropAspectRatioFloat();
+		tAssert(aspect > 0.0f);
+
+		// Top Left.
+		if (LineT.Pressed && LineL.Pressed)
+		{
+			float sheight = LineT.GetScreenVal() - LineB.GetScreenVal();
+			float reqwidth = sheight * aspect;
+			if (LineL.GetScreenVal() < LineR.GetScreenVal()-reqwidth)
+				LineL.PressedDelta = (LineR.GetScreenVal()-reqwidth) - LineL.ScreenVal;
+			if (LineR.GetScreenVal() > LineL.GetScreenVal()+reqwidth)
+				LineR.PressedDelta = (LineL.GetScreenVal()+reqwidth) - LineR.ScreenVal;
+
+			float swidth = LineR.GetScreenVal() - LineL.GetScreenVal();
+			float reqheight = swidth / aspect;
+			if (LineT.GetScreenVal() > LineB.GetScreenVal()+reqheight)
+				LineT.PressedDelta = (LineB.GetScreenVal()+reqheight) - LineT.ScreenVal;
+		}
+
+		// Top Right.
+		else if (LineT.Pressed && LineR.Pressed)
+		{
+			float sheight = LineT.GetScreenVal() - LineB.GetScreenVal();
+			float reqwidth = sheight * aspect;
+			if (LineR.GetScreenVal() > LineL.GetScreenVal()+reqwidth)
+				LineR.PressedDelta = (LineL.GetScreenVal()+reqwidth) - LineR.ScreenVal;
+			if (LineL.GetScreenVal() < LineR.GetScreenVal()-reqwidth)
+				LineL.PressedDelta = (LineR.GetScreenVal()-reqwidth) - LineL.ScreenVal;
+
+			float swidth = LineR.GetScreenVal() - LineL.GetScreenVal();
+			float reqheight = swidth / aspect;
+			if (LineT.GetScreenVal() > LineB.GetScreenVal()+reqheight)
+				LineT.PressedDelta = (LineB.GetScreenVal()+reqheight) - LineT.ScreenVal;
+		}
+
+		// Bottom Left.
+		else if (LineB.Pressed && LineL.Pressed)
+		{
+			float sheight = LineT.GetScreenVal() - LineB.GetScreenVal();
+			float reqwidth = sheight * aspect;
+			if (LineL.GetScreenVal() < LineR.GetScreenVal()-reqwidth)
+				LineL.PressedDelta = (LineR.GetScreenVal()-reqwidth) - LineL.ScreenVal;
+			if (LineR.GetScreenVal() > LineL.GetScreenVal()+reqwidth)
+				LineR.PressedDelta = (LineL.GetScreenVal()+reqwidth) - LineR.ScreenVal;
+
+			float swidth = LineR.GetScreenVal() - LineL.GetScreenVal();
+			float reqheight = swidth / aspect;
+			if (LineB.GetScreenVal() < LineT.GetScreenVal()-reqheight)
+				LineB.PressedDelta = (LineT.GetScreenVal()-reqheight) - LineB.ScreenVal;
+		}
+
+		// Bottom Right.
+		else if (LineB.Pressed && LineR.Pressed)
+		{
+			float sheight = LineT.GetScreenVal() - LineB.GetScreenVal();
+			float reqwidth = sheight * aspect;
+			if (LineR.GetScreenVal() > LineL.GetScreenVal()+reqwidth)
+				LineR.PressedDelta = (LineL.GetScreenVal()+reqwidth) - LineR.ScreenVal;
+			if (LineL.GetScreenVal() < LineR.GetScreenVal()-reqwidth)
+				LineL.PressedDelta = (LineR.GetScreenVal()-reqwidth) - LineL.ScreenVal;
+
+			float swidth = LineR.GetScreenVal() - LineL.GetScreenVal();
+			float reqheight = swidth / aspect;
+			if (LineB.GetScreenVal() < LineT.GetScreenVal()-reqheight)
+				LineB.PressedDelta = (LineT.GetScreenVal()-reqheight) - LineB.ScreenVal;
+		}
+
+		// Left Middle.
+		else if (LineL.Pressed && !LineT.Pressed && !LineB.Pressed)
+		{
+			float swidth = LineR.GetScreenVal() - LineL.GetScreenVal();
+			float reqheight = swidth / aspect;
+			float ycent = (LineB.GetScreenVal() + LineT.GetScreenVal()) / 2.0f;
+			if (LineB.GetScreenVal() < ycent - reqheight*0.5f)
+				LineB.PressedDelta = (ycent - reqheight*0.5f) - LineB.ScreenVal;
+			if (LineT.GetScreenVal() > ycent + reqheight*0.5f)
+				LineT.PressedDelta = (ycent + reqheight*0.5f) - LineT.ScreenVal;
+
+			float sheight = LineT.GetScreenVal() - LineB.GetScreenVal();
+			float reqwidth = sheight * aspect;
+			if (LineL.GetScreenVal() < LineR.GetScreenVal()-reqwidth)
+				LineL.PressedDelta = (LineR.GetScreenVal()-reqwidth) - LineL.ScreenVal;
+		}
+
+		// Right Middle.
+		else if (LineR.Pressed && !LineT.Pressed && !LineB.Pressed)
+		{
+			float swidth = LineR.GetScreenVal() - LineL.GetScreenVal();
+			float reqheight = swidth / aspect;
+			float ycent = (LineB.GetScreenVal() + LineT.GetScreenVal()) / 2.0f;
+			if (LineB.GetScreenVal() < ycent - reqheight*0.5f)
+				LineB.PressedDelta = (ycent - reqheight*0.5f) - LineB.ScreenVal;
+			if (LineT.GetScreenVal() > ycent + reqheight*0.5f)
+				LineT.PressedDelta = (ycent + reqheight*0.5f) - LineT.ScreenVal;
+
+			float sheight = LineT.GetScreenVal() - LineB.GetScreenVal();
+			float reqwidth = sheight * aspect;
+			if (LineR.GetScreenVal() > LineL.GetScreenVal()+reqwidth)
+				LineR.PressedDelta = (LineL.GetScreenVal()+reqwidth) - LineR.ScreenVal;
+		}
+
+		// Bottom Middle.
+		else if (LineB.Pressed && !LineL.Pressed && !LineR.Pressed)
+		{
+			float sheight = LineT.GetScreenVal() - LineB.GetScreenVal();
+			float reqwidth = sheight * aspect;
+			float xcent = (LineL.GetScreenVal() + LineR.GetScreenVal()) / 2.0f;
+			if (LineR.GetScreenVal() > xcent + reqwidth*0.5f)
+				LineR.PressedDelta = (xcent + reqwidth*0.5f) - LineR.ScreenVal;
+			if (LineL.GetScreenVal() < xcent - reqwidth*0.5f)
+				LineL.PressedDelta = (xcent - reqwidth*0.5f) - LineL.ScreenVal;
+
+			float swidth = LineR.GetScreenVal() - LineL.GetScreenVal();
+			float reqheight = swidth / aspect;
+			if (LineB.GetScreenVal() < LineT.GetScreenVal()-reqheight)
+				LineB.PressedDelta = (LineT.GetScreenVal()-reqheight) - LineB.ScreenVal;
+		}
+
+		// Top Middle.
+		else if (LineT.Pressed && !LineL.Pressed && !LineR.Pressed)
+		{
+			float sheight = LineT.GetScreenVal() - LineB.GetScreenVal();
+			float reqwidth = sheight * aspect;
+			float xcent = (LineL.GetScreenVal() + LineR.GetScreenVal()) / 2.0f;
+			if (LineR.GetScreenVal() > xcent + reqwidth*0.5f)
+				LineR.PressedDelta = (xcent + reqwidth*0.5f) - LineR.ScreenVal;
+			if (LineL.GetScreenVal() < xcent - reqwidth*0.5f)
+				LineL.PressedDelta = (xcent - reqwidth*0.5f) - LineL.ScreenVal;
+
+			float swidth = LineR.GetScreenVal() - LineL.GetScreenVal();
+			float reqheight = swidth / aspect;
+			if (LineT.GetScreenVal() > LineB.GetScreenVal()+reqheight)
+				LineT.PressedDelta = (LineB.GetScreenVal()+reqheight) - LineT.ScreenVal;
+		}
 	}
 }
 
@@ -576,6 +816,9 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 				break;
 		}
 
+		//
+		// Crop info display.
+		//
 		tVector2 scrCropMin(CropGizmo.LineL.GetScreenVal(), CropGizmo.LineB.GetScreenVal());
 		tVector2 scrCropMax(CropGizmo.LineR.GetScreenVal(), CropGizmo.LineT.GetScreenVal());
 		int minX, minY;
@@ -601,6 +844,9 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		ImGui::Text("Orig Size");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("W:%d H:%d", origW, origH);
 		ImGui::Text("New Size");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("W:%d H:%d", newW, newH);
 
+		//
+		// Crop aspect ratio chooser.
+		//
 		ImGui::PushItemWidth(comboWidth);
 		ImGui::Combo
 		(
@@ -608,7 +854,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 			&Config::Current->CropAspectRatio,
 			tImage::tAspectRatioNames,
 			int(tImage::tAspectRatio::NumRatios) + 1,
-			int(tImage::tAspectRatio::NumRatios)/2
+			int(tImage::tAspectRatio::NumRatios) / 2
 		);
 		ImGui::PopItemWidth();
 
@@ -627,6 +873,9 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 			ShowHelpMark("Aspect ratio for crop area.\nFree means aspect is unlocked.\nUser means enter the aspect ratio manually.\nFor the print presets the L means Landscape.");
 		}
 
+		//
+		// Shortcuts.
+		//
 		ImGui::SetCursorPosX(shortcutTxtLeft);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 7.0f);
 		ImGui::Text("View Shortcuts");
@@ -731,7 +980,9 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		if (Request_PanSnap != Anchor::Invalid)
 			CropGizmo.LastSelectedHandle = Request_PanSnap;
 
+		//
 		// Buttons.
+		//
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 7.0f);
 		if (ImGui::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 			CropMode = false;
