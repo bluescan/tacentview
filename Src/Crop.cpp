@@ -137,7 +137,36 @@ void Viewer::CropWidget::Update(const tVector4& imgext, const tVector2& mouse, c
 	TestSetHovered(LineV, mouse, tVector2(b, t), false);
 	TestSetHovered(LineH, mouse, tVector2(l, r), true);
 
-	if (Config::Current->GetCropAspectRatio() != tImage::tAspectRatio::Free)
+	bool centerPressed = LineB.Pressed && LineT.Pressed && LineL.Pressed && LineR.Pressed && LineV.Pressed && LineH.Pressed;
+	bool aspectLocked = (Config::Current->GetCropAspectRatio() != tImage::tAspectRatio::Free);
+
+	if (centerPressed && aspectLocked)
+	{
+		float width = LineR.GetScreenVal() - LineL.GetScreenVal();
+		if (LineL.GetScreenVal() < imgext.L)
+		{
+			LineL.PressedDelta = imgext.L - LineL.ScreenVal;
+			LineR.PressedDelta = (imgext.L + width) - LineR.ScreenVal;
+		}
+		if (LineR.GetScreenVal() > imgext.R)
+		{
+			LineR.PressedDelta = imgext.R - LineR.ScreenVal;
+			LineL.PressedDelta = (imgext.R - width) - LineL.ScreenVal;
+		}
+
+		float height = LineT.GetScreenVal() - LineB.GetScreenVal();
+		if (LineB.GetScreenVal() < imgext.B)
+		{
+			LineB.PressedDelta = imgext.B - LineB.ScreenVal;
+			LineT.PressedDelta = (imgext.B + height) - LineT.ScreenVal;
+		}
+		if (LineT.GetScreenVal() > imgext.T)
+		{
+			LineT.PressedDelta = imgext.T - LineT.ScreenVal;
+			LineB.PressedDelta = (imgext.T - height) - LineB.ScreenVal;
+		}
+	}
+	else if (aspectLocked)
 	{
 		float aspect = Config::Current->GetCropAspectRatioFloat();
 
@@ -246,9 +275,7 @@ void Viewer::CropWidget::Update(const tVector4& imgext, const tVector2& mouse, c
 		}
 	}
 
-	bool excludeImageExtents = LineB.Pressed && LineT.Pressed && LineL.Pressed && LineR.Pressed && LineV.Pressed && LineH.Pressed;
-	ConstrainCropLines(imgext, excludeImageExtents);
-//	ConstrainCropLines(imgext, false);
+	ConstrainCropLines(imgext, centerPressed);
 
 	if (LineL.Pressed || LineR.Pressed || LineT.Pressed || LineB.Pressed)
 	{
@@ -280,69 +307,85 @@ void Viewer::CropWidget::MoveDirection(Viewer::CursorMove moveDir, const tMath::
 	int top = LineT.ImageVal;
 	int bottom = LineB.ImageVal;
 	Anchor hnd = LastSelectedHandle;
+	bool aspectLocked = (Config::Current->GetCropAspectRatio() != tImage::tAspectRatio::Free);
 
-	if (hnd == Anchor::MM)
+	if (aspectLocked)
 	{
 		switch (moveDir)
 		{
 			case CursorMove_Left:
-				if (left > 0)
-					left--;
-				if	(right >= left+CropMin)
-					right--;
+				if (left > 0)					{ left--; right--; }
 				break;
 
 			case CursorMove_Right:
-				if	(right < imgW-1)
-					right++;
-				if (left <= right-CropMin)
-					left++;
+				if (right < imgW-1)				{ right++; left++; }
 				break;
 
 			case CursorMove_Up:
-				if (top < imgH-1)
-					top++;
-				if	(bottom <= top-CropMin)
-					bottom++;
+				if (top < imgH-1)				{ top++; bottom++; }
 				break;
 
 			case CursorMove_Down:
-				if	(bottom > 0)
-					bottom--;
-				if (top >= bottom+CropMin)
-					top--;
+				if (bottom > 0)					{ bottom--; top--; }
 				break;
 		}
 	}
-	else
+
+	else if (hnd == Anchor::MM)
 	{
 		switch (moveDir)
 		{
 			case CursorMove_Left:
-				if 		(((hnd == Anchor::TL) || (hnd == Anchor::ML) || (hnd == Anchor::BL)) && (left > 0))
+				if (left > 0)					left--;
+				if (right >= left+CropMin)		right--;
+				break;
+
+			case CursorMove_Right:
+				if (right < imgW-1)				right++;
+				if (left <= right-CropMin)		left++;
+				break;
+
+			case CursorMove_Up:
+				if (top < imgH-1)				top++;
+				if (bottom <= top-CropMin)		bottom++;
+				break;
+
+			case CursorMove_Down:
+				if (bottom > 0)					bottom--;
+				if (top >= bottom+CropMin)		top--;
+				break;
+		}
+	}
+
+	else	// Not MM anchor.
+	{
+		switch (moveDir)
+		{
+			case CursorMove_Left:
+				if (((hnd == Anchor::TL) || (hnd == Anchor::ML) || (hnd == Anchor::BL)) && (left > 0))
 					left--;
-				else if	(((hnd == Anchor::TR) || (hnd == Anchor::MR) || (hnd == Anchor::BR)) && (right >= left+CropMin))
+				if (((hnd == Anchor::TR) || (hnd == Anchor::MR) || (hnd == Anchor::BR)) && (right >= left+CropMin))
 					right--;
 				break;
 
 			case CursorMove_Right:
-				if		(((hnd == Anchor::TL) || (hnd == Anchor::ML) || (hnd == Anchor::BL)) && (left <= right-CropMin))
+				if (((hnd == Anchor::TL) || (hnd == Anchor::ML) || (hnd == Anchor::BL)) && (left <= right-CropMin))
 					left++;
-				else if	(((hnd == Anchor::TR) || (hnd == Anchor::MR) || (hnd == Anchor::BR)) && (right < imgW-1))
+				if (((hnd == Anchor::TR) || (hnd == Anchor::MR) || (hnd == Anchor::BR)) && (right < imgW-1))
 					right++;
 				break;
 
 			case CursorMove_Up:
-				if		(((hnd == Anchor::TL) || (hnd == Anchor::TM) || (hnd == Anchor::TR)) && (top < imgH-1))
+				if (((hnd == Anchor::TL) || (hnd == Anchor::TM) || (hnd == Anchor::TR)) && (top < imgH-1))
 					top++;
-				else if	(((hnd == Anchor::BL) || (hnd == Anchor::BM) || (hnd == Anchor::BR)) && (bottom <= top-CropMin))
+				if (((hnd == Anchor::BL) || (hnd == Anchor::BM) || (hnd == Anchor::BR)) && (bottom <= top-CropMin))
 					bottom++;
 				break;
 
 			case CursorMove_Down:
-				if		(((hnd == Anchor::TL) || (hnd == Anchor::TM) || (hnd == Anchor::TR)) && (top >= bottom+CropMin))
+				if (((hnd == Anchor::TL) || (hnd == Anchor::TM) || (hnd == Anchor::TR)) && (top >= bottom+CropMin))
 					top--;
-				else if	(((hnd == Anchor::BL) || (hnd == Anchor::BM) || (hnd == Anchor::BR)) && (bottom > 0))
+				if (((hnd == Anchor::BL) || (hnd == Anchor::BM) || (hnd == Anchor::BR)) && (bottom > 0))
 					bottom--;
 				break;
 		}
@@ -398,8 +441,10 @@ void Viewer::CropWidget::ConstrainLines(int l, int r, int t, int b, const tMath:
 }
 
 
-void Viewer::CropWidget::ConstrainCropLines(const tVector4& imgext, bool excludeImage)
+void Viewer::CropWidget::ConstrainCropLines(const tVector4& imgext, bool centerPressed)
 {
+	bool constrainImg = !centerPressed;
+
 	float scrPixelsPerImgPixelW = (imgext.R-imgext.L)/CurrImage->GetWidth();
 	float scrPixelsPerImgPixelH = (imgext.T-imgext.B)/CurrImage->GetHeight();
 	float cropMin = float(CropMin -1);
@@ -407,25 +452,25 @@ void Viewer::CropWidget::ConstrainCropLines(const tVector4& imgext, bool exclude
 	// Left.
 	if (LineL.GetScreenVal() + cropMin*scrPixelsPerImgPixelW > LineR.GetScreenVal())
 		LineL.PressedDelta = LineR.GetScreenVal() - LineL.ScreenVal - cropMin*scrPixelsPerImgPixelW;
-	if (!excludeImage && (LineL.GetScreenVal() < imgext.L))
+	if (constrainImg && (LineL.GetScreenVal() < imgext.L))
 		LineL.PressedDelta = imgext.L - LineL.ScreenVal;
 
 	// Right.
 	if (LineR.GetScreenVal() - cropMin*scrPixelsPerImgPixelW < LineL.GetScreenVal())
 		LineR.PressedDelta = LineL.GetScreenVal() - LineR.ScreenVal + cropMin*scrPixelsPerImgPixelW;
-	if (!excludeImage && (LineR.GetScreenVal() > imgext.R))
+	if (constrainImg && (LineR.GetScreenVal() > imgext.R))
 		LineR.PressedDelta = imgext.R - LineR.ScreenVal;
 
 	// Bottom.
 	if (LineB.GetScreenVal() + cropMin*scrPixelsPerImgPixelH > LineT.GetScreenVal())
 		LineB.PressedDelta = LineT.GetScreenVal() - LineB.ScreenVal - cropMin*scrPixelsPerImgPixelH;
-	if (!excludeImage && (LineB.GetScreenVal() < imgext.B))
+	if (constrainImg && (LineB.GetScreenVal() < imgext.B))
 		LineB.PressedDelta = imgext.B - LineB.ScreenVal;
 
 	// Top.
 	if (LineT.GetScreenVal() - cropMin*scrPixelsPerImgPixelH < LineB.GetScreenVal())
 		LineT.PressedDelta = LineB.GetScreenVal() - LineT.ScreenVal + cropMin*scrPixelsPerImgPixelH;
-	if (!excludeImage && (LineT.GetScreenVal() > imgext.T))
+	if (constrainImg && (LineT.GetScreenVal() > imgext.T))
 		LineT.PressedDelta = imgext.T - LineT.ScreenVal;
 
 	// Aspect constrain.

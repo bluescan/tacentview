@@ -74,7 +74,7 @@ private:
 
 	void TestSetHovered(CropLine&, const tMath::tVector2& mouse, const tMath::tVector2& ends, bool horizontal);
 	bool MouseButton(CropLine&, bool down, float mouse, bool force = false);
-	void ConstrainCropLines(const tMath::tVector4& imgext, bool excludeImageExtents);
+	void ConstrainCropLines(const tMath::tVector4& imgext, bool centerPressed);
 };
 
 
