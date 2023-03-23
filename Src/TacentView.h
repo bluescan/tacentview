@@ -82,6 +82,8 @@ namespace Viewer
 
 	extern bool CropMode;
 	extern Anchor Request_PanSnap;
+	extern bool Request_CropLineConstrain;
+
 	extern bool DeleteAllCacheFilesOnExit;
 	extern bool PendingTransparentWorkArea;
 	extern bool DrawChannel_AsIntensity;

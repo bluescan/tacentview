@@ -420,6 +420,7 @@ void Viewer::CropWidget::SetLines(int left, int right, int top, int bottom, cons
 
 void Viewer::CropWidget::ConstrainLines(int l, int r, int t, int b, const tMath::tVector4& imgext, const tMath::tVector2& uvoffset)
 {
+	// This function gets called when the image changes.
 	tVector2 min; ConvertImagePosToScreenPos(min, l, b, imgext, uvoffset, true);
 	tVector2 max; ConvertImagePosToScreenPos(max, r, t, imgext, uvoffset, true);
 	if (LineL.ImageVal > l)
@@ -436,6 +437,38 @@ void Viewer::CropWidget::ConstrainLines(int l, int r, int t, int b, const tMath:
 	}
 	if (LineB.ImageVal > b)
 	{
+		LineB.ImageVal = b; LineB.ScreenVal = min.y; LineB.PressedDelta = 0.0f;
+	}
+
+	// If we are in aspect-locked mode we need to 
+	bool aspectLocked = (Config::Current->GetCropAspectRatio() != tImage::tAspectRatio::Free);
+	if (aspectLocked)
+	{
+		float cropAspect = Config::Current->GetCropAspectRatioFloat();
+		float width = float(r-l);
+		float height = float(t-b);
+		float imgAspect = width/height;
+
+		if (cropAspect > imgAspect)
+		{
+			// Width goes to extents.
+			float cropHeight = width / cropAspect;
+			t = int(height/2.0f + cropHeight/2.0f);
+			b = int(height/2.0f - cropHeight/2.0f);
+		}
+		else
+		{
+			// Height goes to extents.
+			float cropWidth = height * cropAspect;
+			r = int(width/2.0f + cropWidth/2.0f);
+			l = int(width/2.0f - cropWidth/2.0f);
+		}
+
+		ConvertImagePosToScreenPos(min, l, b, imgext, uvoffset, true);
+		ConvertImagePosToScreenPos(max, r, t, imgext, uvoffset, true);
+		LineL.ImageVal = l; LineL.ScreenVal = min.x; LineL.PressedDelta = 0.0f;
+		LineR.ImageVal = r; LineR.ScreenVal = max.x; LineR.PressedDelta = 0.0f;
+		LineT.ImageVal = t; LineT.ScreenVal = max.y; LineT.PressedDelta = 0.0f;
 		LineB.ImageVal = b; LineB.ScreenVal = min.y; LineB.PressedDelta = 0.0f;
 	}
 }
@@ -894,22 +927,27 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		// Crop aspect ratio chooser.
 		//
 		ImGui::PushItemWidth(comboWidth);
-		ImGui::Combo
+		if (ImGui::Combo
 		(
 			"Aspect",
 			&Config::Current->CropAspectRatio,
 			tImage::tAspectRatioNames,
 			int(tImage::tAspectRatio::NumRatios) + 1,
 			int(tImage::tAspectRatio::NumRatios) / 2
-		);
+		))
+		{
+			Viewer::Request_CropLineConstrain = true;
+		}
 		ImGui::PopItemWidth();
 
 		if (Config::Current->GetCropAspectRatio() == tImage::tAspectRatio::User)
 		{
 			ImGui::PushItemWidth(26.0f);
-			ImGui::InputInt("##Num", &Config::Current->CropAspectUserNum, 0, 0);
+			if (ImGui::InputInt("##Num", &Config::Current->CropAspectUserNum, 0, 0))
+				Viewer::Request_CropLineConstrain = true;
 			ImGui::SameLine(); ImGui::Text(":"); ImGui::SameLine();
-			ImGui::InputInt("##Den", &Config::Current->CropAspectUserDen, 0, 0);
+			if (ImGui::InputInt("##Den", &Config::Current->CropAspectUserDen, 0, 0))
+				Viewer::Request_CropLineConstrain = true;
 			ImGui::PopItemWidth();
 			tiClamp(Config::Current->CropAspectUserNum, 1, 99); tiClamp(Config::Current->CropAspectUserDen, 1, 99);
 		}
@@ -1040,6 +1078,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 			// ResetPan();
 			// CurrZoomMode = Config::ProfileSettings::ZoomMode::Fit;
 			CropGizmo.SetLines(0, CurrImage->GetWidth()-1, CurrImage->GetHeight()-1, 0, lrtb, uvoffset);
+			Viewer::Request_CropLineConstrain = true;
 		}
 
 		ImGui::SameLine();
