@@ -527,7 +527,7 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 			tPicture* picture = GetCurrentPic();
 			if (!picture || !picture->IsValid())
 				return false;
-			tImageTGA tga(*picture, true);
+			tImageTGA tga(*picture, false);
 			tImageTGA::SaveParams params(SaveParamsTGA);
 			if (useConfigSaveParams)
 				params.Compression = Config::Current->SaveFileTargaRLE ? tImageTGA::tCompression::RLE : tImageTGA::tCompression::None;
