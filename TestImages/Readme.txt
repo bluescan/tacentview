@@ -92,7 +92,9 @@ my photos or generated gradients and are ISC.
 
 -------------------------------------------------------------------------------
 
-The TacentTestPattern.pkm file was generated from https://sisik.eu/etc
-The image itself is under ISC and CC0 as stated above.
+The TacentTestPattern image is under ISC and CC0 as stated above and is used
+in the pkm files. All pmk files were generated using ETCPACK.EXE. This is the
+official Ericsson tool for generating pkm files. The other pkm files are photos
+from me and are ISC.
 
 -------------------------------------------------------------------------------

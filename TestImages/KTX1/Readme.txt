@@ -14,3 +14,13 @@ Note: These Compressonator ktx test files do not contain mipmaps.
 Note: What Compressonator calls ARGB is actually RGBA. This goes for the UNORM 8888 format as well as the 16F and 32F formats.
 
 Note: Compressonator does not read RLE compressed TGA files properly. Non-run-length-encoded TGA files (24 and 32 bit)
+
+The HDR ASTC test images were generated from Desk.exr using the official ARM astcenc-sse2.exe. This tool is the only one that generated compressed data outside the 0.0 to 1.0 range. NVTT, which can open EXR files, did not generate ASTC blocks with values above 1.0. It forced LDR. This tool writes dot astc or ktx V1 files only (not ktx2).
+
+Example command-line:
+astcenc-sse2.exe -ch Desk.exr ASTC4x4_HDRRGBA.ktx 4x4 -thorough
+The -ch means compress (c) and HDR (h). A lower-case h means RGB are HDR but not A. A capital H means
+all 4 channels (RGBA) are HDR.
+
+The ETC1, ETC2, and EAC encoded ktx(V1) files were generated using etcpack.exe and the bat file in the
+PKM folder.
