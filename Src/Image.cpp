@@ -488,6 +488,31 @@ bool Image::Load()
 			success = true;
 			break;
 		}
+
+		case tSystem::tFileType::PKM:
+		{
+			tImagePKM pkm;
+			bool ok = pkm.Load(Filename, LoadParams_PKM);
+			if (!ok)
+				break;
+
+			int width = pkm.GetWidth();
+			int height = pkm.GetHeight();
+			Info.SrcPixelFormat = pkm.GetPixelFormatSrc();
+
+			tLayer* layer = pkm.StealLayer();
+			tAssert(layer && (layer->PixelFormat == tPixelFormat::R8G8B8A8));
+			tPixel* pixels = (tPixel*)layer->StealData();
+
+			// Give the pixels to the tPicture.
+			tPicture* picture = new tPicture(width, height, pixels, false);
+			Pictures.Append(picture);
+
+			// We still delete the layer even though its data has been stolen.
+			delete layer;
+			success = true;
+			break;
+		}
 	}
 
 	if (!success)

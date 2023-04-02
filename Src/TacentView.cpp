@@ -84,6 +84,7 @@ namespace Viewer
 		tFileType::KTX,
 		tFileType::KTX2,
 		tFileType::ASTC,
+		tFileType::PKM,
 		tFileType::EXR,
 		tFileType::HDR,
 		tFileType::APNG,
@@ -103,6 +104,16 @@ namespace Viewer
 		tFileType::QOI,
 		tFileType::APNG,
 		tFileType::BMP,
+		tFileType::TIFF,
+		tFileType::EOL
+	);
+
+	tFileTypes FileTypes_MultiFrame
+	(
+		tFileType::GIF,
+		tFileType::WEBP,
+		tFileType::APNG,
+		tFileType::PNG,
 		tFileType::TIFF,
 		tFileType::EOL
 	);
@@ -615,6 +626,7 @@ void Viewer::LoadCurrImage()
 		imgJustLoaded = CurrImage->Load();
 
 	AutoPropertyWindow();
+	SetWindowTitle();
 	if (!CurrImage->IsLoaded())
 	{
 		tPrintf("Warning: Failed to load [%s]\n", tGetFileName(CurrImage->Filename).Chr());
@@ -623,15 +635,9 @@ void Viewer::LoadCurrImage()
 
 	if
 	(
-		// @todo We have a list of animated/multi-frame filetypes we should use here.
-		Config::Current->AutoPlayAnimatedImages && (CurrImage->GetNumFrames() > 1) &&
-		(
-			(CurrImage->Filetype == tFileType::GIF) ||
-			(CurrImage->Filetype == tFileType::WEBP) ||
-			(CurrImage->Filetype == tFileType::APNG) ||
-			(CurrImage->Filetype == tFileType::PNG) ||		// PNGs that have APNGs inside (more than one frame), also autoplay.
-			(CurrImage->Filetype == tFileType::TIFF)
-		)
+		Config::Current->AutoPlayAnimatedImages &&
+		(CurrImage->GetNumFrames() > 1) &&
+		FileTypes_MultiFrame.Contains(CurrImage->Filetype)
 	)
 	{
 		CurrImage->FramePlayLooping = true;
@@ -639,7 +645,6 @@ void Viewer::LoadCurrImage()
 		CurrImage->Play();
 	}
 
-	SetWindowTitle();
 	ResetPan();
 	Request_CropLineConstrain = true;
 

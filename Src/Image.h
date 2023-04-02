@@ -35,6 +35,7 @@
 #include <Image/tImageTIFF.h>
 #include <Image/tImageWEBP.h>
 #include <Image/tImageASTC.h>
+#include <Image/tImagePKM.h>
 #include <Image/tImageDDS.h>
 #include <Image/tImageEXR.h>
 #include <Image/tImageHDR.h>
@@ -56,11 +57,12 @@ public:
 	virtual ~Image();
 
 	void ResetLoadParams();
-	tImage::tImageDDS::LoadParams LoadParams_DDS;
-	tImage::tImageKTX::LoadParams LoadParams_KTX;
+	tImage::tImageDDS::LoadParams  LoadParams_DDS;
+	tImage::tImageKTX::LoadParams  LoadParams_KTX;
 	tImage::tImageASTC::LoadParams LoadParams_ASTC;
-	tImage::tImageEXR::LoadParams LoadParams_EXR;
-	tImage::tImageHDR::LoadParams LoadParams_HDR;
+	tImage::tImagePKM::LoadParams  LoadParams_PKM;
+	tImage::tImageEXR::LoadParams  LoadParams_EXR;
+	tImage::tImageHDR::LoadParams  LoadParams_HDR;
 
 	void Play();
 	void Stop();
