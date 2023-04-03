@@ -108,6 +108,7 @@ namespace Viewer
 		tFileType::EOL
 	);
 
+	// All multiframe/animated types that are loadable.
 	tFileTypes FileTypes_MultiFrame
 	(
 		tFileType::GIF,
