@@ -344,6 +344,7 @@ inline bool Image::TypeSupportsProperties() const
 		(Filetype == tSystem::tFileType::KTX) ||
 		(Filetype == tSystem::tFileType::KTX2) ||
 		(Filetype == tSystem::tFileType::ASTC) ||
+		(Filetype == tSystem::tFileType::PKM) ||
 		(Filetype == tSystem::tFileType::WEBP)
 	);
 }

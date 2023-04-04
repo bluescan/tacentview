@@ -2,7 +2,7 @@
 //
 // Image properties display and editor window.
 //
-// Copyright (c) 2019-2022 Tristan Grimmer.
+// Copyright (c) 2019-2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -518,6 +518,82 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			{
 				CurrImage->ResetLoadParams();
 				CurrImage->FrameNum = 0;
+				reloadChanges = true;
+			}
+
+			if (reloadChanges)
+			{
+				CurrImage->Unload();
+				CurrImage->Load();
+			}
+
+			ImGui::End();
+			return;
+		}
+
+		case tSystem::tFileType::PKM:
+		{
+			bool reloadChanges = false;
+			tString texTypeName = "Texture";
+
+			// Gamma correction. First read current setting and put it in an int.
+			int gammaMode = 0;
+			if (CurrImage->LoadParams_PKM.Flags & tImagePKM::LoadFlag_GammaCompression)
+				gammaMode = 1;
+			if (CurrImage->LoadParams_PKM.Flags & tImagePKM::LoadFlag_SRGBCompression)
+				gammaMode = 2;
+			if (CurrImage->LoadParams_PKM.Flags & tImagePKM::LoadFlag_AutoGamma)
+				gammaMode = 3;
+
+			const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB", "Auto" };
+			ImGui::PushItemWidth(itemWidth);
+			if (ImGui::Combo("Gamma Correct", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
+			{
+				CurrImage->LoadParams_PKM.Flags &= ~(tImagePKM::LoadFlag_GammaCompression | tImagePKM::LoadFlag_SRGBCompression | tImagePKM::LoadFlag_AutoGamma);
+				if (gammaMode == 1) CurrImage->LoadParams_PKM.Flags |= tImagePKM::LoadFlag_GammaCompression;
+				if (gammaMode == 2) CurrImage->LoadParams_PKM.Flags |= tImagePKM::LoadFlag_SRGBCompression;
+				if (gammaMode == 3) CurrImage->LoadParams_PKM.Flags |= tImagePKM::LoadFlag_AutoGamma;
+				reloadChanges = true;
+			}
+			ImGui::PopItemWidth();
+			ImGui::SameLine();
+			ShowHelpMark
+			(
+				"Gamma Correction\n"
+				"Pixel values used for PKM images are often in linear space. Before being displayed\n"
+				"on a screen with non-linear response they should be 'corrected' to gamma or sRGB-space (brightened).\n"
+				"\n"
+				"Use 'None' if you know the source image data is already in either gamma or sRGB-space.\n\n"
+				"Use 'Gamma' if you want control over the gamma exponent being used to do the correction. 2.2 is standard.\n\n"
+				"Use 'sRGB' if you want to convert to sRGB-space. This more accurately represents a display's response and\n"
+				"is close to a 2.2 gamma but with an extra linear region, a non-unity amplitude, and a slightly larger gamma."
+				"Use 'Auto' if you want the viewer to try to detect whether to apply sRGB compression or not.\n",
+				false
+			);
+
+			if (gammaMode == 1)
+			{
+				ImGui::PushItemWidth(itemWidth);
+				if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_PKM.Gamma, 0.01f, 0.1f, "%.3f"))
+					reloadChanges = true;
+				ImGui::PopItemWidth();
+				ImGui::SameLine();
+				ShowHelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
+				tMath::tiClamp(CurrImage->LoadParams_PKM.Gamma, 0.5f, 4.0f);
+			}
+
+			if (tIsLuminanceFormat(CurrImage->Info.SrcPixelFormat))
+			{
+				if (ImGui::CheckboxFlags("Spread Luminance", &CurrImage->LoadParams_PKM.Flags, tImagePKM::LoadFlag_SpreadLuminance))
+					reloadChanges = true;
+				ImGui::SameLine();
+				ShowHelpMark("Luminance-only pkm files are represented in this viewer as having a red channel only,\nIf spread is true, the channel is spread to all RGB channels to create a grey-scale image.");
+			}
+
+			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 110.0f);
+			if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
+			{
+				CurrImage->ResetLoadParams();
 				reloadChanges = true;
 			}
 

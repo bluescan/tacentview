@@ -120,6 +120,9 @@ void Image::ResetLoadParams()
 	LoadParams_ASTC.Reset();
 	LoadParams_ASTC.Gamma = Viewer::Config::Current->MonitorGamma;
 
+	LoadParams_PKM.Reset();
+	LoadParams_PKM.Gamma = Viewer::Config::Current->MonitorGamma;
+
 	LoadParams_EXR.Reset();
 	LoadParams_EXR.Gamma = Viewer::Config::Current->MonitorGamma;
 
