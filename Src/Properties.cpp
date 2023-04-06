@@ -178,6 +178,13 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			anyUIDisplayed |= DoAltCubemapDisplay(texTypeName);
 			anyUIDisplayed |= DoChooseDisplayImage(texTypeName, itemWidth);
 
+			if (tIsETCFormat(CurrImage->Info.SrcPixelFormat))
+			{
+				if (ImGui::CheckboxFlags("SwizzleBGRToRGB", &CurrImage->LoadParams_DDS.Flags, tImageDDS::LoadFlag_SwizzleBGR2RGB))
+					reloadChanges = true;
+				anyUIDisplayed = true;
+			}
+
 			// If we're here show options when have 1 or more frames.
 			bool altEnabled = CurrImage->IsAltPictureEnabled();
 			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || tIsASTCFormat(CurrImage->Info.SrcPixelFormat))
