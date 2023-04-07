@@ -170,7 +170,13 @@ public:
 	void SetAllPixels(const tColouri& colour, comp_t channels = tCompBit_RGBA);
 
 	// Spreads the specified single channel to all RGB channels.
-	void Spread(comp_t channel = tCompBit_R);
+	void Spread(tComp channel = tComp::R);
+
+	// Swizzle colour channels. You specify the RGBA destination channels in that order. For example, to swap R and B
+	// channels you would call Swizzle(B,G,R,A). You can also use tComp::Zero and tComp::Full to set the channel to zero
+	// or full values. The default swizzle is RGBA which does nothing. If tComp::Auto is set for any channel, it just
+	// uses the default for that channel.
+	void Swizzle(tComp = tComp::R, tComp = tComp::G, tComp = tComp::B, tComp = tComp::A);
 
 	// Computes RGB intensity and sets specified channels to that value. Any combination of RGBA allowed.
 	void Intensity(comp_t channels = tCompBit_RGB);

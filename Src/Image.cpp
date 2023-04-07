@@ -1388,20 +1388,12 @@ void Image::SetAllPixels(const tColouri& colour, comp_t channels)
 }
 
 
-void Image::Spread(comp_t channel)
+void Image::Spread(tComp channel)
 {
-	int setBit = tMath::tFindFirstSetBit(channel);
-	if (setBit == -1)
+	if (!tIsColourComponent(channel))
 		return;
-	channel = 1 << setBit;	
 
-	tString channelsStr;
-	if (channel & tCompBit_R) channelsStr += "R";
-	if (channel & tCompBit_G) channelsStr += "G";
-	if (channel & tCompBit_B) channelsStr += "B";
-	if (channel & tCompBit_A) channelsStr += "A";
-
-	tString desc; tsPrintf(desc, "Spread %s", channelsStr.Chr());
+	tString desc; tsPrintf(desc, "Spread %s", tGetComponentName(channel));
 	PushUndo(desc);
 
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
@@ -1411,7 +1403,28 @@ void Image::Spread(comp_t channel)
 }
 
 
-	// Computes RGB intensity and sets specified channels to that value. Any combination of RGBA allowed.
+void Image::Swizzle(tComp R, tComp G, tComp B, tComp A)
+{
+	if (tIsMatrixComponent(R) || tIsMatrixComponent(G) || tIsMatrixComponent(B) || tIsMatrixComponent(A))
+		return;
+
+	tString channelsStr =
+		tString(tGetComponentName(R)) +
+		tString(tGetComponentName(G)) +
+		tString(tGetComponentName(B)) +
+		tString(tGetComponentName(A));
+
+	tString desc; tsPrintf(desc, "Swizzle %s", channelsStr.Chr());
+	PushUndo(desc);
+
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->Swizzle(R, G, B, A);
+
+	Dirty = true;
+}
+
+
+// Computes RGB intensity and sets specified channels to that value. Any combination of RGBA allowed.
 void Image::Intensity(comp_t channels)
 {
 	tString channelsStr;

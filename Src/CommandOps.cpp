@@ -1489,7 +1489,7 @@ bool Command::OperationChannel::Apply(Viewer::Image& image)
 
 		case ChanMode::Spread:
 			tPrintfFull("Channel | Spread[channel:%s]\n", channelsStr.Chr());
-			image.Spread(Channels);
+			image.Spread(tComp(tMath::tFindFirstSetBit(Channels)));
 			break;
 
 		case ChanMode::Intensity:
