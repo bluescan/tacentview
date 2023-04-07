@@ -374,6 +374,7 @@ void Command::PopulateOperations()
 			case tHash::tHashCT("brightness"):	Operations.Append(new OperationBrightness(args));	break;
 			case tHash::tHashCT("quantize"):	Operations.Append(new OperationQuantize(args));		break;
 			case tHash::tHashCT("channel"):		Operations.Append(new OperationChannel(args));		break;
+			case tHash::tHashCT("swizzle"):		Operations.Append(new OperationSwizzle(args));		break;
 		}
 	}
 }
@@ -1068,6 +1069,36 @@ R"OPERATIONS147(
         significant dithering.
 
 --op channel[mode*,chan*,col*]
+  Channel operations affect components of all pixels. The supported modes
+  support setting channels, blending using alpha, spreading a channel, and
+  writing intensity to channels.
+  mode: The channel operation mode. One of:
+        set:    Sets specified channels to corresponding component in the
+                supplied colour value.
+        blend*: Blends background colour (bg) into the specified RGB channels
+                by using the pixel-alpha to modulate. The new pixel colour is
+                alpha*src_comp + (1-alpha)*bg_comp. This applies to any
+                combination of input RGB channels. The final alpha is left
+                unmodified if A not specified in channels. If A is specified
+                the alpha is set to the A component of the supplied bg colour.
+        spread: Spreads a specific single channel into the RGB chanbels.
+        intens: Computes pixel intensity and sets any combination of RGBA
+                channels to that intensity.
+  chan: Colour channels. For set and intensity modes the default is RGB*. For
+        blend mode default is RGBA*. For spread mode the single-channel default
+        is R. Channels are specified with any combination of the letters RGBA
+        or rgba.
+  col:  Colour. Only used if mode is blend or set. Either specify with a hex in
+        form #RRGGBBAA or use one of the predefined colours: black*, white,
+        grey, red, green, blue, yellow, cyan, magenta, or trans. You can also
+        specify a single integer that gets used for all RGBA components. The
+        default value is black* full alpha.
+  As an example, the command --op channel will create an image with
+  pre-multiplied alphas. The blended in background will be black and the alpha
+  will be 255 for all pixels.
+
+--op swizzle[rgba*]
+  TODO WRITE THIS
   Channel operations affect components of all pixels. The supported modes
   support setting channels, blending using alpha, spreading a channel, and
   writing intensity to channels.

@@ -1500,3 +1500,14 @@ bool Command::OperationChannel::Apply(Viewer::Image& image)
 
 	return true;
 }
+
+
+Command::OperationSwizzle::OperationSwizzle(const tString& argsStr)
+{
+	tList<tStringItem> args;
+	int numArgs = tStd::tExplode(args, argsStr, ',');
+	tStringItem* currArg = nullptr;
+
+	// WIP
+	// Valid = true;
+}

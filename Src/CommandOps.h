@@ -202,10 +202,23 @@ struct OperationChannel : public Operation
 		Intensity
 	};
 	ChanMode Mode										= ChanMode::Blend;				// Optional.
-	comp_t Channels										= tCompBit_RGBA;					// Optional.
+	comp_t Channels										= tCompBit_RGBA;				// Optional.
 	tColour4i Colour									= tColour4i::black;				// Optional.
 
 	bool Apply(Viewer::Image&) override;
+};
+
+
+struct OperationSwizzle : public Operation
+{
+	OperationSwizzle(const tString& args);
+
+	tComp SwizzleR										= tComp::R;						// Optional.
+	tComp SwizzleG										= tComp::G;						// Optional.
+	tComp SwizzleB										= tComp::B;						// Optional.
+	tComp SwizzleA										= tComp::A;						// Optional.
+
+	bool Apply(Viewer::Image&) override { /* WIP */ return false; }
 };
 
 
