@@ -1336,7 +1336,7 @@ void Image::Crop(int newWidth, int newHeight, tPicture::Anchor anchor, const tCo
 }
 
 
-void Image::Crop(const tColouri& borderColour, tcomps channels)
+void Image::Crop(const tColouri& borderColour, comp_t channels)
 {
 	PushUndo("Crop Borders");
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
@@ -1376,7 +1376,7 @@ void Image::SetPixelColour(int x, int y, const tColouri& colour, bool pushUndo, 
 }
 
 
-void Image::SetAllPixels(const tColouri& colour, tcomps channels)
+void Image::SetAllPixels(const tColouri& colour, comp_t channels)
 {
 	tString desc; tsPrintf(desc, "Set Pixels (%d,%d,%d,%d)", colour.R, colour.G, colour.B, colour.A);
 	PushUndo(desc);
@@ -1388,7 +1388,7 @@ void Image::SetAllPixels(const tColouri& colour, tcomps channels)
 }
 
 
-void Image::Spread(tcomps channel)
+void Image::Spread(comp_t channel)
 {
 	int setBit = tMath::tFindFirstSetBit(channel);
 	if (setBit == -1)
@@ -1396,10 +1396,10 @@ void Image::Spread(tcomps channel)
 	channel = 1 << setBit;	
 
 	tString channelsStr;
-	if (channel & tComp_R) channelsStr += "R";
-	if (channel & tComp_G) channelsStr += "G";
-	if (channel & tComp_B) channelsStr += "B";
-	if (channel & tComp_A) channelsStr += "A";
+	if (channel & tCompBit_R) channelsStr += "R";
+	if (channel & tCompBit_G) channelsStr += "G";
+	if (channel & tCompBit_B) channelsStr += "B";
+	if (channel & tCompBit_A) channelsStr += "A";
 
 	tString desc; tsPrintf(desc, "Spread %s", channelsStr.Chr());
 	PushUndo(desc);
@@ -1412,13 +1412,13 @@ void Image::Spread(tcomps channel)
 
 
 	// Computes RGB intensity and sets specified channels to that value. Any combination of RGBA allowed.
-void Image::Intensity(tcomps channels)
+void Image::Intensity(comp_t channels)
 {
 	tString channelsStr;
-	if (channels & tComp_R) channelsStr += "R";
-	if (channels & tComp_G) channelsStr += "G";
-	if (channels & tComp_B) channelsStr += "B";
-	if (channels & tComp_A) channelsStr += "A";
+	if (channels & tCompBit_R) channelsStr += "R";
+	if (channels & tCompBit_G) channelsStr += "G";
+	if (channels & tCompBit_B) channelsStr += "B";
+	if (channels & tCompBit_A) channelsStr += "A";
 
 	tString desc; tsPrintf(desc, "Intensity %s", channelsStr.Chr());
 	PushUndo(desc);
@@ -1430,7 +1430,7 @@ void Image::Intensity(tcomps channels)
 }
 
 
-void Image::AlphaBlendColour(const tColouri& colour, tcomps channels, int finalAlpha)
+void Image::AlphaBlendColour(const tColouri& colour, comp_t channels, int finalAlpha)
 {
 	tString desc; tsPrintf(desc, "Blend (%d,%d,%d,%d)", colour.R, colour.G, colour.B, colour.A);
 	PushUndo(desc);

@@ -77,7 +77,7 @@ struct OperationDeborder : public Operation
 	OperationDeborder(const tString& args);
 	bool UseTestColour									= false;
 	tColour4i TestColour								= tColour4i::black;							// Optional.
-	tcomps Channels										= tComp_RGBA;								// Optional.
+	comp_t Channels										= tCompBit_RGBA;								// Optional.
 
 	bool Apply(Viewer::Image&) override;
 };
@@ -202,7 +202,7 @@ struct OperationChannel : public Operation
 		Intensity
 	};
 	ChanMode Mode										= ChanMode::Blend;				// Optional.
-	tcomps Channels										= tComp_RGBA;					// Optional.
+	comp_t Channels										= tCompBit_RGBA;					// Optional.
 	tColour4i Colour									= tColour4i::black;				// Optional.
 
 	bool Apply(Viewer::Image&) override;

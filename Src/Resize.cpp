@@ -532,10 +532,10 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool firstOpen)
 	if (Viewer::Button("Remove", tVector2(buttonWidth, 0.0f)))
 	{
 		uint32 channels =
-			(channelR ? tComp_R : 0) |
-			(channelG ? tComp_G : 0) |
-			(channelB ? tComp_B : 0) |
-			(channelA ? tComp_A : 0);
+			(channelR ? tCompBit_R : 0) |
+			(channelG ? tCompBit_G : 0) |
+			(channelB ? tCompBit_B : 0) |
+			(channelA ? tCompBit_A : 0);
 
 		CurrImage->Unbind();
 		CurrImage->Crop(Config::Current->FillColour, channels);

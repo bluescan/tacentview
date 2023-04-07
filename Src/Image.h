@@ -143,7 +143,7 @@ public:
 
 	bool AdjustmentBegin();
 	enum class AdjChan { RGB, R, G, B, A };	// Adjustment is to individual RGBA channels or RGB/Intensity (default).
-	static tcomps ComponentBits(AdjChan);	// Converts to tChannels.
+	static comp_t ComponentBits(AdjChan);	// Converts to tChannels.
 
 	void AdjustBrightness(float brightness, AdjChan = AdjChan::RGB, bool allFrames = true);
 	void AdjustContrast(float contrast, AdjChan = AdjChan::RGB, bool allFrames = true);
@@ -164,16 +164,16 @@ public:
 	void Flip(bool horizontal);
 	void Crop(int newWidth, int newHeight, int originX, int originY, const tColouri& fillColour = tColour::black);
 	void Crop(int newWidth, int newHeight, tImage::tPicture::Anchor, const tColouri& fillColour = tColour::black);
-	void Crop(const tColouri& borderColour, tcomps channels = tComp_RGBA);
+	void Crop(const tColouri& borderColour, comp_t channels = tCompBit_RGBA);
 	void Resample(int newWidth, int newHeight, tImage::tResampleFilter filter, tImage::tResampleEdgeMode edgeMode);
 	void SetPixelColour(int x, int y, const tColouri&, bool pushUndo, bool supressDirty = false);
-	void SetAllPixels(const tColouri& colour, tcomps channels = tComp_RGBA);
+	void SetAllPixels(const tColouri& colour, comp_t channels = tCompBit_RGBA);
 
 	// Spreads the specified single channel to all RGB channels.
-	void Spread(tcomps channel = tComp_R);
+	void Spread(comp_t channel = tCompBit_R);
 
 	// Computes RGB intensity and sets specified channels to that value. Any combination of RGBA allowed.
-	void Intensity(tcomps channels = tComp_RGB);
+	void Intensity(comp_t channels = tCompBit_RGB);
 
 	// Blends blendColour (background) into the RGB channels specified (usually RGB, but any combination of the 3 is
 	// allowed) using the pixel alpha to modulate. The new pixel colour is alpha*component + (1-alpha)*blend_component.
@@ -186,7 +186,7 @@ public:
 	// means the operation essentially creates a premultiplied-alpha opaque image.
 	// Note that the alpha of the supplied colour is ignored (since we use finalAlpha).
 	// Note that unspecified RGB channels are keft unmodified.
-	void AlphaBlendColour(const tColouri& blendColour, tcomps = tComp_RGB, int finalAlpha = 255);
+	void AlphaBlendColour(const tColouri& blendColour, comp_t = tCompBit_RGB, int finalAlpha = 255);
 	void SetFrameDuration(float duration, bool allFrames = false);
 
 	// Undo and redo functions.
@@ -350,15 +350,15 @@ inline bool Image::TypeSupportsProperties() const
 }
 
 
-inline tcomps Image::ComponentBits(AdjChan channels)
+inline comp_t Image::ComponentBits(AdjChan channels)
 {
 	switch (channels)
 	{
-		case AdjChan::RGB:	return tComp_RGB;
-		case AdjChan::R:	return tComp_R;
-		case AdjChan::G:	return tComp_G;
-		case AdjChan::B:	return tComp_B;
-		case AdjChan::A:	return tComp_A;
+		case AdjChan::RGB:	return tCompBit_RGB;
+		case AdjChan::R:	return tCompBit_R;
+		case AdjChan::G:	return tCompBit_G;
+		case AdjChan::B:	return tCompBit_B;
+		case AdjChan::A:	return tCompBit_A;
 	}
 	return 0;
 }

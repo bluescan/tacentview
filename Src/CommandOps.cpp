@@ -446,12 +446,12 @@ Command::OperationDeborder::OperationDeborder(const tString& argsStr)
 		currArg = currArg->Next();
 		tString chanStr = *currArg;
 		Channels = 0;
-		if (chanStr.FindChar('*') != -1)	Channels = tComp_RGBA;
-		if (chanStr.FindAny("rR") != -1)	Channels |= tComp_R;
-		if (chanStr.FindAny("gG") != -1)	Channels |= tComp_G;
-		if (chanStr.FindAny("bB") != -1)	Channels |= tComp_B;
-		if (chanStr.FindAny("aA") != -1)	Channels |= tComp_A;
-		if (!Channels)						Channels = tComp_RGBA;
+		if (chanStr.FindChar('*') != -1)	Channels = tCompBit_RGBA;
+		if (chanStr.FindAny("rR") != -1)	Channels |= tCompBit_R;
+		if (chanStr.FindAny("gG") != -1)	Channels |= tCompBit_G;
+		if (chanStr.FindAny("bB") != -1)	Channels |= tCompBit_B;
+		if (chanStr.FindAny("aA") != -1)	Channels |= tCompBit_A;
+		if (!Channels)						Channels = tCompBit_RGBA;
 	}
 
 	Valid = true;
@@ -1395,19 +1395,19 @@ Command::OperationChannel::OperationChannel(const tString& argsStr)
 		{
 			switch (Mode)
 			{
-				case ChanMode::Set:			Channels = tComp_RGB;		break;
-				case ChanMode::Blend:		Channels = tComp_RGBA;		break;
-				case ChanMode::Spread:		Channels = tComp_R;			break;
-				case ChanMode::Intensity:	Channels = tComp_RGB;		break;
+				case ChanMode::Set:			Channels = tCompBit_RGB;		break;
+				case ChanMode::Blend:		Channels = tCompBit_RGBA;		break;
+				case ChanMode::Spread:		Channels = tCompBit_R;			break;
+				case ChanMode::Intensity:	Channels = tCompBit_RGB;		break;
 			}
 		}
-		if (chanStr.FindAny("rR") != -1)	Channels |= tComp_R;
-		if (chanStr.FindAny("gG") != -1)	Channels |= tComp_G;
-		if (chanStr.FindAny("bB") != -1)	Channels |= tComp_B;
-		if (chanStr.FindAny("aA") != -1)	Channels |= tComp_A;
+		if (chanStr.FindAny("rR") != -1)	Channels |= tCompBit_R;
+		if (chanStr.FindAny("gG") != -1)	Channels |= tCompBit_G;
+		if (chanStr.FindAny("bB") != -1)	Channels |= tCompBit_B;
+		if (chanStr.FindAny("aA") != -1)	Channels |= tCompBit_A;
 
 		// In all cases at least one channel is necessary.
-		if (!Channels)						Channels  = tComp_R;
+		if (!Channels)						Channels  = tCompBit_R;
 
 		// If mode is spread, only one channel is allowed. We choose first one (LSB first) if multiple.
 		if (Mode == ChanMode::Spread)
@@ -1467,10 +1467,10 @@ bool Command::OperationChannel::Apply(Viewer::Image& image)
 	tAssert(Valid);
 
 	tString channelsStr;
-	if (Channels & tComp_R) channelsStr += "R";
-	if (Channels & tComp_G) channelsStr += "G";
-	if (Channels & tComp_B) channelsStr += "B";
-	if (Channels & tComp_A) channelsStr += "A";
+	if (Channels & tCompBit_R) channelsStr += "R";
+	if (Channels & tCompBit_G) channelsStr += "G";
+	if (Channels & tCompBit_B) channelsStr += "B";
+	if (Channels & tCompBit_A) channelsStr += "A";
 
 	switch (Mode)
 	{
@@ -1481,7 +1481,7 @@ bool Command::OperationChannel::Apply(Viewer::Image& image)
 
 		case ChanMode::Blend:
 		{
-			int finalAlpha = (Channels & tComp_A) ? Colour.A : -1;
+			int finalAlpha = (Channels & tCompBit_A) ? Colour.A : -1;
 			tPrintfFull("Channel | AlphaBlendColour[colour:%02x,%02x,%02x,%02x channels:%s finalAlpha:%d]\n", Colour.R, Colour.G, Colour.B, Colour.A, channelsStr.Chr(), finalAlpha);
 			image.AlphaBlendColour(Colour, Channels, finalAlpha);
 			break;
