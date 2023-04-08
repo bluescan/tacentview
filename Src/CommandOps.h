@@ -218,7 +218,10 @@ struct OperationSwizzle : public Operation
 	tComp SwizzleB										= tComp::B;						// Optional.
 	tComp SwizzleA										= tComp::A;						// Optional.
 
-	bool Apply(Viewer::Image&) override { /* WIP */ return false; }
+	bool Apply(Viewer::Image&) override;
+
+private:
+	tComp CharToComp(char);
 };
 
 

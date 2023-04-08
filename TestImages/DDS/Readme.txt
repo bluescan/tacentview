@@ -21,7 +21,10 @@ So... to create the BC6u_HDRRGB_Modern.dds, TEXC was used with the R32G32B32 lin
 to the BC6u_HDRRGB_Modern.dds unsigned format. The BC6 is the only HDR format that supports unsigned floats.
 
 Compressonator (COMP) was used for creating the legacy dds files that use the ETC encoder. There are 4 of these files.
-one for each COMP-Supported ETC format: ETC1, ETC2RGB, ETC2RGBA, and ETC2RGBA1.
+one for each COMP-Supported ETC format: ETC1, ETC2RGB, ETC2RGBA, and ETC2RGBA1. Note that COMP encodes incorrectly. It
+swaps the R and B channels. That is, they interpreted the texture-format name literally. The D3DFMT names are wrong and
+MS fixed this with their DXGI names. In the case of the 4 COMP-generated test images, the swizzle to swap R and B was
+performed before encoding for better-quality results (colour channels are not independant) and correct dds files.
 
 Encoding Tools
 --------------

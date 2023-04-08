@@ -1508,6 +1508,50 @@ Command::OperationSwizzle::OperationSwizzle(const tString& argsStr)
 	int numArgs = tStd::tExplode(args, argsStr, ',');
 	tStringItem* currArg = nullptr;
 
-	// WIP
-	// Valid = true;
+	// RGBA swizzle string. It seems a bit nicer to have all swizzles in a single
+	// string without the comma separator. Defaults to RGBA if not specified.
+	if (numArgs >= 1)
+	{
+		currArg = args.First();
+		tString swizzle = *currArg;
+		int len = swizzle.Length();
+		
+		char rs = (len >= 1) ? swizzle[0] : '\0';
+		char gs = (len >= 2) ? swizzle[1] : '\0';
+		char bs = (len >= 3) ? swizzle[2] : '\0';
+		char as = (len >= 4) ? swizzle[3] : '\0';
+
+		SwizzleR = CharToComp(rs);
+		SwizzleG = CharToComp(gs);
+		SwizzleB = CharToComp(bs);
+		SwizzleA = CharToComp(as);
+	}
+
+	Valid = true;
+}
+
+
+tComp Command::OperationSwizzle::CharToComp(char cs)
+{
+	switch (cs)
+	{
+		case 'R': case 'r':		return tComp::R;
+		case 'G': case 'g':		return tComp::G;
+		case 'B': case 'b':		return tComp::B;
+		case 'A': case 'a':		return tComp::A;
+		case '*':				return tComp::Auto;
+		case '0':				return tComp::Zero;
+		case '1':				return tComp::Full;
+	}
+
+	return tComp::Auto;
+}
+
+
+bool Command::OperationSwizzle::Apply(Viewer::Image& image)
+{
+	tAssert(Valid);
+	tPrintfFull("Swizzle | Swizzle[%s%s$s%s]\n", tGetComponentName(SwizzleR), tGetComponentName(SwizzleB), tGetComponentName(SwizzleB), tGetComponentName(SwizzleA));
+	image.Swizzle(SwizzleR, SwizzleG, SwizzleB, SwizzleA);
+	return true;
 }

@@ -1098,34 +1098,30 @@ R"OPERATIONS147(
   will be 255 for all pixels.
 
 --op swizzle[rgba*]
-  TODO WRITE THIS
-  Channel operations affect components of all pixels. The supported modes
-  support setting channels, blending using alpha, spreading a channel, and
-  writing intensity to channels.
-  mode: The channel operation mode. One of:
-        set:    Sets specified channels to corresponding component in the
-                supplied colour value.
-        blend*: Blends background colour (bg) into the specified RGB channels
-                by using the pixel-alpha to modulate. The new pixel colour is
-                alpha*src_comp + (1-alpha)*bg_comp. This applies to any
-                combination of input RGB channels. The final alpha is left
-                unmodified if A not specified in channels. If A is specified
-                the alpha is set to the A component of the supplied bg colour.
-        spread: Spreads a specific single channel into the RGB chanbels.
-        intens: Computes pixel intensity and sets any combination of RGBA
-                channels to that intensity.
-  chan: Colour channels. For set and intensity modes the default is RGB*. For
-        blend mode default is RGBA*. For spread mode the single-channel default
-        is R. Channels are specified with any combination of the letters RGBA
-        or rgba.
-  col:  Colour. Only used if mode is blend or set. Either specify with a hex in
-        form #RRGGBBAA or use one of the predefined colours: black*, white,
-        grey, red, green, blue, yellow, cyan, magenta, or trans. You can also
-        specify a single integer that gets used for all RGBA components. The
-        default value is black* full alpha.
-  As an example, the command --op channel will create an image with
-  pre-multiplied alphas. The blended in background will be black and the alpha
-  will be 255 for all pixels.
+  The swizzle operation allows you to manipulate the RGBA channels of an image
+  and swap, duplicate, clear or set them. You can basically take the existing
+  channels and rearrange them as you see fit.
+  rgba: This is the destination mapping used by the swizzle. It is always in
+        the order RGBA. It is made of the characters R, G, B, A, 0, 1, and *.
+        The characters are case-insensitive so r, g, b, and a may also be used.
+        The asterisk means automatic channel selection. 0 means the channel is
+        set to 0 for all pixels. 1 means the channel is set to full for all
+        pixels. R means the destiniation channel is taken from the original red
+        channel. Similarly for G, B, and A. You do not need to specify all four
+        characters if you want the remaining ones to be defaulted to their
+        corresponding source channel. This is what the asterisk does.
+        The default is **** which is the same as RGBA, both of which leave the
+        image unmodified.
+  Example 1: --op swizzle[BGR] will swap the red and the blue channels. In
+  order, the new red channel gets the original blue channel, the green gets
+  green, and the new blue channel gets red. This is the same as swizzle[B*R]
+  and is also the same as swizzle[B*R*]. The asterisks just grab the
+  corresponding original channel.
+  Example 2: --op swizzle[***1] keeps the colours the same but sets the alpha
+  to full for all pixels. This is the same as swizzle[RGB1].
+  Example 3: --op swizzle[0] clears the red channel. Same as [0GBA] and [0***]
+  Example 4: --op swizzle[GGG1] places the original green channel in the new
+  red, green and blue channels. It also sets the alpha to full (opaque).
 
 %s
 %s
