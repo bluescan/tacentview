@@ -187,7 +187,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 
 			// If we're here show options when have 1 or more frames.
 			bool altEnabled = CurrImage->IsAltPictureEnabled();
-			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || tIsASTCFormat(CurrImage->Info.SrcPixelFormat))
+			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || tIsASTCFormat(CurrImage->Info.SrcPixelFormat) || tIsETCFormat(CurrImage->Info.SrcPixelFormat) || tIsEACFormat(CurrImage->Info.SrcPixelFormat))
 			{
 				// Gamma correction. First read current setting and put it in an int.
 				int gammaMode = 0;
@@ -234,7 +234,11 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 					ShowHelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
 					tMath::tiClamp(CurrImage->LoadParams_DDS.Gamma, 0.5f, 4.0f);
 				}
+				anyUIDisplayed = true;
+			}
 
+			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || tIsASTCFormat(CurrImage->Info.SrcPixelFormat))
+			{
 				bool expEnabled = (CurrImage->LoadParams_DDS.Flags & tImageDDS::LoadFlag_ToneMapExposure);
 				ImGui::PushItemWidth(itemWidth);
 				if (ImGui::InputFloat("Exposure", &CurrImage->LoadParams_DDS.Exposure, 0.001f, 0.05f, "%.4f", expEnabled ? 0 : ImGuiInputTextFlags_ReadOnly))
@@ -311,9 +315,16 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			anyUIDisplayed |= DoAltCubemapDisplay(texTypeName);
 			anyUIDisplayed |= DoChooseDisplayImage(texTypeName, itemWidth);
 
+			if (tIsETCFormat(CurrImage->Info.SrcPixelFormat))
+			{
+				if (ImGui::CheckboxFlags("SwizzleBGRToRGB", &CurrImage->LoadParams_KTX.Flags, tImageKTX::LoadFlag_SwizzleBGR2RGB))
+					reloadChanges = true;
+				anyUIDisplayed = true;
+			}
+
 			// If we're here show options when have 1 or more frames.
 			bool altEnabled = CurrImage->IsAltPictureEnabled();
-			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || tIsASTCFormat(CurrImage->Info.SrcPixelFormat))
+			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || tIsASTCFormat(CurrImage->Info.SrcPixelFormat) || tIsETCFormat(CurrImage->Info.SrcPixelFormat) || tIsEACFormat(CurrImage->Info.SrcPixelFormat))
 			{
 				// Gamma correction. First read current setting and put it in an int.
 				int gammaMode = 0;
@@ -363,7 +374,12 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				anyUIDisplayed = true;
 			}
 
-			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || (CurrImage->Info.SrcColourSpace == tColourSpace::Linear))
+			// We don't allow exposure control on ETC and EAC images.
+			if
+			(
+				(!tIsETCFormat(CurrImage->Info.SrcPixelFormat) && !tIsEACFormat(CurrImage->Info.SrcPixelFormat)) &&
+				(tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || (CurrImage->Info.SrcColourSpace == tColourSpace::Linear))
+			)
 			{
 				bool expEnabled = (CurrImage->LoadParams_KTX.Flags & tImageKTX::LoadFlag_ToneMapExposure);
 				ImGui::PushItemWidth(itemWidth);
