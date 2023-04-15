@@ -321,7 +321,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 					reloadChanges = true;
 				anyUIDisplayed = true;
 			}
-
+		
 			// If we're here show options when have 1 or more frames.
 			bool altEnabled = CurrImage->IsAltPictureEnabled();
 			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || tIsASTCFormat(CurrImage->Info.SrcPixelFormat) || tIsETCFormat(CurrImage->Info.SrcPixelFormat) || tIsEACFormat(CurrImage->Info.SrcPixelFormat))
@@ -450,12 +450,11 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			bool reloadChanges = false;
 
 			// Colour Profile.
-			int colourProfile = int(CurrImage->LoadParams_ASTC.Profile);
-			const char* colourProfileItems[] = { "LDR", "LDR FULL", "HDR", "HDR FULL" };
+			int colourProfile = int(CurrImage->LoadParams_ASTC.Profile);			
 			ImGui::PushItemWidth(itemWidth);
-			if (ImGui::Combo("Colour Profile", &colourProfile, colourProfileItems, tNumElements(colourProfileItems)))
+			if (ImGui::Combo("Colour Profile", &colourProfile, tColourProfileShortNames, tNumElements(tColourProfileShortNames)-1))
 			{
-				CurrImage->LoadParams_ASTC.Profile = tImageASTC::ColourProfile(colourProfile);
+				CurrImage->LoadParams_ASTC.Profile = tColourProfile(colourProfile);
 				reloadChanges = true;
 			}
 			ImGui::PopItemWidth();
@@ -463,17 +462,19 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ShowHelpMark
 			(
 				"Colour Profile\n"
+				"ASTC files do not contain information about the colour profile so we supply it here.\n"
 				"Most LDR (low-dynamic-range) images have their colours authored in sRGB space since that is what your\n"
 				"monitor displays. If there is an alpha, it is usually in linear-space and clamped to the range [0.0, 1.0].\n"
 				"The ASTC decoder needs to know what kind of pixel data it is dealing with. HDR (high-dynamic-range) just\n"
-				"means the pixel data can be outside the [0.0, 1.0] range. LDR means it is within it. This is a separate\n"
-				"concept to the 'space' the colour or alpha is in. The space is either 'Linear' or 'sRGB'. Generally HDR\n"
-				"images are in linear space.\n"
+				"means the pixel data can be outside the [0.0, 1.0] range. LDR means it is within it. The space is either\n"
+				"'Linear' or 'sRGB'. Generally HDR images are in linear space. The Colour Profile determines how both the\n"
+				"space and the range should be interpreted for each channel of an image.\n"
 				"\n"
-				"LDR PROFILE      : LDR RGB-components in sRGB space. LDR A-component in Linear space. Most LDR images are this.\n"
-				"LDR FULL PROFILE : LDR RGBA-components all in Linear space.\n"
-				"HDR PROFILE      : HDR RGB-components in Linear space. LDR A-component in Linear space. Most HDR images are this.\n"
-				"HDR FULL PROFILE : HDR RGBA-components all in Linear space.",
+				"sRGB : LDRsRGB_LDRlA. LDR RGB-components in sRGB space. LDR alpha in linear space. Most LDR images are this.\n"
+				"gRGB : LDRgRGB_LDRlA. LDR RGB-components in gRGB space. LDR alpha in linear space.\n"
+				"lRGB : LDRlRGBA. LDR RGBA-components all in linear space. Normal maps often use this.\n"
+				"HDRa : HDR RGB-components in linear space. LDR alpha in linear space. Most HDR images are this.\n"
+				"HDRA : HDR RGBA-components all in linear space.",
 				false
 			);
 
@@ -483,14 +484,16 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				gammaMode = 1;
 			if (CurrImage->LoadParams_ASTC.Flags & tImageASTC::LoadFlag_SRGBCompression)
 				gammaMode = 2;
-
-			const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB" };
+			if (CurrImage->LoadParams_ASTC.Flags & tImageASTC::LoadFlag_AutoGamma)
+				gammaMode = 3;
+			const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB", "Auto" };
 			ImGui::PushItemWidth(itemWidth);
 			if (ImGui::Combo("Gamma Correct", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
 			{
-				CurrImage->LoadParams_ASTC.Flags &= ~(tImageASTC::LoadFlag_GammaCompression | tImageASTC::LoadFlag_SRGBCompression);
+				CurrImage->LoadParams_ASTC.Flags &= ~(tImageASTC::LoadFlag_GammaCompression | tImageASTC::LoadFlag_SRGBCompression | tImageASTC::LoadFlag_AutoGamma);
 				if (gammaMode == 1) CurrImage->LoadParams_ASTC.Flags |= tImageASTC::LoadFlag_GammaCompression;
 				if (gammaMode == 2) CurrImage->LoadParams_ASTC.Flags |= tImageASTC::LoadFlag_SRGBCompression;
+				if (gammaMode == 3) CurrImage->LoadParams_ASTC.Flags |= tImageASTC::LoadFlag_AutoGamma;
 				reloadChanges = true;
 			}
 			ImGui::PopItemWidth();
@@ -498,16 +501,16 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ShowHelpMark
 			(
 				"Gamma Correction\n"
-				"Floating-point pixel formats used for HDR images are often in linear space. Before being displayed\n"
-				"on a screen with non-linear response they need to be 'corrected' to gamma or sRGB-space (brightened).\n"
+				"Pixel values used for ASTC images are often in linear space. Before being displayed\n"
+				"on a screen with non-linear response they should be 'corrected' to gamma or sRGB-space (brightened).\n"
 				"\n"
 				"Use 'None' if you know the source image data is already in either gamma or sRGB-space.\n\n"
 				"Use 'Gamma' if you want control over the gamma exponent being used to do the correction. 2.2 is standard.\n\n"
 				"Use 'sRGB' if you want to convert to sRGB-space. This more accurately represents a display's response and\n"
-				"is close to a 2.2 gamma but with an extra linear region, a non-unity amplitude, and a slightly larger gamma.",
+				"is close to a 2.2 gamma but with an extra linear region, a non-unity amplitude, and a slightly larger gamma."
+				"Use 'Auto' if you want the viewer to try to detect whether to apply sRGB compression or not.\n",
 				false
 			);
-
 			if (gammaMode == 1)
 			{
 				ImGui::PushItemWidth(itemWidth);
@@ -516,7 +519,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				ImGui::PopItemWidth();
 				ImGui::SameLine();
 				ShowHelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
-				tMath::tiClamp(CurrImage->LoadParams_KTX.Gamma, 0.5f, 4.0f);
+				tMath::tiClamp(CurrImage->LoadParams_ASTC.Gamma, 0.5f, 4.0f);
 			}
 
 			// WIP Add detection of HDR blocks to tImageASTC.
@@ -567,7 +570,6 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				gammaMode = 2;
 			if (CurrImage->LoadParams_PKM.Flags & tImagePKM::LoadFlag_AutoGamma)
 				gammaMode = 3;
-
 			const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB", "Auto" };
 			ImGui::PushItemWidth(itemWidth);
 			if (ImGui::Combo("Gamma Correct", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
@@ -593,7 +595,6 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				"Use 'Auto' if you want the viewer to try to detect whether to apply sRGB compression or not.\n",
 				false
 			);
-
 			if (gammaMode == 1)
 			{
 				ImGui::PushItemWidth(itemWidth);
