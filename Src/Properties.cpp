@@ -378,7 +378,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			if
 			(
 				(!tIsETCFormat(CurrImage->Info.SrcPixelFormat) && !tIsEACFormat(CurrImage->Info.SrcPixelFormat)) &&
-				(tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || (CurrImage->Info.SrcColourSpace == tColourSpace::Linear))
+				(tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || tIsProfileLinearInRGB(CurrImage->Info.SrcColourProfile))
 			)
 			{
 				bool expEnabled = (CurrImage->LoadParams_KTX.Flags & tImageKTX::LoadFlag_ToneMapExposure);

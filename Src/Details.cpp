@@ -84,6 +84,11 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 						bppStr.ExtractRight(".00");
 					}
 				}
+
+				const char* colourProfileName = tGetColourProfileShortName(info.SrcColourProfile);
+				if (!colourProfileName) colourProfileName = "Unknown";
+				ImGui::Text("Profile: %s", colourProfileName);
+
 				ImGui::Text("Bits Per Pixel: %s", bppStr.Chr());
 				switch (info.Opacity)
 				{

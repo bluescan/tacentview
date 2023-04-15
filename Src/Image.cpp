@@ -174,7 +174,7 @@ bool Image::Load()
 		loadingFiletype = tSystem::tFileType::APNG;
 
 	Info.SrcPixelFormat = tPixelFormat::Invalid;
-	Info.SrcColourSpace = tColourSpace::Unspecified;
+	Info.SrcColourProfile = tColourProfile::Unspecified;
 	bool success = false;
 
 	switch (loadingFiletype)
@@ -273,7 +273,7 @@ bool Image::Load()
 			tPixel* pixels = hdr.StealPixels();
 
 			Info.SrcPixelFormat = hdr.PixelFormatSrc;
-			Info.SrcColourSpace = tColourSpace::lRGB;
+			Info.SrcColourProfile = tColourProfile::lRGB;
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
 			success = true;
@@ -356,6 +356,7 @@ bool Image::Load()
 			tPixel* pixels = tga.StealPixels();
 
 			Info.SrcPixelFormat = tga.PixelFormatSrc;
+
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
 			success = true;
@@ -443,6 +444,7 @@ bool Image::Load()
 			CreateAltPicturesDDS(dds);
 
 			Info.SrcPixelFormat = dds.GetPixelFormatSrc();
+			Info.SrcColourProfile = dds.GetColourProfileSrc();
 			success = true;
 			break;
 		}
@@ -462,7 +464,7 @@ bool Image::Load()
 			CreateAltPicturesKTX(ktx);
 
 			Info.SrcPixelFormat = ktx.GetPixelFormatSrc();
-			Info.SrcColourSpace = ktx.GetColourSpaceSrc();
+			Info.SrcColourProfile = ktx.GetColourProfileSrc();
 			success = true;
 			break;
 		}
@@ -502,6 +504,7 @@ bool Image::Load()
 			int width = pkm.GetWidth();
 			int height = pkm.GetHeight();
 			Info.SrcPixelFormat = pkm.GetPixelFormatSrc();
+			Info.SrcColourProfile = pkm.GetColourProfileSrc();
 
 			tLayer* layer = pkm.StealLayer();
 			tAssert(layer && (layer->PixelFormat == tPixelFormat::R8G8B8A8));
