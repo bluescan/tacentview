@@ -187,55 +187,52 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 
 			// If we're here show options when have 1 or more frames.
 			bool altEnabled = CurrImage->IsAltPictureEnabled();
-			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || tIsASTCFormat(CurrImage->Info.SrcPixelFormat) || tIsETCFormat(CurrImage->Info.SrcPixelFormat) || tIsEACFormat(CurrImage->Info.SrcPixelFormat))
-			{
-				// Gamma correction. First read current setting and put it in an int.
-				int gammaMode = 0;
-				if (CurrImage->LoadParams_DDS.Flags & tImageDDS::LoadFlag_GammaCompression)
-					gammaMode = 1;
-				if (CurrImage->LoadParams_DDS.Flags & tImageDDS::LoadFlag_SRGBCompression)
-					gammaMode = 2;
-				if (CurrImage->LoadParams_DDS.Flags & tImageDDS::LoadFlag_AutoGamma)
-					gammaMode = 3;
 
-				const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB", "Auto" };
+			// Gamma correction. First read current setting and put it in an int.
+			int gammaMode = 0;
+			if (CurrImage->LoadParams_DDS.Flags & tImageDDS::LoadFlag_GammaCompression)
+				gammaMode = 1;
+			if (CurrImage->LoadParams_DDS.Flags & tImageDDS::LoadFlag_SRGBCompression)
+				gammaMode = 2;
+			if (CurrImage->LoadParams_DDS.Flags & tImageDDS::LoadFlag_AutoGamma)
+				gammaMode = 3;
+			const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB", "Auto" };
+			ImGui::PushItemWidth(itemWidth);
+			if (ImGui::Combo("Gamma Correct", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
+			{
+				CurrImage->LoadParams_DDS.Flags &= ~(tImageDDS::LoadFlag_GammaCompression | tImageDDS::LoadFlag_SRGBCompression | tImageDDS::LoadFlag_AutoGamma);
+				if (gammaMode == 1) CurrImage->LoadParams_DDS.Flags |= tImageDDS::LoadFlag_GammaCompression;
+				if (gammaMode == 2) CurrImage->LoadParams_DDS.Flags |= tImageDDS::LoadFlag_SRGBCompression;
+				if (gammaMode == 3) CurrImage->LoadParams_DDS.Flags |= tImageDDS::LoadFlag_AutoGamma;
+				reloadChanges = true;
+			}
+			ImGui::PopItemWidth();
+			ImGui::SameLine();
+			ShowHelpMark
+			(
+				"Gamma Correction\n"
+				"Floating-point pixel formats used for HDR images are often in linear space. Before being displayed\n"
+				"on a screen with non-linear response they need to be 'corrected' to gamma or sRGB-space (brightened).\n"
+				"\n"
+				"Use 'None' if you know the source image data is already in either gamma or sRGB-space.\n\n"
+				"Use 'Gamma' if you want control over the gamma exponent being used to do the correction. 2.2 is standard.\n\n"
+				"Use 'sRGB' if you want to convert to sRGB-space. This more accurately represents a display's response and\n"
+				"is close to a 2.2 gamma but with an extra linear region, a non-unity amplitude, and a slightly larger gamma."
+				"Use 'Auto' if you want the viewer to try to detect whether to apply sRGB compression or not.\n",
+				false
+			);
+
+			if (gammaMode == 1)
+			{
 				ImGui::PushItemWidth(itemWidth);
-				if (ImGui::Combo("Gamma Correct", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
-				{
-					CurrImage->LoadParams_DDS.Flags &= ~(tImageDDS::LoadFlag_GammaCompression | tImageDDS::LoadFlag_SRGBCompression | tImageDDS::LoadFlag_AutoGamma);
-					if (gammaMode == 1) CurrImage->LoadParams_DDS.Flags |= tImageDDS::LoadFlag_GammaCompression;
-					if (gammaMode == 2) CurrImage->LoadParams_DDS.Flags |= tImageDDS::LoadFlag_SRGBCompression;
-					if (gammaMode == 3) CurrImage->LoadParams_DDS.Flags |= tImageDDS::LoadFlag_AutoGamma;
+				if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_DDS.Gamma, 0.01f, 0.1f, "%.3f"))
 					reloadChanges = true;
-				}
 				ImGui::PopItemWidth();
 				ImGui::SameLine();
-				ShowHelpMark
-				(
-					"Gamma Correction\n"
-					"Floating-point pixel formats used for HDR images are often in linear space. Before being displayed\n"
-					"on a screen with non-linear response they need to be 'corrected' to gamma or sRGB-space (brightened).\n"
-					"\n"
-					"Use 'None' if you know the source image data is already in either gamma or sRGB-space.\n\n"
-					"Use 'Gamma' if you want control over the gamma exponent being used to do the correction. 2.2 is standard.\n\n"
-					"Use 'sRGB' if you want to convert to sRGB-space. This more accurately represents a display's response and\n"
-					"is close to a 2.2 gamma but with an extra linear region, a non-unity amplitude, and a slightly larger gamma."
-					"Use 'Auto' if you want the viewer to try to detect whether to apply sRGB compression or not.\n",
-					false
-				);
-
-				if (gammaMode == 1)
-				{
-					ImGui::PushItemWidth(itemWidth);
-					if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_DDS.Gamma, 0.01f, 0.1f, "%.3f"))
-						reloadChanges = true;
-					ImGui::PopItemWidth();
-					ImGui::SameLine();
-					ShowHelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
-					tMath::tiClamp(CurrImage->LoadParams_DDS.Gamma, 0.5f, 4.0f);
-				}
-				anyUIDisplayed = true;
+				ShowHelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
+				tMath::tiClamp(CurrImage->LoadParams_DDS.Gamma, 0.5f, 4.0f);
 			}
+			anyUIDisplayed = true;
 
 			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || tIsASTCFormat(CurrImage->Info.SrcPixelFormat))
 			{
@@ -324,55 +321,53 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		
 			// If we're here show options when have 1 or more frames.
 			bool altEnabled = CurrImage->IsAltPictureEnabled();
-			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || tIsASTCFormat(CurrImage->Info.SrcPixelFormat) || tIsETCFormat(CurrImage->Info.SrcPixelFormat) || tIsEACFormat(CurrImage->Info.SrcPixelFormat))
-			{
-				// Gamma correction. First read current setting and put it in an int.
-				int gammaMode = 0;
-				if (CurrImage->LoadParams_KTX.Flags & tImageKTX::LoadFlag_GammaCompression)
-					gammaMode = 1;
-				if (CurrImage->LoadParams_KTX.Flags & tImageKTX::LoadFlag_SRGBCompression)
-					gammaMode = 2;
-				if (CurrImage->LoadParams_KTX.Flags & tImageKTX::LoadFlag_AutoGamma)
-					gammaMode = 3;
 
-				const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB", "Auto" };
+			// Gamma correction. First read current setting and put it in an int.
+			int gammaMode = 0;
+			if (CurrImage->LoadParams_KTX.Flags & tImageKTX::LoadFlag_GammaCompression)
+				gammaMode = 1;
+			if (CurrImage->LoadParams_KTX.Flags & tImageKTX::LoadFlag_SRGBCompression)
+				gammaMode = 2;
+			if (CurrImage->LoadParams_KTX.Flags & tImageKTX::LoadFlag_AutoGamma)
+				gammaMode = 3;
+
+			const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB", "Auto" };
+			ImGui::PushItemWidth(itemWidth);
+			if (ImGui::Combo("Gamma Correct", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
+			{
+				CurrImage->LoadParams_KTX.Flags &= ~(tImageKTX::LoadFlag_GammaCompression | tImageKTX::LoadFlag_SRGBCompression | tImageKTX::LoadFlag_AutoGamma);
+				if (gammaMode == 1) CurrImage->LoadParams_KTX.Flags |= tImageKTX::LoadFlag_GammaCompression;
+				if (gammaMode == 2) CurrImage->LoadParams_KTX.Flags |= tImageKTX::LoadFlag_SRGBCompression;
+				if (gammaMode == 3) CurrImage->LoadParams_KTX.Flags |= tImageKTX::LoadFlag_AutoGamma;
+				reloadChanges = true;
+			}
+			ImGui::PopItemWidth();
+			ImGui::SameLine();
+			ShowHelpMark
+			(
+				"Gamma Correction\n"
+				"Floating-point pixel formats used for HDR images are often in linear space. Before being displayed\n"
+				"on a screen with non-linear response they need to be 'corrected' to gamma or sRGB-space (brightened).\n"
+				"\n"
+				"Use 'None' if you know the source image data is already in either gamma or sRGB-space.\n\n"
+				"Use 'Gamma' if you want control over the gamma exponent being used to do the correction. 2.2 is standard.\n\n"
+				"Use 'sRGB' if you want to convert to sRGB-space. This more accurately represents a display's response and\n"
+				"is close to a 2.2 gamma but with an extra linear region, a non-unity amplitude, and a slightly larger gamma."
+				"Use 'Auto' if you want the viewer to try to detect whether to apply sRGB compression or not.\n",
+				false
+			);
+
+			if (gammaMode == 1)
+			{
 				ImGui::PushItemWidth(itemWidth);
-				if (ImGui::Combo("Gamma Correct", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
-				{
-					CurrImage->LoadParams_KTX.Flags &= ~(tImageKTX::LoadFlag_GammaCompression | tImageKTX::LoadFlag_SRGBCompression | tImageKTX::LoadFlag_AutoGamma);
-					if (gammaMode == 1) CurrImage->LoadParams_KTX.Flags |= tImageKTX::LoadFlag_GammaCompression;
-					if (gammaMode == 2) CurrImage->LoadParams_KTX.Flags |= tImageKTX::LoadFlag_SRGBCompression;
-					if (gammaMode == 3) CurrImage->LoadParams_KTX.Flags |= tImageKTX::LoadFlag_AutoGamma;
+				if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_KTX.Gamma, 0.01f, 0.1f, "%.3f"))
 					reloadChanges = true;
-				}
 				ImGui::PopItemWidth();
 				ImGui::SameLine();
-				ShowHelpMark
-				(
-					"Gamma Correction\n"
-					"Floating-point pixel formats used for HDR images are often in linear space. Before being displayed\n"
-					"on a screen with non-linear response they need to be 'corrected' to gamma or sRGB-space (brightened).\n"
-					"\n"
-					"Use 'None' if you know the source image data is already in either gamma or sRGB-space.\n\n"
-					"Use 'Gamma' if you want control over the gamma exponent being used to do the correction. 2.2 is standard.\n\n"
-					"Use 'sRGB' if you want to convert to sRGB-space. This more accurately represents a display's response and\n"
-					"is close to a 2.2 gamma but with an extra linear region, a non-unity amplitude, and a slightly larger gamma."
-					"Use 'Auto' if you want the viewer to try to detect whether to apply sRGB compression or not.\n",
-					false
-				);
-
-				if (gammaMode == 1)
-				{
-					ImGui::PushItemWidth(itemWidth);
-					if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_KTX.Gamma, 0.01f, 0.1f, "%.3f"))
-						reloadChanges = true;
-					ImGui::PopItemWidth();
-					ImGui::SameLine();
-					ShowHelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
-					tMath::tiClamp(CurrImage->LoadParams_KTX.Gamma, 0.5f, 4.0f);
-				}
-				anyUIDisplayed = true;
+				ShowHelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
+				tMath::tiClamp(CurrImage->LoadParams_KTX.Gamma, 0.5f, 4.0f);
 			}
+			anyUIDisplayed = true;
 
 			// We don't allow exposure control on ETC and EAC images.
 			if
