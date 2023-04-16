@@ -49,7 +49,18 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX()+30);
 		ImGui::Text("Image   Details         ");
 
-		ShowToolTip("Right-Click to Change Anchor");
+		ShowToolTip
+		(
+			"Right-Click to Change Anchor\n"
+			"\n"
+			"The Colour Profile is a best guess at the type of pixel data present.\n"
+			"LDR means low dynamic range (0.0 to 1.0). HDR means values above 1.0\n\n"
+			"sRGB : LDR RGB in the sRGB colour space. LDR alpha in linear space.\n"
+			"gRGB : LDR RGB in gamma colour space. LDR alpha in linear space.\n"
+			"lRGB : LDR RGBA all in linear space.\n"
+			"HDRa : HDR RGB in linear space. LDR alpha in linear space.\n"
+			"HDRA : HDR RGBA all in linear space.\n"
+		);
 		ImGui::Separator();
 
 		if (CurrImage)

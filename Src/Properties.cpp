@@ -198,7 +198,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				gammaMode = 3;
 			const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB", "Auto" };
 			ImGui::PushItemWidth(itemWidth);
-			if (ImGui::Combo("Gamma Correct", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
+			if (ImGui::Combo("Gamma Corr", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
 			{
 				CurrImage->LoadParams_DDS.Flags &= ~(tImageDDS::LoadFlag_GammaCompression | tImageDDS::LoadFlag_SRGBCompression | tImageDDS::LoadFlag_AutoGamma);
 				if (gammaMode == 1) CurrImage->LoadParams_DDS.Flags |= tImageDDS::LoadFlag_GammaCompression;
@@ -211,17 +211,16 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ShowHelpMark
 			(
 				"Gamma Correction\n"
-				"Floating-point pixel formats used for HDR images are often in linear space. Before being displayed\n"
-				"on a screen with non-linear response they need to be 'corrected' to gamma or sRGB-space (brightened).\n"
+				"Pixel values may be in linear space. Before being displayed on a screen with non-linear response\n"
+				"they should be 'corrected' to gamma or sRGB-space (brightened).\n"
 				"\n"
-				"Use 'None' if you know the source image data is already in either gamma or sRGB-space.\n\n"
-				"Use 'Gamma' if you want control over the gamma exponent being used to do the correction. 2.2 is standard.\n\n"
-				"Use 'sRGB' if you want to convert to sRGB-space. This more accurately represents a display's response and\n"
-				"is close to a 2.2 gamma but with an extra linear region, a non-unity amplitude, and a slightly larger gamma."
-				"Use 'Auto' if you want the viewer to try to detect whether to apply sRGB compression or not.\n",
+				"None : If you know the source image data is already in either gamma or sRGB-space.\n"
+				"Gamma : If you want control over the gamma exponent being used to do the correction. 2.2 is standard.\n"
+				"sRGB : If you want to convert to sRGB-space. This more accurately represents a display's response and\n"
+				"   is close to a 2.2 gamma but with an extra linear region and a non-unity amplitude.\n"
+				"Auto : Let the viewer decide whether to apply sRGB compression based on the detected colour profile.\n",
 				false
 			);
-
 			if (gammaMode == 1)
 			{
 				ImGui::PushItemWidth(itemWidth);
@@ -330,10 +329,9 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				gammaMode = 2;
 			if (CurrImage->LoadParams_KTX.Flags & tImageKTX::LoadFlag_AutoGamma)
 				gammaMode = 3;
-
 			const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB", "Auto" };
 			ImGui::PushItemWidth(itemWidth);
-			if (ImGui::Combo("Gamma Correct", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
+			if (ImGui::Combo("Gamma Corr", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
 			{
 				CurrImage->LoadParams_KTX.Flags &= ~(tImageKTX::LoadFlag_GammaCompression | tImageKTX::LoadFlag_SRGBCompression | tImageKTX::LoadFlag_AutoGamma);
 				if (gammaMode == 1) CurrImage->LoadParams_KTX.Flags |= tImageKTX::LoadFlag_GammaCompression;
@@ -346,17 +344,16 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ShowHelpMark
 			(
 				"Gamma Correction\n"
-				"Floating-point pixel formats used for HDR images are often in linear space. Before being displayed\n"
-				"on a screen with non-linear response they need to be 'corrected' to gamma or sRGB-space (brightened).\n"
+				"Pixel values may be in linear space. Before being displayed on a screen with non-linear response\n"
+				"they should be 'corrected' to gamma or sRGB-space (brightened).\n"
 				"\n"
-				"Use 'None' if you know the source image data is already in either gamma or sRGB-space.\n\n"
-				"Use 'Gamma' if you want control over the gamma exponent being used to do the correction. 2.2 is standard.\n\n"
-				"Use 'sRGB' if you want to convert to sRGB-space. This more accurately represents a display's response and\n"
-				"is close to a 2.2 gamma but with an extra linear region, a non-unity amplitude, and a slightly larger gamma."
-				"Use 'Auto' if you want the viewer to try to detect whether to apply sRGB compression or not.\n",
+				"None : If you know the source image data is already in either gamma or sRGB-space.\n"
+				"Gamma : If you want control over the gamma exponent being used to do the correction. 2.2 is standard.\n"
+				"sRGB : If you want to convert to sRGB-space. This more accurately represents a display's response and\n"
+				"   is close to a 2.2 gamma but with an extra linear region and a non-unity amplitude.\n"
+				"Auto : Let the viewer decide whether to apply sRGB compression based on the detected colour profile.\n",
 				false
 			);
-
 			if (gammaMode == 1)
 			{
 				ImGui::PushItemWidth(itemWidth);
@@ -483,7 +480,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				gammaMode = 3;
 			const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB", "Auto" };
 			ImGui::PushItemWidth(itemWidth);
-			if (ImGui::Combo("Gamma Correct", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
+			if (ImGui::Combo("Gamma Corr", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
 			{
 				CurrImage->LoadParams_ASTC.Flags &= ~(tImageASTC::LoadFlag_GammaCompression | tImageASTC::LoadFlag_SRGBCompression | tImageASTC::LoadFlag_AutoGamma);
 				if (gammaMode == 1) CurrImage->LoadParams_ASTC.Flags |= tImageASTC::LoadFlag_GammaCompression;
@@ -496,14 +493,14 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ShowHelpMark
 			(
 				"Gamma Correction\n"
-				"Pixel values used for ASTC images are often in linear space. Before being displayed\n"
-				"on a screen with non-linear response they should be 'corrected' to gamma or sRGB-space (brightened).\n"
+				"Pixel values may be in linear space. Before being displayed on a screen with non-linear response\n"
+				"they should be 'corrected' to gamma or sRGB-space (brightened).\n"
 				"\n"
-				"Use 'None' if you know the source image data is already in either gamma or sRGB-space.\n\n"
-				"Use 'Gamma' if you want control over the gamma exponent being used to do the correction. 2.2 is standard.\n\n"
-				"Use 'sRGB' if you want to convert to sRGB-space. This more accurately represents a display's response and\n"
-				"is close to a 2.2 gamma but with an extra linear region, a non-unity amplitude, and a slightly larger gamma."
-				"Use 'Auto' if you want the viewer to try to detect whether to apply sRGB compression or not.\n",
+				"None : If you know the source image data is already in either gamma or sRGB-space.\n"
+				"Gamma : If you want control over the gamma exponent being used to do the correction. 2.2 is standard.\n"
+				"sRGB : If you want to convert to sRGB-space. This more accurately represents a display's response and\n"
+				"   is close to a 2.2 gamma but with an extra linear region and a non-unity amplitude.\n"
+				"Auto : Let the viewer decide whether to apply sRGB compression based on the detected colour profile.\n",
 				false
 			);
 			if (gammaMode == 1)
@@ -567,7 +564,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				gammaMode = 3;
 			const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB", "Auto" };
 			ImGui::PushItemWidth(itemWidth);
-			if (ImGui::Combo("Gamma Correct", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
+			if (ImGui::Combo("Gamma Corr", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
 			{
 				CurrImage->LoadParams_PKM.Flags &= ~(tImagePKM::LoadFlag_GammaCompression | tImagePKM::LoadFlag_SRGBCompression | tImagePKM::LoadFlag_AutoGamma);
 				if (gammaMode == 1) CurrImage->LoadParams_PKM.Flags |= tImagePKM::LoadFlag_GammaCompression;
@@ -580,14 +577,14 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ShowHelpMark
 			(
 				"Gamma Correction\n"
-				"Pixel values used for PKM images are often in linear space. Before being displayed\n"
-				"on a screen with non-linear response they should be 'corrected' to gamma or sRGB-space (brightened).\n"
+				"Pixel values may be in linear space. Before being displayed on a screen with non-linear response\n"
+				"they should be 'corrected' to gamma or sRGB-space (brightened).\n"
 				"\n"
-				"Use 'None' if you know the source image data is already in either gamma or sRGB-space.\n\n"
-				"Use 'Gamma' if you want control over the gamma exponent being used to do the correction. 2.2 is standard.\n\n"
-				"Use 'sRGB' if you want to convert to sRGB-space. This more accurately represents a display's response and\n"
-				"is close to a 2.2 gamma but with an extra linear region, a non-unity amplitude, and a slightly larger gamma."
-				"Use 'Auto' if you want the viewer to try to detect whether to apply sRGB compression or not.\n",
+				"None : If you know the source image data is already in either gamma or sRGB-space.\n"
+				"Gamma : If you want control over the gamma exponent being used to do the correction. 2.2 is standard.\n"
+				"sRGB : If you want to convert to sRGB-space. This more accurately represents a display's response and\n"
+				"   is close to a 2.2 gamma but with an extra linear region and a non-unity amplitude.\n"
+				"Auto : Let the viewer decide whether to apply sRGB compression based on the detected colour profile.\n",
 				false
 			);
 			if (gammaMode == 1)
