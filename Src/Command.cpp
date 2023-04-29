@@ -841,14 +841,14 @@ one -i to process multiple types. No -i means all supported types.
 R"OPERATIONS137(OPERATIONS
 ----------
 Operations are specified using --op opname[arg1,arg2]
-There most be no spaces between arguments. The operations get applied in the
+There must be no spaces between arguments. The operations get applied in the
 order they were specified on the command line. Default argument values are
-specified with an asterisk. Optional argumets are marked with an asterisk.
+denoted with an asterisk. Optional arguments are also denoted with an asterisk.
 When either optional arguments are not provided or * is entered, the default
 value is used. eg. --op zap[a,b,c*,d*] may be called with --op zap[a,b] which
 would do the same thing as --op zap[a,b,*,*]. If the operation has all optional
 arguments you may include an empty arg list with [] or leave it out. For
-example if zap[*a,b*] you may call with --op zap[] or just --op zap as well.
+example zap[*a,b*] may be called with --op zap[] or just --op zap.
 
 --op resize[wid,hgt,filt*,edge*]
   Resizes image by resampling. Allows non-uniform scale.
