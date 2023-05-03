@@ -141,6 +141,13 @@ namespace Viewer
 		tFileType::EOL
 	);
 
+	// This is the list of lossy formats where the viewer supports lossless transformations.
+	tFileTypes FileTypes_LosslessTransform
+	(
+		tFileType::JPG,
+		tFileType::EOL
+	);
+
 	tFileDialog::FileDialog OpenFileDialog(tFileDialog::DialogMode::OpenFile, Viewer::FileTypes_Load);
 	tFileDialog::FileDialog OpenDirDialog(tFileDialog::DialogMode::OpenDir);
 	tFileDialog::FileDialog SaveAsDialog(tFileDialog::DialogMode::SaveFile, Viewer::FileTypes_Save);
@@ -219,6 +226,7 @@ namespace Viewer
 	bool Request_Quit								= false;
 	bool Request_CropLineConstrain					= false;
 	Anchor Request_PanSnap							= Anchor::Invalid;
+	LosslessTransformMode Request_LosslessTrnsModal	= LosslessTransformMode::None;
 	bool BindingsWindowJustOpened					= false;
 	bool CropMode									= false;
 	bool LMBDown									= false;
@@ -1768,6 +1776,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	bool resizeCanvasPressed		= Request_ResizeCanvasModal;		Request_ResizeCanvasModal			= false;
 	bool rotateImagePressed			= Request_RotateImageModal;			Request_RotateImageModal			= false;
 	bool levelsPressed				= Request_LevelsModal;				Request_LevelsModal					= false;
+	LosslessTransformMode
+	losslessTransformPressed		= Request_LosslessTrnsModal;		Request_LosslessTrnsModal			= LosslessTransformMode::None;
 
 	if (Config::Current->ShowMenuBar)
 	{
@@ -1885,37 +1895,65 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			tString flipVKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::FlipVertically);
 			if (ImGui::MenuItem("Flip Vertically", flipVKey.Chz(), false, imgAvail ))
 			{
-				CurrImage->Unbind();
-				CurrImage->Flip(false);
-				CurrImage->Bind();
-				SetWindowTitle();
+				if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
+				{
+					Request_LosslessTrnsModal = LosslessTransformMode::FlipV;
+				}
+				else
+				{
+					CurrImage->Unbind();
+					CurrImage->Flip(false);
+					CurrImage->Bind();
+					SetWindowTitle();
+				}
 			}
 
 			tString flipHKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::FlipHorizontally);
 			if (ImGui::MenuItem("Flip Horizontally", flipHKey.Chz(), false, imgAvail))
 			{
-				CurrImage->Unbind();
-				CurrImage->Flip(true);
-				CurrImage->Bind();
-				SetWindowTitle();
+				if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
+				{
+					Request_LosslessTrnsModal = LosslessTransformMode::FlipH;
+				}
+				else
+				{
+					CurrImage->Unbind();
+					CurrImage->Flip(true);
+					CurrImage->Bind();
+					SetWindowTitle();
+				}
 			}
 
 			tString rotACWKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Rotate90Anticlockwise);
 			if (ImGui::MenuItem("Rotate Anti-Clockwise", rotACWKey.Chz(), false, imgAvail))
 			{
-				CurrImage->Unbind();
-				CurrImage->Rotate90(true);
-				CurrImage->Bind();
-				SetWindowTitle();
+				if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
+				{
+					Request_LosslessTrnsModal = LosslessTransformMode::Rot90ACW;
+				}
+				else
+				{
+					CurrImage->Unbind();
+					CurrImage->Rotate90(true);
+					CurrImage->Bind();
+					SetWindowTitle();
+				}
 			}
 
 			tString rotCWKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Rotate90Clockwise);
 			if (ImGui::MenuItem("Rotate Clockwise", rotCWKey.Chz(), false, imgAvail))
 			{
-				CurrImage->Unbind();
-				CurrImage->Rotate90(false);
-				CurrImage->Bind();
-				SetWindowTitle();
+				if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
+				{
+					Request_LosslessTrnsModal = LosslessTransformMode::Rot90CW;
+				}
+				else
+				{
+					CurrImage->Unbind();
+					CurrImage->Rotate90(false);
+					CurrImage->Bind();
+					SetWindowTitle();
+				}
 			}
 
 			tString rotateImgKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::RotateImage);
@@ -2140,10 +2178,17 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			imgAvail ? ColourEnabledTint : ColourDisabledTint) && imgAvail
 		)
 		{
-			CurrImage->Unbind();
-			CurrImage->Flip(false);
-			CurrImage->Bind();
-			SetWindowTitle();
+			if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
+			{
+				Request_LosslessTrnsModal = LosslessTransformMode::FlipV;
+			}
+			else
+			{
+				CurrImage->Unbind();
+				CurrImage->Flip(false);
+				CurrImage->Bind();
+				SetWindowTitle();
+			}
 		}
 		ShowToolTip("Flip Vertically");
 
@@ -2154,10 +2199,17 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			imgAvail ? ColourEnabledTint : ColourDisabledTint) && imgAvail
 		)
 		{
-			CurrImage->Unbind();
-			CurrImage->Flip(true);
-			CurrImage->Bind();
-			SetWindowTitle();
+			if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
+			{
+				Request_LosslessTrnsModal = LosslessTransformMode::FlipH;
+			}
+			else
+			{
+				CurrImage->Unbind();
+				CurrImage->Flip(true);
+				CurrImage->Bind();
+				SetWindowTitle();
+			}
 		}
 		ShowToolTip("Flip Horizontally");
 
@@ -2169,10 +2221,17 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			imgAvail ? ColourEnabledTint : ColourDisabledTint) && imgAvail
 		)
 		{
-			CurrImage->Unbind();
-			CurrImage->Rotate90(true);
-			CurrImage->Bind();
-			SetWindowTitle();
+			if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
+			{
+				Request_LosslessTrnsModal = LosslessTransformMode::Rot90ACW;
+			}
+			else
+			{
+				CurrImage->Unbind();
+				CurrImage->Rotate90(true);
+				CurrImage->Bind();
+				SetWindowTitle();
+			}
 		}
 		ImGui::PopID();
 		ShowToolTip("Rotate 90 Anticlockwise");
@@ -2185,10 +2244,17 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			imgAvail ? ColourEnabledTint : ColourDisabledTint) && imgAvail
 		)
 		{
-			CurrImage->Unbind();
-			CurrImage->Rotate90(false);
-			CurrImage->Bind();
-			SetWindowTitle();
+			if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
+			{
+				Request_LosslessTrnsModal = LosslessTransformMode::Rot90CW;
+			}
+			else
+			{
+				CurrImage->Unbind();
+				CurrImage->Rotate90(false);
+				CurrImage->Bind();
+				SetWindowTitle();
+			}
 		}
 		ImGui::PopID();
 		ShowToolTip("Rotate 90 Clockwise");
@@ -2328,6 +2394,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	DoResizeCanvasModal				(resizeCanvasPressed);
 	DoRotateImageModal				(rotateImagePressed);
 	DoLevelsModal					(levelsPressed);
+	DoLosslessTransformModal		(losslessTransformPressed);
 
 	// If any modal is open we allow keyboard navigation. For non-modal we do not as we need the keyboard
 	// to control the viewer itself.
@@ -2852,10 +2919,20 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case Bindings::Operation::FlipHorizontally:
 			if (imgAvail && !CurrImage->IsAltPictureEnabled())
 			{
-				CurrImage->Unbind();
-				CurrImage->Flip(operation == Bindings::Operation::FlipHorizontally);
-				CurrImage->Bind();
-				SetWindowTitle();
+				if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
+				{
+					Request_LosslessTrnsModal =
+						(operation == Bindings::Operation::FlipVertically) ?
+						LosslessTransformMode::FlipV :
+						LosslessTransformMode::FlipH;
+				}
+				else
+				{
+					CurrImage->Unbind();
+					CurrImage->Flip(operation == Bindings::Operation::FlipHorizontally);
+					CurrImage->Bind();
+					SetWindowTitle();
+				}
 			}
 			break;
 
@@ -2863,10 +2940,20 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case Bindings::Operation::Rotate90Clockwise:
 			if (imgAvail && !CurrImage->IsAltPictureEnabled())
 			{
-				CurrImage->Unbind();
-				CurrImage->Rotate90(operation == Bindings::Operation::Rotate90Anticlockwise);
-				CurrImage->Bind();
-				SetWindowTitle();
+				if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
+				{
+					Request_LosslessTrnsModal =
+						(operation == Bindings::Operation::Rotate90Anticlockwise) ?
+						LosslessTransformMode::Rot90ACW :
+						LosslessTransformMode::Rot90CW;
+				}
+				else
+				{
+					CurrImage->Unbind();
+					CurrImage->Rotate90(operation == Bindings::Operation::Rotate90Anticlockwise);
+					CurrImage->Bind();
+					SetWindowTitle();
+				}
 			}
 			break;
 

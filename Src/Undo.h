@@ -21,7 +21,7 @@ namespace Undo
 {
 
 
-// An Step is is capable of undoing (or redoing) an operation.
+// A Step is capable of undoing (or redoing) an operation.
 class Step : public tLink<Step>
 {
 public:
@@ -33,8 +33,7 @@ public:
 };
 
 
-// A particular type of restore step. This one is simple but takes quite a lot of memory. Good one to use while trying
-// to get this running.
+// A particular type of restore step. This one is simple but takes quite a lot of memory.
 class Step_PictureList : public Step
 {
 public:

@@ -15,6 +15,7 @@
 #include <Foundation/tVersion.cmake.h>
 #include <Math/tVector2.h>
 #include <Math/tColour.h>
+#include <Image/tImageJPG.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "imgui.h"
@@ -811,56 +812,6 @@ void Viewer::DoDeleteFileNoRecycleModal(bool deleteFileNoRecycPressed)
 }
 
 
-void Viewer::DoRenameModal(bool renamePressed)
-{
-	if (renamePressed)
-		ImGui::OpenPopup("Rename File");
-
-	// The unused isOpenRen bool is just so we get a close button in ImGui.
-	bool isOpenRen = true;
-	if (!ImGui::BeginPopupModal("Rename File", &isOpenRen, ImGuiWindowFlags_AlwaysAutoResize))
-		return;
-
-	tString fullname = CurrImage->Filename;
-	tString origname = tSystem::tGetFileName(fullname);
-
-	static char newname[128] = "Filename";
-	if (renamePressed)
-		tStd::tStrcpy(newname, origname.Chr());
-
-	bool nameChanged = false;
-	if (ImGui::InputText("##NewNameText", newname, tNumElements(newname), ImGuiInputTextFlags_EnterReturnsTrue))
-		nameChanged = true;
-	ImGui::NewLine();
-
-	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
-		ImGui::CloseCurrentPopup();
-
-	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-
-	if (ImGui::IsWindowAppearing())
-		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("OK", tVector2(100.0f, 0.0f)) || nameChanged)
-	{
-		if (origname != newname)
-		{
-			tString dir = tSystem::tGetDir(fullname);
-			bool renamed = tSystem::tRenameFile(dir, origname, newname);
-			if (renamed)
-			{
-				PopulateImages();
-				SetCurrentImage(dir+newname);
-			}
-		}
-
-		ImGui::CloseCurrentPopup();
-	}
-
-	ImGui::EndPopup();
-}
-
-
 void Viewer::DoSnapMessageNoFileBrowseModal(bool justPressed)
 {
 	if (justPressed)
@@ -926,6 +877,151 @@ void Viewer::DoSnapMessageNoFrameTransModal(bool justPressed)
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
 	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
+
+	ImGui::EndPopup();
+}
+
+
+void Viewer::DoRenameModal(bool renamePressed)
+{
+	if (renamePressed)
+		ImGui::OpenPopup("Rename File");
+
+	// The unused isOpenRen bool is just so we get a close button in ImGui.
+	bool isOpenRen = true;
+	if (!ImGui::BeginPopupModal("Rename File", &isOpenRen, ImGuiWindowFlags_AlwaysAutoResize))
+		return;
+
+	tString fullname = CurrImage->Filename;
+	tString origname = tSystem::tGetFileName(fullname);
+
+	static char newname[128] = "Filename";
+	if (renamePressed)
+		tStd::tStrcpy(newname, origname.Chr());
+
+	bool nameChanged = false;
+	if (ImGui::InputText("##NewNameText", newname, tNumElements(newname), ImGuiInputTextFlags_EnterReturnsTrue))
+		nameChanged = true;
+	ImGui::NewLine();
+
+	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
+		ImGui::CloseCurrentPopup();
+
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+
+	if (ImGui::IsWindowAppearing())
+		ImGui::SetKeyboardFocusHere();
+	if (Viewer::Button("OK", tVector2(100.0f, 0.0f)) || nameChanged)
+	{
+		if (origname != newname)
+		{
+			tString dir = tSystem::tGetDir(fullname);
+			bool renamed = tSystem::tRenameFile(dir, origname, newname);
+			if (renamed)
+			{
+				PopulateImages();
+				SetCurrentImage(dir+newname);
+			}
+		}
+
+		ImGui::CloseCurrentPopup();
+	}
+
+	ImGui::EndPopup();
+}
+
+
+void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
+{
+	static const char* transName = nullptr;
+	static LosslessTransformMode currMode = LosslessTransformMode::None;
+	if (mode != LosslessTransformMode::None)
+	{
+		currMode = mode;
+		switch (mode)
+		{
+			case LosslessTransformMode::Rot90ACW:	transName = "Anti-clockwise 90° Rotation";	break;
+			case LosslessTransformMode::Rot90CW:	transName = "Clockwise 90° Rotation";		break;
+			case LosslessTransformMode::FlipH:		transName = "Horizontal Flip";				break;
+			case LosslessTransformMode::FlipV:		transName = "Vertical Flip";				break;
+		}
+		ImGui::OpenPopup("Lossless Transform");
+	}
+
+	// The unused isOpenRen bool is just so we get a close button in ImGui.
+	bool isOpenRen = true;
+	if (!ImGui::BeginPopupModal("Lossless Transform", &isOpenRen, ImGuiWindowFlags_AlwaysAutoResize))
+		return;
+
+	ImGui::Text
+	(
+		"Tacent View supports lossless %ss.\n"
+		"\n"
+		"If you select 'Normal' the transform will be performed\n"
+		"but if you save to a lossy format it will need to re-compress.\n"
+		"\n"
+		"If you press 'Lossless' the transform will be applied directly\n"
+		"to the file without decompressing. The image will be saved\n"
+		"and reloaded. There is no undo and no loss of quality.\n\n",
+		transName
+	);
+
+	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
+		ImGui::CloseCurrentPopup();
+
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 212.0f);
+	if (Viewer::Button("Normal", tVector2(100.0f, 0.0f)))
+	{
+		CurrImage->Unbind();
+		switch (currMode)
+		{
+			case LosslessTransformMode::Rot90ACW:	CurrImage->Rotate90(true);	break;
+			case LosslessTransformMode::Rot90CW:	CurrImage->Rotate90(false);	break;
+			case LosslessTransformMode::FlipH:		CurrImage->Flip(true);		break;
+			case LosslessTransformMode::FlipV:		CurrImage->Flip(false);		break;
+		}
+		CurrImage->Bind();
+		SetWindowTitle();
+		ImGui::CloseCurrentPopup();
+	}
+
+	ImGui::SameLine();
+	if (ImGui::IsWindowAppearing())
+		ImGui::SetKeyboardFocusHere();
+	if (Viewer::Button("Lossless", tVector2(100.0f, 0.0f)))
+	{
+		bool fileSaved = false;
+		switch (CurrImage->Filetype)
+		{
+			case tSystem::tFileType::JPG:
+			{
+				tImage::tImageJPG jpg;
+				jpg.Load(CurrImage->Filename, tImage::tImageJPG::LoadFlag_NoDecompress);
+				if (!jpg.IsValid())
+					break;
+				switch (currMode)
+				{
+					case LosslessTransformMode::Rot90ACW:	jpg.LosslessRotate90(true);		break;
+					case LosslessTransformMode::Rot90CW:	jpg.LosslessRotate90(false);	break;
+					case LosslessTransformMode::FlipH:		jpg.LosslessFlip(true);			break;
+					case LosslessTransformMode::FlipV:		jpg.LosslessFlip(false);		break;
+				}
+				fileSaved = jpg.Save(CurrImage->Filename);
+				break;
+			}
+		}
+		if (fileSaved)
+		{
+			CurrImage->Unbind();
+			CurrImage->Unload(true);
+			CurrImage->Load();
+			CurrImage->Bind();
+			SetWindowTitle();
+		}
+		ImGui::CloseCurrentPopup();
+	}
 
 	ImGui::EndPopup();
 }
