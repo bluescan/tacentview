@@ -288,6 +288,7 @@ bool Image::Load()
 				break;
 
 			Info.SrcPixelFormat = ico.GetBestSrcPixelFormat();
+			Info.SrcColourProfile = tColourProfile::sRGB;
 			int numFrames = ico.GetNumFrames();
 			for (int p = 0; p < numFrames; p++)
 			{
@@ -318,6 +319,7 @@ bool Image::Load()
 			tPixel* pixels = jpg.StealPixels();
 
 			Info.SrcPixelFormat = jpg.PixelFormatSrc;
+			Info.SrcColourProfile = tColourProfile::sRGB;
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
 

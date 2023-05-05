@@ -936,6 +936,7 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 {
 	static const char* transName = nullptr;
 	static LosslessTransformMode currMode = LosslessTransformMode::None;
+	static bool isPerfect = false;
 	if (mode != LosslessTransformMode::None)
 	{
 		currMode = mode;
@@ -945,6 +946,29 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 			case LosslessTransformMode::Rot90CW:	transName = "Clockwise 90° Rotation";		break;
 			case LosslessTransformMode::FlipH:		transName = "Horizontal Flip";				break;
 			case LosslessTransformMode::FlipV:		transName = "Vertical Flip";				break;
+		}
+		if (CurrImage->Filetype == tSystem::tFileType::JPG)
+		{
+			// @todo This isn't ideal as we are loading the jpg only to find out if a perfect
+			// lossless transformation is possible. Later the user may press the lossless button
+			// in which case we need to load the jpg again.
+			isPerfect = false;
+			tImage::tImageJPG jpg;
+			jpg.Load(CurrImage->Filename, tImage::tImageJPG::LoadFlag_NoDecompress);
+			if (jpg.IsValid())
+			{
+				switch (mode)
+				{
+					case LosslessTransformMode::Rot90ACW:	isPerfect = jpg.CanDoPerfectLosslessTransform(tImage::tImageJPG::Transform::Rotate90ACW);	break;
+					case LosslessTransformMode::Rot90CW:	isPerfect = jpg.CanDoPerfectLosslessTransform(tImage::tImageJPG::Transform::Rotate90CW);	break;
+					case LosslessTransformMode::FlipH:		isPerfect = jpg.CanDoPerfectLosslessTransform(tImage::tImageJPG::Transform::FlipH);			break;
+					case LosslessTransformMode::FlipV:		isPerfect = jpg.CanDoPerfectLosslessTransform(tImage::tImageJPG::Transform::FlipV);			break;
+				}
+			}
+		}
+		else
+		{
+			isPerfect = true;
 		}
 		ImGui::OpenPopup("Lossless Transform");
 	}
@@ -963,9 +987,21 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 		"\n"
 		"If you press 'Lossless' the transform will be applied directly\n"
 		"to the file without decompressing. The image will be saved\n"
-		"and reloaded. There is no undo and no loss of quality.\n\n",
+		"and reloaded. There is no undo but also no loss of quality.\n\n",
 		transName
 	);
+
+	if (!isPerfect)
+	{
+		ImGui::Text
+		(
+			"Note: For this file a perfect (area-preserving) transformation\n"
+			"is not possible because the width or height is not a multiple of\n"
+			"the JPeg MCU block-size. If you press 'Lossless' you will still\n"
+			"get a lossless image afterwards, but the right or bottom edge\n"
+			"will be slightly trimmed.\n\n"
+		);
+	}
 
 	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
@@ -1003,10 +1039,10 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 					break;
 				switch (currMode)
 				{
-					case LosslessTransformMode::Rot90ACW:	jpg.LosslessRotate90(true);		break;
-					case LosslessTransformMode::Rot90CW:	jpg.LosslessRotate90(false);	break;
-					case LosslessTransformMode::FlipH:		jpg.LosslessFlip(true);			break;
-					case LosslessTransformMode::FlipV:		jpg.LosslessFlip(false);		break;
+					case LosslessTransformMode::Rot90ACW:	jpg.LosslessTransform(tImage::tImageJPG::Transform::Rotate90ACW);	break;
+					case LosslessTransformMode::Rot90CW:	jpg.LosslessTransform(tImage::tImageJPG::Transform::Rotate90CW);	break;
+					case LosslessTransformMode::FlipH:		jpg.LosslessTransform(tImage::tImageJPG::Transform::FlipH);			break;
+					case LosslessTransformMode::FlipV:		jpg.LosslessTransform(tImage::tImageJPG::Transform::FlipV);			break;
 				}
 				fileSaved = jpg.Save(CurrImage->Filename);
 				break;
