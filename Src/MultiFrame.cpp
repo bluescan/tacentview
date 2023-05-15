@@ -290,7 +290,7 @@ tString Viewer::GetFrameFilename(int frameNum, const tString& dir, const tString
 {
 	tString frameFile;
 	tString extension = tSystem::tGetExtension(fileType);
-	tsPrintf(frameFile, "%s%s_%03d.%s", dir.Chr(), baseName, frameNum, extension.Chr());
+	tsPrintf(frameFile, "%s%s_%03d.%s", dir.Chr(), baseName.Chr(), frameNum, extension.Chr());
 	return frameFile;
 }
 
