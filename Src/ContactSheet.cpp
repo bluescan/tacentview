@@ -58,7 +58,7 @@ bool Viewer::AnyImageNeedsResize(int frameWidth, int frameHeight)
 }
 
 
-void Viewer::DoContactSheetModal(bool saveContactSheetPressed)
+void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 {
 	if (saveContactSheetPressed)
 		ImGui::OpenPopup("Contact Sheet");

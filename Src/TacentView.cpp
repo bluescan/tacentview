@@ -218,6 +218,7 @@ namespace Viewer
 	bool Request_LevelsModal						= false;
 	bool Request_ContactSheetModal					= false;
 	bool Request_MultiFrameModal					= false;
+	bool Request_ExtractFramesModal					= false;
 	bool Request_DeleteFileModal					= false;
 	bool Request_DeleteFileNoRecycleModal			= false;
 	bool Request_RenameModal						= false;
@@ -1765,6 +1766,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	bool saveAllPressed				= Request_SaveAllModal;				Request_SaveAllModal				= false;
 	bool saveContactSheetPressed	= Request_ContactSheetModal;		Request_ContactSheetModal			= false;
 	bool saveMultiFramePressed		= Request_MultiFrameModal;			Request_MultiFrameModal				= false;
+	bool saveExtractFramesPressed 	= Request_ExtractFramesModal;		Request_ExtractFramesModal			= false;
 	bool snapMessageNoFileBrowse	= Request_SnapMessage_NoFileBrowse;	Request_SnapMessage_NoFileBrowse	= false;
 	bool snapMessageNoFrameTrans	= Request_SnapMessage_NoFrameTrans;	Request_SnapMessage_NoFrameTrans	= false;
 	bool deleteFilePressed			= Request_DeleteFileModal;			Request_DeleteFileModal				= false;
@@ -1827,6 +1829,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			bool saveMultiEnabled = (Images.GetNumItems() > 1);
 			if (ImGui::MenuItem("Save Multi-Frame...", saveMultiKey.Chz(), false, saveMultiEnabled))
 				saveMultiFramePressed = true;
+
+			tString saveFramesKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SaveExtractFrames);
+			bool saveFramesEnabled = CurrImage && (CurrImage->GetNumFrames() > 1);
+			if (ImGui::MenuItem("Save Extract Frames...", saveFramesKey.Chz(), false, saveFramesEnabled))
+				saveExtractFramesPressed = true;
 
 			ImGui::Separator();
 
@@ -2378,8 +2385,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	DoSaveAsModal					(saveAsPressed);
 
 	DoSaveAllModal					(saveAllPressed);
-	DoContactSheetModal				(saveContactSheetPressed);
-	DoMultiFrameModal				(saveMultiFramePressed);
+	DoSaveContactSheetModal			(saveContactSheetPressed);
+	DoSaveMultiFrameModal			(saveMultiFramePressed);
+	DoSaveExtractFramesModal		(saveExtractFramesPressed);
 	DoSnapMessageNoFileBrowseModal	(snapMessageNoFileBrowse);
 	DoSnapMessageNoFrameTransModal	(snapMessageNoFrameTrans);
 
@@ -3098,12 +3106,16 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			if (CurrImage) Request_SaveAllModal = true;
 			break;
 
+		case Bindings::Operation::SaveContactSheet:
+			if (Images.GetNumItems() > 1) Request_ContactSheetModal = true;
+			break;
+
 		case Bindings::Operation::SaveMultiFrameImage:
 			if (Images.GetNumItems() > 1) Request_MultiFrameModal = true;
 			break;
 
-		case Bindings::Operation::SaveContactSheet:
-			if (Images.GetNumItems() > 1) Request_ContactSheetModal = true;
+		case Bindings::Operation::SaveExtractFrames:
+			if (CurrImage && (CurrImage->GetNumFrames() > 1)) Request_ExtractFramesModal = true;
 			break;
 
 		case Bindings::Operation::MenuBar:

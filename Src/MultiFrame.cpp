@@ -34,6 +34,9 @@ namespace Viewer
 	void SaveMultiFrameTo(const tString& outFile, int finalWidth, int finalHeight);
 	void ComputeMaxWidthHeight(int& outWidth, int& outHeight);
 	bool AllDimensionsMatch(int width, int height);
+
+	tString GetFrameFilename(int frameNum, const tString& dir, const tString& baseName, tFileType);
+	void SaveAllExtractedFrames(const tString& destDir, const tString& baseName, tFileType);
 }
 
 
@@ -80,7 +83,7 @@ bool Viewer::AllDimensionsMatch(int width, int height)
 }
 
 
-void Viewer::DoMultiFrameModal(bool saveMultiFramePressed)
+void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 {
 	if (saveMultiFramePressed)
 		ImGui::OpenPopup("Multi Frame");
@@ -280,4 +283,141 @@ void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeigh
 		PopulateImages();
 		SetCurrentImage(outFile);
 	}
+}
+
+
+tString Viewer::GetFrameFilename(int frameNum, const tString& dir, const tString& baseName, tFileType fileType)
+{
+	tString frameFile;
+	tString extension = tSystem::tGetExtension(fileType);
+	tsPrintf(frameFile, "%s%s_%03d.%s", dir.Chr(), baseName, frameNum, extension.Chr());
+	return frameFile;
+}
+
+
+void Viewer::SaveAllExtractedFrames(const tString& destDir, const tString& baseName, tFileType fileType)
+{
+	int numFrames = CurrImage->GetNumFrames();
+	for (int frameNum = 0; frameNum < numFrames; frameNum++)
+	{
+		tString frameFile = GetFrameFilename(frameNum, destDir, baseName, fileType);
+
+		///////////////////////// WIP HERE
+		// Save frame to frameFile. Need to extract frame as tPicture from
+		// CurrImage and pass it to Viewer::SavePictureAs.
+	}
+}
+
+
+void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
+{
+	if (saveExtractFramesPressed)
+		ImGui::OpenPopup("Extract Frames");
+
+	// The unused isOpenExtractFrames bool is just so we get a close button in ImGui. Returns false if popup not open.
+	bool isOpenExtractFrames = true;
+	if (!ImGui::BeginPopupModal("Extract Frames", &isOpenExtractFrames, ImGuiWindowFlags_AlwaysAutoResize))
+		return;
+
+	int numFrames = CurrImage->GetNumFrames();
+	tString srcFileName = tGetFileName(CurrImage->Filename);
+	tString genMsg;
+	tsPrintf
+	(
+		genMsg,
+		"This modal extracts all frames from the current image and saves them\n"
+		"to a folder. Image %s will have %d frames extracted.",
+		srcFileName.Chr(), numFrames
+	);
+	ImGui::Text(genMsg.Chr());
+
+	ImGui::Separator();
+	tFileType fileType = DoSaveChooseFiletype();
+	DoSaveFiletypeOptions(fileType);
+
+	ImGui::Separator();
+	tString destDir = DoSubFolder();
+	static char outBaseName[128] = "ExtractedFrame";
+	ImGui::InputText("Base Filename", outBaseName, tNumElements(outBaseName));
+	tString baseHelp;
+	tString extension = tGetExtension(fileType);
+	tsPrintf(baseHelp, "The output base filename without extension. Files\nwill be called BaseName_001.%s, BaseName_02.%s, etc.", extension.Chr(), extension.Chr());
+	ImGui::SameLine(); ShowHelpMark(baseHelp.Chr());
+
+	ImGui::NewLine();
+	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
+		ImGui::CloseCurrentPopup();
+	ImGui::SameLine();
+
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+
+	// This needs to be static since DoSaveModal is called for every frame the modal is open.
+	static tList<tStringItem> overwriteFiles(tListMode::Static);
+	bool closeThisModal = false;
+
+	if (ImGui::IsWindowAppearing())
+		ImGui::SetKeyboardFocusHere();		
+	if (Viewer::Button("Extract", tVector2(100.0f, 0.0f)))
+	{
+		bool dirExists = tDirExists(destDir);
+		if (!dirExists)
+		{
+			dirExists = tCreateDir(destDir);
+			PopulateImagesSubDirs();
+		}
+
+		if (dirExists)
+		{
+			// Generate all the filenames we will be saving _before_ we extract.
+			// This allows us to make sure, if Config->AllowExtractOverwites is false.
+			// that there aren't existing files.
+			tList<tStringItem> extractedFilenames;
+			for (int frameNum = 0; frameNum < numFrames; frameNum++)
+			{
+				tString frameFile = GetFrameFilename(frameNum, destDir, tString(outBaseName), fileType);
+				extractedFilenames.Append(new tStringItem(frameFile));
+			}
+
+			if (Config::Current->ConfirmFileOverwrites)
+			{
+				overwriteFiles.Empty();
+				for (tStringItem* exFile = extractedFilenames.First(); exFile; exFile = exFile->Next())
+					if (tSystem::tFileExists(*exFile))
+						overwriteFiles.Append(new tStringItem(*exFile));
+
+				if (!overwriteFiles.IsEmpty())
+				{
+					ImGui::OpenPopup("Extract Overwrite Popup");
+				}
+				else
+				{
+					SaveAllExtractedFrames(destDir, tString(outBaseName), fileType);
+					closeThisModal = true;
+				}
+			}
+			else
+			{
+				SaveAllExtractedFrames(destDir, tString(outBaseName), fileType);
+				closeThisModal = true;
+			}
+		}
+	}
+
+	// The unused isOpen bool is just so we get a close button in ImGui. 
+	bool isOpen = true;
+	if (ImGui::BeginPopupModal("Extract Overwrite Popup", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		bool pressedOK = false, pressedCancel = false;
+		Viewer::DoOverwriteMultipleFilesModal(overwriteFiles, pressedOK, pressedCancel);
+		if (pressedOK)
+			SaveAllExtractedFrames(destDir, tString(outBaseName), fileType);
+
+		if (pressedOK || pressedCancel)
+			closeThisModal = true;
+	}
+
+	if (closeThisModal)
+		ImGui::CloseCurrentPopup();
+
+	ImGui::EndPopup();
 }

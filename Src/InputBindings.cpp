@@ -195,7 +195,8 @@ const char* Bindings::OperationDescriptions[] =
 	"Zoom Per Image",
 	"Levels",
 	"Copy",
-	"Paste"
+	"Paste",
+	"Save Extract Frames..."
 
 	// Add new entries here.
 };
@@ -380,8 +381,9 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 	AssignKey(GLFW_KEY_S,			Modifier_Ctrl,					Operation::Save,					onlyIfUnassigned);	// Update enum pending.
 	AssignKey(GLFW_KEY_S,			Modifier_Shift,					Operation::SaveAs,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_S,			Modifier_Alt,					Operation::SaveAll,					onlyIfUnassigned);
-	AssignKey(GLFW_KEY_M,			Modifier_Ctrl,					Operation::SaveMultiFrameImage,		onlyIfUnassigned);
 	AssignKey(GLFW_KEY_C,			Modifier_None,					Operation::SaveContactSheet,		onlyIfUnassigned);
+	AssignKey(GLFW_KEY_M,			Modifier_Ctrl,					Operation::SaveMultiFrameImage,		onlyIfUnassigned);
+	AssignKey(GLFW_KEY_E,			Modifier_Ctrl,					Operation::SaveExtractFrames,		onlyIfUnassigned);
 
 	AssignKey(GLFW_KEY_M,			Modifier_None,					Operation::MenuBar,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_N,			Modifier_None,					Operation::NavBar,					onlyIfUnassigned);

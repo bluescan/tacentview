@@ -110,6 +110,7 @@ namespace Bindings
 		Levels,					// Toggle levels popup.
 		Copy,					// Copies current image to clipboard.
 		Paste,					// Pastes image in clipboard.
+		SaveExtractFrames,		// Save individual frames of a mult-frame image as indivisual files.
 		//
 		// Add new operations here. Adding above will invalidate save file keybindings.
 		//
