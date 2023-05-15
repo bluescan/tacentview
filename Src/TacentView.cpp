@@ -286,8 +286,8 @@ namespace Viewer
 	bool Compare_ImageLoadTimeAscending	(const Image& a, const Image& b)												{ return a.GetLoadedTime() < b.GetLoadedTime(); }
 	bool Compare_ImageFileNameAscending	(const Image& a, const Image& b)												{ return tStricmp(a.Filename.Chars(), b.Filename.Chars()) < 0; }
 	bool Compare_ImageFileNameDescending(const Image& a, const Image& b)												{ return tStricmp(a.Filename.Chars(), b.Filename.Chars()) > 0; }
-	bool Compare_ImageFileTypeAscending	(const Image& a, const Image& b)												{ return int(a.Filetype) < int(b.Filetype); }
-	bool Compare_ImageFileTypeDescending(const Image& a, const Image& b)												{ return int(a.Filetype) > int(b.Filetype); }
+	bool Compare_ImageFileTypeAscending	(const Image& a, const Image& b)												{ return tStricmp(tGetExtension(a.Filetype).Chr(), tGetExtension(b.Filetype).Chr()) < 0; }
+	bool Compare_ImageFileTypeDescending(const Image& a, const Image& b)												{ return tStricmp(tGetExtension(a.Filetype).Chr(), tGetExtension(b.Filetype).Chr()) > 0; }
 	bool Compare_ImageModTimeAscending	(const Image& a, const Image& b)												{ return a.FileModTime < b.FileModTime; }
 	bool Compare_ImageModTimeDescending	(const Image& a, const Image& b)												{ return a.FileModTime > b.FileModTime; }
 	bool Compare_ImageFileSizeAscending	(const Image& a, const Image& b)												{ return a.FileSizeB < b.FileSizeB; }
