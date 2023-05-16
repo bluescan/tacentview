@@ -29,29 +29,30 @@
 
 namespace Command
 {
-	tCmdLine::tParam  ParamInputFiles	("Input image files",					"inputfiles",	0			);
+	tCmdLine::tParam  ParamInputFiles		("Input image files",				"inputfiles",	0			);
 
 	// Note, -c and --cli are reserved.
-	tCmdLine::tOption OptionHelp		("Print help/usage information",		"help",			'h'			);
-	tCmdLine::tOption OptionSyntax		("Print syntax help",					"syntax",		's'			);
-	tCmdLine::tOption OptionVerbosity	("Verbosity from 0 to 2",				"verbosity",	'v',	1	);
+	tCmdLine::tOption OptionHelp			("Print help/usage information",	"help",			'h'			);
+	tCmdLine::tOption OptionSyntax			("Print syntax help",				"syntax",		's'			);
+	tCmdLine::tOption OptionVerbosity		("Verbosity from 0 to 2",			"verbosity",	'v',	1	);
 
-	tCmdLine::tOption OptionInType		("Input file type(s)",					"intype",		'i',	1	);
-	tCmdLine::tOption OptionOperation	("Operation",							"op",					1	);
+	tCmdLine::tOption OptionInType			("Input file type(s)",				"intype",		'i',	1	);
+	tCmdLine::tOption OptionOperation		("Operation",						"op",					1	);
 
-	tCmdLine::tOption OptionOutType		("Output file type",					"outtype",		'o',	1	);
-	tCmdLine::tOption OptionOverwrite	("Overwrite existing output files",		"overwrite",	'w'			);
-	tCmdLine::tOption OptionAutoName	("Autogenerate output file names",		"autoname",		'a'			);
-	tCmdLine::tOption OptionParamsAPNG	("Save parameters for APNG files",		"paramsAPNG",	2			);
-	tCmdLine::tOption OptionParamsBMP	("Save parameters for BMP  files",		"paramsBMP",	1			);
-	tCmdLine::tOption OptionParamsGIF	("Save parameters for GIF  files",		"paramsGIF",	8			);
-	tCmdLine::tOption OptionParamsJPG	("Save parameters for JPG  files",		"paramsJPG",	1			);
-	tCmdLine::tOption OptionParamsPNG	("Save parameters for PNG  files",		"paramsPNG",	1			);
-	tCmdLine::tOption OptionParamsQOI	("Save parameters for QOI  files",		"paramsQOI",	2			);
-	tCmdLine::tOption OptionParamsTGA	("Save parameters for TGA  files",		"paramsTGA",	2			);
-	tCmdLine::tOption OptionParamsTIFF	("Save parameters for TIFF files",		"paramsTIFF",	3			);
-	tCmdLine::tOption OptionParamsWEBP	("Save parameters for WEBP files",		"paramsWEBP",	3			);
-	tCmdLine::tOption OptionEarlyExit	("Early exit / no skipping",			"earlyexit",	'e'			);
+	tCmdLine::tOption OptionOutType			("Output file type",				"outtype",		'o',	1	);
+	tCmdLine::tOption OptionOverwrite		("Overwrite existing output files",	"overwrite",	'w'			);
+	tCmdLine::tOption OptionAutoName		("Autogenerate output file names",	"autoname",		'a'			);
+	tCmdLine::tOption OptionParamsAPNG		("Save parameters for APNG files",	"paramsAPNG",	2			);
+	tCmdLine::tOption OptionParamsBMP		("Save parameters for BMP  files",	"paramsBMP",	1			);
+	tCmdLine::tOption OptionParamsGIF		("Save parameters for GIF  files",	"paramsGIF",	8			);
+	tCmdLine::tOption OptionParamsJPG		("Save parameters for JPG  files",	"paramsJPG",	1			);
+	tCmdLine::tOption OptionParamsPNG		("Save parameters for PNG  files",	"paramsPNG",	1			);
+	tCmdLine::tOption OptionParamsQOI		("Save parameters for QOI  files",	"paramsQOI",	2			);
+	tCmdLine::tOption OptionParamsTGA		("Save parameters for TGA  files",	"paramsTGA",	2			);
+	tCmdLine::tOption OptionParamsTIFF		("Save parameters for TIFF files",	"paramsTIFF",	3			);
+	tCmdLine::tOption OptionParamsWEBP		("Save parameters for WEBP files",	"paramsWEBP",	3			);
+	tCmdLine::tOption OptionEarlyExit		("Early exit / no skipping",		"earlyexit",	'e'			);
+	tCmdLine::tOption OptionSkipUnchanged	("Don't save unchanged files",		"skipunchanged",'k'			);
 
 	void BeginConsoleOutput();
 	void EndConsoleOutput();
@@ -706,7 +707,7 @@ tString Command::DetermineOutputFilename(const tString& inName, tSystem::tFileTy
 		if (nameIter == 0)
 			contender = nonAutoName;
 		else
-			tsPrintf(contender, "%s%s_%02d.%s", tSystem::tGetDir(inName).Chr(), tSystem::tGetFileBaseName(inName).Chr(), nameIter, outExt.Chr());
+			tsPrintf(contender, "%s%s_%03d.%s", tSystem::tGetDir(inName).Chr(), tSystem::tGetFileBaseName(inName).Chr(), nameIter, outExt.Chr());
 
 		if (!tSystem::tFileExists(contender))
 			return contender;
@@ -802,7 +803,7 @@ int Command::Process()
 		// In editor the column num at EOL (after last character) should be 80 or less.
 		tPrintf
 		(
-R"U5AG3(MODE
+R"USAGE010(MODE
 ----
 You MUST call with -c or --cli to use this program in CLI mode.
 
@@ -833,12 +834,12 @@ one -i to process multiple types. No -i means all supported types.
 %s
 %s
 
-)U5AG3", intypes.Chr(), inexts.Chr()
+)USAGE010", intypes.Chr(), inexts.Chr()
 		);
 
 		tPrintf
 		(
-R"OPERATIONS137(OPERATIONS
+R"OPERATIONS010(OPERATIONS
 ----------
 Operations are specified using --op opname[arg1,arg2]
 There must be no spaces between arguments. The operations get applied in the
@@ -981,12 +982,12 @@ example zap[*a,b*] may be called with --op zap[] or just --op zap.
   fill: Fill colour. Only used if mode was fill. Either specify with a hex in
         form #RRGGBBAA or use one of the predefined colours: black*, white,
         grey, red, green, blue, yellow, cyan, magenta, or trans.
-)OPERATIONS137"
+)OPERATIONS010"
 		);
 
 		tPrintf
 		(
-R"OPERATIONS147(
+R"OPERATIONS020(
 --op levels[bp,mp,wp,obp,owp,fram*,chan*,alg*]
   Adjusts image levels in a manner similar to photo-editing software. You
   specify black, mid, and white points, whether to operate on all frames or a
@@ -1122,19 +1123,19 @@ R"OPERATIONS147(
   Example 3: --op swizzle[0] clears the red channel. Same as [0GBA] and [0***]
   Example 4: --op swizzle[GGG1] places the original green channel in the new
   red, green and blue channels. It also sets the alpha to full (opaque).
+)OPERATIONS020"
+		);
 
+		tPrintf
+		(
+R"OUTIMAGES010(
 %s
 %s
 For boolean arguments you may use "true", "t", "yes", "y", "on", "enable",
 "enabled", "1", "+", and strings that represent non-zero integers as true.
 These are case-insensitive. False is the result otherwise.
 
-)OPERATIONS147", filters.Chr(), edgemodes.Chr()
-		);
-
-		tPrintf
-		(
-R"OUTIMAGES137(OUTPUT IMAGES
+OUTPUT IMAGES
 -------------
 The output files are generated based on the input files and chosen operations.
 The type of the output images is specified with --outtype type. The short
@@ -1145,17 +1146,23 @@ The output filename matches the input filename except that the extension/type
 may be different. Eg. Seascape.jpg would save as Seascape.tga if the outtype
 was tga.
 
-By default if an output file already exists, it is not overwritten. To allow
-overwrite use the --overwrite (-w) flag. To have the tool try a different
-filename if it aready exists, use the --autoname (-a) flag. It will append the
-string _NN to the name where NN is a number that keeps incrementing until no
-existing file is found.
-)OUTIMAGES137", outtypes.Chr()
+If an output file already exists, it is not overwritten. To allow overwrite use
+the --overwrite (-w) flag. To have the tool try a different filename if it
+aready exists, use the --autoname (-a) flag. It will append the string _NNN to
+the name where NNN is a number that keeps incrementing until no existing file
+is found.
+
+By default if no modifications are made to an input file, the file is still
+saved. This is so easy batch conversions from one type to another may be
+performed. Sometimes you may not want to save unmodified files. An example of
+this is using the extract operation by itself. If you don't want the unmodified
+input image saved, specify -k or --skipunchanged on the command line.
+)OUTIMAGES010", filters.Chr(), edgemodes.Chr(), outtypes.Chr()
 		);
 
 		tPrintf
 		(
-R"OU7PMS(
+R"OUTPARAMS010(
 OUTPUT PARAMETERS
 -----------------
 Different output image types have different features and may support different
@@ -1228,7 +1235,7 @@ failure in any step for any image results in an error. By default processing
 continues to the next image even on a failure. If the --earlyexit (-e) flag is
 set, processing stops immediately on any failure. Either way, any failure
 returns a non-zero exit code.
-)OU7PMS"
+)OUTPARAMS010"
 		);
 
 		return 0;
@@ -1287,8 +1294,16 @@ returns a non-zero exit code.
 			continue;
 		}
 
-		// Determine out filename,
+		// Some operations do not modify the input image at all. For example, the extract operation saves every frame
+		// of the input image but does not modify it. In these cases the image dirty flag is not set so we can
+		// skip saving if OptionSkipUnchanged is true.
+		if (OptionSkipUnchanged && !image->IsDirty())
+		{
+			tPrintfNorm("Skipping Save: %s\n", inNameShort.Chr());
+			continue;
+		}
 
+		// Determine out filename,
 		tString outFilename = DetermineOutputFilename(image->Filename, outType);
 		tString outNameShort = tSystem::tGetFileName(outFilename);
 		bool doSave = true;
