@@ -100,6 +100,8 @@ public:
 	bool Save(const tString& outFile, tSystem::tFileType fileType, bool useConfigSaveParams = true) const;
 
 	int GetNumFrames() const																							{ return Pictures.Count(); }
+	int GetNumPictures() const																							{ return Pictures.Count(); }
+
 	bool IsOpaque() const;
 	bool Unload(bool force = false);
 	float GetLoadedTime() const																							{ return LoadedTime; }
@@ -117,6 +119,7 @@ public:
 	// Some images can store multiple complete images inside a single file (multiple frames).
 	// The primary one is the first one.
 	tImage::tPicture* GetPrimaryPic() const																				{ return Pictures.First(); }
+	tImage::tPicture* GetFirstPic() const																				{ return Pictures.First(); }
 	tImage::tPicture* GetCurrentPic() const																				{ tImage::tPicture* pic = Pictures.First(); for (int i = 0; i < FrameNum; i++) pic = pic ? pic->Next() : nullptr; return pic; }
 	const tList<tImage::tPicture>& GetPictures() const																	{ return Pictures; }
 
@@ -277,16 +280,9 @@ private:
 	void PushUndo(const tString& desc)																					{ if (UndoEnabled) UndoStack.Push(Pictures, desc, Dirty); }
 	void PopUndo()																										{ if (UndoEnabled) UndoStack.Pop(); }
 
-	// If the image is from a DDS file, we keep the DDS around so we have access to the iage data in its original pixel
-	// format. This will allow us to do things like cropping without a decode/recode step.
-	// @todo For mow we don't support this feature and don't need the DDS to be remembered.
-	// tImage::tImageDDS;
-
 	// There are multiple pictures for a few reasons. Images with multiple frames (gifs, exrs, tiffs, webps etc) store
 	// the individual frames as separate pictures in the list, dds files may store a cubemap and the 6 sides are stored
 	// in the picture list, and dds files may contain mipmaps, also stored in the list.
-	// @todo Yes, currently no way 
-	// second to store the  
 	tList<tImage::tPicture> Pictures;
 
 	// The 'alternative' picture is valid when there is another valid way of displaying the image.

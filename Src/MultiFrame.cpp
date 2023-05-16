@@ -297,15 +297,15 @@ tString Viewer::GetFrameFilename(int frameNum, const tString& dir, const tString
 
 void Viewer::SaveAllExtractedFrames(const tString& destDir, const tString& baseName, tFileType fileType)
 {
-	int numFrames = CurrImage->GetNumFrames();
-	for (int frameNum = 0; frameNum < numFrames; frameNum++)
+	tAssert(CurrImage);
+	int frameNum = 0;
+	for (tImage::tPicture* framePic = CurrImage->GetFirstPic(); framePic; framePic = framePic->Next(), frameNum++)
 	{
 		tString frameFile = GetFrameFilename(frameNum, destDir, baseName, fileType);
-
-		///////////////////////// WIP HERE
-		// Save frame to frameFile. Need to extract frame as tPicture from
-		// CurrImage and pass it to Viewer::SavePictureAs.
+		Viewer::SavePictureAs(*framePic, frameFile, fileType, false);
 	}
+
+	tAssert(CurrImage->GetNumFrames() == frameNum);
 }
 
 
@@ -330,6 +330,7 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 		srcFileName.Chr(), numFrames
 	);
 	ImGui::Text(genMsg.Chr());
+	ImGui::NewLine();
 
 	ImGui::Separator();
 	tFileType fileType = DoSaveChooseFiletype();
@@ -338,10 +339,16 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 	ImGui::Separator();
 	tString destDir = DoSubFolder();
 	static char outBaseName[128] = "ExtractedFrame";
+	if (saveExtractFramesPressed)
+	{
+		tString currBaseName = tGetFileBaseName(CurrImage->Filename);
+		if (!currBaseName.IsEmpty())
+			tStd::tStrncpy(outBaseName, currBaseName.Chr(), 128);
+	}
 	ImGui::InputText("Base Filename", outBaseName, tNumElements(outBaseName));
 	tString baseHelp;
 	tString extension = tGetExtension(fileType);
-	tsPrintf(baseHelp, "The output base filename without extension. Files\nwill be called BaseName_001.%s, BaseName_02.%s, etc.", extension.Chr(), extension.Chr());
+	tsPrintf(baseHelp, "The output base filename without extension. Saved files will be:\n%s_001.%s, %s_002.%s, etc.", outBaseName, outBaseName, extension.Chr(), extension.Chr());
 	ImGui::SameLine(); ShowHelpMark(baseHelp.Chr());
 
 	ImGui::NewLine();
