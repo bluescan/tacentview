@@ -376,6 +376,7 @@ void Command::PopulateOperations()
 			case tHash::tHashCT("quantize"):	Operations.Append(new OperationQuantize(args));		break;
 			case tHash::tHashCT("channel"):		Operations.Append(new OperationChannel(args));		break;
 			case tHash::tHashCT("swizzle"):		Operations.Append(new OperationSwizzle(args));		break;
+			case tHash::tHashCT("extract"):		Operations.Append(new OperationExtract(args));		break;
 		}
 	}
 }
@@ -1123,6 +1124,13 @@ R"OPERATIONS020(
   Example 3: --op swizzle[0] clears the red channel. Same as [0GBA] and [0***]
   Example 4: --op swizzle[GGG1] places the original green channel in the new
   red, green and blue channels. It also sets the alpha to full (opaque).
+
+--op extract[frms*, base*, dir*]
+  Extracts frames from a multiframe or animated image. Specify the frame
+  numbers to extract, the base filename, and the directory to put them in.
+  frms: The frame numbers to extract in interval format.
+        More desc here.
+  Example 1: --op extract["[0,4)"] will extract 4 frames (0, 1, 2, and 3).
 )OPERATIONS020"
 		);
 

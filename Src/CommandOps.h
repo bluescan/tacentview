@@ -15,6 +15,7 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #pragma once
+#include <Math/tInterval.h>
 #include <Image/tPicture.h>
 #include <Image/tQuantize.h>
 #include "Image.h"
@@ -222,6 +223,16 @@ struct OperationSwizzle : public Operation
 
 private:
 	tComp CharToComp(char);
+};
+
+
+struct OperationExtract : public Operation
+{
+	OperationExtract(const tString& args);
+
+	tMath::tIntervalSet Frames;
+
+	bool Apply(Viewer::Image&) override;
 };
 
 

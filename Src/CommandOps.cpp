@@ -1555,3 +1555,32 @@ bool Command::OperationSwizzle::Apply(Viewer::Image& image)
 	image.Swizzle(SwizzleR, SwizzleG, SwizzleB, SwizzleA);
 	return true;
 }
+
+
+Command::OperationExtract::OperationExtract(const tString& argsStr)
+{
+	tPrintf("argsStr: %s\n", argsStr.Chr());
+	tList<tStringItem> args;
+	int numArgs = tStd::tExplode(args, argsStr, ',');
+	tStringItem* currArg = nullptr;
+
+	if (numArgs >= 1)
+	{
+		currArg = args.First();
+		tString frames = *currArg;
+
+		// Populate Frames member.
+		Frames.Clear();
+	}
+
+	Valid = true;
+}
+
+
+bool Command::OperationExtract::Apply(Viewer::Image& image)
+{
+	tAssert(Valid);
+	tPrintfFull("Extract | Extract[]\n");
+	//image.Swizzle(SwizzleR, SwizzleG, SwizzleB, SwizzleA);
+	return true;
+}

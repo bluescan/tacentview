@@ -13,6 +13,7 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #include <Math/tVector2.h>
+#include <Math/tInterval.h>
 #include <Image/tImageGIF.h>
 #include <Image/tImageWEBP.h>
 #include <Image/tImageAPNG.h>
@@ -36,7 +37,7 @@ namespace Viewer
 	bool AllDimensionsMatch(int width, int height);
 
 	tString GetFrameFilename(int frameNum, const tString& dir, const tString& baseName, tFileType);
-	void SaveAllExtractedFrames(const tString& destDir, const tString& baseName, tFileType);
+	void SaveExtractedFrames(const tString& destDir, const tString& baseName, tFileType, tIntervalSet frames);
 }
 
 
@@ -295,17 +296,18 @@ tString Viewer::GetFrameFilename(int frameNum, const tString& dir, const tString
 }
 
 
-void Viewer::SaveAllExtractedFrames(const tString& destDir, const tString& baseName, tFileType fileType)
+void Viewer::SaveExtractedFrames(const tString& destDir, const tString& baseName, tFileType fileType, tIntervalSet frameSet)
 {
 	tAssert(CurrImage);
 	int frameNum = 0;
 	for (tImage::tPicture* framePic = CurrImage->GetFirstPic(); framePic; framePic = framePic->Next(), frameNum++)
 	{
+		if (!frameSet.Contains(frameNum))
+			continue;
+
 		tString frameFile = GetFrameFilename(frameNum, destDir, baseName, fileType);
 		Viewer::SavePictureAs(*framePic, frameFile, fileType, false);
 	}
-
-	tAssert(CurrImage->GetNumFrames() == frameNum);
 }
 
 
@@ -320,17 +322,32 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 		return;
 
 	int numFrames = CurrImage->GetNumFrames();
+
+	// These two statics are in lock-step for efficiency.
+	static tIntervalSet frameSet;
+	static char framesToExtract[128] = "all";
+	if (saveExtractFramesPressed)
+	{
+		frameSet.Clear();
+		frameSet.Add( tInterval(0, numFrames-1) );
+		tString rangedStr = frameSet.Get();
+		tStd::tStrncpy(framesToExtract, rangedStr.Chr(), 128);
+
+		// Strncpy is scary. It may not write the terminating null!
+		framesToExtract[127] = '\0';
+	}
+
 	tString srcFileName = tGetFileName(CurrImage->Filename);
 	tString genMsg;
 	tsPrintf
 	(
 		genMsg,
-		"This modal extracts all frames from the current image and saves them\n"
-		"to a folder. Image %s will have %d frames extracted.",
-		srcFileName.Chr(), numFrames
+		"Extracts specified frames and saves them to a folder.\n"
+		"Image %s will have %d frames extracted.\n"
+		"Frames to extract: %s\n",
+		srcFileName.Chr(), frameSet.Count(), frameSet.MakeInclusive().Get(tIntervalRep::Set).Chr()
 	);
 	ImGui::Text(genMsg.Chr());
-	ImGui::NewLine();
 
 	ImGui::Separator();
 	tFileType fileType = DoSaveChooseFiletype();
@@ -350,6 +367,39 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 	tString extension = tGetExtension(fileType);
 	tsPrintf(baseHelp, "The output base filename without extension. Saved files will be:\n%s_001.%s, %s_002.%s, etc.", outBaseName, outBaseName, extension.Chr(), extension.Chr());
 	ImGui::SameLine(); ShowHelpMark(baseHelp.Chr());
+
+	if (ImGui::InputText("Frames", framesToExtract, tNumElements(framesToExtract)))
+	{
+		frameSet.Set( tString(framesToExtract) );
+		if (!frameSet.IsValid())
+		{
+			frameSet.Clear();
+			frameSet.Add( tInterval(0, numFrames-1) );
+			tString rangedStr = frameSet.Get();
+			tStd::tStrncpy(framesToExtract, rangedStr.Chr(), 128);
+
+			// Strncpy is scary. It may not write the terminating null!
+			framesToExtract[127] = '\0';
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("All##Frames"))
+	{
+		frameSet.Clear();
+		frameSet.Add( tInterval(0, numFrames-1) );
+		tString rangedStr = frameSet.Get();
+		tStd::tStrncpy(framesToExtract, rangedStr.Chr(), 128);
+		framesToExtract[127] = '\0';
+	}
+	ImGui::SameLine();
+	ShowHelpMark
+	(
+		"Frames to extract. Frame numbers start at 0.\n"
+		"Specify frames in interval-set notation:\n"
+		"[] means inclusive. () means exclusive.\n"
+		"Specify multiple intervals with a union (U) or bar (|)\n"
+		"Example: [0,2]U[6,8) extracts 5 frames { 0, 1, 2, 6, 7 }"
+	);
 
 	ImGui::NewLine();
 	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
@@ -381,6 +431,9 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 			tList<tStringItem> extractedFilenames;
 			for (int frameNum = 0; frameNum < numFrames; frameNum++)
 			{
+				if (!frameSet.Contains(frameNum))
+					continue;
+
 				tString frameFile = GetFrameFilename(frameNum, destDir, tString(outBaseName), fileType);
 				extractedFilenames.Append(new tStringItem(frameFile));
 			}
@@ -398,13 +451,13 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 				}
 				else
 				{
-					SaveAllExtractedFrames(destDir, tString(outBaseName), fileType);
+					SaveExtractedFrames(destDir, tString(outBaseName), fileType, frameSet);
 					closeThisModal = true;
 				}
 			}
 			else
 			{
-				SaveAllExtractedFrames(destDir, tString(outBaseName), fileType);
+				SaveExtractedFrames(destDir, tString(outBaseName), fileType, frameSet);
 				closeThisModal = true;
 			}
 		}
@@ -417,7 +470,7 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 		bool pressedOK = false, pressedCancel = false;
 		Viewer::DoOverwriteMultipleFilesModal(overwriteFiles, pressedOK, pressedCancel);
 		if (pressedOK)
-			SaveAllExtractedFrames(destDir, tString(outBaseName), fileType);
+			SaveExtractedFrames(destDir, tString(outBaseName), fileType, frameSet);
 
 		if (pressedOK || pressedCancel)
 			closeThisModal = true;
