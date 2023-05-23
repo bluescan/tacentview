@@ -367,7 +367,7 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 	ImGui::InputText("Base Filename", outBaseName, tNumElements(outBaseName));
 	tString baseHelp;
 	tString extension = tGetExtension(fileType);
-	tsPrintf(baseHelp, "The output base filename without extension. Saved files will be:\n%s_001.%s, %s_002.%s, etc.", outBaseName, outBaseName, extension.Chr(), extension.Chr());
+	tsPrintf(baseHelp, "The output base filename without extension. Saved files will be:\n%s_001.%s, %s_002.%s, etc.", outBaseName, extension.Chr(), outBaseName, extension.Chr());
 	ImGui::SameLine(); ShowHelpMark(baseHelp.Chr());
 
 	if (ImGui::InputText("Frames", framesToExtract, tNumElements(framesToExtract)))
