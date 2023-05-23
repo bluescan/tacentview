@@ -47,7 +47,7 @@ FetchContent_Declare(
 	tacent
 	GIT_REPOSITORY https://github.com/bluescan/tacent.git
 	# GIT_TAG v0.8.15
-	GIT_TAG e3d564ca980f8b1e289228d5e1938afabaf3cba9
+	GIT_TAG d275af0e78e2baffb9274e6845399e711456a36b
 )
 FetchContent_MakeAvailable(tacent)
 
