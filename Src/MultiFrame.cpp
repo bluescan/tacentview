@@ -36,7 +36,6 @@ namespace Viewer
 	void ComputeMaxWidthHeight(int& outWidth, int& outHeight);
 	bool AllDimensionsMatch(int width, int height);
 
-	tString GetFrameFilename(int frameNum, const tString& dir, const tString& baseName, tFileType);
 	void SaveExtractedFrames(const tString& destDir, const tString& baseName, tFileType, tIntervalSet frames);
 }
 
@@ -360,7 +359,10 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 	{
 		tString currBaseName = tGetFileBaseName(CurrImage->Filename);
 		if (!currBaseName.IsEmpty())
+		{
 			tStd::tStrncpy(outBaseName, currBaseName.Chr(), 128);
+			outBaseName[127] = '\0';
+		}
 	}
 	ImGui::InputText("Base Filename", outBaseName, tNumElements(outBaseName));
 	tString baseHelp;

@@ -16,6 +16,8 @@
 
 #pragma once
 #include <System/tPrint.h>
+#include <System/tCmdLine.h>
+#include "Image.h"
 
 
 namespace Command
@@ -30,6 +32,10 @@ namespace Command
 	// some output, like when --help or --syntax is used.
 	int tPrintfNorm(const char* format, ...);		// Appears for verbosity level 1.
 	int tPrintfFull(const char* format, ...);		// Appears for verbosily level 1 and 2.
+
+	extern tSystem::tFileType OutType;
+	extern tCmdLine::tOption OptionOverwrite;
+	void SetImageSaveParameters(Viewer::Image&, tSystem::tFileType);
 }
 
 

@@ -550,7 +550,7 @@ bool Image::Load()
 }
 
 
-bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveParams) const
+bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveParams, bool onlyCurrentPic) const
 {
 	bool success = false;
 	switch (fileType)
@@ -610,9 +610,9 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 		case tFileType::GIF:
 		{
 			tList<tFrame> frames;
-			const tList<tImage::tPicture>& pics = GetPictures();
-			for (const tPicture* picture = pics.First(); picture; picture = picture->Next())
+			if (onlyCurrentPic)
 			{
+				const tPicture* picture = GetCurrentPic();
 				frames.Append
 				(
 					new tFrame
@@ -623,6 +623,23 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 						picture->Duration
 					)
 				);
+			}
+			else
+			{
+				const tList<tImage::tPicture>& pics = GetPictures();
+				for (const tPicture* picture = pics.First(); picture; picture = picture->Next())
+				{
+					frames.Append
+					(
+						new tFrame
+						(
+							picture->GetPixelPointer(),
+							picture->GetWidth(),
+							picture->GetHeight(),
+							picture->Duration
+						)
+					);
+				}
 			}
 
 			tImageGIF gif(frames, true);
@@ -645,9 +662,9 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 		case tFileType::WEBP:
 		{
 			tList<tFrame> frames;
-			const tList<tImage::tPicture>& pics = GetPictures();
-			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
+			if (onlyCurrentPic)
 			{
+				const tPicture* picture = GetCurrentPic();
 				frames.Append
 				(
 					new tFrame
@@ -658,6 +675,23 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 						picture->Duration
 					)
 				);
+			}
+			else
+			{
+				const tList<tImage::tPicture>& pics = GetPictures();
+				for (tPicture* picture = pics.First(); picture; picture = picture->Next())
+				{
+					frames.Append
+					(
+						new tFrame
+						(
+							picture->GetPixelPointer(),
+							picture->GetWidth(),
+							picture->GetHeight(),
+							picture->Duration
+						)
+					);
+				}
 			}
 
 			tImageWEBP webp(frames, true);
@@ -705,9 +739,9 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 		case tFileType::APNG:
 		{
 			tList<tFrame> frames;
-			const tList<tImage::tPicture>& pics = GetPictures();
-			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
+			if (onlyCurrentPic)
 			{
+				const tPicture* picture = GetCurrentPic();
 				frames.Append
 				(
 					new tFrame
@@ -718,6 +752,23 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 						picture->Duration
 					)
 				);
+			}
+			else
+			{
+				const tList<tImage::tPicture>& pics = GetPictures();
+				for (tPicture* picture = pics.First(); picture; picture = picture->Next())
+				{
+					frames.Append
+					(
+						new tFrame
+						(
+							picture->GetPixelPointer(),
+							picture->GetWidth(),
+							picture->GetHeight(),
+							picture->Duration
+						)
+					);
+				}
 			}
 
 			tImageAPNG apng(frames, true);
@@ -754,19 +805,36 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 		case tFileType::TIFF:
 		{
 			tList<tFrame> frames;
-			const tList<tImage::tPicture>& pics = GetPictures();
-			for (tPicture* picture = pics.First(); picture; picture = picture->Next())
+			if (onlyCurrentPic)
 			{
+				const tPicture* picture = GetCurrentPic();
 				frames.Append
 				(
 					new tFrame
 					(
- 						picture->GetPixelPointer(),
+						picture->GetPixelPointer(),
 						picture->GetWidth(),
 						picture->GetHeight(),
 						picture->Duration
 					)
 				);
+			}
+			else
+			{
+				const tList<tImage::tPicture>& pics = GetPictures();
+				for (tPicture* picture = pics.First(); picture; picture = picture->Next())
+				{
+					frames.Append
+					(
+						new tFrame
+						(
+							picture->GetPixelPointer(),
+							picture->GetWidth(),
+							picture->GetHeight(),
+							picture->Duration
+						)
+					);
+				}
 			}
 
 			tImageTIFF tiff(frames, true);

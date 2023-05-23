@@ -230,7 +230,9 @@ struct OperationExtract : public Operation
 {
 	OperationExtract(const tString& args);
 
-	tMath::tIntervalSet Frames;
+	tMath::tIntervalSet FrameSet;
+	tString SubFolder;				// Relative to the image dir.
+	tString BaseName;
 
 	bool Apply(Viewer::Image&) override;
 };

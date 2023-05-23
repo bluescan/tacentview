@@ -43,5 +43,6 @@ namespace Viewer
 	// Not all fileTypes are supported for save. Reads config for each types save parameters. If you set steal to true
 	// you are indicating you don't mind if picture is modified and the pixels are stolen from it. It's more efficient
 	// to do this if possible. Returns success.
+	// @todo This function looks _very_ similar to the save call in the Image class.
 	bool SavePictureAs(tImage::tPicture& picture, const tString& outFile, tSystem::tFileType fileType, bool steal);
 }

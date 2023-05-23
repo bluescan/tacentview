@@ -76,7 +76,7 @@ namespace Command
 	void PopulateImagesList();																	// Step 3.
 	bool ProcessOperationsOnImage(Viewer::Image&);												// Applies all the operations (in order) to the supplied image.
 
-	tSystem::tFileType DetermineOutType();														// Step 4.
+	void DetermineOutType();																	// Step 4.
 
 	void DetermineOutSaveParameters(tSystem::tFileType);										// Step 5.
 	void ParseSaveParametersAPNG();
@@ -88,7 +88,6 @@ namespace Command
 	void ParseSaveParametersTGA();
 	void ParseSaveParametersTIFF();
 	void ParseSaveParametersWEBP();
-	void SetImageSaveParameters(Viewer::Image&, tSystem::tFileType);
 
 	tString DetermineOutputFilename(const tString& inName, tSystem::tFileType outType);
 
@@ -106,6 +105,7 @@ namespace Command
 	tList<tSystem::tFileInfo> InputFiles;
 	tList<Viewer::Image> Images;
 	tList<Operation> Operations;
+	tSystem::tFileType OutType;
 }
 
 
@@ -400,19 +400,18 @@ bool Command::ProcessOperationsOnImage(Viewer::Image& image)
 }
 
 
-tSystem::tFileType Command::DetermineOutType()
+void Command::DetermineOutType()
 {
-	tSystem::tFileType outType = tSystem::tFileType::TGA;
+	OutType = tSystem::tFileType::TGA;
 	if (OptionOutType)
 	{
-		outType = tSystem::tGetFileTypeFromName(OptionOutType.Arg1());
-		if (outType == tSystem::tFileType::Invalid)
+		OutType = tSystem::tGetFileTypeFromName(OptionOutType.Arg1());
+		if (OutType == tSystem::tFileType::Invalid)
 		{
 			tPrintfNorm("Invalid output file type specified. Defaulting to tga.\n");
-			outType = tSystem::tFileType::TGA;
+			OutType = tSystem::tFileType::TGA;
 		}
 	}
-	return outType;
 }
 
 
@@ -1125,12 +1124,28 @@ R"OPERATIONS020(
   Example 4: --op swizzle[GGG1] places the original green channel in the new
   red, green and blue channels. It also sets the alpha to full (opaque).
 
---op extract[frms*, base*, dir*]
+--op extract[frms*, sdir*, base*]
   Extracts frames from a multiframe or animated image. Specify the frame
-  numbers to extract, the base filename, and the directory to put them in.
-  frms: The frame numbers to extract in interval format.
-        More desc here.
-  Example 1: --op extract["[0,4)"] will extract 4 frames (0, 1, 2, and 3).
+  numbers to extract, the base filename, and the directory to put them in. The
+  output type is specified using -o or --outtype and the output parameters are
+  specified using the --paramsTYPE options. See below.
+  frms: The frame numbers to extract in range format. In this format you may
+        specify multiple ranges separated by a | or U character. A ! means
+        exclusive and a hyphen specifies a range. The default is to extract
+        all* frames. For example, --op extract[0-2|!4-6|!7-10!] will extract
+        frames 0,1,2,5,6,8,9. This is the same as --op extract[0-2|5-6|8-9]
+        If the image being processed does not have enough frames for the
+        specified range, those frame files will not be created.
+  sdir: The sub-directory, relative to the directory the image is in, to place
+        the extracted frames. If the sub-directory does not exist, it is
+        created for you. Defaults to a directory called Saved*.
+  base: The base filename used when saving extracted frames. Defaults* to the
+        base filename of the input image. The final filename will be of the
+        form Basename_NNN.ext where NNN is the frame number and ext is the
+        extension.
+  Example 1: --op extract["[0,4)"] will extract 4 frames (0, 1, 2, and 3) and
+  save them to a folder called Saved with names Base_001.tga, Base_002, and
+  Base_002.tga.
 )OPERATIONS020"
 		);
 
@@ -1267,8 +1282,8 @@ returns a non-zero exit code.
 	// Populates the Operations list.
 	PopulateOperations();
 
-	tSystem::tFileType outType = DetermineOutType();
-	DetermineOutSaveParameters(outType);
+	DetermineOutType();
+	DetermineOutSaveParameters(OutType);
 
 	// Process standard operations.
 	// We do the images one at a time to save memory. That is, we only need to load one image in at a time.
@@ -1311,11 +1326,11 @@ returns a non-zero exit code.
 			continue;
 		}
 
-		// Determine out filename,
-		tString outFilename = DetermineOutputFilename(image->Filename, outType);
+		// Determine out filename.
+		tString outFilename = DetermineOutputFilename(image->Filename, OutType);
 		tString outNameShort = tSystem::tGetFileName(outFilename);
 		bool doSave = true;
-		if (tSystem::tFileExists(outFilename) && !OptionOverwrite)
+		if (!OptionOverwrite && tSystem::tFileExists(outFilename))
 		{
 			tPrintfNorm("File %s exists. Not overwriting.\n", outNameShort.Chr());
 			somethingFailed = true;
@@ -1332,8 +1347,8 @@ returns a non-zero exit code.
 		if (doSave)
 		{
 			// Set the image save parameters correctly. The user may have modified them from the command line.
-			SetImageSaveParameters(*image, outType);
-			bool success = image->Save(outFilename, outType, false);
+			SetImageSaveParameters(*image, OutType);
+			bool success = image->Save(outFilename, OutType, false);
 			if (success)
 			{
 				tPrintfFull("Saved File: %s\n", outNameShort.Chr());

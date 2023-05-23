@@ -1042,6 +1042,7 @@ void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool&
 
 bool Viewer::SavePictureAs(tImage::tPicture& picture, const tString& outFile, tFileType fileType, bool steal)
 {
+	// @todo This function looks _very_ similar to the save call in the Image class.
 	if (!picture.IsValid())
 		return false;
 

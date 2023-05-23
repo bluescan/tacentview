@@ -13,10 +13,13 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #pragma once
+#include <System/tFile.h>
 
 
 namespace Viewer
 {
 	void DoSaveMultiFrameModal(bool saveMultiFramePressed);
 	void DoSaveExtractFramesModal(bool saveExtractFramesPressed);
+
+	tString GetFrameFilename(int frameNum, const tString& dir, const tString& baseName, tSystem::tFileType);
 }

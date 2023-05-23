@@ -96,8 +96,9 @@ public:
 	// Not all fileTypes are supported for save. Handles single and multi-frame images. If useConfigSaveParams is true
 	// any paramteres used for saving that are stored in the viewer config file will override the setting in the save
 	// param structures above. Parameters not in the config will use whatever is in the structs. If useConfigSaveParams
-	// is false, the parameter structs above are used exclusively. Returns success.
-	bool Save(const tString& outFile, tSystem::tFileType fileType, bool useConfigSaveParams = true) const;
+	// is false, the parameter structs above are used exclusively. Is onlyCurrentPic is true, only the single frame
+	// defined by FrameNum will be saved. Returns success.
+	bool Save(const tString& outFile, tSystem::tFileType fileType, bool useConfigSaveParams = true, bool onlyCurrentPic = false) const;
 
 	int GetNumFrames() const																							{ return Pictures.Count(); }
 	int GetNumPictures() const																							{ return Pictures.Count(); }

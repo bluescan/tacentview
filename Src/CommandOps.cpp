@@ -16,6 +16,8 @@
 
 #include "CommandOps.h"
 #include "Command.h"
+#include "MultiFrame.h"
+#include "OpenSaveDialogs.h"
 
 
 Command::OperationResize::OperationResize(const tString& argsStr)
@@ -1551,7 +1553,7 @@ tComp Command::OperationSwizzle::CharToComp(char cs)
 bool Command::OperationSwizzle::Apply(Viewer::Image& image)
 {
 	tAssert(Valid);
-	tPrintfFull("Swizzle | Swizzle[%s%s$s%s]\n", tGetComponentName(SwizzleR), tGetComponentName(SwizzleB), tGetComponentName(SwizzleB), tGetComponentName(SwizzleA));
+	tPrintfFull("Swizzle | Swizzle[%s%s%s%s]\n", tGetComponentName(SwizzleR), tGetComponentName(SwizzleB), tGetComponentName(SwizzleB), tGetComponentName(SwizzleA));
 	image.Swizzle(SwizzleR, SwizzleG, SwizzleB, SwizzleA);
 	return true;
 }
@@ -1559,7 +1561,6 @@ bool Command::OperationSwizzle::Apply(Viewer::Image& image)
 
 Command::OperationExtract::OperationExtract(const tString& argsStr)
 {
-	tPrintf("argsStr: %s\n", argsStr.Chr());
 	tList<tStringItem> args;
 	int numArgs = tStd::tExplode(args, argsStr, ',');
 	tStringItem* currArg = nullptr;
@@ -1568,9 +1569,42 @@ Command::OperationExtract::OperationExtract(const tString& argsStr)
 	{
 		currArg = args.First();
 		tString frames = *currArg;
+		if (frames == "*")
+			FrameSet.Clear();
+		else
+			// Populate Frames member. If the string was badly formed the frames will be empty.
+			// When the frames are empty, all frames are extracted, so there is no more error checking needed.
+			FrameSet.Set(frames);
+	}
 
-		// Populate Frames member.
-		Frames.Clear();
+	// Channels.
+	if (numArgs >= 2)
+	{
+		currArg = currArg->Next();
+
+		// If SubFolder is empty the default sub-folder name of "Saved" will be used.
+		SubFolder = *currArg;
+		if (SubFolder.IsEmpty() || (SubFolder == "*"))
+		{
+			SubFolder.Clear();
+		}
+		else
+		{
+			if (SubFolder[SubFolder.Length()-1] == '\\')
+				SubFolder[SubFolder.Length()-1] = '/';
+			if (SubFolder[SubFolder.Length()-1] != '/')
+				SubFolder += "/";
+		}
+	}
+
+	if (numArgs >= 3)
+	{
+		currArg = currArg->Next();
+
+		// If BaseName is empty the default is to use the base name of the image being processed.
+		BaseName = *currArg;
+		if (BaseName == "*")
+			BaseName.Clear();
 	}
 
 	Valid = true;
@@ -1580,7 +1614,43 @@ Command::OperationExtract::OperationExtract(const tString& argsStr)
 bool Command::OperationExtract::Apply(Viewer::Image& image)
 {
 	tAssert(Valid);
-	tPrintfFull("Extract | Extract[]\n");
-	//image.Swizzle(SwizzleR, SwizzleG, SwizzleB, SwizzleA);
+	tString subDir = "Saved/";
+	if (!SubFolder.IsEmpty())
+		subDir = SubFolder;
+
+	tString destDir = tSystem::tGetDir(image.Filename) + subDir;
+	bool dirExists = tSystem::tDirExists(destDir);
+	if (!dirExists)
+		dirExists = tSystem::tCreateDir(destDir);
+	if (!dirExists)
+		return false;
+
+	tString baseName = BaseName;
+	if (baseName.IsEmpty())
+		baseName = tSystem::tGetFileBaseName(image.Filename);
+
+	Command::SetImageSaveParameters(image, Command::OutType);
+	for (int frameNum = 0; frameNum < image.GetNumFrames(); frameNum++)
+	{
+		if (!FrameSet.Contains(frameNum))
+			continue;
+
+		image.FrameNum = frameNum;
+
+		tString outFile = Viewer::GetFrameFilename(frameNum, destDir, baseName, Command::OutType);
+		tString outFileShort = tSystem::tGetFileName(outFile);
+		if (!Command::OptionOverwrite && tSystem::tFileExists(outFile))
+		{
+			tPrintf("Extract | File %s%s exists. Not overwriting.\n", subDir.Chr(), outFileShort.Chr());
+			continue;
+		}
+
+		bool useConfigSaveParams = false;
+		bool onlyCurrentPic = true;
+
+		tPrintf("Extract | Save[file:%s%s]\n", subDir.Chr(), outFileShort.Chr());
+		image.Save(outFile, Command::OutType, useConfigSaveParams, onlyCurrentPic);
+	}
+
 	return true;
 }
