@@ -54,6 +54,7 @@
 #include "MultiFrame.h"
 #include "ContentView.h"
 #include "Crop.h"
+#include "Quantize.h"
 #include "Resize.h"
 #include "Rotate.h"
 #include "OpenSaveDialogs.h"
@@ -216,6 +217,7 @@ namespace Viewer
 	bool Request_ResizeCanvasModal					= false;
 	bool Request_RotateImageModal					= false;
 	bool Request_LevelsModal						= false;
+	bool Request_QuantizeModal						= false;
 	bool Request_ContactSheetModal					= false;
 	bool Request_MultiFrameModal					= false;
 	bool Request_ExtractFramesModal					= false;
@@ -1778,6 +1780,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	bool resizeCanvasPressed		= Request_ResizeCanvasModal;		Request_ResizeCanvasModal			= false;
 	bool rotateImagePressed			= Request_RotateImageModal;			Request_RotateImageModal			= false;
 	bool levelsPressed				= Request_LevelsModal;				Request_LevelsModal					= false;
+	bool quantizePressed			= Request_QuantizeModal;			Request_QuantizeModal				= false;
 	LosslessTransformMode
 	losslessTransformPressed		= Request_LosslessTrnsModal;		Request_LosslessTrnsModal			= LosslessTransformMode::None;
 
@@ -1995,6 +1998,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			tString levelsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Levels);
 			if (ImGui::MenuItem("Levels...", levelsKey.Chz(), false, imgAvail))
 				levelsPressed = true;
+
+			tString quantizeKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Quantize);
+			if (ImGui::MenuItem("Quantize...", quantizeKey.Chz(), false, imgAvail))
+				quantizePressed = true;
 
 			tString propsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::PropertyEdit);
 			ImGui::MenuItem("Image Properties...", propsKey.Chz(), &Config::Current->ShowPropsWindow);
@@ -2402,6 +2409,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	DoResizeCanvasModal				(resizeCanvasPressed);
 	DoRotateImageModal				(rotateImagePressed);
 	DoLevelsModal					(levelsPressed);
+	DoQuantizeModal					(quantizePressed);
 	DoLosslessTransformModal		(losslessTransformPressed);
 
 	// If any modal is open we allow keyboard navigation. For non-modal we do not as we need the keyboard
@@ -3000,6 +3008,10 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case Bindings::Operation::Levels:
 			// @todo Should these be checking that no alt image like imgAvail?
 			if (imgAvail) Request_LevelsModal = true;
+			break;
+
+		case Bindings::Operation::Quantize:
+			if (imgAvail) Request_QuantizeModal = true;
 			break;
 
 		case Bindings::Operation::RedChannel:

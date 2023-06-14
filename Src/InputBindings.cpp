@@ -196,7 +196,8 @@ const char* Bindings::OperationDescriptions[] =
 	"Levels",
 	"Copy",
 	"Paste",
-	"Save Extract Frames..."
+	"Save Extract Frames...",
+	"Quantize..."
 
 	// Add new entries here.
 };
@@ -362,6 +363,7 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 	AssignKey(GLFW_KEY_4,			Modifier_None,					Operation::AlphaChannel,			onlyIfUnassigned);
 	AssignKey(GLFW_KEY_5,			Modifier_None,					Operation::ChannelAsIntensity,		onlyIfUnassigned);
 	AssignKey(GLFW_KEY_L,			Modifier_None,					Operation::Levels,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_Q,			Modifier_None,					Operation::Quantize,				onlyIfUnassigned);
 
 	AssignKey(GLFW_KEY_I,			Modifier_None,					Operation::Details,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_X,			Modifier_None,					Operation::MetaData,				onlyIfUnassigned);	// Update enum pending.

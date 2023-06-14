@@ -93,6 +93,8 @@ add_executable(
 	Src/Profile.h
 	Src/Properties.cpp
 	Src/Properties.h
+	Src/Quantize.cpp
+	Src/Quantize.h
 	Src/Resize.cpp
 	Src/Resize.h
 	Src/Rotate.cpp

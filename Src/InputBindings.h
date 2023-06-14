@@ -111,6 +111,7 @@ namespace Bindings
 		Copy,					// Copies current image to clipboard.
 		Paste,					// Pastes image in clipboard.
 		SaveExtractFrames,		// Save individual frames of a mult-frame image as indivisual files.
+		Quantize,				// Quantize (reduce) the colours used by an image using various algorithms.
 		//
 		// Add new operations here. Adding above will invalidate save file keybindings.
 		//

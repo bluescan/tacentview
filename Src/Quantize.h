@@ -1,8 +1,8 @@
-// Resize.h
+// Quantize.h
 //
-// Dialog for resizing an image.
+// Dialog for quantizing (reducing) the colours used by an image.
 //
-// Copyright (c) 2020-2023 Tristan Grimmer.
+// Copyright (c) 2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -17,6 +17,6 @@
 
 namespace Viewer
 {
-	void DoResizeImageModal(bool resizeImagePressed);
-	void DoResizeCanvasModal(bool resizeCanvasPressed);
+	void DoQuantizeModal(bool quantizeImagePressed);
+	void DoQuantizeInterface(int& method, int& spatialFilterSize, float& spatialDitherLevel, int& neuSampleFactor, float itemWidth = 0.0f);
 }

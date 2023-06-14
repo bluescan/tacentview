@@ -26,6 +26,7 @@
 #include "Image.h"
 #include "TacentView.h"
 #include "FileDialog.h"
+#include "Quantize.h"
 using namespace tStd;
 using namespace tSystem;
 using namespace tMath;
@@ -360,57 +361,15 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 		"Determines how many colours the gif uses. From 2 to 256.\n"
 		"Note that using transparency takes one colour away."
 	);
-	
-	if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
-	const char* methodItems[] = { "Fixed Palette", "Spatial Scolorq", "Neu Quant", "Wu Bipartition" };
-	ImGui::Combo("Quantize", &Config::Current->SaveFileGifQuantMethod , methodItems, tNumElements(methodItems));
-	ImGui::SameLine();
-	ShowHelpMark
+
+	Viewer::DoQuantizeInterface
 	(
-		"The colour quantization method is used to create a high-quality palette,\n\n"
-
-		"Fixed Palette: Lowest quality since it doesn't inspect the image pixels. It\n"
-		"is useful for 1-bit palettes as it guarantees black and white for this size.\n\n"
-
-		"Spatial Scolorq: High quality but slow. Good for 5-bit palettes and smaller.\n"
-		"This is the only quantization method supporting dither.\n\n"
-
-		"Neu Quant: Defacto high-quality quantizer. Neural-network based.\n"
-		"Good for 6-bit palettes and larger.\n\n"
-
-		"Wu Bipartition: The default quantizer. Fast and looks very good at 5-bit and up."
+		Config::Current->SaveFileGifQuantMethod,
+		Config::Current->SaveFileGifFilterSize,
+		Config::Current->SaveFileGifDitherLevel,
+		Config::Current->SaveFileGifSampleFactor,
+		multiframeConfigValues ? 0.0f : itemWidth
 	);
-
-	if (Config::Current->SaveFileGifQuantMethod == int(tQuantize::Method::Spatial))
-	{
-		if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
-		const char* filterSizeItems[] = { "Low", "Med", "High" };
-		ImGui::Combo("Quantize Filter Size", &Config::Current->SaveFileGifFilterSize , filterSizeItems, tNumElements(filterSizeItems));
-		ImGui::SameLine();
-		ShowHelpMark("Filter size for the scolorq/spatial quantizer. Low -> 1, Med -> 3, High -> 5");
-
-		if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
- 		ImGui::SliderFloat("Quantize Dither", &Config::Current->SaveFileGifDitherLevel, 0.0f, 2.0f, "%.1f");
-		ImGui::SameLine();
-		ShowHelpMark
-		(
-			"Dither level for the scolorq/spatial quantizer. 0 means auto-determine a good value for\n"
-			"the current image based on its dimensions. Greater than zero means manually set the\n"
-			"amount. A dither value of 0.1 results in no dithering. 2.0 results in significant dithering."
-		);
-	}
-
-	if (Config::Current->SaveFileGifQuantMethod == int(tQuantize::Method::Neu))
-	{
-		if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
-		ImGui::SliderInt("Quantize Factor", &Config::Current->SaveFileGifSampleFactor, 1, 10, "%d");
-		ImGui::SameLine();
-		ShowHelpMark
-		(
-			"Sample factor for the Neu quantizer. 1 is highest quality and slowest. All pixels are visited\n"
-			"during the learning step. 10 means only 1/10th of the image is considered during learning."
-		);
-	}
 
 	if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Alpha Threshold", &Config::Current->SaveFileGifAlphaThreshold);
