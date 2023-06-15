@@ -18,5 +18,10 @@
 namespace Viewer
 {
 	void DoQuantizeModal(bool quantizeImagePressed);
-	void DoQuantizeInterface(int& method, int& spatialFilterSize, float& spatialDitherLevel, int& neuSampleFactor, float itemWidth = 0.0f);
+	void DoQuantizeInterface
+	(
+		int& method,
+		int& spatialFilterSize, float& spatialDitherLevel, int& neuSampleFactor,
+		float itemWidth = 0.0f
+	);
 }

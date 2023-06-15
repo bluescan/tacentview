@@ -22,28 +22,59 @@ using namespace tMath;
 using namespace tImage;
 
 
+namespace Viewer
+{
+	// Compute a (very) approx number of seconds it will take to quantize on an intel 11th gen mobile CPU.
+	float ComputeApproxQuantizeDuration(const Image* image, tImage::tQuantize::Method method, int numColours);
+}
+
+
+float Viewer::ComputeApproxQuantizeDuration(const Image* image, tImage::tQuantize::Method method, int numColours)
+{
+	if (!image || (numColours < 2))
+		return 0.0f;
+
+	// We currently only consider scolorq and neu methods. The other two are quite fast.
+	switch (method)
+	{
+		case tImage::tQuantize::Method::Spatial:
+			// 1024x1024 pixels, 2 colours -> approx 5 seconds.
+			return (5.0f*CurrImage->GetArea()*numColours) / (1024.0f*1024.0f*2.0f);
+
+		case tImage::tQuantize::Method::Neu:
+			// 1024x1024 pixels, 256 colours -> approx 3 seconds.
+			return (3.0f*CurrImage->GetArea()*numColours) / (1024.0f*1024.0f*256.0f);
+	}
+	return 0.0f;
+}
+
+
 void Viewer::DoQuantizeInterface(int& method, int& spatialFilterSize, float& spatialDitherLevel, int& neuSampleFactor, float itemWidth)
 {
 	if (itemWidth > 0.0f)
 		ImGui::SetNextItemWidth(itemWidth);
 
 	const char* methodItems[] = { "Fixed Palette", "Spatial Scolorq", "Neu Quant", "Wu Bipartition" };
-	ImGui::Combo("Quantize", &method , methodItems, tNumElements(methodItems));
+	ImGui::Combo("Quantize Method", &method , methodItems, tNumElements(methodItems));
 	ImGui::SameLine();
 	ShowHelpMark
 	(
-		"The colour quantization method is used to create a high-quality palette,\n\n"
+		"The colour quantization method is used to create a high-quality palette.\n\n"
 
-		"Fixed Palette: Lowest quality since it doesn't inspect the image pixels. It\n"
-		"is useful for 1-bit palettes as it guarantees black and white for this size.\n\n"
+		"Fixed Palette: Lowest quality since it doesn't inspect the image pixels.\n"
+		"Useful for 1-bit (2-colour) palettes as it guarantees black and white\n"
+		"are present. No guarantee that the number of colours requested will all\n"
+		"be used because the source image colours may not be close to all the\n"
+		"colours in the fixed palette.\n\n"
 
-		"Spatial Scolorq: High quality but slow. Good for 5-bit palettes and smaller.\n"
-		"This is the only quantization method supporting dither.\n\n"
+		"Spatial Scolorq: High quality but slow. Good for 5-bit (32-colour)\n"
+		"palettes and smaller. This quantization method supports dither.\n\n"
 
-		"Neu Quant: Defacto high-quality quantizer. Neural-network based.\n"
-		"Good for 6-bit palettes and larger.\n\n"
+		"Neu Quant: Defacto high-quality quantizer. Neural-network based. Good\n"
+		"for 6-bit (64-colour) palettes and larger.\n\n"
 
-		"Wu Bipartition: The default quantizer. Fast and looks very good at 5-bit and up."
+		"Wu Bipartition: The default quantizer. Fast and looks very good at 5-bit\n"
+		"(32-colour) and higher."
 	);
 
 	if (method == int(tQuantize::Method::Spatial))
@@ -117,10 +148,11 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 	static int spatialFilterSize = 1;
 	static float spatialDitherLevel = 0.0f;
 	static int neuSampleFactor = 1;
+	static int numColours = 256;
 	const float itemWidth = 180.0f;
+
 	DoQuantizeInterface(method, spatialFilterSize, spatialDitherLevel, neuSampleFactor, itemWidth);
 
-	static int numColours = 256;
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Num Colours", &numColours);
 	ImGui::SameLine();
@@ -140,6 +172,23 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 		"image is exactly representable already and the quantize is not needed. If false the\n"
 		"quantize will proceed either way, and the chosen quantize method may adjust the colours."
 	);
+
+	// This is so we can print a warning if it's going to take a really long time.
+	float quantizeDurationApprox = ComputeApproxQuantizeDuration(CurrImage, tImage::tQuantize::Method(method), numColours);
+	float maxDurationBeforeWarning = 10.0f;
+	if (quantizeDurationApprox > maxDurationBeforeWarning)
+	{
+		ImGui::Text
+		(
+			"\n"
+			"Based on the image resolution, quantization\n"
+			"method, and number of colours, this operation\n"
+			"will take more than %d seconds.\n\n"
+			"Consider a different method or reduce the\n"
+			"number of colours.",
+			int(quantizeDurationApprox)
+		);
+	}
 
 	ImGui::NewLine();
 	ImGui::Separator();
