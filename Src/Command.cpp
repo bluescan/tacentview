@@ -742,7 +742,7 @@ int Command::Process()
 	}
 
 	tPrintf("\n");
-	tPrintfNorm("Tacent View %d.%d.%d in CLI Mode. Call with --help for instructions.\n", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
+	tPrintfNorm("Tacent View %d.%d.%d in CLI Mode. Use --help for details.\n", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
 
 	if (OptionHelp)
 	{
@@ -837,13 +837,15 @@ one -i to process multiple types. No -i means all supported types.
 )USAGE010", intypes.Chr(), inexts.Chr()
 		);
 
+		// In editor the column num at EOL (after last character) should be 80 or less.
 		tPrintf
 		(
 R"OPERATIONS010(OPERATIONS
 ----------
 Operations are specified using --op opname[arg1,arg2]
 There must be no spaces between arguments. The operations get applied in the
-order they were specified on the command line. Default argument values are
+order they were specified on the command line. The full sequence of operations
+is applied to each and every input image. Default argument values below are
 denoted with an asterisk. Optional arguments are also denoted with an asterisk.
 When either optional arguments are not provided or * is entered, the default
 value is used. eg. --op zap[a,b,c*,d*] may be called with --op zap[a,b] which
@@ -985,6 +987,7 @@ example zap[*a,b*] may be called with --op zap[] or just --op zap.
 )OPERATIONS010"
 		);
 
+		// In editor the column num at EOL (after last character) should be 80 or less.
 		tPrintf
 		(
 R"OPERATIONS020(
@@ -1146,18 +1149,42 @@ R"OPERATIONS020(
   Example 1: --op extract["[0,4)"] will extract 4 frames (0, 1, 2, and 3) and
   save them to a folder called Saved with names Base_001.tga, Base_002, and
   Base_002.tga.
-)OPERATIONS020"
+
+%s
+
+%s
+
+Boolean arguments: You may use "true", "t", "yes", "y", "on", "enable",
+"enabled", "1", "+", and strings that represent non-zero integers as true.
+These are case-insensitive. False is the result otherwise.
+)OPERATIONS020", filters.Chr(), edgemodes.Chr()
 		);
 
+		// In editor the column num at EOL (after last character) should be 80 or less.
+		tPrintf
+		(
+R"POSTOPS010(
+POST OPERATIONS
+---------------
+Post operations are specified using --po opname[arg1,arg2]
+These are operations that take more than a single image as input. They are
+separated out into a different pass for efficiency -- if we were to do these as
+regular inline operations (--op) we would need to have all input images in
+memory at the same time. The post-op pass still uses the _same_ set of input
+images. It runs after all normal operations have saved to disk.
+
+--po combine[TBD]
+  Combines multiple input images into a single animated image.
+
+--po contact[TBD]
+  Creates a contact sheet from multiple input images.
+)POSTOPS010"
+		);
+
+		// In editor the column num at EOL (after last character) should be 80 or less.
 		tPrintf
 		(
 R"OUTIMAGES010(
-%s
-%s
-For boolean arguments you may use "true", "t", "yes", "y", "on", "enable",
-"enabled", "1", "+", and strings that represent non-zero integers as true.
-These are case-insensitive. False is the result otherwise.
-
 OUTPUT IMAGES
 -------------
 The output files are generated based on the input files and chosen operations.
@@ -1180,9 +1207,10 @@ saved. This is so easy batch conversions from one type to another may be
 performed. Sometimes you may not want to save unmodified files. An example of
 this is using the extract operation by itself. If you don't want the unmodified
 input image saved, specify -k or --skipunchanged on the command line.
-)OUTIMAGES010", filters.Chr(), edgemodes.Chr(), outtypes.Chr()
+)OUTIMAGES010", outtypes.Chr()
 		);
 
+		// In editor the column num at EOL (after last character) should be 80 or less.
 		tPrintf
 		(
 R"OUTPARAMS010(
@@ -1286,7 +1314,8 @@ returns a non-zero exit code.
 	DetermineOutSaveParameters(OutType);
 
 	// Process standard operations.
-	// We do the images one at a time to save memory. That is, we only need to load one image in at a time.
+	// We do the images one at a time to save memory. That is, we only need to load one image in at a time
+	// and can unload them when done.
 	bool somethingFailed = false;
 	for (Viewer::Image* image = Images.First(); image; image = image->Next())
 	{
@@ -1368,5 +1397,12 @@ returns a non-zero exit code.
 		image->Unload();
 	}
 
+	// Do post save operations here --po. These are operations that take more than a single image as input.
+	// They are separated out into a different pass for efficiency -- if we were to do these as regular inline
+	// operations (--op) we would need to have all input images in memory at the same time. The post-op pass
+	// still uses the _same_ set of input images. It runs after all normal operations have saved to disk.
+	//
+	// Example post-op coperations include: combining multiple images into a single animated image or creating
+	// a contact sheet from multiple images.
 	return somethingFailed ? 1 : 0;
 }
