@@ -38,6 +38,7 @@ namespace Command
 
 	tCmdLine::tOption OptionInType			("Input file type(s)",				"intype",		'i',	1	);
 	tCmdLine::tOption OptionOperation		("Operation",						"op",					1	);
+	tCmdLine::tOption OptionPostOperation	("Post operation",					"po",					1	);
 
 	tCmdLine::tOption OptionOutType			("Output file type",				"outtype",		'o',	1	);
 	tCmdLine::tOption OptionOverwrite		("Overwrite existing output files",	"overwrite",	'w'			);
@@ -73,6 +74,7 @@ namespace Command
 	void ParseInputItem(tList<tSystem::tFileInfo>& inputFiles, const tString& item);
 
 	void PopulateOperations();
+	void PopulatePostOperations();
 	void PopulateImagesList();																	// Step 3.
 	bool ProcessOperationsOnImage(Viewer::Image&);												// Applies all the operations (in order) to the supplied image.
 
@@ -105,6 +107,7 @@ namespace Command
 	tList<tSystem::tFileInfo> InputFiles;
 	tList<Viewer::Image> Images;
 	tList<Operation> Operations;
+	tList<PostOperation> PostOperations;
 	tSystem::tFileType OutType;
 }
 
@@ -377,6 +380,29 @@ void Command::PopulateOperations()
 			case tHash::tHashCT("channel"):		Operations.Append(new OperationChannel(args));		break;
 			case tHash::tHashCT("swizzle"):		Operations.Append(new OperationSwizzle(args));		break;
 			case tHash::tHashCT("extract"):		Operations.Append(new OperationExtract(args));		break;
+		}
+	}
+}
+
+
+void Command::PopulatePostOperations()
+{
+	if (!OptionPostOperation)
+		return;
+
+	tList<tStringItem> postrings;
+	OptionPostOperation.GetArgs(postrings);
+	for (tStringItem* postr = postrings.First(); postr; postr = postr->Next())
+	{
+		// Now we need to parse something of the form: combine[2,*] or contact[7]
+		tString str = *postr;
+		tString po = str.ExtractLeft('[');
+		tString args = str.ExtractLeft(']');
+
+		switch (tHash::tHashString(po))
+		{
+			case tHash::tHashCT("combine"):		PostOperations.Append(new PostOperationCombine(args));		break;
+			case tHash::tHashCT("contact"):		PostOperations.Append(new PostOperationContact(args));		break;
 		}
 	}
 }
@@ -833,16 +859,16 @@ one -i to process multiple types. No -i means all supported types.
 
 %s
 %s
-
 )USAGE010", intypes.Chr(), inexts.Chr()
 		);
 
 		// In editor the column num at EOL (after last character) should be 80 or less.
 		tPrintf
 		(
-R"OPERATIONS010(OPERATIONS
+R"OPERATIONS010(
+OPERATIONS
 ----------
-Operations are specified using --op opname[arg1,arg2]
+Operations are specified using --op opname[arg1,arg2,...]
 There must be no spaces between arguments. The operations get applied in the
 order they were specified on the command line. The full sequence of operations
 is applied to each and every input image. Default argument values below are
@@ -1127,7 +1153,7 @@ R"OPERATIONS020(
   Example 4: --op swizzle[GGG1] places the original green channel in the new
   red, green and blue channels. It also sets the alpha to full (opaque).
 
---op extract[frms*, sdir*, base*]
+--op extract[frms*,sdir*,base*]
   Extracts frames from a multiframe or animated image. Specify the frame
   numbers to extract, the base filename, and the directory to put them in. The
   output type is specified using -o or --outtype and the output parameters are
@@ -1146,7 +1172,7 @@ R"OPERATIONS020(
         base filename of the input image. The final filename will be of the
         form Basename_NNN.ext where NNN is the frame number and ext is the
         extension.
-  Example 1: --op extract["[0,4)"] will extract 4 frames (0, 1, 2, and 3) and
+  Example 1: --op extract[0-4!] will extract 4 frames (0, 1, 2, and 3) and
   save them to a folder called Saved with names Base_001.tga, Base_002, and
   Base_002.tga.
 
@@ -1166,15 +1192,22 @@ These are case-insensitive. False is the result otherwise.
 R"POSTOPS010(
 POST OPERATIONS
 ---------------
-Post operations are specified using --po opname[arg1,arg2]
+Post operations are specified using --po opname[arg1,arg2,...]
 These are operations that take more than a single image as input. They are
 separated out into a different pass for efficiency -- if we were to do these as
 regular inline operations (--op) we would need to have all input images in
 memory at the same time. The post-op pass still uses the _same_ set of input
-images. It runs after all normal operations have saved to disk.
+images and it runs after all normal operations have completed. If a regular
+operation modifies any of the input files, the modified file(s) are used as
+input to the post operation. If a normal operation generates a new file not
+included in the inputs, the new file is not used by the post operation.
 
---po combine[TBD]
+--po combine[durs*,file*]
   Combines multiple input images into a single animated image.
+  out file type must be animated or only first frame saved.
+  durs: Use | seperator. Last val repeated. In seconds.
+  file: Any non-existant directories created for you. Will overwrite if
+  flag set.
 
 --po contact[TBD]
   Creates a contact sheet from multiple input images.
@@ -1309,6 +1342,9 @@ returns a non-zero exit code.
 
 	// Populates the Operations list.
 	PopulateOperations();
+
+	// Populates the PostOperations list.
+	PopulatePostOperations();
 
 	DetermineOutType();
 	DetermineOutSaveParameters(OutType);

@@ -1,8 +1,10 @@
 // CommandOps.cpp
 //
-// Command line operations for batch image processing and conversions. Ooperations such as quantization,
-// rescaling/filtering, cropping, rotation, extracting frames, creating contact-sheets, amalgamating images into
-// animated formats, and levels adjustments are specified/implemented here.
+// Command line operations for batch image processing and conversions. Operations such as rescaling/filtering,
+// quantization, cropping, rotation, extracting frames, and levels adjustments are specified/implemented here.
+// Some operations are applied to whole sets of images rather than on one image at a time. These are called
+// post-operations and implement things like creating contact-sheets or amalgamating multiple images into a single
+// animated image.
 //
 // Copyright (c) 2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
@@ -1652,5 +1654,34 @@ bool Command::OperationExtract::Apply(Viewer::Image& image)
 		image.Save(outFile, Command::OutType, useConfigSaveParams, onlyCurrentPic);
 	}
 
+	return true;
+}
+
+
+// Post operations follow.
+
+
+Command::PostOperationCombine::PostOperationCombine(const tString& argsStr)
+{
+	Valid = false;
+}
+
+
+bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
+{
+	tAssert(Valid);
+	return true;
+}
+
+
+Command::PostOperationContact::PostOperationContact(const tString& argsStr)
+{
+	Valid = false;
+}
+
+
+bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
+{
+	tAssert(Valid);
 	return true;
 }

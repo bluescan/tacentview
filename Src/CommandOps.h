@@ -1,8 +1,10 @@
 // CommandOps.h
 //
-// Command line operations for batch image processing and conversions. Ooperations such as quantization,
-// rescaling/filtering, cropping, rotation, extracting frames, creating contact-sheets, amalgamating images into
-// animated formats, and levels adjustments are specified/implemented here.
+// Command line operations for batch image processing and conversions. Operations such as rescaling/filtering,
+// quantization, cropping, rotation, extracting frames, and levels adjustments are specified/implemented here.
+// Some operations are applied to whole sets of images rather than on one image at a time. These are called
+// post-operations and implement things like creating contact-sheets or amalgamating multiple images into a single
+// animated image.
 //
 // Copyright (c) 2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
@@ -23,6 +25,7 @@ namespace Command
 {
 
 
+// Normal operations that are applied to single images.
 struct Operation : public tLink<Operation>
 {
 	virtual bool Apply(Viewer::Image&)					= 0;
@@ -235,6 +238,31 @@ struct OperationExtract : public Operation
 	tString BaseName;
 
 	bool Apply(Viewer::Image&) override;
+};
+
+
+// Post Operations. These apply to multiple images after all normal (per-image) operations have been performed.
+struct PostOperation : public tLink<PostOperation>
+{
+	virtual bool Apply(tList<Viewer::Image>&)			= 0;
+	virtual ~PostOperation()							{ }
+	bool Valid											= false;
+};
+
+
+struct PostOperationCombine : public PostOperation
+{
+	PostOperationCombine(const tString& args);
+
+	bool Apply(tList<Viewer::Image>& images) override;
+};
+
+
+struct PostOperationContact : public PostOperation
+{
+	PostOperationContact(const tString& args);
+
+	bool Apply(tList<Viewer::Image>& images) override;
 };
 
 
