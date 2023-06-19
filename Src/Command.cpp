@@ -806,6 +806,15 @@ int Command::Process()
 			tsaPrintf(outtypes, "%s ", tSystem::tGetFileTypeName(typ->FileType).Chr());
 		}
 
+		tString outtypesanim("  Supported animated types: ");
+		for (tSystem::tFileTypes::tFileTypeItem* typ = Viewer::FileTypes_SaveMultiFrame.First(); typ; typ = typ->Next())
+		{
+			int lineStart = outtypesanim.FindChar('\n', true) + 1;
+			if ( (tStd::tStrlen(outtypesanim.Chr()+lineStart)%maxCols) >= (maxCols-tSystem::tGetFileTypeName(typ->FileType).Length()) )
+				tsaPrintf(outtypesanim, "\n");
+			tsaPrintf(outtypesanim, "%s ", tSystem::tGetFileTypeName(typ->FileType).Chr());
+		}
+
 		tString filters("Supported filters: ");
 		for (int f = 0; f < int(tImage::tResampleFilter::NumFilters)+1; f++)
 		{
@@ -1202,16 +1211,36 @@ operation modifies any of the input files, the modified file(s) are used as
 input to the post operation. If a normal operation generates a new file not
 included in the inputs, the new file is not used by the post operation.
 
---po combine[durs*,file*]
-  Combines multiple input images into a single animated image.
-  out file type must be animated or only first frame saved.
-  durs: Use | seperator. Last val repeated. In seconds.
-  file: Any non-existant directories created for you. Will overwrite if
-  flag set.
+--po combine[durs*,sdir*,base*]
+  Combines multiple input images into a single animated image. The output file
+  type must support animation or be able to store multiple sub-images / pages.
+%s
+  Input images must be all the same dimensions. Use normal operations to resize
+  if necessary.
+  durs: Durations for each frame specified in milliseconds. The syntax is a
+        sequence of frame-interval:duration pairs separated by |. Frame numbers
+        start at 0. The intervals are applied in the order they are entered so
+        an overlap will overwrite previous durations. For an interval bang (!)
+        means exclusive and a hyphen specifies a range. The default duration
+        for all frames is 33*. If a frame interval is not specified, the
+        supplied duration applies to all frames. For example, if you are
+        combining 100 images these are equivalent: combine[], combine[*],
+        combine[33], and combine[0-99:33]. To create a 2 second pause on frame
+        10 only: combine[10:2000]. To set the first 3 frames to 100ms, frame 6
+        to 16ms, and frame 10, 11, 12 to 1.1s, the following could be used:
+        [0-2:100|6:16|10-12:1100]
+
+  sdir: WIP The sub-directory, relative to the directory the image is in, to place
+        the extracted frames. If the sub-directory does not exist, it is
+        created for you. Defaults to a directory called Saved*.
+  base: WIP The base filename used when saving extracted frames. Defaults* to the
+        base filename of the input image. The final filename will be of the
+        form Basename_NNN.ext where NNN is the frame number and ext is the
+        extension.
 
 --po contact[TBD]
   Creates a contact sheet from multiple input images.
-)POSTOPS010"
+)POSTOPS010", outtypesanim.Chr()
 		);
 
 		// In editor the column num at EOL (after last character) should be 80 or less.
