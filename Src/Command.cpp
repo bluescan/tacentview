@@ -1216,7 +1216,9 @@ included in the inputs, the new file is not used by the post operation.
   type must support animation or be able to store multiple sub-images / pages.
 %s
   Input images must be all the same dimensions. Use normal operations to resize
-  if necessary.
+  the source images beforehand if necessary. This can be done in a single
+  command if you don't mind overwriting your existing source files with the
+  --overwrite flag (see below), or do it as two passes.
   durs: Durations for each frame specified in milliseconds. The syntax is a
         sequence of frame-interval:duration pairs separated by |. Frame numbers
         start at 0. The intervals are applied in the order they are entered so
@@ -1225,21 +1227,62 @@ included in the inputs, the new file is not used by the post operation.
         for all frames is 33*. If a frame interval is not specified, the
         supplied duration applies to all frames. For example, if you are
         combining 100 images these are equivalent: combine[], combine[*],
-        combine[33], and combine[0-99:33]. To create a 2 second pause on frame
-        10 only: combine[10:2000]. To set the first 3 frames to 100ms, frame 6
-        to 16ms, and frame 10, 11, 12 to 1.1s, the following could be used:
-        [0-2:100|6:16|10-12:1100]
+        combine[33], and combine[0-99:33]. To create a 2 second pause on (zero-
+        based) frame 10 only: combine[10:2000]. To set the first 3 frames to
+        100ms, frame 6 to 16ms, and frame 10, 11, 12 to 1.1s, the following
+        could be used: [0-2:100|6:16|10-12:1100]
+  sdir: The sub-directory, relative to the current directory, to place the
+        combined image in. If the sub-directory does not exist, it is created
+        for you. Defaults to a directory called Combined*.
+  base: The base filename (not including the extension) used when saving the
+        combined image. Defaults* to Combined_YYYY_MM_DD_HH_MM_SS_NNN where
+        NNN is the number of frames. The final filename will include the
+        correct extension based on the output image type.
+  Example 1: --po combine[0-4!] will extract 4 frames (0, 1, 2, and 3) and
+  save them to a folder called Saved with names Base_001.tga, Base_002, and
+  Base_002.tga. EXAMPLE NOT WRITTEN YET.
 
-  sdir: WIP The sub-directory, relative to the directory the image is in, to place
-        the extracted frames. If the sub-directory does not exist, it is
-        created for you. Defaults to a directory called Saved*.
-  base: WIP The base filename used when saving extracted frames. Defaults* to the
-        base filename of the input image. The final filename will be of the
-        form Basename_NNN.ext where NNN is the frame number and ext is the
-        extension.
-
---po contact[TBD]
-  Creates a contact sheet from multiple input images.
+--po contact[cols*,rows*,frmw*,frmh*,sdir*,base*]
+  Creates a contact sheet (AKA flipbook) from multiple input images. Input
+  images are scaled (only if needed) to fit the requested frame dimensions. If
+  you have specific cropping or scaling requirements use normal operations to
+  resize/crop the source images beforehand. This can be done in a single
+  command if you don't mind overwriting your existing source files with the
+  --overwrite flag (see below), or do it as two passes. The final output
+  image always has a single frame. The final output image width will always be
+  the frame width times the number of columns. The height will be the frame
+  height times the number of rows. In some cases there will need to be empty
+  frames in the contact sheet -- If any input image has a transparency, the
+  final image will have transparency (assuming the output format supports it).
+  Blank frames are filled with either opaque black (if no transparency) or
+  transparent black (if there is transparency).
+  cols: Specify the number of columns you want in the contact sheet. If not
+        default, must be an integer bigger than 0. If set to default* it will
+        be computed for you based on the number of rows entered so that all
+        input frames will be included. If rows is also default, both cols and
+        rows will be computed for you so that there are enough pages for all
+        input images. If both are set and their product is less than the number
+        of input images, not all imput images will be in the contact sheet.
+  rows: The number of rows. Similar to description of cols above.
+  frmw: The individual frame width. Specified as an integer greater than 0. The
+        default* is to read the width from the first frame image processed.
+  frmh: The individual frame height. Specified as an integer greater than 0. The
+        default* is to read the height from the first frame image processed.
+  filt: Resample filter for frames. Default is bilinear*. Only used if
+        input image frame dimensions don't match requested. See above for valid
+        filter names.
+  edge: Edge mode when filtering. Default is clamp*. Only used if necessary.
+        See above for valid edge mode names.
+  sdir: The sub-directory, relative to the current directory, to place the
+        contact-sheet image in. If the sub-directory does not exist, it is
+        created for you. Defaults to a directory called Contact*.
+  base: The base filename (not including the extension) used when saving the
+        contact image. Defaults* to Contact_YYYY_MM_DD_HH_MM_SS_NNN where
+        NNN is the number of frames. The final filename will include the
+        correct extension based on the output image type.
+  Example 1: --po combine[0-4!] will extract 4 frames (0, 1, 2, and 3) and
+  save them to a folder called Saved with names Base_001.tga, Base_002, and
+  Base_002.tga. EXAMPLE NOT WRITTEN YET.
 )POSTOPS010", outtypesanim.Chr()
 		);
 
