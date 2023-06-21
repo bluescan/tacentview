@@ -880,32 +880,54 @@ OPERATIONS
 Operations are specified using --op opname[arg1,arg2,...]
 There must be no spaces between arguments. The operations get applied in the
 order they were specified on the command line. The full sequence of operations
-is applied to each and every input image. Default argument values below are
-denoted with an asterisk. Optional arguments are also denoted with an asterisk.
-When either optional arguments are not provided or * is entered, the default
-value is used. eg. --op zap[a,b,c*,d*] may be called with --op zap[a,b] which
-would do the same thing as --op zap[a,b,*,*]. If the operation has all optional
-arguments you may include an empty arg list with [] or leave it out. For
-example zap[*a,b*] may be called with --op zap[] or just --op zap.
+is applied to each and every input image. Optional arguments are denoted with
+an asterisk and do not need to be supplied. When either optional arguments are
+not provided or * is entered, the default value is used -- look for the
+asterisk in the argument description. eg. --op zap[a,b,c*,d*] may be called
+with --op zap[a,b] which would do the same thing as --op zap[a,b,*,*]. If the
+operation has all optional arguments you may include an empty arg list with []
+or leave it out. Eg. zap[*a,b*] may be called with --op zap[] or just --op zap.
 
---op resize[wid,hgt,filt*,edge*]
+--op pixel[x,y,col*,chan*]
+  Sets the pixel at (x,y) to the colour supplied. The chan argument lets you
+  optionally select which pixel colour channels should be modified. You may
+  choose any combination of RGBA colour channels.
+  x:    The pixel x coordinate. 0 is the first pixel on the left. Specifying -1
+        will be the pixel at the far right regardless of image width. A -2
+		represents the second to last pixel on the right. Using negatives this
+        way is handy since not all processed images are required to have the
+		same width. 
+  y:    The pixel y coordinate. 0 is the first pixel on the bottom. Specifying
+        -1 will be the pixel at the far top regardless of image height. A -2
+		represents the second to last pixel on the top. Using negatives this
+        way is handy since not all processed images are required to have the
+		same height.
+  col:  Pixel colour. Either specify with a hex in form #RRGGBBAA or use one of
+        the predefined colours: black*, white, grey, red, green, blue, yellow,
+        cyan, magenta, or trans.
+  chan: Colour channels to set. The channels are specified with any combination
+        of the letters RGBA or rgba. Default is RGBA*. At least one
+        valid channel should be specified otherwise the default is used. Eg. RG
+        sets the red and green channels. abG sets alpha, blue, and green.
+
+--op resize[w,h,filt*,edge*]
   Resizes image by resampling. Allows non-uniform scale.
-  wid:  Width. An int in range [4, 65536], 0*, or -1. If set to 0 or -1 it
+  w:    Width. An int in range [4, 65536], 0*, or -1. If set to 0 or -1 it
         preserves the aspect ratio by using the height and original aspect.
-  hgt:  Height. An int in range [4, 65536], 0*, or -1. If set to 0 or -1 it
+  h:    Height. An int in range [4, 65536], 0*, or -1. If set to 0 or -1 it
         preserves the aspect ratio by using the width and original aspect.
   filt: Resample filter. Default is bilinear*. Only used if dimensions changed
         for the image being processed. See below for valid filter names.
   edge: Edge mode. Default is clamp*. Only used if dimensions changed for the
         image being processed. See note below for valid edge mode names.
 
---op canvas[wid,hgt,anc*,fill*,ancx*,ancy*]
+--op canvas[w,h,anc*,fill*,ancx*,ancy*]
   Resizes image by modifying the canvas area of the image. You specify the new
   width and height. Vertical or horizontal letterboxes may be needed. This
   operation does not perform resampling.
-  wid:  Width. An int in range [4, 65536], 0*, or -1. If set to 0 or -1 it
+  w:    Width. An int in range [4, 65536], 0*, or -1. If set to 0 or -1 it
         preserves the aspect ratio by using the height and original aspect.
-  hgt:  Height. An int in range [4, 65536], 0*, or -1. If set to 0 or -1 it
+  h:    Height. An int in range [4, 65536], 0*, or -1. If set to 0 or -1 it
         preserves the aspect ratio by using the width and original aspect.
   anc:  Anchor. One of tl, tm, tr, ml, mm*, mr, bl, bm. br. These are
         abbreviations for top-left, top-middle, top-right, etc.
@@ -944,7 +966,7 @@ example zap[*a,b*] may be called with --op zap[] or just --op zap.
   whether to remove or not. You may check any combination of RGBA colour
   channels. You may retrieve the test-colour from the image itself.
   col:  Test colour. Either specify with a hex in form #RRGGBBAA or use one of
-        the predefined colours: black*, white, grey, red, green, blue, yellow,
+        the predefined colours: black, white, grey, red, green, blue, yellow,
         cyan, magenta, or trans. The default* is to get the colour from the
         origin of the image being processed. This is the bottom-left pixel.
   chan: Colour channels to test. You may test the border by looking only for
@@ -994,9 +1016,9 @@ example zap[*a,b*] may be called with --op zap[] or just --op zap.
         specify in radians include the letter 'r' after the value. eg. -1.2r.
         Negatives rotate clockwise. For exact 90 and 180 degree rotations the
         following strings should be used so it uses a faster exact algorithm:
-          For 90 Degree Anticlockwise :  90  90.0 acw ccw
-          For 90 Degree Clockwise     : -90 -90.0 cw
-          For 180 Degree Rotation     : 180 180.0
+        For 90 Degree Anticlockwise :  90  90.0 acw ccw
+        For 90 Degree Clockwise     : -90 -90.0 cw
+        For 180 Degree Rotation     : 180 180.0
   mode: Rotation mode. One of fill, crop*, or resize. Fill mode will result in
         larger images and the fill-colour is used because the image bounds get
         rotated outside of the original area. Preserves all image content. Crop
@@ -1238,9 +1260,9 @@ included in the inputs, the new file is not used by the post operation.
         combined image. Defaults* to Combined_YYYY_MM_DD_HH_MM_SS_NNN where
         NNN is the number of frames. The final filename will include the
         correct extension based on the output image type.
-  Example 1: --po combine[0-4!] will extract 4 frames (0, 1, 2, and 3) and
-  save them to a folder called Saved with names Base_001.tga, Base_002, and
-  Base_002.tga. EXAMPLE NOT WRITTEN YET.
+  Example 1: -o webp --po combine[0-24:100|50-74:200,OutDir,Animated] creates a
+  file called Animated.webp with the first 25 frames each lasting 1/10 second,
+  the next 25 at 30fps, the 25 after at 1/5 second, and the remainder at 33ms.
 
 --po contact[cols*,rows*,frmw*,frmh*,sdir*,base*]
   Creates a contact sheet (AKA flipbook) from multiple input images. Input
@@ -1280,9 +1302,9 @@ included in the inputs, the new file is not used by the post operation.
         contact image. Defaults* to Contact_YYYY_MM_DD_HH_MM_SS_NNN where
         NNN is the number of frames. The final filename will include the
         correct extension based on the output image type.
-  Example 1: --po combine[0-4!] will extract 4 frames (0, 1, 2, and 3) and
-  save them to a folder called Saved with names Base_001.tga, Base_002, and
-  Base_002.tga. EXAMPLE NOT WRITTEN YET.
+  Example 1: -o tga --po contact[10,5,512,256,bicubic_catmullrom,clamp,*,Sheet]
+  will create a contact sheet image called Sheet.tga in a directory called
+  Contacts. The tga file will be 5120x1280 and have 50 512x256 images in it.
 )POSTOPS010", outtypesanim.Chr()
 		);
 
