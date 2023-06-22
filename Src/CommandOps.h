@@ -34,6 +34,18 @@ struct Operation : public tLink<Operation>
 };
 
 
+struct OperationPixel : public Operation
+{
+	OperationPixel(const tString& args);
+	int X												= 0;
+	int Y												= 0;
+	tColour4i PixelColour								= tColour4i::black;							// Optional.
+	comp_t Channels										= tCompBit_RGBA;							// Optional.
+
+	bool Apply(Viewer::Image&) override;
+};
+
+
 struct OperationResize : public Operation
 {
 	OperationResize(const tString& args);

@@ -366,6 +366,7 @@ void Command::PopulateOperations()
 
 		switch (tHash::tHashString(op))
 		{
+			case tHash::tHashCT("pixel"):		Operations.Append(new OperationPixel(args));		break;
 			case tHash::tHashCT("resize"):		Operations.Append(new OperationResize(args));		break;
 			case tHash::tHashCT("canvas"):		Operations.Append(new OperationCanvas(args));		break;
 			case tHash::tHashCT("aspect"):		Operations.Append(new OperationAspect(args));		break;
@@ -888,20 +889,20 @@ with --op zap[a,b] which would do the same thing as --op zap[a,b,*,*]. If the
 operation has all optional arguments you may include an empty arg list with []
 or leave it out. Eg. zap[*a,b*] may be called with --op zap[] or just --op zap.
 
---op pixel[x,y,col*,chan*]
+--op pixel[x,y,col,chan*]
   Sets the pixel at (x,y) to the colour supplied. The chan argument lets you
   optionally select which pixel colour channels should be modified. You may
   choose any combination of RGBA colour channels.
-  x:    The pixel x coordinate. 0 is the first pixel on the left. Specifying -1
+  x:    The pixel x coordinate. 0* is the first/leftmost pixel. Specifying -1
         will be the pixel at the far right regardless of image width. A -2
-		represents the second to last pixel on the right. Using negatives this
+        represents the second to last pixel on the right. Using negatives this
         way is handy since not all processed images are required to have the
-		same width. 
-  y:    The pixel y coordinate. 0 is the first pixel on the bottom. Specifying
-        -1 will be the pixel at the far top regardless of image height. A -2
-		represents the second to last pixel on the top. Using negatives this
+        same width. 
+  y:    The pixel y coordinate. 0* is the first pixel on the bottom. Specifying
+        -1 will be the pixel at the image top regardless of image height. A -2
+        represents the second to last pixel from the top. Using negatives this
         way is handy since not all processed images are required to have the
-		same height.
+        same height.
   col:  Pixel colour. Either specify with a hex in form #RRGGBBAA or use one of
         the predefined colours: black*, white, grey, red, green, blue, yellow,
         cyan, magenta, or trans.

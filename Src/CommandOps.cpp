@@ -22,6 +22,89 @@
 #include "OpenSaveDialogs.h"
 
 
+Command::OperationPixel::OperationPixel(const tString& argsStr)
+{
+	tList<tStringItem> args;
+	int numArgs = tStd::tExplode(args, argsStr, ',');
+	if (numArgs < 3)
+	{
+		tPrintfNorm("Operation Pixel Invalid. At least 3 arguments required.\n");
+		return;
+	}
+
+	// The AsInt calls return 0 if * is entered.
+	tStringItem* currArg = args.First();
+	X = currArg->AsInt32();
+
+	currArg = currArg->Next();
+	Y = currArg->AsInt32();
+
+	currArg = currArg->Next();
+	tString colStr = *currArg;
+	if (colStr[0] == '#')
+	{
+		uint32 hex = colStr.AsUInt32(16);
+		PixelColour.Set( uint8((hex >> 24) & 0xFF), uint8((hex >> 16) & 0xFF), uint8((hex >> 8) & 0xFF), uint8((hex >> 0) & 0xFF) );
+	}
+	else
+	{
+		switch (tHash::tHashString(colStr.Chr()))
+		{
+			case tHash::tHashCT("black"):	PixelColour = tColour4i::black;			break;
+			case tHash::tHashCT("white"):	PixelColour = tColour4i::white;			break;
+			case tHash::tHashCT("grey"):	PixelColour = tColour4i::grey;			break;
+			case tHash::tHashCT("red"):		PixelColour = tColour4i::red;			break;
+			case tHash::tHashCT("green"):	PixelColour = tColour4i::green;			break;
+			case tHash::tHashCT("blue"):	PixelColour = tColour4i::blue;			break;
+			case tHash::tHashCT("yellow"):	PixelColour = tColour4i::yellow;		break;
+			case tHash::tHashCT("cyan"):	PixelColour = tColour4i::cyan;			break;
+			case tHash::tHashCT("magenta"):	PixelColour = tColour4i::magenta;		break;
+			case tHash::tHashCT("trans"):	PixelColour = tColour4i::transparent;	break;
+		}
+	}
+
+	// Channels to set.
+	if (numArgs >= 4)
+	{
+		currArg = currArg->Next();
+		tString chanStr = *currArg;
+		Channels = 0;
+		if (chanStr.FindChar('*') != -1)	Channels = tCompBit_RGBA;
+		if (chanStr.FindAny("rR") != -1)	Channels |= tCompBit_R;
+		if (chanStr.FindAny("gG") != -1)	Channels |= tCompBit_G;
+		if (chanStr.FindAny("bB") != -1)	Channels |= tCompBit_B;
+		if (chanStr.FindAny("aA") != -1)	Channels |= tCompBit_A;
+		if (!Channels)						Channels = tCompBit_RGBA;
+	}
+
+	Valid = true;
+}
+
+
+bool Command::OperationPixel::Apply(Viewer::Image& image)
+{
+	tAssert(Valid);
+	int w = image.GetWidth();
+	int h = image.GetHeight();
+	if ((w <= 0) || (h <= 0))
+		return false;
+
+	int x = tMath::tMod(X, w);
+	int y = tMath::tMod(Y, h);
+
+	tColour4i setCol = PixelColour;
+	tColour4i pixCol = image.GetPixel(x, y);
+	if (Channels & tCompBit_R) pixCol.R = setCol.R;
+	if (Channels & tCompBit_G) pixCol.G = setCol.G;
+	if (Channels & tCompBit_B) pixCol.B = setCol.B;
+	if (Channels & tCompBit_A) pixCol.A = setCol.A;
+
+	tPrintfFull("Pixel | SetPixelColour[X:%d Y:%d Col:%02x,%02x,%02x,%02x]\n", x, y, pixCol.R, pixCol.G, pixCol.B, pixCol.A);
+	image.SetPixelColour(x, y, pixCol, false, false);
+	return true;
+}
+
+
 Command::OperationResize::OperationResize(const tString& argsStr)
 {
 	tList<tStringItem> args;
@@ -172,8 +255,8 @@ Command::OperationCanvas::OperationCanvas(const tString& argsStr)
 				case tHash::tHashCT("white"):	FillColour = tColour4i::white;		break;
 				case tHash::tHashCT("grey"):	FillColour = tColour4i::grey;		break;
 				case tHash::tHashCT("red"):		FillColour = tColour4i::red;		break;
-				case tHash::tHashCT("green"):	FillColour = tColour4i::red;		break;
-				case tHash::tHashCT("blue"):	FillColour = tColour4i::red;		break;
+				case tHash::tHashCT("green"):	FillColour = tColour4i::green;		break;
+				case tHash::tHashCT("blue"):	FillColour = tColour4i::blue;		break;
 				case tHash::tHashCT("yellow"):	FillColour = tColour4i::yellow;		break;
 				case tHash::tHashCT("cyan"):	FillColour = tColour4i::cyan;		break;
 				case tHash::tHashCT("magenta"):	FillColour = tColour4i::magenta;	break;
@@ -318,8 +401,8 @@ Command::OperationAspect::OperationAspect(const tString& argsStr)
 				case tHash::tHashCT("white"):	FillColour = tColour4i::white;		break;
 				case tHash::tHashCT("grey"):	FillColour = tColour4i::grey;		break;
 				case tHash::tHashCT("red"):		FillColour = tColour4i::red;		break;
-				case tHash::tHashCT("green"):	FillColour = tColour4i::red;		break;
-				case tHash::tHashCT("blue"):	FillColour = tColour4i::red;		break;
+				case tHash::tHashCT("green"):	FillColour = tColour4i::green;		break;
+				case tHash::tHashCT("blue"):	FillColour = tColour4i::blue;		break;
 				case tHash::tHashCT("yellow"):	FillColour = tColour4i::yellow;		break;
 				case tHash::tHashCT("cyan"):	FillColour = tColour4i::cyan;		break;
 				case tHash::tHashCT("magenta"):	FillColour = tColour4i::magenta;	break;
@@ -433,8 +516,8 @@ Command::OperationDeborder::OperationDeborder(const tString& argsStr)
 				case tHash::tHashCT("white"):	TestColour = tColour4i::white;		break;
 				case tHash::tHashCT("grey"):	TestColour = tColour4i::grey;		break;
 				case tHash::tHashCT("red"):		TestColour = tColour4i::red;		break;
-				case tHash::tHashCT("green"):	TestColour = tColour4i::red;		break;
-				case tHash::tHashCT("blue"):	TestColour = tColour4i::red;		break;
+				case tHash::tHashCT("green"):	TestColour = tColour4i::green;		break;
+				case tHash::tHashCT("blue"):	TestColour = tColour4i::blue;		break;
 				case tHash::tHashCT("yellow"):	TestColour = tColour4i::yellow;		break;
 				case tHash::tHashCT("cyan"):	TestColour = tColour4i::cyan;		break;
 				case tHash::tHashCT("magenta"):	TestColour = tColour4i::magenta;	break;
@@ -559,8 +642,8 @@ Command::OperationCrop::OperationCrop(const tString& argsStr)
 				case tHash::tHashCT("white"):	FillColour = tColour4i::white;		break;
 				case tHash::tHashCT("grey"):	FillColour = tColour4i::grey;		break;
 				case tHash::tHashCT("red"):		FillColour = tColour4i::red;		break;
-				case tHash::tHashCT("green"):	FillColour = tColour4i::red;		break;
-				case tHash::tHashCT("blue"):	FillColour = tColour4i::red;		break;
+				case tHash::tHashCT("green"):	FillColour = tColour4i::green;		break;
+				case tHash::tHashCT("blue"):	FillColour = tColour4i::blue;		break;
 				case tHash::tHashCT("yellow"):	FillColour = tColour4i::yellow;		break;
 				case tHash::tHashCT("cyan"):	FillColour = tColour4i::cyan;		break;
 				case tHash::tHashCT("magenta"):	FillColour = tColour4i::magenta;	break;
@@ -758,8 +841,8 @@ Command::OperationRotate::OperationRotate(const tString& argsStr)
 				case tHash::tHashCT("white"):	FillColour = tColour4i::white;		break;
 				case tHash::tHashCT("grey"):	FillColour = tColour4i::grey;		break;
 				case tHash::tHashCT("red"):		FillColour = tColour4i::red;		break;
-				case tHash::tHashCT("green"):	FillColour = tColour4i::red;		break;
-				case tHash::tHashCT("blue"):	FillColour = tColour4i::red;		break;
+				case tHash::tHashCT("green"):	FillColour = tColour4i::green;		break;
+				case tHash::tHashCT("blue"):	FillColour = tColour4i::blue;		break;
 				case tHash::tHashCT("yellow"):	FillColour = tColour4i::yellow;		break;
 				case tHash::tHashCT("cyan"):	FillColour = tColour4i::cyan;		break;
 				case tHash::tHashCT("magenta"):	FillColour = tColour4i::magenta;	break;
@@ -1449,8 +1532,8 @@ Command::OperationChannel::OperationChannel(const tString& argsStr)
 					case tHash::tHashCT("white"):	Colour = tColour4i::white;		break;
 					case tHash::tHashCT("grey"):	Colour = tColour4i::grey;		break;
 					case tHash::tHashCT("red"):		Colour = tColour4i::red;		break;
-					case tHash::tHashCT("green"):	Colour = tColour4i::red;		break;
-					case tHash::tHashCT("blue"):	Colour = tColour4i::red;		break;
+					case tHash::tHashCT("green"):	Colour = tColour4i::green;		break;
+					case tHash::tHashCT("blue"):	Colour = tColour4i::blue;		break;
 					case tHash::tHashCT("yellow"):	Colour = tColour4i::yellow;		break;
 					case tHash::tHashCT("cyan"):	Colour = tColour4i::cyan;		break;
 					case tHash::tHashCT("magenta"):	Colour = tColour4i::magenta;	break;
