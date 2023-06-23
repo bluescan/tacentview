@@ -903,9 +903,11 @@ or leave it out. Eg. zap[*a,b*] may be called with --op zap[] or just --op zap.
         represents the second to last pixel from the top. Using negatives this
         way is handy since not all processed images are required to have the
         same height.
-  col:  Pixel colour. Either specify with a hex in form #RRGGBBAA or use one of
-        the predefined colours: black*, white, grey, red, green, blue, yellow,
-        cyan, magenta, or trans.
+  col:  Pixel colour. Colours may be specified in three ways: as a hexadecimal
+        in the form #RRGGBBAA, as a single integer that gets used for RGB with
+        alpha set to full, or as one of the predefined names black*, white,
+        grey, red, green, blue, yellow, cyan, magenta, or trans (transparent
+        black).
   chan: Colour channels to set. The channels are specified with any combination
         of the letters RGBA or rgba. Default is RGBA*. At least one
         valid channel should be specified otherwise the default is used. Eg. RG
@@ -932,9 +934,11 @@ or leave it out. Eg. zap[*a,b*] may be called with --op zap[] or just --op zap.
         preserves the aspect ratio by using the width and original aspect.
   anc:  Anchor. One of tl, tm, tr, ml, mm*, mr, bl, bm. br. These are
         abbreviations for top-left, top-middle, top-right, etc.
-  fill: Fill colour. If letterboxes needed this is their colour. Either specify
-        with a hex in form #RRGGBBAA or use one of the predefined colours:
-        black*, white, grey, red, green, blue, yellow, cyan, magenta, or trans.
+  fill: Fill colour. If letterboxes needed this is their colour. Colours may be
+        specified in three ways: as a hexadecimal in the form #RRGGBBAA, as a
+        single integer that gets used for RGB with alpha set to full, or as one
+        of the predefined names black*, white, grey, red, green, blue, yellow,
+        cyan, magenta, or trans (transparent black).
   ancx: Explicit anchor X position. An int in range [-1*, 65536]. If -1 used
         the anc argument above takes priority.
   ancy: Explicit anchor Y position. An int in range [-1*, 65536]. If -1 used
@@ -953,9 +957,11 @@ or leave it out. Eg. zap[*a,b*] may be called with --op zap[] or just --op zap.
         necessary to add either horizontal or vertical letterboxes (not both).
   anc:  Anchor. One of tl, tm, tr, ml, mm*, mr, bl, bm. br. These are
         abbreviations for top-left, top-middle, top-right, etc.
-  fill: Fill colour. If letterboxes needed this is their colour. Either specify
-        with a hex in form #RRGGBBAA or use one of the predefined colours:
-        black*, white, grey, red, green, blue, yellow, cyan, magenta, or trans.
+  fill: Fill colour. If letterboxes needed this is their colour. Colours may be
+        specified in three ways: as a hexadecimal in the form #RRGGBBAA, as a
+        single integer that gets used for RGB with alpha set to full, or as one
+        of the predefined names black*, white, grey, red, green, blue, yellow,
+        cyan, magenta, or trans (transparent black).
   ancx: Explicit anchor X position. An int in range [-1*, 65536]. If -1 used
         the anc argument above takes priority.
   ancy: Explicit anchor Y position. An int in range [-1*, 65536]. If -1 used
@@ -966,10 +972,12 @@ or leave it out. Eg. zap[*a,b*] may be called with --op zap[] or just --op zap.
   image to see if all rows or columns have the same test-colour and decides
   whether to remove or not. You may check any combination of RGBA colour
   channels. You may retrieve the test-colour from the image itself.
-  col:  Test colour. Either specify with a hex in form #RRGGBBAA or use one of
-        the predefined colours: black, white, grey, red, green, blue, yellow,
-        cyan, magenta, or trans. The default* is to get the colour from the
-        origin of the image being processed. This is the bottom-left pixel.
+  col:  Test colour. Colours may be specified in three ways: as a hexadecimal
+        in the form #RRGGBBAA, as a single integer that gets used for RGB with
+        alpha set to full, or as one of the predefined names black, white,
+        grey, red, green, blue, yellow, cyan, magenta, or trans (transparent
+        black). The default* is to get the colour from the origin of the image
+		being processed. This is the bottom-left pixel.
   chan: Colour channels to test. You may test the border by looking only for
         matches in particular colour channels. These are specified with any
         combination of the letters RGBA or rgba. Default is RGBA*. At least one
@@ -995,9 +1003,11 @@ or leave it out. Eg. zap[*a,b*] may be called with --op zap[] or just --op zap.
   mh:   The max y of the upper-right extent of the crop area OR the new image
         height if in rel mode. Included in final pixels. Defaults to 3* in
         absolute mode or 4* in relative mode. Both defaults result in a 4x4.
-  fill: Fill colour. Either specify with a hex in form #RRGGBBAA or use one of
-        the predefined colours: black, white, grey, red, green, blue, yellow,
-        cyan, magenta, or trans*. Trans is transparent-black.
+  fill: Fill colour. Colours may be specified in three ways: as a hexadecimal
+        in the form #RRGGBBAA, as a single integer that gets used for RGB with
+        alpha set to full, or as one of the predefined names black, white,
+        grey, red, green, blue, yellow, cyan, magenta, or trans* (transparent
+        black).
 
 --op flip[mode*]
   Flips an image either horizontally or vertically.
@@ -1039,9 +1049,11 @@ or leave it out. Eg. zap[*a,b*] may be called with --op zap[] or just --op zap.
         used to restore image size after rotation. Specifying none* here uses
         a special upsample method that produces sharper results. Using box
         filter here is also a good choice. See below for valid filter names.
-  fill: Fill colour. Only used if mode was fill. Either specify with a hex in
-        form #RRGGBBAA or use one of the predefined colours: black*, white,
-        grey, red, green, blue, yellow, cyan, magenta, or trans.
+  fill: Fill colour. Only used if mode was fill. Colours may be specified in
+        three ways: as a hexadecimal in the form #RRGGBBAA, as a single integer
+        that gets used for RGB with alpha set to full, or as one of the
+        predefined names black*, white, grey, red, green, blue, yellow, cyan,
+		magenta, or trans (transparent black).
 )OPERATIONS010"
 		);
 
@@ -1150,11 +1162,11 @@ R"OPERATIONS020(
         blend mode default is RGBA*. For spread mode the single-channel default
         is R. Channels are specified with any combination of the letters RGBA
         or rgba.
-  col:  Colour. Only used if mode is blend or set. Either specify with a hex in
-        form #RRGGBBAA or use one of the predefined colours: black*, white,
-        grey, red, green, blue, yellow, cyan, magenta, or trans. You can also
-        specify a single integer that gets used for all RGBA components. The
-        default value is black* full alpha.
+  col:  Colour. Only used if mode is blend or set. Colours may be specified in
+        three ways: as a hexadecimal in the form #RRGGBBAA, as a single integer
+        that gets used for RGB with alpha set to full, or as one of the
+        predefined names black*, white, grey, red, green, blue, yellow, cyan,
+		magenta, or trans (transparent black).
   As an example, the command --op channel will create an image with
   pre-multiplied alphas. The blended in background will be black and the alpha
   will be 255 for all pixels.
