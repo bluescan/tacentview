@@ -22,6 +22,52 @@
 #include "OpenSaveDialogs.h"
 
 
+namespace Command
+{
+	// Parses strCol as a colour string. The string may be a hexadecimal in the form #RRGGBBAA, a single integer spread
+	// to RGBA, or a predefined name: black, white, grey, red, green, blue, yellow, cyan, magenta, or trans
+	// (transparent black). If the string is not of this form, colour is left unmodified. You may set colour as your
+	// default colour before calling this. Returns true if colour was modified.
+	bool ParseColour(tColour4i& colour, const tString& strCol);
+}
+
+
+bool Command::ParseColour(tColour4i& colour, const tString& colStr)
+{
+	if (colStr[0] == '#')
+	{
+		uint32 hex = colStr.AsUInt32(16);
+		colour.Set( uint8((hex >> 24) & 0xFF), uint8((hex >> 16) & 0xFF), uint8((hex >> 8) & 0xFF), uint8((hex >> 0) & 0xFF) );
+		return true;
+	}
+
+	if (colStr.IsNumeric())
+	{
+		// We also allow entering a single integer that sets the RGBA components.
+		int val = colStr.AsInt();
+		tMath::tiClamp(val, 0, 255);
+		colour.Set(val, val, val, val);
+		return true;
+	}
+
+	switch (tHash::tHashString(colStr.Chr()))
+	{
+		case tHash::tHashCT("black"):	colour = tColour4i::black;			return true;
+		case tHash::tHashCT("white"):	colour = tColour4i::white;			return true;
+		case tHash::tHashCT("grey"):	colour = tColour4i::grey;			return true;
+		case tHash::tHashCT("red"):		colour = tColour4i::red;			return true;
+		case tHash::tHashCT("green"):	colour = tColour4i::green;			return true;
+		case tHash::tHashCT("blue"):	colour = tColour4i::blue;			return true;
+		case tHash::tHashCT("yellow"):	colour = tColour4i::yellow;			return true;
+		case tHash::tHashCT("cyan"):	colour = tColour4i::cyan;			return true;
+		case tHash::tHashCT("magenta"):	colour = tColour4i::magenta;		return true;
+		case tHash::tHashCT("trans"):	colour = tColour4i::transparent;	return true;
+	}
+
+	return false;
+}
+
+
 Command::OperationPixel::OperationPixel(const tString& argsStr)
 {
 	tList<tStringItem> args;
@@ -41,27 +87,7 @@ Command::OperationPixel::OperationPixel(const tString& argsStr)
 
 	currArg = currArg->Next();
 	tString colStr = *currArg;
-	if (colStr[0] == '#')
-	{
-		uint32 hex = colStr.AsUInt32(16);
-		PixelColour.Set( uint8((hex >> 24) & 0xFF), uint8((hex >> 16) & 0xFF), uint8((hex >> 8) & 0xFF), uint8((hex >> 0) & 0xFF) );
-	}
-	else
-	{
-		switch (tHash::tHashString(colStr.Chr()))
-		{
-			case tHash::tHashCT("black"):	PixelColour = tColour4i::black;			break;
-			case tHash::tHashCT("white"):	PixelColour = tColour4i::white;			break;
-			case tHash::tHashCT("grey"):	PixelColour = tColour4i::grey;			break;
-			case tHash::tHashCT("red"):		PixelColour = tColour4i::red;			break;
-			case tHash::tHashCT("green"):	PixelColour = tColour4i::green;			break;
-			case tHash::tHashCT("blue"):	PixelColour = tColour4i::blue;			break;
-			case tHash::tHashCT("yellow"):	PixelColour = tColour4i::yellow;		break;
-			case tHash::tHashCT("cyan"):	PixelColour = tColour4i::cyan;			break;
-			case tHash::tHashCT("magenta"):	PixelColour = tColour4i::magenta;		break;
-			case tHash::tHashCT("trans"):	PixelColour = tColour4i::transparent;	break;
-		}
-	}
+	ParseColour(PixelColour, colStr);
 
 	// Channels to set.
 	if (numArgs >= 4)
@@ -242,27 +268,7 @@ Command::OperationCanvas::OperationCanvas(const tString& argsStr)
 	{
 		currArg = currArg->Next();
 		tString colStr = *currArg;
-		if (colStr[0] == '#')
-		{
-			uint32 hex = colStr.AsUInt32(16);
-			FillColour.Set( uint8((hex >> 24) & 0xFF), uint8((hex >> 16) & 0xFF), uint8((hex >> 8) & 0xFF), uint8((hex >> 0) & 0xFF) );
-		}
-		else
-		{
-			switch (tHash::tHashString(colStr.Chr()))
-			{
-				case tHash::tHashCT("black"):	FillColour = tColour4i::black;		break;
-				case tHash::tHashCT("white"):	FillColour = tColour4i::white;		break;
-				case tHash::tHashCT("grey"):	FillColour = tColour4i::grey;		break;
-				case tHash::tHashCT("red"):		FillColour = tColour4i::red;		break;
-				case tHash::tHashCT("green"):	FillColour = tColour4i::green;		break;
-				case tHash::tHashCT("blue"):	FillColour = tColour4i::blue;		break;
-				case tHash::tHashCT("yellow"):	FillColour = tColour4i::yellow;		break;
-				case tHash::tHashCT("cyan"):	FillColour = tColour4i::cyan;		break;
-				case tHash::tHashCT("magenta"):	FillColour = tColour4i::magenta;	break;
-				case tHash::tHashCT("trans"):	FillColour = tColour4i::transparent;break;
-			}
-		}
+		ParseColour(FillColour, colStr);
 	}
 
 	// Anchor X.
@@ -388,27 +394,7 @@ Command::OperationAspect::OperationAspect(const tString& argsStr)
 	{
 		currArg = currArg->Next();
 		tString colStr = *currArg;
-		if (colStr[0] == '#')
-		{
-			uint32 hex = colStr.AsUInt32(16);
-			FillColour.Set( uint8((hex >> 24) & 0xFF), uint8((hex >> 16) & 0xFF), uint8((hex >> 8) & 0xFF), uint8((hex >> 0) & 0xFF) );
-		}
-		else
-		{
-			switch (tHash::tHashString(colStr.Chr()))
-			{
-				case tHash::tHashCT("black"):	FillColour = tColour4i::black;		break;
-				case tHash::tHashCT("white"):	FillColour = tColour4i::white;		break;
-				case tHash::tHashCT("grey"):	FillColour = tColour4i::grey;		break;
-				case tHash::tHashCT("red"):		FillColour = tColour4i::red;		break;
-				case tHash::tHashCT("green"):	FillColour = tColour4i::green;		break;
-				case tHash::tHashCT("blue"):	FillColour = tColour4i::blue;		break;
-				case tHash::tHashCT("yellow"):	FillColour = tColour4i::yellow;		break;
-				case tHash::tHashCT("cyan"):	FillColour = tColour4i::cyan;		break;
-				case tHash::tHashCT("magenta"):	FillColour = tColour4i::magenta;	break;
-				case tHash::tHashCT("trans"):	FillColour = tColour4i::transparent;break;
-			}
-		}
+		ParseColour(FillColour, colStr);
 	}
 
 	// Anchor X.
@@ -501,30 +487,7 @@ Command::OperationDeborder::OperationDeborder(const tString& argsStr)
 	{
 		currArg = args.First();
 		tString colStr = *currArg;
-		if (colStr[0] == '#')
-		{
-			uint32 hex = colStr.AsUInt32(16);
-			TestColour.Set( uint8((hex >> 24) & 0xFF), uint8((hex >> 16) & 0xFF), uint8((hex >> 8) & 0xFF), uint8((hex >> 0) & 0xFF) );
-			UseTestColour = true;
-		}
-		else
-		{
-			UseTestColour = true;
-			switch (tHash::tHashString(colStr.Chr()))
-			{
-				case tHash::tHashCT("black"):	TestColour = tColour4i::black;		break;
-				case tHash::tHashCT("white"):	TestColour = tColour4i::white;		break;
-				case tHash::tHashCT("grey"):	TestColour = tColour4i::grey;		break;
-				case tHash::tHashCT("red"):		TestColour = tColour4i::red;		break;
-				case tHash::tHashCT("green"):	TestColour = tColour4i::green;		break;
-				case tHash::tHashCT("blue"):	TestColour = tColour4i::blue;		break;
-				case tHash::tHashCT("yellow"):	TestColour = tColour4i::yellow;		break;
-				case tHash::tHashCT("cyan"):	TestColour = tColour4i::cyan;		break;
-				case tHash::tHashCT("magenta"):	TestColour = tColour4i::magenta;	break;
-				case tHash::tHashCT("trans"):	TestColour = tColour4i::transparent;break;
-				default:						UseTestColour = false;				break;
-			}
-		}
+		UseTestColour = ParseColour(TestColour, colStr);
 	}
 
 	// Channels to test.
@@ -629,27 +592,7 @@ Command::OperationCrop::OperationCrop(const tString& argsStr)
 	{
 		currArg = currArg->Next();
 		tString colStr = *currArg;
-		if (colStr[0] == '#')
-		{
-			uint32 hex = colStr.AsUInt32(16);
-			FillColour.Set( uint8((hex >> 24) & 0xFF), uint8((hex >> 16) & 0xFF), uint8((hex >> 8) & 0xFF), uint8((hex >> 0) & 0xFF) );
-		}
-		else
-		{
-			switch (tHash::tHashString(colStr.Chr()))
-			{
-				case tHash::tHashCT("black"):	FillColour = tColour4i::black;		break;
-				case tHash::tHashCT("white"):	FillColour = tColour4i::white;		break;
-				case tHash::tHashCT("grey"):	FillColour = tColour4i::grey;		break;
-				case tHash::tHashCT("red"):		FillColour = tColour4i::red;		break;
-				case tHash::tHashCT("green"):	FillColour = tColour4i::green;		break;
-				case tHash::tHashCT("blue"):	FillColour = tColour4i::blue;		break;
-				case tHash::tHashCT("yellow"):	FillColour = tColour4i::yellow;		break;
-				case tHash::tHashCT("cyan"):	FillColour = tColour4i::cyan;		break;
-				case tHash::tHashCT("magenta"):	FillColour = tColour4i::magenta;	break;
-				case tHash::tHashCT("trans"):	FillColour = tColour4i::transparent;break;
-			}
-		}
+		ParseColour(FillColour, colStr);
 	}
 
 	Valid = true;
@@ -828,27 +771,7 @@ Command::OperationRotate::OperationRotate(const tString& argsStr)
 	{
 		currArg = currArg->Next();
 		tString colStr = *currArg;
-		if (colStr[0] == '#')
-		{
-			uint32 hex = colStr.AsUInt32(16);
-			FillColour.Set( uint8((hex >> 24) & 0xFF), uint8((hex >> 16) & 0xFF), uint8((hex >> 8) & 0xFF), uint8((hex >> 0) & 0xFF) );
-		}
-		else
-		{
-			switch (tHash::tHashString(colStr.Chr()))
-			{
-				case tHash::tHashCT("black"):	FillColour = tColour4i::black;		break;
-				case tHash::tHashCT("white"):	FillColour = tColour4i::white;		break;
-				case tHash::tHashCT("grey"):	FillColour = tColour4i::grey;		break;
-				case tHash::tHashCT("red"):		FillColour = tColour4i::red;		break;
-				case tHash::tHashCT("green"):	FillColour = tColour4i::green;		break;
-				case tHash::tHashCT("blue"):	FillColour = tColour4i::blue;		break;
-				case tHash::tHashCT("yellow"):	FillColour = tColour4i::yellow;		break;
-				case tHash::tHashCT("cyan"):	FillColour = tColour4i::cyan;		break;
-				case tHash::tHashCT("magenta"):	FillColour = tColour4i::magenta;	break;
-				case tHash::tHashCT("trans"):	FillColour = tColour4i::transparent;break;
-			}
-		}
+		ParseColour(FillColour, colStr);
 	}
 
 	Valid = true;
@@ -1510,38 +1433,7 @@ Command::OperationChannel::OperationChannel(const tString& argsStr)
 	{
 		currArg = currArg->Next();
 		tString colStr = *currArg;
-		if (colStr[0] == '#')
-		{
-			uint32 hex = colStr.AsUInt32(16);
-			Colour.Set( uint8((hex >> 24) & 0xFF), uint8((hex >> 16) & 0xFF), uint8((hex >> 8) & 0xFF), uint8((hex >> 0) & 0xFF) );
-		}
-		else
-		{
-			if (colStr.IsNumeric())
-			{
-				// We also allow entering a single integer that sets RGBA in Colour.
-				int val = colStr.AsInt();
-				tMath::tiClamp(val, 0, 255);
-				Colour.Set(val, val, val, val);
-			}
-			else
-			{
-				switch (tHash::tHashString(colStr.Chr()))
-				{
-					case tHash::tHashCT("black"):	Colour = tColour4i::black;		break;
-					case tHash::tHashCT("white"):	Colour = tColour4i::white;		break;
-					case tHash::tHashCT("grey"):	Colour = tColour4i::grey;		break;
-					case tHash::tHashCT("red"):		Colour = tColour4i::red;		break;
-					case tHash::tHashCT("green"):	Colour = tColour4i::green;		break;
-					case tHash::tHashCT("blue"):	Colour = tColour4i::blue;		break;
-					case tHash::tHashCT("yellow"):	Colour = tColour4i::yellow;		break;
-					case tHash::tHashCT("cyan"):	Colour = tColour4i::cyan;		break;
-					case tHash::tHashCT("magenta"):	Colour = tColour4i::magenta;	break;
-					case tHash::tHashCT("trans"):	Colour = tColour4i::transparent;break;
-				}
-			}
-		}
-
+		ParseColour(Colour, colStr);
 		// If nothing above set the colour (like "*") then the default of black (0,0,0,255) is used.
 	}
 
