@@ -29,6 +29,10 @@ namespace Command
 	// (transparent black). If the string is not of this form, colour is left unmodified. You may set colour as your
 	// default colour before calling this. Returns true if colour was modified.
 	bool ParseColour(tColour4i& colour, const tString& strCol);
+
+	// Parses chanStr as a set of channels. The string may contain the characters RGBA in any order and in upper or
+	// lower case. If none of these characters are set, channels is left unmodified and false is returned.
+	bool ParseChannels(comp_t& channels, const tString& chanStr);
 }
 
 
@@ -68,6 +72,24 @@ bool Command::ParseColour(tColour4i& colour, const tString& colStr)
 }
 
 
+bool Command::ParseChannels(comp_t& channels, const tString& chanStr)
+{
+	comp_t chans = 0;
+	if (chanStr.FindAny("rR") != -1)	chans |= tCompBit_R;
+	if (chanStr.FindAny("gG") != -1)	chans |= tCompBit_G;
+	if (chanStr.FindAny("bB") != -1)	chans |= tCompBit_B;
+	if (chanStr.FindAny("aA") != -1)	chans |= tCompBit_A;
+
+	if (chans)
+	{
+		channels = chans;
+		return true;
+	}
+	
+	return false;
+}
+
+
 Command::OperationPixel::OperationPixel(const tString& argsStr)
 {
 	tList<tStringItem> args;
@@ -94,13 +116,8 @@ Command::OperationPixel::OperationPixel(const tString& argsStr)
 	{
 		currArg = currArg->Next();
 		tString chanStr = *currArg;
-		Channels = 0;
-		if (chanStr.FindChar('*') != -1)	Channels = tCompBit_RGBA;
-		if (chanStr.FindAny("rR") != -1)	Channels |= tCompBit_R;
-		if (chanStr.FindAny("gG") != -1)	Channels |= tCompBit_G;
-		if (chanStr.FindAny("bB") != -1)	Channels |= tCompBit_B;
-		if (chanStr.FindAny("aA") != -1)	Channels |= tCompBit_A;
-		if (!Channels)						Channels = tCompBit_RGBA;
+		ParseChannels(Channels, chanStr);
+		tAssert(Channels);
 	}
 
 	Valid = true;
@@ -495,13 +512,8 @@ Command::OperationDeborder::OperationDeborder(const tString& argsStr)
 	{
 		currArg = currArg->Next();
 		tString chanStr = *currArg;
-		Channels = 0;
-		if (chanStr.FindChar('*') != -1)	Channels = tCompBit_RGBA;
-		if (chanStr.FindAny("rR") != -1)	Channels |= tCompBit_R;
-		if (chanStr.FindAny("gG") != -1)	Channels |= tCompBit_G;
-		if (chanStr.FindAny("bB") != -1)	Channels |= tCompBit_B;
-		if (chanStr.FindAny("aA") != -1)	Channels |= tCompBit_A;
-		if (!Channels)						Channels = tCompBit_RGBA;
+		ParseChannels(Channels, chanStr);
+		tAssert(Channels);
 	}
 
 	Valid = true;
@@ -1370,7 +1382,8 @@ Command::OperationChannel::OperationChannel(const tString& argsStr)
 	tStringItem* currArg = nullptr;
 
 	// Mode.
-	// Defaults to Blend if not specified.
+	// Defaults to Blend if not specified. This switch also sets the default channels based
+	// on the mode.
 	if (numArgs >= 1)
 	{
 		currArg = args.First();
@@ -1378,19 +1391,23 @@ Command::OperationChannel::OperationChannel(const tString& argsStr)
 		{
 			case tHash::tHashCT("set"):
 				Mode = ChanMode::Set;
+				Channels = tCompBit_RGB;
 				break;
 
 			case tHash::tHashCT("*"):
 			case tHash::tHashCT("blend"):
 				Mode = ChanMode::Blend;
+				Channels = tCompBit_RGBA;
 				break;
 
 			case tHash::tHashCT("spread"):
 				Mode = ChanMode::Spread;
-				break;
+				Channels = tCompBit_R;
+			break;
 
 			case tHash::tHashCT("intens"):
 				Mode = ChanMode::Intensity;
+				Channels = tCompBit_RGB;
 				break;
 		}
 	}
@@ -1400,24 +1417,8 @@ Command::OperationChannel::OperationChannel(const tString& argsStr)
 	{
 		currArg = currArg->Next();
 		tString chanStr = *currArg;
-		Channels = 0;
-		if (chanStr.FindChar('*') != -1)
-		{
-			switch (Mode)
-			{
-				case ChanMode::Set:			Channels = tCompBit_RGB;		break;
-				case ChanMode::Blend:		Channels = tCompBit_RGBA;		break;
-				case ChanMode::Spread:		Channels = tCompBit_R;			break;
-				case ChanMode::Intensity:	Channels = tCompBit_RGB;		break;
-			}
-		}
-		if (chanStr.FindAny("rR") != -1)	Channels |= tCompBit_R;
-		if (chanStr.FindAny("gG") != -1)	Channels |= tCompBit_G;
-		if (chanStr.FindAny("bB") != -1)	Channels |= tCompBit_B;
-		if (chanStr.FindAny("aA") != -1)	Channels |= tCompBit_A;
-
-		// In all cases at least one channel is necessary.
-		if (!Channels)						Channels  = tCompBit_R;
+		ParseChannels(Channels, chanStr);
+		tAssert(Channels);
 
 		// If mode is spread, only one channel is allowed. We choose first one (LSB first) if multiple.
 		if (Mode == ChanMode::Spread)
