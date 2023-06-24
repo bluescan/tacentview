@@ -20,6 +20,7 @@
 #include "Command.h"
 #include "MultiFrame.h"
 #include "OpenSaveDialogs.h"
+#include "TacentView.h"
 
 
 namespace Command
@@ -1619,14 +1620,14 @@ bool Command::OperationExtract::Apply(Viewer::Image& image)
 		tString outFileShort = tSystem::tGetFileName(outFile);
 		if (!Command::OptionOverwrite && tSystem::tFileExists(outFile))
 		{
-			tPrintf("Extract | File %s%s exists. Not overwriting.\n", subDir.Chr(), outFileShort.Chr());
+			tPrintfFull("Extract | File %s%s exists. Not overwriting.\n", subDir.Chr(), outFileShort.Chr());
 			continue;
 		}
 
 		bool useConfigSaveParams = false;
 		bool onlyCurrentPic = true;
 
-		tPrintf("Extract | Save[file:%s%s]\n", subDir.Chr(), outFileShort.Chr());
+		tPrintfFull("Extract | Save[file:%s%s]\n", subDir.Chr(), outFileShort.Chr());
 		image.Save(outFile, Command::OutType, useConfigSaveParams, onlyCurrentPic);
 	}
 
@@ -1646,6 +1647,13 @@ Command::PostOperationCombine::PostOperationCombine(const tString& argsStr)
 bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 {
 	tAssert(Valid);
+	if (!Viewer::FileTypes_SaveMultiFrame.Contains(Command::OutType))
+	{
+		tPrintfNorm("Combine | Filetype %s does not support Multi-Frame.\n", tSystem::tGetFileTypeName(Command::OutType).Chr());
+		return false;
+	}
+
+
 	return true;
 }
 

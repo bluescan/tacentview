@@ -1540,5 +1540,21 @@ returns a non-zero exit code.
 	//
 	// Example post-op coperations include: combining multiple images into a single animated image or creating
 	// a contact sheet from multiple images.
+	if (!PostOperations.IsEmpty() && (Images.Count() < 2))
+	{
+		tPrintfNorm("Post operations require 2 or more input images. Skipping.\n");
+	}
+	else
+	{
+		for (PostOperation* postop = PostOperations.First(); postop; postop = postop->Next())
+		{
+			if (!postop->Valid)
+				continue;
+			bool success = postop->Apply(Images);
+			if (!success)
+				somethingFailed = true;
+		}
+	}
+
 	return somethingFailed ? 1 : 0;
 }
