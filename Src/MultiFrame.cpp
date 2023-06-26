@@ -344,7 +344,7 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 		"Extracts specified frames and saves them to a folder.\n"
 		"Image %s will have %d frames extracted.\n"
 		"Frames to extract: %s\n",
-		srcFileName.Chr(), frameSet.Count(), frameSet.MakeInclusive().Get(tIntervalRep::Set).Chr()
+		srcFileName.Chr(), frameSet.Count(), frameSet.MakeInclusive().Get(tIntervalRep::Normal, tIntervalSetRep::Union).Chr()
 	);
 	ImGui::Text(genMsg.Chr());
 
