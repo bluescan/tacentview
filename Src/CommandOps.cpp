@@ -1655,16 +1655,22 @@ Command::PostOperationCombine::PostOperationCombine(const tString& argsStr)
 		// The default is an empty durations list. If empty or "*" is passed in, that is what we get.
 		if (!durations.IsEmpty() && (durations != "*"))
 		{
-			tList<tStringItem> pairs;
-			tStd::tExplode(pairs, durations, '|');
-
-			for (tStringItem* pair = pairs.First(); pair; pair = pair->Next())
-				tPrintf("Pair: %s\n", pair->Chr());
+			tList<tStringItem> pairStrs;
+			tStd::tExplode(pairStrs, durations, '+');
 
 			// Populate Durations member. If the string was badly formed the durations will be empty
 			// and the default duration will be used for all frames.
-			// WIP
-			// FrameSet.Set(frames);
+			for (tStringItem* pairStr = pairStrs.First(); pairStr; pairStr = pairStr->Next())
+			{
+				tString intStr = pairStr->Left(':');
+				tString durStr = pairStr->Right(':');
+				IntervalDurationPair* pair = new IntervalDurationPair;
+				pair->FrameInterval.Set(intStr);
+				pair->Duration = durStr.AsFloat();
+				Durations.Append(pair);
+
+				tPrintfFull("Pair: %s : %f\n", pair->FrameInterval.Get().Chr(), pair->Duration);
+			}
 		}
 	}
 
