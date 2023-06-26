@@ -16,6 +16,7 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+#include <System/tTime.h>
 #include "CommandOps.h"
 #include "Command.h"
 #include "MultiFrame.h"
@@ -1718,6 +1719,86 @@ bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 		return false;
 	}
 
+	// Ensure the output directory exists.
+	tString subDir = "Combined/";
+	if (!SubFolder.IsEmpty())
+		subDir = SubFolder;	
+	tString destDir = tSystem::tGetCurrentDir() + subDir;
+	bool dirExists = tSystem::tDirExists(destDir);
+	if (!dirExists)
+		dirExists = tSystem::tCreateDir(destDir);
+	if (!dirExists)
+	{
+		tPrintfNorm("Combine | Could not create sub-directory %s.\n", subDir.Chr());
+		return false;
+	}
+
+	// Determine the output filename.
+	tString extension = tSystem::tGetExtension(Command::OutType);
+	tString filename;
+	tString baseName = BaseName;
+	if (baseName.IsEmpty())
+	{
+		tsPrintf
+		(
+			filename, "%sCombined_%s_%03d.%s",
+			destDir.Chr(),
+			tSystem::tConvertTimeToString(tSystem::tGetTimeLocal(), tSystem::tTimeFormat::Filename).Chr(),
+			images.GetNumItems(),
+			extension.Chr()
+		);
+	}
+	else
+	{
+		filename = destDir + baseName + "." + extension;
+	}
+
+	//Command::SetImageSaveParameters(image, Command::OutType);
+
+	// We need to load the first image to determine the width and height. All input images must have the same width and
+	// height otherwise it is considered an error. This has 2 benefits: a) You get more control of how to resize/crop
+	// images to the desired size by using the resize/crop regular operations, and b) This combine call does not need
+	// to load all source images at the same time.
+	Viewer::Image* firstImage = images.First();
+	if (!firstImage->IsLoaded())
+		firstImage->Load();
+	int width = firstImage->GetWidth();
+	int height = firstImage->GetHeight();
+	if ((width < 4) || (height < 4))
+	if (!Viewer::FileTypes_SaveMultiFrame.Contains(Command::OutType))
+	{
+		tPrintfNorm("Combine | Invalid image dimensions %dx%d.\n", width, height);
+		return false;
+	}
+
+	// Create the frames of the output image. Make sure for each one we set the duration correctly.
+	tList<tImage::tFrame> frames;
+	int frameNumber = 0;
+	for (Viewer::Image* img = images.First(); img; img = img->Next(), frameNumber++)
+	{
+		if (!img->IsLoaded())
+			img->Load();
+
+		tImage::tPicture* currPic = img->GetCurrentPic();
+		if (!img->IsLoaded() || !currPic)
+		{
+			tPrintfNorm("Combine | Error loading input image %s.\n", tSystem::tGetFileName(img->Filename).Chr());
+			return false;
+		}
+
+		if ((currPic->GetWidth() != width) || (currPic->GetHeight() != height))
+		{
+			tPrintfNorm("Combine | All input images must be %dx%d.\n", width, height);
+			return false;
+		}
+
+		// Determine duration.
+		float duration = 33.0f / 1000.0f;
+		tImage::tFrame* frame = new tImage::tFrame(currPic->StealPixels(), width, height, duration);
+		frames.Append(frame);
+
+		tPrintf("WIP Frame %d added. Eventually saved to:\n%s\n", frameNumber, filename.Chr());
+	}
 
 	return true;
 }

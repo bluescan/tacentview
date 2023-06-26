@@ -1263,7 +1263,7 @@ included in the inputs, the new file is not used by the post operation.
         combined image in. If the sub-directory does not exist, it is created
         for you. Defaults to a directory called Combined*.
   base: The base filename (not including the extension) used when saving the
-        combined image. Defaults* to Combined_YYYY_MM_DD_HH_MM_SS_NNN where
+        combined image. Defaults* to Combined_YYYY-MM-DD-HH-MM-SS_NNN where
         NNN is the number of frames. The final filename will include the
         correct extension based on the output image type.
   Example 1: -o webp --po combine[0-24:100+50-74:200,OutDir,Animated] creates a
