@@ -1544,6 +1544,7 @@ Command::OperationExtract::OperationExtract(const tString& argsStr)
 	int numArgs = tStd::tExplode(args, argsStr, ',');
 	tStringItem* currArg = nullptr;
 
+	// Frame numbers.
 	if (numArgs >= 1)
 	{
 		currArg = args.First();
@@ -1556,7 +1557,7 @@ Command::OperationExtract::OperationExtract(const tString& argsStr)
 			FrameSet.Set(frames);
 	}
 
-	// Channels.
+	// Subfolder.
 	if (numArgs >= 2)
 	{
 		currArg = currArg->Next();
@@ -1576,6 +1577,7 @@ Command::OperationExtract::OperationExtract(const tString& argsStr)
 		}
 	}
 
+	// Basename.
 	if (numArgs >= 3)
 	{
 		currArg = currArg->Next();
@@ -1640,7 +1642,64 @@ bool Command::OperationExtract::Apply(Viewer::Image& image)
 
 Command::PostOperationCombine::PostOperationCombine(const tString& argsStr)
 {
-	Valid = false;
+	tList<tStringItem> args;
+	int numArgs = tStd::tExplode(args, argsStr, ',');
+	tStringItem* currArg = nullptr;
+
+	// Frame durations.
+	if (numArgs >= 1)
+	{
+		currArg = args.First();
+		tString durations = *currArg;
+
+		// The default is an empty durations list. If empty or "*" is passed in, that is what we get.
+		if (!durations.IsEmpty() && (durations != "*"))
+		{
+			tList<tStringItem> pairs;
+			tStd::tExplode(pairs, durations, '|');
+
+			for (tStringItem* pair = pairs.First(); pair; pair = pair->Next())
+				tPrintf("Pair: %s\n", pair->Chr());
+
+			// Populate Durations member. If the string was badly formed the durations will be empty
+			// and the default duration will be used for all frames.
+			// WIP
+			// FrameSet.Set(frames);
+		}
+	}
+
+	// Subfolder.
+	if (numArgs >= 2)
+	{
+		currArg = currArg->Next();
+
+		// If SubFolder is empty the default sub-folder name of "Saved" will be used.
+		SubFolder = *currArg;
+		if (SubFolder.IsEmpty() || (SubFolder == "*"))
+		{
+			SubFolder.Clear();
+		}
+		else
+		{
+			if (SubFolder[SubFolder.Length()-1] == '\\')
+				SubFolder[SubFolder.Length()-1] = '/';
+			if (SubFolder[SubFolder.Length()-1] != '/')
+				SubFolder += "/";
+		}
+	}
+
+	// Basename.
+	if (numArgs >= 3)
+	{
+		currArg = currArg->Next();
+
+		// If BaseName is empty the default is to use the base name of the image being processed.
+		BaseName = *currArg;
+		if (BaseName == "*")
+			BaseName.Clear();
+	}
+
+	Valid = true;
 }
 
 

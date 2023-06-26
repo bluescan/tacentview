@@ -266,6 +266,15 @@ struct PostOperationCombine : public PostOperation
 {
 	PostOperationCombine(const tString& args);
 
+	struct IntervalDurationPair : public tLink<IntervalDurationPair>
+	{
+		tMath::tInterval FrameInterval;
+		float Duration;									// Milli seconds.
+	};
+	tList<IntervalDurationPair> Durations;				// An empty list means the default duration is not overridden.
+	tString SubFolder;									// Relative to the current dir.
+	tString BaseName;
+
 	bool Apply(tList<Viewer::Image>& images) override;
 };
 

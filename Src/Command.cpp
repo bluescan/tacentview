@@ -1196,10 +1196,10 @@ R"OPERATIONS020(
   output type is specified using -o or --outtype and the output parameters are
   specified using the --paramsTYPE options. See below.
   frms: The frame numbers to extract in range format. In this format you may
-        specify multiple ranges separated by a | or U character. A ! means
-        exclusive and a hyphen specifies a range. The default is to extract
-        all* frames. For example, --op extract[0-2|!4-6|!7-10!] will extract
-        frames 0,1,2,5,6,8,9. This is the same as --op extract[0-2|5-6|8-9]
+        specify multiple ranges separated by a + or U character. A ! means
+        exclusive and a - (hyphen) specifies a range. The default is to extract
+        all* frames. For example, --op extract[0-2+!4-6+!7-10!] will extract
+        frames 0,1,2,5,6,8,9. This is the same as --op extract[0-2+5-6+8-9]
         If the image being processed does not have enough frames for the
         specified range, those frame files will not be created.
   sdir: The sub-directory, relative to the directory the image is in, to place
@@ -1248,17 +1248,17 @@ included in the inputs, the new file is not used by the post operation.
   command if you don't mind overwriting your existing source files with the
   --overwrite flag (see below), or do it as two passes.
   durs: Durations for each frame specified in milliseconds. The syntax is a
-        sequence of frame-interval:duration pairs separated by |. Frame numbers
-        start at 0. The intervals are applied in the order they are entered so
-        an overlap will overwrite previous durations. For an interval bang (!)
-        means exclusive and a hyphen specifies a range. The default duration
-        for all frames is 33*. If a frame interval is not specified, the
-        supplied duration applies to all frames. For example, if you are
+        sequence of frame-interval:duration pairs separated by + or a U. Frame
+        numbers start at 0. The intervals are applied in the order they are
+        entered so an overlap will overwrite previous durations. An interval
+        bang (!) means exclusive and a hyphen specifies a range. The default
+        duration for all frames is 33*. If a frame interval is not specified,
+        the supplied duration applies to all frames. For example, if you are
         combining 100 images these are equivalent: combine[], combine[*],
         combine[33], and combine[0-99:33]. To create a 2 second pause on (zero-
         based) frame 10 only: combine[10:2000]. To set the first 3 frames to
         100ms, frame 6 to 16ms, and frame 10, 11, 12 to 1.1s, the following
-        could be used: [0-2:100|6:16|10-12:1100]
+        could be used: [0-2:100+6:16+10-12:1100]
   sdir: The sub-directory, relative to the current directory, to place the
         combined image in. If the sub-directory does not exist, it is created
         for you. Defaults to a directory called Combined*.
@@ -1266,7 +1266,7 @@ included in the inputs, the new file is not used by the post operation.
         combined image. Defaults* to Combined_YYYY_MM_DD_HH_MM_SS_NNN where
         NNN is the number of frames. The final filename will include the
         correct extension based on the output image type.
-  Example 1: -o webp --po combine[0-24:100|50-74:200,OutDir,Animated] creates a
+  Example 1: -o webp --po combine[0-24:100+50-74:200,OutDir,Animated] creates a
   file called Animated.webp with the first 25 frames each lasting 1/10 second,
   the next 25 at 30fps, the 25 after at 1/5 second, and the remainder at 33ms.
 
@@ -1538,7 +1538,7 @@ returns a non-zero exit code.
 	// operations (--op) we would need to have all input images in memory at the same time. The post-op pass
 	// still uses the _same_ set of input images. It runs after all normal operations have saved to disk.
 	//
-	// Example post-op coperations include: combining multiple images into a single animated image or creating
+	// Example post-operations include: combining multiple images into a single animated image or creating
 	// a contact sheet from multiple images.
 	if (!PostOperations.IsEmpty() && (Images.Count() < 2))
 	{
@@ -1546,6 +1546,7 @@ returns a non-zero exit code.
 	}
 	else
 	{
+		tPrintfNorm("Processing post-operations on %d images.\n", Images.Count());
 		for (PostOperation* postop = PostOperations.First(); postop; postop = postop->Next())
 		{
 			if (!postop->Valid)
