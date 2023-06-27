@@ -1272,47 +1272,39 @@ included in the inputs, the new file is not used by the post operation.
   file called Animated.webp with the first 25 frames each lasting 1/10 second,
   the next 25 at 30fps, the 25 after at 1/5 second, and the remainder at 33ms.
 
---po contact[cols*,rows*,frmw*,frmh*,sdir*,base*]
-  Creates a contact sheet (AKA flipbook) from multiple input images. Input
-  images are scaled (only if needed) to fit the requested frame dimensions. If
-  you have specific cropping or scaling requirements use normal operations to
-  resize/crop the source images beforehand. This can be done in a single
+--po contact[cols*,rows*,sdir*,base*]
+  Creates a single contact sheet image (AKA flipbook) from multiple input
+  images. You may specify the number of columns and rows or let the operation
+  determine it automatically for you based on the number of input images.
+  Input images must be all the same dimensions. Use normal operations to resize
+  the source images beforehand if necessary. This can be done in a single
   command if you don't mind overwriting your existing source files with the
-  --overwrite flag (see below), or do it as two passes. The final output
-  image always has a single frame. The final output image width will always be
-  the frame width times the number of columns. The height will be the frame
-  height times the number of rows. In some cases there will need to be empty
-  frames in the contact sheet -- If any input image has a transparency, the
-  final image will have transparency (assuming the output format supports it).
-  Blank frames are filled with either opaque black (if no transparency) or
-  transparent black (if there is transparency).
-  cols: Specify the number of columns you want in the contact sheet. If not
-        default, must be an integer bigger than 0. If set to default* it will
+  --overwrite flag (see below), or do it as two passes. The final output image
+  width will always be the frame width times the number of columns and the
+  height will be the frame height times the number of rows. If any input image
+  has a transparency, the final image will have transparency (assuming the
+  output format supports it). When blank pages are needed they are filled with
+  either opaque black (if no transparency) or transparent black (if there is).
+  Pages start at the top-left, one line at a time, from left to right.
+  cols: Specify the number of columns you want in the contact sheet. This value
+        should be bigger or equal to 0*. When set to 0 (the default) it will
         be computed for you based on the number of rows entered so that all
-        input frames will be included. If rows is also default, both cols and
-        rows will be computed for you so that there are enough pages for all
-        input images. If both are set and their product is less than the number
-        of input images, not all imput images will be in the contact sheet.
-  rows: The number of rows. Similar to description of cols above.
-  frmw: The individual frame width. Specified as an integer greater than 0. The
-        default* is to read the width from the first frame image processed.
-  frmh: The individual frame height. Specified as an integer greater than 0. The
-        default* is to read the height from the first frame image processed.
-  filt: Resample filter for frames. Default is bilinear*. Only used if
-        input image frame dimensions don't match requested. See above for valid
-        filter names.
-  edge: Edge mode when filtering. Default is clamp*. Only used if necessary.
-        See above for valid edge mode names.
+        input frames will be included. If rows is also 0, both cols and rows
+        will be computed for you so that there are enough pages for all input
+        images. If both are set and their product is less than the number of
+        input images, not all imput images will be in the contact sheet.
+  rows: The number of rows. Behaves similarly to cols above.
   sdir: The sub-directory, relative to the current directory, to place the
         contact-sheet image in. If the sub-directory does not exist, it is
         created for you. Defaults to a directory called Contact*.
   base: The base filename (not including the extension) used when saving the
-        contact image. Defaults* to Contact_YYYY_MM_DD_HH_MM_SS_NNN where
-        NNN is the number of frames. The final filename will include the
-        correct extension based on the output image type.
-  Example 1: -o tga --po contact[10,5,512,256,bicubic_catmullrom,clamp,*,Sheet]
+        contact image. Defaults* to Contact_YYYY-MM-DD-HH-MM-SS_NNxMM where
+        NN is the number of columns and MM is the number of rows. The final
+        filename will have an extension based on the output image type.
+  Example 1: -o tga --po contact[10,5,*,Sheet]
   will create a contact sheet image called Sheet.tga in a directory called
-  Contacts. The tga file will be 5120x1280 and have 50 512x256 images in it.
+  Contacts. The tga file will be 10 columns by 5 rows. Assuming there are at
+  least 50 input images, every page will have an image in it.
 )POSTOPS010", outtypesanim.Chr()
 		);
 
