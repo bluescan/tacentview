@@ -17,6 +17,10 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #include <System/tTime.h>
+#include <Image/tImageGIF.h>
+#include <Image/tImageWEBP.h>
+#include <Image/tImageAPNG.h>
+#include <Image/tImageTIFF.h>
 #include "CommandOps.h"
 #include "Command.h"
 #include "MultiFrame.h"
@@ -1657,6 +1661,8 @@ Command::PostOperationCombine::PostOperationCombine(const tString& argsStr)
 		if (!durations.IsEmpty() && (durations != "*"))
 		{
 			tList<tStringItem> pairStrs;
+			durations.Replace('U', '+');
+			durations.RemoveAnyNot("!-0123456789.:+");
 			tStd::tExplode(pairStrs, durations, '+');
 
 			// Populate Durations member. If the string was badly formed the durations will be empty
@@ -1710,6 +1716,16 @@ Command::PostOperationCombine::PostOperationCombine(const tString& argsStr)
 }
 
 
+float Command::PostOperationCombine::GetFrameDuration(int frameNum) const
+{
+	for (IntervalDurationPair* pair = Durations.Last(); pair; pair = pair->Prev())
+		if (pair->FrameInterval.Contains(frameNum))
+			return pair->Duration / 1000.0f;
+
+	return 33.0f/1000.0f;
+}
+
+
 bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 {
 	tAssert(Valid);
@@ -1753,8 +1769,6 @@ bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 		filename = destDir + baseName + "." + extension;
 	}
 
-	//Command::SetImageSaveParameters(image, Command::OutType);
-
 	// We need to load the first image to determine the width and height. All input images must have the same width and
 	// height otherwise it is considered an error. This has 2 benefits: a) You get more control of how to resize/crop
 	// images to the desired size by using the resize/crop regular operations, and b) This combine call does not need
@@ -1776,6 +1790,7 @@ bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 	int frameNumber = 0;
 	for (Viewer::Image* img = images.First(); img; img = img->Next(), frameNumber++)
 	{
+		tPrintfNorm("Combine | LoadImage[frame:%d]\n", frameNumber);
 		if (!img->IsLoaded())
 			img->Load();
 
@@ -1793,14 +1808,48 @@ bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 		}
 
 		// Determine duration.
-		float duration = 33.0f / 1000.0f;
+		float duration = GetFrameDuration(frameNumber);
 		tImage::tFrame* frame = new tImage::tFrame(currPic->StealPixels(), width, height, duration);
 		frames.Append(frame);
-
-		tPrintf("WIP Frame %d added. Eventually saved to:\n%s\n", frameNumber, filename.Chr());
+		img->Unload();
 	}
 
-	return true;
+	// The set of frames is ready. Now we need to create the combined image file from them.
+	bool success = false;
+	tPrintfNorm("Combine | Save[file:%s]\n", tSystem::tGetFileName(filename).Chr());
+	switch (OutType)
+	{
+		case tSystem::tFileType::GIF:
+		{
+			tImage::tImageGIF gif(frames, true);
+			success = gif.Save(filename, SaveParamsGIF);
+			break;
+		}
+
+		case tSystem::tFileType::WEBP:
+		{
+			tImage::tImageWEBP webp(frames, true);
+			success = webp.Save(filename, SaveParamsWEBP);
+			break;
+		}
+
+		case tSystem::tFileType::APNG:
+		{
+			tImage::tImageAPNG apng(frames, true);
+			tImage::tImageAPNG::tFormat savedFormat = apng.Save(filename, SaveParamsAPNG);
+			success = (savedFormat != tImage::tImageAPNG::tFormat::Invalid);
+			break;
+		}
+
+		case tSystem::tFileType::TIFF:
+		{
+			tImage::tImageTIFF tiff(frames, true);
+			success = tiff.Save(filename, SaveParamsTIFF);
+			break;
+		}
+	}
+
+	return success;
 }
 
 

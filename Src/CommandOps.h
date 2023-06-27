@@ -275,6 +275,7 @@ struct PostOperationCombine : public PostOperation
 	tString SubFolder;									// Relative to the current dir.
 	tString BaseName;
 
+	float GetFrameDuration(int frameNum) const;			// In seconds. Defaults to 33.0f/1000.0f.
 	bool Apply(tList<Viewer::Image>& images) override;
 };
 

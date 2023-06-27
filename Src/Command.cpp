@@ -100,6 +100,8 @@ namespace Command
 	tImage::tImagePNG::SaveParams  SaveParamsPNG;
 	tImage::tImageQOI::SaveParams  SaveParamsQOI;
 	tImage::tImageTGA::SaveParams  SaveParamsTGA;
+
+
 	tImage::tImageTIFF::SaveParams SaveParamsTIFF;
 	tImage::tImageWEBP::SaveParams SaveParamsWEBP;
 
@@ -1249,9 +1251,9 @@ included in the inputs, the new file is not used by the post operation.
   --overwrite flag (see below), or do it as two passes.
   durs: Durations for each frame specified in milliseconds. The syntax is a
         sequence of frame-interval:duration pairs separated by + or a U. Frame
-        numbers start at 0. The intervals are applied in the order they are
-        entered so an overlap will overwrite previous durations. An interval
-        bang (!) means exclusive and a hyphen specifies a range. The default
+        numbers start at 0. If more than one interval overlaps the same frame
+        the last overlapping interval-pair is used for the duration. A ! char
+        (bang) means exclusive and a hyphen specifies a range. The default
         duration for all frames is 33*. If a frame interval is not specified,
         the supplied duration applies to all frames. For example, if you are
         combining 100 images these are equivalent: combine[], combine[*],
@@ -1540,20 +1542,24 @@ returns a non-zero exit code.
 	//
 	// Example post-operations include: combining multiple images into a single animated image or creating
 	// a contact sheet from multiple images.
-	if (!PostOperations.IsEmpty() && (Images.Count() < 2))
+	if (!PostOperations.IsEmpty())
 	{
-		tPrintfNorm("Post operations require 2 or more input images. Skipping.\n");
-	}
-	else
-	{
-		tPrintfNorm("Processing post-operations on %d images.\n", Images.Count());
-		for (PostOperation* postop = PostOperations.First(); postop; postop = postop->Next())
+		if (Images.Count() < 2)
 		{
-			if (!postop->Valid)
-				continue;
-			bool success = postop->Apply(Images);
-			if (!success)
-				somethingFailed = true;
+			tPrintfNorm("Post operations require 2 or more input images. Skipping.\n");
+		}
+		else
+		{
+			tPrintfNorm("Processing post-operations on %d images.\n", Images.Count());
+			for (PostOperation* postop = PostOperations.First(); postop; postop = postop->Next())
+			{
+				if (!postop->Valid)
+					continue;
+				bool success = postop->Apply(Images);
+				if (!success)
+					somethingFailed = true;
+			}
+			tPrintfNorm("Done processing post-operations on %d images.\n", Images.Count());
 		}
 	}
 
