@@ -1751,13 +1751,13 @@ bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 
 	// Determine the output filename.
 	tString extension = tSystem::tGetExtension(Command::OutType);
-	tString filename;
+	tString outFile;
 	tString baseName = BaseName;
 	if (baseName.IsEmpty())
 	{
 		tsPrintf
 		(
-			filename, "%sCombined_%s_%03d.%s",
+			outFile, "%sCombined_%s_%03d.%s",
 			destDir.Chr(),
 			tSystem::tConvertTimeToString(tSystem::tGetTimeLocal(), tSystem::tTimeFormat::Filename).Chr(),
 			images.GetNumItems(),
@@ -1766,7 +1766,14 @@ bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 	}
 	else
 	{
-		filename = destDir + baseName + "." + extension;
+		outFile = destDir + baseName + "." + extension;
+	}
+
+	// No need to continue if we know we won't be able to save the outFile.
+	if (!Command::OptionOverwrite && tSystem::tFileExists(outFile))
+	{
+		tPrintfNorm("Combine | File %s%s exists. Not overwriting.\n", subDir.Chr(), tSystem::tGetFileName(outFile).Chr());
+		return false;
 	}
 
 	// We need to load the first image to determine the width and height. All input images must have the same width and
@@ -1790,7 +1797,7 @@ bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 	int frameNumber = 0;
 	for (Viewer::Image* img = images.First(); img; img = img->Next(), frameNumber++)
 	{
-		tPrintfNorm("Combine | LoadImage[frame:%d]\n", frameNumber);
+		tPrintfFull("Combine | LoadImage[frame:%d]\n", frameNumber);
 		if (!img->IsLoaded())
 			img->Load();
 
@@ -1816,27 +1823,27 @@ bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 
 	// The set of frames is ready. Now we need to create the combined image file from them.
 	bool success = false;
-	tPrintfNorm("Combine | Save[file:%s]\n", tSystem::tGetFileName(filename).Chr());
+	tPrintfFull("Combine | Save[file:%s]\n", tSystem::tGetFileName(outFile).Chr());
 	switch (OutType)
 	{
 		case tSystem::tFileType::GIF:
 		{
 			tImage::tImageGIF gif(frames, true);
-			success = gif.Save(filename, SaveParamsGIF);
+			success = gif.Save(outFile, SaveParamsGIF);
 			break;
 		}
 
 		case tSystem::tFileType::WEBP:
 		{
 			tImage::tImageWEBP webp(frames, true);
-			success = webp.Save(filename, SaveParamsWEBP);
+			success = webp.Save(outFile, SaveParamsWEBP);
 			break;
 		}
 
 		case tSystem::tFileType::APNG:
 		{
 			tImage::tImageAPNG apng(frames, true);
-			tImage::tImageAPNG::tFormat savedFormat = apng.Save(filename, SaveParamsAPNG);
+			tImage::tImageAPNG::tFormat savedFormat = apng.Save(outFile, SaveParamsAPNG);
 			success = (savedFormat != tImage::tImageAPNG::tFormat::Invalid);
 			break;
 		}
@@ -1844,7 +1851,7 @@ bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 		case tSystem::tFileType::TIFF:
 		{
 			tImage::tImageTIFF tiff(frames, true);
-			success = tiff.Save(filename, SaveParamsTIFF);
+			success = tiff.Save(outFile, SaveParamsTIFF);
 			break;
 		}
 	}

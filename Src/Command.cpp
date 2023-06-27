@@ -1550,7 +1550,7 @@ returns a non-zero exit code.
 		}
 		else
 		{
-			tPrintfNorm("Processing post-operations on %d images.\n", Images.Count());
+			tPrintfFull("Processing post-operations on %d images.\n", Images.Count());
 			for (PostOperation* postop = PostOperations.First(); postop; postop = postop->Next())
 			{
 				if (!postop->Valid)
@@ -1559,7 +1559,7 @@ returns a non-zero exit code.
 				if (!success)
 					somethingFailed = true;
 			}
-			tPrintfNorm("Done processing post-operations on %d images.\n", Images.Count());
+			tPrintfFull("Done processing post-operations on %d images.\n", Images.Count());
 		}
 	}
 
