@@ -284,6 +284,11 @@ struct PostOperationContact : public PostOperation
 {
 	PostOperationContact(const tString& args);
 
+	int Columns											= 0;
+	int Rows											= 0;
+	tString SubFolder;									// Relative to the current dir.
+	tString BaseName;
+
 	bool Apply(tList<Viewer::Image>& images) override;
 };
 

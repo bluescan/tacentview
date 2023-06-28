@@ -1786,7 +1786,6 @@ bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 	int width = firstImage->GetWidth();
 	int height = firstImage->GetHeight();
 	if ((width < 4) || (height < 4))
-	if (!Viewer::FileTypes_SaveMultiFrame.Contains(Command::OutType))
 	{
 		tPrintfNorm("Combine | Invalid image dimensions %dx%d.\n", width, height);
 		return false;
@@ -1862,12 +1861,156 @@ bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 
 Command::PostOperationContact::PostOperationContact(const tString& argsStr)
 {
-	Valid = false;
+	tList<tStringItem> args;
+	int numArgs = tStd::tExplode(args, argsStr, ',');
+	tStringItem* currArg = nullptr;
+
+	// Columns.
+	if (numArgs >= 1)
+	{
+		currArg = args.First();
+		Columns = currArg->AsInt32();
+	}
+
+	// Rows.
+	if (numArgs >= 2)
+	{
+		currArg = currArg->Next();
+		Rows = currArg->AsInt32();
+	}
+
+	// Subfolder.
+	if (numArgs >= 3)
+	{
+		currArg = currArg->Next();
+
+		// If SubFolder is empty the default sub-folder name of "Saved" will be used.
+		SubFolder = *currArg;
+		if (SubFolder.IsEmpty() || (SubFolder == "*"))
+		{
+			SubFolder.Clear();
+		}
+		else
+		{
+			if (SubFolder[SubFolder.Length()-1] == '\\')
+				SubFolder[SubFolder.Length()-1] = '/';
+			if (SubFolder[SubFolder.Length()-1] != '/')
+				SubFolder += "/";
+		}
+	}
+
+	// Basename.
+	if (numArgs >= 4)
+	{
+		currArg = currArg->Next();
+
+		// If BaseName is empty the default is to use the base name of the image being processed.
+		BaseName = *currArg;
+		if (BaseName == "*")
+			BaseName.Clear();
+	}
+
+	Valid = true;
 }
 
 
 bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 {
 	tAssert(Valid);
+	if (!Viewer::FileTypes_Save.Contains(Command::OutType))
+	{
+		tPrintfNorm("Contact | Filetype %s cannot be saved.\n", tSystem::tGetFileTypeName(Command::OutType).Chr());
+		return false;
+	}
+
+	// If columns or rows (or both) are 0 we need to compute them based on the total number of images.
+	int numImages = images.GetNumItems();
+	if ((Columns <= 0) && (Rows <= 0))
+	{
+		float root = tMath::tSqrt(float(numImages));
+		tMath::tiCeiling(root);
+		Columns = int(root);
+		Rows = numImages / Columns;
+		if (Columns*Rows < numImages)
+			Rows++;
+		tAssert(Columns*Rows >= numImages);
+	}
+	else if (Columns <= 0)
+	{
+		Columns = numImages / Rows;
+		if (Columns*Rows < numImages)
+			Columns++;
+		tAssert(Columns*Rows >= numImages);
+	}
+	else if (Rows <= 0)
+	{
+		Rows = numImages / Columns;
+		if (Columns*Rows < numImages)
+			Rows++;
+		tAssert(Columns*Rows >= numImages);
+	}
+
+	if (Columns*Rows < numImages)
+		tPrintfFull("Warning: %dx%d contact pages is not enough for %d images.\n", Columns, Rows, numImages);
+
+	// Ensure the output directory exists.
+	tString subDir = "Contact/";
+	if (!SubFolder.IsEmpty())
+		subDir = SubFolder;	
+	tString destDir = tSystem::tGetCurrentDir() + subDir;
+	bool dirExists = tSystem::tDirExists(destDir);
+	if (!dirExists)
+		dirExists = tSystem::tCreateDir(destDir);
+	if (!dirExists)
+	{
+		tPrintfNorm("Contact | Could not create sub-directory %s.\n", subDir.Chr());
+		return false;
+	}
+
+	// Determine the output filename.
+	tString extension = tSystem::tGetExtension(Command::OutType);
+	tString outFile;
+	tString baseName = BaseName;
+	if (baseName.IsEmpty())
+	{
+		tsPrintf
+		(
+			outFile, "%sContact_%s_%02dx%02d.%s",
+			destDir.Chr(),
+			tSystem::tConvertTimeToString(tSystem::tGetTimeLocal(), tSystem::tTimeFormat::Filename).Chr(),
+			Columns, Rows,
+			extension.Chr()
+		);
+	}
+	else
+	{
+		outFile = destDir + baseName + "." + extension;
+	}
+
+	// No need to continue if we know we won't be able to save the outFile.
+	if (!Command::OptionOverwrite && tSystem::tFileExists(outFile))
+	{
+		tPrintfNorm("Contact | File %s%s exists. Not overwriting.\n", subDir.Chr(), tSystem::tGetFileName(outFile).Chr());
+		return false;
+	}
+
+	// We need to load the first image to determine the width and height. All input images must have the same width and
+	// height otherwise it is considered an error. This has 2 benefits: a) You get more control of how to resize/crop
+	// images to the desired size by using the resize/crop regular operations, and b) This combine call does not need
+	// to load all source images at the same time.
+	Viewer::Image* firstImage = images.First();
+	if (!firstImage->IsLoaded())
+		firstImage->Load();
+	int width = firstImage->GetWidth();
+	int height = firstImage->GetHeight();
+	if ((width < 4) || (height < 4))
+	{
+		tPrintfNorm("Contact | Invalid image dimensions %dx%d.\n", width, height);
+		return false;
+	}
+
+	// WIP Do the actual work here.
+	// WIP Test the col/row computations above.
+
 	return true;
 }
