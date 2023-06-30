@@ -1925,33 +1925,35 @@ bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 
 	// If columns or rows (or both) are 0 we need to compute them based on the total number of images.
 	int numImages = images.GetNumItems();
-	if ((Columns <= 0) && (Rows <= 0))
+	int rows = Rows;
+	int cols = Columns;
+	if ((cols <= 0) && (rows <= 0))
 	{
 		float root = tMath::tSqrt(float(numImages));
 		tMath::tiCeiling(root);
-		Columns = int(root);
-		Rows = numImages / Columns;
-		if (Columns*Rows < numImages)
-			Rows++;
-		tAssert(Columns*Rows >= numImages);
+		cols = int(root);
+		rows = numImages / cols;
+		if (cols*rows < numImages)
+			rows++;
+		tAssert(cols*rows >= numImages);
 	}
-	else if (Columns <= 0)
+	else if (cols <= 0)
 	{
-		Columns = numImages / Rows;
-		if (Columns*Rows < numImages)
-			Columns++;
-		tAssert(Columns*Rows >= numImages);
+		cols = numImages / rows;
+		if (cols*rows < numImages)
+			cols++;
+		tAssert(cols*rows >= numImages);
 	}
-	else if (Rows <= 0)
+	else if (rows <= 0)
 	{
-		Rows = numImages / Columns;
-		if (Columns*Rows < numImages)
-			Rows++;
-		tAssert(Columns*Rows >= numImages);
+		rows = numImages / cols;
+		if (cols*rows < numImages)
+			rows++;
+		tAssert(cols*rows >= numImages);
 	}
 
-	if (Columns*Rows < numImages)
-		tPrintfFull("Warning: %dx%d contact pages is not enough for %d images.\n", Columns, Rows, numImages);
+	if (cols*rows < numImages)
+		tPrintfFull("Warning: %dx%d contact pages is not enough for %d images.\n", cols, rows, numImages);
 
 	// Ensure the output directory exists.
 	tString subDir = "Contact/";
@@ -1978,7 +1980,7 @@ bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 			outFile, "%sContact_%s_%02dx%02d.%s",
 			destDir.Chr(),
 			tSystem::tConvertTimeToString(tSystem::tGetTimeLocal(), tSystem::tTimeFormat::Filename).Chr(),
-			Columns, Rows,
+			cols, rows,
 			extension.Chr()
 		);
 	}
@@ -2001,16 +2003,119 @@ bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 	Viewer::Image* firstImage = images.First();
 	if (!firstImage->IsLoaded())
 		firstImage->Load();
-	int width = firstImage->GetWidth();
-	int height = firstImage->GetHeight();
-	if ((width < 4) || (height < 4))
+	int frameWidth = firstImage->GetWidth();
+	int frameHeight = firstImage->GetHeight();
+	if ((frameWidth < 4) || (frameHeight < 4))
 	{
-		tPrintfNorm("Contact | Invalid image dimensions %dx%d.\n", width, height);
+		tPrintfNorm("Contact | Invalid image dimensions %dx%d. Must be at least 4x4.\n", frameWidth, frameHeight);
 		return false;
 	}
 
-	// WIP Do the actual work here.
-	// WIP Test the col/row computations above.
+	// Do the actual work here.
+	int contactWidth = frameWidth*cols;
+	int contactHeight = frameHeight*rows;
+	tImage::tPicture outPic(contactWidth, contactHeight);
+	outPic.SetAll(tColouri(0, 0, 0, 0));
 
-	return true;
+	int ix = 0;
+	int iy = 0;
+	int frame = 0;
+	for (Viewer::Image* img = images.First(); img; img = img->Next(), frame++)
+	{
+		if (!img->IsLoaded())
+			img->Load();
+
+		tPrintf("Processing frame %d : %s at (%d, %d).\n", frame, img->Filename.Chr(), ix, iy);
+
+		if ((img->GetWidth() != frameWidth) || (img->GetHeight() != frameHeight))
+		{
+			img->Unload();
+			tPrintfNorm("Contact | All input images must be same size.\n");
+			return false;
+		}
+
+		tImage::tPicture* currPic = img->GetCurrentPic();
+
+		// Copy resampled frame into place.
+		for (int y = 0; y < frameHeight; y++)
+		{
+			for (int x = 0; x < frameWidth; x++)
+			{
+				outPic.SetPixel
+				(
+					x + (ix*frameWidth),
+					y + ((rows-1-iy)*frameHeight),
+					currPic->GetPixel(x, y)
+				);
+			}
+		}
+
+		img->Unload();
+		ix++;
+		if (ix >= cols)
+		{
+			ix = 0;
+			iy++;
+			if (iy >= rows)
+				break;
+		}
+	}
+
+	if (!outPic.IsValid())
+		return false;
+
+	// The outPic is ready. Now we need to create the combined image file from it.
+	bool success = false;
+	tPrintfFull("Contact | Save[file:%s]\n", tSystem::tGetFileName(outFile).Chr());
+	switch (OutType)
+	{
+		case tSystem::tFileType::TGA:
+		{
+			tImage::tImageTGA tga(outPic, true);
+			tImage::tImageTGA::tFormat savedFmt = tga.Save(outFile, SaveParamsTGA);
+			success = (savedFmt != tImage::tImageTGA::tFormat::Invalid);
+			break;
+		}
+
+		case tSystem::tFileType::PNG:
+		{
+			tImage::tImagePNG png(outPic, true);
+			tImage::tImagePNG::tFormat savedFmt = png.Save(outFile, SaveParamsPNG);
+			success = (savedFmt != tImage::tImagePNG::tFormat::Invalid);
+			break;
+		}
+
+/*
+		case tSystem::tFileType::GIF:
+		{
+			tImage::tImageGIF gif(frames, true);
+			success = gif.Save(outFile, SaveParamsGIF);
+			break;
+		}
+
+		case tSystem::tFileType::WEBP:
+		{
+			tImage::tImageWEBP webp(frames, true);
+			success = webp.Save(outFile, SaveParamsWEBP);
+			break;
+		}
+
+		case tSystem::tFileType::APNG:
+		{
+			tImage::tImageAPNG apng(frames, true);
+			tImage::tImageAPNG::tFormat savedFormat = apng.Save(outFile, SaveParamsAPNG);
+			success = (savedFormat != tImage::tImageAPNG::tFormat::Invalid);
+			break;
+		}
+
+		case tSystem::tFileType::TIFF:
+		{
+			tImage::tImageTIFF tiff(frames, true);
+			success = tiff.Save(outFile, SaveParamsTIFF);
+			break;
+		}
+		*/
+	}
+
+	return success;
 }

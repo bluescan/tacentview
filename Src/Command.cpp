@@ -100,8 +100,6 @@ namespace Command
 	tImage::tImagePNG::SaveParams  SaveParamsPNG;
 	tImage::tImageQOI::SaveParams  SaveParamsQOI;
 	tImage::tImageTGA::SaveParams  SaveParamsTGA;
-
-
 	tImage::tImageTIFF::SaveParams SaveParamsTIFF;
 	tImage::tImageWEBP::SaveParams SaveParamsWEBP;
 

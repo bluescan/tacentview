@@ -35,10 +35,16 @@ namespace Command
 
 	extern tSystem::tFileType OutType;
 	extern tCmdLine::tOption OptionOverwrite;
-	extern tImage::tImageGIF::SaveParams  SaveParamsGIF;
-	extern tImage::tImageWEBP::SaveParams SaveParamsWEBP;
+
 	extern tImage::tImageAPNG::SaveParams SaveParamsAPNG;
+	extern tImage::tImageBMP::SaveParams  SaveParamsBMP;
+	extern tImage::tImageGIF::SaveParams  SaveParamsGIF;
+	extern tImage::tImageJPG::SaveParams  SaveParamsJPG;
+	extern tImage::tImagePNG::SaveParams  SaveParamsPNG;
+	extern tImage::tImageQOI::SaveParams  SaveParamsQOI;
+	extern tImage::tImageTGA::SaveParams  SaveParamsTGA;
 	extern tImage::tImageTIFF::SaveParams SaveParamsTIFF;
+	extern tImage::tImageWEBP::SaveParams SaveParamsWEBP;
 
 	void SetImageSaveParameters(Viewer::Image&, tSystem::tFileType);
 }
