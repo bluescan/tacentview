@@ -2025,7 +2025,7 @@ bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 		if (!img->IsLoaded())
 			img->Load();
 
-		tPrintf("Processing frame %d : %s at (%d, %d).\n", frame, img->Filename.Chr(), ix, iy);
+		tPrintfFull("Processing frame %d : %s at (%d, %d).\n", frame, img->Filename.Chr(), ix, iy);
 
 		if ((img->GetWidth() != frameWidth) || (img->GetHeight() != frameHeight))
 		{
@@ -2064,7 +2064,7 @@ bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 	if (!outPic.IsValid())
 		return false;
 
-	// The outPic is ready. Now we need to create the combined image file from it.
+	// The outPic is ready. Now we need to create the contact/flipbook image file from it.
 	bool success = false;
 	tPrintfFull("Contact | Save[file:%s]\n", tSystem::tGetFileName(outFile).Chr());
 	switch (OutType)
@@ -2085,36 +2085,57 @@ bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 			break;
 		}
 
-/*
+		case tSystem::tFileType::JPG:
+		{
+			tImage::tImageJPG jpg(outPic, true);
+			success = jpg.Save(outFile, SaveParamsJPG);
+			break;
+		}
+
 		case tSystem::tFileType::GIF:
 		{
-			tImage::tImageGIF gif(frames, true);
+			tImage::tImageGIF gif(outPic, true);
 			success = gif.Save(outFile, SaveParamsGIF);
 			break;
 		}
 
 		case tSystem::tFileType::WEBP:
 		{
-			tImage::tImageWEBP webp(frames, true);
+			tImage::tImageWEBP webp(outPic, true);
 			success = webp.Save(outFile, SaveParamsWEBP);
+			break;
+		}
+
+		case tSystem::tFileType::QOI:
+		{
+			tImage::tImageQOI qoi(outPic, true);
+			tImage::tImageQOI::tFormat savedFmt = qoi.Save(outFile, SaveParamsQOI);
+			success = (savedFmt != tImage::tImageQOI::tFormat::Invalid);
 			break;
 		}
 
 		case tSystem::tFileType::APNG:
 		{
-			tImage::tImageAPNG apng(frames, true);
+			tImage::tImageAPNG apng(outPic, true);
 			tImage::tImageAPNG::tFormat savedFormat = apng.Save(outFile, SaveParamsAPNG);
 			success = (savedFormat != tImage::tImageAPNG::tFormat::Invalid);
 			break;
 		}
 
+		case tSystem::tFileType::BMP:
+		{
+			tImage::tImageBMP bmp(outPic, true);
+			tImage::tImageBMP::tFormat savedFormat = bmp.Save(outFile, SaveParamsBMP);
+			success = (savedFormat != tImage::tImageBMP::tFormat::Invalid);
+			break;
+		}
+
 		case tSystem::tFileType::TIFF:
 		{
-			tImage::tImageTIFF tiff(frames, true);
+			tImage::tImageTIFF tiff(outPic, true);
 			success = tiff.Save(outFile, SaveParamsTIFF);
 			break;
 		}
-		*/
 	}
 
 	return success;

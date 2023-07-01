@@ -257,6 +257,7 @@ struct OperationExtract : public Operation
 struct PostOperation : public tLink<PostOperation>
 {
 	virtual bool Apply(tList<Viewer::Image>&)			= 0;
+	virtual const char* GetName() const					= 0;
 	virtual ~PostOperation()							{ }
 	bool Valid											= false;
 };
@@ -277,6 +278,7 @@ struct PostOperationCombine : public PostOperation
 
 	float GetFrameDuration(int frameNum) const;			// In seconds. Defaults to 33.0f/1000.0f.
 	bool Apply(tList<Viewer::Image>& images) override;
+	const char* GetName() const override				{ return "combine"; }
 };
 
 
@@ -290,6 +292,7 @@ struct PostOperationContact : public PostOperation
 	tString BaseName;
 
 	bool Apply(tList<Viewer::Image>& images) override;
+	const char* GetName() const override				{ return "contact"; }
 };
 
 

@@ -1545,6 +1545,8 @@ returns a non-zero exit code.
 			{
 				if (!postop->Valid)
 					continue;
+
+				tPrintfNorm("Processing Post Operation: %s\n", postop->GetName());
 				bool success = postop->Apply(Images);
 				if (!success)
 					somethingFailed = true;
