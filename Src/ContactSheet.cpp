@@ -100,7 +100,9 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	static char lo[32];
 	static char hi[32];
 	tVector2 bsize(50.0f, 0.0f);
+	const int itemWidth = 160;
 
+	ImGui::SetNextItemWidth(itemWidth);
 	if (ImGui::InputInt("Frame Width", &frameWidth))
 		anyImageNeedsResize = AnyImageNeedsResize(frameWidth, frameHeight);
 	tiClampMin(frameWidth, 4);
@@ -110,6 +112,7 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	ImGui::SameLine(); if (ImGui::Button(hi, bsize)) frameWidth = hiP2W;
 	ImGui::SameLine(); ShowHelpMark("Single frame width in pixels.");
 
+	ImGui::SetNextItemWidth(itemWidth);
 	if (ImGui::InputInt("Frame Height", &frameHeight))
 		anyImageNeedsResize = AnyImageNeedsResize(frameWidth, frameHeight);
 	tiClampMin(frameHeight, 4);
@@ -119,10 +122,12 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	ImGui::SameLine(); if (ImGui::Button(hi, bsize)) frameHeight = hiP2H;
 	ImGui::SameLine(); ShowHelpMark("Single frame height in pixels.");
 
+	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Columns", &numCols);
 	ImGui::SameLine();
 	ShowHelpMark("Number of columns.");
  
+	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Rows", &numRows);
 	ImGui::SameLine();
 	ShowHelpMark("Number of rows.");
@@ -136,6 +141,7 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	}
 	ImGui::Separator();
 
+	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Final Width", &finalWidth);
 	tiClampMin(finalWidth, 4);
 	loP2W = tNextLowerPower2(finalWidth);	tiClampMin(loP2W, 4);	tsPrintf(lo, "%d##width", loP2W);
@@ -144,6 +150,7 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	ImGui::SameLine(); if (ImGui::Button(hi, bsize)) finalWidth = hiP2W;
 	ImGui::SameLine(); ShowHelpMark("Final scaled output sheet width in pixels.");
 
+	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Final Height", &finalHeight);
 	tiClampMin(finalHeight, 4);
 	loP2H = tNextLowerPower2(finalHeight);	tiClampMin(loP2H, 4);	tsPrintf(lo, "%d##height", loP2H);
@@ -152,7 +159,7 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	ImGui::SameLine(); if (ImGui::Button(hi, bsize)) finalHeight = hiP2H;
 	ImGui::SameLine(); ShowHelpMark("Final scaled output sheet height in pixels.");
 
-	if (ImGui::Button("Reset"))
+	if (ImGui::Button("Reset", tVector2(100.0f, 0.0f)))
 	{
 		finalWidth = contactWidth;
 		finalHeight = contactHeight;
@@ -194,6 +201,7 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	tString destDir = DoSubFolder();
 
 	static char filename[128] = "ContactSheet";
+	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputText("Filename", filename, tNumElements(filename));
 	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
 

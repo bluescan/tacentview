@@ -97,11 +97,13 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 	static int outHeight = 256;
 	static char lo[32];
 	static char hi[32];
+	const int itemWidth = 160;
 
 	// If just opened, loop through all the images and choose the largest width and height.
 	if (saveMultiFramePressed)
 		ComputeMaxWidthHeight(outWidth, outHeight);
 
+	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Width", &outWidth);
 	tiClampMin(outWidth, 4);
 	int loP2W = tNextLowerPower2(outWidth);		tiClampMin(loP2W, 4);	tsPrintf(lo, "w%d", loP2W);
@@ -110,6 +112,7 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 	ImGui::SameLine(); if (ImGui::Button(hi)) outWidth = hiP2W;
 	ImGui::SameLine(); ShowHelpMark("Output width in pixels.");
 
+	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Height", &outHeight);
 	tiClampMin(outHeight, 4);
 	int loP2H = tNextLowerPower2(outHeight);	tiClampMin(loP2H, 4);	tsPrintf(lo, "h%d", loP2H);
@@ -142,6 +145,7 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 	tString destDir = DoSubFolder();
 
 	static char filename[128] = "MultiFrame";
+	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputText("Filename", filename, tNumElements(filename));
 	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
 
@@ -236,7 +240,7 @@ void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeigh
 			params.Format = tPixelFormat(int(tPixelFormat::FirstPalette) + Config::Current->SaveFileGifBPP - 1);
 			params.Method = tQuantize::Method(Config::Current->SaveFileGifQuantMethod);
 			params.Loop = Config::Current->SaveFileGifLoop;
-			params.AlphaThreshold = Config::Current->SaveFileGifAlphaThreshold;
+			params.AlphaThresholdd = Config::Current->SaveFileGifAlphaThreshold;
 			params.OverrideFrameDuration = Config::Current->SaveFileGifDurMultiFrame;
 			params.DitherLevel = double(Config::Current->SaveFileGifDitherLevel);
 			params.FilterSize = (Config::Current->SaveFileGifFilterSize * 2) + 1;
@@ -342,9 +346,10 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 	(
 		genMsg,
 		"Extracts specified frames and saves them to a folder.\n"
-		"Image %s will have %d frames extracted.\n"
+		"%d frames will be extraxcted from\n"
+		"%s\n"
 		"Frames to extract: %s\n",
-		srcFileName.Chr(), frameSet.Count(), frameSet.MakeInclusive().Get(tIntervalRep::Normal, tIntervalSetRep::Union).Chr()
+		frameSet.Count(), srcFileName.Chr(), frameSet.MakeInclusive().Get(tIntervalRep::Normal, tIntervalSetRep::Union).Chr()
 	);
 	ImGui::Text(genMsg.Chr());
 
@@ -364,12 +369,15 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 			outBaseName[127] = '\0';
 		}
 	}
+	const int itemWidth = 160;
+	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputText("Base Filename", outBaseName, tNumElements(outBaseName));
 	tString baseHelp;
 	tString extension = tGetExtension(fileType);
-	tsPrintf(baseHelp, "The output base filename without extension. Saved files will be:\n%s_001.%s, %s_002.%s, etc.", outBaseName, extension.Chr(), outBaseName, extension.Chr());
+	tsPrintf(baseHelp, "The output base filename without extension.\nSaved files will be:\n%s_001.%s,\n%s_002.%s,\netc.", outBaseName, extension.Chr(), outBaseName, extension.Chr());
 	ImGui::SameLine(); ShowHelpMark(baseHelp.Chr());
 
+	ImGui::SetNextItemWidth(itemWidth);
 	if (ImGui::InputText("Frames", framesToExtract, tNumElements(framesToExtract)))
 	{
 		frameSet.Set( tString(framesToExtract) );

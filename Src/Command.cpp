@@ -551,9 +551,9 @@ void Command::ParseSaveParametersGIF()
 
 	tString alphaThresholdStr = OptionParamsGIF.Arg4();
 	if (alphaThresholdStr == "*")
-		SaveParamsGIF.AlphaThreshold = -1;
+		SaveParamsGIF.AlphaThresholdd = -1;
 	else
-		SaveParamsGIF.AlphaThreshold = alphaThresholdStr.AsInt32();
+		SaveParamsGIF.AlphaThresholdd = alphaThresholdStr.AsInt32();
 
 	tString overrideFrameDurStr = OptionParamsGIF.Arg5();
 	if (overrideFrameDurStr == "*")
@@ -1357,14 +1357,17 @@ indicates which is the default.
 
 --paramsGIF bpp qan loop alp dur dith filt samp
   bpp:  Bits per pixel from 1 to 8*. Results in palette colours from 2 to 256.
+        If the GIF has transparency, one less colour can be represented.
   qan:  Quantization method for palette generation.
         fixed:   Use a fixed colour palette for the chosen bpp. Low quality.
         spatial: Use scolorq algorithm. Slow but good for 32 colours or fewer.
         neu:     Use neuquant algorithm. Good for 64 colours or more.
         wu*:     Use XiaolinWu algorithm. Good for 64 colours or more.
   loop: Times to loop for animated GIFs. Choose 0* to loop forever. 
-  alp:  Alpha threshold. Choose -1 for opaque(*). Otherwise in [0, 255] and
-        if pixel alpha <= threshold the pixel is transparent.
+  alp:  Alpha threshold. Set to 255 to force opaque. If in [0, 255) a pixel
+        alpha <= threshold results in a transparent pixel. Set to -1(*) for
+        auto-mode where a threshold of 127 if used if image is not opaque -- if
+        image is opaque the resultant GIF will be opaque.
   dur:  Frame duration override, -1* means no override. Otherwise in 1/100 s.
   dith: Dither level. Value in range 0.0 to 2.0+. Only applies to spatial
         quantization. 0.0* means auto-determine a good value for the current

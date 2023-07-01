@@ -192,7 +192,6 @@ void Viewer::DoSavePopup()
 
 	DoSaveFiletypeOptions(saveType);
 
-	ImGui::NewLine();
 	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
 		ImGui::CloseCurrentPopup();
 	ImGui::SameLine();
@@ -303,6 +302,9 @@ tString Viewer::DoSubFolder()
 	// Output sub-folder
 	char subFolder[256]; tMemset(subFolder, 0, 256);
 	tStrncpy(subFolder, Config::Current->SaveSubFolder.Chr(), 255);
+
+	const int itemWidth = 160;
+	ImGui::SetNextItemWidth(itemWidth);	
 	ImGui::InputText("SubFolder", subFolder, 256);
 	Config::Current->SaveSubFolder.Set(subFolder);
 	tString destDir = ImagesDir;
@@ -326,6 +328,9 @@ tSystem::tFileType Viewer::DoSaveChooseFiletype()
 {
 	tString fileTypeName = Config::Current->SaveFileType;
 	tFileType fileType = tGetFileTypeFromName(fileTypeName);
+
+	const int itemWidth = 160;
+	ImGui::SetNextItemWidth(itemWidth);
 	if (ImGui::BeginCombo("File Type", fileTypeName.Chr()))
 	{
 		for (tFileTypes::tFileTypeItem* item = FileTypes_Save.First(); item; item = item->Next())
@@ -353,7 +358,7 @@ tSystem::tFileType Viewer::DoSaveChooseFiletype()
 void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 {
 	const int itemWidth = 160;
-	if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
+	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::SliderInt("Bits per Pixel", &Config::Current->SaveFileGifBPP, 1, 8, "%d");
 	ImGui::SameLine();
 	ShowHelpMark
@@ -368,24 +373,28 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 		Config::Current->SaveFileGifFilterSize,
 		Config::Current->SaveFileGifDitherLevel,
 		Config::Current->SaveFileGifSampleFactor,
-		multiframeConfigValues ? 0.0f : itemWidth
+		itemWidth
 	);
 
-	if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
+	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Alpha Threshold", &Config::Current->SaveFileGifAlphaThreshold);
 	tiClamp(Config::Current->SaveFileGifAlphaThreshold, -1, 255);
 	ImGui::SameLine(); ShowHelpMark
 	(
-		"When set to -1 this will force the gif to be opaque. When between 0 and 255 it will use\n"
-		"this value to determine if the pixel is transparent or not. A pixel alpha less-than or\n"
-		"equal means the pixel will be transparent. Larger means opaque. Gif only supports binary alpha."
+		"Gif only supports binary alpha. Set threshold -1 to auto-determine if the GIF\n"
+		"should have alpha -- if the image is fully opaque the GIF will not have alpha and\n"
+		"if the image has transparency, a threshold of 127 will be used. When threshold\n"
+		"between 0 and 254 (both inclusive) it will use the threshold to determine if the\n"
+		"pixel is transparent or not. A pixel alpha less-than or equal means the pixel\n"
+		"will be transparent. Larger means opaque. If the threshold is set to 255 it will\n"
+		"force the gif to be opaque regardless of the pixel alpha value."
 	);
 
-	if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
+	ImGui::SetNextItemWidth(itemWidth);
 	if (!multiframeConfigValues)
 	{
 		ImGui::InputInt("Duration Override", &Config::Current->SaveFileGifDurOverride);
-		tiClamp(Config::Current->SaveFileGifAlphaThreshold, -1, 1000);
+		tiClamp(Config::Current->SaveFileGifDurOverride, -1, 1000);
 		ImGui::SameLine(); ShowHelpMark("In 1/100 seconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
 		if (Viewer::Button("1.0s"))  Config::Current->SaveFileGifDurOverride = 100; ImGui::SameLine();
 		if (Viewer::Button("0.5s"))  Config::Current->SaveFileGifDurOverride = 50;  ImGui::SameLine();
@@ -404,13 +413,12 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 		if (Viewer::Button("50fps")) Config::Current->SaveFileGifDurMultiFrame = 2;
 	}
 
-	if (!multiframeConfigValues) ImGui::SetNextItemWidth(itemWidth);
+	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Loop", &Config::Current->SaveFileGifLoop);
 	tiClampMin(Config::Current->SaveFileGifLoop, 0);
 	ImGui::SameLine();
 	ShowHelpMark("How many times an animated gif will loop. 0 means forever.\nThis only applies to animated (multi-frame) images.");
 
-	bool isOpaque = (Config::Current->SaveFileGifAlphaThreshold == -1);
 	tString loopDesc = "forever";
 	if (Config::Current->SaveFileGifLoop != 0)
 	{
@@ -419,20 +427,19 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 		else
 			tsPrintf(loopDesc, "%d times", Config::Current->SaveFileGifLoop);
 	}
-	tString desc; tsPrintf
-	(
-		desc, " A %d colour %s GIF. If\n animated, loops %s.",
-		(1 << Config::Current->SaveFileGifBPP) - (isOpaque ? 0 : 1),
-		isOpaque ? "opaque" : "transparent",
-		loopDesc.Chr()
-	);
+	tString desc;
+	tsPrintf(desc, " %d-bit palette GIF. If animated, loops %s.\n", Config::Current->SaveFileGifBPP, loopDesc.Chr());
+	if (Config::Current->SaveFileGifBPP == 1)
+		tsaPrintf(desc, " 2-colour images are always opaque.\n");
+	else if (Config::Current->SaveFileGifAlphaThreshold < 0)
+		tsaPrintf(desc, " Auto-alpha. If image transparent %d colours.\n", (1 << Config::Current->SaveFileGifBPP) - 1);
+	else if (Config::Current->SaveFileGifAlphaThreshold >= 255)
+		tsaPrintf(desc, " Opaque. Image will have %d colours.\n", (1 << Config::Current->SaveFileGifBPP));
+	else
+		tsaPrintf(desc, " Binary-alpha. Image will have %d colours.\n", (1 << Config::Current->SaveFileGifBPP) - 1);
 	if ((Config::Current->SaveFileGifQuantMethod == int(tQuantize::Method::Spatial)) && (Config::Current->SaveFileGifBPP > 5))
-		desc += "\n\n WARNING: Spatial quantization\n at large BPPs may take a long\n time for large images.";
-
+		tsaPrintf(desc, " WARNING: Scolorq at large BPPs may take\n a long time for large images.");
 	ImGui::Text(desc.Chr());
-	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.0f);
 
 	if (Viewer::Button("Reset", tVector2(100.0f, 0.0f)))
 	{
@@ -552,6 +559,9 @@ tString Viewer::DoSaveFiletypeMultiFrame()
 {
 	tString fileTypeName = Config::Current->SaveFileTypeMultiFrame;
 	tFileType fileType = tGetFileTypeFromName(fileTypeName);
+	const int itemWidth = 160;
+
+	ImGui::SetNextItemWidth(itemWidth);
 	if (ImGui::BeginCombo("File Type", fileTypeName.Chr()))
 	{
 		for (tFileTypes::tFileTypeItem* item = FileTypes_SaveMultiFrame.First(); item; item = item->Next())
@@ -582,9 +592,12 @@ tString Viewer::DoSaveFiletypeMultiFrame()
 			break;
 
 		case tFileType::WEBP:
+			// @todo This should be using a standard options call like the GIF type.
 			ImGui::Checkbox("Lossy", &Config::Current->SaveFileWebpLossy);
+			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::SliderFloat("Quality / Compression", &Config::Current->SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
 			ImGui::SameLine(); ShowToolTip("Image quality percent if lossy. Image compression strength if not lossy"); ImGui::NewLine();
+			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::SliderInt("Frame Duration", &Config::Current->SaveFileWebpDurMultiFrame, 0, 10000, "%d");
 			ImGui::SameLine(); ShowToolTip("In milliseconds."); ImGui::NewLine();
 			if (ImGui::Button("1.0s"))  Config::Current->SaveFileWebpDurMultiFrame = 1000; ImGui::SameLine();
@@ -594,6 +607,8 @@ tString Viewer::DoSaveFiletypeMultiFrame()
 			break;
 
 		case tFileType::APNG:
+			// @todo This should be using a standard options call like the GIF type.
+			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::SliderInt("Frame Duration", &Config::Current->SaveFileApngDurMultiFrame, 0, 10000, "%d");
 			ImGui::SameLine(); ShowToolTip("In milliseconds."); ImGui::NewLine();
 			if (ImGui::Button("1.0s"))  Config::Current->SaveFileApngDurMultiFrame = 1000; ImGui::SameLine();
@@ -603,6 +618,8 @@ tString Viewer::DoSaveFiletypeMultiFrame()
 			break;
 
 		case tFileType::TIFF:
+			// @todo This should be using a standard options call like the GIF type.
+			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::SliderInt("Frame Duration", &Config::Current->SaveFileTiffDurMultiFrame, 0, 10000, "%d");
 			ImGui::SameLine(); ShowToolTip("In milliseconds."); ImGui::NewLine();
 			if (ImGui::Button("1.0s"))  Config::Current->SaveFileTiffDurMultiFrame = 1000; ImGui::SameLine();
@@ -1044,7 +1061,7 @@ bool Viewer::SavePictureAs(tImage::tPicture& picture, const tString& outFile, tF
 			params.Format = tPixelFormat(int(tPixelFormat::FirstPalette) + Config::Current->SaveFileGifBPP - 1);
 			params.Method = tQuantize::Method(Config::Current->SaveFileGifQuantMethod);
 			params.Loop = Config::Current->SaveFileGifLoop;
-			params.AlphaThreshold = Config::Current->SaveFileGifAlphaThreshold;
+			params.AlphaThresholdd = Config::Current->SaveFileGifAlphaThreshold;
 			params.OverrideFrameDuration = Config::Current->SaveFileGifDurOverride;
 			params.DitherLevel = double(Config::Current->SaveFileGifDitherLevel);
 			params.FilterSize = (Config::Current->SaveFileGifFilterSize * 2) + 1;
