@@ -551,9 +551,9 @@ void Command::ParseSaveParametersGIF()
 
 	tString alphaThresholdStr = OptionParamsGIF.Arg4();
 	if (alphaThresholdStr == "*")
-		SaveParamsGIF.AlphaThresholdd = -1;
+		SaveParamsGIF.AlphaThreshold = -1;
 	else
-		SaveParamsGIF.AlphaThresholdd = alphaThresholdStr.AsInt32();
+		SaveParamsGIF.AlphaThreshold = alphaThresholdStr.AsInt32();
 
 	tString overrideFrameDurStr = OptionParamsGIF.Arg5();
 	if (overrideFrameDurStr == "*")

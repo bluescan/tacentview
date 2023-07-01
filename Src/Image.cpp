@@ -649,7 +649,7 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 				params.Format					= tPixelFormat(int(tPixelFormat::FirstPalette) + Config::Current->SaveFileGifBPP - 1);
 				params.Method					= tQuantize::Method(Config::Current->SaveFileGifQuantMethod);
 				params.Loop						= Config::Current->SaveFileGifLoop;
-				params.AlphaThresholdd			= Config::Current->SaveFileGifAlphaThreshold;
+				params.AlphaThreshold			= Config::Current->SaveFileGifAlphaThreshold;
 				params.OverrideFrameDuration	= Config::Current->SaveFileGifDurOverride;
 				params.DitherLevel				= double(Config::Current->SaveFileGifDitherLevel);
 				params.FilterSize				= (Config::Current->SaveFileGifFilterSize * 2) + 1;
