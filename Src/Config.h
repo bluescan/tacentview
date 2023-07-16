@@ -72,16 +72,21 @@ struct ProfileSettings
 		FileModTime,
 		FileSize,
 		FileType,
-		ImageArea,
+
+		FirstCachedKey,
+		ImageArea				= FirstCachedKey,
 		ImageWidth,
 		ImageHeight,
-//		MetaAltitude,
 		MetaLatitude,
-//		MetaLongitude,
+		MetaLongitude,
+		MetaAltitude,
+		LastCachedKey			= MetaAltitude,
+
 		NumKeys
 	};
 	int SortKey;										// Matches SortKeyEnum values.
 	SortKeyEnum GetSortKey() const						{ return SortKeyEnum(SortKey); }
+	inline static bool IsCachedSortKey(SortKeyEnum key)	{ return (int(key) >= int(SortKeyEnum::FirstCachedKey)) && (int(key) <= int(SortKeyEnum::LastCachedKey)); }
 	bool SortAscending;									// Sort direction.
 
 	int OverlayCorner;
