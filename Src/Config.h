@@ -75,6 +75,9 @@ struct ProfileSettings
 		ImageArea,
 		ImageWidth,
 		ImageHeight,
+//		MetaAltitude,
+		MetaLatitude,
+//		MetaLongitude,
 		NumKeys
 	};
 	int SortKey;										// Matches SortKeyEnum values.

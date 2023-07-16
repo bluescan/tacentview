@@ -44,8 +44,6 @@ tString Image::ThumbCacheDir;
 
 
 const uint32 Image::ThumbChunkInfoID		= 0x0B000000;
-const uint32 Image::ThumbChunkMetaDataID	= 0x8B000010;
-const uint32 Image::ThumbChunkMetaDatumID	= 0x0B000020;
 
 
 const int Image::ThumbWidth					= 256;
@@ -1818,7 +1816,7 @@ void Image::GenerateThumbnail()
 
 	// Retrieve from cache if possible.
 	tuint256 hash = 0;
-	int thumbVersion = 2;
+	int thumbVersion = 3;
 	tFileInfo fileInfo;
 	tGetFileInfo(fileInfo, Filename);
 	hash = tHash::tHashData256((uint8*)&thumbVersion, sizeof(thumbVersion));
@@ -1844,18 +1842,9 @@ void Image::GenerateThumbnail()
 					ch.GetItem(Cached_PrimaryArea);
 					break;
 
-				case ThumbChunkMetaDataID:
+				case tChunkID::Image_MetaData:
 					Cached_MetaData.Clear();
-					for (tChunk datum = ch.First(); datum.IsValid(); datum = datum.Next())
-					{
-						switch (datum.ID())
-						{
-							case ThumbChunkMetaDatumID:
-								// @wip Read tag, type, value etc.
-								// @todo Move all metadata load/save over to tacent tMetaData class.
-								break;
-						}
-					}
+					Cached_MetaData.Load(ch);
 					break;
 
 				case tChunkID::Image_Picture:
@@ -1891,6 +1880,8 @@ void Image::GenerateThumbnail()
 	Cached_PrimaryHeight	= srcH;
 	Cached_PrimaryArea		= srcW * srcH;
 
+	Cached_MetaData			= thumbLoader.Cached_MetaData;
+
 	// We make the thumbnail keep its aspect ratio.
 	float scaleX = float(ThumbWidth)  / float(srcW);
 	float scaleY = float(ThumbHeight) / float(srcH);
@@ -1923,6 +1914,11 @@ void Image::GenerateThumbnail()
 	writer.Write(Cached_PrimaryArea);
 	writer.Write(0x00000000);
 	writer.End();
+
+	// Only save meta-data chunk if it's valid.
+	if (Cached_MetaData.IsValid())
+		Cached_MetaData.Save(writer);
+
 	ThumbnailPicture.Save(writer);
 	// std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }

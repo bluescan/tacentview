@@ -301,6 +301,18 @@ namespace Viewer
 	bool Compare_ImageWidthDescending	(const Image& a, const Image& b)												{ return a.Cached_PrimaryWidth > b.Cached_PrimaryWidth; }
 	bool Compare_ImageHeightAscending	(const Image& a, const Image& b)												{ return a.Cached_PrimaryHeight < b.Cached_PrimaryHeight; }
 	bool Compare_ImageHeightDescending	(const Image& a, const Image& b)												{ return a.Cached_PrimaryHeight > b.Cached_PrimaryHeight; }
+	bool Compare_ImageLatitudeAscending	(const Image& a, const Image& b)
+	{
+		float lata = a.Cached_MetaData[tImage::tMetaTag::LatitudeDD].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::LatitudeDD].Float : 0.0f;
+		float latb = b.Cached_MetaData[tImage::tMetaTag::LatitudeDD].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::LatitudeDD].Float : 0.0f;
+		return lata < latb;
+	}
+	bool Compare_ImageLatitudeDescending(const Image& a, const Image& b)
+	{
+		float lata = a.Cached_MetaData[tImage::tMetaTag::LatitudeDD].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::LatitudeDD].Float : 0.0f;
+		float latb = b.Cached_MetaData[tImage::tMetaTag::LatitudeDD].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::LatitudeDD].Float : 0.0f;
+		return lata > latb;
+	}
 	typedef bool ImageCompareFn			(const Image&, const Image&);
 
 	bool OnPrevious();
@@ -564,6 +576,10 @@ void Viewer::SortImages(Config::ProfileSettings::SortKeyEnum key, bool ascending
 
 		case Config::ProfileSettings::SortKeyEnum::ImageHeight:
 			sortFn = ascending ? Compare_ImageHeightAscending : Compare_ImageHeightDescending;
+			break;
+
+		case Config::ProfileSettings::SortKeyEnum::MetaLatitude:
+			sortFn = ascending ? Compare_ImageLatitudeAscending : Compare_ImageLatitudeDescending;
 			break;
 	}
 
