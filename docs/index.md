@@ -11,18 +11,10 @@ based on official reference implementations. Once decoded, images are marshalled
 fast switching/rendering. The thumbnail viewer caches images and meta-data and is able to handle
 thousands of files in a single directory at interactive speeds.
 
-_Tacent View_ is distributed in 
-1. As **source code** that may be compiled locally.
-2. As a pre-compiled **portable application** for Windows (64-bit)
-3. As a Linux **deb** file.
-4. As a Snapcraft **snap**.
+_Tacent View_ is distributed as:
+1. **Source Code** that may be compiled directly. The CMake build-system is used and can create projects (VS2022, make, nmake, ninja) for any desired compiler (MSVC, Clang, GCC).
+2. A pre-compiled **portable application** for Windows (64-bit).
+3. A Linux **deb** file.
+4. A Snapcraft **snap**.
 
-[Link to another page](./another-page.html).
-
-### Sub Cat A
-### Sub Cat B
-Releases are here:
-- https://bluescan.github.com/releases/
-
-or use this syntax:
-- [Releases](https://bluescan.github.com/releases/)
+The latest stable release is available on [Github](https://github.com/bluescan/tacentview/releases). The source code, portable Windows zip, and deb files are available there. If running Linux you may also consider [installing the snap](https://snapcraft.io/tacentview).
