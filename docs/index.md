@@ -33,39 +33,57 @@ The secondary **CLI** mode allows you to perform all operations that can be done
 
 ## Supported Image Types
 
-_Tacent View_ can load:
-* TGA
-* PNG
-* JPG
-* GIF
-* WEBP
-* QOI
-* DDS
-* KTX
-* KTX2
-* ASTC
-* PKM
-* EXR
-* HDR
-* APNG
-* BMP
-* ICO
-* TIFF
+_Tacent View_ can load: **TGA PNG JPG GIF WEBP QOI DDS KTX KTX2 ASTC PKM EXR HDR APNG BMP ICO TIFF**
 
-_Tacent View_ can save:
-* TGA
-* PNG
-* JPG
-* GIF
-* WEBP
-* QOI
-* APNG
-* BMP
-* TIFF
+_Tacent View_ can save: **TGA PNG JPG GIF WEBP QOI APNG BMP TIFF**
 
-_Tacent View_ supports saving animations/multiple-pages for:
-* GIF
-* WEBP
-* APNG
-* TIFF
+_Tacent View_ supports saving animations/multiple-pages for: **GIF WEBP APNG TIFF**
 
+---
+
+## Features
+
+* Image quantization.
+* High quality image rotations including lossless JPG transformations.
+* Live rotation preview.
+* Viewing meta-data stored inside images (EXIF data in JPG files).
+* Compensating for meta-data orientation.
+* Fast thumbnail viewer that supports sorting by file properties as well as meta-data.
+* Slideshow mode at speeds anywhere between 60fps to multiple minutes per slide.
+* Slideshow ordering based on any sort-criteria. Eg. Order by latitude or longitude.
+* Live thumbnail size adjustments.
+* Cropping.
+* Image Levels adjustments with histogram.
+* Custom key-bindings per profile.
+* Small, Normal, and Large UI widget/font selection.
+* Fullscreen and basic modes for UX minimalists.
+* Multiple zoom modes. Includes optional per-image zoom, downscale-only, and one-to-one.
+* Flip operations.
+* Canvas resizing with arbitrary or preset anchor.
+* Image resizing using various filters / edge modes.
+* Predefined or arbitrary aspect-ratios for resize operations.
+* Folder bookmarks for storing favourite locations.  
+* Colour channels.
+* Alpha blending.
+* Brightness adjustments.
+* Contrast adjustments.
+* Generating flipbook/contact-sheets.
+* Frame extraction. Both mipmap, cubemap, and animation frames may be extracted.
+* Creation of animated images from individual frames.
+* High-quality GIF file generation.
+* Scrubbing of all animated image formats (both forward and backwards).
+* Adjusting frame durations for all animated formats.
+* Legacy and modern DDS loading.
+* All BC, ASTC, and ETC pixel formats for DDS, KTX, KTX2, ASTC, and PKM files.
+* HDR image adjustments including exposure for all formats that encode HDR.
+* Batch conversions between image types.
+* Batch operations on arbitrary input images.
+* Correct transparency and alpha-channel support.
+* Transparent desktop mode.
+* Full per-image undo/redo stack.
+* Border detection/extraction.
+* Multiple monitor support.
+* Direct edit of pixel colour.
+* Viewing of mipmaps individually or side-by-side.
+* Cubemap view in T-layout or as individual sides.
+* Tile-view for checking texture edge boundaries.
