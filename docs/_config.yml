@@ -1,8 +1,6 @@
 # If you don't set these, they will be inferred from the repo's description on GitHub.
+title: Tacent View
+description: Homepage for Tacent View
 
-# title: My project title
-# description: My description
-
-#theme: jekyll-theme-slate
-#theme: minimal
+show_downloads: true
 theme: jekyll-theme-minimal

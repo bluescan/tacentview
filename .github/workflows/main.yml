@@ -5,9 +5,15 @@ name: Build
 # events but only for the master branch
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
+    paths-ignore:
+      - 'docs/**'
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
+    paths-ignore:
+      - 'docs/**'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel.
 jobs:
