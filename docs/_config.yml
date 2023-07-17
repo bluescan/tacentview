@@ -1,0 +1,7 @@
+# If you don't set these, they will be inferred from the repo's description on GitHub.
+
+# title: My project title
+# description: My description
+
+#theme: jekyll-theme-slate
+theme: minimal
