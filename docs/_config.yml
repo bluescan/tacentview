@@ -1,6 +1,6 @@
 # If you don't set these, they will be inferred from the repo's description on GitHub.
 title: Tacent View
-description: Homepage for Tacent View
+description: A fast image and texture viewer written in C++ and leverages the GPU for quick draw times. Uses Dear ImGui and the Tacent library. Tacent View has solid support for common texture formats like tga, dds, ktx2, exr as well as more traditional formats like jpg and png. Editing functionality includes batch resizing, rotations/flips, and the ability to generate contact sheets for FX.
 
 show_downloads: true
 theme: jekyll-theme-minimal
