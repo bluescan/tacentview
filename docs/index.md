@@ -22,10 +22,14 @@ _Tacent View_ is distributed as:
 The source code, portable Windows zip, and deb files are available from the [releases GitHub page](https://github.com/bluescan/tacentview/releases). If running Linux you may also consider [installing the snap](https://snapcraft.io/tacentview). If you want to build it yourself, instructions are available at the [Tacent View GitHub page](https://github.com/bluescan/tacentview). The CMake build-system is used and can create projects (VS2022, make, nmake, ninja) for any desired compiler (MSVC, Clang, GCC).
 
 <ul class="downloads">
-	<li><a href="{{ site.github.zip_url }}">Download <strong>ZIP File</strong></a></li>
-	<li><a href="{{ site.github.tar_url }}">Download <strong>TAR Ball</strong></a></li>
-	<li><a href="{{ site.github.repository_url }}">View On <strong>GitHub</strong></a></li>
+	<li><a href="https://github.com/bluescan/tacentview/archive/refs/tags/v1.0.40.zip">Download <strong>ZIP Code</strong></a></li>
+	<li><a href="https://github.com/bluescan/tacentview/releases/download/v1.0.40/tacentview_1.0.40.zip">Download <strong>WIN Portable</strong></a></li>
+	<li><a href="https://github.com/bluescan/tacentview/releases/download/v1.0.40/tacentview_1.0-40.deb">Download <strong>DEB File</strong></a></li>
+	<li><a href="https://snapcraft.io/tacentview">Snapcraft <strong>SNAP Install</strong></a></li>
 </ul>
+
+---
+## Operation Modes
 
 There are two main modes in which _Tacent View_ may be used: **GUI** and **CLI**.
 
@@ -36,7 +40,6 @@ The primary **GUI** mode is what you would expect. Open an image file with tacen
 The secondary **CLI** mode allows you to perform all operations that can be done in the **GUI** from the command-line. The same executable file is used for command-line operations, whether compiled for Linux or Windows. **CLI** mode is intended to allow batch processing and conversions of images from one format to another. It allows _Tacent View_ to be easily used in game and image processing build pipelines.
 
 ---
-
 ## Supported Image Types
 
 _Tacent View_ can load:  
