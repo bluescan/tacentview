@@ -21,6 +21,12 @@ _Tacent View_ is distributed as:
 
 The source code, portable Windows zip, and deb files are available from the [releases GitHub page](https://github.com/bluescan/tacentview/releases). If running Linux you may also consider [installing the snap](https://snapcraft.io/tacentview). If you want to build it yourself, instructions are available at the [Tacent View GitHub page](https://github.com/bluescan/tacentview). The CMake build-system is used and can create projects (VS2022, make, nmake, ninja) for any desired compiler (MSVC, Clang, GCC).
 
+<ul class="downloads">
+	<li><a href="{{ site.github.zip_url }}">Download <strong>ZIP File</strong></a></li>
+	<li><a href="{{ site.github.tar_url }}">Download <strong>TAR Ball</strong></a></li>
+	<li><a href="{{ site.github.repository_url }}">View On <strong>GitHub</strong></a></li>
+</ul>
+
 There are two main modes in which _Tacent View_ may be used: **GUI** and **CLI**.
 
 #### GUI Mode
