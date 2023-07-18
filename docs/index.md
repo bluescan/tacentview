@@ -13,6 +13,9 @@ based on official reference implementations. Once decoded, images are marshalled
 fast switching/rendering. The thumbnail viewer caches images and meta-data and is able to handle
 thousands of files in a single directory at interactive speeds.
 
+---
+## Download
+
 _Tacent View_ is distributed as:
 1. **Source Code** that may be compiled directly.
 2. A pre-compiled **portable application** for Windows (64-bit).
