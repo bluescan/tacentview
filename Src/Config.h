@@ -80,7 +80,10 @@ struct ProfileSettings
 		MetaLatitude,
 		MetaLongitude,
 		MetaAltitude,
-		LastCachedKey			= MetaAltitude,
+		MetaRoll,
+		MetaPitch,
+		MetaYaw,
+		LastCachedKey			= MetaYaw,
 
 		NumKeys
 	};

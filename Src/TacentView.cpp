@@ -405,6 +405,27 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 			float B = b.Cached_MetaData[tImage::tMetaTag::Altitude].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::Altitude].Float : -1000.0f;
 			return Ascending ? (A < B) : (A > B);
 		}
+
+		case Config::ProfileSettings::SortKeyEnum::MetaRoll:
+		{
+			float A = a.Cached_MetaData[tImage::tMetaTag::Roll].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::Roll].Float : 0.0f;
+			float B = b.Cached_MetaData[tImage::tMetaTag::Roll].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::Roll].Float : 0.0f;
+			return Ascending ? (A < B) : (A > B);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::MetaPitch:
+		{
+			float A = a.Cached_MetaData[tImage::tMetaTag::Pitch].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::Pitch].Float : 0.0f;
+			float B = b.Cached_MetaData[tImage::tMetaTag::Pitch].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::Pitch].Float : 0.0f;
+			return Ascending ? (A < B) : (A > B);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::MetaYaw:
+		{
+			float A = a.Cached_MetaData[tImage::tMetaTag::Yaw].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::Yaw].Float : 0.0f;
+			float B = b.Cached_MetaData[tImage::tMetaTag::Yaw].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::Yaw].Float : 0.0f;
+			return Ascending ? (A < B) : (A > B);
+		}
 	}
 
 	return true;

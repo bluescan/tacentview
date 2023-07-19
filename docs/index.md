@@ -42,7 +42,7 @@ The primary **GUI** mode is what you would expect. Open an image file with tacen
 The secondary **CLI** mode allows you to perform all operations that can be done in the **GUI** from the command-line. The same executable file is used for command-line operations, whether compiled for Linux or Windows. **CLI** mode is intended to allow batch processing and conversions of images from one format to another. It allows _Tacent View_ to be easily used in game and image processing build pipelines.
 
 ---
-## Supported Image Types
+## Image Formats
 
 _Tacent View_ loads: _TGA PNG JPG GIF WEBP QOI DDS KTX KTX2 ASTC PKM EXR HDR APNG BMP ICO TIFF_
 
