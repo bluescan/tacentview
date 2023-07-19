@@ -44,11 +44,11 @@ The secondary **CLI** mode allows you to perform all operations that can be done
 ---
 ## Supported Image Types
 
-_Tacent View_ loads: **TGA PNG JPG GIF WEBP QOI DDS KTX KTX2 ASTC PKM EXR HDR APNG BMP ICO TIFF**
+_Tacent View_ loads: _TGA PNG JPG GIF WEBP QOI DDS KTX KTX2 ASTC PKM EXR HDR APNG BMP ICO TIFF_
 
-_Tacent View_ saves: **TGA PNG JPG GIF WEBP QOI APNG BMP TIFF**
+_Tacent View_ saves: _TGA PNG JPG GIF WEBP QOI APNG BMP TIFF_
 
-_Tacent View_ animates: **GIF WEBP APNG TIFF**
+_Tacent View_ animates: _GIF WEBP APNG TIFF_
 
 ---
 

@@ -281,63 +281,24 @@ namespace Viewer
 	void PrintRedirectCallback(const char* text, int numChars);
 	void GlfwErrorCallback(int error, const char* description)															{ tPrintf("Glfw Error %d: %s\n", error, description); }
 	void SetWindowIcon(const tString& icoFile);
-
-	// When compare functions are used to sort, they result in ascending order if they return a < b.
 	bool Compare_AlphabeticalAscending		(const tSystem::tFileInfo& a, const tSystem::tFileInfo& b)					{ return tStricmp(a.FileName.Chars(), b.FileName.Chars()) < 0; }
 	bool Compare_FileCreationTimeAscending	(const tSystem::tFileInfo& a, const tSystem::tFileInfo& b)					{ return a.CreationTime < b.CreationTime; }
 	bool Compare_ImageLoadTimeAscending		(const Image& a, const Image& b)											{ return a.GetLoadedTime() < b.GetLoadedTime(); }
-	bool Compare_ImageFileNameAscending		(const Image& a, const Image& b)											{ return tStricmp(a.Filename.Chars(), b.Filename.Chars()) < 0; }
-	bool Compare_ImageFileNameDescending	(const Image& a, const Image& b)											{ return tStricmp(a.Filename.Chars(), b.Filename.Chars()) > 0; }
-	bool Compare_ImageFileTypeAscending		(const Image& a, const Image& b)											{ return tStricmp(tGetExtension(a.Filetype).Chr(), tGetExtension(b.Filetype).Chr()) < 0; }
-	bool Compare_ImageFileTypeDescending	(const Image& a, const Image& b)											{ return tStricmp(tGetExtension(a.Filetype).Chr(), tGetExtension(b.Filetype).Chr()) > 0; }
-	bool Compare_ImageModTimeAscending		(const Image& a, const Image& b)											{ return a.FileModTime < b.FileModTime; }
-	bool Compare_ImageModTimeDescending		(const Image& a, const Image& b)											{ return a.FileModTime > b.FileModTime; }
-	bool Compare_ImageFileSizeAscending		(const Image& a, const Image& b)											{ return a.FileSizeB < b.FileSizeB; }
-	bool Compare_ImageFileSizeDescending	(const Image& a, const Image& b)											{ return a.FileSizeB > b.FileSizeB; }
 
-	bool Compare_ImageAreaAscending			(const Image& a, const Image& b)											{ return a.Cached_PrimaryArea < b.Cached_PrimaryArea; }
-	bool Compare_ImageAreaDescending		(const Image& a, const Image& b)											{ return a.Cached_PrimaryArea > b.Cached_PrimaryArea; }
-	bool Compare_ImageWidthAscending		(const Image& a, const Image& b)											{ return a.Cached_PrimaryWidth < b.Cached_PrimaryWidth; }
-	bool Compare_ImageWidthDescending		(const Image& a, const Image& b)											{ return a.Cached_PrimaryWidth > b.Cached_PrimaryWidth; }
-	bool Compare_ImageHeightAscending		(const Image& a, const Image& b)											{ return a.Cached_PrimaryHeight < b.Cached_PrimaryHeight; }
-	bool Compare_ImageHeightDescending		(const Image& a, const Image& b)											{ return a.Cached_PrimaryHeight > b.Cached_PrimaryHeight; }
-	bool Compare_ImageLatitudeAscending		(const Image& a, const Image& b)
+	// This is a 'FunctionObject'. Basically an object that acts like a function. This is sorta cool as it allows state
+	// to be stored in the object. In this case we use it as the compare function for a Sort call. Instead of a
+	// whackload of separate compare functions, we now only need one and we use the state information to determine the
+	// desired sort key and direction (ascending or descending). Note: when compare functions are used to sort, they
+	// result in ascending order if they return a < b and descending if they return a > b.
+	struct ImageCompareFunctionObject
 	{
-		float lata = a.Cached_MetaData[tImage::tMetaTag::LatitudeDD].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::LatitudeDD].Float : -100.0f;
-		float latb = b.Cached_MetaData[tImage::tMetaTag::LatitudeDD].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::LatitudeDD].Float : -100.0f;
-		return lata < latb;
-	}
-	bool Compare_ImageLatitudeDescending	(const Image& a, const Image& b)
-	{
-		float lata = a.Cached_MetaData[tImage::tMetaTag::LatitudeDD].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::LatitudeDD].Float : -100.0f;
-		float latb = b.Cached_MetaData[tImage::tMetaTag::LatitudeDD].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::LatitudeDD].Float : -100.0f;
-		return lata > latb;
-	}
-	bool Compare_ImageLongitudeAscending	(const Image& a, const Image& b)
-	{
-		float lona = a.Cached_MetaData[tImage::tMetaTag::LongitudeDD].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::LongitudeDD].Float : -200.0f;
-		float lonb = b.Cached_MetaData[tImage::tMetaTag::LongitudeDD].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::LongitudeDD].Float : -200.0f;
-		return lona < lonb;
-	}
-	bool Compare_ImageLongitudeDescending	(const Image& a, const Image& b)
-	{
-		float lona = a.Cached_MetaData[tImage::tMetaTag::LongitudeDD].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::LongitudeDD].Float : -200.0f;
-		float lonb = b.Cached_MetaData[tImage::tMetaTag::LongitudeDD].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::LongitudeDD].Float : -200.0f;
-		return lona > lonb;
-	}
-	bool Compare_ImageAltitudeAscending		(const Image& a, const Image& b)
-	{
-		float alta = a.Cached_MetaData[tImage::tMetaTag::Altitude].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::Altitude].Float : -1000.0f;
-		float altb = b.Cached_MetaData[tImage::tMetaTag::Altitude].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::Altitude].Float : -1000.0f;
-		return alta < altb;
-	}
-	bool Compare_ImageAltitudeDescending	(const Image& a, const Image& b)
-	{
-		float alta = a.Cached_MetaData[tImage::tMetaTag::Altitude].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::Altitude].Float : -1000.0f;
-		float altb = b.Cached_MetaData[tImage::tMetaTag::Altitude].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::Altitude].Float : -1000.0f;
-		return alta > altb;
-	}
-	typedef bool ImageCompareFn			(const Image&, const Image&);
+		ImageCompareFunctionObject(Config::ProfileSettings::SortKeyEnum key, bool ascending) : Key(key), Ascending(ascending) { }
+		Config::ProfileSettings::SortKeyEnum Key;
+		bool Ascending;
+
+		// This is what makes it a magical function object.
+		bool operator() (const Image& a, const Image& b) const;
+	};
 
 	bool OnPrevious();
 	bool OnNext();
@@ -367,6 +328,86 @@ namespace Viewer
 	void ChangeProfile(Viewer::Profile);
 	bool CopyImage();
 	bool PasteImage();
+}
+
+
+bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image& b) const
+{
+	switch (Key)
+	{
+		default:
+		case Config::ProfileSettings::SortKeyEnum::FileName:
+		{
+			const char8_t* A = a.Filename.Chars();
+			const char8_t* B = b.Filename.Chars();
+			return Ascending ? (tStricmp(A, B) < 0) : (tStricmp(A, B) > 0);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::FileModTime:
+		{
+			time_t A = a.FileModTime;
+			time_t B = b.FileModTime;
+			return Ascending ? (A < B) : (A > B);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::FileSize:
+		{
+			uint64 A = a.FileSizeB;
+			uint64 B = b.FileSizeB;
+			return Ascending ? (A < B) : (A > B);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::FileType:
+		{
+			const char* A = tGetExtension(a.Filetype).Chr();
+			const char* B = tGetExtension(b.Filetype).Chr();
+			return Ascending ? (tStricmp(A, B) < 0) : (tStricmp(A, B) > 0);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::ImageArea:
+		{
+			int A = a.Cached_PrimaryArea;
+			int B = b.Cached_PrimaryArea;
+			return Ascending ? (A < B) : (A > B);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::ImageWidth:
+		{
+			int A = a.Cached_PrimaryWidth;
+			int B = b.Cached_PrimaryWidth;
+			return Ascending ? (A < B) : (A > B);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::ImageHeight:
+		{
+			int A = a.Cached_PrimaryHeight;
+			int B = b.Cached_PrimaryHeight;
+			return Ascending ? (A < B) : (A > B);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::MetaLatitude:
+		{
+			float A = a.Cached_MetaData[tImage::tMetaTag::LatitudeDD].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::LatitudeDD].Float : -100.0f;
+			float B = b.Cached_MetaData[tImage::tMetaTag::LatitudeDD].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::LatitudeDD].Float : -100.0f;
+			return Ascending ? (A < B) : (A > B);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::MetaLongitude:
+		{
+			float A = a.Cached_MetaData[tImage::tMetaTag::LongitudeDD].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::LongitudeDD].Float : -200.0f;
+			float B = b.Cached_MetaData[tImage::tMetaTag::LongitudeDD].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::LongitudeDD].Float : -200.0f;
+			return Ascending ? (A < B) : (A > B);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::MetaAltitude:
+		{
+			float A = a.Cached_MetaData[tImage::tMetaTag::Altitude].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::Altitude].Float : -1000.0f;
+			float B = b.Cached_MetaData[tImage::tMetaTag::Altitude].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::Altitude].Float : -1000.0f;
+			return Ascending ? (A < B) : (A > B);
+		}
+	}
+
+	return true;
 }
 
 
@@ -571,51 +612,8 @@ void Viewer::PopulateImages()
 
 void Viewer::SortImages(Config::ProfileSettings::SortKeyEnum key, bool ascending)
 {
-	ImageCompareFn* sortFn;
-	switch (key)
-	{
-		case Config::ProfileSettings::SortKeyEnum::FileName:
-			sortFn = ascending ? Compare_ImageFileNameAscending : &Compare_ImageFileNameDescending;
-			break;
-
-		case Config::ProfileSettings::SortKeyEnum::FileModTime:
-			sortFn = ascending ? Compare_ImageModTimeAscending : Compare_ImageModTimeDescending;
-			break;
-
-		case Config::ProfileSettings::SortKeyEnum::FileSize:
-			sortFn = ascending ? Compare_ImageFileSizeAscending : Compare_ImageFileSizeDescending;
-			break;
-
-		case Config::ProfileSettings::SortKeyEnum::FileType:
-			sortFn = ascending ? Compare_ImageFileTypeAscending : Compare_ImageFileTypeDescending;
-			break;
-
-		case Config::ProfileSettings::SortKeyEnum::ImageArea:
-			sortFn = ascending ? Compare_ImageAreaAscending : Compare_ImageAreaDescending;
-			break;
-
-		case Config::ProfileSettings::SortKeyEnum::ImageWidth:
-			sortFn = ascending ? Compare_ImageWidthAscending : Compare_ImageWidthDescending;
-			break;
-
-		case Config::ProfileSettings::SortKeyEnum::ImageHeight:
-			sortFn = ascending ? Compare_ImageHeightAscending : Compare_ImageHeightDescending;
-			break;
-
-		case Config::ProfileSettings::SortKeyEnum::MetaLatitude:
-			sortFn = ascending ? Compare_ImageLatitudeAscending : Compare_ImageLatitudeDescending;
-			break;
-
-		case Config::ProfileSettings::SortKeyEnum::MetaLongitude:
-			sortFn = ascending ? Compare_ImageLongitudeAscending : Compare_ImageLongitudeDescending;
-			break;
-
-		case Config::ProfileSettings::SortKeyEnum::MetaAltitude:
-			sortFn = ascending ? Compare_ImageAltitudeAscending : Compare_ImageAltitudeDescending;
-			break;
-	}
-
-	Images.Sort(sortFn);
+	ImageCompareFunctionObject compObj(key, ascending);
+	Images.Sort(compObj);
 }
 
 
