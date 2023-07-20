@@ -83,7 +83,10 @@ struct ProfileSettings
 		MetaRoll,
 		MetaPitch,
 		MetaYaw,
-		LastCachedKey			= MetaYaw,
+		MetaSpeed,
+		MetaShutterSpeed,
+		MetaExposureTime,
+		LastCachedKey			= MetaExposureTime,
 
 		NumKeys
 	};

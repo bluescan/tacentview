@@ -195,7 +195,14 @@ void Viewer::ShowContentViewDialog(bool* popen)
 	ImGui::PopItemWidth();
 
 	ImGui::PushItemWidth(100);
-	const char* sortItems[] = { "Name", "ModTime", "Size", "Type", "Area", "Width", "Height", "Latitude*", "Longitude*", "Altitude*" };
+	const char* sortItems[] =
+	{
+		"Name", "ModTime", "Size", "Type", "Area", "Width", "Height",
+		"Latitude*", "Longitude*", "Altitude*", "Roll*", "Pitch*", "Yaw*",
+		"Speed*", "ShutterSpeed*", "ExposureTime*"
+	};
+
+	tStaticAssert(tNumElements(sortItems) == int(Config::ProfileSettings::SortKeyEnum::NumKeys));
 	if (ImGui::Combo("##Sort", &Config::Current->SortKey, sortItems, tNumElements(sortItems)))
 		SortImages(Config::Current->GetSortKey(), Config::Current->SortAscending);
 	ShowToolTip("Specifies what property to sort by. An asterisk (*) means\nthe property is stored in image meta-data and may not be\npresent in all images.");

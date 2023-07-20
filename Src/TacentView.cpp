@@ -426,6 +426,30 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 			float B = b.Cached_MetaData[tImage::tMetaTag::Yaw].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::Yaw].Float : 0.0f;
 			return Ascending ? (A < B) : (A > B);
 		}
+
+		case Config::ProfileSettings::SortKeyEnum::MetaSpeed:
+		{
+			float A = a.Cached_MetaData[tImage::tMetaTag::Speed].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::Speed].Float : 0.0f;
+			float B = b.Cached_MetaData[tImage::tMetaTag::Speed].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::Speed].Float : 0.0f;
+			return Ascending ? (A < B) : (A > B);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::MetaShutterSpeed:
+		{
+			// Camera Shutter 'Speed' is measured in 1/s. 125 => 1/125th second. 0.0 (infinite) is considered the default for sorting purposes.
+			float A = a.Cached_MetaData[tImage::tMetaTag::ShutterSpeed].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::ShutterSpeed].Float : 0.0f;
+			float B = b.Cached_MetaData[tImage::tMetaTag::ShutterSpeed].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::ShutterSpeed].Float : 0.0f;
+			return Ascending ? (A < B) : (A > B);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::MetaExposureTime:
+		{
+			// Exposure time is how long the shutter is open for. Basically the inverse of the shutter speed.
+			// I don't know why EXIF data duplicates this explicitely. 0.0s is considered the default for exposure time.
+			float A = a.Cached_MetaData[tImage::tMetaTag::ExposureTime].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::ExposureTime].Float : 0.0f;
+			float B = b.Cached_MetaData[tImage::tMetaTag::ExposureTime].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::ExposureTime].Float : 0.0f;
+			return Ascending ? (A < B) : (A > B);
+		}
 	}
 
 	return true;
