@@ -199,7 +199,7 @@ void Viewer::ShowContentViewDialog(bool* popen)
 	{
 		"Name", "ModTime", "Size", "Type", "Area", "Width", "Height",
 		"Latitude*", "Longitude*", "Altitude*", "Roll*", "Pitch*", "Yaw*",
-		"Speed*", "ShutterSpeed*", "ExposureTime*"
+		"Speed*", "ShutterSpeed*", "ExposureTime*", "FStop*", "ISO*", "Aperture*"
 	};
 
 	tStaticAssert(tNumElements(sortItems) == int(Config::ProfileSettings::SortKeyEnum::NumKeys));

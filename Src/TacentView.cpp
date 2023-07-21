@@ -450,6 +450,30 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 			float B = b.Cached_MetaData[tImage::tMetaTag::ExposureTime].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::ExposureTime].Float : 0.0f;
 			return Ascending ? (A < B) : (A > B);
 		}
+
+		case Config::ProfileSettings::SortKeyEnum::MetaFStop:
+		{
+			// No existing lens can get down to an f-stop of 0.5. That;s why we use 0.5 as the default.
+			float A = a.Cached_MetaData[tImage::tMetaTag::FStop].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::FStop].Float : 0.5f;
+			float B = b.Cached_MetaData[tImage::tMetaTag::FStop].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::FStop].Float : 0.5f;
+			return Ascending ? (A < B) : (A > B);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::MetaISO:
+		{
+			// ISO as low as 25 exist. 100-200 is 'normal' speed film. 400 is fast (but grainy). We use 0 as default.
+			float A = a.Cached_MetaData[tImage::tMetaTag::ISO].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::ISO].Float : 0.0f;
+			float B = b.Cached_MetaData[tImage::tMetaTag::ISO].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::ISO].Float : 0.0f;
+			return Ascending ? (A < B) : (A > B);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::MetaAperture:
+		{
+			// Aperture in APEX units can't get down to 0. We use 0 as default.
+			float A = a.Cached_MetaData[tImage::tMetaTag::Aperture].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::Aperture].Float : 0.0f;
+			float B = b.Cached_MetaData[tImage::tMetaTag::Aperture].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::Aperture].Float : 0.0f;
+			return Ascending ? (A < B) : (A > B);
+		}
 	}
 
 	return true;

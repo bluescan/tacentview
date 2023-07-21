@@ -86,7 +86,10 @@ struct ProfileSettings
 		MetaSpeed,
 		MetaShutterSpeed,
 		MetaExposureTime,
-		LastCachedKey			= MetaExposureTime,
+		MetaFStop,
+		MetaISO,
+		MetaAperture,
+		LastCachedKey			= MetaAperture,
 
 		NumKeys
 	};
