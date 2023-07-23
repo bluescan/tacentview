@@ -56,6 +56,7 @@ public:
 	Image(const tSystem::tFileInfo& fileInfo);
 	virtual ~Image();
 
+	void RegenerateShuffleValue();
 	void ResetLoadParams();
 	tImage::tImageDDS::LoadParams  LoadParams_DDS;
 	tImage::tImageKTX::LoadParams  LoadParams_KTX;
@@ -249,6 +250,7 @@ public:
 	tSystem::tFileType Filetype;						// Valid before load. Based on extension.
 	std::time_t FileModTime;							// Valid before load.
 	uint64 FileSizeB;									// Valid before load.
+	uint32 ShuffleValue;								// Valid before load.
 
 	// Members starting with "Cached" are stored in the cache/thumbnail file and are valid
 	// once the thumbnail is loaded. Used for sorting without having to do a full load.

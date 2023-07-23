@@ -542,6 +542,13 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 			const char8_t* B = b.Cached_MetaData[tImage::tMetaTag::Description].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::Description].String.Chars() : u8"";
 			return Ascending ? (tStrcmp(A, B) < 0) : (tStrcmp(A, B) > 0);
 		}
+
+		case Config::ProfileSettings::SortKeyEnum::Shuffle:
+		{
+			uint32 A = a.ShuffleValue;
+			uint32 B = b.ShuffleValue;
+			return Ascending ? (A < B) : (A > B);
+		}
 	}
 
 	return true;

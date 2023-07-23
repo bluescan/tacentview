@@ -96,8 +96,9 @@ struct ProfileSettings
 		MetaTimeTaken,
 		MetaTimeModified,
 		MetaCameraMake,
-		MetaDescription,		
-		LastCachedKey			= MetaDescription,
+		MetaDescription,
+		Shuffle,
+		LastCachedKey			= Shuffle,
 
 		NumKeys
 	};

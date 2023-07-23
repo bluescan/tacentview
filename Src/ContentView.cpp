@@ -204,13 +204,26 @@ void Viewer::ShowContentViewDialog(bool* popen)
 		"Name", "ModTime", "Size", "Type", "Area", "Width", "Height", "Latitude*",
 		"Longitude*", "Altitude*", "Roll*", "Pitch*", "Yaw*", "Speed*", "Shutter Speed*",
 		"Exposure Time*", "F-Stop*", "ISO*", "Aperture*", "Orientation*", "Brightness*",
-		"Flash*", "Focal Length*", "Time Taken*", "Time Modified*", "Camera Make*", "Description*"
+		"Flash*", "Focal Length*", "Time Taken*", "Time Modified*", "Camera Make*", "Description*",
+		"Shuffle"
 	};
 
 	tStaticAssert(tNumElements(sortItems) == int(Config::ProfileSettings::SortKeyEnum::NumKeys));
 	if (ImGui::Combo("##Sort", &Config::Current->SortKey, sortItems, tNumElements(sortItems)))
 		SortImages(Config::Current->GetSortKey(), Config::Current->SortAscending);
-	ShowToolTip("Specifies what property to sort by. An asterisk (*) means\nthe property is stored in image meta-data and may not be\npresent in all images.");
+	ShowToolTip("Specifies what property to sort by. An asterisk (*) means\nthe property is stored in image meta-data and may not be\npresent in all images. Shuffle means random order.");
+
+	if (Config::Current->GetSortKey() == Config::ProfileSettings::SortKeyEnum::Shuffle)
+	{
+		ImGui::SameLine();
+		if (ImGui::Button("Reshuffle"))
+		{
+			for (Image* i = Images.First(); i; i = i->Next())
+				i->RegenerateShuffleValue();
+			SortImages(Config::ProfileSettings::SortKeyEnum::Shuffle, Config::Current->SortAscending);
+		}
+	}
+
 	ImGui::SameLine();
 	if (ImGui::Checkbox("Ascending", &Config::Current->SortAscending))
 		SortImages(Config::Current->GetSortKey(), Config::Current->SortAscending);

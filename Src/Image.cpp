@@ -22,6 +22,7 @@
 #include <System/tTime.h>
 #include <System/tMachine.h>
 #include <System/tChunk.h>
+#include <Math/tRandom.h>
 #include <Image/tImageAPNG.h>
 #include <Image/tImageBMP.h>
 #include <Image/tImageGIF.h>
@@ -41,11 +42,10 @@ using namespace tMath;
 using namespace Viewer;
 int Image::ThumbnailNumThreadsRunning = 0;
 tString Image::ThumbCacheDir;
+static tMath::tRandom::tGeneratorMersenneTwister ShuffleGenerator((uint64)tSystem::tGetTimeUTC());
 
 
 const uint32 Image::ThumbChunkInfoID		= 0x0B000000;
-
-
 const int Image::ThumbWidth					= 256;
 const int Image::ThumbHeight				= 144;
 const int Image::ThumbMinDispWidth			= 64;
@@ -58,6 +58,7 @@ Image::Image() :
 {
 	tMemset(&FileModTime, 0, sizeof(FileModTime));
 	ResetLoadParams();
+	ShuffleValue = ShuffleGenerator.GetBits();
 }
 
 
@@ -74,6 +75,7 @@ Image::Image(const tString& filename) :
 		FileModTime = info.ModificationTime;
 		FileSizeB = info.FileSize;
 	}
+	ShuffleValue = ShuffleGenerator.GetBits();
 }
 
 
@@ -84,6 +86,7 @@ Image::Image(const tSystem::tFileInfo& fileInfo) :
 	FileSizeB(fileInfo.FileSize)
 {
 	ResetLoadParams();
+	ShuffleValue = ShuffleGenerator.GetBits();
 }
 
 
@@ -104,6 +107,12 @@ Image::~Image()
 
 	// Free GPU image mem and texture IDs.
 	Unload(true);
+}
+
+
+void Image::RegenerateShuffleValue()
+{
+	ShuffleValue = ShuffleGenerator.GetBits();
 }
 
 
