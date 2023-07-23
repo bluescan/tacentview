@@ -12,8 +12,6 @@ here is the specification for command-line parameters directly from the built-in
 ---
 ## Command Line Usage
 
-# CLI Current Progress
-
 This is a printout of the CLI usage instructions (--help) built into tacentview.exe. All operations that may
 be performed in the GUI may also be accessed via the command-line allowing many images to be processed by a
 single command. For example, a simple CLI command can resize all png files in a list and then save them as jpg
