@@ -40,9 +40,9 @@ There are two main modes in which _Tacent View_ may be used: **GUI** and **CLI**
 **CLI** mode (Command-Line Interface) allows you to perform all operations that can be done in the **GUI** from the command-line. The same executable file is used for command-line operations, whether compiled for Linux or Windows. **CLI** mode is intended to allow batch processing and conversions of images from one format to another. It allows _Tacent View_ to be easily used in game and image processing build pipelines.
 
 <ul class="downloads">
-	<li><a href="https://bluescan.github.io/tacentview/docs/gui.md">GUI Info <strong>GUI</strong></a></li>
+	<li><a href="https://bluescan.github.io/tacentview/gui.html">GUI Info <strong>GUI</strong></a></li>
 	<li></li>
-	<li><a href="https://bluescan.github.io/tacentview/docs/cli.md">CLI Info <strong>CLI</strong></a></li>
+	<li><a href="https://bluescan.github.io/tacentview/cli.html">CLI Info <strong>CLI</strong></a></li>
 </ul>
 
 ---
