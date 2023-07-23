@@ -204,6 +204,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				Viewer::SlideshowCountdown = Config::Current->SlideshowPeriod;
 			}
 			ImGui::Checkbox("Countdown Indicator", &Config::Current->SlideshowProgressArc);
+			ImGui::Checkbox("Auto Reshuffle", &Config::Current->SlideshowAutoReshuffle);
 
 			ImGui::EndTabItem();
 		}

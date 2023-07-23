@@ -197,7 +197,8 @@ const char* Bindings::OperationDescriptions[] =
 	"Copy",
 	"Paste",
 	"Save Extract Frames...",
-	"Quantize..."
+	"Quantize...",
+	"Slideshow Auto-Reshuffle"
 
 	// Add new entries here.
 };
@@ -392,6 +393,7 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 	AssignKey(GLFW_KEY_V,			Modifier_None,					Operation::Thumbnails,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_ENTER,		Modifier_None,					Operation::FileBrowser,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_S,			Modifier_None,					Operation::SlideshowTimer,			onlyIfUnassigned);
+	AssignKey(GLFW_KEY_L,			Modifier_Alt,					Operation::SlideshowReshuffle,		onlyIfUnassigned);
 	AssignKey(GLFW_KEY_F1,			Modifier_None,					Operation::CheatSheet,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_L,			Modifier_Ctrl,					Operation::DebugLog,				onlyIfUnassigned);
 

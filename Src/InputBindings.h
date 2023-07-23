@@ -112,6 +112,7 @@ namespace Bindings
 		Paste,					// Pastes image in clipboard.
 		SaveExtractFrames,		// Save individual frames of a mult-frame image as indivisual files.
 		Quantize,				// Quantize (reduce) the colours used by an image using various algorithms.
+		SlideshowReshuffle,		// If shuffle selected as sort order, this will reshuffle after every slideshow loop.
 		//
 		// Add new operations here. Adding above will invalidate save file keybindings.
 		//

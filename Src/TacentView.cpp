@@ -2216,6 +2216,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			tString slideKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SlideshowTimer);
 			ImGui::MenuItem("Slideshow Progress", slideKey.Chz(), &Config::Current->SlideshowProgressArc, !CropMode);
 
+			tString reshuffleKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SlideshowReshuffle);
+			ImGui::MenuItem("Slideshow Reshuffle", reshuffleKey.Chz(), &Config::Current->SlideshowAutoReshuffle, !CropMode);
+
 			bool basicSettings = (Config::GetProfile() == Profile::Basic);
 			tString modeKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Profile);
 			if (ImGui::MenuItem("Basic Profile", modeKey.Chz(), &basicSettings, !CropMode))
@@ -2664,6 +2667,25 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		SlideshowCountdown -= dt;
 		if ((SlideshowCountdown <= 0.0f))
 		{
+			// If we are supposed to reshuffle at the end of every slideshow loop, we do so here.
+			if
+			(
+				(Config::Current->GetSortKey() == Config::ProfileSettings::SortKeyEnum::Shuffle) &&
+				Config::Current->SlideshowAutoReshuffle && Config::Current->SlideshowLooping &&
+				(CurrImage && !CurrImage->Next())
+			)
+			{
+				for (Image* i = Images.First(); i; i = i->Next())
+					i->RegenerateShuffleValue();
+				SortImages(Config::ProfileSettings::SortKeyEnum::Shuffle, Config::Current->SortAscending);
+
+				// We set to last after the reshuffle because the OnNext below will push it to the first
+				// one as needed. This way we always start from the first image after the reshuffle.
+				CurrImage = Images.Last();
+			}
+
+			// We only support auto-playing 'forward' because you can always change the ascending flag in the thumbnail view
+			// to go backwards. This keeps it simple.
 			bool ok = OnNext();
 			if (!ok)
 				SlideshowPlaying = false;
@@ -3346,6 +3368,10 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case Bindings::Operation::SlideshowTimer:
 			Config::Current->SlideshowProgressArc = !Config::Current->SlideshowProgressArc;
+			break;
+
+		case Bindings::Operation::SlideshowReshuffle:
+			Config::Current->SlideshowAutoReshuffle = !Config::Current->SlideshowAutoReshuffle;
 			break;
 
 		case Bindings::Operation::CheatSheet:

@@ -370,6 +370,7 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 	if (categories & Category_Slideshow)
 	{
 		SlideshowProgressArc		= true;
+		SlideshowAutoReshuffle		= true;
 		SlideshowPeriod				= (profile == Profile::Basic) ? 8.0 : 4.0;			// Values as small as 1.0/60.0 also work.
 	}
 
@@ -451,6 +452,7 @@ void Config::ProfileSettings::Load(tExpression expr)
 			ReadItem(ConfirmFileOverwrites);
 			ReadItem(SlideshowLooping);
 			ReadItem(SlideshowProgressArc);
+			ReadItem(SlideshowAutoReshuffle);
 			ReadItem(SlideshowPeriod);
 			ReadItem(ClipboardPasteFileType);
 
@@ -615,6 +617,7 @@ bool Config::ProfileSettings::Save(tExprWriter& writer) const
 	WriteItem(ConfirmFileOverwrites);
 	WriteItem(SlideshowLooping);
 	WriteItem(SlideshowProgressArc);
+	WriteItem(SlideshowAutoReshuffle);
 	WriteItem(SlideshowPeriod);
 	WriteItem(ClipboardPasteFileType);
 

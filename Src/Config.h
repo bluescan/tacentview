@@ -182,6 +182,7 @@ struct ProfileSettings
 	bool ConfirmFileOverwrites;
 	bool SlideshowLooping;
 	bool SlideshowProgressArc;
+	bool SlideshowAutoReshuffle;
 	double SlideshowPeriod;
 	tString ClipboardPasteFileType;
 

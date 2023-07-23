@@ -65,7 +65,8 @@ Animates: _GIF WEBP APNG TIF/TIFF_
 * Compensating for meta-data orientation.
 * Fast thumbnail viewer that supports sorting by file properties as well as meta-data.
 * Slideshow mode at speeds anywhere between 60fps to multiple minutes per slide.
-* Slideshow ordering based on any sort-criteria. Eg. Order by latitude or longitude.
+* Slideshow ordering based on any sort-criteria. e.g. Order by latitude or longitude, etc.
+* Random slideshow shuffle with optional reshuffle at the end of every loop.
 * Live thumbnail size adjustments.
 * Cropping.
 * Image Levels adjustments with histogram.
