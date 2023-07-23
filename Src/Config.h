@@ -93,11 +93,11 @@ struct ProfileSettings
 		MetaBrightness,
 		MetaFlash,
 		MetaFocalLength,
-		//MetaTimeTaken,
-		//MetaTimeModified,
-		//MetaCameraMake,
-		//MetaDescription,		
-		LastCachedKey			= MetaFocalLength, // MetaTimeModified,
+		MetaTimeTaken,
+		MetaTimeModified,
+		MetaCameraMake,
+		MetaDescription,		
+		LastCachedKey			= MetaDescription,
 
 		NumKeys
 	};

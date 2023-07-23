@@ -84,6 +84,7 @@ void Viewer::ShowContentViewDialog(bool* popen)
 	float viewOptionsHeight;
 	float viewOptionsOffset;
 	float progressTextOffset;
+	float sortComboWidth;
 	switch (Config::Current->GetUISize())
 	{
 		default:
@@ -91,16 +92,19 @@ void Viewer::ShowContentViewDialog(bool* popen)
 			viewOptionsHeight	= 61.0f;
 			viewOptionsOffset	= 4.0f;
 			progressTextOffset	= 460.0f;
+			sortComboWidth		= 110.0f;
 			break;
 		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
 			viewOptionsHeight	= 65.0f;
 			viewOptionsOffset	= 4.0f;
 			progressTextOffset	= 475.0f;
+			sortComboWidth		= 125.0f;
 			break;
 		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
 			viewOptionsHeight	= 70.0f;
 			viewOptionsOffset	= 5.0f;
 			progressTextOffset	= 490.0f;
+			sortComboWidth		= 140.0f;
 			break;
 	}
 
@@ -194,14 +198,13 @@ void Viewer::ShowContentViewDialog(bool* popen)
 	ImGui::SameLine();
 	ImGui::PopItemWidth();
 
-	ImGui::PushItemWidth(100);
+	ImGui::PushItemWidth(sortComboWidth);
 	const char* sortItems[] =
 	{
-		"Name", "ModTime", "Size", "Type", "Area", "Width", "Height",
-		"Latitude*", "Longitude*", "Altitude*", "Roll*", "Pitch*",
-		"Yaw*", "Speed*", "Shutter Speed*", "Exposure Time*", "F-Stop*",
-		"ISO*", "Aperture*", "Orientation*", "Brightness*", "Flash*",
-		"Focal Length*"// , "Time Taken*", "Time Modified*", "Camera Make*", "Description*"
+		"Name", "ModTime", "Size", "Type", "Area", "Width", "Height", "Latitude*",
+		"Longitude*", "Altitude*", "Roll*", "Pitch*", "Yaw*", "Speed*", "Shutter Speed*",
+		"Exposure Time*", "F-Stop*", "ISO*", "Aperture*", "Orientation*", "Brightness*",
+		"Flash*", "Focal Length*", "Time Taken*", "Time Modified*", "Camera Make*", "Description*"
 	};
 
 	tStaticAssert(tNumElements(sortItems) == int(Config::ProfileSettings::SortKeyEnum::NumKeys));

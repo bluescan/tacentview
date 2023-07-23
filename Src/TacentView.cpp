@@ -340,7 +340,7 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 		{
 			const char8_t* A = a.Filename.Chars();
 			const char8_t* B = b.Filename.Chars();
-			return Ascending ? (tStricmp(A, B) < 0) : (tStricmp(A, B) > 0);
+			return Ascending ? (tStrcmp(A, B) < 0) : (tStrcmp(A, B) > 0);
 		}
 
 		case Config::ProfileSettings::SortKeyEnum::FileModTime:
@@ -506,6 +506,41 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 			float A = a.Cached_MetaData[tImage::tMetaTag::FocalLength].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::FocalLength].Float : 0.0f;
 			float B = b.Cached_MetaData[tImage::tMetaTag::FocalLength].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::FocalLength].Float : 0.0f;
 			return Ascending ? (A < B) : (A > B);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::MetaTimeTaken:
+		{
+			// String sort works because fields are ordered nicely. "YYYY-MM-DD hh:mm:ss". From Wikipedia: "The first
+			// photographic camera developed for commercial manufacture was a daguerreotype camera, built by Alphonse
+			// Giroux in 1839". We'll use Jan 1 of that year for the default time taken beacuse there should be no photos
+			// before that date, even if you wanted to add EXIF data after.
+			const char8_t* A = a.Cached_MetaData[tImage::tMetaTag::DateTimeOrig].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::DateTimeOrig].String.Chars() : u8"1839-01-01 00:00:00";
+			const char8_t* B = b.Cached_MetaData[tImage::tMetaTag::DateTimeOrig].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::DateTimeOrig].String.Chars() : u8"1839-01-01 00:00:00";
+			return Ascending ? (tStrcmp(A, B) < 0) : (tStrcmp(A, B) > 0);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::MetaTimeModified:
+		{
+			// String sort works because fields are ordered nicely. "YYYY-MM-DD hh:mm:ss". We use the same default as TimeTaken.
+			const char8_t* A = a.Cached_MetaData[tImage::tMetaTag::DateTimeChange].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::DateTimeChange].String.Chars() : u8"1839-01-01 00:00:00";
+			const char8_t* B = b.Cached_MetaData[tImage::tMetaTag::DateTimeChange].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::DateTimeChange].String.Chars() : u8"1839-01-01 00:00:00";
+			return Ascending ? (tStrcmp(A, B) < 0) : (tStrcmp(A, B) > 0);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::MetaCameraMake:
+		{
+			// Empty string used for default. Empty is less than all other non-empty strings.
+			const char8_t* A = a.Cached_MetaData[tImage::tMetaTag::MakeModelSerial].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::MakeModelSerial].String.Chars() : u8"";
+			const char8_t* B = b.Cached_MetaData[tImage::tMetaTag::MakeModelSerial].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::MakeModelSerial].String.Chars() : u8"";
+			return Ascending ? (tStrcmp(A, B) < 0) : (tStrcmp(A, B) > 0);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::MetaDescription:
+		{
+			// Empty string used for default. Empty is less than all other non-empty strings.
+			const char8_t* A = a.Cached_MetaData[tImage::tMetaTag::Description].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::Description].String.Chars() : u8"";
+			const char8_t* B = b.Cached_MetaData[tImage::tMetaTag::Description].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::Description].String.Chars() : u8"";
+			return Ascending ? (tStrcmp(A, B) < 0) : (tStrcmp(A, B) > 0);
 		}
 	}
 
