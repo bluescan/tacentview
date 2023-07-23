@@ -1,7 +1,13 @@
 ![Build](https://github.com/bluescan/tacentview/workflows/Build/badge.svg) [![latest](https://img.shields.io/github/v/release/bluescan/tacentview.svg)](https://github.com/bluescan/tacentview/releases) [![tacentview](https://snapcraft.io//tacentview/badge.svg)](https://snapcraft.io/tacentview)
 
 # tacent view
-An image and texture viewer for tga, png, apng, exr, dds, ktx, ktx2, astc, pkm, qoi, gif, hdr, jpg, tiff, ico, webp, and bmp files. Uses Dear ImGui and the Tacent library. This viewer is targeted to game devs -- It displays alpha channels correctly and can inspect/edit the colour of individual pixels. There is basic editing functionality, batch resizing, rotations/flips, and the ability to generate contact sheets for FX. Tacent View can save tga, png, bmp, qoi, jpg, (animated) webp, (animated) gif, (animated) apng, and (animated) tiff files.
+An image and texture viewer for tga, png, apng, exr, dds, ktx, ktx2, astc, pkm, qoi, gif, hdr, jpg, tiff, ico, webp, and bmp files. Built on DearImGui and the Tacent library, the viewer has robust support for pixel-formats used during game/mobile development including BC1-7, ASTC and ETC. Editing functionality includes batch-resizing, rotations/flips, contact-sheet/flipbook generation, cropping, levels adjustments, etc. Tacent View can save tga, png, bmp, qoi, jpg, (animated) webp, (animated) gif, (animated) apng, and (animated) tiff files.
+
+As a photo viewer it can handle large collections and generate/retrieve thumbnails very quickly. The slideshow mode can display photos in any order, including fields stored in the EXIF meta-data of jpeg files (like latitude, or aperture, etc).
+
+Tacent View may also be used as a command-line tool for batch processing of images or integration into build-pipelines. All operations that can be done in the GUI are also available from the command-line -- colour quantization, crop, rotate, frame-extraction, resize, etc.
+
+These features are described in more detail on the [Tacent View Homepage](https://bluescan.github.io/tacentview).
 
 Tacent View runs on Windows (10 or 11) and Linux (Kubuntu etc). Browse the releases to grab a zip (Windows) or deb (Linux) package -- or install from the [Snap Store](https://snapcraft.io/tacentview).
 
