@@ -22,7 +22,8 @@ _Tacent View_ is distributed as:
 3. A Linux **deb** file.
 4. A Snapcraft **snap**.
 
-The source code, portable Windows zip, and deb files are available from the [releases GitHub page](https://github.com/bluescan/tacentview/releases). If running Linux you may also consider [installing the snap](https://snapcraft.io/tacentview). If you want to build it yourself, instructions are available at the [Tacent View GitHub page](https://github.com/bluescan/tacentview). The CMake build-system is used and can create projects (VS2022, make, nmake, ninja) for any desired compiler (MSVC, Clang, GCC).
+The source code, portable Windows zip, and deb files are available from the [releases GitHub page](https://github.com/bluescan/tacentview/releases). If running Linux you may also consider [installing the snap](https://snapcraft.io/tacentview). If you want to build it yourself, instructions are available at the [Tacent View GitHub page](https://github.com/bluescan/tacentview). The CMake build-system is used and can create projects (VS2022, make, nmake, ninja) for any desired compiler (MSVC, Clang, GCC). The buttons below link you pre-compiled versions of
+the latest stable release (1.0.40) but I suggest building yourself if you have any security concerns.
 
 <ul class="downloads">
 	<li><a href="https://github.com/bluescan/tacentview/releases/download/v1.0.40/tacentview_1.0.40.zip">Download <strong>WIN App</strong></a></li>
@@ -39,13 +40,11 @@ There are two main modes in which _Tacent View_ may be used: **GUI** and **CLI**
 
 **CLI** mode (Command-Line Interface) allows you to perform all operations that can be done in the **GUI** from the command-line. The same executable file is used for command-line operations, whether compiled for Linux or Windows. **CLI** mode is intended to allow batch processing and conversions of images from one format to another. It allows _Tacent View_ to be easily used in game and image processing build pipelines.
 
-<!--
 <ul class="downloads">
 	<li><a href="https://bluescan.github.io/tacentview/gui.html">GUI Info <strong>GUI</strong></a></li>
 	<li></li>
 	<li><a href="https://bluescan.github.io/tacentview/cli.html">CLI Info <strong>CLI</strong></a></li>
 </ul>
--->
 
 ---
 ## Image Formats
