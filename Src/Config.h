@@ -89,7 +89,15 @@ struct ProfileSettings
 		MetaFStop,
 		MetaISO,
 		MetaAperture,
-		LastCachedKey			= MetaAperture,
+		MetaOrientation,
+		MetaBrightness,
+		MetaFlash,
+		MetaFocalLength,
+		//MetaTimeTaken,
+		//MetaTimeModified,
+		//MetaCameraMake,
+		//MetaDescription,		
+		LastCachedKey			= MetaFocalLength, // MetaTimeModified,
 
 		NumKeys
 	};

@@ -198,8 +198,10 @@ void Viewer::ShowContentViewDialog(bool* popen)
 	const char* sortItems[] =
 	{
 		"Name", "ModTime", "Size", "Type", "Area", "Width", "Height",
-		"Latitude*", "Longitude*", "Altitude*", "Roll*", "Pitch*", "Yaw*",
-		"Speed*", "ShutterSpeed*", "ExposureTime*", "FStop*", "ISO*", "Aperture*"
+		"Latitude*", "Longitude*", "Altitude*", "Roll*", "Pitch*",
+		"Yaw*", "Speed*", "Shutter Speed*", "Exposure Time*", "F-Stop*",
+		"ISO*", "Aperture*", "Orientation*", "Brightness*", "Flash*",
+		"Focal Length*"// , "Time Taken*", "Time Modified*", "Camera Make*", "Description*"
 	};
 
 	tStaticAssert(tNumElements(sortItems) == int(Config::ProfileSettings::SortKeyEnum::NumKeys));

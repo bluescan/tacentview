@@ -474,6 +474,39 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 			float B = b.Cached_MetaData[tImage::tMetaTag::Aperture].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::Aperture].Float : 0.0f;
 			return Ascending ? (A < B) : (A > B);
 		}
+
+		case Config::ProfileSettings::SortKeyEnum::MetaOrientation:
+		{
+			// All non-90-degree transforms are grouped at the start. All 90-degree transforms have larger values.
+			// This allows for meaningful sorting. The default 0 means 'unspecified'.
+			uint32 A = a.Cached_MetaData[tImage::tMetaTag::Orientation].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::Orientation].Uint32 : 0;
+			uint32 B = b.Cached_MetaData[tImage::tMetaTag::Orientation].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::Orientation].Uint32 : 0;
+			return Ascending ? (A < B) : (A > B);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::MetaBrightness:
+		{
+			// Aperture in APEX Bv units. 0 is dark -- about 3.4candelas/(m^2). We use 0 as default.
+			float A = a.Cached_MetaData[tImage::tMetaTag::Brightness].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::Brightness].Float : 0.0f;
+			float B = b.Cached_MetaData[tImage::tMetaTag::Brightness].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::Brightness].Float : 0.0f;
+			return Ascending ? (A < B) : (A > B);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::MetaFlash:
+		{
+			// Flash used is 0 for not used, 1 for used. We use 0 for default.
+			uint32 A = a.Cached_MetaData[tImage::tMetaTag::FlashUsed].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::FlashUsed].Uint32 : 0;
+			uint32 B = b.Cached_MetaData[tImage::tMetaTag::FlashUsed].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::FlashUsed].Uint32 : 0;
+			return Ascending ? (A < B) : (A > B);
+		}
+
+		case Config::ProfileSettings::SortKeyEnum::MetaFocalLength:
+		{
+			// Focal length in mm.  We use 0 as default which means unknown.
+			float A = a.Cached_MetaData[tImage::tMetaTag::FocalLength].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::FocalLength].Float : 0.0f;
+			float B = b.Cached_MetaData[tImage::tMetaTag::FocalLength].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::FocalLength].Float : 0.0f;
+			return Ascending ? (A < B) : (A > B);
+		}
 	}
 
 	return true;
