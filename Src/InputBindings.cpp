@@ -368,7 +368,7 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 
 	AssignKey(GLFW_KEY_I,			Modifier_None,					Operation::Details,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_X,			Modifier_None,					Operation::MetaData,				onlyIfUnassigned);	// Update enum pending.
-	AssignKey(GLFW_KEY_T,			Modifier_None,					Operation::Tile,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_T,			Modifier_Ctrl,					Operation::Tile,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_Z,			Modifier_Ctrl,					Operation::Undo,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_Y,			Modifier_Ctrl,					Operation::Redo,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_C,			Modifier_Ctrl,					Operation::Copy,					onlyIfUnassigned);
@@ -390,7 +390,7 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 
 	AssignKey(GLFW_KEY_M,			Modifier_None,					Operation::MenuBar,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_N,			Modifier_None,					Operation::NavBar,					onlyIfUnassigned);
-	AssignKey(GLFW_KEY_V,			Modifier_None,					Operation::Thumbnails,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_T,			Modifier_None,					Operation::Thumbnails,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_ENTER,		Modifier_None,					Operation::FileBrowser,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_S,			Modifier_None,					Operation::SlideshowTimer,			onlyIfUnassigned);
 	AssignKey(GLFW_KEY_L,			Modifier_Alt,					Operation::SlideshowReshuffle,		onlyIfUnassigned);

@@ -1,4 +1,4 @@
-// ContentView.h
+// ThumbnailView.h
 //
 // Dialog that displays folder contents as thumbnails.
 //
@@ -17,6 +17,6 @@
 
 namespace Viewer
 {
-	void ShowContentViewDialog(bool* popen);
+	void ShowThumbnailViewDialog(bool* popen);
 	void DoSortParameters(bool singleLine);
 }

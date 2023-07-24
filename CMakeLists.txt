@@ -69,8 +69,6 @@ add_executable(
 	Src/Config.h
 	Src/ContactSheet.cpp
 	Src/ContactSheet.h
-	Src/ContentView.cpp
-	Src/ContentView.h
 	Src/Crop.cpp
 	Src/Crop.h
 	Src/Details.cpp
@@ -101,6 +99,8 @@ add_executable(
 	Src/Rotate.h
 	Src/TacentView.cpp
 	Src/TacentView.h
+	Src/ThumbnailView.cpp
+	Src/ThumbnailView.h
 	Src/Undo.cpp
 	Src/Undo.h
 	Src/Version.cmake.h

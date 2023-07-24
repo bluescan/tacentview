@@ -19,7 +19,7 @@
 #include "Config.h"
 #include "Image.h"
 #include "TacentView.h"
-#include "ContentView.h"
+#include "ThumbnailView.h"
 #include "Version.cmake.h"
 using namespace tMath;
 

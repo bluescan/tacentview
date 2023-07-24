@@ -52,7 +52,7 @@
 #include "Properties.h"
 #include "ContactSheet.h"
 #include "MultiFrame.h"
-#include "ContentView.h"
+#include "ThumbnailView.h"
 #include "Crop.h"
 #include "Quantize.h"
 #include "Resize.h"
@@ -2231,7 +2231,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::MenuItem("Image Meta Data", metaDataKey.Chz(), &Config::Current->ShowImageMetaData);
 
 			tString thumbKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Thumbnails);
-			ImGui::MenuItem("Thumbnail View", thumbKey.Chz(), &Config::Current->ShowContentView);
+			ImGui::MenuItem("Thumbnail View", thumbKey.Chz(), &Config::Current->ShowThumbnailView);
 
 			ImGui::Separator();
 
@@ -2358,8 +2358,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton
 		(
 			ImTextureID(Image_ContentView.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
-			Config::Current->ShowContentView ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	Config::Current->ShowContentView = !Config::Current->ShowContentView;
+			Config::Current->ShowThumbnailView ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	Config::Current->ShowThumbnailView = !Config::Current->ShowThumbnailView;
 		ShowToolTip("Content Thumbnail View");
 
 		bool tileAvail = (CurrImage && CurrImage->IsLoaded()) ? !CropMode : false;
@@ -2610,8 +2610,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (ImGui::IsPopupOpen(0u, ImGuiPopupFlags_AnyPopup))
 		io.ConfigFlags = ImGuiConfigFlags_NavEnableKeyboard;
 
-	if (Config::Current->ShowContentView)
-		ShowContentViewDialog(&Config::Current->ShowContentView);
+	if (Config::Current->ShowThumbnailView)
+		ShowThumbnailViewDialog(&Config::Current->ShowThumbnailView);
 
 	if (Config::Current->ShowPropsWindow)
 		ShowPropertiesWindow(&Config::Current->ShowPropsWindow);
@@ -3351,7 +3351,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::Thumbnails:
-			Viewer::Config::Current->ShowContentView = !Viewer::Config::Current->ShowContentView;
+			Viewer::Config::Current->ShowThumbnailView = !Viewer::Config::Current->ShowThumbnailView;
 			break;
 
 		case Bindings::Operation::FileBrowser:

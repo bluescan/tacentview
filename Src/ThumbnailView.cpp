@@ -1,4 +1,4 @@
-// ContentView.cpp
+// ThumbnailView.cpp
 //
 // Dialog that displays folder contents as thumbnails.
 //
@@ -15,7 +15,7 @@
 #include <System/tTime.h>
 #include <Math/tVector2.h>
 #include "imgui.h"
-#include "ContentView.h"
+#include "ThumbnailView.h"
 #include "TacentView.h"
 #include "Image.h"
 using namespace tMath;
@@ -110,7 +110,7 @@ void Viewer::DoSortParameters(bool singleLine)
 }
 
 
-void Viewer::ShowContentViewDialog(bool* popen)
+void Viewer::ShowThumbnailViewDialog(bool* popen)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar;
 	tVector2 windowPos = GetDialogOrigin(DialogID::ContentView);
@@ -127,7 +127,7 @@ void Viewer::ShowContentViewDialog(bool* popen)
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(initialSize, ImGuiCond_FirstUseEver);
 
-	if (!ImGui::Begin("Content View", popen, windowFlags))
+	if (!ImGui::Begin("Thumbnail View", popen, windowFlags))
 	{
 		ImGui::End();
 		return;

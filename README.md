@@ -23,7 +23,7 @@ Left/right direction keys show previous and next images, semi-transparent images
 Use 'Save All As..." to batch convert all the images in a folder.
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_BatchSaveAll.png)
 
-Viewing as thumbnails is supported by the 'Content View' window. Thumbnail generation and cache retrieval are extremely fast. Tacent View can easily handle thousands of photos in a single folder.
+Viewing as thumbnails is supported by the 'Thumbnail View' window. Thumbnail generation and cache retrieval are extremely fast. Tacent View can easily handle thousands of photos in a single folder.
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_Thumbnails.png)
 
 
