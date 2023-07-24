@@ -19,6 +19,7 @@
 #include "Config.h"
 #include "Image.h"
 #include "TacentView.h"
+#include "ContentView.h"
 #include "Version.cmake.h"
 using namespace tMath;
 
@@ -203,8 +204,23 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				Config::Current->SlideshowPeriod = 1.0/60.0;
 				Viewer::SlideshowCountdown = Config::Current->SlideshowPeriod;
 			}
+
 			ImGui::Checkbox("Countdown Indicator", &Config::Current->SlideshowProgressArc);
+			ImGui::SameLine();
+			ShowHelpMark("Display a time remaining indicator when slideshow active.");
+
+			ImGui::Checkbox("Looping", &Config::Current->SlideshowLooping);
+			ImGui::SameLine();
+			ShowHelpMark("Should slideshow loop after completion.");
+
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+			ImGui::Separator();
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+
+			Viewer::DoSortParameters(false);
 			ImGui::Checkbox("Auto Reshuffle", &Config::Current->SlideshowAutoReshuffle);
+			ImGui::SameLine();
+			ShowHelpMark("If sort set to shuffle, reshuffle automatically after every loop.");
 
 			ImGui::EndTabItem();
 		}

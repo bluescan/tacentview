@@ -303,8 +303,6 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 		ShowAbout					= false;
 
 		ThumbnailWidth				= 128.0f;
-		SortKey						= 0;
-		SortAscending				= true;
 		OverlayCorner				= 1;
 		Tile						= false;
 		ResampleFilter				= int(tImage::tResampleFilter::Bilinear);
@@ -317,7 +315,6 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 		ResampleFilterRotateDown	= int(tImage::tResampleFilter::None);
 		RotateMode					= int(RotateModeEnum::Fill);
 
-		SlideshowLooping			= (profile == Profile::Basic) ? true : false;
 		SaveSubFolder				.Clear();
 		SaveFileType				.Set(tSystem::tGetFileTypeName(tSystem::tFileType::TGA));
 		SaveFileTypeMultiFrame		.Set(tSystem::tGetFileTypeName(tSystem::tFileType::GIF));
@@ -369,9 +366,12 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 
 	if (categories & Category_Slideshow)
 	{
+		SlideshowLooping			= (profile == Profile::Basic) ? true : false;
 		SlideshowProgressArc		= true;
-		SlideshowAutoReshuffle		= true;
 		SlideshowPeriod				= (profile == Profile::Basic) ? 8.0 : 4.0;			// Values as small as 1.0/60.0 also work.
+		SortKey						= int(SortKeyEnum::FileName);
+		SortAscending				= true;
+		SlideshowAutoReshuffle		= true;
 	}
 
 	if (categories & Category_System)

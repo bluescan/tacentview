@@ -58,6 +58,58 @@ tString Viewer::MakeImageTooltipString(Viewer::Image* image, const tString& file
 }
 
 
+void Viewer::DoSortParameters(bool singleLine)
+{
+	float sortComboWidth;
+	switch (Config::Current->GetUISize())
+	{
+		default:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			sortComboWidth		= 110.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			sortComboWidth		= 125.0f;
+			break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			sortComboWidth		= 140.0f;
+			break;
+	}
+
+	const char* sortItems[] =
+	{
+		"Name", "ModTime", "Size", "Type", "Area", "Width", "Height", "Latitude*",
+		"Longitude*", "Altitude*", "Roll*", "Pitch*", "Yaw*", "Speed*", "Shutter Speed*",
+		"Exposure Time*", "F-Stop*", "ISO*", "Aperture*", "Orientation*", "Brightness*",
+		"Flash*", "Focal Length*", "Time Taken*", "Time Modified*", "Camera Make*", "Description*",
+		"Shuffle"
+	};
+
+	tStaticAssert(tNumElements(sortItems) == int(Config::ProfileSettings::SortKeyEnum::NumKeys));
+	ImGui::PushItemWidth(sortComboWidth);
+
+	tString label = singleLine ? "##Sort" : "Sort";
+	if (ImGui::Combo(label.Chr(), &Config::Current->SortKey, sortItems, tNumElements(sortItems), tNumElements(sortItems)/2))
+		SortImages(Config::Current->GetSortKey(), Config::Current->SortAscending);
+	ShowToolTip("Specifies what property to sort by. An asterisk (*) means\nthe property is stored in image meta-data and may not be\npresent in all images. Shuffle means random order.");
+
+	if (Config::Current->GetSortKey() == Config::ProfileSettings::SortKeyEnum::Shuffle)
+	{
+		ImGui::SameLine();
+		if (ImGui::Button(" Reshuffle "))
+		{
+			for (Image* i = Images.First(); i; i = i->Next())
+				i->RegenerateShuffleValue();
+			SortImages(Config::ProfileSettings::SortKeyEnum::Shuffle, Config::Current->SortAscending);
+		}
+	}
+
+	if (singleLine)
+		ImGui::SameLine();
+	if (ImGui::Checkbox("Ascending", &Config::Current->SortAscending))
+		SortImages(Config::Current->GetSortKey(), Config::Current->SortAscending);
+}
+
+
 void Viewer::ShowContentViewDialog(bool* popen)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar;
@@ -84,7 +136,6 @@ void Viewer::ShowContentViewDialog(bool* popen)
 	float viewOptionsHeight;
 	float viewOptionsOffset;
 	float progressTextOffset;
-	float sortComboWidth;
 	switch (Config::Current->GetUISize())
 	{
 		default:
@@ -92,19 +143,16 @@ void Viewer::ShowContentViewDialog(bool* popen)
 			viewOptionsHeight	= 61.0f;
 			viewOptionsOffset	= 4.0f;
 			progressTextOffset	= 460.0f;
-			sortComboWidth		= 110.0f;
 			break;
 		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
 			viewOptionsHeight	= 65.0f;
 			viewOptionsOffset	= 4.0f;
 			progressTextOffset	= 475.0f;
-			sortComboWidth		= 125.0f;
 			break;
 		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
 			viewOptionsHeight	= 70.0f;
 			viewOptionsOffset	= 5.0f;
 			progressTextOffset	= 490.0f;
-			sortComboWidth		= 140.0f;
 			break;
 	}
 
@@ -198,35 +246,7 @@ void Viewer::ShowContentViewDialog(bool* popen)
 	ImGui::SameLine();
 	ImGui::PopItemWidth();
 
-	ImGui::PushItemWidth(sortComboWidth);
-	const char* sortItems[] =
-	{
-		"Name", "ModTime", "Size", "Type", "Area", "Width", "Height", "Latitude*",
-		"Longitude*", "Altitude*", "Roll*", "Pitch*", "Yaw*", "Speed*", "Shutter Speed*",
-		"Exposure Time*", "F-Stop*", "ISO*", "Aperture*", "Orientation*", "Brightness*",
-		"Flash*", "Focal Length*", "Time Taken*", "Time Modified*", "Camera Make*", "Description*",
-		"Shuffle"
-	};
-
-	tStaticAssert(tNumElements(sortItems) == int(Config::ProfileSettings::SortKeyEnum::NumKeys));
-	if (ImGui::Combo("##Sort", &Config::Current->SortKey, sortItems, tNumElements(sortItems)))
-		SortImages(Config::Current->GetSortKey(), Config::Current->SortAscending);
-	ShowToolTip("Specifies what property to sort by. An asterisk (*) means\nthe property is stored in image meta-data and may not be\npresent in all images. Shuffle means random order.");
-
-	if (Config::Current->GetSortKey() == Config::ProfileSettings::SortKeyEnum::Shuffle)
-	{
-		ImGui::SameLine();
-		if (ImGui::Button("Reshuffle"))
-		{
-			for (Image* i = Images.First(); i; i = i->Next())
-				i->RegenerateShuffleValue();
-			SortImages(Config::ProfileSettings::SortKeyEnum::Shuffle, Config::Current->SortAscending);
-		}
-	}
-
-	ImGui::SameLine();
-	if (ImGui::Checkbox("Ascending", &Config::Current->SortAscending))
-		SortImages(Config::Current->GetSortKey(), Config::Current->SortAscending);
+	DoSortParameters(true);
 
 	// If we are sorting by a thumbnail cached key, resort if necessary.
 	Config::ProfileSettings::SortKeyEnum sortKey = Config::Current->GetSortKey();
