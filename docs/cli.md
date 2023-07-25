@@ -18,7 +18,7 @@ The easiest way to begin using _Tacent View_ from the commad line is by example.
 ```
 tacentview.exe -c
 ```
-This is the simplest conversion command line. The -c (or --cli) simply means do not launch the GUI. The input is all supported image formats in the current directory. This is the default if -o (--outtype) is not specified. The output type -o (--outtype) is also not specified. The default is tga.
+This is the simplest conversion command line. The -c (or --cli) simply means do not launch the GUI. The input is all supported image formats in the current directory. This is the default if -i (--intype) is not specified. The output type -o (--outtype) is also not specified. Out-type defaults to tga if not specified.
 
 ---
 ## Usage
