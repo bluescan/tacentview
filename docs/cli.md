@@ -10,7 +10,18 @@ here is the specification for command-line parameters directly from the built-in
 
 
 ---
-## Command Line Usage
+## Examples
+
+The easiest way to begin using _Tacent View_ from the commad line is by example. These examples assume a) _tacentview.exe_ is in the path (or in the current directory), and b) there are multiple images of various types in the current directory.
+
+**Example 1 - Convert to TGA
+```
+tacentview.exe -c
+```
+This is the simplest conversion command line. The -c (or --cli) simply means do not launch the GUI. The input is all supported image formats in the current directory. This is the default if -o (--outtype) is not specified. The output type -o (--outtype) is also not specified. The default is tga.
+
+---
+## Usage
 
 This is a printout of the CLI usage instructions (--help) built into tacentview.exe. All operations that may
 be performed in the GUI may also be accessed via the command-line allowing many images to be processed by a
