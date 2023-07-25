@@ -22,8 +22,7 @@ _Tacent View_ is distributed as:
 3. A Linux **deb** file.
 4. A Snapcraft **snap**.
 
-The source code, portable Windows zip, and deb files are available from the [releases GitHub page](https://github.com/bluescan/tacentview/releases). If running Linux you may also consider [installing the snap](https://snapcraft.io/tacentview). If you want to build it yourself, instructions are available at the [Tacent View GitHub page](https://github.com/bluescan/tacentview). The CMake build-system is used and can create projects (VS2022, make, nmake, ninja) for any desired compiler (MSVC, Clang, GCC). The buttons below link you pre-compiled versions of
-the latest stable release (1.0.40) but I suggest building yourself if you have any security concerns.
+The source code, portable Windows zip, and deb files are available from the [releases GitHub page](https://github.com/bluescan/tacentview/releases). If running Linux you may also consider [installing the snap](https://snapcraft.io/tacentview). If you want to build it yourself, instructions are available at the [Tacent View GitHub page](https://github.com/bluescan/tacentview). The CMake build-system is used and can create projects (VS2022, make, nmake, ninja) for your desired compiler (MSVC, Clang, GCC). The buttons below link to pre-compiled versions of the latest stable release. Build yourself if you have any security concerns.
 
 <ul class="downloads">
 	<li><a href="https://github.com/bluescan/tacentview/releases/download/v1.0.40/tacentview_1.0.40.zip">Download <strong>WIN App</strong></a></li>
@@ -38,7 +37,7 @@ There are two main modes in which _Tacent View_ may be used: **GUI** and **CLI**
 
 **GUI** mode is what you would expect -- Open an image file with tacentview.exe and a window will open displaying the image. If you install the _snap_ or _deb_ file, it will register with the OS to be able to open supported image formats (but will not change your defaults). On Windows you may optionally associate _Tacent View_ to a particular image type by selecting _Open with_ and then _Choose another app_.
 
-**CLI** mode (Command-Line Interface) allows you to perform all operations that can be done in the **GUI** from the command-line. The same executable file is used for command-line operations, whether compiled for Linux or Windows. **CLI** mode is intended to allow batch processing and conversions of images from one format to another. It allows _Tacent View_ to be easily used in game and image processing build pipelines.
+**CLI** mode (Command-Line Interface) allows you to perform all operations that can be done in the **GUI** from the command-line. The same executable file is used for command-line operations, whether compiled for Linux or Windows. **CLI** mode is intended to allow batch processing and conversions of images from one format to another. It allows _Tacent View_ to be used in game pipelines and image processing workflows.
 
 <ul class="downloads">
 	<li><a href="https://bluescan.github.io/tacentview/gui.html">GUI Info <strong>GUI</strong></a></li>
@@ -105,6 +104,7 @@ Animates: _GIF WEBP APNG TIF/TIFF_
 * Tile-view for checking texture edge boundaries.
 * Copy images to the clipboard.
 * Paste images from the clipboard. Every paste generates a new file automatically.
+* Drag image files directly into viewing area.
 
 ---
 ## Texture Pixel Formats
