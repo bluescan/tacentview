@@ -14,7 +14,7 @@ here is the specification for command-line parameters directly from the built-in
 
 The easiest way to begin using _Tacent View_ from the commad line is by example. These examples assume a) _tacentview.exe_ is in the path (or in the current directory), and b) there are multiple images of various types in the current directory.
 
-**Example 1 - Convert to TGA
+**Example 1 - Convert to TGA**
 ```
 tacentview.exe -c
 ```
