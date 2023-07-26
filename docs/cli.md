@@ -20,12 +20,26 @@ tacentview.exe -c
 ```
 This is the simplest conversion command line. The -c (or --cli) simply means do not launch the GUI. The input is all supported image formats in the current directory. This is the default if -i (--intype) is not specified. The output type -o (--outtype) is also not specified. Out-type defaults to tga if not specified.
 
-**Example 2 - Convert to PKM files to PNG**
+**Example 2 - Convert PKM files to PNG**
 ```
 tacentview.exe -c --intype pkm --outtype png
 ```
-Similar to Example 1, except the type of the input and output files is specified explicitely.
+Similar to Example 1 except the type of the input and output files is specified explicitely.
 
+**Example 3 - Create GIFs from manifest**
+```
+tacentview.exe -c @manifest.txt --outtype gif --paramsGIF 8 wu 0 120 -1 * * *
+```
+Uses the @ symbol to specify a manifest file that lists the files to process. The contents of _manifest.txt_ could look something like this.
+```
+; Some individual files to process.
+Flipbook.webp
+Flame.apng
+
+; A directory to process.
+MoreImages/
+```
+The _--paramsGIF_ is optional and specifies any non-default parameters for creating the GIFs. In this case an 8-bit palette is used, the _wu_ algorithm is used for colour quantization, and the transparency threshold is 120. The -1 means don't override any frame durations from the input files (if they are animated).
 
 ---
 ## Usage
