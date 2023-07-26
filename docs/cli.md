@@ -14,7 +14,7 @@ The easiest way to begin using _Tacent View_ from the commad-line is by example.
 ```
 tacentview.exe -c
 ```
-This is the simplest conversion command line. The -c (or - -cli) simply means do not launch the GUI. The input is all supported image formats in the current directory. This is the default if -i (- -intype) is not specified. The output type -o (- -outtype) is also not specified. Out-type defaults to tga if not specified.
+This is the simplest conversion command-line. The `-c` (alternatively `--cli`) simply means do not launch the GUI. The input images are all the files in the current directory (since no directory was specified). By default all image types are processed unless you specify the input image type with `-i` or `--intype`. The output type could be specified with `-o` or `--outtype`. If this is missing the default is to output TGA files.
 
 **Example 2 - Convert PKM Files to PNG**
 ```
@@ -35,23 +35,23 @@ Flame.apng
 ; A directory to process.
 MoreImages/
 ```
-The _- -paramsGIF_ is optional and specifies any non-default parameters for creating the GIFs. In this case an 8-bit palette is used, the _wu_ algorithm is used for colour quantization, and the transparency threshold is 120. The -1 means don't override any frame durations from the input files (if they are animated).
+The `--paramsGIF` is optional and specifies any non-default parameters for creating the GIFs. In this case an 8-bit palette is used, the _wu_ algorithm is used for colour quantization, and the transparency threshold is 120. The -1 means don't override any frame durations from the input files (if they are animated).
 
 **Example 4 - Resize Images Preserving Aspect**
 ```
 tacentview.exe -cw . --op resize[1920,-1] -o jpg
 ```
-Resizes all images in the current directory and saves them as JPG files. The JPG images will be 1920 pixels wide. The -1 for height means compute the height so that the original aspect ratio is preserved. The -w (- -overwrite) means overwrite existing files that may be present. Use with caution. There are more arguments to resize that allow setting filters and edge modes that are not shown here.
+Resizes all images in the current directory and saves them as JPG files. The JPG images will be 1920 pixels wide. The -1 for height means compute the height so that the original aspect ratio is preserved. The `-w` or `--overwrite` means overwrite existing files that may be present. Use with caution. There are more arguments to resize that allow setting filters and edge modes that are not shown here.
 
 **Example 4 - Resize Followed by Rotation**
 ```
 tacentview.exe -ca --op resize[1920,-1] --op rotate[5] --paramsTGA 24 rle
 ```
-Resizes and then applies a 5-degree anti-clockwise rotation to all images in the current directory. Saves them as TGA files. The -a (- -autoname) flag means if the output file exists the output file name will be modified so the existing file is not overwritten. The TGA params force a 24-bit run-length-encoded TGA to be written.
+Resizes and then applies a 5-degree anti-clockwise rotation to all images in the current directory. Saves them as TGA files. The `-a` or `--autoname` flag means if the output file exists the output filename will be modified so the existing file is not overwritten. The TGA params force a 24-bit run-length-encoded TGA to be written.
 
 ---
 ## Usage
-This is a printout of the CLI usage instructions (- -help) built into tacentview.exe.
+This is a printout of the CLI usage instructions built into _Tacent View_. To get this printout simply issue the command `tacentview.exe --help`
 
 ```
 Tacent View 1.0.40 in CLI Mode. Use --help for details.
@@ -638,7 +638,7 @@ returns a non-zero exit code.
 
 ---
 ## Syntax
-This is a printout of the comman-line syntax (- -syntax) used to specify arguments to tacentview.exe.
+This is a printout of the command-line syntax used to specify arguments to _Tacent View_. To printout the syntax usage use the command `tacentview.exe -c --syntax`
 
 ```
 Tacent View 1.0.40 in CLI Mode. Use --help for details.
