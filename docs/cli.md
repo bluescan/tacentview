@@ -1,5 +1,5 @@
 ---
-title: GUI
+title: CLI
 
 ---
 ## Tacent View CLI
