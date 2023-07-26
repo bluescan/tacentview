@@ -7,21 +7,21 @@ This page is an overview of the features available in _Tacent View_ while using 
 
 ---
 ## Examples
-The easiest way to begin using _Tacent View_ from the commad-line is by example. The following examples assume a) _tacentview.exe_ is in the path or in the current directory, and b) there are multiple images of various types in the current directory. The examples do not exhaustively demonstrate all options and parameters -- see the _usage_ section after the examples for all the options.
-\ 
+The easiest way to begin using _Tacent View_ from the commad-line is by example. The following examples assume a) _tacentview.exe_ is in the path or in the current directory, and b) there are multiple images of various types in the current directory. The examples do not exhaustively demonstrate all options and parameters -- see the _usage_ section after the examples for all the options.\
+\
 \
 **Example 1 - Convert to TGA**
 ```
 tacentview.exe -c
 ```
-This is the simplest conversion command-line. The `-c` (alternatively `--cli`) simply means do not launch the GUI. The input images are all the files in the current directory (since no directory was specified). By default all image types are processed unless you specify the input image type with `-i` or `--intype`. The output type could be specified with `-o` or `--outtype`. If this is missing the default is to output TGA files.
+This is the simplest conversion command-line. The `-c` (alternatively `--cli`) simply means do not launch the GUI. The input images are all the files in the current directory (since no directory was specified). By default all image types are processed unless you specify the input image type with `-i` or `--intype`. The output type could be specified with `-o` or `--outtype`. If this is missing the default is to output TGA files.\
 \
 \
 **Example 2 - Convert PKM Files to PNG**
 ```
 tacentview.exe -c --intype pkm --outtype png
 ```
-Similar to Example 1 except the type of the input and output files is specified explicitly.
+Similar to Example 1 except the type of the input and output files is specified explicitly.\
 \
 \
 **Example 3 - Create GIFs from Manifest**
@@ -37,14 +37,14 @@ Flame.apng
 ; A directory to process.
 MoreImages/
 ```
-The `--paramsGIF` is optional and specifies any non-default parameters for creating the GIFs. In this case an 8-bit palette is used, the _wu_ algorithm is used for colour quantization, and the transparency threshold is 120. The -1 means don't override any frame durations from the input files (if they are animated).
+The `--paramsGIF` is optional and specifies any non-default parameters for creating the GIFs. In this case an 8-bit palette is used, the _wu_ algorithm is used for colour quantization, and the transparency threshold is 120. The -1 means don't override any frame durations from the input files (if they are animated).\
 \
 \
 **Example 4 - Resize Images Preserving Aspect**
 ```
 tacentview.exe -cw . --op resize[1920,-1] -o jpg
 ```
-Resizes all images in the current directory and saves them as JPG files. The JPG images will be 1920 pixels wide. The -1 for height means compute the height so that the original aspect ratio is preserved. The `-w` or `--overwrite` means overwrite existing files that may be present. Use with caution. There are more arguments to resize that allow setting filters and edge modes that are not shown here.
+Resizes all images in the current directory and saves them as JPG files. The JPG images will be 1920 pixels wide. The -1 for height means compute the height so that the original aspect ratio is preserved. The `-w` or `--overwrite` means overwrite existing files that may be present. Use with caution. There are more arguments to resize that allow setting filters and edge modes that are not shown here.\
 \
 \
 **Example 5 - Resize Followed by Rotation**
