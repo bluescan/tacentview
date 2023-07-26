@@ -14,7 +14,7 @@ The easiest way to begin using _Tacent View_ from the commad-line is by example.
 ```
 tacentview.exe -c
 ```
-This is the simplest conversion command line. The -c (or --cli) simply means do not launch the GUI. The input is all supported image formats in the current directory. This is the default if -i (--intype) is not specified. The output type -o (--outtype) is also not specified. Out-type defaults to tga if not specified.
+This is the simplest conversion command line. The -c (or - -cli) simply means do not launch the GUI. The input is all supported image formats in the current directory. This is the default if -i (- -intype) is not specified. The output type -o (- -outtype) is also not specified. Out-type defaults to tga if not specified.
 
 **Example 2 - Convert PKM Files to PNG**
 ```
@@ -35,23 +35,23 @@ Flame.apng
 ; A directory to process.
 MoreImages/
 ```
-The _--paramsGIF_ is optional and specifies any non-default parameters for creating the GIFs. In this case an 8-bit palette is used, the _wu_ algorithm is used for colour quantization, and the transparency threshold is 120. The -1 means don't override any frame durations from the input files (if they are animated).
+The _- -paramsGIF_ is optional and specifies any non-default parameters for creating the GIFs. In this case an 8-bit palette is used, the _wu_ algorithm is used for colour quantization, and the transparency threshold is 120. The -1 means don't override any frame durations from the input files (if they are animated).
 
 **Example 4 - Resize Images Preserving Aspect**
 ```
 tacentview.exe -cw . --op resize[1920,-1] -o jpg
 ```
-Resizes all images in the current directory and saves them as JPG files. The JPG images will be 1920 pixels wide. The -1 for height means compute the height so that the original aspect ratio is preserved. The -w means overwrite existing files that may be present. Use with caution. There are more arguments to resize that allow setting filters and edge modes that are not shown here.
+Resizes all images in the current directory and saves them as JPG files. The JPG images will be 1920 pixels wide. The -1 for height means compute the height so that the original aspect ratio is preserved. The -w (- -overwrite) means overwrite existing files that may be present. Use with caution. There are more arguments to resize that allow setting filters and edge modes that are not shown here.
 
 **Example 4 - Resize Followed by Rotation**
 ```
 tacentview.exe -ca --op resize[1920,-1] --op rotate[5] --paramsTGA 24 rle
 ```
-Resizes and then applies a 5-degree anti-clockwise rotation to all images in the current directory. Saves them as TGA files. The -a (--autoname) flag means if the output file exists the output file name will be modified so the existing file is not overwritten. The TGA params force a 24-bit run-length-encoded TGA to be written.
+Resizes and then applies a 5-degree anti-clockwise rotation to all images in the current directory. Saves them as TGA files. The -a (- -autoname) flag means if the output file exists the output file name will be modified so the existing file is not overwritten. The TGA params force a 24-bit run-length-encoded TGA to be written.
 
 ---
 ## Usage
-This is a printout of the CLI usage instructions (--help) built into tacentview.exe.
+This is a printout of the CLI usage instructions (- -help) built into tacentview.exe.
 
 ```
 Tacent View 1.0.40 in CLI Mode. Use --help for details.
@@ -634,4 +634,75 @@ failure in any step for any image results in an error. By default processing
 continues to the next image even on a failure. If the --earlyexit (-e) flag is
 set, processing stops immediately on any failure. Either way, any failure
 returns a non-zero exit code.
+```
+
+---
+## Syntax
+This is a printout of the comman-line syntax (- -syntax) used to specify arguments to tacentview.exe.
+
+```
+Tacent View 1.0.40 in CLI Mode. Use --help for details.
+Syntax Help:
+program.exe [arg1 arg2 arg3 ...]
+
+ARGUMENTS:
+Arguments are separated by spaces. An argument must be enclosed in quotes
+(single or double) if it has spaces in it or you want the argument to start
+with a hyphen literal. Hat (^) escape sequences can be used to put either type
+of quote inside. If you need to specify file paths you may use forward or back
+slashes. An ARGUMENT is either an OPTION or PARAMETER.
+
+OPTIONS:
+An option is simply an argument that starts with a hyphen (-). An option has a
+short syntax and a long syntax. Short syntax is a - followed by a single
+non-hyphen character. The long form is -- followed by a word. All options
+support either long, short, or both forms. Options may have 0 or more
+arguments separated by spaces. Options can be specified in any order. Short
+form options may be combined: Eg. -al expands to -a -l.
+
+FLAGS:
+If an option takes zero arguments it is called a flag. You can only test for a
+FLAGs presence or lack thereof.
+
+PARAMETERS:
+A parameter is simply an argument that is not one of the available options. It
+can be read as a string and parsed however is needed (converted to an integer,
+float etc.) Order is important when specifying parameters. If you need a
+hyphen in a parameter at the start you will need put the parameter in quotes.
+For example, a filename _can_ start with -. Note that arguments that start
+with a hyphen but are not recognized as a valid option just get turned into
+parameters. This means interpreting a hyphen directly instead of as an option
+specifier will happen automatically if there are no options matching what
+comes after the hyphen. Eg. 'tool.exe -.85 --add 33 -87.98 --notpresent' work
+just fine as long as there are no options that have a short form with digits
+or a decimal. In this example the -.85 will be the first parameter,
+--notpresent will be the second. The --add is assumed to take in two number
+arguments.
+
+ESCAPES:
+Sometimes you need a particular character to appear inside an argument. For
+example you may need a single or double quote to apprear inside a parameter.
+The hat (^) followed by the character you need is used for this purpose.
+Eg: ^^ yields ^ | ^' yields ' | ^" yields "
+
+VARIABLE ARGUMENTS:
+A variable number of space-separated parameters may be specified if the tool
+supports them. The parsing system will collect them all up if the parameter
+number is unset (-1).
+A variable number of option arguments is not directly supported due to the
+more complex parsing that would be needed. The same result is achieved by
+entering the same option more than once. Order is preserved. This can also
+be done with options that take more than one argument.
+Eg. tool.exe -I /patha/include/ -I /pathb/include
+
+EXAMPLE:
+mycopy.exe -R --overwrite fileA.txt -pat fileB.txt --log log.txt
+
+The fileA.txt and fileB.txt in the above example are parameters (assuming
+the overwrite option is a flag). fileA.txt is the first parameter and
+fileB.txt is the second.
+
+The '--log log.txt' is an option with a single argument, log.txt. Flags may be
+combined. The -pat in the example expands to -p -a -t. It is suggested only to
+combine flag options as only the last option would get any arguments.
 ```
