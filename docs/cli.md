@@ -20,6 +20,13 @@ tacentview.exe -c
 ```
 This is the simplest conversion command line. The -c (or --cli) simply means do not launch the GUI. The input is all supported image formats in the current directory. This is the default if -i (--intype) is not specified. The output type -o (--outtype) is also not specified. Out-type defaults to tga if not specified.
 
+**Example 2 - Convert to PKM files to PNG**
+```
+tacentview.exe -c --intype pkm --outtype png
+```
+Similar to Example 1, except the type of the input and output files is specified explicitely.
+
+
 ---
 ## Usage
 
