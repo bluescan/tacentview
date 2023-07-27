@@ -44,15 +44,44 @@ The `--paramsGIF` is optional and specifies any non-default parameters for creat
 ```
 tacentview.exe -cw . --op resize[1920,-1] -o jpg
 ```
-Resizes all images in the current directory and saves them as JPG files. The JPG images will be 1920 pixels wide. The -1 for height means compute the height so that the original aspect ratio is preserved. The `-w` or `--overwrite` means overwrite existing files that may be present. Use with caution. There are more arguments to resize that allow setting filters and edge modes that are not shown here.\
+Resizes all images in the current directory and saves them as JPG files. The JPG images will be 1920 pixels wide. The -1 for height means compute the height so that the original aspect ratio is preserved. The `-w` or `--overwrite` means overwrite existing files that may be present. Use with caution. There are more arguments to resize that allow setting resample filters and edge modes that are not shown here.\
 \
 \
 **Example 5 - Resize Followed by Rotation**
 ```
 tacentview.exe -ca --op resize[1920,-1] --op rotate[5] --paramsTGA 24 rle
 ```
-Resizes and then applies a 5-degree anti-clockwise rotation to all images in the current directory. Saves them as TGA files. The `-a` or `--autoname` flag means if the output file exists the output filename will be modified so the existing file is not overwritten. The TGA params force a 24-bit run-length-encoded TGA to be written.
-
+Resizes and then applies a 5-degree anti-clockwise rotation to all images in the current directory. Saves them as TGA files. The `-a` or `--autoname` flag means if the output file exists the output filename will be modified so the existing file is not overwritten. The TGA params force a 24-bit run-length-encoded TGA to be written.\
+\
+\
+**Example 6 - Set Pixel Colours**
+```
+tacentview.exe -c --op pixel[2,1,cyan,RGB] --op pixel[-3,-2,#0000FF80,RGBA]
+```
+Sets the lower-left pixel (3rd to the right and 2nd up) to the colour cyan and leaves the alpha unchanged. Then sets the upper-right pixel (3rd to the left and 2nd down) to the colour blue with an alpha of 128. The pixel at (0,0) is the bottom-left. The pixel at (-1,-1) is the top-right of the current image. All images are saved as targas (the default).\
+\
+\
+**Example 7 - Resize Canvas**
+```
+tacentview.exe --cli --verbosity 2 --op canvas[640,400,mm,black]
+```
+Processes all images in the current directory and saves then as targas. The `--verbosity 2` means it will output the maximum amount of output text. All images are resized to 640x400 without resampling. If the new size is larger than the input, black bars are added. The anchor is set to the middle of the image. Further arguments not show allow the anchor to be set to a particular pixel position.\
+\
+\
+**Example 8 - Crop to Aspect Ratio**
+```
+tacentview.exe -c --op aspect[19:10,crop,*,*,64,64]
+```
+Resizes image to an aspect ratio of 19:10. If the input image does not have the same aspect ratio, the sides are cropped so the resultant image takes up the full size. That is, some of the input image pixels get discarded to accomplish this without resampling. The anchor is the specific pixel position (64,64) where (0,0) is the bottom-left.\
+\
+\
+**Example 9 - Letterbox to Aspect Ratio**
+```
+tacentview.exe -c --op aspect[2:1,letter,tr,green]
+```
+Resizes canvas to an aspect ratio of 2:1. No resampling is performed. In letterbox mode all source pixels are kept. If the input image has a different aspect ratio, green bars are added to the image. Since the anchor is the top-right, the green will be added to the left and bottom edges as necessary.\
+\
+\
 ---
 ## Usage
 This is a printout of the CLI usage instructions built into _Tacent View_. To get this printout simply issue the command `tacentview.exe --help`
