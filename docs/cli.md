@@ -79,9 +79,9 @@ Resizes image to an aspect ratio of 19:10. If the input image does not have the 
 ```
 tacentview.exe -c --op aspect[2:1,letter,tr,green]
 ```
-Resizes canvas to an aspect ratio of 2:1. No resampling is performed. In letterbox mode all source pixels are kept. If the input image has a different aspect ratio, green bars are added to the image. Since the anchor is the top-right, the green will be added to the left and bottom edges as necessary.\
-\
-\
+Resizes canvas to an aspect ratio of 2:1. No resampling is performed. In letterbox mode all source pixels are kept. If the input image has a different aspect ratio, green bars are added to the image. Since the anchor is the top-right, the green will be added to the left and bottom edges as necessary.
+
+
 ---
 ## Usage
 This is a printout of the CLI usage instructions built into _Tacent View_. To get this printout simply issue the command `tacentview.exe --help`
