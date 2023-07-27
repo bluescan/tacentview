@@ -68,14 +68,14 @@ tacentview.exe --cli --verbosity 2 --op canvas[640,400,mm,black]
 Processes all images in the current directory and saves then as targas. The `--verbosity 2` means it will output the maximum amount of output text. All images are resized to 640x400 without resampling. If the new size is larger than the input, black bars are added. The anchor is set to the middle of the image. Further arguments not show allow the anchor to be set to a particular pixel position.\
 \
 \
-**Example 8 - Crop to Aspect Ratio**
+**Example 8 - Set Aspect Ratio Without Fill**
 ```
 tacentview.exe -c --op aspect[19:10,crop,*,*,64,64]
 ```
 Resizes image to an aspect ratio of 19:10. If the input image does not have the same aspect ratio, the sides are cropped so the resultant image takes up the full size. That is, some of the input image pixels get discarded to accomplish this without resampling. The anchor is the specific pixel position (64,64) where (0,0) is the bottom-left.\
 \
 \
-**Example 9 - Letterbox to Aspect Ratio**
+**Example 9 - Set Aspect Ratio With Letterbox Fill**
 ```
 tacentview.exe -c --op aspect[2:1,letter,tr,green]
 ```
