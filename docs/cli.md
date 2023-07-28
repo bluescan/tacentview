@@ -86,7 +86,7 @@ Resizes canvas to an aspect ratio of 2:1. No resampling is performed. In letterb
 ```
 tacentview -ckv 2 --op deborder[yellow,RG]
 ```
-Removes image borders by inspecting the rows and columns of all 4 sides. If both the red and green components are at maximum values, they get removed (yellow is full red and green). Note that since we only check R and G component channels, the blue and alpha may be any value. The `-k` or `--skipunchanged` flag means if there would be no change to the input image, it is not resaved. The `-ckv 2` expands to `--cli --skipunchanged --verbosity 2` which makes it clear the 2 refers to the verbosity level. The `-c` and `-k` are simple boolean flags and don't have arguments.\
+Removes image borders by inspecting the rows and columns of all 4 sides. If both the red and green components are saturated (yellow), the border gets removed. Since we only check R and G component channels, the blue and alpha may be any value. The `-k` or `--skipunchanged` flag means if there would be no change to the input image, it is not saved -- even if the output image type is different than the input image type. The `-ckv 2` expands to `--cli --skipunchanged --verbosity 2` which makes it clear the 2 refers to the verbosity. The `-c` and `-k` are boolean flags and don't have arguments.
 
 
 ---
