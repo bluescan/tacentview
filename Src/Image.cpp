@@ -1232,14 +1232,18 @@ void Image::Rotate90(bool antiClockWise)
 }
 
 
-void Image::Rotate(float angle, const tColouri& fill, tResampleFilter upFilter, tResampleFilter downFilter)
+bool Image::Rotate(float angle, const tColouri& fill, tResampleFilter upFilter, tResampleFilter downFilter)
 {
+	if (angle == 0.0f)
+		return false;
+
 	tString desc; tsPrintf(desc, "Rotate %.1f", tRadToDeg(angle));
 	PushUndo(desc);
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->RotateCenter(angle, fill, upFilter, downFilter);
 
 	Dirty = true;
+	return true;
 }
 
 
@@ -1394,46 +1398,98 @@ void Image::Flip(bool horizontal)
 }
 
 
-void Image::Crop(int newWidth, int newHeight, int originX, int originY, const tColouri& fillColour)
+bool Image::Crop(int newWidth, int newHeight, int originX, int originY, const tColouri& fillColour)
 {
+	bool atLeastOneDifferentSize = false;
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+	{
+		if ((picture->GetWidth() != newWidth) || (picture->GetHeight() != newHeight))
+		{
+			atLeastOneDifferentSize = true;
+			break;
+		}
+	}
+	if (!atLeastOneDifferentSize)
+		return false;
+
 	tString desc; tsPrintf(desc, "Crop %d %d", newWidth, newHeight);
 	PushUndo(desc);
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->Crop(newWidth, newHeight, originX, originY, fillColour);
 
 	Dirty = true;
+	return true;
 }
 
 
-void Image::Crop(int newWidth, int newHeight, tPicture::Anchor anchor, const tColouri& fillColour)
+bool Image::Crop(int newWidth, int newHeight, tPicture::Anchor anchor, const tColouri& fillColour)
 {
+	bool atLeastOneDifferentSize = false;
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+	{
+		if ((picture->GetWidth() != newWidth) || (picture->GetHeight() != newHeight))
+		{
+			atLeastOneDifferentSize = true;
+			break;
+		}
+	}
+	if (!atLeastOneDifferentSize)
+		return false;
+
 	tString desc; tsPrintf(desc, "Crop %d %d", newWidth, newHeight);
 	PushUndo(desc);
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->Crop(newWidth, newHeight, anchor, fillColour);
 
 	Dirty = true;
+	return true;
 }
 
 
-void Image::Crop(const tColouri& borderColour, comp_t channels)
+bool Image::Deborder(const tColouri& borderColour, comp_t channels)
 {
+	bool atLeastOneHasBorders = false;
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+	{
+		if (picture->HasBorders(borderColour, channels))
+		{
+			atLeastOneHasBorders = true;
+			break;
+		}
+	}
+	if (!atLeastOneHasBorders)
+		return false;
+
 	PushUndo("Crop Borders");
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
-		picture->Crop(borderColour, channels);
+		picture->Deborder(borderColour, channels);
 
 	Dirty = true;
+	return true;
 }
 
 
-void Image::Resample(int newWidth, int newHeight, tImage::tResampleFilter filter, tImage::tResampleEdgeMode edgeMode)
+bool Image::Resample(int newWidth, int newHeight, tImage::tResampleFilter filter, tImage::tResampleEdgeMode edgeMode)
 {
+	bool atLeastOneDifferentSize = false;
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+	{
+		if ((picture->GetWidth() != newWidth) || (picture->GetHeight() != newHeight))
+		{
+			atLeastOneDifferentSize = true;
+			break;
+		}
+	}
+	if (!atLeastOneDifferentSize)
+		return false;
+
 	tString desc; tsPrintf(desc, "Resample %d %d", newWidth, newHeight);
 	PushUndo(desc);
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
 		picture->Resample(newWidth, newHeight, filter, edgeMode);
 
 	Dirty = true;
+	return true;
 }
 
 

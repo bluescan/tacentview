@@ -535,8 +535,8 @@ bool Command::OperationDeborder::Apply(Viewer::Image& image)
 	if (!UseTestColour)
 		testCol = image.GetPixel(0, 0);
 
-	tPrintfFull("Deborder | Crop[Col:%02x,%02x,%02x,%02x Channels:%08x]\n", testCol.R, testCol.G, testCol.B, testCol.A, Channels);
-	image.Crop(testCol, Channels);
+	tPrintfFull("Deborder | Deborder[Col:%02x,%02x,%02x,%02x Channels:%08x]\n", testCol.R, testCol.G, testCol.B, testCol.A, Channels);
+	image.Deborder(testCol, Channels);
 	return true;
 }
 

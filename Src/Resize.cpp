@@ -538,7 +538,7 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool firstOpen)
 			(channelA ? tCompBit_A : 0);
 
 		CurrImage->Unbind();
-		CurrImage->Crop(Config::Current->FillColour, channels);
+		CurrImage->Deborder(Config::Current->FillColour, channels);
 		CurrImage->Bind();
 		Viewer::SetWindowTitle();
 		Viewer::ZoomDownscaleOnly();

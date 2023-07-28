@@ -125,9 +125,10 @@ public:
 	tImage::tPicture* GetCurrentPic() const																				{ tImage::tPicture* pic = Pictures.First(); for (int i = 0; i < FrameNum; i++) pic = pic ? pic->Next() : nullptr; return pic; }
 	const tList<tImage::tPicture>& GetPictures() const																	{ return Pictures; }
 
-	// Functions that edit and cause dirty flag to be set.
+	// Functions that edit and cause dirty flag to be set. Functions that return a bool will return false if the image
+	// is unmodified and the dirty flag is untouched. Functions that are void should be assumed to modify the image.
 	void Rotate90(bool antiClockWise);
-	void Rotate(float angle, const tColouri& fill, tImage::tResampleFilter upFilter, tImage::tResampleFilter downFilter);
+	bool Rotate(float angle, const tColouri& fill, tImage::tResampleFilter upFilter, tImage::tResampleFilter downFilter);
 
 	// Quantize image colours based on a fixed palette. numColours must be 256 or less. checkExact means no change to
 	// the image will be made if it already contains fewer colours than numColours already. This may or may not be
@@ -167,10 +168,10 @@ public:
 	bool AdjustmentEnd();
 
 	void Flip(bool horizontal);
-	void Crop(int newWidth, int newHeight, int originX, int originY, const tColouri& fillColour = tColour::black);
-	void Crop(int newWidth, int newHeight, tImage::tPicture::Anchor, const tColouri& fillColour = tColour::black);
-	void Crop(const tColouri& borderColour, comp_t channels = tCompBit_RGBA);
-	void Resample(int newWidth, int newHeight, tImage::tResampleFilter filter, tImage::tResampleEdgeMode edgeMode);
+	bool Crop(int newWidth, int newHeight, int originX, int originY, const tColouri& fillColour = tColour::black);
+	bool Crop(int newWidth, int newHeight, tImage::tPicture::Anchor, const tColouri& fillColour = tColour::black);
+	bool Deborder(const tColouri& borderColour, comp_t channels = tCompBit_RGBA);
+	bool Resample(int newWidth, int newHeight, tImage::tResampleFilter filter, tImage::tResampleEdgeMode edgeMode);
 	void SetPixelColour(int x, int y, const tColouri&, bool pushUndo, bool supressDirty = false);
 	void SetAllPixels(const tColouri& colour, comp_t channels = tCompBit_RGBA);
 
@@ -183,7 +184,8 @@ public:
 	// uses the default for that channel.
 	void Swizzle(tComp = tComp::R, tComp = tComp::G, tComp = tComp::B, tComp = tComp::A);
 
-	// Computes RGB intensity and sets specified channels to that value. Any combination of RGBA allowed.
+	// Computes RGB intensity and sets specified channels to that value. Any combination of RGBA allowed. This can be used,
+	// for example, to create grey-scale images.
 	void Intensity(comp_t channels = tCompBit_RGB);
 
 	// Blends blendColour (background) into the RGB channels specified (usually RGB, but any combination of the 3 is
