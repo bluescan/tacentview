@@ -82,12 +82,12 @@ tacentview.exe -c --op aspect[2:1,letter,tr,green]
 Resizes canvas to an aspect ratio of 2:1. No resampling is performed. In letterbox mode all source pixels are kept. If the input image has a different aspect ratio, green bars are added to the image. Since the anchor is the top-right, the green will be added to the left and bottom edges as necessary.\
 \
 \
-** Example 10 - Remove Borders**
+**Example 10 - Remove Borders**
 ```
 tacentview -ckv 2 --op deborder[yellow,RG]
 ```
-Removes image borders by inspecting the rows and columns of all 4 sides. If both the red and green components are at maximum values, they get removed (yellow is full red and green). Note that since we only check R and G component channels, the blue and alpha may be any value. The `-k` or `--skipunchanged` flag means if there would be no change to the input image, it is not resaved. The `-ckv 2` expands to `--cli --skipunchanged --verbosity 2` so it is clear the 2 refers to the verbosity level -- the `-c` and `-k` are simple boolean flags and come first.\
-\
+Removes image borders by inspecting the rows and columns of all 4 sides. If both the red and green components are at maximum values, they get removed (yellow is full red and green). Note that since we only check R and G component channels, the blue and alpha may be any value. The `-k` or `--skipunchanged` flag means if there would be no change to the input image, it is not resaved. The `-ckv 2` expands to `--cli --skipunchanged --verbosity 2` which makes it clear the 2 refers to the verbosity level. The `-c` and `-k` are simple boolean flags and don't have arguments.\
+
 
 ---
 ## Usage
