@@ -93,7 +93,19 @@ Removes image borders by inspecting the rows and columns of all 4 sides. If both
 ```
 tacentview -c --op crop[rel,20,10,320,200,*]
 ```
-Crops all images in relative-mode. In this mode the crop is from the lower-left position (20,10) and the next two arguments specify the width (320) and height (200). The last argument * means use the default fill colour which is transparent black. This is used if the crop area extends beyond the image being processed. In absolute mode (abs), the 320,200 would be interpreted as the upper-right pixel position. In both modes the lower-left and upper-right positions are included in the final image. This example uses defaults for intput types (all supported) and the output type (tga).
+Crops all images in relative-mode. In this mode the crop is from the lower-left position (20,10) and the next two arguments specify the width (320) and height (200). The last argument * means use the default fill colour which is transparent black. This is used if the crop area extends beyond the image being processed. In absolute mode (abs), the 320,200 would be interpreted as the upper-right pixel position. In both modes the lower-left and upper-right positions are included in the final image. This example uses defaults for intput types (all supported) and the output type (tga).\
+\
+\
+**Example 12 - Flip**
+```
+tacentview -c --op flip
+tacentview -c --op flip[]
+tacentview -c --op flip[*]
+tacentview -c --op flip[h]
+tacentview -c --op flip[H]
+tacentview -c --op flip[Horizontal]
+```
+This example demonstrates different ways of executing the same horizontal right-to-left flip operation (about the vertical axis). Since all arguments have a default, the square brackets are optional, and if they are present, they may be empty. The * means use the default for the argument. `flip[h]`, `flip[H]`, and `flip[Horizontal]` are all synonyms. For a vertical flip you would need to use `flip[v]` or `flip[V]` or `flip[Vertical]`.
 
 
 ---

@@ -671,7 +671,7 @@ bool Command::OperationFlip::Apply(Viewer::Image& image)
 	tAssert(Valid);
 
 	bool horizontal = (Mode == FlipMode::Horizontal);
-	tPrintfFull("Flip | Flip[horizontal:%B\n", horizontal);
+	tPrintfFull("Flip | Flip[horizontal:%B]\n", horizontal);
 	image.Flip(horizontal);
 
 	return true;
