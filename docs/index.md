@@ -6,12 +6,12 @@ title: Homepage
 
 ## Introduction
 
-![Tacent View Levels](https://user-images.githubusercontent.com/19311462/216225745-0ea91c61-6b07-40fc-a1b7-bd327cdded4c.gif)
-
 _Tacent View_ is both fast and correct. Most of the image loading code is either custom or
 based on official reference implementations. Once decoded, images are marshalled to GPU memory for
 fast switching/rendering. The thumbnail viewer caches images/meta-data and can handle
 thousands of files in a single directory at interactive speeds.
+
+![Tacent View Levels](https://user-images.githubusercontent.com/19311462/216225745-0ea91c61-6b07-40fc-a1b7-bd327cdded4c.gif)
 
 ---
 ## Download
@@ -21,6 +21,7 @@ _Tacent View_ is distributed as:
 2. Portable Windows Zip
 3. Linux Deb File
 4. Snapcraft Snap
+
 The source code, portable Windows zip, and deb files are available from the [releases GitHub page](https://github.com/bluescan/tacentview/releases). If running Linux you may also consider [installing the snap](https://snapcraft.io/tacentview). If you want to build it yourself, instructions are available at the [Tacent View GitHub page](https://github.com/bluescan/tacentview). The CMake build-system is used and can create projects (VS2022, make, nmake, ninja) for your desired compiler (MSVC, Clang, GCC). Build yourself if you have any security concerns. The buttons below link to pre-compiled versions of the latest stable release.
 
 <ul class="downloads">
