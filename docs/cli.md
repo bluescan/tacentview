@@ -86,7 +86,14 @@ Resizes canvas to an aspect ratio of 2:1. No resampling is performed. In letterb
 ```
 tacentview -ckv 2 --op deborder[yellow,RG]
 ```
-Removes image borders by inspecting the rows and columns of all 4 sides. If both the red and green components are saturated (yellow), the border gets removed. Since we only check R and G component channels, the blue and alpha may be any value. The `-k` or `--skipunchanged` flag means if there would be no change to the input image, it is not saved -- even if the output image type is different than the input image type. The `-ckv 2` expands to `--cli --skipunchanged --verbosity 2` which makes it clear the 2 refers to the verbosity. The `-c` and `-k` are boolean flags and don't have arguments.
+Removes image borders by inspecting the rows and columns of all 4 sides. If both the red and green components are saturated (yellow), the border gets removed. Since we only check R and G component channels, the blue and alpha may be any value. The `-k` or `--skipunchanged` flag means if there would be no change to the input image, it is not saved -- even if the output image type is different than the input image type. The `-ckv 2` expands to `--cli --skipunchanged --verbosity 2` which makes it clear the 2 refers to the verbosity. The `-c` and `-k` are boolean flags and don't have arguments.\
+\
+\
+**Example 11 - Crop**
+```
+tacentview -c --op crop[rel,20,10,320,200,*]
+```
+Crops all images in relative-mode. In this mode the crop is from the lower-left position (20,10) and the next two arguments specify the width (320) and height (200). The last argument * means use the default fill colour which is transparent black. This is used if the crop area extends beyond the image being processed. In absolute mode (abs), the 320,200 would be interpreted as the upper-right pixel position. In both modes the lower-left and upper-right positions are included in the final image. This example uses defaults for intput types (all supported) and the output type (tga).
 
 
 ---
@@ -262,23 +269,23 @@ or leave it out. Eg. zap[*a,b*] may be called with --op zap[] or just --op zap.
         valid channel should be specified otherwise the default is used. Eg. RG
         tests the red and green channels. abG tests alpha, blue, and green.
 
---op crop[mode,x,y,mw,mh,fill*]
+--op crop[mode,x,y,xw,yh,fill*]
   Crops an image. You get to specify the lower-left origin and either a new
   width/height or the top-right corner. The values are pixels starting at 0.
   If the crop area you specify goes outside the image being processed, the fill
   colour is used. The resultant image must be at least 4x4.
-  mode: Coordinate mode. Either abs* or rel. In absolute mode mw and mh are the
+  mode: Coordinate mode. Either abs* or rel. In absolute mode xw and yh are the
         position of the top right extent of the crop area. Pixels outside of
-        this are cropped. In relative mode mw and mh are the new width and
+        this are cropped. In relative mode xw and yh are the new width and
         height of the cropped image.
   x:    The x of the lower-left origin of the crop area. Included in final
         pixels. Defaults to 0*.
   y:    The y of the lower-left origin of the crop area. Included in final
         pixels. Defaults to 0*.
-  mw:   The max x of the upper-right extent of the crop area OR the new image
+  xw:   The max x of the upper-right extent of the crop area OR the new image
         width if in rel mode. Included in final pixels. Defaults to 3* in
         absolute mode or 4* in relative mode. Both defaults result in a 4x4.
-  mh:   The max y of the upper-right extent of the crop area OR the new image
+  yh:   The max y of the upper-right extent of the crop area OR the new image
         height if in rel mode. Included in final pixels. Defaults to 3* in
         absolute mode or 4* in relative mode. Both defaults result in a 4x4.
   fill: Fill colour. Specify the colour using a hexadecimal in the form

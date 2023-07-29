@@ -980,7 +980,7 @@ or leave it out. Eg. zap[*a,b*] may be called with --op zap[] or just --op zap.
         valid channel should be specified otherwise the default is used. Eg. RG
         tests the red and green channels. abG tests alpha, blue, and green.
 
---op crop[mode,x,y,mw,mh,fill*]
+--op crop[mode,x,y,xw,yh,fill*]
   Crops an image. You get to specify the lower-left origin and either a new
   width/height or the top-right corner. The values are pixels starting at 0.
   If the crop area you specify goes outside the image being processed, the fill
@@ -993,10 +993,10 @@ or leave it out. Eg. zap[*a,b*] may be called with --op zap[] or just --op zap.
         pixels. Defaults to 0*.
   y:    The y of the lower-left origin of the crop area. Included in final
         pixels. Defaults to 0*.
-  mw:   The max x of the upper-right extent of the crop area OR the new image
+  xw:   The max x of the upper-right extent of the crop area OR the new image
         width if in rel mode. Included in final pixels. Defaults to 3* in
         absolute mode or 4* in relative mode. Both defaults result in a 4x4.
-  mh:   The max y of the upper-right extent of the crop area OR the new image
+  yh:   The max y of the upper-right extent of the crop area OR the new image
         height if in rel mode. Included in final pixels. Defaults to 3* in
         absolute mode or 4* in relative mode. Both defaults result in a 4x4.
   fill: Fill colour. Specify the colour using a hexadecimal in the form

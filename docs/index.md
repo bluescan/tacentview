@@ -4,25 +4,24 @@ title: Homepage
 
 ![Build](https://github.com/bluescan/tacentview/workflows/Build/badge.svg) [![latest](https://img.shields.io/github/v/release/bluescan/tacentview.svg)](https://github.com/bluescan/tacentview/releases) [![tacentview](https://snapcraft.io//tacentview/badge.svg)](https://snapcraft.io/tacentview)
 
-![Tacent View Levels](https://user-images.githubusercontent.com/19311462/216225745-0ea91c61-6b07-40fc-a1b7-bd327cdded4c.gif)
-
 ## Introduction
+
+![Tacent View Levels](https://user-images.githubusercontent.com/19311462/216225745-0ea91c61-6b07-40fc-a1b7-bd327cdded4c.gif)
 
 _Tacent View_ is both fast and correct. Most of the image loading code is either custom or
 based on official reference implementations. Once decoded, images are marshalled to GPU memory for
-fast switching/rendering. The thumbnail viewer caches images and meta-data and is able to handle
+fast switching/rendering. The thumbnail viewer caches images/meta-data and can handle
 thousands of files in a single directory at interactive speeds.
 
 ---
 ## Download
 
 _Tacent View_ is distributed as:
-1. **Source Code** that may be compiled directly.
-2. A pre-compiled **portable application** for Windows (64-bit).
-3. A Linux **deb** file.
-4. A Snapcraft **snap**.
-
-The source code, portable Windows zip, and deb files are available from the [releases GitHub page](https://github.com/bluescan/tacentview/releases). If running Linux you may also consider [installing the snap](https://snapcraft.io/tacentview). If you want to build it yourself, instructions are available at the [Tacent View GitHub page](https://github.com/bluescan/tacentview). The CMake build-system is used and can create projects (VS2022, make, nmake, ninja) for your desired compiler (MSVC, Clang, GCC). The buttons below link to pre-compiled versions of the latest stable release. Build yourself if you have any security concerns.
+1. Source Code
+2. Portable Windows Zip
+3. Linux Deb File
+4. Snapcraft Snap
+The source code, portable Windows zip, and deb files are available from the [releases GitHub page](https://github.com/bluescan/tacentview/releases). If running Linux you may also consider [installing the snap](https://snapcraft.io/tacentview). If you want to build it yourself, instructions are available at the [Tacent View GitHub page](https://github.com/bluescan/tacentview). The CMake build-system is used and can create projects (VS2022, make, nmake, ninja) for your desired compiler (MSVC, Clang, GCC). Build yourself if you have any security concerns. The buttons below link to pre-compiled versions of the latest stable release.
 
 <ul class="downloads">
 	<li><a href="https://github.com/bluescan/tacentview/releases/download/v1.0.40/tacentview_1.0.40.zip">Download <strong>WIN Zip</strong></a></li>
