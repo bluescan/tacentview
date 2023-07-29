@@ -7,7 +7,9 @@ As a photo viewer it can handle large collections and generate/retrieve thumbnai
 
 Tacent View may also be used as a command-line tool for batch processing of images or integration into build-pipelines. All operations that can be done in the GUI are also available from the command-line -- colour quantization, crop, rotate, frame-extraction, resize, etc.
 
-These features are described in more detail on the [Tacent View Homepage](https://bluescan.github.io/tacentview).
+[Tacent View Homepage](https://bluescan.github.io/tacentview)
+[GUI Overview](https://bluescan.github.io/tacentview/gui.html)
+[CLI Overview](https://bluescan.github.io/tacentview/cli.html)
 
 Tacent View runs on Windows (10 or 11) and Linux (Kubuntu etc). Browse the releases to grab a zip (Windows) or deb (Linux) package -- or install from the [Snap Store](https://snapcraft.io/tacentview).
 
