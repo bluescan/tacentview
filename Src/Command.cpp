@@ -1042,7 +1042,7 @@ or leave it out. Eg. zap[*a,b*] may be called with --op zap[] or just --op zap.
         and a good choice for pixel-art and sprites.
   dnft: Downsample filter. Only used if up-filter is not none. This filter is
         used to restore image size after rotation. Specifying none* here uses
-        a special upsample method that produces sharper results. Using box
+        a special down-sample method that produces sharper results. Using box
         filter here is also a good choice. See below for valid filter names.
   fill: Fill colour. Only used if mode was fill. Specify the colour using a
         hexadecimal in the form #RRGGBBAA, a single integer spread to RGBA, or

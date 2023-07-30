@@ -108,11 +108,25 @@ tacentview -c --op flip[Horizontal]
 This example demonstrates different ways of executing the same horizontal right-to-left flip operation (about the vertical axis). Since all arguments have a default, the square brackets are optional, and if they are present, they may be empty. The * means use the default for the argument. `flip[h]`, `flip[H]`, and `flip[Horizontal]` are all synonyms. For a vertical flip you would need to use `flip[v]` or `flip[V]` or `flip[Vertical]`.\
 \
 \
-**Example 13 - Rotation with Fill**
+**Example 13 - Rotate and Fill**
 ```
 tacentview -c --op rotate[-30,fill,bilinear,bicubic_catmullrom,green]
 ```
-The simplest rotation mode is fill. This example rotates the images clockwise by 30 degrees and does not crop. Imagine rotating an image clockwise a little and then placing a rectange around it. The bottom-left corner will be a bit farther left, the top-left a little higher, etc. This means the rotated image will be a bit larger than the original and 4 extra triangles will be present. The fill colour is used to fill those triangles (with green in this case). The up-filter (bilinear) is used to create a larger image internally so rotation quality is preserved. The down-filter (bicubic_catmullrom) is used to resample back down to the required size. In short, fill mode creates larger images than the original and preserves all image content. Supported filters include: nearest, box, bilinear, bicubic, bicubic_catmullrom, bicubic_mitchell, bicubic_cardinal, bicubic_bspline, lanczos_narrow, lanczos, lanczos_wide, and none. None will be described in a different example.
+The simplest rotation mode is fill. This example rotates the images clockwise by 30 degrees and does not crop. Imagine rotating an image clockwise a little and then placing a rectange around it. The bottom-left corner will be a bit farther left, the top-left a little higher, etc. This means the rotated image will be a bit larger than the original and 4 extra triangles will be present. The fill colour is used to fill those triangles (with green in this case). The up-filter (bilinear) is used to create a larger image internally so rotation quality is preserved. The down-filter (bicubic_catmullrom) is used to resample back down to the required size. In short, fill mode creates larger images than the original and preserves all image content. Supported filters include: nearest, box, bilinear, bicubic, bicubic_catmullrom, bicubic_mitchell, bicubic_cardinal, bicubic_bspline, lanczos_narrow, lanczos, and lanczos_wide.\
+\
+\
+**Example 14 - Rotate and Crop**
+```
+tacentview -c --op rotate[-0.1r,crop,none]
+```
+Crop mode (the default) is similar to fill but instead of filling the extra area introduced by the rotation, it crops it out. The final image will have sightly smaller size than the original and no fill will be used. Not all original content is preserved. The `-0.1r` means use radians. Putting `none` for the up-filter means no ressampling is performed (down-filter is ignored) and no new colours are introduced to the palette -- useful for rotating sprites or pixel-art.\
+\
+\
+**Example 15 - Rotate and Resize**
+```
+tacentview -c --op rotate[12,resize,bilinear,none]
+```
+Rotates 12 degrees anti-clockwise. Resize mode does the same as crop mode but then resizes the image back to the original dimensions. Useful for rotating horizons in photos where you don't want to use a fill and want the final image size to be the same . Using `none` for the down-filter causes a custom down-sample method to be used that keeps edges sharper and results in high-quality rotations.
 
 
 ---
@@ -350,7 +364,7 @@ or leave it out. Eg. zap[*a,b*] may be called with --op zap[] or just --op zap.
         and a good choice for pixel-art and sprites.
   dnft: Downsample filter. Only used if up-filter is not none. This filter is
         used to restore image size after rotation. Specifying none* here uses
-        a special upsample method that produces sharper results. Using box
+        a special down-sample method that produces sharper results. Using box
         filter here is also a good choice. See below for valid filter names.
   fill: Fill colour. Only used if mode was fill. Specify the colour using a
         hexadecimal in the form #RRGGBBAA, a single integer spread to RGBA, or
