@@ -105,7 +105,14 @@ tacentview -c --op flip[h]
 tacentview -c --op flip[H]
 tacentview -c --op flip[Horizontal]
 ```
-This example demonstrates different ways of executing the same horizontal right-to-left flip operation (about the vertical axis). Since all arguments have a default, the square brackets are optional, and if they are present, they may be empty. The * means use the default for the argument. `flip[h]`, `flip[H]`, and `flip[Horizontal]` are all synonyms. For a vertical flip you would need to use `flip[v]` or `flip[V]` or `flip[Vertical]`.
+This example demonstrates different ways of executing the same horizontal right-to-left flip operation (about the vertical axis). Since all arguments have a default, the square brackets are optional, and if they are present, they may be empty. The * means use the default for the argument. `flip[h]`, `flip[H]`, and `flip[Horizontal]` are all synonyms. For a vertical flip you would need to use `flip[v]` or `flip[V]` or `flip[Vertical]`.\
+\
+\
+**Example 13 - Rotation with Fill**
+```
+tacentview -c --op rotate[-30,fill,bilinear,bicubic_catmullrom,green]
+```
+The simplest rotation mode is fill. This example rotates the images clockwise by 30 degrees and does not crop. Imagine rotating an image clockwise a little and then placing a rectange around it. The bottom-left corner will be a bit farther left, the top-left a little higher, etc. This means the rotated image will be a bit larger than the original if we keep all original pixels and 4 extra triangles will be present. The fill colour is used to fill those triangles (with green in this case). The up-filter (bilinear) is used to create a larger image internally so rotation quality is preserved. The down-filter (bicubic_catmullrom) is used to resample back down to the required size. In short, fill mode creates larger images than the original and preserves all image content.
 
 
 ---
