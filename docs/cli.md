@@ -147,14 +147,14 @@ Adjusts image levels like _Example 16_ except we specify all five black and whit
 ```
 tacentview -ca --op contrast[0.75] --paramsJPG 90
 ```
-Adjusts the image contrast to 0.75 and saves the adjusted images as jpg files (auto-renaming them if they exist). A contrast value of 0.5 is neutral. Larger than 0.5 is more contrast up to a maximum of 1 (black and white). Lower than 0.5 is less contrast down to a minimum of 0 (all grey). Optional arguments not shown include the frame(s) to apply the adjustment to and which colour channels. The 90 is the quality setting from 1 to 100 for the jpg file.\
+Adjusts the contrast to 0.75 and saves the adjusted images as jpg files (auto-renaming them if they exist). A contrast value of 0.5 is neutral. Larger than 0.5 is more contrast up to a maximum of 1 (black and white). Lower than 0.5 is less contrast down to a minimum of 0 (all grey). Optional arguments not shown include the frame(s) to apply the adjustment to and which colour channels. The 90 is the quality setting from 1 to 100 for the jpg file.\
 \
 \
 **Example 19 - Brightness**
 ```
 tacentview -ca --op brightness[0.4] --paramsQOI 32 srgb
 ```
-Adjusts the image brightness to 0.4 and saves the adjusted images as qoi files (auto-renaming them if they exist). A brightness value of 0.5 is neutral. Larger than 0.5 is brighter up to a maximum of 1 (full white). Lower than 0.5 is dimmer down to a minimum of 0 (black). Optional arguments not shown include the frame(s) to apply the adjustment to and which colour channels. The `32 srgb` forces a 32-bit qoi to be generated in the sRGB colour-space.
+Adjusts the brightness to 0.4 and saves the adjusted images as qoi files (auto-renaming them if they exist). A brightness value of 0.5 is neutral. Larger than 0.5 is brighter up to a maximum of 1 (full white). Lower than 0.5 is dimmer down to a minimum of 0 (black). Optional arguments not shown include the frame(s) to apply the adjustment to and which colour channels. The `32 srgb` forces a 32-bit qoi to be generated in the sRGB colour-space.
 
 
 ---
