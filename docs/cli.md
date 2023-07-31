@@ -140,7 +140,21 @@ Adjusts image levels in a manner similar to other photo-editing software where y
 ```
 tacentview -c --op levels[0.2,0.6,0.8,0.1,0.9,4,R,false]
 ```
-Adjusts image levels like _Example 16_ except we specify all five black and white points explicitly. The 4 is the zero-based frame number to operate on if you have an animated or multi-page input image. If this is set to -1 or * it adjusts levels on all frames. The `R` means the red channel only. Choices are R, G, B, RGB (the default), and A. The last argument lets you specify a continuous or discontinuous function for the mid-point gamma algorithm. False means discontinuous at gamma 1 (approximates Photoshop). True means use a continuous base-10 power curve that smoothly transitions the full range (similar to the GIMP).
+Adjusts image levels like _Example 16_ except we specify all five black and white points explicitly. The 4 is the zero-based frame number to operate on if you have an animated or multi-page input image. If this is set to -1 or * it adjusts levels on all frames. The `R` means the red channel only. Choices are R, G, B, RGB (the default), and A. The last argument lets you specify a continuous or discontinuous function for the mid-point gamma algorithm. False means discontinuous at gamma 1 (approximates Photoshop). True means use a continuous base-10 power curve that smoothly transitions the full range (similar to the GIMP).\
+\
+\
+**Example 18 - Contrast**
+```
+tacentview -ca --op contrast[0.75] --paramsJPG 90
+```
+Adjusts the image contrast to 0.75 and saves the adjusted images as jpg files (auto-renaming them if they exist). A contrast value of 0.5 is neutral. Larger than 0.5 is more contrast up to a maximum of 1 (black and white). Lower than 0.5 is less contrast down to a minimum of 0 (all grey). Optional arguments not shown include the frame(s) to apply the adjustment to and which colour channels. The 90 is the quality setting from 1 to 100 for the jpg file.\
+\
+\
+**Example 19 - Brightness**
+```
+tacentview -ca --op brightness[0.4] --paramsQOI 32 srgb
+```
+Adjusts the image brightness to 0.4 and saves the adjusted images as qoi files (auto-renaming them if they exist). A brightness value of 0.5 is neutral. Larger than 0.5 is brighter up to a maximum of 1 (full white). Lower than 0.5 is dimmer down to a minimum of 0 (black). Optional arguments not shown include the frame(s) to apply the adjustment to and which colour channels. The `32 srgb` forces a 32-bit qoi to be generated in the sRGB colour-space.
 
 
 ---
