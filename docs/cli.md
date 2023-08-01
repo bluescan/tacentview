@@ -175,7 +175,7 @@ Similar to _example 20_ except using the NeuQuant neural-learning algorithm. Whe
 ```
 tacentview -ca --op quantize[spc,16,true,3,8.0] -o qoi --paramsQOI 24 srgb
 ```
-Similar to _example 20_ except using the ScolorQ spatial quantization algorithm. When using this algorithm the 4th argument (3) is the filter-size and must be 1, 3, or 5. ScolorQ supports dithering -- the 5th argument (from 0.0 to 30.0) represents the amount of dither. A value of 0.1 is essentially no dither, while 20+ is a lot. If dither is set to 0.0 a good value is computed for you based on the image size and number of requested colours. ScolorQ is good choice for small palette sizes (here we chose 16) but can be quite slow for larger images or palette sizes bigger than 30.
+Similar to _example 20_ except using the ScolorQ spatial quantization algorithm. When using this algorithm the 4th argument (3) is the filter-size and must be 1, 3, or 5. ScolorQ supports dithering -- the 5th argument (from 0.0 to 30.0) represents the amount of dither. A value of 0.1 is essentially no dither, while 20+ is a lot. If dither is set to 0.0 a good value is computed for you based on the image size and number of requested colours. ScolorQ is a good choice for small palette sizes (here we chose 16) but can be quite slow for larger images or palette sizes bigger than 30.
 
 
 ---
