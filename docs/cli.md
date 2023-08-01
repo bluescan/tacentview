@@ -168,14 +168,14 @@ Quantizing is the (difficult) process of reducing the number of colours used in 
 ```
 tacentview -ca --op quantize[neu,256,true,2] -o qoi --paramsQOI 24 srgb
 ```
-Similar to _example 20_ except using the NeuQuant neural-learning algorithm. When using this algorithm the 4th argument (2) is the sample-factor. This value affects the speed/quality ratio and must be between 1 and 30 (inclusive). 1 results in the highest quality by training on the full set of input pixels, but is slower than 30 which only uses 1/30 of the input pixels.\
+Similar to _example 20_ except using the NeuQuant neural-learning algorithm. When using this algorithm the 4th argument (2) is the sample-factor. This value affects the speed/quality ratio and must be between 1 and 30 (inclusive). 1 results in the highest quality by training on the full set of input pixels, but is slower than 30 which only uses 1/30 of the input pixels. The number of colours (256) must be between 2 and 256 inclusive. There is no requirement it be a power-of or divisible-by 2.\
 \
 \
 **Example 22 - Quantize using ScolorQ Algorithm**
 ```
 tacentview -ca --op quantize[spc,16,true,3,8.0] -o qoi --paramsQOI 24 srgb
 ```
-Similar to _example 20_ except using the ScolorQ spatial quantization algorithm. When using this algorithm the 4th argument (3) is the filter-size and must be 1, 3, or 5. The bigger the number the wider (and slower) the filter. ScolorQ also supports dithering. The 5th argument (from 0.0 to 30.0) represents the amount of dither. 0.1 is essentially no dither while 20+ is a lot. If dither is set to 0.0, a good value is computed for you based on the image size ond number of requested colours. ScolorQ is good choice for small palette sizes (here we chose 16) but can be quite slow for larger images or palette sizes bigger than 30.
+Similar to _example 20_ except using the ScolorQ spatial quantization algorithm. When using this algorithm the 4th argument (3) is the filter-size and must be 1, 3, or 5. ScolorQ supports dithering -- the 5th argument (from 0.0 to 30.0) represents the amount of dither. A value of 0.1 is essentially no dither, while 20+ is a lot. If dither is set to 0.0 a good value is computed for you based on the image size and number of requested colours. ScolorQ is good choice for small palette sizes (here we chose 16) but can be quite slow for larger images or palette sizes bigger than 30.
 
 
 ---
