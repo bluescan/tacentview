@@ -145,16 +145,37 @@ Adjusts image levels like _Example 16_ except we specify all five black and whit
 \
 **Example 18 - Contrast**
 ```
-tacentview -ca --op contrast[0.75] --paramsJPG 90
+tacentview -ca --op contrast[0.75] -o gif --paramsJPG 90
 ```
 Adjusts the contrast to 0.75 and saves the adjusted images as jpg files (auto-renaming them if they exist). A contrast value of 0.5 is neutral. Larger than 0.5 is more contrast up to a maximum of 1 (black and white). Lower than 0.5 is less contrast down to a minimum of 0 (all grey). Optional arguments not shown include the frame(s) to apply the adjustment to and which colour channels. The 90 is the quality setting from 1 to 100 for the jpg file.\
 \
 \
 **Example 19 - Brightness**
 ```
-tacentview -ca --op brightness[0.4] --paramsQOI 32 srgb
+tacentview -ca --op brightness[0.4] -o qoi --paramsQOI 32 srgb 
 ```
-Adjusts the brightness to 0.4 and saves the adjusted images as qoi files (auto-renaming them if they exist). A brightness value of 0.5 is neutral. Larger than 0.5 is brighter up to a maximum of 1 (full white). Lower than 0.5 is dimmer down to a minimum of 0 (black). Optional arguments not shown include the frame(s) to apply the adjustment to and which colour channels. The `32 srgb` forces a 32-bit qoi to be generated in the sRGB colour-space.
+Adjusts the brightness to 0.4 and saves the adjusted images as qoi files (auto-renaming them if they exist). A brightness value of 0.5 is neutral. Larger than 0.5 is brighter up to a maximum of 1 (full white). Lower than 0.5 is dimmer down to a minimum of 0 (black). Optional arguments not shown include the frame(s) to apply the adjustment to and which colour channels. The `32 srgb` forces a 32-bit qoi to be generated in the sRGB colour-space.\
+\
+\
+**Example 20 - Quantize using Wu Algorithm**
+```
+tacentview -cav 2 --op quantize[wu,256,true] -o qoi --paramsQOI 24 srgb
+```
+Quantizing is the (difficult) process of reducing the number of colours used in an image. There are a number of algorithms that may be applied to do this while keeping the image looking as good as possible. _Tacent View_ supports the Xiaolin Wu method (wu), a simple predefined palette (fix), a neural-net algorithm (neu), and a spatial quantization method (spc). In this example we use the default Wu method and reduce the number of colours to 256. The true means check for exactness -- when this check is on, if the number of colours currently in the image is already less-than or equal-to the number requested, the image is left unmodified. If false, the algorithm is run regardless (handy for forcing a black and white image with colours set to 2 while using 'fix' for the method). The output files are written as 24 bit qoi files in sRGB space. Verbosity is full and auto-rename is enabled.
+\
+\
+**Example 21 - Quantize using NeuQuant Algorithm**
+```
+tacentview -ca --op quantize[neu,256,true,2] -o qoi --paramsQOI 24 srgb
+```
+Similar to _example 20_ except using the NeuQuant neural-learning algorithm. When using this algorithm the 4th argument (2) is the sample-factor. This value affects the speed/quality ratio and must be between 1 and 30 (inclusive). 1 results in the highest quality by training on the full set of input pixels, but is slower than 30 which only uses 1/30 of the input pixels.\
+\
+\
+**Example 22 - Quantize using ScolorQ Algorithm**
+```
+tacentview -ca --op quantize[spc,16,true,3,8.0] -o qoi --paramsQOI 24 srgb
+```
+Similar to _example 20_ except using the ScolorQ spatial quantization algorithm. When using this algorithm the 4th argument (3) is the filter-size and must be 1, 3, or 5. The bigger the number the wider (and slower) the filter. ScolorQ also supports dithering. The 5th argument (from 0.0 to 30.0) represents the amount of dither. 0.1 is essentially no dither while 20+ is a lot. If dither is set to 0.0, a good value is computed for you based on the image size ond number of requested colours. ScolorQ is good choice for small palette sizes (here we chose 16) but can be quite slow for larger images or palette sizes bigger than 30.
 
 
 ---
