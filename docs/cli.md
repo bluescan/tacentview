@@ -175,8 +175,35 @@ Similar to _example 20_ except using the NeuQuant neural-learning algorithm. Whe
 ```
 tacentview -ca --op quantize[spc,16,true,3,8.0] -o qoi --paramsQOI 24 srgb
 ```
-Similar to _example 20_ except using the ScolorQ spatial quantization algorithm. When using this algorithm the 4th argument (3) is the filter-size and must be 1, 3, or 5. ScolorQ supports dithering -- the 5th argument (from 0.0 to 30.0) represents the amount of dither. A value of 0.1 is essentially no dither, while 20+ is a lot. If dither is set to 0.0 a good value is computed for you based on the image size and number of requested colours. ScolorQ is a good choice for small palette sizes (here we chose 16) but can be quite slow for larger images or palette sizes bigger than 30.
-
+Similar to _example 20_ except using the ScolorQ spatial quantization algorithm. When using this algorithm the 4th argument (3) is the filter-size and must be 1, 3, or 5. ScolorQ supports dithering -- the 5th argument (from 0.0 to 30.0) represents the amount of dither. A value of 0.1 is essentially no dither, while 20+ is a lot. If dither is set to 0.0 a good value is computed for you based on the image size and number of requested colours. ScolorQ is a good choice for small palette sizes (here we chose 16) but can be quite slow for larger images or palette sizes bigger than 30.\
+\
+\
+**Example 23 - Set R and B Channels**
+```
+tacentview -ca --op channel[set,RB,#0F00A200]
+```
+This example will set all red channels in all input images to 15, and all blue channels to 162.\
+\
+\
+**Example 24 - Blend Background into RGB Channels**
+```
+tacentview -ca --op channel[blend,RGBA,#80808AFF]
+```
+Blends a grey-blue backgraound into the RGB components of the input images. Each pixel's current alpha component is used to determine how much of the backgound to blend-in. Since alpha (A) is specified in the channels (2nd argument), the final alpha will be set to what is specified in the background colour (3rd argument) -- in this case FF (255).\
+\
+\
+**Example 25 - Spread G Channel into R and B**
+```
+tacentview -ca --op channel[spread,G]
+```
+Spreads (copies) the green (G) channel of each pixel into the red and blue channels. Spread always taks in a single channel and spreads it to the RGB channels of the image.\
+\
+\
+**Example 26 - Spread G Channel into R and B**
+```
+tacentview -ca --op channel[spread,G]
+```
+Spreads (copies) the green (G) channel of each pixel into the red and blue channels. Spread always taks in a single channel and spreads it to the RGB channels of the image.
 
 ---
 ## Usage
