@@ -238,7 +238,7 @@ There is no restriction on repeating colour components. That is, swizzle is not 
 ```
 tacentview -ck --op extract -i apng -o bmp --parmamsBMP auto
 ```
-Extracts all frames from every APNG input file and saves them as BMP files. The `-k` means the original input images are not resaved (this operation does not modify the input images at all). The `auto` means auto-determine the bits-per-pixel for the BMP based on the image opacity. You can use the extract operation on any file that stores more than one image inside -- extract mipmaps from ktx2 files, extract pages from tiff files, extract animation frames from webp/gifs, etc. By default the output file names will be based on the input with _NNN appended. The NNN is the frame number. Unless you specify otherwise, the extracted images are placed in a subdirectoryt called `Saved'.
+Extracts all frames from every APNG input file and saves them as BMP files. The `-k` means the original input images are not resaved (this operation does not modify the input images at all). The `auto` means auto-determine the bits-per-pixel for the BMP based on the image opacity. You can use the extract operation on any file that stores more than one image inside -- extract mipmaps from ktx2 files, extract pages from tiff files, extract animation frames from webp/gifs, etc. By default the output file names will be based on the input with _NNN appended. The NNN is the frame number. Unless you specify otherwise, the extracted images are placed in a subdirectory called 'Saved'.
 
 
 ---
