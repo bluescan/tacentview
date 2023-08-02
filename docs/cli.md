@@ -231,7 +231,7 @@ Keeps the Red and Alpha channels the same and sets the green and blue to zero. T
 ```
 tacentview -ca --op swizzle[GGG1]
 ```
-There is no restriction on repeating colour components. That is, swizzle is not restricted to permutations. Here the original green channel is placed in the RGB channels and the alpha (usually interprested as opacity) is set to full. This will generate a grescale image based only on the original green channel. If you want a grey-scale based on intensity, use the channel operation above.
+There is no restriction on repeating colour components. That is, swizzle is not restricted to permutations. Here the original green channel is placed in the RGB channels and the alpha (usually interprested as opacity) is set to full. This will generate a grey-scale image based only on the original green channel. If you want a grey-scale based on intensity, use the channel operation above.
 
 
 ---
