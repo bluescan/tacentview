@@ -203,7 +203,35 @@ Spreads (copies) the green (G) channel of each pixel into the red and blue chann
 ```
 tacentview -ca --op channel[intens,RGB]
 ```
-Computes the intensity of every pixel and sets the RGB components to the intensity value. This can be used to create greyscale images. You may set any combination of RGBA channels -- in all cases RGB is used to compute the intensity.
+Computes the intensity of every pixel and sets the RGB components to the intensity value. This can be used to create greyscale images. You may set any combination of RGBA channels -- in all cases RGB is used to compute the intensity.\
+\
+\
+**Example 27 - Swizzle RGB to BGR**
+```
+tacentview -ca --op swizzle[BGR]
+```
+Swaps the red and the blue channels. In order, the new red channel gets the original blue channel, the green gets green, and the new blue channel gets red. This is the same as `swizzle[B*R]` and is also the same as `swizzle[B*R*]`. The asterisks just grab the corresponding original channel.\
+\
+\
+**Example 28 - Swizzle Set Full Alpha**
+```
+tacentview -ca --op swizzle[RGB1]
+```
+Keeps the RGB channels the same and sets the alpha channel to full. The '1' means saturate -- since it is in the A position, alpha gets saturated.
+\
+\
+**Example 29 - Swizzle Clear G and B**
+```
+tacentview -ca --op swizzle[*00*]
+```
+Keeps the Red and Alpha channels the same and sets the green and blue to zero. The '0' means, well, zero -- since it is in the G and B positions, they get set to zero.\
+\
+\
+**Example 30 - Swizzle Set RGB to G with Full Alpha**
+```
+tacentview -ca --op swizzle[GGG1]
+```
+There is no restriction on repeating colour components. That is, swizzle is not restricted to permutations. Here the original green channel is placed in the RGB channels and the alpha (usually interprested as opacity) is set to full. This will generate a grescale image based only on the original green channel. If you want a grey-scale based on intensity, use the channel operation above.
 
 
 ---
