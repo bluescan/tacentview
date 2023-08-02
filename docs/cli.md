@@ -189,7 +189,7 @@ This example will set all red channels in all input images to 15, and all blue c
 ```
 tacentview -ca --op channel[blend,RGBA,#80808AFF]
 ```
-Blends a grey-blue backgraound into the RGB components of the input images. Each pixel's current alpha component is used to determine how much of the backgound to blend-in. Since alpha (A) is specified in the channels (2nd argument), the final alpha will be set to what is specified in the background colour (3rd argument) -- in this case FF (255).\
+Blends a grey-blue backgraound into the RGB components of the input images. Each pixel's current alpha component is used to determine how much of the backgound to blend-in. Since alpha (A) is specified in the channels (2nd argument), the final alpha will be set to what is specified in the background colour (3rd argument) -- in this case FF (255). If alpha was not specified the blend still happens but the original alpha will remain unchanged in the output image.\
 \
 \
 **Example 25 - Spread G Channel into R and B**
@@ -199,11 +199,12 @@ tacentview -ca --op channel[spread,G]
 Spreads (copies) the green (G) channel of each pixel into the red and blue channels. Spread always taks in a single channel and spreads it to the RGB channels of the image.\
 \
 \
-**Example 26 - Spread G Channel into R and B**
+**Example 26 - Set Channels to Intensity**
 ```
-tacentview -ca --op channel[spread,G]
+tacentview -ca --op channel[intens,RGB]
 ```
-Spreads (copies) the green (G) channel of each pixel into the red and blue channels. Spread always taks in a single channel and spreads it to the RGB channels of the image.
+Computes the intensity of every pixel and sets the RGB components to the intensity value. This can be used to create greyscale images. You may set any combination of RGBA channels -- in all cases RGB is used to compute the intensity.
+
 
 ---
 ## Usage
