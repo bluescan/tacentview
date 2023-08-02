@@ -231,7 +231,14 @@ Keeps the Red and Alpha channels the same and sets the green and blue to zero. T
 ```
 tacentview -ca --op swizzle[GGG1]
 ```
-There is no restriction on repeating colour components. That is, swizzle is not restricted to permutations. Here the original green channel is placed in the RGB channels and the alpha (usually interprested as opacity) is set to full. This will generate a grey-scale image based only on the original green channel. If you want a grey-scale based on intensity, use the channel operation above.
+There is no restriction on repeating colour components. That is, swizzle is not restricted to permutations. Here the original green channel is placed in the RGB channels and the alpha (usually interpreted as opacity) is set to full. This will generate a grey-scale image based only on the original green channel. If you want a grey-scale based on intensity, use the channel operation above.\
+\
+\
+**Example 31 - Extract All Frames**
+```
+tacentview -ck --op extract -i apng -o bmp --parmamsBMP auto
+```
+Extracts all frames from every APNG input file and saves them as BMP files. The `-k` means the original input images are not resaved (this operation does not modify the input images at all). The `auto` means auto-determine the bits-per-pixel for the BMP based on the image opacity. You can use the extract operation on any file that stores more than one image inside -- extract mipmaps from ktx2 files, extract pages from tiff files, extract animation frames from webp/gifs, etc. By default the output file names will be based on the input with _NNN appended. The NNN is the frame number. Unless you specify otherwise, the extracted images are placed in a subdirectoryt called `Saved'.
 
 
 ---
