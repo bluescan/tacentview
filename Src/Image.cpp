@@ -338,7 +338,10 @@ bool Image::Load()
 		case tSystem::tFileType::PNG:
 		{
 			tImagePNG png;
-			bool ok = png.Load(Filename);
+			uint32 loadFlags =
+				(!Config::Current->StrictLoading	? tImagePNG::LoadFlag_AllowJPG		: 0);
+
+			bool ok = png.Load(Filename, loadFlags);
 			if (!ok)
 				break;
 
