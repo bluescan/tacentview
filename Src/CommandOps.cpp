@@ -1621,6 +1621,7 @@ bool Command::OperationExtract::Apply(Viewer::Image& image)
 		if (!FrameSet.Contains(frameNum))
 			continue;
 
+		// This sets the current frame so that when the image is saved, this frame is used.
 		image.FrameNum = frameNum;
 
 		tString outFile = Viewer::GetFrameFilename(frameNum, destDir, baseName, Command::OutType);

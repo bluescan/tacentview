@@ -236,9 +236,16 @@ There is no restriction on repeating colour components. That is, swizzle is not 
 \
 **Example 31 - Extract All Frames**
 ```
-tacentview -ck --op extract -i apng -o bmp --parmamsBMP auto
+tacentview -ck --op extract -i apng -o bmp --paramsBMP auto
 ```
-Extracts all frames from every APNG input file and saves them as BMP files. The `-k` means the original input images are not resaved (this operation does not modify the input images at all). The `auto` means auto-determine the bits-per-pixel for the BMP based on the image opacity. You can use the extract operation on any file that stores more than one image inside -- extract mipmaps from ktx2 files, extract pages from tiff files, extract animation frames from webp/gifs, etc. By default the output file names will be based on the input with _NNN appended. The NNN is the frame number. Unless you specify otherwise, the extracted images are placed in a subdirectory called 'Saved'.
+Extracts all frames from every APNG input file and saves them as BMP files. The `-k` means the original input images are not resaved (this operation does not modify the input images at all). The `auto` means auto-determine the bits-per-pixel for the BMP based on the image opacity. You can use the extract operation on any file that stores more than one image inside -- extract mipmaps from ktx2 files, extract pages from tiff files, extract animation frames from webp/gifs, etc. By default the output file names will be based on the input with _NNN appended. The NNN is the frame number. Unless you specify otherwise, the extracted images are placed in a subdirectory called 'Saved'.\
+\
+\
+**Example 32 - Extract Specific Frames**
+```
+tacentview -ck --op extract[0-2+!4-6+!7-10!,FramesDir,FrameFile] -i gif InImage.gif
+```
+Extracts frames 0,1,2,5,6,8,9 from InImage.gif and saves them as TGA files in a directory called FramesDir. The images will be named **FrameFile_000.tga, FrameFile_001.tga, FrameFile_002.tga, FrameFile_005.tga**, etc. To specify the frames, an asterisk by itself means all, `0-2` means 0 to 2 (inclusive), the + is used to specify more ranges. The ! means exclude the endpoint, so `!7-10!` would be 8 to 9. A number by itself is just that number as a range. eg. 11 would translate to `11-11`. Since -k is included, InImage.gif itself will _not_ be resaved as InImage.tga. If the input image has fewer frames than the ranges being processed, those frames can't and won't be saved because they don't exist. This is not considered an error. If FrameFile is * or is not entered, the base filename of the input image(s) is used and the frame-number is still appended.
 
 
 ---
