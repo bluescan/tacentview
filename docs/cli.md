@@ -252,7 +252,14 @@ Extracts frames 0,1,2,5,6,8,9 from InImage.gif and saves them as TGA files in a 
 ```
 tacentview -ck -o webp --po combine
 ```
-Combines multiple images into a single image animated webp. This is an example of a _post-operation_. Post operations `--po` run after all normal operations. They run on the same set of original input images, in this case TGAs (the default input image type). Only if a normal operation `--op` modifies an input image is the change included in the post operation. The `combine` post op has a number of optional arguments not shown here for conciseness. Specifically the default frame duration is 33ms, the webp is written to a folder called `Combined`, and the filename will take the form `Combined_YYYY-MM-DD-HH-MM-SS_NNN.webp` where NNN is the number of frames.
+Combines multiple images into a single animated webp. This is an example of a _post-operation_. Post operations (`--po`) run after all normal operations. They run on the same set of original input images, in this case TGAs (the default input type). Only if a normal operation (`--op`) modifies an input image is the change included in the post operation. The `combine` post operation has a number of optional arguments not shown here for conciseness -- specifically the default frame duration is `33ms`, the webp is written to a folder called `Combined`, and the filename will take the form `Combined_YYYY-MM-DD-HH-MM-SS_NNN.webp` where NNN is the number of frames.\
+\
+\
+**Example 34 - Create an Animated GIF**
+```
+tacentview -ck -o gif --po combine[0-19:20+20-39:100,ResultDir,AnimImage]
+```
+Creates an animated gif called `AnimImage.gif` from the input tga files. The gif will be placed in a directory called `ResultDir`. The first argument, `0-19:25+20-39:200` means the first 20 frames (`0-19`) will get a 25ms frame duration, and the next 20 (`20-39`) will get a 200ms frame duration. If there are more than 40 input images, the remainder will get the default 33ms frame duration. If there are only 30 input images, the first 20 will be at 25ms and the remaining 10 at 200ms. You may also leave out the frame-range before the colon in which case the duration applies to all frames. For example, `--po combine[100]` will set all frame durations to 100 milliseconds. The default gif save parameters support auto-detecting transparency and output an 8-bit palette using Wu colour quantization.
 
 
 ---
