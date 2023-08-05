@@ -245,7 +245,14 @@ Extracts all frames from every APNG input file and saves them as BMP files. The 
 ```
 tacentview -ck --op extract[0-2+!4-6+!7-10!,FramesDir,FrameFile] -i gif InImage.gif
 ```
-Extracts frames 0,1,2,5,6,8,9 from InImage.gif and saves them as TGA files in a directory called FramesDir. The images will be named *FrameFile_000.tga, FrameFile_001.tga, FrameFile_002.tga, FrameFile_005.tga*, etc. To specify the frames, an asterisk by itself means all, `0-2` means 0 to 2 (inclusive), the + is used to specify more ranges and the ! means exclude the end-point. The range `!7-10!` would be 8 and 9. A number by itself is just that number as a range so 11 would translate to `11-11`. Since -k is included, InImage.gif itself will _not_ be resaved as InImage.tga. If the input image has fewer frames than the ranges being processed, those frames can't and won't be saved because they don't exist. This is not considered an error. If FrameFile is * or is not entered, the base filename of the input image(s) is used and the 3-digit frame-number is still appended.
+Extracts frames 0,1,2,5,6,8,9 from InImage.gif and saves them as TGA files in a directory called FramesDir. The images will be named *FrameFile_000.tga, FrameFile_001.tga, FrameFile_002.tga, FrameFile_005.tga*, etc. To specify the frames, an asterisk by itself means all, `0-2` means 0 to 2 (inclusive), the + is used to specify more ranges and the ! means exclude the end-point. The range `!7-10!` would be 8 and 9. A number by itself is just that number as a range so 11 would translate to `11-11`. Since -k is included, InImage.gif itself will _not_ be resaved as InImage.tga. If the input image has fewer frames than the ranges being processed, those frames can't and won't be saved because they don't exist. This is not considered an error. If FrameFile is * or is not entered, the base filename of the input image(s) is used and the 3-digit frame-number is still appended.\
+\
+\
+**Example 33 - Create an Animated WebP**
+```
+tacentview -ck -o webp --po combine
+```
+Combines multiple images into a single image animated webp. This is an example of a _post-operation_. Post operations `--po` run after all normal operations. They run on the same set of original input images, in this case TGAs (the default input image type). Only if a normal operation `--op` modifies an input image is the change included in the post operation. The `combine` post op has a number of optional arguments not shown here for conciseness. Specifically the default frame duration is 33ms, the webp is written to a folder called `Combined`, and the filename will take the form `Combined_YYYY-MM-DD-HH-MM-SS_NNN.webp` where NNN is the number of frames.
 
 
 ---

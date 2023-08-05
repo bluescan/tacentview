@@ -852,8 +852,8 @@ from 0 to 2. 0 means no text output, 1* is normal, and 2 is full/detailed.
 
 INPUT IMAGES
 ------------
-Each parameter of the command line shoud be a file or directory to process. You
-may enter as many as you need. If no input files are specified, the current
+Each parameter of the command line should be a file or directory to process.
+You may enter as many as you need. If no input files are specified, the current
 directory is processed. You may also specify a manifest file containing images
 to process using the @ symbol.
 
