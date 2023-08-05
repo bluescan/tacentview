@@ -259,7 +259,14 @@ Combines multiple images into a single animated webp. This is an example of a _p
 ```
 tacentview -ck -o gif --po combine[0-19:20+20-39:100,ResultDir,AnimImage]
 ```
-Creates an animated gif called `AnimImage.gif` from the input tga files. The gif will be placed in a directory called `ResultDir`. The first argument, `0-19:25+20-39:200` means the first 20 frames (`0-19`) will get a 25ms frame duration, and the next 20 (`20-39`) will get a 200ms frame duration. If there are more than 40 input images, the remainder will get the default 33ms frame duration. If there are only 30 input images, the first 20 will be at 25ms and the remaining 10 at 200ms. You may also leave out the frame-range before the colon in which case the duration applies to all frames. For example, `--po combine[100]` will set all frame durations to 100 milliseconds. The default gif save parameters support auto-detecting transparency and output an 8-bit palette using Wu colour quantization.
+Creates an animated gif called `AnimImage.gif` from the input tga files. The gif will be placed in a directory called `ResultDir`. The first argument, `0-19:25+20-39:200` means the first 20 frames (`0-19`) will get a 25ms frame duration, and the next 20 (`20-39`) will get a 200ms frame duration. If there are more than 40 input images, the remainder will get the default 33ms frame duration. If there are only 30 input images, the first 20 will be at 25ms and the remaining 10 at 200ms. You may also leave out the frame-range before the colon in which case the duration applies to all frames. For example, `--po combine[100]` will set all frame durations to 100 milliseconds. The default gif save parameters support auto-detecting transparency and output an 8-bit palette using Wu colour quantization.\
+\
+\
+**Example 35 - Create a Multipage TIFF**
+```
+tacentview -ck --po combine[0:1000+1:2000+2:3000] page1.tga page2.tga page3.tga
+```
+Creates a multipage tiff called `Combined_YYYY-MM-DD-HH-MM-SS_003.tif` from the 3 input tga files. The tiff will be placed in a directory called `Combined`. _Tacent View_ uses a tiff-tag (specifically TIFFTAG_SOFTWARE) to store additional information in each page of the tiff. In particular the page-duration is stored in this tag while not affecting compatibility with other software. This allows the specified 1, 2 and 3 second frame durations to be stored with each tiff page. If this same tiff is loaded in _Tacent View_ it can be treated and played as an animated image. Use 16 milliseconds (`--po combine[16]`) to achieve 60 FPS.
 
 
 ---
