@@ -264,9 +264,9 @@ Creates an animated gif called `AnimImage.gif` from the input tga files. The gif
 \
 **Example 35 - Create a Multipage TIFF**
 ```
-tacentview -ck --po combine[0:1000+1:2000+2:3000] page1.tga page2.tga page3.tga
+tacentview -ck -o tif --po combine[0:1000+1:2000+2:3000] page1.qoi page2.qoi page3.qoi
 ```
-Creates a multipage tiff called `Combined_YYYY-MM-DD-HH-MM-SS_003.tif` from the 3 input tga files. The tiff will be placed in a directory called `Combined`. _Tacent View_ uses a tiff-tag (specifically TIFFTAG_SOFTWARE) to store additional information in each page of the tiff. In particular the page-duration is stored in this tag while not affecting compatibility with other software. This allows the specified 1, 2 and 3 second frame durations to be stored with each tiff page. If this same tiff is loaded in _Tacent View_ it can be treated and played as an animated image. Use 16 milliseconds (`--po combine[16]`) to achieve 60 FPS.
+Creates a multipage tiff called `Combined_YYYY-MM-DD-HH-MM-SS_003.tif` from the 3 input qoi files. The tiff will be placed in a directory called `Combined`. _Tacent View_ uses a tiff-tag (specifically TIFFTAG_SOFTWARE) to store additional information in each page of the tiff. In particular the page-duration is stored in this field while not affecting compatibility with other software. This allows the specified 1, 2 and 3 second frame durations to be stored with each tiff page. If this tiff is later loaded in _Tacent View_ it can be treated and played as an animated image. Use 16 milliseconds (`--po combine[16]`) to achieve 60 FPS.
 
 
 ---
