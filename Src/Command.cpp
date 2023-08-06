@@ -877,7 +877,7 @@ You may enter as many as you need. If no input files are specified, the current
 directory is processed. You may also specify a manifest file containing images
 to process using the @ symbol.
 
-eg. @list.txt will load files from a manifest file called list.txt. Each line
+e.g. @list.txt will load files from a manifest file called list.txt. Each line
 of a manifest file should be the name of a file to process, the name of a dir
 to process, start with a line-comment semicolon, or simply be empty.
 
@@ -889,6 +889,27 @@ types. You may have more than one -i to process multiple types or you may
 specify multiple types with a comma-separated list. For example, '-i jpg,png'
 is the same as '-i jpg -i png'. If you specify only unsupported or invalid
 types a warning is generated and tga images will be processed.
+
+Some image types support various parameters while being loaded. To specify load
+parameters call --inTTT param=value,param=value,... where TTT represents the
+image type. All parameters have reasonable defaults denoted with an asterisk.
+The image types that support load parameters are:
+
+--inASTC
+  prof : Colour profile. Possible values:
+         sRGB* - Low dynamic range RGB in sRGB space. Linear alpha.
+         gRGB  - Low dynamic range RGB in gamma space. Linear alpha.
+         lRGB  - Low dynamic range RGBA in linear space.
+         HDRa  - High dynamic range RGB in linear space. LDR linear alpha.
+         HDRA  - High dynamic range RGBA in linear space.
+  corr : Gamma correction mode, Possible values:
+         auto* - Apply gamma correction based on colour profile.
+         gamc  - Apply gamma compression using an encoding-gamma of 1/gama.
+		 srgb  - Apply gamma compression by applying a Linear->sRGB transform.
+  gama : Gamma value. Used when an encoding-gamma is needed. Default* is 2.2.
+  tone : For HDR images. Tone-map exposure function applied if this is >= 0.
+         Value of 0.0 is black. Value of 4.0 is over-exposed. Negative means do
+         not apply tone-map exposure function. Default* is -1.0.
 
 %s
 %s
