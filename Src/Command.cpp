@@ -36,7 +36,7 @@ namespace Command
 	tCmdLine::tOption OptionSyntax			("Print syntax help",				"syntax",		's'			);
 	tCmdLine::tOption OptionVerbosity		("Verbosity from 0 to 2",			"verbosity",	'v',	1	);
 
-	tCmdLine::tOption OptionInTypes			("Input file type(s)",				"intype",		'i',	1	);
+	tCmdLine::tOption OptionInTypes			("Input file type(s)",				"in",			'i',	1	);
 	tCmdLine::tOption OptionOperation		("Operation",						"op",					1	);
 	tCmdLine::tOption OptionPostOperation	("Post operation",					"po",					1	);
 
@@ -216,6 +216,14 @@ void Command::DetermineInputTypes()
 				else
 					InputTypes.Add(ft);
 			}
+		}
+
+		// If InputTypes is still empty because the caller didn't enter any valid types, we
+		// default to tga-only.
+		if (InputTypes.IsEmpty())
+		{
+			tPrintfNorm("Warning: No valid input types specified. Defaulting to tga.\n");
+			InputTypes.Add(tSystem::tFileType::TGA);
 		}
 	}
 	else
@@ -879,7 +887,8 @@ more than one accepted extension (tif and tiff). The extension is not
 specified, the type is. Use the --in (-i) option to specify one or more input
 types. You may have more than one -i to process multiple types or you may
 specify multiple types with a comma-separated list. For example, '-i jpg,png'
-is the same as '-i jpg -i png'.
+is the same as '-i jpg -i png'. If you specify only unsupported or invalid
+types a warning is generated and tga images will be processed.
 
 %s
 %s
