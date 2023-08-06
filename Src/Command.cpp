@@ -36,7 +36,7 @@ namespace Command
 	tCmdLine::tOption OptionSyntax			("Print syntax help",				"syntax",		's'			);
 	tCmdLine::tOption OptionVerbosity		("Verbosity from 0 to 2",			"verbosity",	'v',	1	);
 
-	tCmdLine::tOption OptionInType			("Input file type(s)",				"intype",		'i',	1	);
+	tCmdLine::tOption OptionInTypes			("Input file type(s)",				"intype",		'i',	1	);
 	tCmdLine::tOption OptionOperation		("Operation",						"op",					1	);
 	tCmdLine::tOption OptionPostOperation	("Post operation",					"po",					1	);
 
@@ -197,14 +197,25 @@ void Command::EndConsoleOutput()
 
 void Command::DetermineInputTypes()
 {
-	if (OptionInType)
+	if (OptionInTypes)
 	{
 		tList<tStringItem> types;
-		OptionInType.GetArgs(types);
+		OptionInTypes.GetArgs(types);
 		for (tStringItem* typ = types.First(); typ; typ = typ->Next())
 		{
-			tSystem::tFileType ft = tSystem::tGetFileTypeFromName(*typ);
-			InputTypes.Add(ft);
+			// Each argument will either be a single type, or a comma-sperated list of types.
+			tList<tStringItem> sepTypes;
+			tStd::tExplode(sepTypes, *typ, ',');
+			for (tStringItem* t = sepTypes.First(); t; t = t->Next())
+			{
+				tSystem::tFileType ft = tSystem::tGetFileTypeFromName(*t);
+				if (ft == tSystem::tFileType::Invalid)
+					tPrintfNorm("Warning: Unknown input file type: %s\n", t->Chr());
+				else if (!Viewer::FileTypes_Load.Contains(ft))
+					tPrintfNorm("Warning: Unsupported input image type: %s\n", t->Chr());
+				else
+					InputTypes.Add(ft);
+			}
 		}
 	}
 	else
@@ -331,9 +342,9 @@ void Command::DetermineInputFiles()
 		InputFilesAddUnique(*info);
 	}
 
-	tPrintfFull("Input Files:\n");
+	tPrintfFull("Input files:\n");
 	for (tSystem::tFileInfo* info = InputFiles.First(); info; info = info->Next())
-		tPrintfFull("Input File: %s\n", info->FileName.Chr());
+		tPrintfFull("File: %s\n", info->FileName.Chr());
 }
 
 
@@ -435,7 +446,7 @@ void Command::DetermineOutType()
 		OutType = tSystem::tGetFileTypeFromName(OptionOutType.Arg1());
 		if (OutType == tSystem::tFileType::Invalid)
 		{
-			tPrintfNorm("Invalid output file type specified. Defaulting to tga.\n");
+			tPrintfNorm("Warning: Invalid output file type specified. Defaulting to tga.\n");
 			OutType = tSystem::tFileType::TGA;
 		}
 	}
@@ -769,7 +780,8 @@ int Command::Process()
 	}
 
 	tPrintf("\n");
-	tPrintfNorm("Tacent View %d.%d.%d in CLI Mode. Use --help for details.\n", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
+	tPrintfNorm("Tacent View %d.%d.%d in CLI Mode.\n", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
+	tPrintfNorm("Call with --help for usage details.\n");
 
 	if (OptionHelp)
 	{
@@ -861,11 +873,13 @@ eg. @list.txt will load files from a manifest file called list.txt. Each line
 of a manifest file should be the name of a file to process, the name of a dir
 to process, start with a line-comment semicolon, or simply be empty.
 
-When processing an entire directory of images you may specify what types of
-input files to process. A type like 'tif' may have more than one accepted
-extension (tif and tiff). The extension is not specified, the type is.
-Use the --intype (-i) option to specify an input type. You may have more than
-one -i to process multiple types. No -i means all supported types.
+You may specify what types of input images to process. If you do not specify
+any types, all supported imgage types are processed. A type like 'tif' may have
+more than one accepted extension (tif and tiff). The extension is not
+specified, the type is. Use the --in (-i) option to specify one or more input
+types. You may have more than one -i to process multiple types or you may
+specify multiple types with a comma-separated list. For example, '-i jpg,png'
+is the same as '-i jpg -i png'.
 
 %s
 %s
@@ -1455,7 +1469,7 @@ returns a non-zero exit code.
 		tString inNameShort = tSystem::tGetFileName(image->Filename);
 		if (!image->IsLoaded())
 		{
-			tPrintfNorm("Failed Load: %s. Skipping.\n", inNameShort.Chr());
+			tPrintfNorm("Warning: Failed load: %s. Skipping.\n", inNameShort.Chr());
 			somethingFailed = true;
 			if (OptionEarlyExit)
 				break;
@@ -1482,7 +1496,7 @@ returns a non-zero exit code.
 		// skip saving if OptionSkipUnchanged is true.
 		if (OptionSkipUnchanged && !image->IsDirty())
 		{
-			tPrintfNorm("Skipping Save: %s\n", inNameShort.Chr());
+			tPrintfNorm("Skipping unchanged: %s\n", inNameShort.Chr());
 			continue;
 		}
 
@@ -1492,7 +1506,7 @@ returns a non-zero exit code.
 		bool doSave = true;
 		if (!OptionOverwrite && tSystem::tFileExists(outFilename))
 		{
-			tPrintfNorm("File %s exists. Not overwriting.\n", outNameShort.Chr());
+			tPrintfNorm("Warning: %s exists. No overwrite.\n", outNameShort.Chr());
 			somethingFailed = true;
 			if (OptionEarlyExit)
 			{
@@ -1515,7 +1529,7 @@ returns a non-zero exit code.
 			}
 			else
 			{
-				tPrintfNorm("Failed Save: %s\n", outNameShort.Chr());
+				tPrintfNorm("Warning: Failed save: %s\n", outNameShort.Chr());
 				somethingFailed = true;
 				if (OptionEarlyExit)
 				{
@@ -1539,22 +1553,22 @@ returns a non-zero exit code.
 	{
 		if (Images.Count() < 2)
 		{
-			tPrintfNorm("Post operations require 2 or more input images. Skipping.\n");
+			tPrintfNorm("Warning: Post operations require 2+ input images. Skipping.\n");
 		}
 		else
 		{
-			tPrintfFull("Processing post-operations on %d images.\n", Images.Count());
+			tPrintfFull("Processing post operations on %d images.\n", Images.Count());
 			for (PostOperation* postop = PostOperations.First(); postop; postop = postop->Next())
 			{
 				if (!postop->Valid)
 					continue;
 
-				tPrintfNorm("Processing Post Operation: %s\n", postop->GetName());
+				tPrintfNorm("Processing post operation: %s\n", postop->GetName());
 				bool success = postop->Apply(Images);
 				if (!success)
 					somethingFailed = true;
 			}
-			tPrintfFull("Done processing post-operations on %d images.\n", Images.Count());
+			tPrintfFull("Done processing post operations on %d images.\n", Images.Count());
 		}
 	}
 
