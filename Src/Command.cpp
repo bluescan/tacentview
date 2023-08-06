@@ -788,8 +788,11 @@ int Command::Process()
 	}
 
 	tPrintf("\n");
-	tPrintfNorm("Tacent View %d.%d.%d in CLI Mode.\n", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
-	tPrintfNorm("Call with --help for usage details.\n");
+	tPrintfNorm("Tacent View %d.%d.%d by Tristan Grimmer\n", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
+	tPrintfNorm("CLI Mode\n");
+	if (!OptionHelp)
+		tPrintfNorm("Run 'tacentview --help' for usage instructions.\n");
+	tPrintfNorm("\n");
 
 	if (OptionHelp)
 	{
@@ -854,7 +857,7 @@ int Command::Process()
 			tsaPrintf(edgemodes, "%s ", tImage::tResampleEdgeModeNamesSimple[e]);
 		}
 
-		tCmdLine::tPrintUsage(u8"Tristan Grimmer", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
+		tCmdLine::tPrintUsage();
 
 		// In editor the column num at EOL (after last character) should be 80 or less.
 		tPrintf
@@ -865,10 +868,10 @@ You MUST call with -c or --cli to use this program in CLI mode.
 
 Use the --help (-h) flag to print this help. To view generic command-line
 syntax help use the --syntax (-s) flag. For example, to print syntax usage you
-could call tacentview.exe -cs which expands to tacentview.exe -c -s
+could call 'tacentview -cs' which expands to 'tacentview -c -s'
 
 Set output verbosity with --verbosity (-v) and a single integer value after it
-from 0 to 2. 0 means no text output, 1* is normal, and 2 is full/detailed.
+from 0 to 2. 0 means no text output, 1 is the default, and 2 is full/detailed.
 
 INPUT IMAGES
 ------------
@@ -882,34 +885,115 @@ of a manifest file should be the name of a file to process, the name of a dir
 to process, start with a line-comment semicolon, or simply be empty.
 
 You may specify what types of input images to process. If you do not specify
-any types, all supported imgage types are processed. A type like 'tif' may have
+any types, ALL supported imgage types are processed. A type like 'tif' may have
 more than one accepted extension (tif and tiff). The extension is not
 specified, the type is. Use the --in (-i) option to specify one or more input
 types. You may have more than one -i to process multiple types or you may
 specify multiple types with a comma-separated list. For example, '-i jpg,png'
 is the same as '-i jpg -i png'. If you specify only unsupported or invalid
-types a warning is generated and tga images will be processed.
+types a warning is printed and the default, tga images only, will be used.
 
-Some image types support various parameters while being loaded. To specify load
-parameters call --inTTT param=value,param=value,... where TTT represents the
-image type. All parameters have reasonable defaults denoted with an asterisk.
-The image types that support load parameters are:
+Values and arguments in this help text follow the following rules:
+- Real     : Real numbers are denoted by including the decimal point.
+- Integers : Integer numbers are denoted by not including the decimal point.
+- Hex      : Hexadecimal values are prefixed with a hash (#).
+- Names    : Some values are simple string names. These are comprised of
+             alphabetic upper and lower case characters only.
+- Booleans : You may use "true", "t", "yes", "y", "on", "enable", "enabled",
+             "1", "+", and strings that represent non-zero integers as true.
+             These are case-insensitive. False is the result otherwise.
+- Defaults : Default values are denoted with an asterisk (*). Setting a value
+             to * will set it to the default value.
+- Ranges   : Value ranges are specified in interval notation where [a,b] means
+             inclusive and (a,b) means exclusive. e.g. [2,5) -> 2,3,4.
+
+Some image types support various parameters while being loaded. Specifying load
+parameters takes the form:
+
+ --inTTT param1=value1,param2=value2,etc
+
+where TTT represents the image type and the lack of spaces is important. All
+loading parameters have reasonable defaults -- there is no requirement to
+specify them if the defaults are sufficient. Image types with load parameters:
 
 --inASTC
-  prof : Colour profile. Possible values:
-         sRGB* - Low dynamic range RGB in sRGB space. Linear alpha.
-         gRGB  - Low dynamic range RGB in gamma space. Linear alpha.
-         lRGB  - Low dynamic range RGBA in linear space.
-         HDRa  - High dynamic range RGB in linear space. LDR linear alpha.
-         HDRA  - High dynamic range RGBA in linear space.
-  corr : Gamma correction mode, Possible values:
-         auto* - Apply gamma correction based on colour profile.
-         gamc  - Apply gamma compression using an encoding-gamma of 1/gama.
-		 srgb  - Apply gamma compression by applying a Linear->sRGB transform.
-  gama : Gamma value. Used when an encoding-gamma is needed. Default* is 2.2.
-  tone : For HDR images. Tone-map exposure function applied if this is >= 0.
-         Value of 0.0 is black. Value of 4.0 is over-exposed. Negative means do
-         not apply tone-map exposure function. Default* is -1.0.
+  colp  : Colour profile. Possible values:
+          sRGB* - Low dynamic range RGB in sRGB space. Linear alpha.
+          gRGB  - Low dynamic range RGB in gamma space. Linear alpha.
+          lRGB  - Low dynamic range RGBA in linear space.
+          HDRa  - High dynamic range RGB in linear space. LDR linear alpha.
+          HDRA  - High dynamic range RGBA in linear space.
+  corr  : Gamma correction mode, Possible values:
+          none  - No gamma correction is performed.
+          auto* - Apply gamma correction based on colour profile set above.
+          gamc  - Apply gamma compression using an encoding-gamma of 1/gamma.
+          srgb  - Apply gamma compression by applying a Linear->sRGB transform.
+  gamma : Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
+  tone  : For HDR images. Tone-map exposure applied if this is >= 0.0. A value
+          of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
+          not apply tone-map exposure function. Default is -1.0*.
+
+--inDDS
+  corr  : Gamma correction mode. Possible values:
+          none  - No gamma correction is performed.
+          auto* - Apply gamma correction based on colour space of pixel format.
+          gamc  - Apply gamma compression using an encoding-gamma of 1/gamma.
+          srgb  - Apply gamma compression by applying a Linear->sRGB transform.
+  gamma : Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
+  tone  : For HDR images. Tone-map exposure applied if this is >= 0.0. A value
+          of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
+          not apply tone-map exposure function. Default is -1.0*.
+  spred : Spread single channel. Boolean true* or false. For DDS files with a
+          single Red or Luminance componentconly, spread it to all the RGB
+          channels if set to true. If false the red channel takes the value.
+          Does not spread single-channel Alpha formats.
+  strct : Strict loading. Boolean true or false*. If strict is true a DDS file
+          that is not fully compliant with the standard will not be loaded.
+          Setting to false allows more forgiving loading behaviour.
+
+--inEXR
+  gamma : Gamma value in range [0.6, 3.0]. Default 2.2*.
+  expo  : Exposure value in range [-10.0, 10.0]. Default 1.0* is neutral.
+  dfog  : Defog value (constant colour bias removal) in range [0.0, 0.1].
+  knelo : Knee Low. Low end of the white and middle gray values in [-3.0, 3.0].
+          Values between Knee Low and Knee High are compressed. Default 0.0*.
+  knehi : Knee High. High end of white and middle gray values in [3.5, 7.5].
+          Values between Knee Low and Knee High are compressed. Default 3.5*.
+
+--inHDR
+  gamma : Gamma value in range [0.6, 3.0]. Default 2.2*.
+  expo  : Exposure value in integral range [-10, 10]. Default 0* is neutral.
+  
+--inJPG
+  strct : Strict loading. Boolean true or false*. If strict is true a JPG file
+          that is not fully compliant with the standard will not be loaded.
+          Setting to false allows more forgiving loading behaviour.
+  exifo : EXIF metadata reorientation. Boolean true or false*. If true undo
+          orientation transforms in JPG image as indicated by Exif meta-data.
+
+--inKTX
+--inKTX2
+--inPKM
+  corr  : Gamma correction mode. Possible values:
+          none  - No gamma correction is performed.
+          auto* - Apply gamma correction based on colour space of pixel format.
+          gamc  - Apply gamma compression using an encoding-gamma of 1/gama.
+          srgb  - Apply gamma compression by applying a Linear->sRGB transform.
+  gamma : Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
+  tone  : For HDR images. Tone-map exposure applied if this is >= 0.0. A value
+          of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
+          not apply tone-map exposure function. Default is -1.0*.
+  spred : Spread single channel. Boolean true* or false. For DDS files with a
+          single Red or Luminance componentconly, spread it to all the RGB
+          channels if set to true. If false the red channel takes the value.
+          Does not spread single-channel Alpha formats.
+
+--inPNG
+  strct : Strict loading. Boolean true or false*. If strict is true a JPG file
+          that is not fully compliant with the standard will not be loaded.
+          Setting to false allows more forgiving loading behaviour. In
+          particular some software saves JPG/JFIF-encoded files with the png
+          extension. Setting this to false allows these 'png' files to load.
 
 %s
 %s
@@ -1260,10 +1344,6 @@ R"OPERATIONS020(
 %s
 
 %s
-
-Boolean arguments: You may use "true", "t", "yes", "y", "on", "enable",
-"enabled", "1", "+", and strings that represent non-zero integers as true.
-These are case-insensitive. False is the result otherwise.
 )OPERATIONS020", filters.Chr(), edgemodes.Chr()
 		);
 
