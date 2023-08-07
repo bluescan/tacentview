@@ -1003,6 +1003,11 @@ specify them if the defaults are sufficient. Image types with load parameters:
           Setting to false allows more forgiving loading behaviour. In
           particular some software saves JPG/JFIF-encoded files with the png
           extension. Setting this to false allows these 'png' files to load.
+  lapng : Load Animated PNG inside a PNG. Boolean true or false*. If lapng is
+          true the loading code will detect an animated PNG (APNG) when stored
+          inside a regular PNG file. This allows the command-line to load all
+          the frames of an APNG file even if it has a regular (single-frame)
+          png extension.
 
 %s
 %s
