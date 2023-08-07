@@ -58,12 +58,14 @@ public:
 
 	void RegenerateShuffleValue();
 	void ResetLoadParams();
-	tImage::tImageDDS::LoadParams  LoadParams_DDS;
-	tImage::tImageKTX::LoadParams  LoadParams_KTX;
 	tImage::tImageASTC::LoadParams LoadParams_ASTC;
-	tImage::tImagePKM::LoadParams  LoadParams_PKM;
+	tImage::tImageDDS::LoadParams  LoadParams_DDS;
 	tImage::tImageEXR::LoadParams  LoadParams_EXR;
 	tImage::tImageHDR::LoadParams  LoadParams_HDR;
+	tImage::tImageJPG::LoadParams  LoadParams_JPG;
+	tImage::tImageKTX::LoadParams  LoadParams_KTX;
+	tImage::tImagePKM::LoadParams  LoadParams_PKM;
+	tImage::tImagePNG::LoadParams  LoadParams_PNG;
 
 	void Play();
 	void Stop();
@@ -76,8 +78,8 @@ public:
 	bool FramePlayLooping				= true;
 	int FrameNum						= 0;
 
-	bool Load(const tString& filename);
-	bool Load();													// Load into main memory.
+	bool Load(const tString& filename, bool loadParamsFromConfig = true);
+	bool Load(bool loadParamsFromConfig = true);																		// Load into main memory.
 	bool IsLoaded() const																								{ return (Pictures.Count() > 0); }
 
 	// These are structs used for specifying parameters when saving. Different image types support different

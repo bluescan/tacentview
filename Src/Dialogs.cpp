@@ -954,7 +954,9 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 			// in which case we need to load the jpg again.
 			isPerfect = false;
 			tImage::tImageJPG jpg;
-			jpg.Load(CurrImage->Filename, tImage::tImageJPG::LoadFlag_NoDecompress);
+			tImage::tImageJPG::LoadParams params;
+			params.Flags = tImage::tImageJPG::LoadFlag_NoDecompress;
+			jpg.Load(CurrImage->Filename, params);
 			if (jpg.IsValid())
 			{
 				switch (mode)
@@ -1034,7 +1036,9 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 			case tSystem::tFileType::JPG:
 			{
 				tImage::tImageJPG jpg;
-				jpg.Load(CurrImage->Filename, tImage::tImageJPG::LoadFlag_NoDecompress);
+				tImage::tImageJPG::LoadParams params;
+				params.Flags = tImage::tImageJPG::LoadFlag_NoDecompress;
+				jpg.Load(CurrImage->Filename, params);
 				if (!jpg.IsValid())
 					break;
 				switch (currMode)

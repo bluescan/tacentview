@@ -93,15 +93,24 @@ namespace Command
 
 	tString DetermineOutputFilename(const tString& inName, tSystem::tFileType outType);
 
-	tImage::tImageAPNG::SaveParams SaveParamsAPNG;
-	tImage::tImageBMP::SaveParams  SaveParamsBMP;
-	tImage::tImageGIF::SaveParams  SaveParamsGIF;
-	tImage::tImageJPG::SaveParams  SaveParamsJPG;
-	tImage::tImagePNG::SaveParams  SaveParamsPNG;
-	tImage::tImageQOI::SaveParams  SaveParamsQOI;
-	tImage::tImageTGA::SaveParams  SaveParamsTGA;
-	tImage::tImageTIFF::SaveParams SaveParamsTIFF;
-	tImage::tImageWEBP::SaveParams SaveParamsWEBP;
+	tImage::tImageAPNG::SaveParams	SaveParamsAPNG;
+	tImage::tImageBMP::SaveParams	SaveParamsBMP;
+	tImage::tImageGIF::SaveParams	SaveParamsGIF;
+	tImage::tImageJPG::SaveParams	SaveParamsJPG;
+	tImage::tImagePNG::SaveParams	SaveParamsPNG;
+	tImage::tImageQOI::SaveParams	SaveParamsQOI;
+	tImage::tImageTGA::SaveParams	SaveParamsTGA;
+	tImage::tImageTIFF::SaveParams	SaveParamsTIFF;
+	tImage::tImageWEBP::SaveParams	SaveParamsWEBP;
+
+	tImage::tImageASTC::LoadParams	LoadParamsASTC;
+	tImage::tImageASTC::LoadParams	LoadParamsDDS;
+	tImage::tImageASTC::LoadParams	LoadParamsEXR;
+	tImage::tImageASTC::LoadParams	LoadParamsHDR;
+	tImage::tImageASTC::LoadParams	LoadParamsJPG;
+	tImage::tImageASTC::LoadParams	LoadParamsKTX;
+	tImage::tImageASTC::LoadParams	LoadParamsPKM;
+	tImage::tImageASTC::LoadParams	LoadParamsPNG;
 
 	tSystem::tFileTypes InputTypes;
 	tList<tSystem::tFileInfo> InputFiles;

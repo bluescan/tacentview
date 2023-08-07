@@ -118,27 +118,31 @@ void Image::RegenerateShuffleValue()
 
 void Image::ResetLoadParams()
 {
-	LoadParams_DDS.Reset();
-	LoadParams_DDS.Gamma = Viewer::Config::Current->MonitorGamma;
-
-	LoadParams_KTX.Reset();
-	LoadParams_KTX.Gamma = Viewer::Config::Current->MonitorGamma;
-
 	LoadParams_ASTC.Reset();
 	LoadParams_ASTC.Gamma = Viewer::Config::Current->MonitorGamma;
 
-	LoadParams_PKM.Reset();
-	LoadParams_PKM.Gamma = Viewer::Config::Current->MonitorGamma;
+	LoadParams_DDS.Reset();
+	LoadParams_DDS.Gamma = Viewer::Config::Current->MonitorGamma;
 
 	LoadParams_EXR.Reset();
 	LoadParams_EXR.Gamma = Viewer::Config::Current->MonitorGamma;
 
 	LoadParams_HDR.Reset();
 	LoadParams_HDR.Gamma = Viewer::Config::Current->MonitorGamma;
+
+	LoadParams_JPG.Reset();
+
+	LoadParams_KTX.Reset();
+	LoadParams_KTX.Gamma = Viewer::Config::Current->MonitorGamma;
+
+	LoadParams_PKM.Reset();
+	LoadParams_PKM.Gamma = Viewer::Config::Current->MonitorGamma;
+
+	LoadParams_PNG.Reset();
 }
 
 
-bool Image::Load(const tString& filename)
+bool Image::Load(const tString& filename, bool loadParamsFromConfig)
 {
 	if (filename.IsEmpty())
 		return false;
@@ -153,11 +157,11 @@ bool Image::Load(const tString& filename)
 		FileSizeB = info.FileSize;
 	}
 
-	return Load();
+	return Load(loadParamsFromConfig);
 }
 
 
-bool Image::Load()
+bool Image::Load(bool loadParamsFromConfig)
 {
 	if (IsLoaded() && !Dirty)
 	{
@@ -177,7 +181,8 @@ bool Image::Load()
 	// false, the PNG loader will always be used for .png files even if they have an apng inside.
 	// The designers of apng made the format backwards compatible with single-frame png loaders.
 	tSystem::tFileType loadingFiletype = Filetype;
-	if ((Filetype == tSystem::tFileType::PNG) && Config::Current->DetectAPNGInsidePNG && tImageAPNG::IsAnimatedPNG(Filename))
+	bool detectAPNGInsidePNG = loadParamsFromConfig ? Config::Current->DetectAPNGInsidePNG : true;
+	if ((Filetype == tSystem::tFileType::PNG) && detectAPNGInsidePNG && tImageAPNG::IsAnimatedPNG(Filename))
 		loadingFiletype = tSystem::tFileType::APNG;
 
 	Info.SrcPixelFormat = tPixelFormat::Invalid;
@@ -313,11 +318,16 @@ bool Image::Load()
 		case tSystem::tFileType::JPG:
 		{
 			tImageJPG jpg;
-			uint32 loadFlags =
-				(Config::Current->StrictLoading		? tImageJPG::LoadFlag_Strict		: 0) |
-				(Config::Current->ExifOrientLoading	? tImageJPG::LoadFlag_ExifOrient	: 0);
+			tImageJPG::LoadParams params = LoadParams_JPG;
+			if (loadParamsFromConfig)
+			{
+				params.Reset();
+				params.Flags =
+					(Config::Current->StrictLoading		? tImageJPG::LoadFlag_Strict		: 0) |
+					(Config::Current->ExifOrientLoading	? tImageJPG::LoadFlag_ExifOrient	: 0);
+			}
 
-			bool ok = jpg.Load(Filename, loadFlags);
+			bool ok = jpg.Load(Filename, params);
 			if (!ok)
 				break;
 
@@ -338,10 +348,15 @@ bool Image::Load()
 		case tSystem::tFileType::PNG:
 		{
 			tImagePNG png;
-			uint32 loadFlags =
-				(!Config::Current->StrictLoading	? tImagePNG::LoadFlag_AllowJPG		: 0);
+			tImagePNG::LoadParams params = LoadParams_PNG;
+			if (loadParamsFromConfig)
+			{
+				params.Reset();
+				params.Flags =
+					(!Config::Current->StrictLoading	? tImagePNG::LoadFlag_AllowJPG		: 0);
+			}
 
-			bool ok = png.Load(Filename, loadFlags);
+			bool ok = png.Load(Filename, params);
 			if (!ok)
 				break;
 
@@ -439,10 +454,13 @@ bool Image::Load()
 		case tSystem::tFileType::DDS:
 		{
 			tImageDDS::LoadParams params(LoadParams_DDS);
-			if (Config::Current->StrictLoading && !(params.Flags & tImageDDS::LoadFlag_StrictLoading))
-				params.Flags |= tImageDDS::LoadFlag_StrictLoading;
-			else if (!Config::Current->StrictLoading && (params.Flags & tImageDDS::LoadFlag_StrictLoading))
-				params.Flags &= ~tImageDDS::LoadFlag_StrictLoading;
+			if (loadParamsFromConfig)
+			{
+				if (Config::Current->StrictLoading && !(params.Flags & tImageDDS::LoadFlag_StrictLoading))
+					params.Flags |= tImageDDS::LoadFlag_StrictLoading;
+				else if (!Config::Current->StrictLoading && (params.Flags & tImageDDS::LoadFlag_StrictLoading))
+					params.Flags &= ~tImageDDS::LoadFlag_StrictLoading;
+			}
 
 			tImageDDS dds;
 			bool ok = dds.Load(Filename, params);
