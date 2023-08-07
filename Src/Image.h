@@ -56,7 +56,6 @@ public:
 	Image(const tSystem::tFileInfo& fileInfo);
 	virtual ~Image();
 
-	void RegenerateShuffleValue();
 	void ResetLoadParams();
 	tImage::tImageASTC::LoadParams LoadParams_ASTC;
 	tImage::tImageDDS::LoadParams  LoadParams_DDS;
@@ -66,7 +65,9 @@ public:
 	tImage::tImageKTX::LoadParams  LoadParams_KTX;
 	tImage::tImagePKM::LoadParams  LoadParams_PKM;
 	tImage::tImagePNG::LoadParams  LoadParams_PNG;
+	bool LoadParams_DetectAPNGInsidePNG = false;
 
+	void RegenerateShuffleValue();
 	void Play();
 	void Stop();
 	void UpdatePlaying(float dt);

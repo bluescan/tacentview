@@ -139,6 +139,7 @@ void Image::ResetLoadParams()
 	LoadParams_PKM.Gamma = Viewer::Config::Current->MonitorGamma;
 
 	LoadParams_PNG.Reset();
+	LoadParams_DetectAPNGInsidePNG = false;
 }
 
 
@@ -181,7 +182,7 @@ bool Image::Load(bool loadParamsFromConfig)
 	// false, the PNG loader will always be used for .png files even if they have an apng inside.
 	// The designers of apng made the format backwards compatible with single-frame png loaders.
 	tSystem::tFileType loadingFiletype = Filetype;
-	bool detectAPNGInsidePNG = loadParamsFromConfig ? Config::Current->DetectAPNGInsidePNG : true;
+	bool detectAPNGInsidePNG = loadParamsFromConfig ? Config::Current->DetectAPNGInsidePNG : LoadParams_DetectAPNGInsidePNG;
 	if ((Filetype == tSystem::tFileType::PNG) && detectAPNGInsidePNG && tImageAPNG::IsAnimatedPNG(Filename))
 		loadingFiletype = tSystem::tFileType::APNG;
 

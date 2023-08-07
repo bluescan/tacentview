@@ -29,7 +29,7 @@
 
 namespace Command
 {
-	tCmdLine::tParam  ParamInputFiles		("Input image files",				"inputfiles",	0			);
+	tCmdLine::tParam  ParamInputFiles		("Input image files",				"inputfiles",			0	);
 
 	// Note, -c and --cli are reserved.
 	tCmdLine::tOption OptionHelp			("Print help/usage information",	"help",			'h'			);
@@ -37,21 +37,23 @@ namespace Command
 	tCmdLine::tOption OptionVerbosity		("Verbosity from 0 to 2",			"verbosity",	'v',	1	);
 
 	tCmdLine::tOption OptionInTypes			("Input file type(s)",				"in",			'i',	1	);
+	tCmdLine::tOption OptionInASTC			("Load parameters for ASTC files",	"inASTC",				1	);
+
 	tCmdLine::tOption OptionOperation		("Operation",						"op",					1	);
 	tCmdLine::tOption OptionPostOperation	("Post operation",					"po",					1	);
 
 	tCmdLine::tOption OptionOutType			("Output file type",				"outtype",		'o',	1	);
 	tCmdLine::tOption OptionOverwrite		("Overwrite existing output files",	"overwrite",	'w'			);
 	tCmdLine::tOption OptionAutoName		("Autogenerate output file names",	"autoname",		'a'			);
-	tCmdLine::tOption OptionParamsAPNG		("Save parameters for APNG files",	"paramsAPNG",	2			);
-	tCmdLine::tOption OptionParamsBMP		("Save parameters for BMP  files",	"paramsBMP",	1			);
-	tCmdLine::tOption OptionParamsGIF		("Save parameters for GIF  files",	"paramsGIF",	8			);
-	tCmdLine::tOption OptionParamsJPG		("Save parameters for JPG  files",	"paramsJPG",	1			);
-	tCmdLine::tOption OptionParamsPNG		("Save parameters for PNG  files",	"paramsPNG",	1			);
-	tCmdLine::tOption OptionParamsQOI		("Save parameters for QOI  files",	"paramsQOI",	2			);
-	tCmdLine::tOption OptionParamsTGA		("Save parameters for TGA  files",	"paramsTGA",	2			);
-	tCmdLine::tOption OptionParamsTIFF		("Save parameters for TIFF files",	"paramsTIFF",	3			);
-	tCmdLine::tOption OptionParamsWEBP		("Save parameters for WEBP files",	"paramsWEBP",	3			);
+	tCmdLine::tOption OptionParamsAPNG		("Save parameters for APNG files",	"paramsAPNG",			2	);
+	tCmdLine::tOption OptionParamsBMP		("Save parameters for BMP  files",	"paramsBMP",			1	);
+	tCmdLine::tOption OptionParamsGIF		("Save parameters for GIF  files",	"paramsGIF",			8	);
+	tCmdLine::tOption OptionParamsJPG		("Save parameters for JPG  files",	"paramsJPG",			1	);
+	tCmdLine::tOption OptionParamsPNG		("Save parameters for PNG  files",	"paramsPNG",			1	);
+	tCmdLine::tOption OptionParamsQOI		("Save parameters for QOI  files",	"paramsQOI",			2	);
+	tCmdLine::tOption OptionParamsTGA		("Save parameters for TGA  files",	"paramsTGA",			2	);
+	tCmdLine::tOption OptionParamsTIFF		("Save parameters for TIFF files",	"paramsTIFF",			3	);
+	tCmdLine::tOption OptionParamsWEBP		("Save parameters for WEBP files",	"paramsWEBP",			3	);
 	tCmdLine::tOption OptionEarlyExit		("Early exit / no skipping",		"earlyexit",	'e'			);
 	tCmdLine::tOption OptionSkipUnchanged	("Don't save unchanged files",		"skipunchanged",'k'			);
 
@@ -68,6 +70,8 @@ namespace Command
 
 	void DetermineInputTypes();																	// Step 1.
 	void InputFilesAddUnique(const tSystem::tFileInfo&);
+	void DetermineInputLoadParameters();
+	void ParseLoadParametersASTC();
 
 	void DetermineInputFiles();																	// Step 2.
 	void GetItemsFromManifest(tList<tStringItem>& manifestItems, const tString& manifestFile);
@@ -104,13 +108,14 @@ namespace Command
 	tImage::tImageWEBP::SaveParams	SaveParamsWEBP;
 
 	tImage::tImageASTC::LoadParams	LoadParamsASTC;
-	tImage::tImageASTC::LoadParams	LoadParamsDDS;
-	tImage::tImageASTC::LoadParams	LoadParamsEXR;
-	tImage::tImageASTC::LoadParams	LoadParamsHDR;
-	tImage::tImageASTC::LoadParams	LoadParamsJPG;
-	tImage::tImageASTC::LoadParams	LoadParamsKTX;
-	tImage::tImageASTC::LoadParams	LoadParamsPKM;
-	tImage::tImageASTC::LoadParams	LoadParamsPNG;
+	tImage::tImageDDS::LoadParams	LoadParamsDDS;
+	tImage::tImageEXR::LoadParams	LoadParamsEXR;
+	tImage::tImageHDR::LoadParams	LoadParamsHDR;
+	tImage::tImageJPG::LoadParams	LoadParamsJPG;
+	tImage::tImageKTX::LoadParams	LoadParamsKTX;
+	tImage::tImagePKM::LoadParams	LoadParamsPKM;
+	tImage::tImagePNG::LoadParams	LoadParamsPNG;
+	bool LoadParams_DetectAPNGInsidePNG = false;
 
 	tSystem::tFileTypes InputTypes;
 	tList<tSystem::tFileInfo> InputFiles;
@@ -330,6 +335,124 @@ void Command::ParseInputItem(tList<tSystem::tFileInfo>& inputFiles, const tStrin
 }
 
 
+void Command::DetermineInputLoadParameters()
+{
+	// We only bother reading load parameters for the types of files we will be loading.
+	for (tSystem::tFileTypes::tFileTypeItem* typeItem = InputTypes.First(); typeItem; typeItem = typeItem->Next())
+	{
+		tSystem::tFileType fileType = typeItem->FileType;
+		switch (fileType)
+		{
+			case tSystem::tFileType::ASTC: ParseLoadParametersASTC(); break;
+		}
+	}
+}
+
+
+void Command::ParseLoadParametersASTC()
+{
+	if (!OptionInASTC)
+		return;
+
+	tString paramValuePairs = OptionInASTC.Arg1();
+	tList<tStringItem> paramValueStrList;
+	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
+	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
+	{
+		if (pvstr->FindChar('=') == -1)
+			continue;
+
+		tString param = pvstr->Left('=');
+		tString value = pvstr->Right('=');
+		if (param.IsEmpty() || value.IsEmpty())
+			continue;
+
+		switch (tHash::tHashString(param.Chr()))
+		{
+			case tHash::tHashCT("colp"):
+			{
+				switch (tHash::tHashString(value.Chr()))
+				{
+					case tHash::tHashCT("*"):
+					case tHash::tHashCT("sRGB"):
+						LoadParamsASTC.Profile = tColourProfile::sRGB;
+						break;
+					case tHash::tHashCT("gRGB"):
+						LoadParamsASTC.Profile = tColourProfile::gRGB;
+						break;
+					case tHash::tHashCT("lRGB"):
+						LoadParamsASTC.Profile = tColourProfile::lRGB;
+						break;
+					case tHash::tHashCT("HDRa"):
+						LoadParamsASTC.Profile = tColourProfile::HDRa;
+						break;
+					case tHash::tHashCT("HDRA"):
+						LoadParamsASTC.Profile = tColourProfile::HDRA;
+						break;
+				}
+				break;
+			}
+
+			case tHash::tHashCT("corr"):
+			{
+				switch (tHash::tHashString(value.Chr()))
+				{
+					case tHash::tHashCT("none"):
+						LoadParamsASTC.Flags &= ~(tImage::tImageASTC::LoadFlag_GammaCompression | tImage::tImageASTC::LoadFlag_SRGBCompression | tImage::tImageASTC::LoadFlag_AutoGamma);
+						break;
+					case tHash::tHashCT("*"):
+					case tHash::tHashCT("auto"):
+						LoadParamsASTC.Flags &= ~(tImage::tImageASTC::LoadFlag_GammaCompression | tImage::tImageASTC::LoadFlag_SRGBCompression);
+						LoadParamsASTC.Flags |= tImage::tImageASTC::LoadFlag_AutoGamma;
+						break;
+					case tHash::tHashCT("gamc"):
+						LoadParamsASTC.Flags &= ~(tImage::tImageASTC::LoadFlag_SRGBCompression | tImage::tImageASTC::LoadFlag_AutoGamma);
+						LoadParamsASTC.Flags |= tImage::tImageASTC::LoadFlag_GammaCompression;
+						break;
+					case tHash::tHashCT("srgb"):
+						LoadParamsASTC.Flags &= ~(tImage::tImageASTC::LoadFlag_GammaCompression | tImage::tImageASTC::LoadFlag_AutoGamma);
+						LoadParamsASTC.Flags |= tImage::tImageASTC::LoadFlag_SRGBCompression;
+						break;
+				}
+				break;
+			}
+
+			case tHash::tHashCT("gamma"):
+			{
+				if (value == "*")
+				{
+					LoadParamsASTC.Gamma = 2.2f;
+				}
+				else
+				{
+					LoadParamsASTC.Gamma = value.AsFloat();
+					tMath::tiClamp(LoadParamsASTC.Gamma, 0.5f, 4.0f);
+				}
+				break;
+			}
+
+			case tHash::tHashCT("tone"):
+			{
+				float tone = value.AsFloat();
+				if (value == "*")
+					tone = -1.0f;
+
+				if (tone < 0.0f)
+				{
+					LoadParamsASTC.Flags &= ~(tImage::tImageASTC::LoadFlag_ToneMapExposure);
+				}
+				else
+				{
+					LoadParamsASTC.Flags |= tImage::tImageASTC::LoadFlag_ToneMapExposure;
+					LoadParamsASTC.Exposure = tMath::tClamp(tone, 0.0f, 4.0f);
+				}
+				break;
+			}
+		}
+	}
+}
+
+
 void Command::DetermineInputFiles()
 {
 	tList<tSystem::tFileInfo> inputFiles;
@@ -367,12 +490,30 @@ void Command::DetermineInputFiles()
 
 void Command::PopulateImagesList()
 {
-	// This doesn't actually load the images. Just prepares them on the Images list.
-	// It also turns off the undo-stack since we don't use that in CLI mode.
+	// This doesn't actually load the images. It just prepares them on the Images list.
+	// a) Depending of the filetype it may set custom load parameters.
+	// b) It also turns off the undo-stack since we don't use that in CLI mode.
 	for (tSystem::tFileInfo* info = InputFiles.First(); info; info = info->Next())
 	{
 		Viewer::Image* newImage = new Viewer::Image(*info);
 		newImage->SetUndoEnabled(false);
+
+		tSystem::tFileType fileType = tSystem::tGetFileType(info->FileName);
+		switch (fileType)
+		{
+			case tSystem::tFileType::ASTC:	newImage->LoadParams_ASTC = LoadParamsASTC;		break;
+			case tSystem::tFileType::DDS:	newImage->LoadParams_DDS  = LoadParamsDDS;		break;
+			case tSystem::tFileType::EXR:	newImage->LoadParams_EXR  = LoadParamsEXR;		break;
+			case tSystem::tFileType::HDR:	newImage->LoadParams_HDR  = LoadParamsHDR;		break;
+			case tSystem::tFileType::JPG:	newImage->LoadParams_JPG  = LoadParamsJPG;		break;
+			case tSystem::tFileType::KTX:	newImage->LoadParams_KTX  = LoadParamsKTX;		break;
+			case tSystem::tFileType::PKM:	newImage->LoadParams_PKM  = LoadParamsPKM;		break;
+			case tSystem::tFileType::PNG:
+				newImage->LoadParams_PNG = LoadParamsPNG;
+				newImage->LoadParams_DetectAPNGInsidePNG = LoadParams_DetectAPNGInsidePNG;
+				break;
+		}
+
 		Images.Append(newImage);
 	}
 }
@@ -921,9 +1062,10 @@ parameters takes the form:
 
  --inTTT param1=value1,param2=value2,etc
 
-where TTT represents the image type and the lack of spaces is important. All
-loading parameters have reasonable defaults -- there is no requirement to
-specify them if the defaults are sufficient. Image types with load parameters:
+where TTT represents the image type, the lack of spaces is important, and both
+param names and values are case sensitive. All loading parameters have
+reasonable defaults -- there is no requirement to specify them if the defaults
+are sufficient. Image types with load parameters:
 
 --inASTC
   colp  : Colour profile. Possible values:
@@ -938,9 +1080,11 @@ specify them if the defaults are sufficient. Image types with load parameters:
           gamc  - Apply gamma compression using an encoding-gamma of 1/gamma.
           srgb  - Apply gamma compression by applying a Linear->sRGB transform.
   gamma : Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
+          Range is [0.5,4.0]
   tone  : For HDR images. Tone-map exposure applied if this is >= 0.0. A value
           of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
-          not apply tone-map exposure function. Default is -1.0*.
+          not apply tone-map exposure function. Default is -1.0*. Non-negative
+          valid range is [0.0,4.0]
 
 --inDDS
   corr  : Gamma correction mode. Possible values:
@@ -1566,11 +1710,13 @@ returns a non-zero exit code.
 
 	// Determine what input types will be processed when specifying a directory.
 	DetermineInputTypes();
+	DetermineInputLoadParameters();
 
 	// Collect all input files into a single list.
 	DetermineInputFiles();
 
-	// Populates the Images list. Does not load the images.
+	// Populates the Images list. Each added image gets its load-parameters set correctly and the undo-stack turned
+	// off. Does not load the images.
 	PopulateImagesList();
 
 	// Populates the Operations list.
@@ -1588,7 +1734,9 @@ returns a non-zero exit code.
 	bool somethingFailed = false;
 	for (Viewer::Image* image = Images.First(); image; image = image->Next())
 	{
-		image->Load();
+		// We do not read the config file when using the CLI. All parameters need to com from the command-line.
+		bool loadParamsFromConfig = false;
+		image->Load(loadParamsFromConfig);
 
 		tString inNameShort = tSystem::tGetFileName(image->Filename);
 		if (!image->IsLoaded())
