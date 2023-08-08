@@ -41,6 +41,7 @@ namespace Command
 	tCmdLine::tOption OptionInDDS			("Load parameters for DDS files",	"inDDS",				1	);
 	tCmdLine::tOption OptionInEXR			("Load parameters for EXR files",	"inEXR",				1	);
 	tCmdLine::tOption OptionInHDR			("Load parameters for HDR files",	"inHDR",				1	);
+	tCmdLine::tOption OptionInJPG			("Load parameters for JPG files",	"inJPG",				1	);
 
 	tCmdLine::tOption OptionOperation		("Operation",						"op",					1	);
 	tCmdLine::tOption OptionPostOperation	("Post operation",					"po",					1	);
@@ -78,6 +79,7 @@ namespace Command
 	void ParseLoadParametersDDS();
 	void ParseLoadParametersEXR();
 	void ParseLoadParametersHDR();
+	void ParseLoadParametersJPG();
 
 	void DetermineInputFiles();																	// Step 2.
 	void GetItemsFromManifest(tList<tStringItem>& manifestItems, const tString& manifestFile);
@@ -353,6 +355,7 @@ void Command::DetermineInputLoadParameters()
 			case tSystem::tFileType::DDS: 	ParseLoadParametersDDS();	break;
 			case tSystem::tFileType::EXR: 	ParseLoadParametersEXR();	break;
 			case tSystem::tFileType::HDR: 	ParseLoadParametersHDR();	break;
+			case tSystem::tFileType::JPG: 	ParseLoadParametersJPG();	break;
 		}
 	}
 }
@@ -479,6 +482,7 @@ void Command::ParseLoadParametersDDS()
 					LoadParamsDDS.Flags |= tImage::tImageDDS::LoadFlag_SpreadLuminance;
 				else
 					LoadParamsDDS.Flags &= ~(tImage::tImageDDS::LoadFlag_SpreadLuminance);
+				break;
 			}
 
 			case tHash::tHashCT("strct"):
@@ -488,6 +492,7 @@ void Command::ParseLoadParametersDDS()
 					LoadParamsDDS.Flags |= tImage::tImageDDS::LoadFlag_StrictLoading;
 				else
 					LoadParamsDDS.Flags &= ~(tImage::tImageDDS::LoadFlag_StrictLoading);
+				break;
 			}
 		}
 	}
@@ -565,6 +570,50 @@ void Command::ParseLoadParametersHDR()
 			case tHash::tHashCT("expo"):
 				LoadParamsHDR.Exposure = (value == "*") ? 0 : tMath::tClamp(value.AsInt(), -10, 10);
 				break;
+		}
+	}
+}
+
+
+void Command::ParseLoadParametersJPG()
+{
+	if (!OptionInJPG)
+		return;
+
+	tString paramValuePairs = OptionInJPG.Arg1();
+	tList<tStringItem> paramValueStrList;
+	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
+	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
+	{
+		if (pvstr->FindChar('=') == -1)
+			continue;
+
+		tString param = pvstr->Left('=');
+		tString value = pvstr->Right('=');
+		if (param.IsEmpty() || value.IsEmpty())
+			continue;
+
+		switch (tHash::tHashString(param.Chr()))
+		{
+			case tHash::tHashCT("strct"):
+			{
+				bool strict = (value == "*") ? false : value.AsBool();
+				if (strict)
+					LoadParamsJPG.Flags |= tImage::tImageJPG::LoadFlag_Strict;
+				else
+					LoadParamsJPG.Flags &= ~(tImage::tImageJPG::LoadFlag_Strict);
+				break;
+			}
+
+			case tHash::tHashCT("exifo"):
+			{
+				bool exifReorient = (value == "*") ? false : value.AsBool();
+				if (exifReorient)
+					LoadParamsJPG.Flags |= tImage::tImageJPG::LoadFlag_ExifOrient;
+				else
+					LoadParamsJPG.Flags &= ~(tImage::tImageJPG::LoadFlag_ExifOrient);
+				break;
+			}
 		}
 	}
 }
