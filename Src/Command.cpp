@@ -39,6 +39,7 @@ namespace Command
 	tCmdLine::tOption OptionInTypes			("Input file type(s)",				"in",			'i',	1	);
 	tCmdLine::tOption OptionInASTC			("Load parameters for ASTC files",	"inASTC",				1	);
 	tCmdLine::tOption OptionInDDS			("Load parameters for DDS files",	"inDDS",				1	);
+	tCmdLine::tOption OptionInEXR			("Load parameters for EXR files",	"inEXR",				1	);
 
 	tCmdLine::tOption OptionOperation		("Operation",						"op",					1	);
 	tCmdLine::tOption OptionPostOperation	("Post operation",					"po",					1	);
@@ -74,6 +75,7 @@ namespace Command
 	void DetermineInputLoadParameters();
 	void ParseLoadParametersASTC();
 	void ParseLoadParametersDDS();
+	void ParseLoadParametersEXR();
 
 	void DetermineInputFiles();																	// Step 2.
 	void GetItemsFromManifest(tList<tStringItem>& manifestItems, const tString& manifestFile);
@@ -347,6 +349,7 @@ void Command::DetermineInputLoadParameters()
 		{
 			case tSystem::tFileType::ASTC:	ParseLoadParametersASTC();	break;
 			case tSystem::tFileType::DDS: 	ParseLoadParametersDDS();	break;
+			case tSystem::tFileType::EXR: 	ParseLoadParametersEXR();	break;
 		}
 	}
 }
@@ -483,6 +486,50 @@ void Command::ParseLoadParametersDDS()
 				else
 					LoadParamsDDS.Flags &= ~(tImage::tImageDDS::LoadFlag_StrictLoading);
 			}
+		}
+	}
+}
+
+
+void Command::ParseLoadParametersEXR()
+{
+	if (!OptionInEXR)
+		return;
+
+	tString paramValuePairs = OptionInEXR.Arg1();
+	tList<tStringItem> paramValueStrList;
+	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
+	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
+	{
+		if (pvstr->FindChar('=') == -1)
+			continue;
+
+		tString param = pvstr->Left('=');
+		tString value = pvstr->Right('=');
+		if (param.IsEmpty() || value.IsEmpty())
+			continue;
+
+		switch (tHash::tHashString(param.Chr()))
+		{
+			case tHash::tHashCT("gamma"):
+				LoadParamsEXR.Gamma = (value == "*") ? 2.2f : tMath::tClamp(value.AsFloat(), 0.6f, 3.0f);
+				break;
+
+			case tHash::tHashCT("expo"):
+				LoadParamsEXR.Exposure = (value == "*") ? 1.0f : tMath::tClamp(value.AsFloat(), -10.0f, 10.0f);
+				break;
+
+			case tHash::tHashCT("defog"):
+				LoadParamsEXR.Defog = (value == "*") ? 0.0f : tMath::tClamp(value.AsFloat(), 0.0f, 0.1f);
+				break;
+
+			case tHash::tHashCT("knelo"):
+				LoadParamsEXR.KneeLow = (value == "*") ? 0.0f : tMath::tClamp(value.AsFloat(), -3.0f, 3.0f);
+				break;
+
+			case tHash::tHashCT("knehi"):
+				LoadParamsEXR.KneeHigh = (value == "*") ? 3.5f : tMath::tClamp(value.AsFloat(), 3.5f, 7.5f);
+				break;
 		}
 	}
 }
@@ -1146,10 +1193,10 @@ are sufficient. Image types with load parameters:
 --inEXR
   gamma : Gamma value in range [0.6, 3.0]. Default 2.2*.
   expo  : Exposure value in range [-10.0, 10.0]. Default 1.0* is neutral.
-  dfog  : Defog value (constant colour bias removal) in range [0.0, 0.1].
-  knelo : Knee Low. Low end of the white and middle gray values in [-3.0, 3.0].
+  defog : Defog value (constant colour bias removal) in range [0.0*, 0.1].
+  knelo : Knee Low. Low end of the white and middle grey values in [-3.0, 3.0].
           Values between Knee Low and Knee High are compressed. Default 0.0*.
-  knehi : Knee High. High end of white and middle gray values in [3.5, 7.5].
+  knehi : Knee High. High end of white and middle grey values in [3.5, 7.5].
           Values between Knee Low and Knee High are compressed. Default 3.5*.
 
 --inHDR
