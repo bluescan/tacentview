@@ -44,6 +44,7 @@ namespace Command
 	tCmdLine::tOption OptionInJPG			("Load parameters for JPG files",	"inJPG",				1	);
 	tCmdLine::tOption OptionInKTX			("Load parameters for KTX files",	"inKTX",				1	);
 	tCmdLine::tOption OptionInPKM			("Load parameters for PKM files",	"inPKM",				1	);
+	tCmdLine::tOption OptionInPNG			("Load parameters for PNG files",	"inPNG",				1	);
 
 	tCmdLine::tOption OptionOperation		("Operation",						"op",					1	);
 	tCmdLine::tOption OptionPostOperation	("Post operation",					"po",					1	);
@@ -84,6 +85,7 @@ namespace Command
 	void ParseLoadParametersJPG();
 	void ParseLoadParametersKTX();
 	void ParseLoadParametersPKM();
+	void ParseLoadParametersPNG();
 
 	void DetermineInputFiles();																	// Step 2.
 	void GetItemsFromManifest(tList<tStringItem>& manifestItems, const tString& manifestFile);
@@ -363,6 +365,7 @@ void Command::DetermineInputLoadParameters()
 			case tSystem::tFileType::KTX:
 			case tSystem::tFileType::KTX2: 	ParseLoadParametersKTX();	break;
 			case tSystem::tFileType::PKM: 	ParseLoadParametersPKM();	break;
+			case tSystem::tFileType::PNG: 	ParseLoadParametersPNG();	break;
 		}
 	}
 }
@@ -739,6 +742,44 @@ void Command::ParseLoadParametersPKM()
 					LoadParamsPKM.Flags &= ~(tImage::tImagePKM::LoadFlag_SpreadLuminance);
 				break;
 			}
+		}
+	}
+}
+
+
+void Command::ParseLoadParametersPNG()
+{
+	if (!OptionInPNG)
+		return;
+
+	tString paramValuePairs = OptionInPNG.Arg1();
+	tList<tStringItem> paramValueStrList;
+	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
+	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
+	{
+		if (pvstr->FindChar('=') == -1)
+			continue;
+
+		tString param = pvstr->Left('=');
+		tString value = pvstr->Right('=');
+		if (param.IsEmpty() || value.IsEmpty())
+			continue;
+
+		switch (tHash::tHashString(param.Chr()))
+		{
+			case tHash::tHashCT("strct"):
+			{
+				bool strict = (value == "*") ? false : value.AsBool();
+				if (!strict)
+					LoadParamsPNG.Flags |= tImage::tImagePNG::LoadFlag_AllowJPG;
+				else
+					LoadParamsPNG.Flags &= ~(tImage::tImagePNG::LoadFlag_AllowJPG);
+				break;
+			}
+
+			case tHash::tHashCT("apng"):
+				LoadParams_DetectAPNGInsidePNG = (value == "*") ? false : value.AsBool();
+				break;
 		}
 	}
 }
@@ -1454,7 +1495,7 @@ are sufficient. Image types with load parameters:
           Setting to false allows more forgiving loading behaviour. In
           particular some software saves JPG/JFIF-encoded files with the png
           extension. Setting this to false allows these 'png' files to load.
-  anpng : Load Animated PNG inside a PNG. Boolean true or false*. If anpng is
+  apng  : Load Animated PNG inside a PNG. Boolean true or false*. If apng is
           true the loading code will detect an animated PNG (APNG) when stored
           inside a regular PNG file. This allows the command-line to load all
           the frames of an APNG file even if it has a regular (single-frame)
