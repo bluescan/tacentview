@@ -42,6 +42,8 @@ namespace Command
 	tCmdLine::tOption OptionInEXR			("Load parameters for EXR files",	"inEXR",				1	);
 	tCmdLine::tOption OptionInHDR			("Load parameters for HDR files",	"inHDR",				1	);
 	tCmdLine::tOption OptionInJPG			("Load parameters for JPG files",	"inJPG",				1	);
+	tCmdLine::tOption OptionInKTX			("Load parameters for KTX files",	"inKTX",				1	);
+	tCmdLine::tOption OptionInPKM			("Load parameters for PKM files",	"inPKM",				1	);
 
 	tCmdLine::tOption OptionOperation		("Operation",						"op",					1	);
 	tCmdLine::tOption OptionPostOperation	("Post operation",					"po",					1	);
@@ -80,6 +82,8 @@ namespace Command
 	void ParseLoadParametersEXR();
 	void ParseLoadParametersHDR();
 	void ParseLoadParametersJPG();
+	void ParseLoadParametersKTX();
+	void ParseLoadParametersPKM();
 
 	void DetermineInputFiles();																	// Step 2.
 	void GetItemsFromManifest(tList<tStringItem>& manifestItems, const tString& manifestFile);
@@ -356,6 +360,9 @@ void Command::DetermineInputLoadParameters()
 			case tSystem::tFileType::EXR: 	ParseLoadParametersEXR();	break;
 			case tSystem::tFileType::HDR: 	ParseLoadParametersHDR();	break;
 			case tSystem::tFileType::JPG: 	ParseLoadParametersJPG();	break;
+			case tSystem::tFileType::KTX:
+			case tSystem::tFileType::KTX2: 	ParseLoadParametersKTX();	break;
+			case tSystem::tFileType::PKM: 	ParseLoadParametersPKM();	break;
 		}
 	}
 }
@@ -612,6 +619,124 @@ void Command::ParseLoadParametersJPG()
 					LoadParamsJPG.Flags |= tImage::tImageJPG::LoadFlag_ExifOrient;
 				else
 					LoadParamsJPG.Flags &= ~(tImage::tImageJPG::LoadFlag_ExifOrient);
+				break;
+			}
+		}
+	}
+}
+
+
+void Command::ParseLoadParametersKTX()
+{
+	if (!OptionInKTX)
+		return;
+
+	tString paramValuePairs = OptionInKTX.Arg1();
+	tList<tStringItem> paramValueStrList;
+	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
+	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
+	{
+		if (pvstr->FindChar('=') == -1)
+			continue;
+
+		tString param = pvstr->Left('=');
+		tString value = pvstr->Right('=');
+		if (param.IsEmpty() || value.IsEmpty())
+			continue;
+
+		switch (tHash::tHashString(param.Chr()))
+		{
+ 			case tHash::tHashCT("corr"):
+			{
+				uint32 gamaF = tImage::tImageKTX::LoadFlag_GammaCompression;
+				uint32 autoF = tImage::tImageKTX::LoadFlag_AutoGamma;
+				uint32 srgbF = tImage::tImageKTX::LoadFlag_SRGBCompression;
+				uint32& flags = LoadParamsKTX.Flags;
+				switch (tHash::tHashString(value.Chr()))
+				{
+					case tHash::tHashCT("none"):	flags &= ~(gamaF | srgbF | autoF);			break;
+					case tHash::tHashCT("*"):
+					case tHash::tHashCT("auto"):	flags &= ~(gamaF | srgbF); flags |= autoF;	break;
+					case tHash::tHashCT("gamc"):	flags &= ~(srgbF | autoF); flags |= gamaF;	break;
+					case tHash::tHashCT("srgb"):	flags &= ~(gamaF | autoF); flags |= srgbF;	break;
+				}
+				break;
+			}
+
+			case tHash::tHashCT("gamma"):
+				LoadParamsKTX.Gamma = (value == "*") ? 2.2f : tMath::tClamp(value.AsFloat(), 0.5f, 4.0f);
+				break;
+
+			case tHash::tHashCT("tone"):
+				LoadParamsKTX.Exposure = (value == "*") ? -1.0f : tMath::tClamp(value.AsFloat(), -1.0f, 4.0f);
+				if (LoadParamsKTX.Exposure < 0.0f)
+					LoadParamsKTX.Flags &= ~(tImage::tImageKTX::LoadFlag_ToneMapExposure);
+				else
+					LoadParamsKTX.Flags |= tImage::tImageKTX::LoadFlag_ToneMapExposure;
+				break;
+
+			case tHash::tHashCT("spred"):
+			{
+				bool spread = (value == "*") ? true : value.AsBool();
+				if (spread)
+					LoadParamsKTX.Flags |= tImage::tImageKTX::LoadFlag_SpreadLuminance;
+				else
+					LoadParamsKTX.Flags &= ~(tImage::tImageKTX::LoadFlag_SpreadLuminance);
+				break;
+			}
+		}
+	}
+}
+
+
+void Command::ParseLoadParametersPKM()
+{
+	if (!OptionInPKM)
+		return;
+
+	tString paramValuePairs = OptionInPKM.Arg1();
+	tList<tStringItem> paramValueStrList;
+	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
+	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
+	{
+		if (pvstr->FindChar('=') == -1)
+			continue;
+
+		tString param = pvstr->Left('=');
+		tString value = pvstr->Right('=');
+		if (param.IsEmpty() || value.IsEmpty())
+			continue;
+
+		switch (tHash::tHashString(param.Chr()))
+		{
+ 			case tHash::tHashCT("corr"):
+			{
+				uint32 gamaF = tImage::tImagePKM::LoadFlag_GammaCompression;
+				uint32 autoF = tImage::tImagePKM::LoadFlag_AutoGamma;
+				uint32 srgbF = tImage::tImagePKM::LoadFlag_SRGBCompression;
+				uint32& flags = LoadParamsPKM.Flags;
+				switch (tHash::tHashString(value.Chr()))
+				{
+					case tHash::tHashCT("none"):	flags &= ~(gamaF | srgbF | autoF);			break;
+					case tHash::tHashCT("*"):
+					case tHash::tHashCT("auto"):	flags &= ~(gamaF | srgbF); flags |= autoF;	break;
+					case tHash::tHashCT("gamc"):	flags &= ~(srgbF | autoF); flags |= gamaF;	break;
+					case tHash::tHashCT("srgb"):	flags &= ~(gamaF | autoF); flags |= srgbF;	break;
+				}
+				break;
+			}
+
+			case tHash::tHashCT("gamma"):
+				LoadParamsPKM.Gamma = (value == "*") ? 2.2f : tMath::tClamp(value.AsFloat(), 0.5f, 4.0f);
+				break;
+
+			case tHash::tHashCT("spred"):
+			{
+				bool spread = (value == "*") ? true : value.AsBool();
+				if (spread)
+					LoadParamsPKM.Flags |= tImage::tImagePKM::LoadFlag_SpreadLuminance;
+				else
+					LoadParamsPKM.Flags &= ~(tImage::tImagePKM::LoadFlag_SpreadLuminance);
 				break;
 			}
 		}
@@ -1296,7 +1421,6 @@ are sufficient. Image types with load parameters:
 
 --inKTX
 --inKTX2
---inPKM
   corr  : Gamma correction mode. Possible values:
           none  - No gamma correction is performed.
           auto* - Apply gamma correction based on colour space of pixel format.
@@ -1307,7 +1431,19 @@ are sufficient. Image types with load parameters:
           of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
           not apply tone-map exposure function. Default is -1.0*. Non-negative
           valid range is [0.0,4.0]
-  spred : Spread single channel. Boolean true* or false. For DDS files with a
+  spred : Spread single channel. Boolean true* or false. For KTX files with a
+          single Red or Luminance componentconly, spread it to all the RGB
+          channels if set to true. If false the red channel takes the value.
+          Does not spread single-channel Alpha formats.
+
+--inPKM
+  corr  : Gamma correction mode. Possible values:
+          none  - No gamma correction is performed.
+          auto* - Apply gamma correction based on colour space of pixel format.
+          gamc  - Apply gamma compression using an encoding-gamma of 1.0/gamma.
+          srgb  - Apply gamma compression by applying a Linear->sRGB transform.
+  gamma : Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
+  spred : Spread single channel. Boolean true* or false. For PKM files with a
           single Red or Luminance componentconly, spread it to all the RGB
           channels if set to true. If false the red channel takes the value.
           Does not spread single-channel Alpha formats.
