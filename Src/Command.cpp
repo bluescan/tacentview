@@ -40,6 +40,7 @@ namespace Command
 	tCmdLine::tOption OptionInASTC			("Load parameters for ASTC files",	"inASTC",				1	);
 	tCmdLine::tOption OptionInDDS			("Load parameters for DDS files",	"inDDS",				1	);
 	tCmdLine::tOption OptionInEXR			("Load parameters for EXR files",	"inEXR",				1	);
+	tCmdLine::tOption OptionInHDR			("Load parameters for HDR files",	"inHDR",				1	);
 
 	tCmdLine::tOption OptionOperation		("Operation",						"op",					1	);
 	tCmdLine::tOption OptionPostOperation	("Post operation",					"po",					1	);
@@ -76,6 +77,7 @@ namespace Command
 	void ParseLoadParametersASTC();
 	void ParseLoadParametersDDS();
 	void ParseLoadParametersEXR();
+	void ParseLoadParametersHDR();
 
 	void DetermineInputFiles();																	// Step 2.
 	void GetItemsFromManifest(tList<tStringItem>& manifestItems, const tString& manifestFile);
@@ -350,6 +352,7 @@ void Command::DetermineInputLoadParameters()
 			case tSystem::tFileType::ASTC:	ParseLoadParametersASTC();	break;
 			case tSystem::tFileType::DDS: 	ParseLoadParametersDDS();	break;
 			case tSystem::tFileType::EXR: 	ParseLoadParametersEXR();	break;
+			case tSystem::tFileType::HDR: 	ParseLoadParametersHDR();	break;
 		}
 	}
 }
@@ -529,6 +532,38 @@ void Command::ParseLoadParametersEXR()
 
 			case tHash::tHashCT("knehi"):
 				LoadParamsEXR.KneeHigh = (value == "*") ? 3.5f : tMath::tClamp(value.AsFloat(), 3.5f, 7.5f);
+				break;
+		}
+	}
+}
+
+
+void Command::ParseLoadParametersHDR()
+{
+	if (!OptionInHDR)
+		return;
+
+	tString paramValuePairs = OptionInHDR.Arg1();
+	tList<tStringItem> paramValueStrList;
+	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
+	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
+	{
+		if (pvstr->FindChar('=') == -1)
+			continue;
+
+		tString param = pvstr->Left('=');
+		tString value = pvstr->Right('=');
+		if (param.IsEmpty() || value.IsEmpty())
+			continue;
+
+		switch (tHash::tHashString(param.Chr()))
+		{
+			case tHash::tHashCT("gamma"):
+				LoadParamsHDR.Gamma = (value == "*") ? 2.2f : tMath::tClamp(value.AsFloat(), 0.6f, 3.0f);
+				break;
+
+			case tHash::tHashCT("expo"):
+				LoadParamsHDR.Exposure = (value == "*") ? 0 : tMath::tClamp(value.AsInt(), -10, 10);
 				break;
 		}
 	}
