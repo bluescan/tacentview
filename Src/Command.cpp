@@ -38,6 +38,7 @@ namespace Command
 
 	tCmdLine::tOption OptionInTypes			("Input file type(s)",				"in",			'i',	1	);
 	tCmdLine::tOption OptionInASTC			("Load parameters for ASTC files",	"inASTC",				1	);
+	tCmdLine::tOption OptionInDDS			("Load parameters for DDS files",	"inDDS",				1	);
 
 	tCmdLine::tOption OptionOperation		("Operation",						"op",					1	);
 	tCmdLine::tOption OptionPostOperation	("Post operation",					"po",					1	);
@@ -72,6 +73,7 @@ namespace Command
 	void InputFilesAddUnique(const tSystem::tFileInfo&);
 	void DetermineInputLoadParameters();
 	void ParseLoadParametersASTC();
+	void ParseLoadParametersDDS();
 
 	void DetermineInputFiles();																	// Step 2.
 	void GetItemsFromManifest(tList<tStringItem>& manifestItems, const tString& manifestFile);
@@ -343,7 +345,8 @@ void Command::DetermineInputLoadParameters()
 		tSystem::tFileType fileType = typeItem->FileType;
 		switch (fileType)
 		{
-			case tSystem::tFileType::ASTC: ParseLoadParametersASTC(); break;
+			case tSystem::tFileType::ASTC:	ParseLoadParametersASTC();	break;
+			case tSystem::tFileType::DDS: 	ParseLoadParametersDDS();	break;
 		}
 	}
 }
@@ -370,83 +373,115 @@ void Command::ParseLoadParametersASTC()
 		switch (tHash::tHashString(param.Chr()))
 		{
 			case tHash::tHashCT("colp"):
-			{
 				switch (tHash::tHashString(value.Chr()))
 				{
 					case tHash::tHashCT("*"):
-					case tHash::tHashCT("sRGB"):
-						LoadParamsASTC.Profile = tColourProfile::sRGB;
-						break;
-					case tHash::tHashCT("gRGB"):
-						LoadParamsASTC.Profile = tColourProfile::gRGB;
-						break;
-					case tHash::tHashCT("lRGB"):
-						LoadParamsASTC.Profile = tColourProfile::lRGB;
-						break;
-					case tHash::tHashCT("HDRa"):
-						LoadParamsASTC.Profile = tColourProfile::HDRa;
-						break;
-					case tHash::tHashCT("HDRA"):
-						LoadParamsASTC.Profile = tColourProfile::HDRA;
-						break;
+					case tHash::tHashCT("sRGB"):	LoadParamsASTC.Profile = tColourProfile::sRGB;	break;
+					case tHash::tHashCT("gRGB"):	LoadParamsASTC.Profile = tColourProfile::gRGB;	break;
+					case tHash::tHashCT("lRGB"):	LoadParamsASTC.Profile = tColourProfile::lRGB;	break;
+					case tHash::tHashCT("HDRa"):	LoadParamsASTC.Profile = tColourProfile::HDRa;	break;
+					case tHash::tHashCT("HDRA"):	LoadParamsASTC.Profile = tColourProfile::HDRA;	break;
 				}
 				break;
-			}
 
 			case tHash::tHashCT("corr"):
 			{
+				uint32 gamaF = tImage::tImageASTC::LoadFlag_GammaCompression;
+				uint32 autoF = tImage::tImageASTC::LoadFlag_AutoGamma;
+				uint32 srgbF = tImage::tImageASTC::LoadFlag_SRGBCompression;
+				uint32& flags = LoadParamsASTC.Flags;
 				switch (tHash::tHashString(value.Chr()))
 				{
-					case tHash::tHashCT("none"):
-						LoadParamsASTC.Flags &= ~(tImage::tImageASTC::LoadFlag_GammaCompression | tImage::tImageASTC::LoadFlag_SRGBCompression | tImage::tImageASTC::LoadFlag_AutoGamma);
-						break;
+					case tHash::tHashCT("none"):	flags &= ~(gamaF | srgbF | autoF);			break;
 					case tHash::tHashCT("*"):
-					case tHash::tHashCT("auto"):
-						LoadParamsASTC.Flags &= ~(tImage::tImageASTC::LoadFlag_GammaCompression | tImage::tImageASTC::LoadFlag_SRGBCompression);
-						LoadParamsASTC.Flags |= tImage::tImageASTC::LoadFlag_AutoGamma;
-						break;
-					case tHash::tHashCT("gamc"):
-						LoadParamsASTC.Flags &= ~(tImage::tImageASTC::LoadFlag_SRGBCompression | tImage::tImageASTC::LoadFlag_AutoGamma);
-						LoadParamsASTC.Flags |= tImage::tImageASTC::LoadFlag_GammaCompression;
-						break;
-					case tHash::tHashCT("srgb"):
-						LoadParamsASTC.Flags &= ~(tImage::tImageASTC::LoadFlag_GammaCompression | tImage::tImageASTC::LoadFlag_AutoGamma);
-						LoadParamsASTC.Flags |= tImage::tImageASTC::LoadFlag_SRGBCompression;
-						break;
+					case tHash::tHashCT("auto"):	flags &= ~(gamaF | srgbF); flags |= autoF;	break;
+					case tHash::tHashCT("gamc"):	flags &= ~(srgbF | autoF); flags |= gamaF;	break;
+					case tHash::tHashCT("srgb"):	flags &= ~(gamaF | autoF); flags |= srgbF;	break;
 				}
 				break;
 			}
 
 			case tHash::tHashCT("gamma"):
-			{
-				if (value == "*")
-				{
-					LoadParamsASTC.Gamma = 2.2f;
-				}
+				LoadParamsASTC.Gamma = (value == "*") ? 2.2f : tMath::tClamp(value.AsFloat(), 0.5f, 4.0f);
+				break;
+
+			case tHash::tHashCT("tone"):
+				LoadParamsASTC.Exposure = (value == "*") ? -1.0f : tMath::tClamp(value.AsFloat(), -1.0f, 4.0f);
+				if (LoadParamsASTC.Exposure < 0.0f)
+					LoadParamsASTC.Flags &= ~(tImage::tImageASTC::LoadFlag_ToneMapExposure);
 				else
+					LoadParamsASTC.Flags |= tImage::tImageASTC::LoadFlag_ToneMapExposure;
+				break;
+		}
+	}
+}
+
+
+void Command::ParseLoadParametersDDS()
+{
+	if (!OptionInDDS)
+		return;
+
+	tString paramValuePairs = OptionInDDS.Arg1();
+	tList<tStringItem> paramValueStrList;
+	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
+	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
+	{
+		if (pvstr->FindChar('=') == -1)
+			continue;
+
+		tString param = pvstr->Left('=');
+		tString value = pvstr->Right('=');
+		if (param.IsEmpty() || value.IsEmpty())
+			continue;
+
+		switch (tHash::tHashString(param.Chr()))
+		{
+			case tHash::tHashCT("corr"):
+			{
+				uint32 gamaF = tImage::tImageDDS::LoadFlag_GammaCompression;
+				uint32 autoF = tImage::tImageDDS::LoadFlag_AutoGamma;
+				uint32 srgbF = tImage::tImageDDS::LoadFlag_SRGBCompression;
+				uint32& flags = LoadParamsDDS.Flags;
+				switch (tHash::tHashString(value.Chr()))
 				{
-					LoadParamsASTC.Gamma = value.AsFloat();
-					tMath::tiClamp(LoadParamsASTC.Gamma, 0.5f, 4.0f);
+					case tHash::tHashCT("none"):	flags &= ~(gamaF | srgbF | autoF);			break;
+					case tHash::tHashCT("*"):
+					case tHash::tHashCT("auto"):	flags &= ~(gamaF | srgbF); flags |= autoF;	break;
+					case tHash::tHashCT("gamc"):	flags &= ~(srgbF | autoF); flags |= gamaF;	break;
+					case tHash::tHashCT("srgb"):	flags &= ~(gamaF | autoF); flags |= srgbF;	break;
 				}
 				break;
 			}
 
-			case tHash::tHashCT("tone"):
-			{
-				float tone = value.AsFloat();
-				if (value == "*")
-					tone = -1.0f;
-
-				if (tone < 0.0f)
-				{
-					LoadParamsASTC.Flags &= ~(tImage::tImageASTC::LoadFlag_ToneMapExposure);
-				}
-				else
-				{
-					LoadParamsASTC.Flags |= tImage::tImageASTC::LoadFlag_ToneMapExposure;
-					LoadParamsASTC.Exposure = tMath::tClamp(tone, 0.0f, 4.0f);
-				}
+			case tHash::tHashCT("gamma"):
+				LoadParamsDDS.Gamma = (value == "*") ? 2.2f : tMath::tClamp(value.AsFloat(), 0.5f, 4.0f);
 				break;
+
+			case tHash::tHashCT("tone"):
+				LoadParamsDDS.Exposure = (value == "*") ? -1.0f : tMath::tClamp(value.AsFloat(), -1.0f, 4.0f);
+				if (LoadParamsDDS.Exposure < 0.0f)
+					LoadParamsDDS.Flags &= ~(tImage::tImageDDS::LoadFlag_ToneMapExposure);
+				else
+					LoadParamsDDS.Flags |= tImage::tImageDDS::LoadFlag_ToneMapExposure;
+				break;
+
+			case tHash::tHashCT("spred"):
+			{
+				bool spread = (value == "*") ? true : value.AsBool();
+				if (spread)
+					LoadParamsDDS.Flags |= tImage::tImageDDS::LoadFlag_SpreadLuminance;
+				else
+					LoadParamsDDS.Flags &= ~(tImage::tImageDDS::LoadFlag_SpreadLuminance);
+			}
+
+			case tHash::tHashCT("strct"):
+			{
+				bool strict = (value == "*") ? false : value.AsBool();
+				if (strict)
+					LoadParamsDDS.Flags |= tImage::tImageDDS::LoadFlag_StrictLoading;
+				else
+					LoadParamsDDS.Flags &= ~(tImage::tImageDDS::LoadFlag_StrictLoading);
 			}
 		}
 	}
@@ -1043,6 +1078,9 @@ specify multiple types with a comma-separated list. For example, '-i jpg,png'
 is the same as '-i jpg -i png'. If you specify only unsupported or invalid
 types a warning is printed and the default, tga images only, will be used.
 
+%s
+%s
+
 Values and arguments in this help text follow the following rules:
 - Real     : Real numbers are denoted by including the decimal point.
 - Integers : Integer numbers are denoted by not including the decimal point.
@@ -1077,7 +1115,7 @@ are sufficient. Image types with load parameters:
   corr  : Gamma correction mode, Possible values:
           none  - No gamma correction is performed.
           auto* - Apply gamma correction based on colour profile set above.
-          gamc  - Apply gamma compression using an encoding-gamma of 1/gamma.
+          gamc  - Apply gamma compression using an encoding-gamma of 1.0/gamma.
           srgb  - Apply gamma compression by applying a Linear->sRGB transform.
   gamma : Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
           Range is [0.5,4.0]
@@ -1090,12 +1128,13 @@ are sufficient. Image types with load parameters:
   corr  : Gamma correction mode. Possible values:
           none  - No gamma correction is performed.
           auto* - Apply gamma correction based on colour space of pixel format.
-          gamc  - Apply gamma compression using an encoding-gamma of 1/gamma.
+          gamc  - Apply gamma compression using an encoding-gamma of 1.0/gamma.
           srgb  - Apply gamma compression by applying a Linear->sRGB transform.
   gamma : Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
   tone  : For HDR images. Tone-map exposure applied if this is >= 0.0. A value
           of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
-          not apply tone-map exposure function. Default is -1.0*.
+          not apply tone-map exposure function. Default is -1.0*. Non-negative
+          valid range is [0.0,4.0]
   spred : Spread single channel. Boolean true* or false. For DDS files with a
           single Red or Luminance componentconly, spread it to all the RGB
           channels if set to true. If false the red channel takes the value.
@@ -1130,12 +1169,13 @@ are sufficient. Image types with load parameters:
   corr  : Gamma correction mode. Possible values:
           none  - No gamma correction is performed.
           auto* - Apply gamma correction based on colour space of pixel format.
-          gamc  - Apply gamma compression using an encoding-gamma of 1/gama.
+          gamc  - Apply gamma compression using an encoding-gamma of 1.0/gamma.
           srgb  - Apply gamma compression by applying a Linear->sRGB transform.
   gamma : Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
   tone  : For HDR images. Tone-map exposure applied if this is >= 0.0. A value
           of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
-          not apply tone-map exposure function. Default is -1.0*.
+          not apply tone-map exposure function. Default is -1.0*. Non-negative
+          valid range is [0.0,4.0]
   spred : Spread single channel. Boolean true* or false. For DDS files with a
           single Red or Luminance componentconly, spread it to all the RGB
           channels if set to true. If false the red channel takes the value.
@@ -1147,14 +1187,11 @@ are sufficient. Image types with load parameters:
           Setting to false allows more forgiving loading behaviour. In
           particular some software saves JPG/JFIF-encoded files with the png
           extension. Setting this to false allows these 'png' files to load.
-  lapng : Load Animated PNG inside a PNG. Boolean true or false*. If lapng is
+  anpng : Load Animated PNG inside a PNG. Boolean true or false*. If anpng is
           true the loading code will detect an animated PNG (APNG) when stored
           inside a regular PNG file. This allows the command-line to load all
           the frames of an APNG file even if it has a regular (single-frame)
           png extension.
-
-%s
-%s
 )USAGE010", intypes.Chr(), inexts.Chr()
 		);
 
