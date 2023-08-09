@@ -49,7 +49,7 @@ namespace Command
 	tCmdLine::tOption OptionOperation		("Operation",						"op",					1	);
 	tCmdLine::tOption OptionPostOperation	("Post operation",					"po",					1	);
 
-	tCmdLine::tOption OptionOutType			("Output file type",				"outtype",		'o',	1	);
+	tCmdLine::tOption OptionOutType			("Output file type(s)",				"out",			'o',	1	);
 	tCmdLine::tOption OptionOverwrite		("Overwrite existing output files",	"overwrite",	'w'			);
 	tCmdLine::tOption OptionAutoName		("Autogenerate output file names",	"autoname",		'a'			);
 	tCmdLine::tOption OptionParamsAPNG		("Save parameters for APNG files",	"paramsAPNG",			2	);
@@ -1354,7 +1354,31 @@ could call 'tacentview -cs' which expands to 'tacentview -c -s'
 
 Set output verbosity with --verbosity (-v) and a single integer value after it
 from 0 to 2. 0 means no text output, 1 is the default, and 2 is full/detailed.
-
+)USAGE010", intypes.Chr(), inexts.Chr()
+		);
+		tPrintf
+		(
+R"NOTATION010(
+NOTATION
+--------
+Values and arguments in this help text follow the following rules:
+- Real     : Real numbers are denoted by including the decimal point.
+- Integers : Integer numbers are denoted by not including the decimal point.
+- Hex      : Hexadecimal values are prefixed with a hash (#).
+- Names    : Some values are simple string names. These are comprised of
+             alphabetic upper and lower case characters only.
+- Booleans : You may use "true", "t", "yes", "y", "on", "enable", "enabled",
+             "1", "+", and strings that represent non-zero integers as true.
+             These are case-insensitive. False is the result otherwise.
+- Defaults : Default values are denoted with an asterisk (*). Setting a value
+             to * will set it to the default value.
+- Ranges   : Value ranges are specified in interval notation where [a,b] means
+             inclusive and (a,b) means exclusive. e.g. [2,5) -> 2,3,4.
+)NOTATION010"
+		);
+		tPrintf
+		(
+R"INPUTIMAGES010(
 INPUT IMAGES
 ------------
 Each parameter of the command line should be a file or directory to process.
@@ -1377,21 +1401,13 @@ types a warning is printed and the default, tga images only, will be used.
 
 %s
 %s
-
-Values and arguments in this help text follow the following rules:
-- Real     : Real numbers are denoted by including the decimal point.
-- Integers : Integer numbers are denoted by not including the decimal point.
-- Hex      : Hexadecimal values are prefixed with a hash (#).
-- Names    : Some values are simple string names. These are comprised of
-             alphabetic upper and lower case characters only.
-- Booleans : You may use "true", "t", "yes", "y", "on", "enable", "enabled",
-             "1", "+", and strings that represent non-zero integers as true.
-             These are case-insensitive. False is the result otherwise.
-- Defaults : Default values are denoted with an asterisk (*). Setting a value
-             to * will set it to the default value.
-- Ranges   : Value ranges are specified in interval notation where [a,b] means
-             inclusive and (a,b) means exclusive. e.g. [2,5) -> 2,3,4.
-
+)INPUTIMAGES010", intypes.Chr(), inexts.Chr()
+		);
+		tPrintf
+		(
+R"LOADPARAMS010(
+LOAD PARAMETERS
+---------------
 Some image types support various parameters while being loaded. Specifying load
 parameters takes the form:
 
@@ -1500,10 +1516,8 @@ are sufficient. Image types with load parameters:
           inside a regular PNG file. This allows the command-line to load all
           the frames of an APNG file even if it has a regular (single-frame)
           png extension.
-)USAGE010", intypes.Chr(), inexts.Chr()
+)LOADPARAMS010"
 		);
-
-		// In editor the column num at EOL (after last character) should be 80 or less.
 		tPrintf
 		(
 R"OPERATIONS010(
@@ -1518,7 +1532,7 @@ not provided or * is entered, the default value is used -- look for the
 asterisk in the argument description. eg. --op zap[a,b,c*,d*] may be called
 with --op zap[a,b] which would do the same thing as --op zap[a,b,*,*]. If the
 operation has all optional arguments you may include an empty arg list with []
-or leave it out. Eg. zap[*a,b*] may be called with --op zap[] or just --op zap.
+or leave it out. Eg. zap[a*,b*] may be called with --op zap[] or just --op zap.
 
 --op pixel[x,y,col,chan*]
   Sets the pixel at (x,y) to the colour supplied. The chan argument lets you
@@ -1849,8 +1863,6 @@ R"OPERATIONS020(
 %s
 )OPERATIONS020", filters.Chr(), edgemodes.Chr()
 		);
-
-		// In editor the column num at EOL (after last character) should be 80 or less.
 		tPrintf
 		(
 R"POSTOPS010(
@@ -1932,21 +1944,24 @@ included in the inputs, the new file is not used by the post operation.
   least 50 input images, every page will have an image in it.
 )POSTOPS010", outtypesanim.Chr()
 		);
-
-		// In editor the column num at EOL (after last character) should be 80 or less.
 		tPrintf
 		(
-R"OUTIMAGES010(
+R"OUTPUTIMAGES010(
 OUTPUT IMAGES
 -------------
 The output files are generated based on the input files and chosen operations.
-The type of the output images is specified with --outtype type. The short
-version -o may also be used. If no outtype is specified the default is tga.
+Each input image may generate one or more output images based on what the output
+types are set to. For example, you might specify that both webp and bmp images
+should be saved. The output types are specified with --out followed by a comma-
+separated list of types. The short version -o may also be used. If no out type
+is specified the default is tga. You may have multiple -o arguments or just a
+single one. For example, '-o webp,bmp' is the same as '-o webp -o bmp'.
+
 %s
 
 The output filename matches the input filename except that the extension/type
-may be different. Eg. Seascape.jpg would save as Seascape.tga if the outtype
-was tga.
+may be different. Eg. Seascape.jpg would save as Seascape.tga if the out type
+was tga only.
 
 If an output file already exists, it is not overwritten. To allow overwrite use
 the --overwrite (-w) flag. To have the tool try a different filename if it
@@ -1959,15 +1974,13 @@ saved. This is so easy batch conversions from one type to another may be
 performed. Sometimes you may not want to save unmodified files. An example of
 this is using the extract operation by itself. If you don't want the unmodified
 input image saved, specify -k or --skipunchanged on the command line.
-)OUTIMAGES010", outtypes.Chr()
+)OUTPUTIMAGES010", outtypes.Chr()
 		);
-
-		// In editor the column num at EOL (after last character) should be 80 or less.
 		tPrintf
 		(
-R"OUTPARAMS010(
-OUTPUT PARAMETERS
------------------
+R"SAVEPARAMS010(
+SAVE PARAMETERS
+---------------
 Different output image types have different features and may support different
 parameters when saving. The following options cover setting these parameters.
 These options do not have single-letter short forms. In all cases entering an
@@ -2032,7 +2045,11 @@ indicates which is the default.
         files. Interpreted as compression strength for non-lossy. Larger values
         compress more but images take longer to generate.
   dur:  Frame duration override, -1* means no override. Otherwise units are ms.
-
+)SAVEPARAMS010"
+		);
+		tPrintf
+		(
+R"EXITCODE010(
 EXIT CODE
 ---------
 The return error code is 0 for success and 1 for failure. For 0 to be returned
@@ -2041,7 +2058,7 @@ failure in any step for any image results in an error. By default processing
 continues to the next image even on a failure. If the --earlyexit (-e) flag is
 set, processing stops immediately on any failure. Either way, any failure
 returns a non-zero exit code.
-)OUTPARAMS010"
+)EXITCODE010"
 		);
 
 		return 0;
