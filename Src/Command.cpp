@@ -50,17 +50,17 @@ namespace Command
 	tCmdLine::tOption OptionPostOperation	("Post operation",					"po",					1	);
 
 	tCmdLine::tOption OptionOutTypes		("Output file type(s)",				"out",			'o',	1	);
+	tCmdLine::tOption OptionOutAPNG			("Save parameters for APNG files",	"outAPNG",				2	);
+	tCmdLine::tOption OptionOutBMP			("Save parameters for BMP  files",	"outBMP",				1	);
+	tCmdLine::tOption OptionOutGIF			("Save parameters for GIF  files",	"outGIF",				8	);
+	tCmdLine::tOption OptionOutJPG			("Save parameters for JPG  files",	"outJPG",				1	);
+	tCmdLine::tOption OptionOutPNG			("Save parameters for PNG  files",	"outPNG",				1	);
+	tCmdLine::tOption OptionOutQOI			("Save parameters for QOI  files",	"outQOI",				2	);
+	tCmdLine::tOption OptionOutTGA			("Save parameters for TGA  files",	"outTGA",				2	);
+	tCmdLine::tOption OptionOutTIFF			("Save parameters for TIFF files",	"outTIFF",				3	);
+	tCmdLine::tOption OptionOutWEBP			("Save parameters for WEBP files",	"outWEBP",				3	);
 	tCmdLine::tOption OptionOverwrite		("Overwrite existing output files",	"overwrite",	'w'			);
 	tCmdLine::tOption OptionAutoName		("Autogenerate output file names",	"autoname",		'a'			);
-	tCmdLine::tOption OptionParamsAPNG		("Save parameters for APNG files",	"paramsAPNG",			2	);
-	tCmdLine::tOption OptionParamsBMP		("Save parameters for BMP  files",	"paramsBMP",			1	);
-	tCmdLine::tOption OptionParamsGIF		("Save parameters for GIF  files",	"paramsGIF",			8	);
-	tCmdLine::tOption OptionParamsJPG		("Save parameters for JPG  files",	"paramsJPG",			1	);
-	tCmdLine::tOption OptionParamsPNG		("Save parameters for PNG  files",	"paramsPNG",			1	);
-	tCmdLine::tOption OptionParamsQOI		("Save parameters for QOI  files",	"paramsQOI",			2	);
-	tCmdLine::tOption OptionParamsTGA		("Save parameters for TGA  files",	"paramsTGA",			2	);
-	tCmdLine::tOption OptionParamsTIFF		("Save parameters for TIFF files",	"paramsTIFF",			3	);
-	tCmdLine::tOption OptionParamsWEBP		("Save parameters for WEBP files",	"paramsWEBP",			3	);
 	tCmdLine::tOption OptionEarlyExit		("Early exit / no skipping",		"earlyexit",	'e'			);
 	tCmdLine::tOption OptionSkipUnchanged	("Don't save unchanged files",		"skipunchanged",'k'			);
 
@@ -999,10 +999,75 @@ void Command::SetImageSaveParameters(Viewer::Image& image, tSystem::tFileType fi
 
 void Command::ParseSaveParametersAPNG()
 {
-	if (!OptionParamsAPNG)
+#if 0
+void Command::ParseLoadParametersASTC()
+{
+	if (!OptionInASTC)
 		return;
 
-	tString formatStr					= OptionParamsAPNG.Arg1();
+	tString paramValuePairs = OptionInASTC.Arg1();
+	tList<tStringItem> paramValueStrList;
+	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
+	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
+	{
+		if (pvstr->FindChar('=') == -1)
+			continue;
+
+		tString param = pvstr->Left('=');
+		tString value = pvstr->Right('=');
+		if (param.IsEmpty() || value.IsEmpty())
+			continue;
+
+		switch (tHash::tHashString(param.Chr()))
+		{
+			case tHash::tHashCT("colp"):
+				switch (tHash::tHashString(value.Chr()))
+				{
+					case tHash::tHashCT("*"):
+					case tHash::tHashCT("sRGB"):	LoadParamsASTC.Profile = tColourProfile::sRGB;	break;
+					case tHash::tHashCT("gRGB"):	LoadParamsASTC.Profile = tColourProfile::gRGB;	break;
+					case tHash::tHashCT("lRGB"):	LoadParamsASTC.Profile = tColourProfile::lRGB;	break;
+					case tHash::tHashCT("HDRa"):	LoadParamsASTC.Profile = tColourProfile::HDRa;	break;
+					case tHash::tHashCT("HDRA"):	LoadParamsASTC.Profile = tColourProfile::HDRA;	break;
+				}
+				break;
+
+			case tHash::tHashCT("corr"):
+			{
+				uint32 gamaF = tImage::tImageASTC::LoadFlag_GammaCompression;
+				uint32 autoF = tImage::tImageASTC::LoadFlag_AutoGamma;
+				uint32 srgbF = tImage::tImageASTC::LoadFlag_SRGBCompression;
+				uint32& flags = LoadParamsASTC.Flags;
+				switch (tHash::tHashString(value.Chr()))
+				{
+					case tHash::tHashCT("none"):	flags &= ~(gamaF | srgbF | autoF);			break;
+					case tHash::tHashCT("*"):
+					case tHash::tHashCT("auto"):	flags &= ~(gamaF | srgbF); flags |= autoF;	break;
+					case tHash::tHashCT("gamc"):	flags &= ~(srgbF | autoF); flags |= gamaF;	break;
+					case tHash::tHashCT("srgb"):	flags &= ~(gamaF | autoF); flags |= srgbF;	break;
+				}
+				break;
+			}
+
+			case tHash::tHashCT("gamma"):
+				LoadParamsASTC.Gamma = (value == "*") ? 2.2f : tMath::tClamp(value.AsFloat(), 0.5f, 4.0f);
+				break;
+
+			case tHash::tHashCT("tone"):
+				LoadParamsASTC.Exposure = (value == "*") ? -1.0f : tMath::tClamp(value.AsFloat(), -1.0f, 4.0f);
+				if (LoadParamsASTC.Exposure < 0.0f)
+					LoadParamsASTC.Flags &= ~(tImage::tImageASTC::LoadFlag_ToneMapExposure);
+				else
+					LoadParamsASTC.Flags |= tImage::tImageASTC::LoadFlag_ToneMapExposure;
+				break;
+		}
+	}
+}
+#endif
+	if (!OptionOutAPNG)
+		return;
+
+	tString formatStr					= OptionOutAPNG.Arg1();
 	switch (tHash::tHashString			(formatStr.Chr()))
 	{
 		case tHash::tHashCT("24"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::BPP24;		break;
@@ -1011,7 +1076,7 @@ void Command::ParseSaveParametersAPNG()
 		case tHash::tHashCT("*"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::Auto;		break;
 	}
 
-	tString overrideFrameDurationStr	= OptionParamsAPNG.Arg2();
+	tString overrideFrameDurationStr	= OptionOutAPNG.Arg2();
 	if (overrideFrameDurationStr == "*")
 		SaveParamsAPNG.OverrideFrameDuration = -1;
 	else
@@ -1021,10 +1086,10 @@ void Command::ParseSaveParametersAPNG()
 
 void Command::ParseSaveParametersBMP()
 {
-	if (!OptionParamsBMP)
+	if (!OptionOutBMP)
 		return;
 
-	tString formatStr					= OptionParamsBMP.Arg1();
+	tString formatStr					= OptionOutBMP.Arg1();
 	switch (tHash::tHashString			(formatStr.Chr()))
 	{
 		case tHash::tHashCT("24"):		SaveParamsBMP.Format = tImage::tImageBMP::tFormat::BPP24;		break;
@@ -1037,10 +1102,10 @@ void Command::ParseSaveParametersBMP()
 
 void Command::ParseSaveParametersGIF()
 {
-	if (!OptionParamsGIF)
+	if (!OptionOutGIF)
 		return;
 
-	tString bppStr = OptionParamsGIF.Arg1();
+	tString bppStr = OptionOutGIF.Arg1();
 	if (bppStr == "*")
 	{
 		SaveParamsGIF.Format = tImage::tPixelFormat::PAL8BIT;
@@ -1052,7 +1117,7 @@ void Command::ParseSaveParametersGIF()
 		SaveParamsGIF.Format = tImage::tPixelFormat(int(tImage::tPixelFormat::PAL8BIT) + bpp - 1);
 	}
 
-	tString quantStr = OptionParamsGIF.Arg2();
+	tString quantStr = OptionOutGIF.Arg2();
 	switch (tHash::tHashString(quantStr.Chr()))
 	{
 		case tHash::tHashCT("fixed"):	SaveParamsGIF.Method = tImage::tQuantize::Method::Fixed;		break;
@@ -1062,31 +1127,31 @@ void Command::ParseSaveParametersGIF()
 		case tHash::tHashCT("*"):		SaveParamsGIF.Method = tImage::tQuantize::Method::Wu;			break;
 	}
 
-	tString loopStr = OptionParamsGIF.Arg3();
+	tString loopStr = OptionOutGIF.Arg3();
 	if (loopStr == "*")
 		SaveParamsGIF.Loop = 0;
 	else
 		SaveParamsGIF.Loop = loopStr.AsInt32();
 
-	tString alphaThresholdStr = OptionParamsGIF.Arg4();
+	tString alphaThresholdStr = OptionOutGIF.Arg4();
 	if (alphaThresholdStr == "*")
 		SaveParamsGIF.AlphaThreshold = -1;
 	else
 		SaveParamsGIF.AlphaThreshold = alphaThresholdStr.AsInt32();
 
-	tString overrideFrameDurStr = OptionParamsGIF.Arg5();
+	tString overrideFrameDurStr = OptionOutGIF.Arg5();
 	if (overrideFrameDurStr == "*")
 		SaveParamsGIF.OverrideFrameDuration = -1;
 	else
 		SaveParamsGIF.OverrideFrameDuration = overrideFrameDurStr.AsInt32();
 
-	tString ditherStr = OptionParamsGIF.Arg6();
+	tString ditherStr = OptionOutGIF.Arg6();
 	if (ditherStr == "*")
 		SaveParamsGIF.DitherLevel = 0.0;
 	else
 		SaveParamsGIF.DitherLevel = ditherStr.AsDouble();
 
-	tString filterSizeStr = OptionParamsGIF.Arg7();
+	tString filterSizeStr = OptionOutGIF.Arg7();
 	if (filterSizeStr == "*")
 		SaveParamsGIF.FilterSize = 3;
 	else
@@ -1094,7 +1159,7 @@ void Command::ParseSaveParametersGIF()
 	if ((SaveParamsGIF.FilterSize != 1) && (SaveParamsGIF.FilterSize != 3) && (SaveParamsGIF.FilterSize != 5))
 		SaveParamsGIF.FilterSize = 3;
 
-	tString sampleFactorStr = OptionParamsGIF.Arg8();
+	tString sampleFactorStr = OptionOutGIF.Arg8();
 	if (sampleFactorStr == "*")
 		SaveParamsGIF.SampleFactor = 1;
 	else
@@ -1104,10 +1169,10 @@ void Command::ParseSaveParametersGIF()
 
 void Command::ParseSaveParametersJPG()
 {
-	if (!OptionParamsJPG)
+	if (!OptionOutJPG)
 		return;
 
-	tString qualityStr					= OptionParamsJPG.Arg1();
+	tString qualityStr					= OptionOutJPG.Arg1();
 	if (qualityStr == "*")
 	{
 		SaveParamsJPG.Quality = 95;
@@ -1123,10 +1188,10 @@ void Command::ParseSaveParametersJPG()
 
 void Command::ParseSaveParametersPNG()
 {
-	if (!OptionParamsPNG)
+	if (!OptionOutPNG)
 		return;
 
-	tString formatStr					= OptionParamsPNG.Arg1();
+	tString formatStr					= OptionOutPNG.Arg1();
 	switch (tHash::tHashString			(formatStr.Chr()))
 	{
 		case tHash::tHashCT("24"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::BPP24;		break;
@@ -1139,10 +1204,10 @@ void Command::ParseSaveParametersPNG()
 
 void Command::ParseSaveParametersQOI()
 {
-	if (!OptionParamsQOI)
+	if (!OptionOutQOI)
 		return;
 
-	tString formatStr					= OptionParamsQOI.Arg1();
+	tString formatStr					= OptionOutQOI.Arg1();
 	switch (tHash::tHashString			(formatStr.Chr()))
 	{
 		case tHash::tHashCT("24"):		SaveParamsQOI.Format = tImage::tImageQOI::tFormat::BPP24;		break;
@@ -1151,7 +1216,7 @@ void Command::ParseSaveParametersQOI()
 		case tHash::tHashCT("*"):		SaveParamsQOI.Format = tImage::tImageQOI::tFormat::Auto;		break;
 	}
 
-	tString spaceStr					= OptionParamsQOI.Arg2();
+	tString spaceStr					= OptionOutQOI.Arg2();
 	switch (tHash::tHashString			(spaceStr.Chr()))
 	{
 		case tHash::tHashCT("srgb"):	SaveParamsQOI.Space = tImage::tImageQOI::tSpace::sRGB;			break;
@@ -1164,10 +1229,10 @@ void Command::ParseSaveParametersQOI()
 
 void Command::ParseSaveParametersTGA()
 {
-	if (!OptionParamsTGA)
+	if (!OptionOutTGA)
 		return;
 
-	tString formatStr					= OptionParamsTGA.Arg1();
+	tString formatStr					= OptionOutTGA.Arg1();
 	switch (tHash::tHashString			(formatStr.Chr()))
 	{
 		case tHash::tHashCT("24"):		SaveParamsTGA.Format = tImage::tImageTGA::tFormat::BPP24;		break;
@@ -1176,7 +1241,7 @@ void Command::ParseSaveParametersTGA()
 		case tHash::tHashCT("*"):		SaveParamsTGA.Format = tImage::tImageTGA::tFormat::Auto;		break;
 	}
 
-	tString compStr						= OptionParamsTGA.Arg2();
+	tString compStr						= OptionOutTGA.Arg2();
 	switch (tHash::tHashString			(compStr.Chr()))
 	{
 		case tHash::tHashCT("rle"):		SaveParamsTGA.Compression = tImage::tImageTGA::tCompression::RLE;	break;
@@ -1188,10 +1253,10 @@ void Command::ParseSaveParametersTGA()
 
 void Command::ParseSaveParametersTIFF()
 {
-	if (!OptionParamsTIFF)
+	if (!OptionOutTIFF)
 		return;
 
-	tString formatStr					= OptionParamsTIFF.Arg1();
+	tString formatStr					= OptionOutTIFF.Arg1();
 	switch (tHash::tHashString			(formatStr.Chr()))
 	{
 		case tHash::tHashCT("24"):		SaveParamsTIFF.Format = tImage::tImageTIFF::tFormat::BPP24;		break;
@@ -1200,13 +1265,13 @@ void Command::ParseSaveParametersTIFF()
 		case tHash::tHashCT("*"):		SaveParamsTIFF.Format = tImage::tImageTIFF::tFormat::Auto;		break;
 	}
 
-	tString zlibCompStr = OptionParamsTIFF.Arg2();
+	tString zlibCompStr = OptionOutTIFF.Arg2();
 	if (zlibCompStr == "*")
 		SaveParamsTIFF.UseZLibCompression = true;
 	else
 		SaveParamsTIFF.UseZLibCompression = zlibCompStr.AsBool();
 
-	tString overrideFrameDurStr = OptionParamsTIFF.Arg3();
+	tString overrideFrameDurStr = OptionOutTIFF.Arg3();
 	if (overrideFrameDurStr == "*")
 		SaveParamsTIFF.OverrideFrameDuration = -1;
 	else
@@ -1216,22 +1281,22 @@ void Command::ParseSaveParametersTIFF()
 
 void Command::ParseSaveParametersWEBP()
 {
-	if (!OptionParamsWEBP)
+	if (!OptionOutWEBP)
 		return;
 
-	tString lossyStr = OptionParamsWEBP.Arg1();
+	tString lossyStr = OptionOutWEBP.Arg1();
 	if (lossyStr == "*")
 		SaveParamsWEBP.Lossy = false;
 	else
 		SaveParamsWEBP.Lossy = lossyStr.AsBool();
 
-	tString qualStr = OptionParamsWEBP.Arg2();
+	tString qualStr = OptionOutWEBP.Arg2();
 	if (qualStr == "*")
 		SaveParamsWEBP.QualityCompstr = 90.0f;
 	else
 		SaveParamsWEBP.QualityCompstr = qualStr.AsFloat();
 
-	tString overrideFrameDurStr = OptionParamsWEBP.Arg3();
+	tString overrideFrameDurStr = OptionOutWEBP.Arg3();
 	if (overrideFrameDurStr == "*")
 		SaveParamsWEBP.OverrideFrameDuration = -1;
 	else
