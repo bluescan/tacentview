@@ -33,8 +33,9 @@ namespace Command
 	int tPrintfNorm(const char* format, ...);		// Appears for verbosity level 1.
 	int tPrintfFull(const char* format, ...);		// Appears for verbosily level 1 and 2.
 
-	extern tSystem::tFileType OutType;
+	extern tSystem::tFileTypes OutTypes;
 	extern tCmdLine::tOption OptionOverwrite;
+	extern tCmdLine::tOption OptionEarlyExit;
 
 	extern tImage::tImageAPNG::SaveParams SaveParamsAPNG;
 	extern tImage::tImageBMP::SaveParams  SaveParamsBMP;

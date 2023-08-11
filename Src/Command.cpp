@@ -49,7 +49,7 @@ namespace Command
 	tCmdLine::tOption OptionOperation		("Operation",						"op",					1	);
 	tCmdLine::tOption OptionPostOperation	("Post operation",					"po",					1	);
 
-	tCmdLine::tOption OptionOutType			("Output file type(s)",				"out",			'o',	1	);
+	tCmdLine::tOption OptionOutTypes		("Output file type(s)",				"out",			'o',	1	);
 	tCmdLine::tOption OptionOverwrite		("Overwrite existing output files",	"overwrite",	'w'			);
 	tCmdLine::tOption OptionAutoName		("Autogenerate output file names",	"autoname",		'a'			);
 	tCmdLine::tOption OptionParamsAPNG		("Save parameters for APNG files",	"paramsAPNG",			2	);
@@ -96,9 +96,8 @@ namespace Command
 	void PopulateImagesList();																	// Step 3.
 	bool ProcessOperationsOnImage(Viewer::Image&);												// Applies all the operations (in order) to the supplied image.
 
-	void DetermineOutType();																	// Step 4.
-
-	void DetermineOutSaveParameters(tSystem::tFileType);										// Step 5.
+	void DetermineOutputTypes();																	// Step 4.
+	void DetermineOutputSaveParameters();										// Step 5.
 	void ParseSaveParametersAPNG();
 	void ParseSaveParametersBMP();
 	void ParseSaveParametersGIF();
@@ -136,7 +135,7 @@ namespace Command
 	tList<Viewer::Image> Images;
 	tList<Operation> Operations;
 	tList<PostOperation> PostOperations;
-	tSystem::tFileType OutType;
+	tSystem::tFileTypes OutTypes;
 }
 
 
@@ -928,35 +927,54 @@ bool Command::ProcessOperationsOnImage(Viewer::Image& image)
 }
 
 
-void Command::DetermineOutType()
+void Command::DetermineOutputTypes()
 {
-	OutType = tSystem::tFileType::TGA;
-	if (OptionOutType)
+	if (OptionOutTypes)
 	{
-		OutType = tSystem::tGetFileTypeFromName(OptionOutType.Arg1());
-		if (OutType == tSystem::tFileType::Invalid)
+		tList<tStringItem> types;
+		OptionOutTypes.GetArgs(types);
+		for (tStringItem* typ = types.First(); typ; typ = typ->Next())
 		{
-			tPrintfNorm("Warning: Invalid output file type specified. Defaulting to tga.\n");
-			OutType = tSystem::tFileType::TGA;
+			// Each argument will either be a single type, or a comma-sperated list of types.
+			tList<tStringItem> sepTypes;
+			tStd::tExplode(sepTypes, *typ, ',');
+			for (tStringItem* t = sepTypes.First(); t; t = t->Next())
+			{
+				tSystem::tFileType ft = tSystem::tGetFileTypeFromName(*t);
+				if (ft == tSystem::tFileType::Invalid)
+					tPrintfNorm("Warning: Unknown output file type: %s\n", t->Chr());
+				else if (!Viewer::FileTypes_Load.Contains(ft))
+					tPrintfNorm("Warning: Unsupported output image type: %s\n", t->Chr());
+				else
+					OutTypes.Add(ft);
+			}
 		}
 	}
+
+	// The default outtype if nothing is specified is tga.
+	if (OutTypes.IsEmpty())
+		OutTypes.Add(tSystem::tFileType::TGA);
 }
 
 
-void Command::DetermineOutSaveParameters(tSystem::tFileType fileType)
+void Command::DetermineOutputSaveParameters()
 {
-	// We only bother reading save parameter options for the type of files we will be saving.
-	switch (fileType)
+	// We only bother reading save parameters for the types of files we will be saving.
+	for (tSystem::tFileTypes::tFileTypeItem* typeItem = OutTypes.First(); typeItem; typeItem = typeItem->Next())
 	{
-		case tSystem::tFileType::APNG: ParseSaveParametersAPNG(); break;
-		case tSystem::tFileType::BMP:  ParseSaveParametersBMP();  break;
-		case tSystem::tFileType::GIF:  ParseSaveParametersGIF();  break;
-		case tSystem::tFileType::JPG:  ParseSaveParametersJPG();  break;
-		case tSystem::tFileType::PNG:  ParseSaveParametersPNG();  break;
-		case tSystem::tFileType::QOI:  ParseSaveParametersQOI();  break;
-		case tSystem::tFileType::TGA:  ParseSaveParametersTGA();  break;
-		case tSystem::tFileType::TIFF: ParseSaveParametersTIFF(); break;
-		case tSystem::tFileType::WEBP: ParseSaveParametersWEBP(); break;
+		tSystem::tFileType fileType = typeItem->FileType;
+		switch (fileType)
+		{
+			case tSystem::tFileType::APNG: ParseSaveParametersAPNG(); break;
+			case tSystem::tFileType::BMP:  ParseSaveParametersBMP();  break;
+			case tSystem::tFileType::GIF:  ParseSaveParametersGIF();  break;
+			case tSystem::tFileType::JPG:  ParseSaveParametersJPG();  break;
+			case tSystem::tFileType::PNG:  ParseSaveParametersPNG();  break;
+			case tSystem::tFileType::QOI:  ParseSaveParametersQOI();  break;
+			case tSystem::tFileType::TGA:  ParseSaveParametersTGA();  break;
+			case tSystem::tFileType::TIFF: ParseSaveParametersTIFF(); break;
+			case tSystem::tFileType::WEBP: ParseSaveParametersWEBP(); break;
+		}
 	}
 }
 
@@ -2087,8 +2105,8 @@ returns a non-zero exit code.
 	// Populates the PostOperations list.
 	PopulatePostOperations();
 
-	DetermineOutType();
-	DetermineOutSaveParameters(OutType);
+	DetermineOutputTypes();
+	DetermineOutputSaveParameters();
 
 	// Process standard operations.
 	// We do the images one at a time to save memory. That is, we only need to load one image in at a time
@@ -2106,7 +2124,7 @@ returns a non-zero exit code.
 			tPrintfNorm("Warning: Failed load: %s. Skipping.\n", inNameShort.Chr());
 			somethingFailed = true;
 			if (OptionEarlyExit)
-				break;
+				return 1;
 			continue;
 		}
 
@@ -2118,10 +2136,7 @@ returns a non-zero exit code.
 			image->Unload();
 			somethingFailed = true;
 			if (OptionEarlyExit)
-			{
-				image->Unload();
-				break;
-			}
+				return 1;
 			continue;
 		}
 
@@ -2131,32 +2146,34 @@ returns a non-zero exit code.
 		if (OptionSkipUnchanged && !image->IsDirty())
 		{
 			tPrintfNorm("Skipping unchanged: %s\n", inNameShort.Chr());
+			image->Unload();
 			continue;
 		}
 
-		// Determine out filename.
-		tString outFilename = DetermineOutputFilename(image->Filename, OutType);
-		tString outNameShort = tSystem::tGetFileName(outFilename);
-		bool doSave = true;
-		if (!OptionOverwrite && tSystem::tFileExists(outFilename))
+		// Now we iterate through the output types, saving if needed.
+		tAssert(OutTypes.Count() >= 1);
+		for (tSystem::tFileTypes::tFileTypeItem* typeItem = OutTypes.First(); typeItem; typeItem = typeItem->Next())
 		{
-			tPrintfNorm("Warning: %s exists. No overwrite.\n", outNameShort.Chr());
-			somethingFailed = true;
-			if (OptionEarlyExit)
+			tSystem::tFileType outType = typeItem->FileType;
+
+			// Determine out filename.
+			tString outFilename = DetermineOutputFilename(image->Filename, outType);
+			tString outNameShort = tSystem::tGetFileName(outFilename);
+			if (!OptionOverwrite && tSystem::tFileExists(outFilename))
 			{
-				image->Unload();
-				break;
+				tPrintfNorm("Warning: %s exists. No overwrite.\n", outNameShort.Chr());
+				somethingFailed = true;
+				if (OptionEarlyExit)
+				{
+					image->Unload();
+					return 1;
+				}
+				continue;
 			}
 
-			doSave = false;
-		}
-
-		// Save.
-		if (doSave)
-		{
 			// Set the image save parameters correctly. The user may have modified them from the command line.
-			SetImageSaveParameters(*image, OutType);
-			bool success = image->Save(outFilename, OutType, false);
+			SetImageSaveParameters(*image, outType);
+			bool success = image->Save(outFilename, outType, false);
 			if (success)
 			{
 				tPrintfFull("Saved File: %s\n", outNameShort.Chr());
@@ -2168,11 +2185,10 @@ returns a non-zero exit code.
 				if (OptionEarlyExit)
 				{
 					image->Unload();
-					break;
+					return 1;
 				}
 			}
 		}
-
 		image->Unload();
 	}
 
@@ -2200,7 +2216,12 @@ returns a non-zero exit code.
 				tPrintfNorm("Processing post operation: %s\n", postop->GetName());
 				bool success = postop->Apply(Images);
 				if (!success)
+				{
+					tPrintfNorm("Warning: Failed post operation: %s\n", postop->GetName());
 					somethingFailed = true;
+					if (OptionEarlyExit)
+						return 1;
+				}
 			}
 			tPrintfFull("Done processing post operations on %d images.\n", Images.Count());
 		}

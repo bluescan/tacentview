@@ -1615,28 +1615,33 @@ bool Command::OperationExtract::Apply(Viewer::Image& image)
 	if (baseName.IsEmpty())
 		baseName = tSystem::tGetFileBaseName(image.Filename);
 
-	Command::SetImageSaveParameters(image, Command::OutType);
-	for (int frameNum = 0; frameNum < image.GetNumFrames(); frameNum++)
+	// Iterate through the output types saving as we go.
+	for (tSystem::tFileTypes::tFileTypeItem* typeItem = Command::OutTypes.First(); typeItem; typeItem = typeItem->Next())
 	{
-		if (!FrameSet.Contains(frameNum))
-			continue;
-
-		// This sets the current frame so that when the image is saved, this frame is used.
-		image.FrameNum = frameNum;
-
-		tString outFile = Viewer::GetFrameFilename(frameNum, destDir, baseName, Command::OutType);
-		tString outFileShort = tSystem::tGetFileName(outFile);
-		if (!Command::OptionOverwrite && tSystem::tFileExists(outFile))
+		tSystem::tFileType outType = typeItem->FileType;
+		Command::SetImageSaveParameters(image, outType);
+		for (int frameNum = 0; frameNum < image.GetNumFrames(); frameNum++)
 		{
-			tPrintfFull("Extract | File %s%s exists. Not overwriting.\n", subDir.Chr(), outFileShort.Chr());
-			continue;
+			if (!FrameSet.Contains(frameNum))
+				continue;
+
+			// This sets the current frame so that when the image is saved, this frame is used.
+			image.FrameNum = frameNum;
+
+			tString outFile = Viewer::GetFrameFilename(frameNum, destDir, baseName, outType);
+			tString outFileShort = tSystem::tGetFileName(outFile);
+			if (!Command::OptionOverwrite && tSystem::tFileExists(outFile))
+			{
+				tPrintfFull("Extract | File %s%s exists. Not overwriting.\n", subDir.Chr(), outFileShort.Chr());
+				continue;
+			}
+
+			bool useConfigSaveParams = false;
+			bool onlyCurrentPic = true;
+
+			tPrintfFull("Extract | Save[file:%s%s]\n", subDir.Chr(), outFileShort.Chr());
+			image.Save(outFile, outType, useConfigSaveParams, onlyCurrentPic);
 		}
-
-		bool useConfigSaveParams = false;
-		bool onlyCurrentPic = true;
-
-		tPrintfFull("Extract | Save[file:%s%s]\n", subDir.Chr(), outFileShort.Chr());
-		image.Save(outFile, Command::OutType, useConfigSaveParams, onlyCurrentPic);
 	}
 
 	return true;
@@ -1730,9 +1735,19 @@ float Command::PostOperationCombine::GetFrameDuration(int frameNum) const
 bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 {
 	tAssert(Valid);
-	if (!Viewer::FileTypes_SaveMultiFrame.Contains(Command::OutType))
+	bool anyOutTypesSupportMultiframe = false;
+	for (tSystem::tFileTypes::tFileTypeItem* typeItem = OutTypes.First(); typeItem; typeItem = typeItem->Next())
 	{
-		tPrintfNorm("Combine | Filetype %s does not support Multi-Frame.\n", tSystem::tGetFileTypeName(Command::OutType).Chr());
+		tSystem::tFileType outType = typeItem->FileType;
+		if (Viewer::FileTypes_SaveMultiFrame.Contains(outType))
+		{
+			anyOutTypesSupportMultiframe = true;
+			break;
+		}
+	}
+	if (!anyOutTypesSupportMultiframe)
+	{
+		tPrintfNorm("Combine | No output filetypes support Multi-Frame.\n");
 		return false;
 	}
 
@@ -1750,33 +1765,7 @@ bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 		return false;
 	}
 
-	// Determine the output filename.
-	tString extension = tSystem::tGetExtension(Command::OutType);
-	tString outFile;
-	tString baseName = BaseName;
-	if (baseName.IsEmpty())
-	{
-		tsPrintf
-		(
-			outFile, "%sCombined_%s_%03d.%s",
-			destDir.Chr(),
-			tSystem::tConvertTimeToString(tSystem::tGetTimeLocal(), tSystem::tTimeFormat::Filename).Chr(),
-			images.GetNumItems(),
-			extension.Chr()
-		);
-	}
-	else
-	{
-		outFile = destDir + baseName + "." + extension;
-	}
-
-	// No need to continue if we know we won't be able to save the outFile.
-	if (!Command::OptionOverwrite && tSystem::tFileExists(outFile))
-	{
-		tPrintfNorm("Combine | File %s%s exists. Not overwriting.\n", subDir.Chr(), tSystem::tGetFileName(outFile).Chr());
-		return false;
-	}
-
+	// Get all the frames ready. They won't change no matter how many times we save them.
 	// We need to load the first image to determine the width and height. All input images must have the same width and
 	// height otherwise it is considered an error. This has 2 benefits: a) You get more control of how to resize/crop
 	// images to the desired size by using the resize/crop regular operations, and b) This combine call does not need
@@ -1821,42 +1810,85 @@ bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 		img->Unload();
 	}
 
-	// The set of frames is ready. Now we need to create the combined image file from them.
-	bool success = false;
-	tPrintfFull("Combine | Save[file:%s]\n", tSystem::tGetFileName(outFile).Chr());
-	switch (OutType)
+	// Now we loop through all the out types.
+	bool somethingFailed = false;
+	for (tSystem::tFileTypes::tFileTypeItem* typeItem = OutTypes.First(); typeItem; typeItem = typeItem->Next())
 	{
-		case tSystem::tFileType::GIF:
+		tSystem::tFileType outType = typeItem->FileType;
+
+		// Determine the output filename.
+		tString extension = tSystem::tGetExtension(outType);
+		tString outFile;
+		tString baseName = BaseName;
+		if (baseName.IsEmpty())
 		{
-			tImage::tImageGIF gif(frames, true);
-			success = gif.Save(outFile, SaveParamsGIF);
-			break;
+			tsPrintf
+			(
+				outFile, "%sCombined_%s_%03d.%s",
+				destDir.Chr(),
+				tSystem::tConvertTimeToString(tSystem::tGetTimeLocal(), tSystem::tTimeFormat::Filename).Chr(),
+				images.GetNumItems(),
+				extension.Chr()
+			);
+		}
+		else
+		{
+			outFile = destDir + baseName + "." + extension;
 		}
 
-		case tSystem::tFileType::WEBP:
+		// No need to try saving if we know we shouldn't overwrite the outFile.
+		if (!Command::OptionOverwrite && tSystem::tFileExists(outFile))
 		{
-			tImage::tImageWEBP webp(frames, true);
-			success = webp.Save(outFile, SaveParamsWEBP);
-			break;
+			tPrintfNorm("Combine | File %s%s exists. Not overwriting.\n", subDir.Chr(), tSystem::tGetFileName(outFile).Chr());
+			if (OptionEarlyExit)
+				return false;
+			continue;
 		}
 
-		case tSystem::tFileType::APNG:
+		// The set of frames is ready. Now we need to create the combined image file from them.
+		bool success = false;
+		tPrintfFull("Combine | Save[file:%s]\n", tSystem::tGetFileName(outFile).Chr());
+		switch (outType)
 		{
-			tImage::tImageAPNG apng(frames, true);
-			tImage::tImageAPNG::tFormat savedFormat = apng.Save(outFile, SaveParamsAPNG);
-			success = (savedFormat != tImage::tImageAPNG::tFormat::Invalid);
-			break;
-		}
+			case tSystem::tFileType::GIF:
+			{
+				tImage::tImageGIF gif(frames, true);
+				success = gif.Save(outFile, SaveParamsGIF);
+				break;
+			}
 
-		case tSystem::tFileType::TIFF:
+			case tSystem::tFileType::WEBP:
+			{
+				tImage::tImageWEBP webp(frames, true);
+				success = webp.Save(outFile, SaveParamsWEBP);
+				break;
+			}
+
+			case tSystem::tFileType::APNG:
+			{
+				tImage::tImageAPNG apng(frames, true);
+				tImage::tImageAPNG::tFormat savedFormat = apng.Save(outFile, SaveParamsAPNG);
+				success = (savedFormat != tImage::tImageAPNG::tFormat::Invalid);
+				break;
+			}
+
+			case tSystem::tFileType::TIFF:
+			{
+				tImage::tImageTIFF tiff(frames, true);
+				success = tiff.Save(outFile, SaveParamsTIFF);
+				break;
+			}
+		}
+		if (!success)
 		{
-			tImage::tImageTIFF tiff(frames, true);
-			success = tiff.Save(outFile, SaveParamsTIFF);
-			break;
+			tPrintfFull("Combine | Failed Save[file:%s]\n", tSystem::tGetFileName(outFile).Chr());
+			somethingFailed = true;
+			if (OptionEarlyExit)
+				return false;
 		}
 	}
 
-	return success;
+	return !somethingFailed;
 }
 
 
@@ -1918,9 +1950,19 @@ Command::PostOperationContact::PostOperationContact(const tString& argsStr)
 bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 {
 	tAssert(Valid);
-	if (!Viewer::FileTypes_Save.Contains(Command::OutType))
+	bool anyOutTypesSupportSave = false;
+	for (tSystem::tFileTypes::tFileTypeItem* typeItem = OutTypes.First(); typeItem; typeItem = typeItem->Next())
 	{
-		tPrintfNorm("Contact | Filetype %s cannot be saved.\n", tSystem::tGetFileTypeName(Command::OutType).Chr());
+		tSystem::tFileType outType = typeItem->FileType;
+		if (Viewer::FileTypes_Save.Contains(outType))
+		{
+			anyOutTypesSupportSave = true;
+			break;
+		}
+	}
+	if (!anyOutTypesSupportSave)
+	{
+		tPrintfNorm("Contact | No output filetypes support save.\n");
 		return false;
 	}
 
@@ -1970,33 +2012,6 @@ bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 		return false;
 	}
 
-	// Determine the output filename.
-	tString extension = tSystem::tGetExtension(Command::OutType);
-	tString outFile;
-	tString baseName = BaseName;
-	if (baseName.IsEmpty())
-	{
-		tsPrintf
-		(
-			outFile, "%sContact_%s_%02dx%02d.%s",
-			destDir.Chr(),
-			tSystem::tConvertTimeToString(tSystem::tGetTimeLocal(), tSystem::tTimeFormat::Filename).Chr(),
-			cols, rows,
-			extension.Chr()
-		);
-	}
-	else
-	{
-		outFile = destDir + baseName + "." + extension;
-	}
-
-	// No need to continue if we know we won't be able to save the outFile.
-	if (!Command::OptionOverwrite && tSystem::tFileExists(outFile))
-	{
-		tPrintfNorm("Contact | File %s%s exists. Not overwriting.\n", subDir.Chr(), tSystem::tGetFileName(outFile).Chr());
-		return false;
-	}
-
 	// We need to load the first image to determine the width and height. All input images must have the same width and
 	// height otherwise it is considered an error. This has 2 benefits: a) You get more control of how to resize/crop
 	// images to the desired size by using the resize/crop regular operations, and b) This combine call does not need
@@ -2004,15 +2019,21 @@ bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 	Viewer::Image* firstImage = images.First();
 	if (!firstImage->IsLoaded())
 		firstImage->Load();
+	if (!firstImage->IsLoaded())
+	{
+		tPrintfNorm("Contact | Unable to determine frame width and height.\n");
+		return false;
+	}
 	int frameWidth = firstImage->GetWidth();
 	int frameHeight = firstImage->GetHeight();
 	if ((frameWidth < 4) || (frameHeight < 4))
 	{
 		tPrintfNorm("Contact | Invalid image dimensions %dx%d. Must be at least 4x4.\n", frameWidth, frameHeight);
+		firstImage->Unload();
 		return false;
 	}
 
-	// Do the actual work here.
+	// Create the output picture. We only need to do this once rather than for every out type.
 	int contactWidth = frameWidth*cols;
 	int contactHeight = frameHeight*rows;
 	tImage::tPicture outPic(contactWidth, contactHeight);
@@ -2027,7 +2048,6 @@ bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 			img->Load();
 
 		tPrintfFull("Processing frame %d : %s at (%d, %d).\n", frame, img->Filename.Chr(), ix, iy);
-
 		if ((img->GetWidth() != frameWidth) || (img->GetHeight() != frameHeight))
 		{
 			img->Unload();
@@ -2063,81 +2083,127 @@ bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 	}
 
 	if (!outPic.IsValid())
-		return false;
-
-	// The outPic is ready. Now we need to create the contact/flipbook image file from it.
-	bool success = false;
-	tPrintfFull("Contact | Save[file:%s]\n", tSystem::tGetFileName(outFile).Chr());
-	switch (OutType)
 	{
-		case tSystem::tFileType::TGA:
+		tPrintfNorm("Contact | Error generating output picture.\n");
+		return false;
+	}
+
+	// Now we iterate all the outtypes.
+	bool somethingFailed = false;
+	for (tSystem::tFileTypes::tFileTypeItem* typeItem = OutTypes.First(); typeItem; typeItem = typeItem->Next())
+	{
+		tSystem::tFileType outType = typeItem->FileType;
+
+		// Determine the output filename.
+		tString extension = tSystem::tGetExtension(outType);
+		tString outFile;
+		tString baseName = BaseName;
+		if (baseName.IsEmpty())
 		{
-			tImage::tImageTGA tga(outPic, true);
-			tImage::tImageTGA::tFormat savedFmt = tga.Save(outFile, SaveParamsTGA);
-			success = (savedFmt != tImage::tImageTGA::tFormat::Invalid);
-			break;
+			tsPrintf
+			(
+				outFile, "%sContact_%s_%02dx%02d.%s",
+				destDir.Chr(),
+				tSystem::tConvertTimeToString(tSystem::tGetTimeLocal(), tSystem::tTimeFormat::Filename).Chr(),
+				cols, rows,
+				extension.Chr()
+			);
+		}
+		else
+		{
+			outFile = destDir + baseName + "." + extension;
 		}
 
-		case tSystem::tFileType::PNG:
+		// Need to continue if we know we won't be able to save the outFile.
+		if (!Command::OptionOverwrite && tSystem::tFileExists(outFile))
 		{
-			tImage::tImagePNG png(outPic, true);
-			tImage::tImagePNG::tFormat savedFmt = png.Save(outFile, SaveParamsPNG);
-			success = (savedFmt != tImage::tImagePNG::tFormat::Invalid);
-			break;
+			tPrintfNorm("Contact | File %s%s exists. Not overwriting.\n", subDir.Chr(), tSystem::tGetFileName(outFile).Chr());
+			if (OptionEarlyExit)
+				return false;
+			continue;
 		}
 
-		case tSystem::tFileType::JPG:
+		// Now we need to save the contact/flipbook image file from the outpic.
+		bool success = false;
+		tPrintfFull("Contact | Save[file:%s]\n", tSystem::tGetFileName(outFile).Chr());
+		switch (outType)
 		{
-			tImage::tImageJPG jpg(outPic, true);
-			success = jpg.Save(outFile, SaveParamsJPG);
-			break;
-		}
+			case tSystem::tFileType::TGA:
+			{
+				tImage::tImageTGA tga(outPic, true);
+				tImage::tImageTGA::tFormat savedFmt = tga.Save(outFile, SaveParamsTGA);
+				success = (savedFmt != tImage::tImageTGA::tFormat::Invalid);
+				break;
+			}
 
-		case tSystem::tFileType::GIF:
-		{
-			tImage::tImageGIF gif(outPic, true);
-			success = gif.Save(outFile, SaveParamsGIF);
-			break;
-		}
+			case tSystem::tFileType::PNG:
+			{
+				tImage::tImagePNG png(outPic, true);
+				tImage::tImagePNG::tFormat savedFmt = png.Save(outFile, SaveParamsPNG);
+				success = (savedFmt != tImage::tImagePNG::tFormat::Invalid);
+				break;
+			}
 
-		case tSystem::tFileType::WEBP:
-		{
-			tImage::tImageWEBP webp(outPic, true);
-			success = webp.Save(outFile, SaveParamsWEBP);
-			break;
-		}
+			case tSystem::tFileType::JPG:
+			{
+				tImage::tImageJPG jpg(outPic, true);
+				success = jpg.Save(outFile, SaveParamsJPG);
+				break;
+			}
 
-		case tSystem::tFileType::QOI:
-		{
-			tImage::tImageQOI qoi(outPic, true);
-			tImage::tImageQOI::tFormat savedFmt = qoi.Save(outFile, SaveParamsQOI);
-			success = (savedFmt != tImage::tImageQOI::tFormat::Invalid);
-			break;
-		}
+			case tSystem::tFileType::GIF:
+			{
+				tImage::tImageGIF gif(outPic, true);
+				success = gif.Save(outFile, SaveParamsGIF);
+				break;
+			}
 
-		case tSystem::tFileType::APNG:
-		{
-			tImage::tImageAPNG apng(outPic, true);
-			tImage::tImageAPNG::tFormat savedFormat = apng.Save(outFile, SaveParamsAPNG);
-			success = (savedFormat != tImage::tImageAPNG::tFormat::Invalid);
-			break;
-		}
+			case tSystem::tFileType::WEBP:
+			{
+				tImage::tImageWEBP webp(outPic, true);
+				success = webp.Save(outFile, SaveParamsWEBP);
+				break;
+			}
 
-		case tSystem::tFileType::BMP:
-		{
-			tImage::tImageBMP bmp(outPic, true);
-			tImage::tImageBMP::tFormat savedFormat = bmp.Save(outFile, SaveParamsBMP);
-			success = (savedFormat != tImage::tImageBMP::tFormat::Invalid);
-			break;
-		}
+			case tSystem::tFileType::QOI:
+			{
+				tImage::tImageQOI qoi(outPic, true);
+				tImage::tImageQOI::tFormat savedFmt = qoi.Save(outFile, SaveParamsQOI);
+				success = (savedFmt != tImage::tImageQOI::tFormat::Invalid);
+				break;
+			}
 
-		case tSystem::tFileType::TIFF:
+			case tSystem::tFileType::APNG:
+			{
+				tImage::tImageAPNG apng(outPic, true);
+				tImage::tImageAPNG::tFormat savedFormat = apng.Save(outFile, SaveParamsAPNG);
+				success = (savedFormat != tImage::tImageAPNG::tFormat::Invalid);
+				break;
+			}
+
+			case tSystem::tFileType::BMP:
+			{
+				tImage::tImageBMP bmp(outPic, true);
+				tImage::tImageBMP::tFormat savedFormat = bmp.Save(outFile, SaveParamsBMP);
+				success = (savedFormat != tImage::tImageBMP::tFormat::Invalid);
+				break;
+			}
+
+			case tSystem::tFileType::TIFF:
+			{
+				tImage::tImageTIFF tiff(outPic, true);
+				success = tiff.Save(outFile, SaveParamsTIFF);
+				break;
+			}
+		}
+		if (!success)
 		{
-			tImage::tImageTIFF tiff(outPic, true);
-			success = tiff.Save(outFile, SaveParamsTIFF);
-			break;
+			tPrintfFull("Contact | Failed Save[file:%s]\n", tSystem::tGetFileName(outFile).Chr());
+			somethingFailed = true;
+			if (OptionEarlyExit)
+				return false;
 		}
 	}
 
-	return success;
+	return !somethingFailed;
 }
