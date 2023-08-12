@@ -75,6 +75,13 @@ namespace Command
 		~ConsoleOutputScoped()			{ EndConsoleOutput(); }
 	};
 
+	struct ParamValuePair : public tLink<ParamValuePair>
+	{
+		tString Param;
+		tString Value;
+	};
+	int ParseParamValuePairs(tList<ParamValuePair>& pairs, const tString& pairsStr);			// Parsed pairsStr of form "param1=value1,param2=value2,etc".
+
 	void DetermineInputTypes();																	// Step 1.
 	void InputFilesAddUnique(const tSystem::tFileInfo&);
 	void DetermineInputLoadParameters();
@@ -219,6 +226,33 @@ void Command::EndConsoleOutput()
 	ip.ki.dwFlags = KEYEVENTF_KEYUP;
 	SendInput(1, &ip, sizeof(INPUT));
 	#endif
+}
+
+
+int Command::ParseParamValuePairs(tList<ParamValuePair>& pairs, const tString& pairsStr)
+{
+	if (pairsStr.IsEmpty())
+		return 0;
+
+	tList<tStringItem> paramValueStrList;
+	tStd::tExplode(paramValueStrList, pairsStr, ',');
+	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
+	{
+		if (pvstr->FindChar('=') == -1)
+			continue;
+
+		tString param = pvstr->Left('=');
+		tString value = pvstr->Right('=');
+		if (param.IsEmpty() || value.IsEmpty())
+			continue;
+
+		ParamValuePair* newPair = new ParamValuePair;
+		newPair->Param = param;
+		newPair->Value = value;
+		pairs.Append(newPair);
+	}
+
+	return pairs.Count();
 }
 
 
@@ -372,22 +406,12 @@ void Command::DetermineInputLoadParameters()
 
 void Command::ParseLoadParametersASTC()
 {
-	if (!OptionInASTC)
-		return;
-
-	tString paramValuePairs = OptionInASTC.Arg1();
-	tList<tStringItem> paramValueStrList;
-	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
-	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
+	tList<ParamValuePair> pairs;
+	ParseParamValuePairs(pairs, OptionInASTC.Arg1());
+	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
 	{
-		if (pvstr->FindChar('=') == -1)
-			continue;
-
-		tString param = pvstr->Left('=');
-		tString value = pvstr->Right('=');
-		if (param.IsEmpty() || value.IsEmpty())
-			continue;
-
+		tString& param = p->Param;
+		tString& value = p->Value;
 		switch (tHash::tHashString(param.Chr()))
 		{
 			case tHash::tHashCT("colp"):
@@ -437,22 +461,12 @@ void Command::ParseLoadParametersASTC()
 
 void Command::ParseLoadParametersDDS()
 {
-	if (!OptionInDDS)
-		return;
-
-	tString paramValuePairs = OptionInDDS.Arg1();
-	tList<tStringItem> paramValueStrList;
-	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
-	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
+	tList<ParamValuePair> pairs;
+	ParseParamValuePairs(pairs, OptionInDDS.Arg1());
+	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
 	{
-		if (pvstr->FindChar('=') == -1)
-			continue;
-
-		tString param = pvstr->Left('=');
-		tString value = pvstr->Right('=');
-		if (param.IsEmpty() || value.IsEmpty())
-			continue;
-
+		tString& param = p->Param;
+		tString& value = p->Value;
 		switch (tHash::tHashString(param.Chr()))
 		{
 			case tHash::tHashCT("corr"):
@@ -510,22 +524,12 @@ void Command::ParseLoadParametersDDS()
 
 void Command::ParseLoadParametersEXR()
 {
-	if (!OptionInEXR)
-		return;
-
-	tString paramValuePairs = OptionInEXR.Arg1();
-	tList<tStringItem> paramValueStrList;
-	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
-	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
+	tList<ParamValuePair> pairs;
+	ParseParamValuePairs(pairs, OptionInEXR.Arg1());
+	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
 	{
-		if (pvstr->FindChar('=') == -1)
-			continue;
-
-		tString param = pvstr->Left('=');
-		tString value = pvstr->Right('=');
-		if (param.IsEmpty() || value.IsEmpty())
-			continue;
-
+		tString& param = p->Param;
+		tString& value = p->Value;
 		switch (tHash::tHashString(param.Chr()))
 		{
 			case tHash::tHashCT("gamma"):
@@ -554,22 +558,12 @@ void Command::ParseLoadParametersEXR()
 
 void Command::ParseLoadParametersHDR()
 {
-	if (!OptionInHDR)
-		return;
-
-	tString paramValuePairs = OptionInHDR.Arg1();
-	tList<tStringItem> paramValueStrList;
-	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
-	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
+	tList<ParamValuePair> pairs;
+	ParseParamValuePairs(pairs, OptionInHDR.Arg1());
+	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
 	{
-		if (pvstr->FindChar('=') == -1)
-			continue;
-
-		tString param = pvstr->Left('=');
-		tString value = pvstr->Right('=');
-		if (param.IsEmpty() || value.IsEmpty())
-			continue;
-
+		tString& param = p->Param;
+		tString& value = p->Value;
 		switch (tHash::tHashString(param.Chr()))
 		{
 			case tHash::tHashCT("gamma"):
@@ -586,22 +580,12 @@ void Command::ParseLoadParametersHDR()
 
 void Command::ParseLoadParametersJPG()
 {
-	if (!OptionInJPG)
-		return;
-
-	tString paramValuePairs = OptionInJPG.Arg1();
-	tList<tStringItem> paramValueStrList;
-	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
-	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
+	tList<ParamValuePair> pairs;
+	ParseParamValuePairs(pairs, OptionInJPG.Arg1());
+	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
 	{
-		if (pvstr->FindChar('=') == -1)
-			continue;
-
-		tString param = pvstr->Left('=');
-		tString value = pvstr->Right('=');
-		if (param.IsEmpty() || value.IsEmpty())
-			continue;
-
+		tString& param = p->Param;
+		tString& value = p->Value;
 		switch (tHash::tHashString(param.Chr()))
 		{
 			case tHash::tHashCT("strct"):
@@ -630,22 +614,12 @@ void Command::ParseLoadParametersJPG()
 
 void Command::ParseLoadParametersKTX()
 {
-	if (!OptionInKTX)
-		return;
-
-	tString paramValuePairs = OptionInKTX.Arg1();
-	tList<tStringItem> paramValueStrList;
-	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
-	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
+	tList<ParamValuePair> pairs;
+	ParseParamValuePairs(pairs, OptionInKTX.Arg1());
+	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
 	{
-		if (pvstr->FindChar('=') == -1)
-			continue;
-
-		tString param = pvstr->Left('=');
-		tString value = pvstr->Right('=');
-		if (param.IsEmpty() || value.IsEmpty())
-			continue;
-
+		tString& param = p->Param;
+		tString& value = p->Value;
 		switch (tHash::tHashString(param.Chr()))
 		{
  			case tHash::tHashCT("corr"):
@@ -693,22 +667,12 @@ void Command::ParseLoadParametersKTX()
 
 void Command::ParseLoadParametersPKM()
 {
-	if (!OptionInPKM)
-		return;
-
-	tString paramValuePairs = OptionInPKM.Arg1();
-	tList<tStringItem> paramValueStrList;
-	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
-	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
+	tList<ParamValuePair> pairs;
+	ParseParamValuePairs(pairs, OptionInPKM.Arg1());
+	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
 	{
-		if (pvstr->FindChar('=') == -1)
-			continue;
-
-		tString param = pvstr->Left('=');
-		tString value = pvstr->Right('=');
-		if (param.IsEmpty() || value.IsEmpty())
-			continue;
-
+		tString& param = p->Param;
+		tString& value = p->Value;
 		switch (tHash::tHashString(param.Chr()))
 		{
  			case tHash::tHashCT("corr"):
@@ -748,22 +712,12 @@ void Command::ParseLoadParametersPKM()
 
 void Command::ParseLoadParametersPNG()
 {
-	if (!OptionInPNG)
-		return;
-
-	tString paramValuePairs = OptionInPNG.Arg1();
-	tList<tStringItem> paramValueStrList;
-	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
-	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
+	tList<ParamValuePair> pairs;
+	ParseParamValuePairs(pairs, OptionInPNG.Arg1());
+	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
 	{
-		if (pvstr->FindChar('=') == -1)
-			continue;
-
-		tString param = pvstr->Left('=');
-		tString value = pvstr->Right('=');
-		if (param.IsEmpty() || value.IsEmpty())
-			continue;
-
+		tString& param = p->Param;
+		tString& value = p->Value;
 		switch (tHash::tHashString(param.Chr()))
 		{
 			case tHash::tHashCT("strct"):
@@ -999,22 +953,12 @@ void Command::SetImageSaveParameters(Viewer::Image& image, tSystem::tFileType fi
 
 void Command::ParseSaveParametersAPNG()
 {
-	if (!OptionOutAPNG)
-		return;
-
-	tString paramValuePairs = OptionOutAPNG.Arg1();
-	tList<tStringItem> paramValueStrList;
-	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
-	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
+	tList<ParamValuePair> pairs;
+	ParseParamValuePairs(pairs, OptionOutAPNG.Arg1());
+	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
 	{
-		if (pvstr->FindChar('=') == -1)
-			continue;
-
-		tString param = pvstr->Left('=');
-		tString value = pvstr->Right('=');
-		if (param.IsEmpty() || value.IsEmpty())
-			continue;
-
+		tString& param = p->Param;
+		tString& value = p->Value;
 		switch (tHash::tHashString(param.Chr()))
 		{
 			case tHash::tHashCT("bpp"):
@@ -1037,22 +981,12 @@ void Command::ParseSaveParametersAPNG()
 
 void Command::ParseSaveParametersBMP()
 {
-	if (!OptionOutBMP)
-		return;
-
-	tString paramValuePairs = OptionOutBMP.Arg1();
-	tList<tStringItem> paramValueStrList;
-	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
-	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
+	tList<ParamValuePair> pairs;
+	ParseParamValuePairs(pairs, OptionOutBMP.Arg1());
+	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
 	{
-		if (pvstr->FindChar('=') == -1)
-			continue;
-
-		tString param = pvstr->Left('=');
-		tString value = pvstr->Right('=');
-		if (param.IsEmpty() || value.IsEmpty())
-			continue;
-
+		tString& param = p->Param;
+		tString& value = p->Value;
 		switch (tHash::tHashString(param.Chr()))
 		{
 			case tHash::tHashCT("bpp"):
@@ -1071,68 +1005,68 @@ void Command::ParseSaveParametersBMP()
 
 void Command::ParseSaveParametersGIF()
 {
-	if (!OptionOutGIF)
-		return;
-
-	tString bppStr = OptionOutGIF.Arg1();
-	if (bppStr == "*")
+	tList<ParamValuePair> pairs;
+	ParseParamValuePairs(pairs, OptionOutBMP.Arg1());
+	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
 	{
-		SaveParamsGIF.Format = tImage::tPixelFormat::PAL8BIT;
+		tString& param = p->Param;
+		tString& value = p->Value;
+		switch (tHash::tHashString(param.Chr()))
+		{
+			case tHash::tHashCT("bpp"):
+				if (value == "*")
+					SaveParamsGIF.Format = tImage::tPixelFormat::PAL8BIT;
+				else
+					SaveParamsGIF.Format = tImage::tPixelFormat(int(tImage::tPixelFormat::PAL1BIT) + tMath::tClamp(value.AsInt32(), 1, 8) - 1);
+				break;
+
+			case tHash::tHashCT("qan"):
+				switch (tHash::tHashString(value.Chr()))
+				{
+					case tHash::tHashCT("fix"):	SaveParamsGIF.Method = tImage::tQuantize::Method::Fixed;		break;
+					case tHash::tHashCT("spc"):	SaveParamsGIF.Method = tImage::tQuantize::Method::Spatial;		break;
+					case tHash::tHashCT("neu"):	SaveParamsGIF.Method = tImage::tQuantize::Method::Neu;			break;
+					case tHash::tHashCT("wu"):
+					case tHash::tHashCT("*"):	SaveParamsGIF.Method = tImage::tQuantize::Method::Wu;			break;
+				}
+				break;
+
+			case tHash::tHashCT("loop"):
+				if (value == "*")
+					SaveParamsGIF.Loop = 0;
+				else
+					SaveParamsGIF.Loop = value.AsInt32();
+				break;
+
+			case tHash::tHashCT("alp"):
+				if (value == "*")
+					SaveParamsGIF.AlphaThreshold = -1;
+				else
+					SaveParamsGIF.AlphaThreshold = value.AsInt32();
+				break;
+
+			case tHash::tHashCT("dur"):
+				SaveParamsGIF.OverrideFrameDuration = (value == "*") ? -1 : tMath::tClampMin(value.AsInt(), -1);
+				break;
+
+			case tHash::tHashCT("dith"):
+				SaveParamsGIF.DitherLevel = (value == "*") ? 0.0 : tMath::tClampMin(value.AsDouble(), 0.0);
+				break;
+
+			case tHash::tHashCT("filt"):
+				if (value == "*")
+					SaveParamsGIF.FilterSize = 3;
+				else
+					SaveParamsGIF.FilterSize = value.AsInt32();
+				if ((SaveParamsGIF.FilterSize != 1) && (SaveParamsGIF.FilterSize != 3) && (SaveParamsGIF.FilterSize != 5))
+					SaveParamsGIF.FilterSize = 3;
+				break;
+
+			case tHash::tHashCT("samp"):
+				SaveParamsGIF.SampleFactor = (value == "*") ? 1 : value.AsInt32();
+				break;
+		}
 	}
-	else
-	{
-		int bpp = bppStr.AsInt32();
-		tMath::tiClamp(bpp, 1, 8);
-		SaveParamsGIF.Format = tImage::tPixelFormat(int(tImage::tPixelFormat::PAL8BIT) + bpp - 1);
-	}
-
-	tString quantStr = OptionOutGIF.Arg2();
-	switch (tHash::tHashString(quantStr.Chr()))
-	{
-		case tHash::tHashCT("fixed"):	SaveParamsGIF.Method = tImage::tQuantize::Method::Fixed;		break;
-		case tHash::tHashCT("spatial"):	SaveParamsGIF.Method = tImage::tQuantize::Method::Spatial;		break;
-		case tHash::tHashCT("neu"):		SaveParamsGIF.Method = tImage::tQuantize::Method::Neu;			break;
-		case tHash::tHashCT("wu"):
-		case tHash::tHashCT("*"):		SaveParamsGIF.Method = tImage::tQuantize::Method::Wu;			break;
-	}
-
-	tString loopStr = OptionOutGIF.Arg3();
-	if (loopStr == "*")
-		SaveParamsGIF.Loop = 0;
-	else
-		SaveParamsGIF.Loop = loopStr.AsInt32();
-
-	tString alphaThresholdStr = OptionOutGIF.Arg4();
-	if (alphaThresholdStr == "*")
-		SaveParamsGIF.AlphaThreshold = -1;
-	else
-		SaveParamsGIF.AlphaThreshold = alphaThresholdStr.AsInt32();
-
-	tString overrideFrameDurStr = OptionOutGIF.Arg5();
-	if (overrideFrameDurStr == "*")
-		SaveParamsGIF.OverrideFrameDuration = -1;
-	else
-		SaveParamsGIF.OverrideFrameDuration = overrideFrameDurStr.AsInt32();
-
-	tString ditherStr = OptionOutGIF.Arg6();
-	if (ditherStr == "*")
-		SaveParamsGIF.DitherLevel = 0.0;
-	else
-		SaveParamsGIF.DitherLevel = ditherStr.AsDouble();
-
-	tString filterSizeStr = OptionOutGIF.Arg7();
-	if (filterSizeStr == "*")
-		SaveParamsGIF.FilterSize = 3;
-	else
-		SaveParamsGIF.FilterSize = filterSizeStr.AsInt32();
-	if ((SaveParamsGIF.FilterSize != 1) && (SaveParamsGIF.FilterSize != 3) && (SaveParamsGIF.FilterSize != 5))
-		SaveParamsGIF.FilterSize = 3;
-
-	tString sampleFactorStr = OptionOutGIF.Arg8();
-	if (sampleFactorStr == "*")
-		SaveParamsGIF.SampleFactor = 1;
-	else
-		SaveParamsGIF.SampleFactor = sampleFactorStr.AsInt32();
 }
 
 
