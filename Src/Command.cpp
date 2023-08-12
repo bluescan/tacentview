@@ -2065,65 +2065,94 @@ R"SAVEPARAMS010(
 SAVE PARAMETERS
 ---------------
 Different output image types have different features and may support different
-parameters when saving. The following options cover setting these parameters.
-These options do not have single-letter short forms. In all cases entering an
-asterisk (*) means use the default value. In the desriptions below the *
-indicates which is the default.
+parameters when saving. Specifying save parameters takes the form:
 
---paramsAPNG bpp dur
-  bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
-  dur:  Frame duration override in milliseconds. -1* means use current frame
-        duration. 0 or more means override all frames to supplied value.
+ --outTTT param1=value1,param2=value2,etc
 
---paramsBMP bpp
-  bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
+where TTT represents the image type, the lack of spaces is important, and both
+param names and values are case sensitive. All save parameters have reasonable
+defaults -- there is no requirement to specify them if the defaults are
+sufficient. An asterisk (*) denotes the default value for that parameter. You
+may enter a * to set it to default or just don't set the parameter. Image types
+with save parameters:
 
---paramsGIF bpp qan loop alp dur dith filt samp
-  bpp:  Bits per pixel from 1 to 8*. Results in palette colours from 2 to 256.
-        If the GIF has transparency, one less colour can be represented.
-  qan:  Quantization method for palette generation.
-        fixed:   Use a fixed colour palette for the chosen bpp. Low quality.
-        spatial: Use scolorq algorithm. Slow but good for 32 colours or fewer.
-        neu:     Use neuquant algorithm. Good for 64 colours or more.
-        wu*:     Use XiaolinWu algorithm. Good for 64 colours or more.
-  loop: Times to loop for animated GIFs. Choose 0* to loop forever. 
-  alp:  Alpha threshold. Set to 255 to force opaque. If in [0, 255) a pixel
-        alpha <= threshold results in a transparent pixel. Set to -1(*) for
-        auto-mode where a threshold of 127 if used if image is not opaque -- if
-        image is opaque the resultant GIF will be opaque.
-  dur:  Frame duration override, -1* means no override. Otherwise in 1/100 s.
-  dith: Dither level. Value in range 0.0 to 2.0+. Only applies to spatial
-        quantization. 0.0* means auto-determine a good value for the current
-        image based on its dimensions. Greater than zero means manually set the
-        amount. A dither value of 0.1 results in no dithering. 2.0 results in
-        significant dithering.
-  filt: Filter size. Only applies to spatial quantization. Must be 1, 3*, or 5.
-  samp: Sample factor. Only applies to neu quantization. 1* means whole image
-        learning. 10 means 1/10 of image only. Max value is 30 (fastest).
+--outAPNG
+  bpp  : Bits per pixel. Possible values:
+         24    - Force 24 bits per pixel. Alpha channel ignored.
+         32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
+		 auto* - Decide bpp based on opacity of image being saved.
+  dur  : Frame duration override in milliseconds. Any value < 0 will result in
+         the currently stored frame-time being used. The default -1* will not
+         override frame times. A value of 0 or more means override all frames
+         to the supplied number of milliseconds.
 
---paramsJPG qual
-  qual: Quality of jpeg as integer from 1 to 100. Default is 95*
+--outBMP
+  bpp  : Bits per pixel. Possible values:
+         24    - Force 24 bits per pixel. Alpha channel ignored.
+         32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
+		 auto* - Decide bpp based on opacity of image being saved.
 
---paramsPNG bpp
-  bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
+--outGIF
+  bpp  : Bits per pixel from 1 to 8*. Since GIFs are palettized this value
+         results in images from 2 to 256 colours. If the GIF has transparency,
+         one fewer colour can be represented.
+  qan  : Quantization method for palette generation. Possible values:
+         fix   - Use a fixed colour palette for the chosen bpp. Low quality.
+         spc   - Use spatial scolorq algorithm. Slow. Good for 5 bpp or lower.
+         neu   - Use neuquant algorithm. Good for 64 colours or more.
+         wu*   - Use XiaolinWu algorithm. Good for 64 colours or more.
+  loop : Times to loop for animated GIFs. Choose 0* to loop forever. 
+  alp  : Alpha threshold. Set to 255 to force opaque. If in [0, 255) a
+         pixel-alpha <= threshold results in a transparent pixel. Set to -1(*)
+         for auto-mode where a threshold of 127 if used if image is not opaque.
+         If set to -1 and image is opaque, the resultant GIF will be opaque.
+  dur  : Frame duration override, -1* means no override. Otherwise in 1/100 s.
+  dith : Dither level. Value in [0.0,2.0+]. Only applies to spatial
+         quantization. 0.0* means auto-determine a good value for the current
+         image based on its dimensions. Greater than 0.0 means manually set the
+         amount. A dither value of 0.1 results in no dithering. 2.0 results in
+         significant dithering.
+  filt : Filter size. Only applies to spatial quantization. Must be 1, 3*, 5.
+  samp : Sample factor. Range is [1,30]. Only applies to neu quantization. 1*
+         means whole image learning. 10 means 1/10 of image only. Max value 30
+         is fastest.
 
---paramsQOI bpp spc
-  bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
-  spc:  Colour space. srgb, lin, or auto*. Auto means keep the currenly loaded
-        space. Use srgb for the sRGB space. Use lin for linear.
+--outJPG
+  qual : Quality of jpeg in range [1,100]. Default is 95*
 
---paramsTGA bpp comp
-  bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
-  comp: Compression. none* or rle. Use rle for run-length encoded.
+--outPNG
+  bpp  : Bits per pixel. Possible values:
+         24    - Force 24 bits per pixel. Alpha channel ignored.
+         32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
+		 auto* - Decide bpp based on opacity of image being saved.
 
---paramsTIFF bpp zlib dur
-  bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
-  zlib: Use Zlib Compression. T* or F. This is a boolean. See note below.
-  dur:  Frame duration override, -1* means no override. Otherwise units are ms.
+--outQOI
+  bpp  : Bits per pixel. Possible values:
+         24    - Force 24 bits per pixel. Alpha channel ignored.
+         32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
+		 auto* - Decide bpp based on opacity of image being saved.
+  spc  : Colour space. srgb, lin, or auto*. Auto means keep the currenly loaded
+         space. Use srgb for the sRGB space. Use lin for linear.
 
---paramsWEBP loss qual dur
-  loss: Generate lossy image. T or F*. This is a boolean. See note below.
-  qual: Quality or compression amount in range 0.0 to 100.0. Default is 90.0*.
+--outTGA
+  bpp  : Bits per pixel. Possible values:
+         24    - Force 24 bits per pixel. Alpha channel ignored.
+         32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
+		 auto* - Decide bpp based on opacity of image being saved.
+  rle  : Run-length encoding. Boolean true or false*. This can reduce tga size
+         but some software can't load RLE-compressed TGAs correctly.
+
+--outTIFF
+  bpp  : Bits per pixel. Possible values:
+         24    - Force 24 bits per pixel. Alpha channel ignored.
+         32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
+		 auto* - Decide bpp based on opacity of image being saved.
+  zlib : Use Zlib Compression. Boolean true* or false.
+  dur  : Frame duration override, -1* means no override. Otherwise units are ms.
+
+--outWEBP
+  loss: Generate lossy image. Boolean true or false*.
+  qual: Quality or compression amount in range [0.0,100.0]. Default is 90.0*.
         Interpreted as quality for lossy images. Larger looks better but bigger
         files. Interpreted as compression strength for non-lossy. Larger values
         compress more but images take longer to generate.
