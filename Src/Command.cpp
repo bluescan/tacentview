@@ -50,7 +50,7 @@ namespace Command
 	tCmdLine::tOption OptionPostOperation	("Post operation",					"po",					1	);
 
 	tCmdLine::tOption OptionOutTypes		("Output file type(s)",				"out",			'o',	1	);
-	tCmdLine::tOption OptionOutAPNG			("Save parameters for APNG files",	"outAPNG",				2	);
+	tCmdLine::tOption OptionOutAPNG			("Save parameters for APNG files",	"outAPNG",				1	);
 	tCmdLine::tOption OptionOutBMP			("Save parameters for BMP  files",	"outBMP",				1	);
 	tCmdLine::tOption OptionOutGIF			("Save parameters for GIF  files",	"outGIF",				8	);
 	tCmdLine::tOption OptionOutJPG			("Save parameters for JPG  files",	"outJPG",				1	);
@@ -999,13 +999,10 @@ void Command::SetImageSaveParameters(Viewer::Image& image, tSystem::tFileType fi
 
 void Command::ParseSaveParametersAPNG()
 {
-#if 0
-void Command::ParseLoadParametersASTC()
-{
-	if (!OptionInASTC)
+	if (!OptionOutAPNG)
 		return;
 
-	tString paramValuePairs = OptionInASTC.Arg1();
+	tString paramValuePairs = OptionOutAPNG.Arg1();
 	tList<tStringItem> paramValueStrList;
 	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
 	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
@@ -1020,67 +1017,21 @@ void Command::ParseLoadParametersASTC()
 
 		switch (tHash::tHashString(param.Chr()))
 		{
-			case tHash::tHashCT("colp"):
+			case tHash::tHashCT("bpp"):
 				switch (tHash::tHashString(value.Chr()))
 				{
-					case tHash::tHashCT("*"):
-					case tHash::tHashCT("sRGB"):	LoadParamsASTC.Profile = tColourProfile::sRGB;	break;
-					case tHash::tHashCT("gRGB"):	LoadParamsASTC.Profile = tColourProfile::gRGB;	break;
-					case tHash::tHashCT("lRGB"):	LoadParamsASTC.Profile = tColourProfile::lRGB;	break;
-					case tHash::tHashCT("HDRa"):	LoadParamsASTC.Profile = tColourProfile::HDRa;	break;
-					case tHash::tHashCT("HDRA"):	LoadParamsASTC.Profile = tColourProfile::HDRA;	break;
+					case tHash::tHashCT("24"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::BPP24;		break;
+					case tHash::tHashCT("32"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::BPP32;		break;
+					case tHash::tHashCT("auto"):
+					case tHash::tHashCT("*"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::Auto;		break;
 				}
 				break;
 
-			case tHash::tHashCT("corr"):
-			{
-				uint32 gamaF = tImage::tImageASTC::LoadFlag_GammaCompression;
-				uint32 autoF = tImage::tImageASTC::LoadFlag_AutoGamma;
-				uint32 srgbF = tImage::tImageASTC::LoadFlag_SRGBCompression;
-				uint32& flags = LoadParamsASTC.Flags;
-				switch (tHash::tHashString(value.Chr()))
-				{
-					case tHash::tHashCT("none"):	flags &= ~(gamaF | srgbF | autoF);			break;
-					case tHash::tHashCT("*"):
-					case tHash::tHashCT("auto"):	flags &= ~(gamaF | srgbF); flags |= autoF;	break;
-					case tHash::tHashCT("gamc"):	flags &= ~(srgbF | autoF); flags |= gamaF;	break;
-					case tHash::tHashCT("srgb"):	flags &= ~(gamaF | autoF); flags |= srgbF;	break;
-				}
-				break;
-			}
-
-			case tHash::tHashCT("gamma"):
-				LoadParamsASTC.Gamma = (value == "*") ? 2.2f : tMath::tClamp(value.AsFloat(), 0.5f, 4.0f);
-				break;
-
-			case tHash::tHashCT("tone"):
-				LoadParamsASTC.Exposure = (value == "*") ? -1.0f : tMath::tClamp(value.AsFloat(), -1.0f, 4.0f);
-				if (LoadParamsASTC.Exposure < 0.0f)
-					LoadParamsASTC.Flags &= ~(tImage::tImageASTC::LoadFlag_ToneMapExposure);
-				else
-					LoadParamsASTC.Flags |= tImage::tImageASTC::LoadFlag_ToneMapExposure;
+			case tHash::tHashCT("dur"):
+				SaveParamsAPNG.OverrideFrameDuration = (value == "*") ? -1 : tMath::tClampMin(value.AsInt(), -1);
 				break;
 		}
 	}
-}
-#endif
-	if (!OptionOutAPNG)
-		return;
-
-	tString formatStr					= OptionOutAPNG.Arg1();
-	switch (tHash::tHashString			(formatStr.Chr()))
-	{
-		case tHash::tHashCT("24"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::BPP24;		break;
-		case tHash::tHashCT("32"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::BPP32;		break;
-		case tHash::tHashCT("auto"):
-		case tHash::tHashCT("*"):		SaveParamsAPNG.Format = tImage::tImageAPNG::tFormat::Auto;		break;
-	}
-
-	tString overrideFrameDurationStr	= OptionOutAPNG.Arg2();
-	if (overrideFrameDurationStr == "*")
-		SaveParamsAPNG.OverrideFrameDuration = -1;
-	else
-		SaveParamsAPNG.OverrideFrameDuration = overrideFrameDurationStr.AsInt32();
 }
 
 
@@ -1089,13 +1040,31 @@ void Command::ParseSaveParametersBMP()
 	if (!OptionOutBMP)
 		return;
 
-	tString formatStr					= OptionOutBMP.Arg1();
-	switch (tHash::tHashString			(formatStr.Chr()))
+	tString paramValuePairs = OptionOutBMP.Arg1();
+	tList<tStringItem> paramValueStrList;
+	tStd::tExplode(paramValueStrList, paramValuePairs, ',');
+	for (tStringItem* pvstr = paramValueStrList.First(); pvstr; pvstr = pvstr->Next())
 	{
-		case tHash::tHashCT("24"):		SaveParamsBMP.Format = tImage::tImageBMP::tFormat::BPP24;		break;
-		case tHash::tHashCT("32"):		SaveParamsBMP.Format = tImage::tImageBMP::tFormat::BPP32;		break;
-		case tHash::tHashCT("auto"):
-		case tHash::tHashCT("*"):		SaveParamsBMP.Format = tImage::tImageBMP::tFormat::Auto;		break;
+		if (pvstr->FindChar('=') == -1)
+			continue;
+
+		tString param = pvstr->Left('=');
+		tString value = pvstr->Right('=');
+		if (param.IsEmpty() || value.IsEmpty())
+			continue;
+
+		switch (tHash::tHashString(param.Chr()))
+		{
+			case tHash::tHashCT("bpp"):
+				switch (tHash::tHashString(value.Chr()))
+				{
+					case tHash::tHashCT("24"):		SaveParamsBMP.Format = tImage::tImageBMP::tFormat::BPP24;		break;
+					case tHash::tHashCT("32"):		SaveParamsBMP.Format = tImage::tImageBMP::tFormat::BPP32;		break;
+					case tHash::tHashCT("auto"):
+					case tHash::tHashCT("*"):		SaveParamsBMP.Format = tImage::tImageBMP::tFormat::Auto;		break;
+				}
+				break;
+		}
 	}
 }
 
@@ -2081,10 +2050,7 @@ with save parameters:
          24    - Force 24 bits per pixel. Alpha channel ignored.
          32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
 		 auto* - Decide bpp based on opacity of image being saved.
-  dur  : Frame duration override in milliseconds. Any value < 0 will result in
-         the currently stored frame-time being used. The default -1* will not
-         override frame times. A value of 0 or more means override all frames
-         to the supplied number of milliseconds.
+  dur  : Frame duration override in milliseconds. Use -1* for no override.
 
 --outBMP
   bpp  : Bits per pixel. Possible values:
@@ -2106,7 +2072,7 @@ with save parameters:
          pixel-alpha <= threshold results in a transparent pixel. Set to -1(*)
          for auto-mode where a threshold of 127 if used if image is not opaque.
          If set to -1 and image is opaque, the resultant GIF will be opaque.
-  dur  : Frame duration override, -1* means no override. Otherwise in 1/100 s.
+  dur  : Frame duration override in 1/100 s. Use -1* for no override.
   dith : Dither level. Value in [0.0,2.0+]. Only applies to spatial
          quantization. 0.0* means auto-determine a good value for the current
          image based on its dimensions. Greater than 0.0 means manually set the
@@ -2148,7 +2114,7 @@ with save parameters:
          32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
 		 auto* - Decide bpp based on opacity of image being saved.
   zlib : Use Zlib Compression. Boolean true* or false.
-  dur  : Frame duration override, -1* means no override. Otherwise units are ms.
+  dur  : Frame duration override in milliseconds. Use -1* for no override.
 
 --outWEBP
   loss: Generate lossy image. Boolean true or false*.
@@ -2156,7 +2122,7 @@ with save parameters:
         Interpreted as quality for lossy images. Larger looks better but bigger
         files. Interpreted as compression strength for non-lossy. Larger values
         compress more but images take longer to generate.
-  dur:  Frame duration override, -1* means no override. Otherwise units are ms.
+  dur  : Frame duration override in milliseconds. Use -1* for no override.
 )SAVEPARAMS010"
 		);
 		tPrintf
