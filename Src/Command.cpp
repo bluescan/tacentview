@@ -52,13 +52,13 @@ namespace Command
 	tCmdLine::tOption OptionOutTypes		("Output file type(s)",				"out",			'o',	1	);
 	tCmdLine::tOption OptionOutAPNG			("Save parameters for APNG files",	"outAPNG",				1	);
 	tCmdLine::tOption OptionOutBMP			("Save parameters for BMP  files",	"outBMP",				1	);
-	tCmdLine::tOption OptionOutGIF			("Save parameters for GIF  files",	"outGIF",				8	);
+	tCmdLine::tOption OptionOutGIF			("Save parameters for GIF  files",	"outGIF",				1	);
 	tCmdLine::tOption OptionOutJPG			("Save parameters for JPG  files",	"outJPG",				1	);
 	tCmdLine::tOption OptionOutPNG			("Save parameters for PNG  files",	"outPNG",				1	);
-	tCmdLine::tOption OptionOutQOI			("Save parameters for QOI  files",	"outQOI",				2	);
-	tCmdLine::tOption OptionOutTGA			("Save parameters for TGA  files",	"outTGA",				2	);
-	tCmdLine::tOption OptionOutTIFF			("Save parameters for TIFF files",	"outTIFF",				3	);
-	tCmdLine::tOption OptionOutWEBP			("Save parameters for WEBP files",	"outWEBP",				3	);
+	tCmdLine::tOption OptionOutQOI			("Save parameters for QOI  files",	"outQOI",				1	);
+	tCmdLine::tOption OptionOutTGA			("Save parameters for TGA  files",	"outTGA",				1	);
+	tCmdLine::tOption OptionOutTIFF			("Save parameters for TIFF files",	"outTIFF",				1	);
+	tCmdLine::tOption OptionOutWEBP			("Save parameters for WEBP files",	"outWEBP",				1	);
 	tCmdLine::tOption OptionOverwrite		("Overwrite existing output files",	"overwrite",	'w'			);
 	tCmdLine::tOption OptionAutoName		("Autogenerate output file names",	"autoname",		'a'			);
 	tCmdLine::tOption OptionEarlyExit		("Early exit / no skipping",		"earlyexit",	'e'			);
@@ -1006,7 +1006,7 @@ void Command::ParseSaveParametersBMP()
 void Command::ParseSaveParametersGIF()
 {
 	tList<ParamValuePair> pairs;
-	ParseParamValuePairs(pairs, OptionOutBMP.Arg1());
+	ParseParamValuePairs(pairs, OptionOutGIF.Arg1());
 	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
 	{
 		tString& param = p->Param;
@@ -1072,138 +1072,172 @@ void Command::ParseSaveParametersGIF()
 
 void Command::ParseSaveParametersJPG()
 {
-	if (!OptionOutJPG)
-		return;
-
-	tString qualityStr					= OptionOutJPG.Arg1();
-	if (qualityStr == "*")
+	tList<ParamValuePair> pairs;
+	ParseParamValuePairs(pairs, OptionOutJPG.Arg1());
+	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
 	{
-		SaveParamsJPG.Quality = 95;
-	}
-	else
-	{
-		int quality = qualityStr.AsInt32();
-		tMath::tiClamp(quality, 1, 100);
-		SaveParamsJPG.Quality = quality;
+		tString& param = p->Param;
+		tString& value = p->Value;
+		switch (tHash::tHashString(param.Chr()))
+		{
+			case tHash::tHashCT("qual"):
+				if (value == "*")
+					SaveParamsJPG.Quality = 95;
+				else
+					SaveParamsJPG.Quality = tMath::tClamp(value.AsInt(), 1, 100);
+				break;
+		}
 	}
 }
 
 
 void Command::ParseSaveParametersPNG()
 {
-	if (!OptionOutPNG)
-		return;
-
-	tString formatStr					= OptionOutPNG.Arg1();
-	switch (tHash::tHashString			(formatStr.Chr()))
+	tList<ParamValuePair> pairs;
+	ParseParamValuePairs(pairs, OptionOutPNG.Arg1());
+	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
 	{
-		case tHash::tHashCT("24"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::BPP24;		break;
-		case tHash::tHashCT("32"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::BPP32;		break;
-		case tHash::tHashCT("auto"):
-		case tHash::tHashCT("*"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::Auto;		break;
+		tString& param = p->Param;
+		tString& value = p->Value;
+		switch (tHash::tHashString(param.Chr()))
+		{
+			case tHash::tHashCT("bpp"):
+				switch (tHash::tHashString(value.Chr()))
+				{
+					case tHash::tHashCT("24"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::BPP24;		break;
+					case tHash::tHashCT("32"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::BPP32;		break;
+					case tHash::tHashCT("auto"):
+					case tHash::tHashCT("*"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::Auto;		break;
+				}
+				break;
+		}
 	}
 }
 
 
 void Command::ParseSaveParametersQOI()
 {
-	if (!OptionOutQOI)
-		return;
-
-	tString formatStr					= OptionOutQOI.Arg1();
-	switch (tHash::tHashString			(formatStr.Chr()))
+	tList<ParamValuePair> pairs;
+	ParseParamValuePairs(pairs, OptionOutQOI.Arg1());
+	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
 	{
-		case tHash::tHashCT("24"):		SaveParamsQOI.Format = tImage::tImageQOI::tFormat::BPP24;		break;
-		case tHash::tHashCT("32"):		SaveParamsQOI.Format = tImage::tImageQOI::tFormat::BPP32;		break;
-		case tHash::tHashCT("auto"):
-		case tHash::tHashCT("*"):		SaveParamsQOI.Format = tImage::tImageQOI::tFormat::Auto;		break;
-	}
+		tString& param = p->Param;
+		tString& value = p->Value;
+		switch (tHash::tHashString(param.Chr()))
+		{
+			case tHash::tHashCT("bpp"):
+				switch (tHash::tHashString(value.Chr()))
+				{
+					case tHash::tHashCT("24"):		SaveParamsQOI.Format = tImage::tImageQOI::tFormat::BPP24;		break;
+					case tHash::tHashCT("32"):		SaveParamsQOI.Format = tImage::tImageQOI::tFormat::BPP32;		break;
+					case tHash::tHashCT("auto"):
+					case tHash::tHashCT("*"):		SaveParamsQOI.Format = tImage::tImageQOI::tFormat::Auto;		break;
+				}
+				break;
 
-	tString spaceStr					= OptionOutQOI.Arg2();
-	switch (tHash::tHashString			(spaceStr.Chr()))
-	{
-		case tHash::tHashCT("srgb"):	SaveParamsQOI.Space = tImage::tImageQOI::tSpace::sRGB;			break;
-		case tHash::tHashCT("lin"):		SaveParamsQOI.Space = tImage::tImageQOI::tSpace::Linear;		break;
-		case tHash::tHashCT("auto"):
-		case tHash::tHashCT("*"):		SaveParamsQOI.Space = tImage::tImageQOI::tSpace::Auto;			break;
+			case tHash::tHashCT("spc"):
+				switch (tHash::tHashString(value.Chr()))
+				{
+					case tHash::tHashCT("srgb"):	SaveParamsQOI.Space = tImage::tImageQOI::tSpace::sRGB;			break;
+					case tHash::tHashCT("lin"):		SaveParamsQOI.Space = tImage::tImageQOI::tSpace::Linear;		break;
+					case tHash::tHashCT("auto"):
+					case tHash::tHashCT("*"):		SaveParamsQOI.Space = tImage::tImageQOI::tSpace::Auto;			break;
+				}
+				break;
+		}
 	}
 }
 
 
 void Command::ParseSaveParametersTGA()
 {
-	if (!OptionOutTGA)
-		return;
-
-	tString formatStr					= OptionOutTGA.Arg1();
-	switch (tHash::tHashString			(formatStr.Chr()))
+	tList<ParamValuePair> pairs;
+	ParseParamValuePairs(pairs, OptionOutTGA.Arg1());
+	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
 	{
-		case tHash::tHashCT("24"):		SaveParamsTGA.Format = tImage::tImageTGA::tFormat::BPP24;		break;
-		case tHash::tHashCT("32"):		SaveParamsTGA.Format = tImage::tImageTGA::tFormat::BPP32;		break;
-		case tHash::tHashCT("auto"):
-		case tHash::tHashCT("*"):		SaveParamsTGA.Format = tImage::tImageTGA::tFormat::Auto;		break;
-	}
+		tString& param = p->Param;
+		tString& value = p->Value;
+		switch (tHash::tHashString(param.Chr()))
+		{
+			case tHash::tHashCT("bpp"):
+				switch (tHash::tHashString(value.Chr()))
+				{
+					case tHash::tHashCT("24"):		SaveParamsTGA.Format = tImage::tImageTGA::tFormat::BPP24;		break;
+					case tHash::tHashCT("32"):		SaveParamsTGA.Format = tImage::tImageTGA::tFormat::BPP32;		break;
+					case tHash::tHashCT("auto"):
+					case tHash::tHashCT("*"):		SaveParamsTGA.Format = tImage::tImageTGA::tFormat::Auto;		break;
+				}
+				break;
 
-	tString compStr						= OptionOutTGA.Arg2();
-	switch (tHash::tHashString			(compStr.Chr()))
-	{
-		case tHash::tHashCT("rle"):		SaveParamsTGA.Compression = tImage::tImageTGA::tCompression::RLE;	break;
-		case tHash::tHashCT("none"):
-		case tHash::tHashCT("*"):		SaveParamsTGA.Compression = tImage::tImageTGA::tCompression::None;	break;
+			case tHash::tHashCT("rle"):
+			{
+				bool rle = (value == "*") ? false : value.AsBool();
+				SaveParamsTGA.Compression = rle ? tImage::tImageTGA::tCompression::RLE : tImage::tImageTGA::tCompression::None;
+				break;
+			}
+		}
 	}
 }
 
 
 void Command::ParseSaveParametersTIFF()
 {
-	if (!OptionOutTIFF)
-		return;
-
-	tString formatStr					= OptionOutTIFF.Arg1();
-	switch (tHash::tHashString			(formatStr.Chr()))
+	tList<ParamValuePair> pairs;
+	ParseParamValuePairs(pairs, OptionOutTIFF.Arg1());
+	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
 	{
-		case tHash::tHashCT("24"):		SaveParamsTIFF.Format = tImage::tImageTIFF::tFormat::BPP24;		break;
-		case tHash::tHashCT("32"):		SaveParamsTIFF.Format = tImage::tImageTIFF::tFormat::BPP32;		break;
-		case tHash::tHashCT("auto"):
-		case tHash::tHashCT("*"):		SaveParamsTIFF.Format = tImage::tImageTIFF::tFormat::Auto;		break;
+		tString& param = p->Param;
+		tString& value = p->Value;
+		switch (tHash::tHashString(param.Chr()))
+		{
+			case tHash::tHashCT("bpp"):
+				switch (tHash::tHashString(value.Chr()))
+				{
+					case tHash::tHashCT("24"):		SaveParamsTIFF.Format = tImage::tImageTIFF::tFormat::BPP24;		break;
+					case tHash::tHashCT("32"):		SaveParamsTIFF.Format = tImage::tImageTIFF::tFormat::BPP32;		break;
+					case tHash::tHashCT("auto"):
+					case tHash::tHashCT("*"):		SaveParamsTIFF.Format = tImage::tImageTIFF::tFormat::Auto;		break;
+				}
+				break;
+
+			case tHash::tHashCT("zlib"):
+				SaveParamsTIFF.UseZLibCompression = (value == "*") ? true : value.AsBool();
+				break;
+
+			case tHash::tHashCT("dur"):
+				SaveParamsTIFF.OverrideFrameDuration = (value == "*") ? -1 : tMath::tClampMin(value.AsInt(), -1);
+				break;
+		}
 	}
-
-	tString zlibCompStr = OptionOutTIFF.Arg2();
-	if (zlibCompStr == "*")
-		SaveParamsTIFF.UseZLibCompression = true;
-	else
-		SaveParamsTIFF.UseZLibCompression = zlibCompStr.AsBool();
-
-	tString overrideFrameDurStr = OptionOutTIFF.Arg3();
-	if (overrideFrameDurStr == "*")
-		SaveParamsTIFF.OverrideFrameDuration = -1;
-	else
-		SaveParamsTIFF.OverrideFrameDuration = overrideFrameDurStr.AsInt32();
 }
 
 
 void Command::ParseSaveParametersWEBP()
 {
-	if (!OptionOutWEBP)
-		return;
+	tList<ParamValuePair> pairs;
+	ParseParamValuePairs(pairs, OptionOutWEBP.Arg1());
+	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
+	{
+		tString& param = p->Param;
+		tString& value = p->Value;
+		switch (tHash::tHashString(param.Chr()))
+		{
+			case tHash::tHashCT("loss"):
+				SaveParamsWEBP.Lossy = (value == "*") ? false : value.AsBool();
+				break;
 
-	tString lossyStr = OptionOutWEBP.Arg1();
-	if (lossyStr == "*")
-		SaveParamsWEBP.Lossy = false;
-	else
-		SaveParamsWEBP.Lossy = lossyStr.AsBool();
+			case tHash::tHashCT("qual"):
+				if (value == "*")
+					SaveParamsWEBP.QualityCompstr = 90.0f;
+				else
+					SaveParamsWEBP.QualityCompstr = tMath::tClamp(value.AsFloat(), 0.0f, 100.0f);
+				break;
 
-	tString qualStr = OptionOutWEBP.Arg2();
-	if (qualStr == "*")
-		SaveParamsWEBP.QualityCompstr = 90.0f;
-	else
-		SaveParamsWEBP.QualityCompstr = qualStr.AsFloat();
-
-	tString overrideFrameDurStr = OptionOutWEBP.Arg3();
-	if (overrideFrameDurStr == "*")
-		SaveParamsWEBP.OverrideFrameDuration = -1;
-	else
-		SaveParamsWEBP.OverrideFrameDuration = overrideFrameDurStr.AsInt32();
+			case tHash::tHashCT("dur"):
+				SaveParamsWEBP.OverrideFrameDuration = (value == "*") ? -1 : tMath::tClampMin(value.AsInt(), -1);
+				break;
+		}
+	}
 }
 
 
@@ -1405,103 +1439,103 @@ reasonable defaults -- there is no requirement to specify them if the defaults
 are sufficient. Image types with load parameters:
 
 --inASTC
-  colp  : Colour profile. Possible values:
-          sRGB* - Low dynamic range RGB in sRGB space. Linear alpha.
-          gRGB  - Low dynamic range RGB in gamma space. Linear alpha.
-          lRGB  - Low dynamic range RGBA in linear space.
-          HDRa  - High dynamic range RGB in linear space. LDR linear alpha.
-          HDRA  - High dynamic range RGBA in linear space.
-  corr  : Gamma correction mode, Possible values:
-          none  - No gamma correction is performed.
-          auto* - Apply gamma correction based on colour profile set above.
-          gamc  - Apply gamma compression using an encoding-gamma of 1.0/gamma.
-          srgb  - Apply gamma compression by applying a Linear->sRGB transform.
-  gamma : Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
-          Range is [0.5,4.0]
-  tone  : For HDR images. Tone-map exposure applied if this is >= 0.0. A value
-          of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
-          not apply tone-map exposure function. Default is -1.0*. Non-negative
-          valid range is [0.0,4.0]
+  colp: Colour profile. Possible values:
+        sRGB* - Low dynamic range RGB in sRGB space. Linear alpha.
+        gRGB  - Low dynamic range RGB in gamma space. Linear alpha.
+        lRGB  - Low dynamic range RGBA in linear space.
+        HDRa  - High dynamic range RGB in linear space. LDR linear alpha.
+        HDRA  - High dynamic range RGBA in linear space.
+  corr: Gamma correction mode, Possible values:
+        none  - No gamma correction is performed.
+        auto* - Apply gamma correction based on colour profile set above.
+        gamc  - Apply gamma compression using an encoding-gamma of 1.0/gamma.
+        srgb  - Apply gamma compression by applying a Linear->sRGB transform.
+  gamma:Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
+        Range is [0.5,4.0]
+  tone: For HDR images. Tone-map exposure applied if this is >= 0.0. A value
+        of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
+        not apply tone-map exposure function. Default is -1.0*. Non-negative
+        valid range is [0.0,4.0]
 
 --inDDS
-  corr  : Gamma correction mode. Possible values:
-          none  - No gamma correction is performed.
-          auto* - Apply gamma correction based on colour space of pixel format.
-          gamc  - Apply gamma compression using an encoding-gamma of 1.0/gamma.
-          srgb  - Apply gamma compression by applying a Linear->sRGB transform.
-  gamma : Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
-  tone  : For HDR images. Tone-map exposure applied if this is >= 0.0. A value
-          of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
-          not apply tone-map exposure function. Default is -1.0*. Non-negative
-          valid range is [0.0,4.0]
-  spred : Spread single channel. Boolean true* or false. For DDS files with a
-          single Red or Luminance componentconly, spread it to all the RGB
-          channels if set to true. If false the red channel takes the value.
-          Does not spread single-channel Alpha formats.
-  strct : Strict loading. Boolean true or false*. If strict is true a DDS file
-          that is not fully compliant with the standard will not be loaded.
-          Setting to false allows more forgiving loading behaviour.
+  corr: Gamma correction mode. Possible values:
+        none  - No gamma correction is performed.
+        auto* - Apply gamma correction based on colour space of pixel format.
+        gamc  - Apply gamma compression using an encoding-gamma of 1.0/gamma.
+        srgb  - Apply gamma compression by applying a Linear->sRGB transform.
+  gamma:Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
+  tone: For HDR images. Tone-map exposure applied if this is >= 0.0. A value
+        of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
+        not apply tone-map exposure function. Default is -1.0*. Non-negative
+        valid range is [0.0,4.0]
+  spred:Spread single channel. Boolean true* or false. For DDS files with a
+        single Red or Luminance componentconly, spread it to all the RGB
+        channels if set to true. If false the red channel takes the value.
+        Does not spread single-channel Alpha formats.
+  strct:Strict loading. Boolean true or false*. If strict is true a DDS file
+        that is not fully compliant with the standard will not be loaded.
+        Setting to false allows more forgiving loading behaviour.
 
 --inEXR
-  gamma : Gamma value in range [0.6, 3.0]. Default 2.2*.
-  expo  : Exposure value in range [-10.0, 10.0]. Default 1.0* is neutral.
-  defog : Defog value (constant colour bias removal) in range [0.0*, 0.1].
-  knelo : Knee Low. Low end of the white and middle grey values in [-3.0, 3.0].
-          Values between Knee Low and Knee High are compressed. Default 0.0*.
-  knehi : Knee High. High end of white and middle grey values in [3.5, 7.5].
-          Values between Knee Low and Knee High are compressed. Default 3.5*.
+  gamma:Gamma value in range [0.6, 3.0]. Default 2.2*.
+  expo: Exposure value in range [-10.0, 10.0]. Default 1.0* is neutral.
+  defog:Defog value (constant colour bias removal) in range [0.0*, 0.1].
+  knelo:Knee Low. Low end of the white and middle grey values in [-3.0, 3.0].
+        Values between Knee Low and Knee High are compressed. Default 0.0*.
+  knehi:Knee High. High end of white and middle grey values in [3.5, 7.5].
+        Values between Knee Low and Knee High are compressed. Default 3.5*.
 
 --inHDR
-  gamma : Gamma value in range [0.6, 3.0]. Default 2.2*.
-  expo  : Exposure value in integral range [-10, 10]. Default 0* is neutral.
+  gamma:Gamma value in range [0.6, 3.0]. Default 2.2*.
+  expo: Exposure value in integral range [-10, 10]. Default 0* is neutral.
   
 --inJPG
-  strct : Strict loading. Boolean true or false*. If strict is true a JPG file
-          that is not fully compliant with the standard will not be loaded.
-          Setting to false allows more forgiving loading behaviour.
-  exifo : EXIF metadata reorientation. Boolean true or false*. If true undo
-          orientation transforms in JPG image as indicated by Exif meta-data.
+  strct:Strict loading. Boolean true or false*. If strict is true a JPG file
+        that is not fully compliant with the standard will not be loaded.
+        Setting to false allows more forgiving loading behaviour.
+  exifo:EXIF metadata reorientation. Boolean true or false*. If true undo
+        orientation transforms in JPG image as indicated by Exif meta-data.
 
 --inKTX
 --inKTX2
-  corr  : Gamma correction mode. Possible values:
-          none  - No gamma correction is performed.
-          auto* - Apply gamma correction based on colour space of pixel format.
-          gamc  - Apply gamma compression using an encoding-gamma of 1.0/gamma.
-          srgb  - Apply gamma compression by applying a Linear->sRGB transform.
-  gamma : Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
-  tone  : For HDR images. Tone-map exposure applied if this is >= 0.0. A value
-          of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
-          not apply tone-map exposure function. Default is -1.0*. Non-negative
-          valid range is [0.0,4.0]
-  spred : Spread single channel. Boolean true* or false. For KTX files with a
-          single Red or Luminance componentconly, spread it to all the RGB
-          channels if set to true. If false the red channel takes the value.
-          Does not spread single-channel Alpha formats.
+  corr: Gamma correction mode. Possible values:
+        none  - No gamma correction is performed.
+        auto* - Apply gamma correction based on colour space of pixel format.
+        gamc  - Apply gamma compression using an encoding-gamma of 1.0/gamma.
+        srgb  - Apply gamma compression by applying a Linear->sRGB transform.
+  gamma:Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
+  tone: For HDR images. Tone-map exposure applied if this is >= 0.0. A value
+        of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
+        not apply tone-map exposure function. Default is -1.0*. Non-negative
+        valid range is [0.0,4.0]
+  spred:Spread single channel. Boolean true* or false. For KTX files with a
+        single Red or Luminance componentconly, spread it to all the RGB
+        channels if set to true. If false the red channel takes the value.
+        Does not spread single-channel Alpha formats.
 
 --inPKM
-  corr  : Gamma correction mode. Possible values:
-          none  - No gamma correction is performed.
-          auto* - Apply gamma correction based on colour space of pixel format.
-          gamc  - Apply gamma compression using an encoding-gamma of 1.0/gamma.
-          srgb  - Apply gamma compression by applying a Linear->sRGB transform.
-  gamma : Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
-  spred : Spread single channel. Boolean true* or false. For PKM files with a
-          single Red or Luminance componentconly, spread it to all the RGB
-          channels if set to true. If false the red channel takes the value.
-          Does not spread single-channel Alpha formats.
+  corr: Gamma correction mode. Possible values:
+        none  - No gamma correction is performed.
+        auto* - Apply gamma correction based on colour space of pixel format.
+        gamc  - Apply gamma compression using an encoding-gamma of 1.0/gamma.
+        srgb  - Apply gamma compression by applying a Linear->sRGB transform.
+  gamma:Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
+  spred:Spread single channel. Boolean true* or false. For PKM files with a
+        single Red or Luminance componentconly, spread it to all the RGB
+        channels if set to true. If false the red channel takes the value.
+        Does not spread single-channel Alpha formats.
 
 --inPNG
-  strct : Strict loading. Boolean true or false*. If strict is true a JPG file
-          that is not fully compliant with the standard will not be loaded.
-          Setting to false allows more forgiving loading behaviour. In
-          particular some software saves JPG/JFIF-encoded files with the png
-          extension. Setting this to false allows these 'png' files to load.
-  apng  : Load Animated PNG inside a PNG. Boolean true or false*. If apng is
-          true the loading code will detect an animated PNG (APNG) when stored
-          inside a regular PNG file. This allows the command-line to load all
-          the frames of an APNG file even if it has a regular (single-frame)
-          png extension.
+  strct:Strict loading. Boolean true or false*. If strict is true a JPG file
+        that is not fully compliant with the standard will not be loaded.
+        Setting to false allows more forgiving loading behaviour. In
+        particular some software saves JPG/JFIF-encoded files with the png
+        extension. Setting this to false allows these 'png' files to load.
+  apng: Load Animated PNG inside a PNG. Boolean true or false*. If apng is
+        true the loading code will detect an animated PNG (APNG) when stored
+        inside a regular PNG file. This allows the command-line to load all
+        the frames of an APNG file even if it has a regular (single-frame)
+        png extension.
 )LOADPARAMS010"
 		);
 		tPrintf
@@ -1980,75 +2014,75 @@ may enter a * to set it to default or just don't set the parameter. Image types
 with save parameters:
 
 --outAPNG
-  bpp  : Bits per pixel. Possible values:
-         24    - Force 24 bits per pixel. Alpha channel ignored.
-         32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
-		 auto* - Decide bpp based on opacity of image being saved.
-  dur  : Frame duration override in milliseconds. Use -1* for no override.
+  bpp:  Bits per pixel. Possible values:
+        24    - Force 24 bits per pixel. Alpha channel ignored.
+        32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
+        auto* - Decide bpp based on opacity of image being saved.
+  dur:  Frame duration override in milliseconds. Use -1* for no override.
 
 --outBMP
-  bpp  : Bits per pixel. Possible values:
-         24    - Force 24 bits per pixel. Alpha channel ignored.
-         32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
-		 auto* - Decide bpp based on opacity of image being saved.
+  bpp:  Bits per pixel. Possible values:
+        24    - Force 24 bits per pixel. Alpha channel ignored.
+        32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
+        auto* - Decide bpp based on opacity of image being saved.
 
 --outGIF
-  bpp  : Bits per pixel from 1 to 8*. Since GIFs are palettized this value
-         results in images from 2 to 256 colours. If the GIF has transparency,
-         one fewer colour can be represented.
-  qan  : Quantization method for palette generation. Possible values:
-         fix   - Use a fixed colour palette for the chosen bpp. Low quality.
-         spc   - Use spatial scolorq algorithm. Slow. Good for 5 bpp or lower.
-         neu   - Use neuquant algorithm. Good for 64 colours or more.
-         wu*   - Use XiaolinWu algorithm. Good for 64 colours or more.
-  loop : Times to loop for animated GIFs. Choose 0* to loop forever. 
-  alp  : Alpha threshold. Set to 255 to force opaque. If in [0, 255) a
-         pixel-alpha <= threshold results in a transparent pixel. Set to -1(*)
-         for auto-mode where a threshold of 127 if used if image is not opaque.
-         If set to -1 and image is opaque, the resultant GIF will be opaque.
-  dur  : Frame duration override in 1/100 s. Use -1* for no override.
-  dith : Dither level. Value in [0.0,2.0+]. Only applies to spatial
-         quantization. 0.0* means auto-determine a good value for the current
-         image based on its dimensions. Greater than 0.0 means manually set the
-         amount. A dither value of 0.1 results in no dithering. 2.0 results in
-         significant dithering.
-  filt : Filter size. Only applies to spatial quantization. Must be 1, 3*, 5.
-  samp : Sample factor. Range is [1,30]. Only applies to neu quantization. 1*
-         means whole image learning. 10 means 1/10 of image only. Max value 30
-         is fastest.
+  bpp:  Bits per pixel from 1 to 8*. Since GIFs are palettized this value
+        results in images from 2 to 256 colours. If the GIF has transparency,
+        one fewer colour can be represented.
+  qan:  Quantization method for palette generation. Possible values:
+        fix   - Use a fixed colour palette for the chosen bpp. Low quality.
+        spc   - Use spatial scolorq algorithm. Slow. Good for 5 bpp or lower.
+        neu   - Use neuquant algorithm. Good for 64 colours or more.
+        wu*   - Use XiaolinWu algorithm. Good for 64 colours or more.
+  loop: Times to loop for animated GIFs. Choose 0* to loop forever. 
+  alp:  Alpha threshold. Set to 255 to force opaque. If in [0, 255) a
+        pixel-alpha <= threshold results in a transparent pixel. Set to -1(*)
+        for auto-mode where a threshold of 127 if used if image is not opaque.
+        If set to -1 and image is opaque, the resultant GIF will be opaque.
+  dur:  Frame duration override in 1/100 s. Use -1* for no override.
+  dith: Dither level. Value in [0.0,2.0+]. Only applies to spatial
+        quantization. 0.0* means auto-determine a good value for the current
+        image based on its dimensions. Greater than 0.0 means manually set the
+        amount. A dither value of 0.1 results in no dithering. 2.0 results in
+        significant dithering.
+  filt: Filter size. Only applies to spatial quantization. Must be 1, 3*, 5.
+  samp: Sample factor. Range is [1,30]. Only applies to neu quantization. 1*
+        means whole image learning. 10 means 1/10 of image only. Max value 30
+        is fastest.
 
 --outJPG
-  qual : Quality of jpeg in range [1,100]. Default is 95*
+  qual: Quality of jpeg in range [1,100]. Default is 95*
 
 --outPNG
-  bpp  : Bits per pixel. Possible values:
-         24    - Force 24 bits per pixel. Alpha channel ignored.
-         32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
-		 auto* - Decide bpp based on opacity of image being saved.
+  bpp:  Bits per pixel. Possible values:
+        24    - Force 24 bits per pixel. Alpha channel ignored.
+        32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
+        auto* - Decide bpp based on opacity of image being saved.
 
 --outQOI
-  bpp  : Bits per pixel. Possible values:
-         24    - Force 24 bits per pixel. Alpha channel ignored.
-         32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
-		 auto* - Decide bpp based on opacity of image being saved.
-  spc  : Colour space. srgb, lin, or auto*. Auto means keep the currenly loaded
-         space. Use srgb for the sRGB space. Use lin for linear.
+  bpp:  Bits per pixel. Possible values:
+        24    - Force 24 bits per pixel. Alpha channel ignored.
+        32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
+        auto* - Decide bpp based on opacity of image being saved.
+  spc:  Colour space. srgb, lin, or auto*. Auto means keep the currenly loaded
+        space. Use srgb for the sRGB space. Use lin for linear.
 
 --outTGA
-  bpp  : Bits per pixel. Possible values:
-         24    - Force 24 bits per pixel. Alpha channel ignored.
-         32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
-		 auto* - Decide bpp based on opacity of image being saved.
-  rle  : Run-length encoding. Boolean true or false*. This can reduce tga size
-         but some software can't load RLE-compressed TGAs correctly.
+  bpp:  Bits per pixel. Possible values:
+        24    - Force 24 bits per pixel. Alpha channel ignored.
+        32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
+        auto* - Decide bpp based on opacity of image being saved.
+  rle:  Run-length encoding. Boolean true or false*. This can reduce tga size
+        but some software can't load RLE-compressed TGAs correctly.
 
 --outTIFF
-  bpp  : Bits per pixel. Possible values:
-         24    - Force 24 bits per pixel. Alpha channel ignored.
-         32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
-		 auto* - Decide bpp based on opacity of image being saved.
-  zlib : Use Zlib Compression. Boolean true* or false.
-  dur  : Frame duration override in milliseconds. Use -1* for no override.
+  bpp:  Bits per pixel. Possible values:
+        24    - Force 24 bits per pixel. Alpha channel ignored.
+        32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
+        auto* - Decide bpp based on opacity of image being saved.
+  zlib: Use Zlib Compression. Boolean true* or false.
+  dur:  Frame duration override in milliseconds. Use -1* for no override.
 
 --outWEBP
   loss: Generate lossy image. Boolean true or false*.
@@ -2056,7 +2090,7 @@ with save parameters:
         Interpreted as quality for lossy images. Larger looks better but bigger
         files. Interpreted as compression strength for non-lossy. Larger values
         compress more but images take longer to generate.
-  dur  : Frame duration override in milliseconds. Use -1* for no override.
+  dur:  Frame duration override in milliseconds. Use -1* for no override.
 )SAVEPARAMS010"
 		);
 		tPrintf
