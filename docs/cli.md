@@ -19,14 +19,23 @@ This is the simplest conversion command-line. The `-c` (alternatively `--cli`) s
 \
 **Example {% increment egnum %} - Convert PKM Files to PNG**
 ```
-tacentview -c --intype pkm --outtype png
+tacentview -c --in pkm --out png
 ```
 Similar to Example 1 except the type of the input and output files is specified explicitly. Since the `exe` extension is optional when using the command prompt, it has been removed from subsequent examples. Additionally, the executable in Linux will not have this extension.\
 \
 \
+**Example {% increment egnum %} - Convert PKM and JPG Files to PNG and BMP**
+```
+tacentview -c --in pkm,jpg --out png,bmp
+tacentview -c --in pkm -i jpg -o png --out bmp
+```
+You can specify multiple types for both the input and output. Both command-lines above do the same thing. In the first more concise example, all types are specified with a single `--in` or `--out` option. The second just shows that individual specifications get combined.
+\
+\
+\
 **Example {% increment egnum %} - Create GIFs from Manifest**
 ```
-tacentview -c @manifest.txt --outtype gif --paramsGIF 8 wu 0 120 -1 * * *
+tacentview -c @manifest.txt --out gif --outGIF bpp=2,qan=neu,alp=120
 ```
 Uses the @ symbol to specify a manifest file that lists the files to process. The contents of _manifest.txt_ could look something like this.
 ```
@@ -37,7 +46,7 @@ Flame.apng
 ; A directory to process.
 MoreImages/
 ```
-The `--paramsGIF` is optional and specifies any non-default parameters for creating the GIFs. In this case an 8-bit palette is used, the _wu_ algorithm is used for colour quantization, and the transparency threshold is 120. The -1 means don't override any frame durations from the input files (if they are animated).\
+The `--outGIF` is optional and specifies any non-default parameters for creating the GIFs. In this case a 2-bit (4 colour) palette is used, the _neu_ algorithm is used for colour quantization, and the transparency threshold is 120. There are more options for GIF output not shown here including things like loop behaviour, frame duration, etc.\
 \
 \
 **Example {% increment egnum %} - Resize Images Preserving Aspect**
@@ -49,9 +58,9 @@ Resizes all images in the current directory and saves them as JPG files. The JPG
 \
 **Example {% increment egnum %} - Resize Followed by Rotation**
 ```
-tacentview -ca --op resize[1920,-1] --op rotate[5] --paramsTGA 24 rle
+tacentview -ca --op resize[1920,-1] --op rotate[5] --outTGA bpp=24,rle=true
 ```
-Resizes and then applies a 5-degree anti-clockwise rotation to all images in the current directory. Saves them as TGA files. The `-a` or `--autoname` flag means if the output file exists the output filename will be modified so the existing file is not overwritten. The TGA params force a 24-bit run-length-encoded TGA to be written.\
+Resizes and then applies a 5-degree anti-clockwise rotation to all images in the current directory. Saves them as TGA files. The `-a` or `--autoname` flag means if the output file exists the output filename will be modified so the existing file is not overwritten. The `--outTGA` params force a 24-bit run-length-encoded TGA to be written.\
 \
 \
 **Example {% increment egnum %} - Set Pixel Colours**
@@ -152,28 +161,28 @@ Adjusts the contrast to 0.75 and saves the adjusted images as jpg files (auto-re
 \
 **Example {% increment egnum %} - Brightness**
 ```
-tacentview -ca --op brightness[0.4] -o qoi --paramsQOI 32 srgb 
+tacentview -ca --op brightness[0.4] -o qoi --outQOI bpp=32,spc=srgb 
 ```
-Adjusts the brightness to 0.4 and saves the adjusted images as qoi files (auto-renaming them if they exist). A brightness value of 0.5 is neutral. Larger than 0.5 is brighter up to a maximum of 1 (full white). Lower than 0.5 is dimmer down to a minimum of 0 (black). Optional arguments not shown include the frame(s) to apply the adjustment to and which colour channels. The `32 srgb` forces a 32-bit qoi to be generated in the sRGB colour-space.\
+Adjusts the brightness to 0.4 and saves the adjusted images as qoi files (auto-renaming them if they exist). A brightness value of 0.5 is neutral. Larger than 0.5 is brighter up to a maximum of 1 (full white). Lower than 0.5 is dimmer down to a minimum of 0 (black). Optional arguments not shown include the frame(s) to apply the adjustment to and which colour channels. The `--outQOI` forces a 32-bit qoi to be generated in the sRGB colour-space.\
 \
 \
 **Example {% increment egnum %} - Quantize using Wu Algorithm**
 ```
-tacentview -cav 2 --op quantize[wu,256,true] -o qoi --paramsQOI 24 srgb
+tacentview -cav 2 --op quantize[wu,256,true] -o qoi --outQOI bpp=24,spc=srgb
 ```
 Quantizing is the (difficult) process of reducing the number of colours used in an image. There are a number of algorithms that may be applied to do this while keeping the image looking as good as possible. _Tacent View_ supports the Xiaolin Wu method (wu), a simple predefined palette (fix), a neural-net algorithm (neu), and a spatial quantization method (spc). In this example we use the default Wu method and reduce the number of colours to 256. The true means check for exactness -- when this check is on, if the number of colours currently in the image is already less-than or equal-to the number requested, the image is left unmodified. If false, the algorithm is run regardless (handy for forcing a black and white image with colours set to 2 while using 'fix' for the method). The output files are written as 24 bit qoi files in sRGB space. Verbosity is full and auto-rename is enabled.
 \
 \
 **Example {% increment egnum %} - Quantize using NeuQuant Algorithm**
 ```
-tacentview -ca --op quantize[neu,256,true,2] -o qoi --paramsQOI 24 srgb
+tacentview -ca --op quantize[neu,256,true,2] -o qoi --outQOI bpp=24,spc=srgb
 ```
 Similar to _example 20_ except using the NeuQuant neural-learning algorithm. When using this algorithm the 4th argument (2) is the sample-factor. This value affects the speed/quality ratio and must be between 1 and 30 (inclusive). 1 results in the highest quality by training on the full set of input pixels, but is slower than 30 which only uses 1/30 of the input pixels. The number of colours (256) must be between 2 and 256 inclusive. There is no requirement it be a power-of or divisible-by 2.\
 \
 \
 **Example {% increment egnum %} - Quantize using ScolorQ Algorithm**
 ```
-tacentview -ca --op quantize[spc,16,true,3,8.0] -o qoi --paramsQOI 24 srgb
+tacentview -ca --op quantize[spc,16,true,3,8.0] -o qoi --outQOI bpp=24,spc=srgb
 ```
 Similar to _example 20_ except using the ScolorQ spatial quantization algorithm. When using this algorithm the 4th argument (3) is the filter-size and must be 1, 3, or 5. ScolorQ supports dithering -- the 5th argument (from 0.0 to 30.0) represents the amount of dither. A value of 0.1 is essentially no dither, while 20+ is a lot. If dither is set to 0.0 a good value is computed for you based on the image size and number of requested colours. ScolorQ is a good choice for small palette sizes (here we chose 16) but can be quite slow for larger images or palette sizes bigger than 30.\
 \
@@ -236,7 +245,7 @@ There is no restriction on repeating colour components. That is, swizzle is not 
 \
 **Example {% increment egnum %} - Extract All Frames**
 ```
-tacentview -ck --op extract -i apng -o bmp --paramsBMP auto
+tacentview -ck --op extract -i apng -o bmp --outBMP bpp=auto
 ```
 Extracts all frames from every APNG input file and saves them as BMP files. The `-k` means the original input images are not resaved (this operation does not modify the input images at all). The `auto` means auto-determine the bits-per-pixel for the BMP based on the image opacity. You can use the extract operation on any file that stores more than one image inside -- extract mipmaps from ktx2 files, extract pages from tiff files, extract animation frames from webp/gifs, etc. By default the output file names will be based on the input with _NNN appended. The NNN is the frame number. Unless you specify otherwise, the extracted images are placed in a subdirectory called 'Saved'.\
 \
@@ -271,72 +280,211 @@ Creates a multipage tiff called `Combined_YYYY-MM-DD-HH-MM-SS_003.tif` from the 
 
 ---
 ## Usage
-This is a printout of the CLI usage instructions built into _Tacent View_. To get this printout simply issue the command `tacentview.exe --help`
+This is a printout of the CLI usage instructions built into _Tacent View_. To get this printout simply issue the command `tacentview --help`
 
 ```
-Tacent View 1.0.40 in CLI Mode. Use --help for details.
-tacentview Version 1.0.40 by Tristan Grimmer
+Tacent View 1.0.41 by Tristan Grimmer
+CLI Mode
 
-USAGE: tacentview.exe [options] [inputfiles] 
+USAGE: tacentview [options] [inputfiles] 
 
 Options:
---autoname -a           : Autogenerate output file names
---cli -c                : Use command line mode (required when using CLI)
---earlyexit -e          : Early exit / no skipping
---help -h               : Print help/usage information
---intype -i arg1        : Input file type(s)
---op arg1               : Operation
---outtype -o arg1       : Output file type
---overwrite -w          : Overwrite existing output files
---paramsAPNG arg1 arg2  : Save parameters for APNG files
---paramsBMP arg1        : Save parameters for BMP  files
---paramsGIF [8 args]    : Save parameters for GIF  files
---paramsJPG arg1        : Save parameters for JPG  files
---paramsPNG arg1        : Save parameters for PNG  files
---paramsQOI arg1 arg2   : Save parameters for QOI  files
---paramsTGA arg1 arg2   : Save parameters for TGA  files
---paramsTIFF [3 args]   : Save parameters for TIFF files
---paramsWEBP [3 args]   : Save parameters for WEBP files
---po arg1               : Post operation
---skipunchanged -k      : Don't save unchanged files
---syntax -s             : Print syntax help
---verbosity -v arg1     : Verbosity from 0 to 2
+--autoname -a        : Autogenerate output file names
+--cli -c             : Use command line mode (required when using CLI)
+--earlyexit -e       : Early exit / no skipping
+--help -h            : Print help/usage information
+--in -i arg1         : Input file type(s)
+--inASTC arg1        : Load parameters for ASTC files
+--inDDS arg1         : Load parameters for DDS files
+--inEXR arg1         : Load parameters for EXR files
+--inHDR arg1         : Load parameters for HDR files
+--inJPG arg1         : Load parameters for JPG files
+--inKTX arg1         : Load parameters for KTX files
+--inPKM arg1         : Load parameters for PKM files
+--inPNG arg1         : Load parameters for PNG files
+--op arg1            : Operation
+--out -o arg1        : Output file type(s)
+--outAPNG arg1       : Save parameters for APNG files
+--outBMP arg1        : Save parameters for BMP  files
+--outGIF arg1        : Save parameters for GIF  files
+--outJPG arg1        : Save parameters for JPG  files
+--outPNG arg1        : Save parameters for PNG  files
+--outQOI arg1        : Save parameters for QOI  files
+--outTGA arg1        : Save parameters for TGA  files
+--outTIFF arg1       : Save parameters for TIFF files
+--outWEBP arg1       : Save parameters for WEBP files
+--overwrite -w       : Overwrite existing output files
+--po arg1            : Post operation
+--skipunchanged -k   : Don't save unchanged files
+--syntax -s          : Print syntax help
+--verbosity -v arg1  : Verbosity from 0 to 2
 
 Parameters:
-[inputfiles]            : Input image files
+[inputfiles]         : Input image files
 
 MODE
 ----
-You MUST call with -c or --cli to use this program in CLI mode.
+You must call with -c or --cli to use this program in CLI mode.
 
-Use the --help (-h) flag to print this help. To view generic command-line
-syntax help use the --syntax (-s) flag. For example, to print syntax usage you
-could call tacentview.exe -cs which expands to tacentview.exe -c -s
+Use the --help (-h) flag to print this help. The help option is the only one
+that does not require -c. To view generic command-line syntax help use the
+--syntax (-s) flag. For example, to print syntax usage you could call
+'tacentview -cs' which expands to 'tacentview -c -s'.
 
 Set output verbosity with --verbosity (-v) and a single integer value after it
-from 0 to 2. 0 means no text output, 1* is normal, and 2 is full/detailed.
+from 0 to 2. 0 means no text output, 1 is the default, and 2 is full/detailed.
+
+NOTATION
+--------
+Values and arguments in this help text follow the following rules:
+- Real     : Real numbers are denoted by including the decimal point.
+- Integers : Integer numbers are denoted by not including the decimal point.
+- Hex      : Hexadecimal values are prefixed with a hash (#).
+- Names    : Some values are simple string names. These are comprised of
+             alphabetic upper and lower case characters only.
+- Booleans : You may use "true", "t", "yes", "y", "on", "enable", "enabled",
+             "1", "+", and strings that represent non-zero integers as true.
+             These are case-insensitive. False is the result otherwise.
+- Defaults : Default values are denoted with an asterisk (*). Setting a value
+             to * will set it to the default value.
+- Ranges   : Value ranges are specified in interval notation where [a,b] means
+             inclusive and (a,b) means exclusive. e.g. [2,5) -> 2,3,4.
 
 INPUT IMAGES
 ------------
-Each parameter of the command line shoud be a file or directory to process. You
-may enter as many as you need. If no input files are specified, the current
+Each parameter of the command line should be a file or directory to process.
+You may enter as many as you need. If no input files are specified, the current
 directory is processed. You may also specify a manifest file containing images
 to process using the @ symbol.
 
-eg. @list.txt will load files from a manifest file called list.txt. Each line
+e.g. @list.txt will load files from a manifest file called list.txt. Each line
 of a manifest file should be the name of a file to process, the name of a dir
 to process, start with a line-comment semicolon, or simply be empty.
 
-When processing an entire directory of images you may specify what types of
-input files to process. A type like 'tif' may have more than one accepted
-extension (tif and tiff). The extension is not specified, the type is.
-Use the --intype (-i) option to specify an input type. You may have more than
-one -i to process multiple types. No -i means all supported types.
+You may specify what types of input images to process. If you do not specify
+any types, ALL supported imgage types are processed. A type like 'tif' may have
+more than one accepted extension (tif and tiff). The extension is not
+specified, the type is. Use the --in (-i) option to specify one or more input
+types. You may have more than one -i to process multiple types or you may
+specify multiple types with a comma-separated list. For example, '-i jpg,png'
+is the same as '-i jpg -i png'. If you specify only unsupported or invalid
+types a warning is printed and tga images will be processed.
 
 Supported input file types: tga png jpg gif webp qoi dds ktx ktx2 astc pkm exr 
 hdr apng bmp ico tif 
 These cover file extensions: tga png jpg jpeg gif webp qoi dds ktx ktx2 astc 
 atc pkm exr hdr rgbe apng bmp ico tif tiff 
+
+LOAD PARAMETERS
+---------------
+Some image types support various parameters while being loaded. Specifying load
+parameters takes the form:
+
+ --inTTT param1=value1,param2=value2,etc
+
+where TTT represents the image type, the lack of spaces is important, and both
+param names and values are case sensitive. All loading parameters have
+reasonable defaults -- there is no requirement to specify them if the defaults
+are sufficient. Image types with load parameters:
+
+--inASTC
+  colp: Colour profile. Possible values:
+        sRGB* - Low dynamic range RGB in sRGB space. Linear alpha.
+        gRGB  - Low dynamic range RGB in gamma space. Linear alpha.
+        lRGB  - Low dynamic range RGBA in linear space.
+        HDRa  - High dynamic range RGB in linear space. LDR linear alpha.
+        HDRA  - High dynamic range RGBA in linear space.
+  corr: Gamma correction mode, Possible values:
+        none  - No gamma correction is performed.
+        auto* - Apply gamma correction based on colour profile set above.
+        gamc  - Apply gamma compression using an encoding-gamma of 1.0/gamma.
+        srgb  - Apply gamma compression by applying a Linear->sRGB transform.
+  gamma:Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
+        Range is [0.5,4.0]
+  tone: For HDR images. Tone-map exposure applied if this is >= 0.0. A value
+        of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
+        not apply tone-map exposure function. Default is -1.0*. Non-negative
+        valid range is [0.0,4.0]
+
+--inDDS
+  corr: Gamma correction mode. Possible values:
+        none  - No gamma correction is performed.
+        auto* - Apply gamma correction based on colour space of pixel format.
+        gamc  - Apply gamma compression using an encoding-gamma of 1.0/gamma.
+        srgb  - Apply gamma compression by applying a Linear->sRGB transform.
+  gamma:Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
+  tone: For HDR images. Tone-map exposure applied if this is >= 0.0. A value
+        of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
+        not apply tone-map exposure function. Default is -1.0*. Non-negative
+        valid range is [0.0,4.0]
+  spred:Spread single channel. Boolean true* or false. For DDS files with a
+        single Red or Luminance componentconly, spread it to all the RGB
+        channels if set to true. If false the red channel takes the value.
+        Does not spread single-channel Alpha formats.
+  strct:Strict loading. Boolean true or false*. If strict is true a DDS file
+        that is not fully compliant with the standard will not be loaded.
+        Setting to false allows more forgiving loading behaviour.
+
+--inEXR
+  gamma:Gamma value in range [0.6, 3.0]. Default 2.2*.
+  expo: Exposure value in range [-10.0, 10.0]. Default 1.0* is neutral.
+  defog:Defog value (constant colour bias removal) in range [0.0*, 0.1].
+  knelo:Knee Low. Low end of the white and middle grey values in [-3.0, 3.0].
+        Values between Knee Low and Knee High are compressed. Default 0.0*.
+  knehi:Knee High. High end of white and middle grey values in [3.5, 7.5].
+        Values between Knee Low and Knee High are compressed. Default 3.5*.
+
+--inHDR
+  gamma:Gamma value in range [0.6, 3.0]. Default 2.2*.
+  expo: Exposure value in integral range [-10, 10]. Default 0* is neutral.
+  
+--inJPG
+  strct:Strict loading. Boolean true or false*. If strict is true a JPG file
+        that is not fully compliant with the standard will not be loaded.
+        Setting to false allows more forgiving loading behaviour.
+  exifo:EXIF metadata reorientation. Boolean true or false*. If true undo
+        orientation transforms in JPG image as indicated by Exif meta-data.
+
+--inKTX
+--inKTX2
+  corr: Gamma correction mode. Possible values:
+        none  - No gamma correction is performed.
+        auto* - Apply gamma correction based on colour space of pixel format.
+        gamc  - Apply gamma compression using an encoding-gamma of 1.0/gamma.
+        srgb  - Apply gamma compression by applying a Linear->sRGB transform.
+  gamma:Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
+  tone: For HDR images. Tone-map exposure applied if this is >= 0.0. A value
+        of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
+        not apply tone-map exposure function. Default is -1.0*. Non-negative
+        valid range is [0.0,4.0]
+  spred:Spread single channel. Boolean true* or false. For KTX files with a
+        single Red or Luminance componentconly, spread it to all the RGB
+        channels if set to true. If false the red channel takes the value.
+        Does not spread single-channel Alpha formats.
+
+--inPKM
+  corr: Gamma correction mode. Possible values:
+        none  - No gamma correction is performed.
+        auto* - Apply gamma correction based on colour space of pixel format.
+        gamc  - Apply gamma compression using an encoding-gamma of 1.0/gamma.
+        srgb  - Apply gamma compression by applying a Linear->sRGB transform.
+  gamma:Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
+  spred:Spread single channel. Boolean true* or false. For PKM files with a
+        single Red or Luminance componentconly, spread it to all the RGB
+        channels if set to true. If false the red channel takes the value.
+        Does not spread single-channel Alpha formats.
+
+--inPNG
+  strct:Strict loading. Boolean true or false*. If strict is true a JPG file
+        that is not fully compliant with the standard will not be loaded.
+        Setting to false allows more forgiving loading behaviour. In
+        particular some software saves JPG/JFIF-encoded files with the png
+        extension. Setting this to false allows these 'png' files to load.
+  apng: Load Animated PNG inside a PNG. Boolean true or false*. If apng is
+        true the loading code will detect an animated PNG (APNG) when stored
+        inside a regular PNG file. This allows the command-line to load all
+        the frames of an APNG file even if it has a regular (single-frame)
+        png extension.
 
 OPERATIONS
 ----------
@@ -349,7 +497,7 @@ not provided or * is entered, the default value is used -- look for the
 asterisk in the argument description. eg. --op zap[a,b,c*,d*] may be called
 with --op zap[a,b] which would do the same thing as --op zap[a,b,*,*]. If the
 operation has all optional arguments you may include an empty arg list with []
-or leave it out. Eg. zap[*a,b*] may be called with --op zap[] or just --op zap.
+or leave it out. Eg. zap[a*,b*] may be called with --op zap[] or just --op zap.
 
 --op pixel[x,y,col,chan*]
   Sets the pixel at (x,y) to the colour supplied. The chan argument lets you
@@ -447,9 +595,9 @@ or leave it out. Eg. zap[*a,b*] may be called with --op zap[] or just --op zap.
   width/height or the top-right corner. The values are pixels starting at 0.
   If the crop area you specify goes outside the image being processed, the fill
   colour is used. The resultant image must be at least 4x4.
-  mode: Coordinate mode. Either abs* or rel. In absolute mode xw and yh are the
+  mode: Coordinate mode. Either abs* or rel. In absolute mode mw and mh are the
         position of the top right extent of the crop area. Pixels outside of
-        this are cropped. In relative mode xw and yh are the new width and
+        this are cropped. In relative mode mw and mh are the new width and
         height of the cropped image.
   x:    The x of the lower-left origin of the crop area. Included in final
         pixels. Defaults to 0*.
@@ -675,10 +823,6 @@ lanczos_wide none
 
 Supported edge modes: clamp wrap 
 
-Boolean arguments: You may use "true", "t", "yes", "y", "on", "enable",
-"enabled", "1", "+", and strings that represent non-zero integers as true.
-These are case-insensitive. False is the result otherwise.
-
 POST OPERATIONS
 ---------------
 Post operations are specified using --po opname[arg1,arg2,...]
@@ -759,13 +903,18 @@ included in the inputs, the new file is not used by the post operation.
 OUTPUT IMAGES
 -------------
 The output files are generated based on the input files and chosen operations.
-The type of the output images is specified with --outtype type. The short
-version -o may also be used. If no outtype is specified the default is tga.
+Each input image may generate one or more output images based on what the output
+types are set to. For example, you might specify that both webp and bmp images
+should be saved. The output types are specified with --out followed by a comma-
+separated list of types. The short version -o may also be used. If no out type
+is specified the default is tga. You may have multiple -o arguments or just a
+single one. For example, '-o webp,bmp' is the same as '-o webp -o bmp'.
+
 Supported output file types: tga png jpg gif webp qoi apng bmp tif 
 
 The output filename matches the input filename except that the extension/type
-may be different. Eg. Seascape.jpg would save as Seascape.tga if the outtype
-was tga.
+may be different. Eg. Seascape.jpg would save as Seascape.tga if the out type
+was tga only.
 
 If an output file already exists, it is not overwritten. To allow overwrite use
 the --overwrite (-w) flag. To have the tool try a different filename if it
@@ -779,72 +928,98 @@ performed. Sometimes you may not want to save unmodified files. An example of
 this is using the extract operation by itself. If you don't want the unmodified
 input image saved, specify -k or --skipunchanged on the command line.
 
-OUTPUT PARAMETERS
------------------
+SAVE PARAMETERS
+---------------
 Different output image types have different features and may support different
-parameters when saving. The following options cover setting these parameters.
-These options do not have single-letter short forms. In all cases entering an
-asterisk (*) means use the default value. In the desriptions below the *
-indicates which is the default.
+parameters when saving. Specifying save parameters takes the form:
 
---paramsAPNG bpp dur
-  bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
-  dur:  Frame duration override in milliseconds. -1* means use current frame
-        duration. 0 or more means override all frames to supplied value.
+ --outTTT param1=value1,param2=value2,etc
 
---paramsBMP bpp
-  bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
+where TTT represents the image type, the lack of spaces is important, and both
+param names and values are case sensitive. All save parameters have reasonable
+defaults -- there is no requirement to specify them if the defaults are
+sufficient. An asterisk (*) denotes the default value for that parameter. You
+may enter a * to set it to default or just don't set the parameter. Image types
+with save parameters:
 
---paramsGIF bpp qan loop alp dur dith filt samp
-  bpp:  Bits per pixel from 1 to 8*. Results in palette colours from 2 to 256.
-        If the GIF has transparency, one less colour can be represented.
-  qan:  Quantization method for palette generation.
-        fixed:   Use a fixed colour palette for the chosen bpp. Low quality.
-        spatial: Use scolorq algorithm. Slow but good for 32 colours or fewer.
-        neu:     Use neuquant algorithm. Good for 64 colours or more.
-        wu*:     Use XiaolinWu algorithm. Good for 64 colours or more.
+--outAPNG
+  bpp:  Bits per pixel. Possible values:
+        24    - Force 24 bits per pixel. Alpha channel ignored.
+        32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
+        auto* - Decide bpp based on opacity of image being saved.
+  dur:  Frame duration override in milliseconds. Use -1* for no override.
+
+--outBMP
+  bpp:  Bits per pixel. Possible values:
+        24    - Force 24 bits per pixel. Alpha channel ignored.
+        32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
+        auto* - Decide bpp based on opacity of image being saved.
+
+--outGIF
+  bpp:  Bits per pixel from 1 to 8*. Since GIFs are palettized this value
+        results in images from 2 to 256 colours. If the GIF has transparency,
+        one fewer colour can be represented.
+  qan:  Quantization method for palette generation. Possible values:
+        fix   - Use a fixed colour palette for the chosen bpp. Low quality.
+        spc   - Use spatial scolorq algorithm. Slow. Good for 5 bpp or lower.
+        neu   - Use neuquant algorithm. Good for 64 colours or more.
+        wu*   - Use XiaolinWu algorithm. Good for 64 colours or more.
   loop: Times to loop for animated GIFs. Choose 0* to loop forever. 
-  alp:  Alpha threshold. Set to 255 to force opaque. If in [0, 255) a pixel
-        alpha <= threshold results in a transparent pixel. Set to -1(*) for
-        auto-mode where a threshold of 127 if used if image is not opaque -- if
-        image is opaque the resultant GIF will be opaque.
-  dur:  Frame duration override, -1* means no override. Otherwise in 1/100 s.
-  dith: Dither level. Value in range 0.0 to 2.0+. Only applies to spatial
+  alp:  Alpha threshold. Set to 255 to force opaque. If in [0, 255) a
+        pixel-alpha <= threshold results in a transparent pixel. Set to -1(*)
+        for auto-mode where a threshold of 127 if used if image is not opaque.
+        If set to -1 and image is opaque, the resultant GIF will be opaque.
+  dur:  Frame duration override in 1/100 s. Use -1* for no override.
+  dith: Dither level. Value in [0.0,2.0+]. Only applies to spatial
         quantization. 0.0* means auto-determine a good value for the current
-        image based on its dimensions. Greater than zero means manually set the
+        image based on its dimensions. Greater than 0.0 means manually set the
         amount. A dither value of 0.1 results in no dithering. 2.0 results in
         significant dithering.
-  filt: Filter size. Only applies to spatial quantization. Must be 1, 3*, or 5.
-  samp: Sample factor. Only applies to neu quantization. 1* means whole image
-        learning. 10 means 1/10 of image only. Max value is 30 (fastest).
+  filt: Filter size. Only applies to spatial quantization. Must be 1, 3*, 5.
+  samp: Sample factor. Range is [1,30]. Only applies to neu quantization. 1*
+        means whole image learning. 10 means 1/10 of image only. Max value 30
+        is fastest.
 
---paramsJPG qual
-  qual: Quality of jpeg as integer from 1 to 100. Default is 95*
+--outJPG
+  qual: Quality of jpeg in range [1,100]. Default is 95*
 
---paramsPNG bpp
-  bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
+--outPNG
+  bpp:  Bits per pixel. Possible values:
+        24    - Force 24 bits per pixel. Alpha channel ignored.
+        32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
+        auto* - Decide bpp based on opacity of image being saved.
 
---paramsQOI bpp spc
-  bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
+--outQOI
+  bpp:  Bits per pixel. Possible values:
+        24    - Force 24 bits per pixel. Alpha channel ignored.
+        32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
+        auto* - Decide bpp based on opacity of image being saved.
   spc:  Colour space. srgb, lin, or auto*. Auto means keep the currenly loaded
         space. Use srgb for the sRGB space. Use lin for linear.
 
---paramsTGA bpp comp
-  bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
-  comp: Compression. none* or rle. Use rle for run-length encoded.
+--outTGA
+  bpp:  Bits per pixel. Possible values:
+        24    - Force 24 bits per pixel. Alpha channel ignored.
+        32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
+        auto* - Decide bpp based on opacity of image being saved.
+  rle:  Run-length encoding. Boolean true or false*. This can reduce tga size
+        but some software can't load RLE-compressed TGAs correctly.
 
---paramsTIFF bpp zlib dur
-  bpp:  Bits per pixel. 24, 32, or auto*. Auto means decide based on opacity.
-  zlib: Use Zlib Compression. T* or F. This is a boolean. See note below.
-  dur:  Frame duration override, -1* means no override. Otherwise units are ms.
+--outTIFF
+  bpp:  Bits per pixel. Possible values:
+        24    - Force 24 bits per pixel. Alpha channel ignored.
+        32    - Force 32 bits per pixel. Alpha channel set to full if opaque.
+        auto* - Decide bpp based on opacity of image being saved.
+  zlib: Use Zlib Compression. Boolean true* or false.
+  dur:  Frame duration override in milliseconds. Use -1* for no override.
 
---paramsWEBP loss qual dur
-  loss: Generate lossy image. T or F*. This is a boolean. See note below.
-  qual: Quality or compression amount in range 0.0 to 100.0. Default is 90.0*.
+--outWEBP
+  loss: Generate lossy image. Boolean true or false*.
+  qual: Quality or compression amount in range [0.0,100.0]. Default is 90.0*.
         Interpreted as quality for lossy images. Larger looks better but bigger
         files. Interpreted as compression strength for non-lossy. Larger values
         compress more but images take longer to generate.
-  dur:  Frame duration override, -1* means no override. Otherwise units are ms.
+  dur:  Frame duration override in milliseconds. Use -1* for no override.
 
 EXIT CODE
 ---------
@@ -854,75 +1029,4 @@ failure in any step for any image results in an error. By default processing
 continues to the next image even on a failure. If the --earlyexit (-e) flag is
 set, processing stops immediately on any failure. Either way, any failure
 returns a non-zero exit code.
-```
-
----
-## Syntax
-This is a printout of the command-line syntax used to specify arguments to _Tacent View_. To printout the syntax usage use the command `tacentview.exe -c --syntax`
-
-```
-Tacent View 1.0.40 in CLI Mode. Use --help for details.
-Syntax Help:
-program.exe [arg1 arg2 arg3 ...]
-
-ARGUMENTS:
-Arguments are separated by spaces. An argument must be enclosed in quotes
-(single or double) if it has spaces in it or you want the argument to start
-with a hyphen literal. Hat (^) escape sequences can be used to put either type
-of quote inside. If you need to specify file paths you may use forward or back
-slashes. An ARGUMENT is either an OPTION or PARAMETER.
-
-OPTIONS:
-An option is simply an argument that starts with a hyphen (-). An option has a
-short syntax and a long syntax. Short syntax is a - followed by a single
-non-hyphen character. The long form is -- followed by a word. All options
-support either long, short, or both forms. Options may have 0 or more
-arguments separated by spaces. Options can be specified in any order. Short
-form options may be combined: Eg. -al expands to -a -l.
-
-FLAGS:
-If an option takes zero arguments it is called a flag. You can only test for a
-FLAGs presence or lack thereof.
-
-PARAMETERS:
-A parameter is simply an argument that is not one of the available options. It
-can be read as a string and parsed however is needed (converted to an integer,
-float etc.) Order is important when specifying parameters. If you need a
-hyphen in a parameter at the start you will need put the parameter in quotes.
-For example, a filename _can_ start with -. Note that arguments that start
-with a hyphen but are not recognized as a valid option just get turned into
-parameters. This means interpreting a hyphen directly instead of as an option
-specifier will happen automatically if there are no options matching what
-comes after the hyphen. Eg. 'tool.exe -.85 --add 33 -87.98 --notpresent' work
-just fine as long as there are no options that have a short form with digits
-or a decimal. In this example the -.85 will be the first parameter,
---notpresent will be the second. The --add is assumed to take in two number
-arguments.
-
-ESCAPES:
-Sometimes you need a particular character to appear inside an argument. For
-example you may need a single or double quote to apprear inside a parameter.
-The hat (^) followed by the character you need is used for this purpose.
-Eg: ^^ yields ^ | ^' yields ' | ^" yields "
-
-VARIABLE ARGUMENTS:
-A variable number of space-separated parameters may be specified if the tool
-supports them. The parsing system will collect them all up if the parameter
-number is unset (-1).
-A variable number of option arguments is not directly supported due to the
-more complex parsing that would be needed. The same result is achieved by
-entering the same option more than once. Order is preserved. This can also
-be done with options that take more than one argument.
-Eg. tool.exe -I /patha/include/ -I /pathb/include
-
-EXAMPLE:
-mycopy.exe -R --overwrite fileA.txt -pat fileB.txt --log log.txt
-
-The fileA.txt and fileB.txt in the above example are parameters (assuming
-the overwrite option is a flag). fileA.txt is the first parameter and
-fileB.txt is the second.
-
-The '--log log.txt' is an option with a single argument, log.txt. Flags may be
-combined. The -pat in the example expands to -p -a -t. It is suggested only to
-combine flag options as only the last option would get any arguments.
 ```
