@@ -7,7 +7,7 @@ This page is an overview of the features available in _Tacent View_ while using 
 
 ---
 ## Examples
-The easiest way to begin using _Tacent View_ from the commad-line is by example. The following examples assume a) _tacentview.exe_ is in the path or in the current directory, and b) there are multiple images of various types in the current directory. The examples do not exhaustively demonstrate all options and parameters -- see the _usage_ section after the examples for all the options.\
+The easiest way to begin using _Tacent View_ from the commad-line is by example. The following examples assume a) _tacentview_ is in the path or in the current directory, and b) there are multiple images of various types in the current directory. The examples do not exhaustively demonstrate all options and parameters -- see the _usage_ section after the examples for all the options.\
 \
 \
 **Example 1 - Convert to TGA**
