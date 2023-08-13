@@ -144,7 +144,7 @@ specified, the type is. Use the --in (-i) option to specify one or more input
 types. You may have more than one -i to process multiple types or you may
 specify multiple types with a comma-separated list. For example, '-i jpg,png'
 is the same as '-i jpg -i png'. If you specify only unsupported or invalid
-types a warning is printed and the default, tga images only, will be used.
+types a warning is printed and tga images will be processed.
 
 %s
 %s
