@@ -179,10 +179,10 @@ are sufficient. Image types with load parameters:
         srgb  - Apply gamma compression by applying a Linear->sRGB transform.
   gamma:Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
         Range is [0.5,4.0]
-  tone: For HDR images. Tone-map exposure applied if this is >= 0.0. A value
-        of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
-        not apply tone-map exposure function. Default is -1.0*. Non-negative
-        valid range is [0.0,4.0]
+  tone: For HDR images. Tone-map exposure applied if this is >= 0.0. The
+        non-negative valid range is [0.0,4.0]. A value of 0.0 is black and 4.0
+		is over-exposed. A value of 1.0 is neutral. Negative values do not
+        apply tone-map exposure. Default is -1.0* for no application.
 
 --inDDS
   corr: Gamma correction mode. Possible values:
@@ -191,10 +191,10 @@ are sufficient. Image types with load parameters:
         gamc  - Apply gamma compression using an encoding-gamma of 1.0/gamma.
         srgb  - Apply gamma compression by applying a Linear->sRGB transform.
   gamma:Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
-  tone: For HDR images. Tone-map exposure applied if this is >= 0.0. A value
-        of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
-        not apply tone-map exposure function. Default is -1.0*. Non-negative
-        valid range is [0.0,4.0]
+  tone: For HDR images. Tone-map exposure applied if this is >= 0.0. The
+        non-negative valid range is [0.0,4.0]. A value of 0.0 is black and 4.0
+		is over-exposed. A value of 1.0 is neutral. Negative values do not
+        apply tone-map exposure. Default is -1.0* for no application.
   spred:Spread single channel. Boolean true* or false. For DDS files with a
         single Red or Luminance componentconly, spread it to all the RGB
         channels if set to true. If false the red channel takes the value.
@@ -231,10 +231,10 @@ are sufficient. Image types with load parameters:
         gamc  - Apply gamma compression using an encoding-gamma of 1.0/gamma.
         srgb  - Apply gamma compression by applying a Linear->sRGB transform.
   gamma:Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
-  tone: For HDR images. Tone-map exposure applied if this is >= 0.0. A value
-        of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
-        not apply tone-map exposure function. Default is -1.0*. Non-negative
-        valid range is [0.0,4.0]
+  tone: For HDR images. Tone-map exposure applied if this is >= 0.0. The
+        non-negative valid range is [0.0,4.0]. A value of 0.0 is black and 4.0
+		is over-exposed. A value of 1.0 is neutral. Negative values do not
+        apply tone-map exposure. Default is -1.0* for no application.
   spred:Spread single channel. Boolean true* or false. For KTX files with a
         single Red or Luminance componentconly, spread it to all the RGB
         channels if set to true. If false the red channel takes the value.
