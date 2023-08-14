@@ -180,6 +180,7 @@ struct ProfileSettings
 
 	bool ConfirmDeletes;
 	bool ConfirmFileOverwrites;
+	bool SlideshowAutoStart;
 	bool SlideshowLooping;
 	bool SlideshowProgressArc;
 	bool SlideshowAutoReshuffle;

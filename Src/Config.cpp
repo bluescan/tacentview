@@ -391,6 +391,7 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 
 	if (categories & Category_Slideshow)
 	{
+		SlideshowAutoStart			= (profile == Profile::Kiosk) ? true : false;
 		SlideshowLooping			= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? true : false;
 		SlideshowProgressArc		= true;
 		switch (profile)
@@ -482,6 +483,7 @@ void Config::ProfileSettings::Load(tExpression expr)
 			ReadItem(ZoomPerImage);
 			ReadItem(ConfirmDeletes);
 			ReadItem(ConfirmFileOverwrites);
+			ReadItem(SlideshowAutoStart);
 			ReadItem(SlideshowLooping);
 			ReadItem(SlideshowProgressArc);
 			ReadItem(SlideshowAutoReshuffle);
@@ -647,6 +649,7 @@ bool Config::ProfileSettings::Save(tExprWriter& writer) const
 	WriteItem(ZoomPerImage);
 	WriteItem(ConfirmDeletes);
 	WriteItem(ConfirmFileOverwrites);
+	WriteItem(SlideshowAutoStart);
 	WriteItem(SlideshowLooping);
 	WriteItem(SlideshowProgressArc);
 	WriteItem(SlideshowAutoReshuffle);

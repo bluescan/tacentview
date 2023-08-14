@@ -3932,7 +3932,7 @@ int main(int argc, char** argv)
 	#elif defined(PLATFORM_LINUX)
 	glfwShowWindow(Viewer::Window);
 	#endif
-		
+
 	// I don't seem to be able to get Linux to v-sync.
 	// glfwSwapInterval(1);
 	glfwMakeContextCurrent(Viewer::Window);
@@ -3940,6 +3940,9 @@ int main(int argc, char** argv)
 
 	if (Viewer::Config::Global.FullscreenMode)
 		Viewer::ChangeScreenMode(true, true);
+
+	if (Viewer::Config::Current->SlideshowAutoStart)
+		Viewer::SlideshowPlaying = true;
 
 	// Main loop.
 	static double lastUpdateTime = glfwGetTime();

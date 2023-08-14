@@ -209,6 +209,10 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::SameLine();
 			ShowHelpMark("Display a time remaining indicator when slideshow active.");
 
+			ImGui::Checkbox("Auto Start", &Config::Current->SlideshowAutoStart);
+			ImGui::SameLine();
+			ShowHelpMark("Should slideshow start automatically on launch.");
+
 			ImGui::Checkbox("Looping", &Config::Current->SlideshowLooping);
 			ImGui::SameLine();
 			ShowHelpMark("Should slideshow loop after completion.");
