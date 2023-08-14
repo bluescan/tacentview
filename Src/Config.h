@@ -289,7 +289,7 @@ private:
 
 
 // Loads the global settings and all profile settings from a single file.
-void Load(const tString& filename);
+void Load(const tString& filename, Profile initialProfileOverride = Profile::Invalid);
 
 // Saves the global settings and all profile settings in a single file.
 void Save(const tString& filename);

@@ -22,7 +22,8 @@ namespace Viewer
 		Main,
 		Basic,
 		Kiosk,
-		NumProfiles
+		NumProfiles,
+		Invalid = NumProfiles
 	};
 
 	const char* GetProfileName(Profile);

@@ -313,7 +313,7 @@ This is a printout of the CLI usage instructions built into _Tacent View_. To ge
 Tacent View 1.0.41 by Tristan Grimmer
 CLI Mode
 
-USAGE: tacentview [options] [inputfiles] 
+USAGE: tacentview.exe [options] [inputfiles] 
 
 Options:
 --autoname -a        : Autogenerate output file names
@@ -342,6 +342,7 @@ Options:
 --outWEBP arg1       : Save parameters for WEBP files
 --overwrite -w       : Overwrite existing output files
 --po arg1            : Post operation
+--profile -p arg1    : Launch GUI with the specified profile active.
 --skipunchanged -k   : Don't save unchanged files
 --syntax -s          : Print syntax help
 --verbosity -v arg1  : Verbosity from 0 to 2
@@ -360,6 +361,17 @@ that does not require -c. To view generic command-line syntax help use the
 
 Set output verbosity with --verbosity (-v) and a single integer value after it
 from 0 to 2. 0 means no text output, 1 is the default, and 2 is full/detailed.
+
+To launch in GUI mode run without any arguments or with the file or directory
+you want to open as the argument. Directories should be specified with a
+trailing slash. You may optionally specify the profile to use with the
+--profile (-p) command followed by the profile name.
+
+When launching this way the selected profile is not saved to the config on exit.
+This is useful, for example, to start with the 'kiosk' profile active. e.g.
+tacentview -p kiosk C:/Slidehow/
+By default the kiosk profile auto-starts the slideshow in shuffle mode. Like
+all profiles it can be configured however is desired.
 
 NOTATION
 --------
@@ -428,10 +440,10 @@ are sufficient. Image types with load parameters:
         srgb  - Apply gamma compression by applying a Linear->sRGB transform.
   gamma:Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
         Range is [0.5,4.0]
-  tone: For HDR images. Tone-map exposure applied if this is >= 0.0. A value
-        of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
-        not apply tone-map exposure function. Default is -1.0*. Non-negative
-        valid range is [0.0,4.0]
+  tone: For HDR images. Tone-map exposure applied if this is >= 0.0. The
+        non-negative valid range is [0.0,4.0]. A value of 0.0 is black and 4.0
+		is over-exposed. A value of 1.0 is neutral. Negative values do not
+        apply tone-map exposure. Default is -1.0* for no application.
 
 --inDDS
   corr: Gamma correction mode. Possible values:
@@ -440,10 +452,10 @@ are sufficient. Image types with load parameters:
         gamc  - Apply gamma compression using an encoding-gamma of 1.0/gamma.
         srgb  - Apply gamma compression by applying a Linear->sRGB transform.
   gamma:Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
-  tone: For HDR images. Tone-map exposure applied if this is >= 0.0. A value
-        of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
-        not apply tone-map exposure function. Default is -1.0*. Non-negative
-        valid range is [0.0,4.0]
+  tone: For HDR images. Tone-map exposure applied if this is >= 0.0. The
+        non-negative valid range is [0.0,4.0]. A value of 0.0 is black and 4.0
+		is over-exposed. A value of 1.0 is neutral. Negative values do not
+        apply tone-map exposure. Default is -1.0* for no application.
   spred:Spread single channel. Boolean true* or false. For DDS files with a
         single Red or Luminance componentconly, spread it to all the RGB
         channels if set to true. If false the red channel takes the value.
@@ -480,10 +492,10 @@ are sufficient. Image types with load parameters:
         gamc  - Apply gamma compression using an encoding-gamma of 1.0/gamma.
         srgb  - Apply gamma compression by applying a Linear->sRGB transform.
   gamma:Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
-  tone: For HDR images. Tone-map exposure applied if this is >= 0.0. A value
-        of 0.0 is black. A value of 4.0 is over-exposed. Negative means do
-        not apply tone-map exposure function. Default is -1.0*. Non-negative
-        valid range is [0.0,4.0]
+  tone: For HDR images. Tone-map exposure applied if this is >= 0.0. The
+        non-negative valid range is [0.0,4.0]. A value of 0.0 is black and 4.0
+		is over-exposed. A value of 1.0 is neutral. Negative values do not
+        apply tone-map exposure. Default is -1.0* for no application.
   spred:Spread single channel. Boolean true* or false. For KTX files with a
         single Red or Luminance componentconly, spread it to all the RGB
         channels if set to true. If false the red channel takes the value.

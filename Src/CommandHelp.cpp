@@ -101,6 +101,17 @@ that does not require -c. To view generic command-line syntax help use the
 
 Set output verbosity with --verbosity (-v) and a single integer value after it
 from 0 to 2. 0 means no text output, 1 is the default, and 2 is full/detailed.
+
+To launch in GUI mode run without any arguments or with the file or directory
+you want to open as the argument. Directories should be specified with a
+trailing slash. You may optionally specify the profile to use with the
+--profile (-p) command followed by the profile name.
+
+When launching this way the selected profile is not saved to the config on exit.
+This is useful, for example, to start with the 'kiosk' profile active. e.g.
+tacentview -p kiosk C:/Slidehow/
+By default the kiosk profile auto-starts the slideshow in shuffle mode. Like
+all profiles it can be configured however is desired.
 )USAGE010", intypes.Chr(), inexts.Chr()
 	);
 	tPrintf

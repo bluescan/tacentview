@@ -69,7 +69,12 @@ using namespace tMath;
 
 namespace Viewer
 {
+	// These are the basic options available when starting the viewer. When in CLI mode there are many more in use that
+	// can be seen in the Command.cpp module. OptionCLI and OptionHelp are the only two that turn in the CLI mode.
+	// The OptionProfile is the only control option for GUI mode -- useful, for example, for launchin the GUI in the
+	// kiosk profile regardless of the last used profile stored in the config file.
 	tCmdLine::tParam  ParamImageFiles	("Files to open",												"ImageFiles",			0,	true	);
+	tCmdLine::tOption OptionProfile		("Launch GUI with the specified profile active.",				"profile",		'p',	1			);
 	tCmdLine::tOption OptionCLI			("Use command line mode (required when using CLI)",				"cli",			'c'					);
 	tCmdLine::tOption OptionHelp		("Help on usage",												"help",			'h',	0,	true	);
 
@@ -3767,7 +3772,18 @@ int main(int argc, char** argv)
 	if (!tSystem::tDirExists(Viewer::Image::ThumbCacheDir))
 		tSystem::tCreateDir(Viewer::Image::ThumbCacheDir);
 	
-	Viewer::Config::Load(cfgFile);
+	Viewer::Profile overrideProfile = Viewer::Profile::Invalid;
+	if (Viewer::OptionProfile)
+	{
+		const tString& profStr = Viewer::OptionProfile.Arg1();
+		switch (tHash::tHashString(profStr.Chr()))
+		{
+			case tHash::tHashCT("main"):	overrideProfile = Viewer::Profile::Main;	break;
+			case tHash::tHashCT("basic"):	overrideProfile = Viewer::Profile::Basic;	break;
+			case tHash::tHashCT("kiosk"):	overrideProfile = Viewer::Profile::Kiosk;	break;
+		}
+	}
+	Viewer::Config::Load(cfgFile, overrideProfile);
 
 	// If no file from commandline, see if there is one set in the config.
 	if (Viewer::CurrImageFile.IsEmpty() && Viewer::Config::Global.LastOpenPath.IsValid())
