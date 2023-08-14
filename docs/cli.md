@@ -62,11 +62,11 @@ tacentview -c --in exr --inEXR gamma=1.8,expo=3.5
 Many image formats have additional load parameters that may be specified. In this example EXR files are loaded with a gamma-correction of 1.8 (default is 2.2) and an exposure value of 3.5. Exposure ranges from -10.0 to 10.0 with the neutral default being 1.0. For EXR files additional load parameters, not shown here, include defogging (`defog`), and adjusting _knee_ values (white and middle points) using knee-low (`knelo`), and knee-high (`knehi`).\
 \
 \
-**Example {% increment egnum %} - Convert JPG to TGA Respecting EFIF Orientation**
+**Example {% increment egnum %} - Convert JPG to TGA Respecting EXIF Orientation**
 ```
 tacentview -c --in jpg --inJPG strct=true,exifo=true
 ```
-Some JPG files have meta-data that indicates, among other things, what orientation the camera was when the picture was taken. By specifying `exifo=true` we can undo this orientation automatically for JPG files. The resultant TGA will always be oriented correctly when we do this. The default is to not take the EFIX orientation into account. The `strct=true` load parameter means that any input JPG files must be well-defined and _strictly_ meet the JPeg specification. Setting this to false allows some non-conformant images to still be loaded.\
+Some JPG files have meta-data that includes, among other things, the orientation of the camera when the picture was taken. By specifying `exifo=true` we can undo this orientation automatically for JPG files. The resultant TGA will always be oriented correctly when we do this. The default is to not take the EXIF orientation into account. The `strct=true` load parameter means that any input JPG files must be well-defined and _strictly_ meet the JPeg specification. Setting this to false allows some non-conformant images to be loaded.\
 \
 \
 **Example {% increment egnum %} - Convert DDS to TGA Specifying Load Parameters**
