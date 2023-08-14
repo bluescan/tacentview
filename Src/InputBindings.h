@@ -23,7 +23,9 @@ namespace Viewer {
 namespace Bindings
 {
 	// Add new operations to the bottom of this enum. If you add in the middle or reorder,
-	// it will invalidate the key bindings in previous version's config save files.
+	// it will invalidate the key bindings in previous version's config save files. If you
+	// need to remove an operation, consider deprecating it by prepending DEPRECATED in front
+	// if you don't want to invalidate bindings from previous config files.
 	enum class Operation
 	{
 		None,
@@ -87,7 +89,7 @@ namespace Bindings
 		CheatSheet,
 		DebugLog,
 
-		Profile,
+		DEPRECATED_Profile,
 		Preferences,
 		KeyBindings,
 
@@ -113,6 +115,9 @@ namespace Bindings
 		SaveExtractFrames,		// Save individual frames of a mult-frame image as indivisual files.
 		Quantize,				// Quantize (reduce) the colours used by an image using various algorithms.
 		SlideshowReshuffle,		// If shuffle selected as sort order, this will reshuffle after every slideshow loop.
+		ProfileMain,			// Activate the main profile.
+		ProfileBasic,			// Activate the basic profile.
+		ProfileKiosk,			// Activate the kiosk profile.
 		//
 		// Add new operations here. Adding above will invalidate save file keybindings.
 		//

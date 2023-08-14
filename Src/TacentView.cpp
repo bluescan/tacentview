@@ -1938,12 +1938,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ChangeScreenMode(!Config::Global.FullscreenMode);
 		ImGui::End();
 
-		// Exit basic profile.
-		if (Config::GetProfile() == Profile::Basic)
+		// Exit basic or kiosk profile.
+		if ((Config::GetProfile() == Profile::Basic) || (Config::GetProfile() == Profile::Kiosk))
 		{
 			ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+mainButtonDim*4.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 			ImGui::SetNextWindowSize(tVector2(120.0f, mainButtonDim), ImGuiCond_Always);
-			ImGui::Begin("ExitBasic", nullptr, flagsImgButton);
+			ImGui::Begin("ToMainProfile", nullptr, flagsImgButton);
 			if (ImGui::Button("ESC", tVector2(50.0f, escButtonHeight)))
 				ChangeProfile(Profile::Main);
 			ImGui::End();
@@ -2040,15 +2040,22 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			ImGui::Separator();
 
+			// For all three profile menu items, changing to the currently activated is checked by ChangeProfile
+			// and does nothing. It is safe.
 			bool mainProfile = Config::GetProfile() == Profile::Main;
-			tString mainProfKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Profile);
-			if (ImGui::MenuItem("Main Profile", mainProfile ? nullptr : mainProfKey.Chz(), &mainProfile))
-				ChangeProfile(mainProfile ? Profile::Main : Profile::Basic);
+			tString mainProfKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ProfileMain);
+			if (ImGui::MenuItem("Main Profile", mainProfKey.Chz(), &mainProfile))
+				ChangeProfile(Profile::Main);
 
 			bool basicProfile = Config::GetProfile() == Profile::Basic;
-			tString basicProfKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Profile);
-			if (ImGui::MenuItem("Basic Profile", basicProfile ? nullptr : basicProfKey.Chz(), &basicProfile))
-				ChangeProfile(basicProfile ? Profile::Basic : Profile::Main);
+			tString basicProfKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ProfileBasic);
+			if (ImGui::MenuItem("Basic Profile", basicProfKey.Chz(), &basicProfile))
+				ChangeProfile(Profile::Basic);
+
+			bool kioskProfile = Config::GetProfile() == Profile::Kiosk;
+			tString kioskProfKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ProfileKiosk);
+			if (ImGui::MenuItem("Kiosk Profile", kioskProfKey.Chz(), &kioskProfile))
+				ChangeProfile(Profile::Kiosk);
 
 			ImGui::Separator();
 
@@ -2218,11 +2225,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			tString reshuffleKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SlideshowReshuffle);
 			ImGui::MenuItem("Slideshow Reshuffle", reshuffleKey.Chz(), &Config::Current->SlideshowAutoReshuffle, !CropMode);
-
-			bool basicSettings = (Config::GetProfile() == Profile::Basic);
-			tString modeKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Profile);
-			if (ImGui::MenuItem("Basic Profile", modeKey.Chz(), &basicSettings, !CropMode))
-				ChangeProfile(basicSettings ? Profile::Basic : Profile::Main);
 
 			tString detailsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Details);
 			ImGui::MenuItem("Image Details", detailsKey.Chz(), &Config::Current->ShowImageDetails);
@@ -3384,8 +3386,16 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				Config::Current->ShowNavBar = true;
 			break;
 
-		case Bindings::Operation::Profile:
-			if (!CropMode) ChangeProfile((Config::GetProfile() == Profile::Basic) ? Profile::Main : Profile::Basic);
+		case Bindings::Operation::ProfileMain:
+			if (!CropMode && (Config::GetProfile() != Profile::Main)) ChangeProfile(Profile::Main);
+			break;
+
+		case Bindings::Operation::ProfileBasic:
+			if (!CropMode && (Config::GetProfile() != Profile::Basic)) ChangeProfile(Profile::Basic);
+			break;
+
+		case Bindings::Operation::ProfileKiosk:
+			if (!CropMode && (Config::GetProfile() != Profile::Kiosk)) ChangeProfile(Profile::Kiosk);
 			break;
 
 		case Bindings::Operation::Preferences:
@@ -3404,14 +3414,14 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case Bindings::Operation::Escape:
 			if (Config::Global.FullscreenMode)
 				ChangeScreenMode(false);
-			else if (Config::GetProfile() == Profile::Basic)
+			else if ((Config::GetProfile() == Profile::Basic) || (Config::GetProfile() == Profile::Kiosk))
 				ChangeProfile(Profile::Main);
 			break;
 
 		case Bindings::Operation::EscapeSupportingQuit:
 			if (Config::Global.FullscreenMode)
 				ChangeScreenMode(false);
-			else if (Config::GetProfile() == Profile::Basic)
+			else if ((Config::GetProfile() == Profile::Basic) || (Config::GetProfile() == Profile::Kiosk))
 				ChangeProfile(Profile::Main);
 			else
 				Viewer::Request_Quit = true;				

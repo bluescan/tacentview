@@ -18,18 +18,22 @@ namespace Viewer
 {
 
 
-const char* ProfileNames[int(Profile::NumProfiles)] =
+const char* ProfileNames[] =
 {
 	"Main",
-	"Basic"
+	"Basic",
+	"Kiosk"
 };
+tStaticAssert(tNumElements(ProfileNames) == int(Profile::NumProfiles));
 
 
-const char* ProfileNamesLong[int(Profile::NumProfiles)] =
+const char* ProfileNamesLong[] =
 {
 	"Main Profile",
-	"Basic Profile"
+	"Basic Profile",
+	"Kiosk Profile"
 };
+tStaticAssert(tNumElements(ProfileNamesLong) == int(Profile::NumProfiles));
 
 
 }

@@ -43,6 +43,7 @@ namespace Config
 	GlobalSettings Global;
 	ProfileSettings MainProfileSettings(Profile::Main);
 	ProfileSettings BasicProfileSettings(Profile::Basic);
+	ProfileSettings KioskProfileSettings(Profile::Kiosk);
 	ProfileSettings* Current = &MainProfileSettings;
 }
 
@@ -56,6 +57,7 @@ void Config::SetProfile(Profile profile)
 	{
 		case Profile::Main:		Current = &MainProfileSettings;		break;
 		case Profile::Basic:	Current = &BasicProfileSettings;	break;
+		case Profile::Kiosk:	Current = &KioskProfileSettings;	break;
 	}
 	Global.CurrentProfile = int(profile);
 }
@@ -83,6 +85,7 @@ void Config::ResetAllProfiles(uint32 categories)
 {
 	MainProfileSettings.Reset(Profile::Main, categories);
 	BasicProfileSettings.Reset(Profile::Basic, categories);
+	KioskProfileSettings.Reset(Profile::Kiosk, categories);
 }
 
 
@@ -112,6 +115,11 @@ void Config::Save(const tString& filename)
 	BasicProfileSettings.Name = "BasicProfile";
 	BasicProfileSettings.Save(writer);
 	writer.CR();
+	writer.CR();
+
+	KioskProfileSettings.Name = "KioskProfile";
+	KioskProfileSettings.Save(writer);
+	writer.CR();
 
 	// Save the file dialog settings.
 	tFileDialog::Save(writer, "FileDialog");
@@ -132,6 +140,7 @@ void Config::Load(const tString& filename)
 	bool loadedGlobal		= false;
 	bool loadedMainProfile	= false;
 	bool loadedBasicProfile	= false;
+	bool loadedKioskProfile	= false;
 	bool loadedFileDialog	= false;
 	tExprReader reader(filename);
 	for (tExpr e = reader.First(); e.IsValid(); e = e.Next())
@@ -147,10 +156,15 @@ void Config::Load(const tString& filename)
 				MainProfileSettings.Load(e);
 				loadedMainProfile = true;
 				break;
-			
+
 			case tHash::tHashCT("BasicProfile"):
 				BasicProfileSettings.Load(e);
 				loadedBasicProfile = true;
+				break;
+
+			case tHash::tHashCT("KioskProfile"):
+				KioskProfileSettings.Load(e);
+				loadedKioskProfile = true;
 				break;
 
 			case tHash::tHashCT("FileDialog"):
@@ -170,6 +184,9 @@ void Config::Load(const tString& filename)
 	if (!loadedBasicProfile)
 		BasicProfileSettings.Reset(Viewer::Profile::Basic, Category_All);
 
+	if (!loadedKioskProfile)
+		KioskProfileSettings.Reset(Viewer::Profile::Kiosk, Category_All);
+
 	if (!loadedFileDialog)
 		tFileDialog::Reset();
 
@@ -181,6 +198,7 @@ void Config::Load(const tString& filename)
 	bool onlyIfUnassigned = true;
 	MainProfileSettings.InputBindings.Reset(Viewer::Profile::Main, onlyIfUnassigned);
 	BasicProfileSettings.InputBindings.Reset(Viewer::Profile::Basic, onlyIfUnassigned);
+	KioskProfileSettings.InputBindings.Reset(Viewer::Profile::Kiosk, onlyIfUnassigned);
 
 	// Add stuff here if you care about what version you loaded from.
 	if (Global.ConfigVersion <= 2)
@@ -195,6 +213,7 @@ void Config::Load(const tString& filename)
 	{
 		case Profile::Main:		Current = &MainProfileSettings;		break;
 		case Profile::Basic:	Current = &BasicProfileSettings;	break;
+		case Profile::Kiosk:	Current = &KioskProfileSettings;	break;
 	}
 }
 
@@ -288,14 +307,14 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 {
 	if (categories & Category_Unspecified)
 	{
-		ShowMenuBar					= (profile == Profile::Basic) ? false : true;
-		ShowNavBar					= (profile == Profile::Basic) ? false : true;
-		ShowImageDetails			= (profile == Profile::Basic) ? false : true;
+		ShowMenuBar					= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? false : true;
+		ShowNavBar					= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? false : true;
+		ShowImageDetails			= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? false : true;
 		ShowImageMetaData			= false;
 		ShowPixelEditor				= false;
 		ShowPreferences				= false;
 		ShowChannelFilter			= false;
-		ShowFrameScrubber			= (profile == Profile::Basic) ? false : true;
+		ShowFrameScrubber			= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? false : true;
 		ShowThumbnailView			= false;
 		ShowPropsWindow				= false;
 		ShowBindingsWindow			= false;
@@ -356,20 +375,33 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 
 	if (categories & Category_Display)
 	{
-		BackgroundStyle				= (profile == Profile::Basic) ? int(BackgroundStyleEnum::None) : int(BackgroundStyleEnum::Checkerboard);
+		BackgroundStyle				= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? int(BackgroundStyleEnum::None) : int(BackgroundStyleEnum::Checkerboard);
 		BackgroundCheckerboxSize	= 16;
 		BackgroundColour			= tColouri::black;
 		BackgroundExtend			= false;
-		ReticleMode					= (profile == Profile::Basic) ? int(ReticleModeEnum::AutoHide) : int(ReticleModeEnum::OnSelect);
-		UISize						= int(UISizeEnum::Medium);
+		switch (profile)
+		{
+			default:
+			case Profile::Main:		ReticleMode = int(ReticleModeEnum::OnSelect);		break;
+			case Profile::Basic:	ReticleMode = int(ReticleModeEnum::AutoHide);		break;
+			case Profile::Kiosk:	ReticleMode = int(ReticleModeEnum::AlwaysHidden);	break;
+		}
+		UISize						= (profile == Profile::Kiosk) ? int(UISizeEnum::Large) : int(UISizeEnum::Medium);
 	}
 
 	if (categories & Category_Slideshow)
 	{
-		SlideshowLooping			= (profile == Profile::Basic) ? true : false;
+		SlideshowLooping			= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? true : false;
 		SlideshowProgressArc		= true;
-		SlideshowPeriod				= (profile == Profile::Basic) ? 8.0 : 4.0;			// Values as small as 1.0/60.0 also work.
-		SortKey						= int(SortKeyEnum::FileName);
+		switch (profile)
+		{
+			default:				
+			case Profile::Main:		SlideshowPeriod = 4.0f;		break;
+			case Profile::Basic:	SlideshowPeriod = 8.0f;		break;
+			case Profile::Kiosk:	SlideshowPeriod = 16.0f;	break;
+		}
+
+		SortKey						= (profile == Profile::Kiosk) ? int(SortKeyEnum::Shuffle) : int(SortKeyEnum::FileName);
 		SortAscending				= true;
 		SlideshowAutoReshuffle		= true;
 	}
@@ -392,11 +424,11 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 	{
 		ConfirmDeletes				= true;
 		ConfirmFileOverwrites		= true;
-		AutoPropertyWindow			= (profile == Profile::Basic) ? false : true;
+		AutoPropertyWindow			= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? false : true;
 		AutoPlayAnimatedImages		= true;
-		ZoomMode					= int(ZoomModeEnum::DownscaleOnly);
+		ZoomMode					= (profile == Profile::Kiosk) ? int(ZoomModeEnum::Fit) : int(ZoomModeEnum::DownscaleOnly);
 		ZoomPercent					= 100.0f;
-		ZoomPerImage				= true;
+		ZoomPerImage				= (profile == Profile::Kiosk) ? false : true;
 	}
 
 	if (categories & Category_Bindings)

@@ -198,7 +198,10 @@ const char* Bindings::OperationDescriptions[] =
 	"Paste",
 	"Save Extract Frames...",
 	"Quantize...",
-	"Slideshow Auto-Reshuffle"
+	"Slideshow Auto-Reshuffle",
+	"Main Profile",
+	"Basic Profile",
+	"Kiosk Profile"
 
 	// Add new entries here.
 };
@@ -397,7 +400,9 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 	AssignKey(GLFW_KEY_F1,			Modifier_None,					Operation::CheatSheet,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_L,			Modifier_Ctrl,					Operation::DebugLog,				onlyIfUnassigned);
 
-	AssignKey(GLFW_KEY_B,			Modifier_None,					Operation::Profile,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_1,			Modifier_Alt,					Operation::ProfileMain,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_2,			Modifier_Alt,					Operation::ProfileBasic,			onlyIfUnassigned);
+	AssignKey(GLFW_KEY_3,			Modifier_Alt,					Operation::ProfileKiosk,			onlyIfUnassigned);
 	AssignKey(GLFW_KEY_P,			Modifier_None,					Operation::Preferences,				onlyIfUnassigned);
 
 	// This one is special and can't be reassigned or removed. This is because the user _could_ turn off the menu,
@@ -530,11 +535,19 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 
 		ImGui::SetNextItemWidth(profileWidth);
 		ImGui::Combo("##ProfileToEdit", &profile, ProfileNamesLong, int(Profile::NumProfiles));
-		Config::ProfileSettings& settings = (profile == 0) ? Config::MainProfileSettings : Config::BasicProfileSettings;
+		Config::ProfileSettings* settings = nullptr;
+		switch (profile)
+		{
+			default:
+			case int(Profile::Main):	settings = &Config::MainProfileSettings;	break;
+			case int(Profile::Basic):	settings = &Config::BasicProfileSettings;	break;
+			case int(Profile::Kiosk):	settings = &Config::KioskProfileSettings;	break;
+		}
+		tAssert(settings);
 
 		ImGui::SameLine();
 		if (ImGui::Button("Reset", tVector2(buttonWidth, 0.0f)))
-			settings.InputBindings.Reset(Viewer::Profile(profile));
+			settings->InputBindings.Reset(Viewer::Profile(profile));
 		ShowToolTip("Resets the key bindings to default for the chosen profile.");
 
 		ImGui::SameLine();
@@ -542,6 +555,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		{
 			Config::MainProfileSettings.InputBindings.Reset(Profile::Main);
 			Config::BasicProfileSettings.InputBindings.Reset(Profile::Basic);
+			Config::KioskProfileSettings.InputBindings.Reset(Profile::Kiosk);
 		}
 		ShowToolTip("Resets the key bindings to default for all profiles.");
 
@@ -549,8 +563,9 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		if (ImGui::Button("Set All", tVector2(buttonWidth, 0.0f)))
 		{
 			// Operator= deals with the object being the same one, so just copy them both over indescriminately.
-			Config::MainProfileSettings.InputBindings = settings.InputBindings;
-			Config::BasicProfileSettings.InputBindings = settings.InputBindings;
+			Config::MainProfileSettings.InputBindings = settings->InputBindings;
+			Config::BasicProfileSettings.InputBindings = settings->InputBindings;
+			Config::KioskProfileSettings.InputBindings = settings->InputBindings;
 		}
 		ShowToolTip("Copies the keybindings to all profiles. Useful if you want them all the same.");
 
@@ -566,7 +581,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
 		const float rowHeight = 25.0f;
 		const int maxRowsToDisplay = 16;
-		int totalAssigned = settings.InputBindings.GetTotalAssigned();
+		int totalAssigned = settings->InputBindings.GetTotalAssigned();
 		const int numRowsToDisplay = tMin(maxRowsToDisplay, totalAssigned);
 		tVector2 outerSize = ImVec2(0.0f, rowHeight + rowHeight * float(numRowsToDisplay));
 		if (ImGui::BeginTable("KeyBindingTable", 3, tableFlags, outerSize))
@@ -594,7 +609,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 			// Key[combo] Mods	Operation[combo]	 	[+] (brings up replace popup if necessary)
 			for (int k = 0; k <= GLFW_KEY_LAST; k++)
 			{
-				KeyOps& keyops = settings.InputBindings.GetKeyOps(k);
+				KeyOps& keyops = settings->InputBindings.GetKeyOps(k);
 
 				// Skip unsupported keys and don't display keys with nothing assigned.
 				if (!keyops.IsAnythingAssigned() || !IsKeySupported(k))
@@ -675,7 +690,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		}
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
-		ShowAddBindingSection(settings, keyWidth, operationWidth, removeAddSize);
+		ShowAddBindingSection(*settings, keyWidth, operationWidth, removeAddSize);
 	}
 	ImGui::End();
 }

@@ -311,6 +311,7 @@ extern GlobalSettings Global;
 extern ProfileSettings* Current;
 extern ProfileSettings MainProfileSettings;
 extern ProfileSettings BasicProfileSettings;
+extern ProfileSettings KioskProfileSettings;
 
 
 } }
