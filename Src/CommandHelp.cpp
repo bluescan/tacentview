@@ -105,13 +105,17 @@ from 0 to 2. 0 means no text output, 1 is the default, and 2 is full/detailed.
 To launch in GUI mode run without any arguments or with the file or directory
 you want to open as the argument. Directories should be specified with a
 trailing slash. You may optionally specify the profile to use with the
---profile (-p) command followed by the profile name.
+--profile (-p) command followed by the profile name. Current profile names
+are 'main', 'basic', and 'kiosk'.
 
-When launching this way the selected profile is not saved to the config on exit.
-This is useful, for example, to start with the 'kiosk' profile active. e.g.
-tacentview -p kiosk C:/Slidehow/
-By default the kiosk profile auto-starts the slideshow in shuffle mode. Like
-all profiles it can be configured however is desired.
+When launched with --profile the active profile is not remembered on exit.
+Changes made to the profile are, however, persistent. Changes can include
+anything from what dialogs are open, zoom mode, slideshow and background
+settings, etc.
+
+e.g. 'tacentview -p kiosk C:/Slidehow/' will start a slidewhow of all the
+images inside the 'SlideShow' directory. By default the kiosk profile
+auto-starts the slideshow in shuffle mode.
 )USAGE010", intypes.Chr(), inexts.Chr()
 	);
 	tPrintf

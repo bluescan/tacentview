@@ -126,19 +126,13 @@ void Config::Save(const tString& filename)
 }
 
 
-void Config::Load(const tString& filename, Profile overrideProfile)
+void Config::Load(const tString& filename)
 {
 	if (!tSystem::tFileExists(filename))
 	{
 		Global.Reset();
 		ResetAllProfiles();
-		switch (overrideProfile)
-		{
-			case Profile::Main:		Current = &MainProfileSettings;		break;
-			case Profile::Basic:	Current = &BasicProfileSettings;	break;
-			case Profile::Kiosk:	Current = &KioskProfileSettings;	break;
-			default:				Current = &MainProfileSettings;		break;
-		}
+		Current = &MainProfileSettings;
 		tFileDialog::Reset();
 		return;
 	}
@@ -217,10 +211,7 @@ void Config::Load(const tString& filename, Profile overrideProfile)
 
 	// I think it makes sense to restore the currently selected profile when the config file is loaded.
 	// This means if you were in Basic profile when you close, you will be in basic when you start the app again.
-	// If there was a profile override, it gets used WITHOUT updating the Global config. This is so it will not be
-	// saved when exiting (unless during operation, it was explicitely changed).
-	Profile currProfile = (overrideProfile != Profile::Invalid) ? overrideProfile : Profile(Global.CurrentProfile);
-	switch (currProfile)
+	switch (Profile(Global.CurrentProfile))
 	{
 		case Profile::Main:		Current = &MainProfileSettings;		break;
 		case Profile::Basic:	Current = &BasicProfileSettings;	break;

@@ -3772,7 +3772,10 @@ int main(int argc, char** argv)
 	if (!tSystem::tDirExists(Viewer::Image::ThumbCacheDir))
 		tSystem::tCreateDir(Viewer::Image::ThumbCacheDir);
 	
+	Viewer::Config::Load(cfgFile);
+
 	Viewer::Profile overrideProfile = Viewer::Profile::Invalid;
+	Viewer::Profile originalProfile = Viewer::Config::GetProfile();
 	if (Viewer::OptionProfile)
 	{
 		const tString& profStr = Viewer::OptionProfile.Arg1();
@@ -3783,7 +3786,8 @@ int main(int argc, char** argv)
 			case tHash::tHashCT("kiosk"):	overrideProfile = Viewer::Profile::Kiosk;	break;
 		}
 	}
-	Viewer::Config::Load(cfgFile, overrideProfile);
+	if (overrideProfile != Viewer::Profile::Invalid)
+		Viewer::Config::SetProfile(overrideProfile);
 
 	// If no file from commandline, see if there is one set in the config.
 	if (Viewer::CurrImageFile.IsEmpty() && Viewer::Config::Global.LastOpenPath.IsValid())
@@ -4000,6 +4004,10 @@ int main(int argc, char** argv)
 		glfwGetWindowPos(Viewer::Window, &Viewer::Config::Global.WindowX, &Viewer::Config::Global.WindowY);
 		glfwGetWindowSize(Viewer::Window, &Viewer::Config::Global.WindowW, &Viewer::Config::Global.WindowH);
 	}
+
+	// If we called with --profile we don't save it as current. Before saving the config we restore the original.
+	if ((overrideProfile != Viewer::Profile::Invalid) && (originalProfile != Viewer::Profile::Invalid))
+		Viewer::Config::SetProfile(originalProfile);
 
 	Viewer::Config::Global.TransparentWorkArea = Viewer::PendingTransparentWorkArea;
 	Viewer::Config::Save(cfgFile);
