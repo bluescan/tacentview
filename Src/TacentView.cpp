@@ -3962,7 +3962,11 @@ int main(int argc, char** argv)
 		Viewer::ChangeScreenMode(true, true);
 
 	if (Viewer::Config::Current->SlideshowAutoStart)
+	{
 		Viewer::SlideshowPlaying = true;
+		Viewer::SlideshowCountdown = Viewer::Config::Current->SlideshowPeriod;
+		Viewer::DisappearCountdown = 0.0;
+	}
 
 	// Main loop.
 	static double lastUpdateTime = glfwGetTime();
