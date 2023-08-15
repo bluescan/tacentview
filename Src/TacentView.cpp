@@ -817,7 +817,7 @@ void Viewer::SetCurrentImage(const tString& currFilename)
 
 void Viewer::AutoPropertyWindow()
 {
-	if (Config::Current->AutoPropertyWindow)
+	if (Config::Current->AutoPropertyWindow && CurrImage)
 		Config::Current->ShowPropsWindow = (CurrImage->TypeSupportsProperties() || (CurrImage->GetNumFrames() > 1));
 
 	if (SlideshowPlaying)
