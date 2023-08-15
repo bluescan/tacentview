@@ -1904,6 +1904,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			SlideshowPlaying = !SlideshowPlaying;
 			SlideshowCountdown = Config::Current->SlideshowPeriod;
+
+			// If play pressed and we're on the last image and not looping, start at the beginning again.
+			if (SlideshowPlaying && !Config::Current->SlideshowLooping && (CurrImage == Images.Last()))
+				OnSkipBegin();
 		}
 		ImGui::PopID();
 		ImGui::End();
