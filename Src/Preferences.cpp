@@ -427,7 +427,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		if (!Config::Global.TransparentWorkArea)
 			PendingTransparentWorkArea = false;
 		SlideshowCountdown = Config::Current->SlideshowPeriod;
-		ChangeScreenMode(Config::Global.FullscreenMode, true);
+		ChangeScreenMode(Config::Current->FullscreenMode, true);
 	}
 	ShowToolTip
 	(

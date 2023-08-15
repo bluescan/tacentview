@@ -50,6 +50,7 @@ struct ProfileSettings
 	ProfileSettings(Profile profile)					: Name(), InputBindings() { Reset(profile, Category_All); }
 	tString Name;										// The name of the profile.
 
+	bool FullscreenMode;
 	bool ShowMenuBar;
 	bool ShowNavBar;
 	bool ShowImageDetails;
@@ -281,7 +282,6 @@ struct GlobalSettings
 	int WindowH;
 	bool TransparentWorkArea;
 	tString LastOpenPath;
-	bool FullscreenMode;
 
 private:
 	static void GetScreenSize(int& width, int& height);

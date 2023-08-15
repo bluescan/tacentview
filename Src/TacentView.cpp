@@ -319,6 +319,7 @@ namespace Viewer
 	int RemoveOldCacheFiles(const tString& cacheDir);								// Returns num removed.
 
 	CursorMove RequestCursorMove = CursorMove_None;
+	bool IgnoreNextCursorPosCallback = false;
 
 	void Update(GLFWwindow* window, double dt, bool dopoll = true);
 	void WindowRefreshFun(GLFWwindow* window)																			{ Update(window, 0.0, false); }
@@ -1938,9 +1939,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+mainButtonDim*3.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(mainButtonSize, ImGuiCond_Always);
 		ImGui::Begin("Fullscreen", nullptr, flagsImgButton);
-		uint64 fsImageID = Config::Global.FullscreenMode ? Image_Windowed.Bind() : Image_Fullscreen.Bind();
+		uint64 fsImageID = Config::Current->FullscreenMode ? Image_Windowed.Bind() : Image_Fullscreen.Bind();
 		if (ImGui::ImageButton(ImTextureID(fsImageID), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0,0,0,0), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
-			ChangeScreenMode(!Config::Global.FullscreenMode);
+			ChangeScreenMode(!Config::Current->FullscreenMode);
 		ImGui::End();
 
 		// Exit basic or kiosk profile.
@@ -2727,11 +2728,11 @@ bool Viewer::DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin)
 
 bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 {
-	if (!force && (Config::Global.FullscreenMode == fullscreen))
+	if (!force && (Config::Current->FullscreenMode == fullscreen))
 		return false;
 
 	// If currently in windowed mode, remember our window geometry.
-	if (!force && !Config::Global.FullscreenMode)
+	if (!force && !Config::Current->FullscreenMode)
 	{
 		glfwGetWindowPos(Viewer::Window, &Viewer::Config::Global.WindowX, &Viewer::Config::Global.WindowY);
 		glfwGetWindowSize(Viewer::Window, &Viewer::Config::Global.WindowW, &Viewer::Config::Global.WindowH);
@@ -2768,8 +2769,8 @@ bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 			glfwSetWindowMonitor(Viewer::Window, nullptr, Viewer::Config::Global.WindowX, Viewer::Config::Global.WindowY, Viewer::Config::Global.WindowW, Viewer::Config::Global.WindowH, mode->refreshRate);
 		}
 	}
-
-	Config::Global.FullscreenMode = fullscreen;
+	IgnoreNextCursorPosCallback = true;
+	Config::Current->FullscreenMode = fullscreen;
 	return true;
 }
 
@@ -2814,6 +2815,7 @@ void Viewer::ChangeProfile(Profile profile)
 	// settings, the only difference is the default values are different than the main profile.
 
 	AutoPropertyWindow();
+	ChangeScreenMode(Config::Current->FullscreenMode, true);
 }
 
 
@@ -3413,18 +3415,18 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::Fullscreen:
-			ChangeScreenMode(!Config::Global.FullscreenMode);
+			ChangeScreenMode(!Config::Current->FullscreenMode);
 			break;
 
 		case Bindings::Operation::Escape:
-			if (Config::Global.FullscreenMode)
+			if (Config::Current->FullscreenMode)
 				ChangeScreenMode(false);
 			else if ((Config::GetProfile() == Profile::Basic) || (Config::GetProfile() == Profile::Kiosk))
 				ChangeProfile(Profile::Main);
 			break;
 
 		case Bindings::Operation::EscapeSupportingQuit:
-			if (Config::Global.FullscreenMode)
+			if (Config::Current->FullscreenMode)
 				ChangeScreenMode(false);
 			else if ((Config::GetProfile() == Profile::Basic) || (Config::GetProfile() == Profile::Kiosk))
 				ChangeProfile(Profile::Main);
@@ -3508,7 +3510,12 @@ void Viewer::CursorPosCallback(GLFWwindow* window, double x, double y)
 {
 	if (ImGui::GetIO().WantCaptureMouse)
 		return;
-
+	
+	if (IgnoreNextCursorPosCallback)
+	{
+		IgnoreNextCursorPosCallback = false;
+		return;
+	}
 	DisappearCountdown = DisappearDuration;
 }
 
@@ -3958,7 +3965,7 @@ int main(int argc, char** argv)
 	glfwMakeContextCurrent(Viewer::Window);
 	glfwSwapBuffers(Viewer::Window);
 
-	if (Viewer::Config::Global.FullscreenMode)
+	if (Viewer::Config::Current->FullscreenMode)
 		Viewer::ChangeScreenMode(true, true);
 
 	if (Viewer::Config::Current->SlideshowAutoStart)
@@ -4003,7 +4010,7 @@ int main(int argc, char** argv)
 	Viewer::UnloadAppImages();
 
 	// Get current window geometry and set in config file if we're not in fullscreen mode and not iconified.
-	if (!Viewer::Config::Global.FullscreenMode && !Viewer::WindowIconified)
+	if (!Viewer::Config::Current->FullscreenMode && !Viewer::WindowIconified)
 	{
 		glfwGetWindowPos(Viewer::Window, &Viewer::Config::Global.WindowX, &Viewer::Config::Global.WindowY);
 		glfwGetWindowSize(Viewer::Window, &Viewer::Config::Global.WindowW, &Viewer::Config::Global.WindowH);

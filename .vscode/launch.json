@@ -34,7 +34,7 @@
 			"type": "cppvsdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/build/ViewerInstall/tacentview.exe",
-			"args": ["--profile","kiosk"],
+			"args": [],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/TestImages/FormatVariety",
 			"environment": [],

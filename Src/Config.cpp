@@ -236,8 +236,7 @@ void Config::GlobalSettings::Save(tExprWriter& writer)
 	WriteItem(WindowW);
 	WriteItem(WindowH);
 	WriteItem(TransparentWorkArea);
-	WriteItem(LastOpenPath);
-	WriteLast(FullscreenMode);
+	WriteLast(LastOpenPath);
 
 	writer.Dedent();
 	writer.CR();
@@ -268,7 +267,6 @@ void Config::GlobalSettings::Load(tExpression expr)
 			ReadItem(WindowH);
 			ReadItem(TransparentWorkArea);
 			ReadItem(LastOpenPath);
-			ReadItem(FullscreenMode);
 		}
 	}
 
@@ -302,7 +300,6 @@ void Config::GlobalSettings::Reset()
 	WindowY						= (screenH - WindowH) >> 1;
 	TransparentWorkArea			= false;
 	LastOpenPath				.Clear();
-	FullscreenMode				= false;
 }
 
 
@@ -310,6 +307,7 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 {
 	if (categories & Category_Unspecified)
 	{
+		FullscreenMode				= (profile == Profile::Kiosk) ? true : false;
 		ShowMenuBar					= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? false : true;
 		ShowNavBar					= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? false : true;
 		ShowImageDetails			= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? false : true;
@@ -448,6 +446,7 @@ void Config::ProfileSettings::Load(tExpression expr)
 	{
 		switch (e.Command().Hash())
 		{
+			ReadItem(FullscreenMode);
 			ReadItem(ShowMenuBar);
 			ReadItem(ShowNavBar);
 			ReadItem(ShowImageDetails);
@@ -614,6 +613,7 @@ bool Config::ProfileSettings::Save(tExprWriter& writer) const
 	writer.WriteAtom(Name);
 	writer.CR();
 
+	WriteItem(FullscreenMode);
 	WriteItem(ShowMenuBar);
 	WriteItem(ShowNavBar);
 	WriteItem(ShowImageDetails);
