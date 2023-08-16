@@ -1292,9 +1292,20 @@ int Command::Process()
 
 	tPrintf("\n");
 	tPrintfNorm("Tacent View %d.%d.%d by Tristan Grimmer\n", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
-	tPrintfNorm("CLI Mode\n");
-	if (!OptionHelp)
-		tPrintfNorm("Run 'tacentview --help' for usage instructions.\n");
+	tString platform	= tGetPlatformNameShort( tGetPlatform() );
+	tString architec	= tGetArchitectureName( tGetArchitecture() );
+	tString config 		= tGetConfigurationName( tGetConfiguration() );
+	#ifdef TACENT_UTF16_API_CALLS
+	tString api 		= "UTF-16";
+	#else
+	tString api 		= "UTF-8";
+	#endif
+	tPrintfNorm("%s %s %s %s API\n", platform.Chr(), architec.Chr(), config.Chr(), api.Chr());
+
+	if (OptionHelp)
+		tPrintfNorm("CLI Mode\n");
+	else
+		tPrintfNorm("CLI Mode Details: tacentview --help\n");
 	tPrintfNorm("\n");
 
 	if (OptionHelp)
@@ -1397,7 +1408,7 @@ int Command::Process()
 			bool success = image->Save(outFilename, outType, false);
 			if (success)
 			{
-				tPrintfFull("Saved File: %s\n", outNameShort.Chr());
+				tPrintfNorm("Saved File: %s\n", outNameShort.Chr());
 			}
 			else
 			{

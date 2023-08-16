@@ -1782,6 +1782,7 @@ bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 	}
 
 	// Create the frames of the output image. Make sure for each one we set the duration correctly.
+	// The default for tList is that it will delete anything left on the list when it is destructed.
 	tList<tImage::tFrame> frames;
 	int frameNumber = 0;
 	for (Viewer::Image* img = images.First(); img; img = img->Next(), frameNumber++)
@@ -1812,6 +1813,7 @@ bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 
 	// Now we loop through all the out types.
 	bool somethingFailed = false;
+	bool allowStealFrames = (OutTypes.Count() == 1);
 	for (tSystem::tFileTypes::tFileTypeItem* typeItem = OutTypes.First(); typeItem; typeItem = typeItem->Next())
 	{
 		tSystem::tFileType outType = typeItem->FileType;
@@ -1852,21 +1854,21 @@ bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 		{
 			case tSystem::tFileType::GIF:
 			{
-				tImage::tImageGIF gif(frames, true);
+				tImage::tImageGIF gif(frames, allowStealFrames);
 				success = gif.Save(outFile, SaveParamsGIF);
 				break;
 			}
 
 			case tSystem::tFileType::WEBP:
 			{
-				tImage::tImageWEBP webp(frames, true);
+				tImage::tImageWEBP webp(frames, allowStealFrames);
 				success = webp.Save(outFile, SaveParamsWEBP);
 				break;
 			}
 
 			case tSystem::tFileType::APNG:
 			{
-				tImage::tImageAPNG apng(frames, true);
+				tImage::tImageAPNG apng(frames, allowStealFrames);
 				tImage::tImageAPNG::tFormat savedFormat = apng.Save(outFile, SaveParamsAPNG);
 				success = (savedFormat != tImage::tImageAPNG::tFormat::Invalid);
 				break;
@@ -1874,12 +1876,16 @@ bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 
 			case tSystem::tFileType::TIFF:
 			{
-				tImage::tImageTIFF tiff(frames, true);
+				tImage::tImageTIFF tiff(frames, allowStealFrames);
 				success = tiff.Save(outFile, SaveParamsTIFF);
 				break;
 			}
 		}
-		if (!success)
+		if (success)
+		{
+			tPrintfNorm("Saved File: %s\n", tSystem::tGetFileName(outFile).Chr());
+		}
+		else
 		{
 			tPrintfFull("Combine | Failed Save[file:%s]\n", tSystem::tGetFileName(outFile).Chr());
 			somethingFailed = true;
@@ -2090,6 +2096,7 @@ bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 
 	// Now we iterate all the outtypes.
 	bool somethingFailed = false;
+	bool allowStealFrames = (OutTypes.Count() == 1);
 	for (tSystem::tFileTypes::tFileTypeItem* typeItem = OutTypes.First(); typeItem; typeItem = typeItem->Next())
 	{
 		tSystem::tFileType outType = typeItem->FileType;
@@ -2130,7 +2137,7 @@ bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 		{
 			case tSystem::tFileType::TGA:
 			{
-				tImage::tImageTGA tga(outPic, true);
+				tImage::tImageTGA tga(outPic, allowStealFrames);
 				tImage::tImageTGA::tFormat savedFmt = tga.Save(outFile, SaveParamsTGA);
 				success = (savedFmt != tImage::tImageTGA::tFormat::Invalid);
 				break;
@@ -2138,7 +2145,7 @@ bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 
 			case tSystem::tFileType::PNG:
 			{
-				tImage::tImagePNG png(outPic, true);
+				tImage::tImagePNG png(outPic, allowStealFrames);
 				tImage::tImagePNG::tFormat savedFmt = png.Save(outFile, SaveParamsPNG);
 				success = (savedFmt != tImage::tImagePNG::tFormat::Invalid);
 				break;
@@ -2146,28 +2153,28 @@ bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 
 			case tSystem::tFileType::JPG:
 			{
-				tImage::tImageJPG jpg(outPic, true);
+				tImage::tImageJPG jpg(outPic, allowStealFrames);
 				success = jpg.Save(outFile, SaveParamsJPG);
 				break;
 			}
 
 			case tSystem::tFileType::GIF:
 			{
-				tImage::tImageGIF gif(outPic, true);
+				tImage::tImageGIF gif(outPic, allowStealFrames);
 				success = gif.Save(outFile, SaveParamsGIF);
 				break;
 			}
 
 			case tSystem::tFileType::WEBP:
 			{
-				tImage::tImageWEBP webp(outPic, true);
+				tImage::tImageWEBP webp(outPic, allowStealFrames);
 				success = webp.Save(outFile, SaveParamsWEBP);
 				break;
 			}
 
 			case tSystem::tFileType::QOI:
 			{
-				tImage::tImageQOI qoi(outPic, true);
+				tImage::tImageQOI qoi(outPic, allowStealFrames);
 				tImage::tImageQOI::tFormat savedFmt = qoi.Save(outFile, SaveParamsQOI);
 				success = (savedFmt != tImage::tImageQOI::tFormat::Invalid);
 				break;
@@ -2175,7 +2182,7 @@ bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 
 			case tSystem::tFileType::APNG:
 			{
-				tImage::tImageAPNG apng(outPic, true);
+				tImage::tImageAPNG apng(outPic, allowStealFrames);
 				tImage::tImageAPNG::tFormat savedFormat = apng.Save(outFile, SaveParamsAPNG);
 				success = (savedFormat != tImage::tImageAPNG::tFormat::Invalid);
 				break;
@@ -2183,7 +2190,7 @@ bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 
 			case tSystem::tFileType::BMP:
 			{
-				tImage::tImageBMP bmp(outPic, true);
+				tImage::tImageBMP bmp(outPic, allowStealFrames);
 				tImage::tImageBMP::tFormat savedFormat = bmp.Save(outFile, SaveParamsBMP);
 				success = (savedFormat != tImage::tImageBMP::tFormat::Invalid);
 				break;
@@ -2191,12 +2198,17 @@ bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 
 			case tSystem::tFileType::TIFF:
 			{
-				tImage::tImageTIFF tiff(outPic, true);
+				tImage::tImageTIFF tiff(outPic, allowStealFrames);
 				success = tiff.Save(outFile, SaveParamsTIFF);
 				break;
 			}
 		}
-		if (!success)
+
+		if (success)
+		{
+			tPrintfNorm("Saved File: %s\n", tSystem::tGetFileName(outFile).Chr());
+		}
+		else
 		{
 			tPrintfFull("Contact | Failed Save[file:%s]\n", tSystem::tGetFileName(outFile).Chr());
 			somethingFailed = true;
