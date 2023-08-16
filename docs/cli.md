@@ -284,11 +284,18 @@ tacentview -ck --op extract[0-2+!4-6+!7-10!,FramesDir,FrameFile] -i gif InImage.
 Extracts frames 0,1,2,5,6,8,9 from InImage.gif and saves them as TGA files in a directory called FramesDir. The images will be named *FrameFile_000.tga, FrameFile_001.tga, FrameFile_002.tga, FrameFile_005.tga*, etc. To specify the frames, an asterisk by itself means all, `0-2` means 0 to 2 (inclusive), the + is used to specify more ranges and the ! means exclude the end-point. The range `!7-10!` would be 8 and 9. A number by itself is just that number as a range so 11 would translate to `11-11`. Since -k is included, InImage.gif itself will _not_ be resaved as InImage.tga. If the input image has fewer frames than the ranges being processed, those frames can't and won't be saved because they don't exist. This is not considered an error. If FrameFile is * or is not entered, the base filename of the input image(s) is used and the 3-digit frame-number is still appended.\
 \
 \
-**Example {% increment egnum %} - Create an Animated WebP**
+**Example {% increment egnum %} - Create an Animated WEBP**
 ```
 tacentview -ck -o webp --po combine
 ```
 Combines multiple images into a single animated webp. This is an example of a _post-operation_. Post operations (`--po`) run after all normal operations. They run on the same set of original input images, in this case TGAs (the default input type). Only if a normal operation (`--op`) modifies an input image is the change included in the post operation. The `combine` post operation has a number of optional arguments not shown here for conciseness -- specifically the default frame duration is `33ms`, the webp is written to a folder called `Combined`, and the filename will take the form `Combined_YYYY-MM-DD-HH-MM-SS_NNN.webp` where NNN is the number of frames.\
+\
+\
+**Example {% increment egnum %} - Create an Animated WEBP and APNG**
+```
+tacentview -ck -o webp,apng --po combine
+```
+Same as previous example but creates both a WEBP animated image and an APNG animated image from the same set of input images.\
 \
 \
 **Example {% increment egnum %} - Create an Animated GIF**
@@ -302,7 +309,28 @@ Creates an animated gif called `AnimImage.gif` from the input tga files. The gif
 ```
 tacentview -ck -o tif --po combine[0:1000+1:2000+2:3000] page1.qoi page2.qoi page3.qoi
 ```
-Creates a multipage tiff called `Combined_YYYY-MM-DD-HH-MM-SS_003.tif` from the 3 input qoi files. The tiff will be placed in a directory called `Combined`. _Tacent View_ uses a tiff-tag (specifically TIFFTAG_SOFTWARE) to store additional information in each page of the tiff. In particular the page-duration is stored in this field while not affecting compatibility with other software. This allows the specified 1, 2 and 3 second frame durations to be stored with each tiff page. If this tiff is later loaded in _Tacent View_ it can be treated and played as an animated image. Use 16 milliseconds (`--po combine[16]`) to achieve 60 FPS.
+Creates a multipage tiff called `Combined_YYYY-MM-DD-HH-MM-SS_003.tif` from the 3 input qoi files. The tiff will be placed in a directory called `Combined`. _Tacent View_ uses a tiff-tag (specifically TIFFTAG_SOFTWARE) to store additional information in each page of the tiff. In particular the page-duration is stored in this field while not affecting compatibility with other software. This allows the specified 1, 2 and 3 second frame durations to be stored with each tiff page. If this tiff is later loaded in _Tacent View_ it can be treated and played as an animated image. Use 16 milliseconds (`--po combine[16]`) to achieve 60 FPS.\
+\
+\
+**Example {% increment egnum %} - Create a Flipbook TGA and PNG**
+```
+tacentview -ck -o tga,png --po contact[]
+```
+Creates two contact sheets called `Contact_YYYY-MM-DD-HH-MM-SS_NNxMM.tga` and `Contact_YYYY-MM-DD-HH-MM-SS_NNxMM.png` from the images in the current directory. The number of rows and columns (`NNxMM`) are computed for you based on the number of input images. The output tga and png files are placed in a directory called `Contact`. All input images must be the same dimension. You may use regular `--op` operations to resize first if desired.\
+\
+\
+**Example {% increment egnum %} - Create a Flipbook QOI with 5 Columns**
+```
+tacentview -ckv 2 -o qoi --po contact[5,*,FlipOut,FiveColFile]
+```
+Creates a contact sheet called `FiveColFile.qoi` from the images in the current directory. The number of columns is set explicitly to 5. The rows will be computed for you so that all input images will be included. The output qoi file will be placed in a directory called `FlipOut` which will be created for you if it doesn't exist. All input images must be the same dimension. You may use regular `--op` operations to resize first if desired.\
+\
+\
+**Example {% increment egnum %} - Create a 7x7 Flipbook JPG and BMP**
+```
+tacentview -ckv 2 -o jpg,bmp --po contact[7,7]
+```
+In this example we set both the number of columns and the number of rows. If there are more than 49 images in the input directory, only the first 49 will be included. If there are fewer than 49 input images, the contact-sheet (flipbook) will have some _blank_ pages. Blanks are filled with black if the ouptut image is 24 bit and transparent black if the image is 32 bit.
 
 
 ---
