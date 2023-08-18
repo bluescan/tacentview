@@ -228,8 +228,9 @@ struct ProfileSettings
 	int SaveAllSizeMode;
 	SizeModeEnum GetSaveAllSizeMode() const				{ return SizeModeEnum(SaveAllSizeMode); }
 
-	int CropAnchor;										// E [-1, 9] with 4 being the default (middle), 0 being top-left, and -1 being 'cursor position'.
 	tColouri FillColour;
+	tColouri FillColourContact;
+	int CropAnchor;										// E [-1, 9] with 4 being the default (middle), 0 being top-left, and -1 being 'cursor position'.
 
 	int CropAspectRatio;								// Matches tImage::tAspectRatio.
 	tImage::tAspectRatio GetCropAspectRatio() const		{ return tImage::tAspectRatio(CropAspectRatio); }

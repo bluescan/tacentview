@@ -29,7 +29,7 @@ namespace Viewer
 
 	// These are used when resizing canvas.
 	void DoResizeAnchorInterface();
-	void DoFillColourInterface(const char* tootTipText = nullptr);
+	void DoFillColourInterface(const char* tootTipText = nullptr, bool contactSheetFillColour = false);
 	void DoResizeCrop(int srcW, int srcH, int dstW, int dstH);
 
 	void DoResizeCanvasAnchorTab(bool firstOpen);
@@ -251,28 +251,43 @@ void Viewer::DoResizeCrop(int srcW, int srcH, int dstW, int dstH)
 }
 
 
-void Viewer::DoFillColourInterface(const char* toolTipText)
+void Viewer::DoFillColourInterface(const char* toolTipText, bool contactSheetFillColour)
 {
-	tColourf floatCol(Config::Current->FillColour);
+	tColourf floatCol(contactSheetFillColour ? Config::Current->FillColourContact : Config::Current->FillColour);
 	ImGui::ColorEdit4
 	(
-		"Fill Colour", floatCol.E,
+		"Fill##Colour", floatCol.E,
 		ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_NoInputs
 	);
-	Config::Current->FillColour.Set(floatCol);
+
+	tColour4i* fillColour = contactSheetFillColour ? &Config::Current->FillColourContact : &Config::Current->FillColour;
+	fillColour->Set(floatCol);
 	if (toolTipText)
 		ShowToolTip(toolTipText);
 
 	ImGui::SameLine();
 	tPicture* picture = CurrImage ? CurrImage->GetCurrentPic() : nullptr;
 	if (ImGui::Button("Origin", tVector2(63.0f, 0.0f)) && picture)
-		Config::Current->FillColour = picture->GetPixel(0, 0);
+		fillColour->Set(picture->GetPixel(0, 0));
 	ShowToolTip("Pick the colour from pixel (0, 0) in the current image.");
 
 	ImGui::SameLine();
 	if (ImGui::Button("Cursor", tVector2(63.0f, 0.0f)))
-		Config::Current->FillColour.Set(Viewer::PixelColour);
+		fillColour->Set(Viewer::PixelColour);
 	ShowToolTip("Pick the colour from the cursor pixel in the current image.");
+
+	ImGui::SameLine();
+	if (ImGui::Button("Reset", tVector2(63.0f, 0.0f)))
+	{
+		if (contactSheetFillColour)
+			fillColour->Set(tColour4i::transparent);
+		else
+			fillColour->Set(tColour4i::black);
+	}
+	if (contactSheetFillColour)
+		ShowToolTip("Reset the fill colour to transparent black.");
+	else
+		ShowToolTip("Reset the fill colour to black.");
 }
 
 

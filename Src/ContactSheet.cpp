@@ -2,7 +2,7 @@
 //
 // Dialog that generates contact sheets and processes alpha channel properly.
 //
-// Copyright (c) 2019-2022 Tristan Grimmer.
+// Copyright (c) 2019-2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -18,6 +18,7 @@
 #include "OpenSaveDialogs.h"
 #include "TacentView.h"
 #include "Image.h"
+namespace Viewer { extern void DoFillColourInterface(const char* = nullptr, bool = false); }
 using namespace tStd;
 using namespace tMath;
 using namespace tSystem;
@@ -132,6 +133,10 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	ImGui::SameLine();
 	ShowHelpMark("Number of rows.");
 
+	int numImg = Images.Count();
+	if ((numImg >= 2) && (numCols*numRows >= 2) && (numCols*numRows > numImg))
+		DoFillColourInterface("Empty pages in the contact sheet\nwill be filled with this colour.", true);
+
 	if (ImGui::Button("Reset From Image") && CurrImage)
 	{
 		frameWidth = picW;
@@ -205,7 +210,6 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	ImGui::InputText("Filename", filename, tNumElements(filename));
 	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
 
-	int numImg = Images.Count();
 	tString genMsg;
 	if (numImg >= 2)
 		tsPrintf(genMsg, " Sheet will have %d frames with %d images.", numRows*numCols, tMin(numImg, numRows*numCols));
@@ -275,7 +279,7 @@ void Viewer::SaveContactSheetTo
 )
 {
 	tImage::tPicture outPic(contactWidth, contactHeight);
-	outPic.SetAll(tColouri(0, 0, 0, 0));
+	outPic.SetAll(Config::Current->FillColourContact);
 
 	// Do the work.
 	int frameWidth = contactWidth / numCols;

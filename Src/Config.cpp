@@ -363,11 +363,12 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 		SaveFileApngDurMultiFrame	= 33;
 		SaveFileTiffDurMultiFrame	= 33;
 		SaveAllSizeMode				= 0;
+		FillColour					= tColouri::black;
+		FillColourContact			= tColouri::transparent;
 		CropAnchor					= 4;
 		CropAspectRatio				= int(tImage::tAspectRatio::Free);
 		CropAspectUserNum			= 16;
 		CropAspectUserDen			= 9;
-		FillColour					= tColouri::black;
 		ResizeAspectRatio			= int(tImage::tAspectRatio::Screen_16_9) - 1;
 		ResizeAspectUserNum			= 16;
 		ResizeAspectUserDen			= 9;
@@ -528,11 +529,12 @@ void Config::ProfileSettings::Load(tExpression expr)
 				InputBindings.Read(e);
 				break;
 
+			ReadItem(FillColour);
+			ReadItem(FillColourContact);
 			ReadItem(CropAnchor);
 			ReadItem(CropAspectRatio);
 			ReadItem(CropAspectUserNum);
 			ReadItem(CropAspectUserDen);
-			ReadItem(FillColour);
 			ReadItem(ResizeAspectRatio);
 			ReadItem(ResizeAspectUserNum);
 			ReadItem(ResizeAspectUserDen);
@@ -693,11 +695,12 @@ bool Config::ProfileSettings::Save(tExprWriter& writer) const
 
 	InputBindings.Write(writer);
 
+	WriteItem(FillColour);
+	WriteItem(FillColourContact);
 	WriteItem(CropAnchor);
 	WriteItem(CropAspectRatio);
 	WriteItem(CropAspectUserNum);
 	WriteItem(CropAspectUserDen);
-	WriteItem(FillColour);
 	WriteItem(ResizeAspectRatio);
 	WriteItem(ResizeAspectUserNum);
 	WriteItem(ResizeAspectUserDen);

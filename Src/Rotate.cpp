@@ -21,7 +21,7 @@ using namespace tStd;
 using namespace tSystem;
 using namespace tMath;
 using namespace tImage;
-namespace Viewer { extern void DoFillColourInterface(const char* = nullptr); }
+namespace Viewer { extern void DoFillColourInterface(const char* = nullptr, bool = false); }
 
 
 void Viewer::DoRotateImageModal(bool rotateImagePressed)
