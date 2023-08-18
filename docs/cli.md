@@ -321,16 +321,16 @@ Creates two contact sheets called `Contact_YYYY-MM-DD-HH-MM-SS_NNxMM.tga` and `C
 \
 **Example {% increment egnum %} - Create a Flipbook QOI with 5 Columns**
 ```
-tacentview -ckv 2 -o qoi --po contact[5,*,FlipOut,FiveColFile]
+tacentview -ckv 2 -o qoi --po contact[5,*,*,FlipOut,FiveColFile]
 ```
 Creates a contact sheet called `FiveColFile.qoi` from the images in the current directory. The number of columns is set explicitly to 5. The rows will be computed for you so that all input images will be included. The output qoi file will be placed in a directory called `FlipOut` which will be created for you if it doesn't exist. All input images must be the same dimension. You may use regular `--op` operations to resize first if desired.\
 \
 \
 **Example {% increment egnum %} - Create a 7x7 Flipbook JPG and BMP**
 ```
-tacentview -ckv 2 -o jpg,bmp --po contact[7,7]
+tacentview -ckv 2 -o jpg,bmp --po contact[7,7,white]
 ```
-In this example we set both the number of columns and the number of rows. If there are more than 49 images in the input directory, only the first 49 will be included. If there are fewer than 49 input images, the contact-sheet (flipbook) will have some _blank_ pages. Blanks are filled with black if the ouptut image is 24 bit and transparent black if the image is 32 bit.
+In this example we set both the number of columns and the number of rows. If there are more than 49 images in the input directory, only the first 49 will be included. If there are fewer than 49 input images, the contact-sheet (flipbook) will have some _empty_ pages. Empty pages get filled with opaque white. If white was not specified or * was used, the fill would be transparent black. Since JPG does not support alpha, the JPG output would just get black for the empty pages. The BMP output supports alpha so those pages would be transparent black. The fill colour may be precisely specified in hexadecimal using #RRGGBBAA. If a single decimal integer is used instead, the fill is that value for all RGBA channels. The predefined colour names are: black, white, grey, red, green, blue, yellow, cyan, magenta, and trans (transparent black, the default).
 
 
 ---
@@ -938,7 +938,7 @@ included in the inputs, the new file is not used by the post operation.
   file called Animated.webp with the first 25 frames each lasting 1/10 second,
   the next 25 at 30fps, the 25 after at 1/5 second, and the remainder at 33ms.
 
---po contact[cols*,rows*,sdir*,base*]
+--po contact[cols*,rows*,fill*,sdir*,base*]
   Creates a single contact sheet image (AKA flipbook) from multiple input
   images. You may specify the number of columns and rows or let the operation
   determine it automatically for you based on the number of input images.
@@ -947,10 +947,10 @@ included in the inputs, the new file is not used by the post operation.
   command if you don't mind overwriting your existing source files with the
   --overwrite flag (see below), or do it as two passes. The final output image
   width will always be the frame width times the number of columns and the
-  height will be the frame height times the number of rows. If any input image
-  has a transparency, the final image will have transparency (assuming the
-  output format supports it). When blank pages are needed they are filled with
-  either opaque black (if no transparency) or transparent black (if there is).
+  height will be the frame height times the number of rows. If an input image
+  has transparency the whole contact sheet will have transparency if the output
+  format supports it. When there are fewer input images than cols*rows, empty
+  pages are needed. These empty pages are filled with a specified fill colour.
   Pages start at the top-left, one line at a time, from left to right.
   cols: Specify the number of columns you want in the contact sheet. This value
         should be bigger or equal to 0*. When set to 0 (the default) it will
@@ -960,6 +960,10 @@ included in the inputs, the new file is not used by the post operation.
         images. If both are set and their product is less than the number of
         input images, not all imput images will be in the contact sheet.
   rows: The number of rows. Behaves similarly to cols above.
+  fill: If empty pages are needed they are filled with this colour. Specify the
+        colour using a hexadecimal in the form #RRGGBBAA, a single integer
+        spread to the RGBA channels, or a predefined name: black, white, grey,
+        red, green, blue, yellow, cyan, magenta, or trans* (transparent black).
   sdir: The sub-directory, relative to the current directory, to place the
         contact-sheet image in. If the sub-directory does not exist, it is
         created for you. Defaults to a directory called Contact*.
@@ -967,10 +971,11 @@ included in the inputs, the new file is not used by the post operation.
         contact image. Defaults* to Contact_YYYY-MM-DD-HH-MM-SS_NNxMM where
         NN is the number of columns and MM is the number of rows. The final
         filename will have an extension based on the output image type.
-  Example 1: -o tga --po contact[10,5,*,Sheet]
+  Example 1: -o tga --po contact[10,5,white,*,Sheet]
   will create a contact sheet image called Sheet.tga in a directory called
-  Contacts. The tga file will be 10 columns by 5 rows. Assuming there are at
-  least 50 input images, every page will have an image in it.
+  Contacts. The tga file will be 10 columns by 5 rows. If there are at least 50
+  input images, every page will have an image in it. If there are fewer, the
+  empty pages will be filled with opaque white.
 
 OUTPUT IMAGES
 -------------

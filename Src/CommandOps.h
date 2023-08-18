@@ -288,6 +288,7 @@ struct PostOperationContact : public PostOperation
 
 	int Columns											= 0;
 	int Rows											= 0;
+	tColour4i FillColour								= tColour4i::transparent;
 	tString SubFolder;									// Relative to the current dir.
 	tString BaseName;
 

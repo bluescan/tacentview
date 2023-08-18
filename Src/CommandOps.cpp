@@ -1918,8 +1918,16 @@ Command::PostOperationContact::PostOperationContact(const tString& argsStr)
 		Rows = currArg->AsInt32();
 	}
 
-	// Subfolder.
+	// Empty Page Fill colour.
 	if (numArgs >= 3)
+	{
+		currArg = currArg->Next();
+		tString colStr = *currArg;
+		ParseColour(FillColour, colStr);
+	}
+
+	// Subfolder.
+	if (numArgs >= 4)
 	{
 		currArg = currArg->Next();
 
@@ -1939,7 +1947,7 @@ Command::PostOperationContact::PostOperationContact(const tString& argsStr)
 	}
 
 	// Basename.
-	if (numArgs >= 4)
+	if (numArgs >= 5)
 	{
 		currArg = currArg->Next();
 
@@ -2043,7 +2051,7 @@ bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 	int contactWidth = frameWidth*cols;
 	int contactHeight = frameHeight*rows;
 	tImage::tPicture outPic(contactWidth, contactHeight);
-	outPic.SetAll(tColouri(0, 0, 0, 0));
+	outPic.SetAll(FillColour);
 
 	int ix = 0;
 	int iy = 0;
