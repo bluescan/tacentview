@@ -475,7 +475,7 @@ are sufficient. Image types with load parameters:
         Range is [0.5,4.0]
   tone: For HDR images. Tone-map exposure applied if this is >= 0.0. The
         non-negative valid range is [0.0,4.0]. A value of 0.0 is black and 4.0
-		is over-exposed. A value of 1.0 is neutral. Negative values do not
+        is over-exposed. A value of 1.0 is neutral. Negative values do not
         apply tone-map exposure. Default is -1.0* for no application.
 
 --inDDS
@@ -487,7 +487,7 @@ are sufficient. Image types with load parameters:
   gamma:Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
   tone: For HDR images. Tone-map exposure applied if this is >= 0.0. The
         non-negative valid range is [0.0,4.0]. A value of 0.0 is black and 4.0
-		is over-exposed. A value of 1.0 is neutral. Negative values do not
+        is over-exposed. A value of 1.0 is neutral. Negative values do not
         apply tone-map exposure. Default is -1.0* for no application.
   spred:Spread single channel. Boolean true* or false. For DDS files with a
         single Red or Luminance componentconly, spread it to all the RGB
@@ -527,7 +527,7 @@ are sufficient. Image types with load parameters:
   gamma:Gamma value. Used when an encoding-gamma is needed. Default is 2.2*.
   tone: For HDR images. Tone-map exposure applied if this is >= 0.0. The
         non-negative valid range is [0.0,4.0]. A value of 0.0 is black and 4.0
-		is over-exposed. A value of 1.0 is neutral. Negative values do not
+        is over-exposed. A value of 1.0 is neutral. Negative values do not
         apply tone-map exposure. Default is -1.0* for no application.
   spred:Spread single channel. Boolean true* or false. For KTX files with a
         single Red or Luminance componentconly, spread it to all the RGB
