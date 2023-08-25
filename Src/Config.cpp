@@ -338,7 +338,8 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 		SaveSubFolder				.Clear();
 		SaveFileType				.Set(tSystem::tGetFileTypeName(tSystem::tFileType::TGA));
 		SaveFileTypeMultiFrame		.Set(tSystem::tGetFileTypeName(tSystem::tFileType::GIF));
-		SaveFileTargaRLE			= false;
+		SaveFileTgaDepthMode		= 0;
+		SaveFileTgaRLE				= false;
 		SaveFilePngDepthMode		= 0;
 		SaveFileQoiDepthMode		= 0;
 		SaveFileQoiColourSpace		= 0;
@@ -496,7 +497,8 @@ void Config::ProfileSettings::Load(tExpression expr)
 			ReadItem(SaveSubFolder);
 			ReadItem(SaveFileType);
 			ReadItem(SaveFileTypeMultiFrame);
-			ReadItem(SaveFileTargaRLE);
+			ReadItem(SaveFileTgaDepthMode);
+			ReadItem(SaveFileTgaRLE);
 			ReadItem(SaveFilePngDepthMode);
 			ReadItem(SaveFileQoiDepthMode);
 			ReadItem(SaveFileQoiColourSpace);
@@ -584,7 +586,13 @@ void Config::ProfileSettings::Load(tExpression expr)
 	tiClampMin	(MaxCacheFiles, 200);	
 	tiClamp		(MaxUndoSteps, 1, 32);
 	tiClamp		(MipmapFilter, 0, int(tImage::tResampleFilter::NumFilters));						// None allowed.
+
 	tiClamp		(SaveAllSizeMode, 0, int(SizeModeEnum::NumModes)-1);
+	tiClamp		(SaveFileTgaDepthMode, 0, 2);
+	tiClamp		(SaveFilePngDepthMode, 0, 2);
+	tiClamp		(SaveFileQoiDepthMode, 0, 2);
+	tiClamp		(SaveFileQoiColourSpace, 0, 2);
+	tiClamp		(SaveFileBmpDepthMode, 0, 2);
 	tiClamp		(SaveFileJpegQuality, 1, 100);
 	tiClamp		(SaveFileWebpQualComp, 0.0f, 100.0f);
 	tiClamp		(SaveFileGifBPP, 1, 8);
@@ -664,7 +672,8 @@ bool Config::ProfileSettings::Save(tExprWriter& writer) const
 	WriteItem(SaveSubFolder);
 	WriteItem(SaveFileType);
 	WriteItem(SaveFileTypeMultiFrame);
-	WriteItem(SaveFileTargaRLE);
+	WriteItem(SaveFileTgaDepthMode);
+	WriteItem(SaveFileTgaRLE);
 	WriteItem(SaveFilePngDepthMode);
 	WriteItem(SaveFileQoiDepthMode);
 	WriteItem(SaveFileQoiColourSpace);

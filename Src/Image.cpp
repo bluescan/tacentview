@@ -592,7 +592,16 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 			tImageTGA tga(*picture, false);
 			tImageTGA::SaveParams params(SaveParamsTGA);
 			if (useConfigSaveParams)
-				params.Compression = Config::Current->SaveFileTargaRLE ? tImageTGA::tCompression::RLE : tImageTGA::tCompression::None;
+			{
+				params.Format = tImageTGA::tFormat::Auto;
+				switch (Config::Current->SaveFileTgaDepthMode)
+				{
+					case 1: params.Format = tImageTGA::tFormat::BPP24;		break;
+					case 2: params.Format = tImageTGA::tFormat::BPP32;		break;
+				}
+
+				params.Compression = Config::Current->SaveFileTgaRLE ? tImageTGA::tCompression::RLE : tImageTGA::tCompression::None;
+			}
 
 			tImageTGA::tFormat savedFmt = tga.Save(outFile, params);
 			success = (savedFmt != tImageTGA::tFormat::Invalid);

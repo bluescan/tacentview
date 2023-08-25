@@ -191,7 +191,8 @@ struct ProfileSettings
 	tString	SaveSubFolder;
 	tString	SaveFileType;
 	tString	SaveFileTypeMultiFrame;
-	bool	SaveFileTargaRLE;
+	int		SaveFileTgaDepthMode;						// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
+	bool	SaveFileTgaRLE;
 	int		SaveFilePngDepthMode;						// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
 	int		SaveFileQoiDepthMode;						// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
 	int		SaveFileQoiColourSpace;						// E [0, 2]. 0 = Auto. 1 = sRGB.  2 = Linear.
@@ -208,15 +209,15 @@ struct ProfileSettings
 	int		SaveFileGifFilterSize;						// E [0, 2] Maps to 1, 3, 5.
 	int		SaveFileGifSampleFactor;					// E [1, 10]
 
-	int SaveFileWebpDurOverride;						// E [-1, inf]. In ms.
-	int SaveFileGifDurOverride;							// E [-1, inf]. In 1/100 seconds.
-	int SaveFileApngDurOverride;						// E [-1, 65535]. In ms.
-	int SaveFileTiffDurOverride;						// E [-1, inf]. In ms.
+	int		SaveFileWebpDurOverride;					// E [-1, inf]. In ms.
+	int		SaveFileGifDurOverride;						// E [-1, inf]. In 1/100 seconds.
+	int		SaveFileApngDurOverride;					// E [-1, 65535]. In ms.
+	int		SaveFileTiffDurOverride;					// E [-1, inf]. In ms.
 
-	int SaveFileWebpDurMultiFrame;						// E [0, inf]. In ms.
-	int SaveFileGifDurMultiFrame;						// E [0, inf]. In 1/100 seconds.
-	int SaveFileApngDurMultiFrame;						// E [0, 65536]. In ms.
-	int SaveFileTiffDurMultiFrame;						// E [0, inf]. In ms.
+	int		SaveFileWebpDurMultiFrame;					// E [0, inf]. In ms.
+	int		SaveFileGifDurMultiFrame;					// E [0, inf]. In 1/100 seconds.
+	int		SaveFileApngDurMultiFrame;					// E [0, 65536]. In ms.
+	int		SaveFileTiffDurMultiFrame;					// E [0, inf]. In ms.
 	enum class SizeModeEnum
 	{
 		Percent,
@@ -225,7 +226,7 @@ struct ProfileSettings
 		SetHeightRetainAspect,
 		NumModes
 	};
-	int SaveAllSizeMode;
+	int		SaveAllSizeMode;
 	SizeModeEnum GetSaveAllSizeMode() const				{ return SizeModeEnum(SaveAllSizeMode); }
 
 	tColouri FillColour;

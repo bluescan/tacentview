@@ -462,8 +462,18 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 	switch (fileType)
 	{
 		case tFileType::TGA:
-			ImGui::Checkbox("RLE Compression", &Config::Current->SaveFileTargaRLE);
+		{
+			const char* tgaModeItems[] = { "Auto", "24 BPP", "32 BPP" };
+			ImGui::SetNextItemWidth(80);
+			ImGui::Combo("Bits Per Pixel", &Config::Current->SaveFileTgaDepthMode , tgaModeItems, tNumElements(tgaModeItems));
+			ImGui::SameLine();
+			ShowHelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.");
+
+			ImGui::Checkbox("RLE Compression", &Config::Current->SaveFileTgaRLE);
+			ImGui::SameLine();
+			ShowHelpMark("Perform simple run-length compression.");
 			break;
+		}
 
 		case tFileType::PNG:
 		{
@@ -1028,7 +1038,13 @@ bool Viewer::SavePictureAs(tImage::tPicture& picture, const tString& outFile, tF
 		case tFileType::TGA:
 		{
 			tImageTGA tga(picture, steal);
-			tImageTGA::tFormat savedFmt = tga.Save(outFile, tImageTGA::tFormat::Auto, Config::Current->SaveFileTargaRLE ? tImageTGA::tCompression::RLE : tImageTGA::tCompression::None);
+			tImageTGA::tFormat saveFormat = tImageTGA::tFormat::Auto;
+			switch (Config::Current->SaveFileTgaDepthMode)
+			{
+				case 1: saveFormat = tImageTGA::tFormat::BPP24;		break;
+				case 2: saveFormat = tImageTGA::tFormat::BPP32;		break;
+			}
+			tImageTGA::tFormat savedFmt = tga.Save(outFile, saveFormat, Config::Current->SaveFileTgaRLE ? tImageTGA::tCompression::RLE : tImageTGA::tCompression::None);
 			success = (savedFmt != tImageTGA::tFormat::Invalid);
 			break;
 		}
