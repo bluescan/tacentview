@@ -70,6 +70,28 @@ A JPeg may have `jpg` or `jpeg` extensions and a Tiff may have `tif` or `tiff`.
 )EXAMPLE"
 },
 
+{
+u8"Convert PKM Files to PNG",
+u8"tacentview -c --in pkm --out png",
+u8R"EXAMPLE(
+Here the types of the input and output files are specified explicitly. In this
+case a single input type (pkm) and a single output type (png) are specified.
+)EXAMPLE"
+},
+
+{
+u8"Convert PKM and JPG Files to PNG and BMP",
+u8"tacentview -c --in pkm,jpg --out png,bmp\n"
+u8"tacentview -c --in pkm -i jpg -o png --out bmp",
+u8R"EXAMPLE(
+You can specify multiple types for both the input and output. Both
+command-lines above do the same thing. In the first more concise example, all
+types are specified with a single `--in` or `--out` option. When using this
+comma-separated list format, do not put spaces after the commas. The second
+line just shows that individual specifications get combined.
+)EXAMPLE"
+},
+
 };
 
 
