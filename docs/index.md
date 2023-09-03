@@ -111,28 +111,28 @@ Animates: _GIF WEBP APNG TIF/TIFF_
 
 Some image formats are often used to store texture data that is easily decompressable by a GPU -- DDS, KTX, KTX2, ASTC, and PKM files are examples. Tacent View supports the following texture formats for these types of files:
 
-| Packed         |                |                |                |
-|----------------|----------------|----------------|----------------|
-| R8             | R8G8           | R8G8B8         | R8G8B8A8       |
-| B8G8R8         | B8G8R8A8       | B5G6R5         | G3B5R5G3       |
-| B4G4R4A4       | B5G5R5A1       | A8L8           | A8             |
-| L8             | R16F           | R16G16F        | R16G16B16A16F  |
-| R32F           | R32G32F        | R32G32B32A32F  |                |
-|                |                |                |                |
-| Block (BC)     |                |                |                |
-|----------------|----------------|----------------|----------------|
-| BC1DXT1        | BC1DXT1A       | BC2DXT2DXT3    | BC3DXT4DXT5    |
-| BC4ATI1        | BC5ATI2        | BC6S           | BC6U           |
-| BC7            |                |                |                |
-|                |                |                |                |
-| Block (ETC)    |                |                |                |
-|----------------|----------------|----------------|----------------|
-| ETC1           | ETC2RGB        | ETC2RGBA       | ETC2RGBA1      |
-| EACR11         | EACR11S        | EACRG11        | EACRG11S       |
-|                |                |                |                |
-| ASTC           |                |                |                |
-|----------------|----------------|----------------|----------------|
-| ASTC4X4        | ASTC5X4        | ASTC5X5        | ASTC6X5        |
-| ASTC6X6        | ASTC8X5        | ASTC8X6        | ASTC8X8        |
-| ASTC10X5       | ASTC10X6       | ASTC10X8       | ASTC10X10      |
-| ASTC12X10      | ASTC12X12      |                |                |
+| **Packed**      |                 |                 |                 |
+|-----------------|-----------------|-----------------|-----------------|
+| R8              | R8G8            | R8G8B8          | R8G8B8A8        |
+| B8G8R8          | B8G8R8A8        | B5G6R5          | G3B5R5G3        |
+| B4G4R4A4        | B5G5R5A1        | A8L8            | A8              |
+| L8              | R16F            | R16G16F         | R16G16B16A16F   |
+| R32F            | R32G32F         | R32G32B32A32F   |                 |
+|                 |                 |                 |                 |
+| **Block (BC)**  |                 |                 |                 |
+|-----------------|-----------------|-----------------|-----------------|
+| BC1DXT1         | BC1DXT1A        | BC2DXT2DXT3     | BC3DXT4DXT5     |
+| BC4ATI1         | BC5ATI2         | BC6S            | BC6U            |
+| BC7             |                 |                 |                 |
+|                 |                 |                 |                 |
+| **Block (ETC)** |                 |                 |                 |
+|-----------------|-----------------|-----------------|-----------------|
+| ETC1            | ETC2RGB         | ETC2RGBA        | ETC2RGBA1       |
+| EACR11          | EACR11S         | EACRG11         | EACRG11S        |
+|                 |                 |                 |                 |
+| **ASTC**        |                 |                 |                 |
+|-----------------|-----------------|-----------------|-----------------|
+| ASTC4X4         | ASTC5X4         | ASTC5X5         | ASTC6X5         |
+| ASTC6X6         | ASTC8X5         | ASTC8X6         | ASTC8X8         |
+| ASTC10X5        | ASTC10X6        | ASTC10X8        | ASTC10X10       |
+| ASTC12X10       | ASTC12X12       |                 |                 |
