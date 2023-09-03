@@ -1,4 +1,3 @@
-
 **Example {% increment egnum %} - Convert to TGA**
 ```
 tacentview -c
@@ -11,5 +10,3 @@ This is the simplest conversion command-line. The `-c` (alternatively `--cli`) s
 tacentview -c TactileConceptDevelopment.jpeg
 ```
 This example shows why the `-c` option is needed -- without it GUI-mode is activated and the images on the command-line are opened in the full graphical user interface. Note that some input types have multiple valid extensions. e.g. A JPeg may have `jpg` or `jpeg` extensions and a Tiff may have `tif` or `tiff`.
-
-

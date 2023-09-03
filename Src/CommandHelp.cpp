@@ -22,6 +22,112 @@
 #include "TacentView.h"
 
 
+namespace Command
+{
+	struct Example
+	{
+		// The name of the example.
+		const char8_t* Name;
+
+		// Use a \n if you want more than one command-line listed.
+		const char8_t* Line;
+
+		// Surround words with ^ for markup ital text. Replaced with _ for markup. Replaced with ` for terminal.
+		// Surround words with ` for markup code text. Replaced with ' for terminal.
+		// Desc should be 80 columns per line max. The newlines get replaced with space for markup output.
+		const char8_t* Desc;
+	};
+
+	Example Examples[];
+	extern int NumExamples;
+}
+
+
+Command::Example Command::Examples[] =
+{
+
+{
+u8"Convert to TGA",
+u8"tacentview -c",
+u8R"EXAMPLE(
+This is the simplest conversion command-line. The `-c` (alternatively `--cli`)
+simply means do not launch the GUI. The input images are all the files in the
+current directory (since no directory was specified). By default all image
+types are processed unless you specify the input image types with `-i` or
+`--in`. Similarly, output types can be specified with `-o` or `--out`. If this
+is missing the default is to output TGA files.
+)EXAMPLE"
+},
+
+{
+u8"Convert Single JPG to TGA",
+u8"tacentview -c TactileConceptDevelopment.jpeg",
+u8R"EXAMPLE(
+This example shows why the `-c` option is needed -- without it GUI-mode is
+activated and the images on the command-line are opened in the full graphical
+user interface. Note that some input types have multiple valid extensions. e.g.
+A JPeg may have `jpg` or `jpeg` extensions and a Tiff may have `tif` or `tiff`.
+)EXAMPLE"
+},
+
+};
+
+
+int Command::NumExamples = tNumElements(Examples);
+
+
+void Command::PrintExamples()
+{
+	for (int e = 0; e < NumExamples; e++)
+	{
+		tString name;
+		tsPrintf(name, "Example %d - %s", e, Examples[e].Name);
+
+		tString line;
+		tsPrintf(line, "%s", Examples[e].Line);
+
+		tString desc;
+		tsPrintf(desc, "%s", Examples[e].Desc);
+
+		desc.Replace('`', '\'');
+		desc.Replace('^', '`');
+
+		if (e)
+			tPrintf("\n");
+		tPrintf("\n%s\n\n", name.Chr());
+		tPrintf("%s\n", line.Chr());
+		tPrintf("%s", desc.Chr());
+	}
+}
+
+
+void Command::PrintExamplesMarkdown()
+{
+	for (int e = 0; e < NumExamples; e++)
+	{
+		tString name;
+		tsPrintf(name, "**Example {%% increment egnum %%} - %s**", Examples[e].Name);
+
+		tString line;
+		tsPrintf(line, "```\n%s\n```", Examples[e].Line);
+
+		tString desc;
+		tsPrintf(desc, "%s", Examples[e].Desc);
+		desc.Replace('\n', ' ');
+		desc.RemoveLast();
+		desc.RemoveFirst();
+		desc.Replace('^', '_');
+
+		tPrintf("%s\n", name.Chr());
+		tPrintf("%s\n", line.Chr());
+		if (e != (NumExamples-1))
+			tPrintf("%s\\\n\\\n\\\n", desc.Chr());
+		else
+			tPrintf("%s\n", desc.Chr());
+	}
+}
+
+
 void Command::PrintHelp()
 {
 	const int maxCols = 80;
@@ -96,8 +202,11 @@ You must call with -c or --cli to use this program in CLI mode.
 
 Use the --help (-h) flag to print this help. The help option is the only one
 that does not require -c. To view generic command-line syntax help use the
---syntax (-s) flag. For example, to print syntax usage you could call
-'tacentview -cs' which expands to 'tacentview -c -s'.
+--syntax (-s) flag. For example, to print syntax usage you would call
+'tacentview -cs' which expands to 'tacentview -c -s'. To view a list of
+examples use the --examples (-x) flag with a command like 'tacentview -cx'.
+For generation of the examples in markdown, use the --markdown (-m) flag. For
+example 'tacentview -cm > markdown.md'
 
 Set output verbosity with --verbosity (-v) and a single integer value after it
 from 0 to 2. 0 means no text output, 1 is the default, and 2 is full/detailed.

@@ -7,33 +7,12 @@ This page is an overview of the features available in _Tacent View_ while using 
 
 ---
 ## Examples
-The easiest way to demonstrate using _Tacent View_ from the command-line is by example. The following assumes a) _tacentview_ or _tacentview.exe_ is in the path or in the current directory, and b) there are multiple images of various types in the current directory. Since Windows can handle not specifying the _exe_ extension, it has been omitted. These examples do not exhaustively demonstrate all options and parameters -- see the following _usage_ section for all the options.
-
+The easiest way to demonstrate using _Tacent View_ from the command-line is by example. The following assumes a) _tacentview_ or _tacentview.exe_ is in the path or in the current directory, and b) there are multiple images of various types in the current directory. Since Windows can handle not specifying the _exe_ extension, it has been omitted. These examples do not exhaustively demonstrate all options and parameters -- see the following _usage_ section for all the options.\
+\
+\
 {% include_relative examples.md %}
 
----
 
-**Example {% increment egnum %} - Convert to TGA**
-```
-tacentview -c
-```
-This is the simplest conversion command-line. The `-c` (alternatively `--cli`) simply means do not launch the GUI. The input images are all the files in the current directory (since no directory was specified). By default all image types are processed unless you specify the input image types with `-i` or `--in`. Similarly, output types can be specified with `-o` or `--out`. If this is missing the default is to output TGA files.\
-\
-\
-**Example {% increment egnum %} - Convert to TGA**
-```
-tacentview -c
-```
-This is the simplest conversion command-line. The `-c` (alternatively `--cli`) simply means do not launch the GUI. The input images are all the files in the current directory (since no directory was specified). By default all image types are processed unless you specify the input image types with `-i` or `--in`. Similarly, output_types can be specified with `-o` or `--out`. If this is missing the default is to output TGA files. This is _italic_ and this is `code` inline. A single asterisk * looks like *.\
-\
-\
-**Example {% increment egnum %} - Convert Single JPG to TGA**
-```
-tacentview -c TactileConceptDevelopment.jpeg
-```
-This example shows why the `-c` option is needed -- without it GUI-mode is activated and the images on the command-line are opened in the full graphical user interface. Note that some input types have multiple valid extensions. e.g. A JPeg may have `jpg` or `jpeg` extensions and a Tiff may have `tif` or `tiff`.\
-\
-\
 **Example {% increment egnum %} - Convert PKM Files to PNG**
 ```
 tacentview -c --in pkm --out png

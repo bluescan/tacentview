@@ -18,4 +18,6 @@
 namespace Command
 {
 	void PrintHelp();
+	void PrintExamples();
+	void PrintExamplesMarkdown();
 }

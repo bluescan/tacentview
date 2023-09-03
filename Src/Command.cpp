@@ -35,6 +35,8 @@ namespace Command
 	// Note, -c and --cli are reserved.
 	tCmdLine::tOption OptionHelp			("Print help/usage information",	"help",			'h'			);
 	tCmdLine::tOption OptionSyntax			("Print syntax help",				"syntax",		's'			);
+	tCmdLine::tOption OptionExamples		("Print examples",					"examples",		'x'			);
+	tCmdLine::tOption OptionMarkdown		("Print examples in markdown",		"markdown",		'm'			);
 	tCmdLine::tOption OptionVerbosity		("Verbosity from 0 to 2",			"verbosity",	'v',	1	);
 
 	tCmdLine::tOption OptionInTypes			("Input file type(s)",				"in",			'i',	1	);
@@ -1290,23 +1292,31 @@ int Command::Process()
 		case 2: tSystem::tSetChannels(tSystem::tChannel_Default | tSystem::tChannel_Verbosity0 | tSystem::tChannel_Verbosity1);	break;
 	}
 
-	tPrintf("\n");
-	tPrintfNorm("Tacent View %d.%d.%d by Tristan Grimmer\n", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
-	tString platform	= tGetPlatformNameShort( tGetPlatform() );
-	tString architec	= tGetArchitectureName( tGetArchitecture() );
-	tString config 		= tGetConfigurationName( tGetConfiguration() );
-	#ifdef TACENT_UTF16_API_CALLS
-	tString api 		= "UTF-16";
-	#else
-	tString api 		= "UTF-8";
-	#endif
-	tPrintfNorm("%s %s %s %s API\n", platform.Chr(), architec.Chr(), config.Chr(), api.Chr());
-
-	if (OptionHelp)
-		tPrintfNorm("CLI Mode\n");
+	if (OptionMarkdown)
+	{
+		Command::PrintExamplesMarkdown();
+		return 0;
+	}
 	else
-		tPrintfNorm("CLI Mode Details: tacentview --help\n");
-	tPrintfNorm("\n");
+	{
+		tPrintf("\n");
+		tPrintfNorm("Tacent View %d.%d.%d by Tristan Grimmer\n", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
+		tString platform	= tGetPlatformNameShort( tGetPlatform() );
+		tString architec	= tGetArchitectureName( tGetArchitecture() );
+		tString config 		= tGetConfigurationName( tGetConfiguration() );
+		#ifdef TACENT_UTF16_API_CALLS
+		tString api 		= "UTF-16";
+		#else
+		tString api 		= "UTF-8";
+		#endif
+		tPrintfNorm("%s %s %s %s API\n", platform.Chr(), architec.Chr(), config.Chr(), api.Chr());
+
+		if (OptionHelp)
+			tPrintfNorm("CLI Mode\n");
+		else
+			tPrintfNorm("CLI Mode Details: tacentview --help\n");
+		tPrintfNorm("\n");
+	}
 
 	if (OptionHelp)
 	{
@@ -1317,6 +1327,12 @@ int Command::Process()
 	if (OptionSyntax)
 	{
 		tCmdLine::tPrintSyntax();
+		return 0;
+	}
+
+	if (OptionExamples)
+	{
+		Command::PrintExamples();
 		return 0;
 	}
 
