@@ -157,7 +157,14 @@ Rotates 12 degrees anti-clockwise. Resize mode does the same as crop mode but th
 ```
 tacentview -c --op levels[0.1,*,0.9,*,*]
 ```
-Adjusts image levels in a manner similar to other photo-editing software where you can specify black, mid, and white points. The first 3 areguments are the input black, mid, and white points in the 0 to 1 range. The * for the mid-point means put it halfway inbetween. The last two *'s are for the output black and white points and default to 0.0 and 1.0. There are further optional arguments to the levels operation (not shown in this example) that control which frame(s) to perform the operation on if the image is animated or has mipmaps, what colour channels to adjust, and what gamma algorithm to use. For a full explanation call `tacentview -c --help`. },  { u8"Levels One Frame One Channel", u8"tacentview -c --op levels[0.2,0.6,0.8,0.1,0.9,4,R,false]", u8R"EXAMPLE( Adjusts image levels like the previous example except we specify all five black and white points explicitly. The 4 is the zero-based frame number to operate on if you have an animated or multi-page input image. If this is set to -1 or * it adjusts levels on all frames. The `R` means the red channel only. Choices are R, G, B, RGB (the default), and A. The last argument lets you specify a continuous or discontinuous function for the mid-point gamma algorithm. False means discontinuous at gamma 1 (approximates Photoshop). True means use a continuous base-10 power curve that smoothly transitions the full range (similar to the GIMP).\
+Adjusts image levels in a manner similar to other photo-editing software where you can specify black, mid, and white points. The first 3 areguments are the input black, mid, and white points in the 0 to 1 range. The * for the mid-point means put it halfway inbetween. The last two *'s are for the output black and white points and default to 0.0 and 1.0. There are further optional arguments to the levels operation (not shown in this example) that control which frame(s) to perform the operation on if the image is animated or has mipmaps, what colour channels to adjust, and what gamma algorithm to use. For a full explanation call `tacentview -c --help`.\
+\
+\
+**Example {% increment egnum %} - Levels One Frame One Channel**
+```
+tacentview -c --op levels[0.2,0.6,0.8,0.1,0.9,4,R,false]
+```
+Adjusts image levels like the previous example except we specify all five black and white points explicitly. The 4 is the zero-based frame number to operate on if you have an animated or multi-page input image. If this is set to -1 or * it adjusts levels on all frames. The `R` means the red channel only. Choices are R, G, B, RGB (the default), and A. The last argument lets you specify a continuous or discontinuous function for the mid-point gamma algorithm. False means discontinuous at gamma 1 (approximates Photoshop). True means use a continuous base-10 power curve that smoothly transitions the full range (similar to the GIMP).\
 \
 \
 **Example {% increment egnum %} - Contrast**

@@ -341,6 +341,7 @@ to the levels operation (not shown in this example) that control which frame(s)
 to perform the operation on if the image is animated or has mipmaps, what
 colour channels to adjust, and what gamma algorithm to use. For a full
 explanation call `tacentview -c --help`.
+)EXAMPLE"
 },
 
 {
