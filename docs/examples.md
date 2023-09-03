@@ -24,4 +24,11 @@ Here the types of the input and output files are specified explicitly. In this c
 tacentview -c --in pkm,jpg --out png,bmp
 tacentview -c --in pkm -i jpg -o png --out bmp
 ```
-You can specify multiple types for both the input and output. Both command-lines above do the same thing. In the first more concise example, all types are specified with a single `--in` or `--out` option. When using this comma-separated list format, do not put spaces after the commas. The second line just shows that individual specifications get combined.
+You can specify multiple types for both the input and output. Both command-lines above do the same thing. In the first more concise example, all types are specified with a single `--in` or `--out` option. When using this comma-separated list format, do not put spaces after the commas. The second line just shows that individual specifications get combined.\
+\
+\
+**Example {% increment egnum %} - Create GIFs from Manifest**
+```
+tacentview -c @manifest.txt --out gif --outGIF bpp=2,qan=neu,alp=120
+```
+Uses the @ symbol to specify a manifest file that lists the files to process. The contents of _manifest.txt_ could look something like this. ``` ; Some individual files to process. Flipbook.webp Flame.apng  ; A directory to process. MoreImages/ ``` The `--outGIF` is optional and specifies any non-default parameters for creating the GIFs. In this case a 2-bit (4 colour) palette is used, the _neu_ algorithm is used for colour quantization, and the transparency threshold is 120. There are more options for GIF output not shown here including things like loop behaviour, frame duration, etc.
