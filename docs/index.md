@@ -41,8 +41,8 @@ There are two main modes in which _Tacent View_ may be used: **GUI** and **CLI**
 
 <ul class="downloads">
 	<li><a href="https://bluescan.github.io/tacentview/gui.html">GUI Info <strong>GUI</strong></a></li>
-	<li></li>
 	<li><a href="https://bluescan.github.io/tacentview/cli.html">CLI Info <strong>CLI</strong></a></li>
+	<li><a href="https://github.com/bluescan/tacentview/wiki.html">Planning <strong>WIKI</strong></a></li>
 </ul>
 
 ---
