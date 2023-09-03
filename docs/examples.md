@@ -31,4 +31,13 @@ You can specify multiple types for both the input and output. Both command-lines
 ```
 tacentview -c @manifest.txt --out gif --outGIF bpp=2,qan=neu,alp=120
 ```
-Uses the @ symbol to specify a manifest file that lists the files to process. The contents of _manifest.txt_ could look something like this. ``` ; Some individual files to process. Flipbook.webp Flame.apng  ; A directory to process. MoreImages/ ``` The `--outGIF` is optional and specifies any non-default parameters for creating the GIFs. In this case a 2-bit (4 colour) palette is used, the _neu_ algorithm is used for colour quantization, and the transparency threshold is 120. There are more options for GIF output not shown here including things like loop behaviour, frame duration, etc.
+Uses the @ symbol to specify a manifest file that lists the files to process. The contents of _manifest.txt_ could look something like this.
+```
+; Some individual files to process.
+Flipbook.webp
+Flame.apng
+
+; A directory to process.
+MoreImages/
+```
+The `--outGIF` is optional and specifies any non-default parameters for creating the GIFs. In this case a 2-bit (4 colour) palette is used, the _neu_ algorithm is used for colour quantization, and the transparency threshold is 120. There are more options for GIF output not shown here including things like loop behaviour, frame duration, etc.

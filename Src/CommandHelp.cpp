@@ -34,6 +34,7 @@ namespace Command
 
 		// Surround words with ^ for markup ital text. Replaced with _ for markup. Replaced with ` for terminal.
 		// Surround words with ` for markup code text. Replaced with ' for terminal.
+		// Use a | to force a newline in markdown.
 		// Desc should be 80 columns per line max. The newlines get replaced with space for markup output.
 		const char8_t* Desc;
 	};
@@ -97,15 +98,15 @@ u8"Create GIFs from Manifest",
 u8"tacentview -c @manifest.txt --out gif --outGIF bpp=2,qan=neu,alp=120",
 u8R"EXAMPLE(
 Uses the @ symbol to specify a manifest file that lists the files to process.
-The contents of _manifest.txt_ could look something like this.
-```
-; Some individual files to process.
-Flipbook.webp
-Flame.apng
-
-; A directory to process.
-MoreImages/
-```
+The contents of ^manifest.txt^ could look something like this.|
+```|
+; Some individual files to process.|
+Flipbook.webp|
+Flame.apng|
+|
+; A directory to process.|
+MoreImages/|
+```|
 The `--outGIF` is optional and specifies any non-default parameters for
 creating the GIFs. In this case a 2-bit (4 colour) palette is used, the ^neu^
 algorithm is used for colour quantization, and the transparency threshold is
@@ -134,6 +135,7 @@ void Command::PrintExamples()
 		tsPrintf(desc, "%s", Examples[e].Desc);
 
 		desc.Replace("```", "");
+		desc.Remove('|');
 		desc.Replace('`', '\'');
 		desc.Replace('^', '`');
 
@@ -159,6 +161,7 @@ void Command::PrintExamplesMarkdown()
 		tString desc;
 		tsPrintf(desc, "%s", Examples[e].Desc);
 		desc.Replace('\n', ' ');
+		desc.Replace("| ", "\n");
 		desc.RemoveLast();
 		desc.RemoveFirst();
 		desc.Replace('^', '_');
