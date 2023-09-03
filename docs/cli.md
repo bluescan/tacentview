@@ -21,7 +21,7 @@ This is the simplest conversion command-line. The `-c` (alternatively `--cli`) s
 ```
 tacentview -c
 ```
-This is the simplest conversion command-line. The `-c` (alternatively `--cli`) simply means do not launch the GUI. The input images are all the files in the current directory (since no directory was specified). By default all image types are processed unless you specify the input image types with `-i` or `--in`. Similarly, output_types can be specified with `-o` or `--out`. If this is missing the default is to output TGA files. This is _italic_. This is *bold*, and this is `code` inline.\
+This is the simplest conversion command-line. The `-c` (alternatively `--cli`) simply means do not launch the GUI. The input images are all the files in the current directory (since no directory was specified). By default all image types are processed unless you specify the input image types with `-i` or `--in`. Similarly, output_types can be specified with `-o` or `--out`. If this is missing the default is to output TGA files. This is _italic_ and this is `code` inline. A single asterisk * looks like *.\
 \
 \
 **Example {% increment egnum %} - Convert Single JPG to TGA**
@@ -337,9 +337,9 @@ Creates a contact sheet called `FiveColFile.qoi` from the images in the current 
 ```
 tacentview -ckv 2 -o jpg,bmp --po contact[7,7,white]
 ```
-In this example we set both the number of columns and the number of rows. If there are more than 49 images in the input directory, only the first 49 will be included. If there are fewer than 49 input images, the contact-sheet (flipbook) will have some _empty_ pages. Empty pages get filled with opaque white. If white was not specified or * was used, the fill would be transparent black. Since JPG does not support alpha, the JPG output ignores transparency (it will be opaque). The BMP output supports alpha so transparency in both the pages and empty-page fill-colour is taken into account. The fill colour may be precisely specified in hexadecimal using #RRGGBBAA. If a single decimal integer is used instead, the fill is that value for all RGBA channels. The predefined colour names are: black, white, grey, red, green, blue, yellow, cyan, magenta, and trans (transparent black, the default). Colour names other than `trans` all default alpha to full (opaque).
-
-
+In this example we set both the number of columns and the number of rows. If there are more than 49 images in the input directory, only the first 49 will be included. If there are fewer than 49 input images, the contact-sheet (flipbook) will have some _empty_ pages. Empty pages get filled with opaque white. If white was not specified or * was used, the fill would be transparent black. Since JPG does not support alpha, the JPG output ignores transparency (it will be opaque). The BMP output supports alpha so transparency in both the pages and empty-page fill-colour is taken into account. The fill colour may be precisely specified in hexadecimal using #RRGGBBAA. If a single decimal integer is used instead, the fill is that value for all RGBA channels. The predefined colour names are: black, white, grey, red, green, blue, yellow, cyan, magenta, and trans (transparent black, the default). Colour names other than `trans` all default alpha to full (opaque).\
+\
+\
 ---
 ## Usage
 This is a printout of the CLI usage instructions built into _Tacent View_. To get this printout simply issue the command `tacentview --help`
