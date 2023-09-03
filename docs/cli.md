@@ -10,6 +10,10 @@ This page is an overview of the features available in _Tacent View_ while using 
 The easiest way to demonstrate using _Tacent View_ from the command-line is by example. The following assumes a) _tacentview_ or _tacentview.exe_ is in the path or in the current directory, and b) there are multiple images of various types in the current directory. Since Windows can handle not specifying the _exe_ extension, it has been omitted. These examples do not exhaustively demonstrate all options and parameters -- see the _usage_ section afterwards for all the options.\
 \
 \
+{% include_relative examples.md %}
+
+---
+
 **Example {% increment egnum %} - Convert to TGA**
 ```
 tacentview -c
