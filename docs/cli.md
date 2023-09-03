@@ -21,7 +21,7 @@ This is the simplest conversion command-line. The `-c` (alternatively `--cli`) s
 ```
 tacentview -c
 ```
-This is the simplest conversion command-line. The `-c` (alternatively `--cli`) simply means do not launch the GUI. The input images are all the files in the current directory (since no directory was specified). By default all image types are processed unless you specify the input image types with `-i` or `--in`. Similarly, output_types can be specified with `-o` or `--out`. If this is missing the default is to output TGA files.\
+This is the simplest conversion command-line. The `-c` (alternatively `--cli`) simply means do not launch the GUI. The input images are all the files in the current directory (since no directory was specified). By default all image types are processed unless you specify the input image types with `-i` or `--in`. Similarly, output_types can be specified with `-o` or `--out`. If this is missing the default is to output TGA files. This is _italic_. This is *bold*, and this is `code` inline.\
 \
 \
 **Example {% increment egnum %} - Convert Single JPG to TGA**
