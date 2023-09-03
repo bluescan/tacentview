@@ -38,7 +38,7 @@ namespace Command
 		const char8_t* Desc;
 	};
 
-	Example Examples[];
+	extern Example Examples[];
 	extern int NumExamples;
 }
 
@@ -133,6 +133,7 @@ void Command::PrintExamples()
 		tString desc;
 		tsPrintf(desc, "%s", Examples[e].Desc);
 
+		desc.Replace("```", "");
 		desc.Replace('`', '\'');
 		desc.Replace('^', '`');
 
