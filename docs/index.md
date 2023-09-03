@@ -118,18 +118,18 @@ Some image formats are often used to store texture data that is easily decompres
 | B4G4R4A4       | B5G5R5A1       | A8L8           | A8             |
 | L8             | R16F           | R16G16F        | R16G16B16A16F  |
 | R32F           | R32G32F        | R32G32B32A32F  |                |
-
+|                |                |                |                |
 | Block (BC)     |                |                |                |
 |----------------|----------------|----------------|----------------|
 | BC1DXT1        | BC1DXT1A       | BC2DXT2DXT3    | BC3DXT4DXT5    |
 | BC4ATI1        | BC5ATI2        | BC6S           | BC6U           |
 | BC7            |                |                |                |
-
+|                |                |                |                |
 | Block (ETC)    |                |                |                |
 |----------------|----------------|----------------|----------------|
 | ETC1           | ETC2RGB        | ETC2RGBA       | ETC2RGBA1      |
 | EACR11         | EACR11S        | EACRG11        | EACRG11S       |
-
+|                |                |                |                |
 | ASTC           |                |                |                |
 |----------------|----------------|----------------|----------------|
 | ASTC4X4        | ASTC5X4        | ASTC5X5        | ASTC6X5        |
