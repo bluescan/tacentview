@@ -7,19 +7,26 @@ This page is an overview of the features available in _Tacent View_ while using 
 
 ---
 ## Examples
-The easiest way to begin using _Tacent View_ from the commad-line is by example. The following examples assume a) _tacentview_ is in the path or in the current directory, and b) there are multiple images of various types in the current directory. The examples do not exhaustively demonstrate all options and parameters -- see the _usage_ section after the examples for all the options.\
+The easiest way to demonstrate using _Tacent View_ from the command-line is by example. The following assumes a) _tacentview_ or _tacentview.exe_ is in the path or in the current directory, and b) there are multiple images of various types in the current directory. Since Windows can handle not specifying the _exe_ extension, it has been omitted. These examples do not exhaustively demonstrate all options and parameters -- see the _usage_ section afterwards for all the options.\
 \
 \
 **Example {% increment egnum %} - Convert to TGA**
 ```
-tacentview.exe -c
+tacentview -c
 ```
 This is the simplest conversion command-line. The `-c` (alternatively `--cli`) simply means do not launch the GUI. The input images are all the files in the current directory (since no directory was specified). By default all image types are processed unless you specify the input image types with `-i` or `--in`. Similarly, output types can be specified with `-o` or `--out`. If this is missing the default is to output TGA files.\
 \
 \
+**Example {% increment egnum %} - Convert to TGA**
+```
+tacentview -c
+```
+This is the simplest conversion command-line. The `-c` (alternatively `--cli`) simply means do not launch the GUI. The input images are all the files in the current directory (since no directory was specified). By default all image types are processed unless you specify the input image types with `-i` or `--in`. Similarly, output_types can be specified with `-o` or `--out`. If this is missing the default is to output TGA files.\
+\
+\
 **Example {% increment egnum %} - Convert Single JPG to TGA**
 ```
-tacentview.exe -c TactileConceptDevelopment.jpeg
+tacentview -c TactileConceptDevelopment.jpeg
 ```
 This example shows why the `-c` option is needed -- without it GUI-mode is activated and the images on the command-line are opened in the full graphical user interface. Note that some input types have multiple valid extensions. e.g. A JPeg may have `jpg` or `jpeg` extensions and a Tiff may have `tif` or `tiff`.\
 \
@@ -28,7 +35,7 @@ This example shows why the `-c` option is needed -- without it GUI-mode is activ
 ```
 tacentview -c --in pkm --out png
 ```
-Here the types of the input and output files is specified explicitly. Since the `exe` extension is optional when using the command prompt, it has been removed from subsequent examples. Additionally, the executable in Linux will not have this extension.\
+Here the types of the input and output files are specified explicitly.\
 \
 \
 **Example {% increment egnum %} - Convert PKM and JPG Files to PNG and BMP**
