@@ -4015,6 +4015,8 @@ int main(int argc, char** argv)
 	if (!Viewer::Config::Current->FullscreenMode && !Viewer::WindowIconified)
 	{
 		glfwGetWindowPos(Viewer::Window, &Viewer::Config::Global.WindowX, &Viewer::Config::Global.WindowY);
+
+		// This is the client area size. Use glfwGetWindowFrameSize to include the title bar.
 		glfwGetWindowSize(Viewer::Window, &Viewer::Config::Global.WindowW, &Viewer::Config::Global.WindowH);
 	}
 

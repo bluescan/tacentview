@@ -294,10 +294,23 @@ void Config::GlobalSettings::Reset()
 
 	int screenW, screenH;
 	GetScreenSize(screenW, screenH);
-	WindowW						= 1280;
-	WindowH						= 720;						//	Sub 37 if want 720 inc title bar;
-	WindowX						= (screenW - WindowW) >> 1;
-	WindowY						= (screenH - WindowH) >> 1;
+	float aspect = float(screenW)/float(screenH);
+
+	// We're going to base the default size on the current screen size minus a buffer around the edges.
+	// The buffer size is a percent of the full-screen dimenasions.
+	int bufferW = screenW / 12;
+	int bufferH = screenH / 12;
+
+	WindowW						= screenW - bufferW*2;
+	WindowH						= screenH - bufferH*2;	//	Sub 37 if want inc title bar;
+	tiClampMin					(WindowW, 640);
+	tiClampMin					(WindowH, 360);
+
+	WindowX						= bufferW;
+	WindowY						= bufferH;
+	tiClamp						(WindowX, 0, screenW - WindowW);
+	tiClamp						(WindowY, 0, screenH - WindowH);
+
 	TransparentWorkArea			= false;
 	LastOpenPath				.Clear();
 }
