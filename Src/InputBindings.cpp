@@ -510,21 +510,21 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		switch (Config::Current->GetUISize())
 		{
 			default:
-			case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+			case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 				profileWidth	= 104.0f;
 				keyWidth		= 120.0f;
 				operationWidth	= 240.0f;
 				buttonWidth		= 72.0f;
 				removeAddSize	= 21.0f;
 				break;
-			case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 				profileWidth	= 117.0f;
 				keyWidth		= 137.0f;
 				operationWidth	= 261.0f;
 				buttonWidth		= 79.0f;
 				removeAddSize	= 22.5f;
 				break;
-			case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 				profileWidth	= 130.0f;
 				keyWidth		= 154.0f;
 				operationWidth	= 282.0f;
@@ -861,17 +861,17 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 	switch (Config::Current->GetUISize())
 	{
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			actionWidth = 106.0f;
 			operatWidth = 238.0f;
 			windowSize.Set(actionWidth+operatWidth, 438.0f);
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 			actionWidth = 114.0f;
 			operatWidth = 262.0f;
 			windowSize.Set(actionWidth+operatWidth, 442.0f);
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			actionWidth = 130.0f;
 			operatWidth = 286.0f;
 			windowSize.Set(actionWidth+operatWidth, 446.0f);

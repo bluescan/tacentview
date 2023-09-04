@@ -198,19 +198,19 @@ void Viewer::ShowImageMetaDataOverlay(bool* popen)
 	switch (Config::Current->GetUISize())
 	{
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			rowHeight			= 18.0f;
 			tagWidth			= 116.0f;
 			valWidth			= 200.0f;
 			maxRowsToDisplay	= 25;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 			rowHeight			= 20.0f;
 			tagWidth			= 132.0f;
 			valWidth			= 230.0f;
 			maxRowsToDisplay	= 23;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			rowHeight			= 22.0f;
 			tagWidth			= 148.0f;
 			valWidth			= 260.0f;

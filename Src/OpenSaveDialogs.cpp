@@ -105,13 +105,13 @@ void Viewer::DoSaveModal(bool savePressed)
 	switch (Viewer::Config::Current->GetUISize())
 	{
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			nextWinWidth = 300.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 			nextWinWidth = 325.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			nextWinWidth = 350.0f;
 			break;
 	}
@@ -158,13 +158,13 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 	switch (Viewer::Config::Current->GetUISize())
 	{
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			nextWinWidth = 300.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 			nextWinWidth = 325.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			nextWinWidth = 350.0f;
 			break;
 	}

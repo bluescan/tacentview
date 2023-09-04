@@ -137,12 +137,20 @@ struct ProfileSettings
 
 	enum class UISizeEnum
 	{
+		// Nano, Tiny, Small, Moderate, Medium, Large, Huge, Massive.
+		Nano,			Smallest = Nano,
 		Tiny,
-		Small,
+		Small,			Largest = Small,
+		NumSizes,
+
+		// These will be the additional ones.
+		Moderate,
 		Medium,
-		NumModes
+		Large,
+		Huge,
+		Massive
 	};
-	int UISize;
+	int UISize;											// In range [0, NumSizes).
 	UISizeEnum GetUISize() const						{ return UISizeEnum(UISize); }
 
 	int ResampleFilter;									// Matches tImage::tResampleFilter. Used for image resize when saving and multiframe saving.

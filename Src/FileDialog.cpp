@@ -1224,15 +1224,15 @@ FileDialog::DialogState FileDialog::DoPopup()
 	float nextWinHeight = 400.0f;
 	switch (Viewer::Config::Current->GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			nextWinWidth = 660.0f;
 			nextWinHeight = 400.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 			nextWinWidth = 720.0f;
 			nextWinHeight = 460.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			nextWinWidth = 780.0f;
 			nextWinHeight = 520.0f;
 			break;
@@ -1263,7 +1263,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 	float menuBarHeight, bottomBarRowA, bottomBarRowB, colWidthIcon, colWidthName, colWidthTime, colWidthType, colWidthSize;
 	switch (Viewer::Config::Current->GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 		default:
 			menuBarHeight	= 24.0f;
 			bottomBarRowA	= 20.0f;
@@ -1275,7 +1275,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 			colWidthSize	= 60.0;
 			break;
 
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 			menuBarHeight	= 26.0f;
 			bottomBarRowA	= 22.0f;
 			bottomBarRowB	= 30.0f;
@@ -1286,7 +1286,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 			colWidthSize	= 65.0;
 			break;
 
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			menuBarHeight	= 28.0f;
 			bottomBarRowA	= 24.0f;
 			bottomBarRowB	= 32.0f;

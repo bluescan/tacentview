@@ -623,17 +623,17 @@ tVector2 Viewer::GetDialogOrigin(DialogID dialogID)
 	switch (Config::Current->GetUISize())
 	{
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			topOffset	= 64.0f;
 			leftOffset	= 30.0f;
 			heightDelta = 22.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 			topOffset	= 66.0f;
 			leftOffset	= 32.0f;
 			heightDelta = 24.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			topOffset	= 68.0f;
 			leftOffset	= 34.0f;
 			heightDelta = 26.0f;
@@ -663,9 +663,9 @@ int Viewer::GetMenuBarHeight()
 
 	switch (Config::Current->GetUISize())
 	{
-		case Config::ProfileSettings::UISizeEnum::Tiny:			return 30;
-		case Config::ProfileSettings::UISizeEnum::Small:		return 32;
-		case Config::ProfileSettings::UISizeEnum::Medium:		return 34;
+		case Config::ProfileSettings::UISizeEnum::Nano:			return 30;
+		case Config::ProfileSettings::UISizeEnum::Tiny:		return 32;
+		case Config::ProfileSettings::UISizeEnum::Small:		return 34;
 	}
 	return 30;
 }
@@ -1736,13 +1736,13 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	switch (Config::Current->GetUISize())
 	{
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			mainArrowSize.Set(16.0f, 56.0f);
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 			mainArrowSize.Set(18.0f, 63.0f);
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			mainArrowSize.Set(20.0f, 70.0f);
 			break;
 	}
@@ -1828,17 +1828,17 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		switch (Config::Current->GetUISize())
 		{
 			default:
-			case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+			case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 				mainButtonImgDim	= 24.0f;
 				mainButtonDim		= 40.0f;
 				escButtonHeight		= 28.0f;
 				break;
-			case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 				mainButtonImgDim	= 26.0f;
 				mainButtonDim		= 42.0f;
 				escButtonHeight		= 30.0f;
 				break;
-			case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 				mainButtonImgDim	= 28.0f;
 				mainButtonDim		= 44.0f;
 				escButtonHeight		= 32.0f;
@@ -2325,9 +2325,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		tVector2 colourButtonSize;
 		switch (Config::Current->GetUISize())
 		{
-			case Config::ProfileSettings::UISizeEnum::Tiny:		colourButtonSize = ColourButtonSizeSmall;	break;
-			case Config::ProfileSettings::UISizeEnum::Small:	colourButtonSize = ColourButtonSizeMed;		break;
-			case Config::ProfileSettings::UISizeEnum::Medium:	colourButtonSize = ColourButtonSizeLarge;	break;
+			case Config::ProfileSettings::UISizeEnum::Nano:		colourButtonSize = ColourButtonSizeSmall;	break;
+			case Config::ProfileSettings::UISizeEnum::Tiny:	colourButtonSize = ColourButtonSizeMed;		break;
+			case Config::ProfileSettings::UISizeEnum::Small:	colourButtonSize = ColourButtonSizeLarge;	break;
 		}
 		tColourf floatCol(PixelColour);
 		tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
@@ -2342,9 +2342,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		tVector2 toolImageSize;
 		switch (Config::Current->GetUISize())
 		{
-			case Config::ProfileSettings::UISizeEnum::Tiny:		toolImageSize = ToolImageSizeSmall;		break;
-			case Config::ProfileSettings::UISizeEnum::Small:	toolImageSize = ToolImageSizeMed;		break;
-			case Config::ProfileSettings::UISizeEnum::Medium:	toolImageSize = ToolImageSizeLarge;		break;
+			case Config::ProfileSettings::UISizeEnum::Nano:		toolImageSize = ToolImageSizeSmall;		break;
+			case Config::ProfileSettings::UISizeEnum::Tiny:	toolImageSize = ToolImageSizeMed;		break;
+			case Config::ProfileSettings::UISizeEnum::Small:	toolImageSize = ToolImageSizeLarge;		break;
 		}
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
@@ -3116,7 +3116,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case Bindings::Operation::UISizeInc:
 			Config::Current->UISize++;
-			tMath::tiClampMax(Config::Current->UISize, int(Config::ProfileSettings::UISizeEnum::NumModes)-1);
+			tMath::tiClampMax(Config::Current->UISize, int(Config::ProfileSettings::UISizeEnum::Largest));
 			break;
 
 		case Bindings::Operation::UISizeDec:
@@ -3921,19 +3921,17 @@ int main(int argc, char** argv)
 
 	// Fonts must be added from smallest to largest and number of adds needs to match UIMode::NumModes.
 	// I'm leaving the original AddFont calls here because they work and I haven't profiled which gives faster
-	// bootup times. I imagine add font from memory is faster since 3 fewer files to open, but the exe load
-	// for the in-memory method will be a bit slower plus it has to decode. In any case, pretty sure it will
-	// still be faster.
+	// bootup times. I imagine add font from memory is faster since fewer files to open, but the exe load
+	// for the in-memory method might actually take longer (and it also has to decode). In any case, pretty
+	// sure it will still be faster.
 	#define USE_IN_MEMORY_FONT_LOAD
 	#ifdef USE_IN_MEMORY_FONT_LOAD
-	io.Fonts->AddFontFromMemoryCompressedBase85TTF(RobotoFont_compressed_data_base85, 14.0f);
-	io.Fonts->AddFontFromMemoryCompressedBase85TTF(RobotoFont_compressed_data_base85, 16.0f);
-	io.Fonts->AddFontFromMemoryCompressedBase85TTF(RobotoFont_compressed_data_base85, 18.0f);
+	for (int uisize = 0; uisize < int(Viewer::Config::ProfileSettings::UISizeEnum::NumSizes); uisize++)
+		io.Fonts->AddFontFromMemoryCompressedBase85TTF(RobotoFont_compressed_data_base85, 14.0f + float(uisize)*2.0f);
 	#else
 	tString fontFile = dataDir + "Roboto-Medium.ttf";
-	io.Fonts->AddFontFromFileTTF(fontFile.Chr(), 14.0f);
-	io.Fonts->AddFontFromFileTTF(fontFile.Chr(), 16.0f);
-	io.Fonts->AddFontFromFileTTF(fontFile.Chr(), 18.0f);
+	for (int uisize = 0; uisize < int(Viewer::Config::ProfileSettings::UISizeEnum::NumSizes); uisize++)
+		io.Fonts->AddFontFromFileTTF(fontFile.Chr(), 14.0f + float(uisize)*2.0f);
 	#endif
 
 	tiClamp(Viewer::Config::Current->UISize, 0, io.Fonts->Fonts.Size - 1);
