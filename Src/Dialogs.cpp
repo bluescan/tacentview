@@ -347,9 +347,9 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	switch (Config::Current->GetUISize())
 	{
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:	okOffset = 135.0f;	break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:	okOffset = 146.0f;	break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Large:	okOffset = 158.0f;	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:		okOffset = 135.0f;	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:	okOffset = 146.0f;	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:	okOffset = 158.0f;	break;
 	}
 
 	const char* channelItems[] = { "RGB", "Red", "Green", "Blue", "Alpha" };
@@ -650,9 +650,9 @@ void Viewer::ShowAboutPopup(bool* popen)
 	switch (Config::Current->GetUISize())
 	{
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:	windowSize.Set(240, 500);	break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:	windowSize.Set(280, 501);	break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Large:	windowSize.Set(320, 515);	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:		windowSize.Set(240, 500);	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:	windowSize.Set(280, 501);	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:	windowSize.Set(320, 515);	break;
 	}
 
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
@@ -1123,9 +1123,9 @@ void Viewer::NavLogBar::Draw()
 		float offset = 0.0f;
 		switch (Config::Current->GetUISize())
 		{
-			case Config::ProfileSettings::UISizeEnum::Small:	offset = 1.0f;	break;
-			case Config::ProfileSettings::UISizeEnum::Medium:	offset = 0.0f;	break;
-			case Config::ProfileSettings::UISizeEnum::Large:	offset = -1.0f;	break;
+			case Config::ProfileSettings::UISizeEnum::Tiny:		offset = 1.0f;	break;
+			case Config::ProfileSettings::UISizeEnum::Small:	offset = 0.0f;	break;
+			case Config::ProfileSettings::UISizeEnum::Medium:	offset = -1.0f;	break;
 		}
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
 		if (ImGui::BeginCombo("##combo", nullptr, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightLargest | ImGuiComboFlags_NoPreview))

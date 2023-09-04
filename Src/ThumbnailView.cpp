@@ -64,13 +64,13 @@ void Viewer::DoSortParameters(bool singleLine)
 	switch (Config::Current->GetUISize())
 	{
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 			sortComboWidth		= 110.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			sortComboWidth		= 125.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
 			sortComboWidth		= 140.0f;
 			break;
 	}
@@ -119,9 +119,9 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 	switch (Config::Current->GetUISize())
 	{
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:	initialSize.Set(586.0f, 480.0f);	break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:	initialSize.Set(602.0f, 488.0f);	break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Large:	initialSize.Set(610.0f, 494.0f);	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:		initialSize.Set(586.0f, 480.0f);	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:	initialSize.Set(602.0f, 488.0f);	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:	initialSize.Set(610.0f, 494.0f);	break;
 	}
 
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
@@ -139,17 +139,17 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 	switch (Config::Current->GetUISize())
 	{
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 			viewOptionsHeight	= 61.0f;
 			viewOptionsOffset	= 4.0f;
 			progressTextOffset	= 460.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			viewOptionsHeight	= 65.0f;
 			viewOptionsOffset	= 4.0f;
 			progressTextOffset	= 475.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
 			viewOptionsHeight	= 70.0f;
 			viewOptionsOffset	= 5.0f;
 			progressTextOffset	= 490.0f;

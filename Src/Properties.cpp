@@ -114,13 +114,13 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 	switch (Viewer::Config::Current->GetUISize())
 	{
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 			nextWinWidth = 238.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			nextWinWidth = 265.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
 			nextWinWidth = 292.0f;
 			break;
 	}
@@ -150,15 +150,15 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 	switch (Viewer::Config::Current->GetUISize())
 	{
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 			itemWidth = 110.0f;
 			buttonSize = 18.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			itemWidth = 130.0f;
 			buttonSize = 22.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
 			itemWidth = 150.0f;
 			buttonSize = 26.0f;
 			break;

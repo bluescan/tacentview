@@ -623,17 +623,17 @@ tVector2 Viewer::GetDialogOrigin(DialogID dialogID)
 	switch (Config::Current->GetUISize())
 	{
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 			topOffset	= 64.0f;
 			leftOffset	= 30.0f;
 			heightDelta = 22.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			topOffset	= 66.0f;
 			leftOffset	= 32.0f;
 			heightDelta = 24.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
 			topOffset	= 68.0f;
 			leftOffset	= 34.0f;
 			heightDelta = 26.0f;
@@ -663,9 +663,9 @@ int Viewer::GetMenuBarHeight()
 
 	switch (Config::Current->GetUISize())
 	{
-		case Config::ProfileSettings::UISizeEnum::Small:		return 30;
-		case Config::ProfileSettings::UISizeEnum::Medium:		return 32;
-		case Config::ProfileSettings::UISizeEnum::Large:		return 34;
+		case Config::ProfileSettings::UISizeEnum::Tiny:			return 30;
+		case Config::ProfileSettings::UISizeEnum::Small:		return 32;
+		case Config::ProfileSettings::UISizeEnum::Medium:		return 34;
 	}
 	return 30;
 }
@@ -1736,13 +1736,13 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	switch (Config::Current->GetUISize())
 	{
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 			mainArrowSize.Set(16.0f, 56.0f);
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			mainArrowSize.Set(18.0f, 63.0f);
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
 			mainArrowSize.Set(20.0f, 70.0f);
 			break;
 	}
@@ -1828,17 +1828,17 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		switch (Config::Current->GetUISize())
 		{
 			default:
-			case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 				mainButtonImgDim	= 24.0f;
 				mainButtonDim		= 40.0f;
 				escButtonHeight		= 28.0f;
 				break;
-			case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+			case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 				mainButtonImgDim	= 26.0f;
 				mainButtonDim		= 42.0f;
 				escButtonHeight		= 30.0f;
 				break;
-			case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
 				mainButtonImgDim	= 28.0f;
 				mainButtonDim		= 44.0f;
 				escButtonHeight		= 32.0f;
@@ -2325,9 +2325,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		tVector2 colourButtonSize;
 		switch (Config::Current->GetUISize())
 		{
-			case Config::ProfileSettings::UISizeEnum::Small:	colourButtonSize = ColourButtonSizeSmall;	break;
-			case Config::ProfileSettings::UISizeEnum::Medium:	colourButtonSize = ColourButtonSizeMed;		break;
-			case Config::ProfileSettings::UISizeEnum::Large:	colourButtonSize = ColourButtonSizeLarge;	break;
+			case Config::ProfileSettings::UISizeEnum::Tiny:		colourButtonSize = ColourButtonSizeSmall;	break;
+			case Config::ProfileSettings::UISizeEnum::Small:	colourButtonSize = ColourButtonSizeMed;		break;
+			case Config::ProfileSettings::UISizeEnum::Medium:	colourButtonSize = ColourButtonSizeLarge;	break;
 		}
 		tColourf floatCol(PixelColour);
 		tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
@@ -2342,9 +2342,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		tVector2 toolImageSize;
 		switch (Config::Current->GetUISize())
 		{
-			case Config::ProfileSettings::UISizeEnum::Small:	toolImageSize = ToolImageSizeSmall;		break;
-			case Config::ProfileSettings::UISizeEnum::Medium:	toolImageSize = ToolImageSizeMed;		break;
-			case Config::ProfileSettings::UISizeEnum::Large:	toolImageSize = ToolImageSizeLarge;		break;
+			case Config::ProfileSettings::UISizeEnum::Tiny:		toolImageSize = ToolImageSizeSmall;		break;
+			case Config::ProfileSettings::UISizeEnum::Small:	toolImageSize = ToolImageSizeMed;		break;
+			case Config::ProfileSettings::UISizeEnum::Medium:	toolImageSize = ToolImageSizeLarge;		break;
 		}
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);

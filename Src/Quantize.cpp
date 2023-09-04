@@ -132,13 +132,13 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 	switch (Config::Current->GetUISize())
 	{
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 			buttonWidth		= 78.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			buttonWidth		= 86.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
 			buttonWidth		= 94.0f;
 			break;
 	}

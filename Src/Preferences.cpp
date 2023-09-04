@@ -45,15 +45,15 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	switch (Config::Current->GetUISize())
 	{
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 			buttonOffset	= 141.0f;
 			comboWidth		= 110.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			buttonOffset	= 170.0f;
 			comboWidth		= 132.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+		case Viewer::Config::ProfileSettings::UISizeEnum::Medium:
 			buttonOffset	= 191.0f;
 			comboWidth		= 146.0f;
 			break;
@@ -147,7 +147,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				"Auto Hide: Hides after inactivity timeout."
 			);
 
-			const char* uiSizeItems[] = { "Small", "Medium", "Large" };
+			const char* uiSizeItems[] = { "Tiny", "Small", "Medium" };
 			ImGui::PushItemWidth(comboWidth);
 			ImGui::Combo("UI Size", &Config::Current->UISize, uiSizeItems, tNumElements(uiSizeItems));
 			ImGui::PopItemWidth();

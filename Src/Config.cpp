@@ -389,7 +389,7 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 			case Profile::Basic:	ReticleMode = int(ReticleModeEnum::AutoHide);		break;
 			case Profile::Kiosk:	ReticleMode = int(ReticleModeEnum::AlwaysHidden);	break;
 		}
-		UISize						= (profile == Profile::Kiosk) ? int(UISizeEnum::Large) : int(UISizeEnum::Medium);
+		UISize						= (profile == Profile::Kiosk) ? int(UISizeEnum::Medium) : int(UISizeEnum::Small);
 	}
 
 	if (categories & Category_Slideshow)

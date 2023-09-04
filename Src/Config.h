@@ -137,9 +137,9 @@ struct ProfileSettings
 
 	enum class UISizeEnum
 	{
+		Tiny,
 		Small,
 		Medium,
-		Large,
 		NumModes
 	};
 	int UISize;
