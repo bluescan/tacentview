@@ -272,12 +272,6 @@ namespace Viewer
 	const tVector4 ColourClear						= tVector4(0.10f, 0.10f, 0.12f, 1.00f);
 
 	uint64 FrameNumber								= 0;
-	tVector2 ToolImageSizeSmall						(24.0f, 24.0f);
-	tVector2 ToolImageSizeMed						(26.0f, 26.0f);
-	tVector2 ToolImageSizeLarge						(28.0f, 28.0f);
-	tVector2 ColourButtonSizeSmall					(26.0f, 26.0f);
-	tVector2 ColourButtonSizeMed					(28.0f, 28.0f);
-	tVector2 ColourButtonSizeLarge					(30.0f, 30.0f);
 
 	void DrawBackground(float l, float r, float b, float t, float drawW, float drawH);
 	void DrawNavBar(float x, float y, float w, float h);
@@ -1306,6 +1300,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (dopoll)
 		glfwPollEvents();
 
+	Config::ProfileSettings& config = *Config::Current;
 	if (Config::Global.TransparentWorkArea)
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	else
@@ -1392,7 +1387,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		float w = iw * GetZoomPercent()/100.0f;
 		float h = ih * GetZoomPercent()/100.0f;
 
-		if (!Config::Current->Tile)
+		if (!config.Tile)
 		{
 			if (Request_PanSnap != Anchor::Invalid)
 			{
@@ -1456,7 +1451,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		// Draw background.
 		glDisable(GL_TEXTURE_2D);
-		if ((Config::Current->BackgroundExtend || Config::Current->Tile) && !CropMode)
+		if ((config.BackgroundExtend || config.Tile) && !CropMode)
 			DrawBackground(0.0f, draww, 0.0f, drawh, draww, drawh);
 
 		// There is no point drawing the background at all if the image is completely opaque.
@@ -1510,7 +1505,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			swizzleModified = true;
 		}
 	
-		if (!Config::Current->Tile)
+		if (!config.Tile)
 		{
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
@@ -1594,7 +1589,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		// Must not be cropping to have a chance at making visible.
 		if (!CropMode)
 		{
-			switch (Config::Current->GetReticleMode())
+			switch (config.GetReticleMode())
 			{
 				case Config::ProfileSettings::ReticleModeEnum::AlwaysVisible:
 					reticleVisible = true;
@@ -1696,15 +1691,15 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	// Did the font change? This may happen if a) the font was changed in the prefs, b) reset was pressed, or c) inc/dec UISize
 	// operation was executed. Note that fontCurrent may be null if ImGui hasn't updated it from last time so instead we track
 	// what was submitted with CurrentFontIndex.
-	if (CurrentFontIndex != Config::Current->UISize)
+	if (CurrentFontIndex != config.UISize)
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		tAssert(Config::Current->UISize < io.Fonts->Fonts.Size);
-		ImFont* font = io.Fonts->Fonts[Config::Current->UISize];
+		tAssert(config.UISize < io.Fonts->Fonts.Size);
+		ImFont* font = io.Fonts->Fonts[config.UISize];
 		ImGui::PushID((void*)font);
 		io.FontDefault = font;
 		ImGui::PopID();
-		CurrentFontIndex = Config::Current->UISize;
+		CurrentFontIndex = config.UISize;
 	}
 
 	// Show the big demo window. You can browse its code to learn more about Dear ImGui.
@@ -1717,13 +1712,13 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGuiWindowFlags_NoTitleBar		|	ImGuiWindowFlags_NoScrollbar	|	ImGuiWindowFlags_NoMove			| ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoCollapse		|	ImGuiWindowFlags_NoNav			|	ImGuiWindowFlags_NoBackground	| ImGuiWindowFlags_NoBringToFrontOnFocus;
 
-	if (SlideshowPlaying && (Config::Current->SlideshowPeriod >= 1.0f) && Config::Current->SlideshowProgressArc)
+	if (SlideshowPlaying && (config.SlideshowPeriod >= 1.0f) && config.SlideshowProgressArc)
 	{
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+7.0f, float(topUIHeight) + float(workAreaH) - 93.0f));
 		ImGui::Begin("SlideProgress", nullptr, flagsImgButton | ImGuiWindowFlags_NoInputs);
 		ImGui::SetCursorPos(tVector2(15, 14));
 
-		float percent = float(SlideshowCountdown / Config::Current->SlideshowPeriod);
+		float percent = float(SlideshowCountdown / config.SlideshowPeriod);
 		ProgressArc(8.0f, percent, ImVec4(1.0f, 1.0f, 1.0f, 1.0f), Viewer::ColourClear);
 		ImGui::End();
 	}
@@ -1733,7 +1728,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	tVector2 mousePos(mouseX, mouseY);
 
 	tVector2 mainArrowSize;
-	switch (Config::Current->GetUISize())
+	switch (config.GetUISize())
 	{
 		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
@@ -1754,7 +1749,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	(
 		!CropMode &&
 		((DisappearCountdown > 0.0) || hitAreaPrevArrow.IsPointInside(mousePos)) &&
-		((CurrImage != Images.First()) || (SlideshowPlaying && Config::Current->SlideshowLooping))
+		((CurrImage != Images.First()) || (SlideshowPlaying && config.SlideshowLooping))
 	)
 	{
 		// Previous arrow.
@@ -1776,7 +1771,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	(
 		!CropMode &&
 		((DisappearCountdown > 0.0) || hitAreaNextArrow.IsPointInside(mousePos)) &&
-		((CurrImage != Images.Last()) || (SlideshowPlaying && Config::Current->SlideshowLooping))
+		((CurrImage != Images.Last()) || (SlideshowPlaying && config.SlideshowLooping))
 	)
 	{
 		// Next arrow.
@@ -1794,7 +1789,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if
 	(
 		!CropMode && Config::Current->ShowPropsWindow &&
-		Config::Current->ShowFrameScrubber && CurrImage && (CurrImage->GetNumFrames() > 1) && !CurrImage->IsAltPictureEnabled()
+		config.ShowFrameScrubber && CurrImage && (CurrImage->GetNumFrames() > 1) && !CurrImage->IsAltPictureEnabled()
 	)
 	{
 		ImGui::SetNextWindowPos(tVector2(0.0f, float(topUIHeight) + float(workAreaH) - 34.0f));
@@ -1825,7 +1820,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	)
 	{
 		float mainButtonImgDim, mainButtonDim, escButtonHeight;
-		switch (Config::Current->GetUISize())
+		switch (config.GetUISize())
 		{
 			default:
 			case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
@@ -1862,9 +1857,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-mainButtonDim*3.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(mainButtonSize, ImGuiCond_Always);
 		ImGui::Begin("Repeat", nullptr, flagsImgButton);
-		uint64 playModeImageID = Config::Current->SlideshowLooping ? Image_PlayOnce.Bind() : Image_PlayLoop.Bind();
+		uint64 playModeImageID = config.SlideshowLooping ? Image_PlayOnce.Bind() : Image_PlayLoop.Bind();
 		if (ImGui::ImageButton(ImTextureID(playModeImageID), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
-			Config::Current->SlideshowLooping = !Config::Current->SlideshowLooping;
+			config.SlideshowLooping = !config.SlideshowLooping;
 		ImGui::End();
 
 		// Skip to beginning button.
@@ -1903,10 +1898,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton(ImTextureID(psImageID), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0,0,0,0), tVector4(1,1,1,1)))
 		{
 			SlideshowPlaying = !SlideshowPlaying;
-			SlideshowCountdown = Config::Current->SlideshowPeriod;
+			SlideshowCountdown = config.SlideshowPeriod;
 
 			// If play pressed and we're on the last image and not looping, start at the beginning again.
-			if (SlideshowPlaying && !Config::Current->SlideshowLooping && (CurrImage == Images.Last()))
+			if (SlideshowPlaying && !config.SlideshowLooping && (CurrImage == Images.Last()))
 				OnSkipBegin();
 		}
 		ImGui::PopID();
@@ -1943,9 +1938,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+mainButtonDim*3.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(mainButtonSize, ImGuiCond_Always);
 		ImGui::Begin("Fullscreen", nullptr, flagsImgButton);
-		uint64 fsImageID = Config::Current->FullscreenMode ? Image_Windowed.Bind() : Image_Fullscreen.Bind();
+		uint64 fsImageID = config.FullscreenMode ? Image_Windowed.Bind() : Image_Fullscreen.Bind();
 		if (ImGui::ImageButton(ImTextureID(fsImageID), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0,0,0,0), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
-			ChangeScreenMode(!Config::Current->FullscreenMode);
+			ChangeScreenMode(!config.FullscreenMode);
 		ImGui::End();
 
 		// Exit basic or kiosk profile.
@@ -1984,7 +1979,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	LosslessTransformMode
 	losslessTransformPressed		= Request_LosslessTrnsModal;		Request_LosslessTrnsModal			= LosslessTransformMode::None;
 
-	if (Config::Current->ShowMenuBar)
+	if (config.ShowMenuBar)
 	{
 		ImGui::SetNextWindowPos(tVector2(0.0f, 0.0f));
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4.0f, 8.0f));
@@ -1998,53 +1993,53 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			// Show file menu items...
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4.0f, 3.0f));
 
-			tString openFileKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::OpenFile);
+			tString openFileKey = config.InputBindings.FindModKeyText(Bindings::Operation::OpenFile);
 			if (ImGui::MenuItem("Open File...", openFileKey.Chz()))
 				openFilePressed = true;
 
-			tString openDirKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::OpenDir);
+			tString openDirKey = config.InputBindings.FindModKeyText(Bindings::Operation::OpenDir);
 			if (ImGui::MenuItem("Open Dir...", openDirKey.Chz()))
 				openDirPressed = true;
 
 			ImGui::Separator();
 
-			tString saveKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Save);
+			tString saveKey = config.InputBindings.FindModKeyText(Bindings::Operation::Save);
 			bool saveEnabled = CurrImage ? true : false;
 			if (ImGui::MenuItem("Save...", saveKey.Chz(), false, saveEnabled))
 				savePressed = true;
 
-			tString saveAsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SaveAs);
+			tString saveAsKey = config.InputBindings.FindModKeyText(Bindings::Operation::SaveAs);
 			bool saveAsEnabled = CurrImage ? true : false;
 			if (ImGui::MenuItem("Save As...", saveAsKey.Chz(), false, saveAsEnabled))
 				saveAsPressed = true;
 
-			tString saveAllKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SaveAll);
+			tString saveAllKey = config.InputBindings.FindModKeyText(Bindings::Operation::SaveAll);
 			bool saveAllEnabled = CurrImage ? true : false;
 			if (ImGui::MenuItem("Save All...", saveAllKey.Chz(), false, saveAllEnabled))
 				saveAllPressed = true;
 
-			tString saveCSKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SaveContactSheet);
+			tString saveCSKey = config.InputBindings.FindModKeyText(Bindings::Operation::SaveContactSheet);
 			bool saveCSEnabled = (Images.GetNumItems() > 1);
 			if (ImGui::MenuItem("Save Contact Sheet...", saveCSKey.Chz(), false, saveCSEnabled))
 				saveContactSheetPressed = true;
 
-			tString saveMultiKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SaveMultiFrameImage);
+			tString saveMultiKey = config.InputBindings.FindModKeyText(Bindings::Operation::SaveMultiFrameImage);
 			bool saveMultiEnabled = (Images.GetNumItems() > 1);
 			if (ImGui::MenuItem("Save Multi-Frame...", saveMultiKey.Chz(), false, saveMultiEnabled))
 				saveMultiFramePressed = true;
 
-			tString saveFramesKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SaveExtractFrames);
+			tString saveFramesKey = config.InputBindings.FindModKeyText(Bindings::Operation::SaveExtractFrames);
 			bool saveFramesEnabled = CurrImage && (CurrImage->GetNumFrames() > 1);
 			if (ImGui::MenuItem("Save Extract Frames...", saveFramesKey.Chz(), false, saveFramesEnabled))
 				saveExtractFramesPressed = true;
 
 			ImGui::Separator();
 
-			tString copyKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Copy);
+			tString copyKey = config.InputBindings.FindModKeyText(Bindings::Operation::Copy);
 			if (ImGui::MenuItem("Copy Image", copyKey.Chz(), false, imgAvail))
 				Viewer::CopyImage();
 
-			tString pasteKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Paste);
+			tString pasteKey = config.InputBindings.FindModKeyText(Bindings::Operation::Paste);
 			if (ImGui::MenuItem("Paste Image", pasteKey.Chz()))
 				Viewer::PasteImage();
 
@@ -2053,31 +2048,31 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			// For all three profile menu items, changing to the currently activated is checked by ChangeProfile
 			// and does nothing. It is safe.
 			bool mainProfile = Config::GetProfile() == Profile::Main;
-			tString mainProfKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ProfileMain);
+			tString mainProfKey = config.InputBindings.FindModKeyText(Bindings::Operation::ProfileMain);
 			if (ImGui::MenuItem("Main Profile", mainProfKey.Chz(), &mainProfile))
 				ChangeProfile(Profile::Main);
 
 			bool basicProfile = Config::GetProfile() == Profile::Basic;
-			tString basicProfKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ProfileBasic);
+			tString basicProfKey = config.InputBindings.FindModKeyText(Bindings::Operation::ProfileBasic);
 			if (ImGui::MenuItem("Basic Profile", basicProfKey.Chz(), &basicProfile))
 				ChangeProfile(Profile::Basic);
 
 			bool kioskProfile = Config::GetProfile() == Profile::Kiosk;
-			tString kioskProfKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ProfileKiosk);
+			tString kioskProfKey = config.InputBindings.FindModKeyText(Bindings::Operation::ProfileKiosk);
 			if (ImGui::MenuItem("Kiosk Profile", kioskProfKey.Chz(), &kioskProfile))
 				ChangeProfile(Profile::Kiosk);
 
 			ImGui::Separator();
 
-			tString bindingsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::KeyBindings);
-			if (ImGui::MenuItem("Key Bindings...", bindingsKey.Chz(), &Config::Current->ShowBindingsWindow))
-				if (Config::Current->ShowBindingsWindow)
+			tString bindingsKey = config.InputBindings.FindModKeyText(Bindings::Operation::KeyBindings);
+			if (ImGui::MenuItem("Key Bindings...", bindingsKey.Chz(), &config.ShowBindingsWindow))
+				if (config.ShowBindingsWindow)
 					BindingsWindowJustOpened = true;
 
-			tString prefsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Preferences);
-			ImGui::MenuItem("Preferences...", prefsKey.Chz(), &Config::Current->ShowPreferences);
+			tString prefsKey = config.InputBindings.FindModKeyText(Bindings::Operation::Preferences);
+			ImGui::MenuItem("Preferences...", prefsKey.Chz(), &config.ShowPreferences);
 
-			tString quitKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Quit);
+			tString quitKey = config.InputBindings.FindModKeyText(Bindings::Operation::Quit);
 			if (ImGui::MenuItem("Quit", quitKey.Chz()))
 				glfwSetWindowShouldClose(Window, 1);
 
@@ -2096,20 +2091,20 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			bool undoEnabled = CurrImage && CurrImage->IsUndoAvailable();
 			tString undoDesc = undoEnabled ? CurrImage->GetUndoDesc() : tString();
 			tString undoStr; tsPrintf(undoStr, "Undo %s", undoDesc.Chr());
-			tString undoKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Undo);
+			tString undoKey = config.InputBindings.FindModKeyText(Bindings::Operation::Undo);
 			if (ImGui::MenuItem(undoStr.Chr(), undoKey.Chz(), false, undoEnabled))
 				Undo();
 
 			bool redoEnabled = CurrImage && CurrImage->IsRedoAvailable();
 			tString redoDesc = redoEnabled ? CurrImage->GetRedoDesc() : tString();
 			tString redoStr; tsPrintf(redoStr, "Redo %s", redoDesc.Chr());
-			tString redoKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Redo);
+			tString redoKey = config.InputBindings.FindModKeyText(Bindings::Operation::Redo);
 			if (ImGui::MenuItem(redoStr.Chr(), redoKey.Chz(), false, redoEnabled))
 				Redo();
 
 			ImGui::Separator();
 
-			tString flipVKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::FlipVertically);
+			tString flipVKey = config.InputBindings.FindModKeyText(Bindings::Operation::FlipVertically);
 			if (ImGui::MenuItem("Flip Vertically", flipVKey.Chz(), false, imgAvail ))
 			{
 				if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
@@ -2125,7 +2120,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 				}
 			}
 
-			tString flipHKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::FlipHorizontally);
+			tString flipHKey = config.InputBindings.FindModKeyText(Bindings::Operation::FlipHorizontally);
 			if (ImGui::MenuItem("Flip Horizontally", flipHKey.Chz(), false, imgAvail))
 			{
 				if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
@@ -2141,7 +2136,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 				}
 			}
 
-			tString rotACWKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Rotate90Anticlockwise);
+			tString rotACWKey = config.InputBindings.FindModKeyText(Bindings::Operation::Rotate90Anticlockwise);
 			if (ImGui::MenuItem("Rotate Anti-Clockwise", rotACWKey.Chz(), false, imgAvail))
 			{
 				if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
@@ -2157,7 +2152,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 				}
 			}
 
-			tString rotCWKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Rotate90Clockwise);
+			tString rotCWKey = config.InputBindings.FindModKeyText(Bindings::Operation::Rotate90Clockwise);
 			if (ImGui::MenuItem("Rotate Clockwise", rotCWKey.Chz(), false, imgAvail))
 			{
 				if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
@@ -2173,45 +2168,45 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 				}
 			}
 
-			tString rotateImgKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::RotateImage);
+			tString rotateImgKey = config.InputBindings.FindModKeyText(Bindings::Operation::RotateImage);
 			if (ImGui::MenuItem("Rotate Image...", rotateImgKey.Chz(), false, imgAvail))
 				rotateImagePressed = true;
 
 			ImGui::Separator();
 
-			tString cropKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Crop);
+			tString cropKey = config.InputBindings.FindModKeyText(Bindings::Operation::Crop);
 			if (ImGui::MenuItem("Crop...", cropKey.Chz(), &CropMode, imgAvail))
 			{
 				if (CropMode)
-					Config::Current->Tile = false;
+					config.Tile = false;
 			}
 
-			tString resizeImgKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ResizeImage);
+			tString resizeImgKey = config.InputBindings.FindModKeyText(Bindings::Operation::ResizeImage);
 			if (ImGui::MenuItem("Resize Image...", resizeImgKey.Chz(), false, imgAvail))
 				resizeImagePressed = true;
 
-			tString resizeCanvasKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ResizeCanvas);
+			tString resizeCanvasKey = config.InputBindings.FindModKeyText(Bindings::Operation::ResizeCanvas);
 			if (ImGui::MenuItem("Resize Canvas...", resizeCanvasKey.Chz(), false, imgAvail))
 				resizeCanvasPressed = true;
 
 			ImGui::Separator();
 
-			tString editPixelKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::PixelEdit);
-			ImGui::MenuItem("Edit Pixel", editPixelKey.Chz(), &Config::Current->ShowPixelEditor, imgAvail);
+			tString editPixelKey = config.InputBindings.FindModKeyText(Bindings::Operation::PixelEdit);
+			ImGui::MenuItem("Edit Pixel", editPixelKey.Chz(), &config.ShowPixelEditor, imgAvail);
 
-			tString chanFiltKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ChannelFilter);
-			ImGui::MenuItem("Channel Filter...", chanFiltKey.Chz(), &Config::Current->ShowChannelFilter);
+			tString chanFiltKey = config.InputBindings.FindModKeyText(Bindings::Operation::ChannelFilter);
+			ImGui::MenuItem("Channel Filter...", chanFiltKey.Chz(), &config.ShowChannelFilter);
 
-			tString levelsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Levels);
+			tString levelsKey = config.InputBindings.FindModKeyText(Bindings::Operation::Levels);
 			if (ImGui::MenuItem("Levels...", levelsKey.Chz(), false, imgAvail))
 				levelsPressed = true;
 
-			tString quantizeKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Quantize);
+			tString quantizeKey = config.InputBindings.FindModKeyText(Bindings::Operation::Quantize);
 			if (ImGui::MenuItem("Quantize...", quantizeKey.Chz(), false, imgAvail))
 				quantizePressed = true;
 
-			tString propsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::PropertyEdit);
-			ImGui::MenuItem("Image Properties...", propsKey.Chz(), &Config::Current->ShowPropsWindow);
+			tString propsKey = config.InputBindings.FindModKeyText(Bindings::Operation::PropertyEdit);
+			ImGui::MenuItem("Image Properties...", propsKey.Chz(), &config.ShowPropsWindow);
 
 			ImGui::PopStyleVar();
 			ImGui::EndMenu();
@@ -2224,26 +2219,26 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4.0f, 3.0f));
 
-			tString menuBarKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::MenuBar);
-			ImGui::MenuItem("Menu Bar", menuBarKey.Chz(), &Config::Current->ShowMenuBar, !CropMode);
+			tString menuBarKey = config.InputBindings.FindModKeyText(Bindings::Operation::MenuBar);
+			ImGui::MenuItem("Menu Bar", menuBarKey.Chz(), &config.ShowMenuBar, !CropMode);
 
-			tString navBarKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::NavBar);
-			ImGui::MenuItem("Nav Bar", navBarKey.Chz(), &Config::Current->ShowNavBar, !CropMode);
+			tString navBarKey = config.InputBindings.FindModKeyText(Bindings::Operation::NavBar);
+			ImGui::MenuItem("Nav Bar", navBarKey.Chz(), &config.ShowNavBar, !CropMode);
 
-			tString slideKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SlideshowTimer);
-			ImGui::MenuItem("Slideshow Progress", slideKey.Chz(), &Config::Current->SlideshowProgressArc, !CropMode);
+			tString slideKey = config.InputBindings.FindModKeyText(Bindings::Operation::SlideshowTimer);
+			ImGui::MenuItem("Slideshow Progress", slideKey.Chz(), &config.SlideshowProgressArc, !CropMode);
 
-			tString reshuffleKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::SlideshowReshuffle);
-			ImGui::MenuItem("Slideshow Reshuffle", reshuffleKey.Chz(), &Config::Current->SlideshowAutoReshuffle, !CropMode);
+			tString reshuffleKey = config.InputBindings.FindModKeyText(Bindings::Operation::SlideshowReshuffle);
+			ImGui::MenuItem("Slideshow Reshuffle", reshuffleKey.Chz(), &config.SlideshowAutoReshuffle, !CropMode);
 
-			tString detailsKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Details);
-			ImGui::MenuItem("Image Details", detailsKey.Chz(), &Config::Current->ShowImageDetails);
+			tString detailsKey = config.InputBindings.FindModKeyText(Bindings::Operation::Details);
+			ImGui::MenuItem("Image Details", detailsKey.Chz(), &config.ShowImageDetails);
 
-			tString metaDataKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::MetaData);
-			ImGui::MenuItem("Image Meta Data", metaDataKey.Chz(), &Config::Current->ShowImageMetaData);
+			tString metaDataKey = config.InputBindings.FindModKeyText(Bindings::Operation::MetaData);
+			ImGui::MenuItem("Image Meta Data", metaDataKey.Chz(), &config.ShowImageMetaData);
 
-			tString thumbKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::Thumbnails);
-			ImGui::MenuItem("Thumbnail View", thumbKey.Chz(), &Config::Current->ShowThumbnailView);
+			tString thumbKey = config.InputBindings.FindModKeyText(Bindings::Operation::Thumbnails);
+			ImGui::MenuItem("Thumbnail View", thumbKey.Chz(), &config.ShowThumbnailView);
 
 			ImGui::Separator();
 
@@ -2255,7 +2250,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 
 			bool fitMode = (zoomMode == Config::ProfileSettings::ZoomModeEnum::Fit);
-			tString zoomFitKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ZoomFit);
+			tString zoomFitKey = config.InputBindings.FindModKeyText(Bindings::Operation::ZoomFit);
 			if (ImGui::MenuItem("Zoom Fit", zoomFitKey.Chz(), &fitMode))
 			{
 				ResetPan();
@@ -2263,7 +2258,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 
 			bool downscale = (zoomMode == Config::ProfileSettings::ZoomModeEnum::DownscaleOnly);
-			tString zoomDSKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ZoomDownscaleOnly);
+			tString zoomDSKey = config.InputBindings.FindModKeyText(Bindings::Operation::ZoomDownscaleOnly);
 			if (ImGui::MenuItem("Zoom Downscale", zoomDSKey.Chz(), &downscale))
 			{
 				ResetPan();
@@ -2271,7 +2266,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			}
 
 			bool oneToOne = (zoomMode == Config::ProfileSettings::ZoomModeEnum::OneToOne);
-			tString zoomOneKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ZoomOneToOne);
+			tString zoomOneKey = config.InputBindings.FindModKeyText(Bindings::Operation::ZoomOneToOne);
 			if (ImGui::MenuItem("Zoom 1:1", zoomOneKey.Chz(), &oneToOne))
 			{
 				SetZoomPercent(100.0f);
@@ -2292,10 +2287,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 				ApplyZoomDelta(zoomVals[zoomIdx]-zoomPercent);
 			ImGui::PopItemWidth();
 
-			tString zoomPerImageKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ZoomPerImage);
-			ImGui::MenuItem("Zoom Per Image", zoomPerImageKey.Chz(), &Config::Current->ZoomPerImage);
+			tString zoomPerImageKey = config.InputBindings.FindModKeyText(Bindings::Operation::ZoomPerImage);
+			ImGui::MenuItem("Zoom Per Image", zoomPerImageKey.Chz(), &config.ZoomPerImage);
 
-			tString panKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::ResetPan);
+			tString panKey = config.InputBindings.FindModKeyText(Bindings::Operation::ResetPan);
 			if (ImGui::MenuItem("Reset Pan", panKey.Chz()))
 				ResetPan();
 
@@ -2310,10 +2305,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4.0f, 3.0f));
 
-			tString cheatKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::CheatSheet);
-			ImGui::MenuItem("Cheat Sheet", cheatKey.Chz(), &Config::Current->ShowCheatSheet);
+			tString cheatKey = config.InputBindings.FindModKeyText(Bindings::Operation::CheatSheet);
+			ImGui::MenuItem("Cheat Sheet", cheatKey.Chz(), &config.ShowCheatSheet);
 
-			ImGui::MenuItem("About", nullptr, &Config::Current->ShowAbout);
+			ImGui::MenuItem("About", nullptr, &config.ShowAbout);
 			ImGui::PopStyleVar();
 			ImGui::EndMenu();
 		}
@@ -2322,13 +2317,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		// Toolbar.
 		//
 		bool imgAvail = (CurrImage && CurrImage->IsLoaded()) ? !CurrImage->IsAltPictureEnabled() : false;
-		tVector2 colourButtonSize;
-		switch (Config::Current->GetUISize())
-		{
-			case Config::ProfileSettings::UISizeEnum::Nano:		colourButtonSize = ColourButtonSizeSmall;	break;
-			case Config::ProfileSettings::UISizeEnum::Tiny:	colourButtonSize = ColourButtonSizeMed;		break;
-			case Config::ProfileSettings::UISizeEnum::Small:	colourButtonSize = ColourButtonSizeLarge;	break;
-		}
+		tVector2 colourButtonSize = tMath::tLinearLookup
+		(
+			config.UISizeFlt(), config.UISizeSmallestFlt(), config.UISizeKeyFlt(),
+			tVector2(26.0f, 26.0f), tVector2(30.0f, 30.0f)
+		);
 		tColourf floatCol(PixelColour);
 		tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6.0f);
@@ -2339,20 +2332,17 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::BeginPopup("CopyColourAs"))
 			ColourCopyAs();
 
-		tVector2 toolImageSize;
-		switch (Config::Current->GetUISize())
-		{
-			case Config::ProfileSettings::UISizeEnum::Nano:		toolImageSize = ToolImageSizeSmall;		break;
-			case Config::ProfileSettings::UISizeEnum::Tiny:	toolImageSize = ToolImageSizeMed;		break;
-			case Config::ProfileSettings::UISizeEnum::Small:	toolImageSize = ToolImageSizeLarge;		break;
-		}
-
+		tVector2 toolImageSize = tMath::tLinearLookup
+		(
+			config.UISizeFlt(), config.UISizeSmallestFlt(), config.UISizeKeyFlt(),
+			tVector2(24.0f, 24.0f), tVector2(28.0f, 28.0f)
+		);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
 			ImTextureID(Image_ChannelFilter.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
-			Config::Current->ShowChannelFilter ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	Config::Current->ShowChannelFilter = !Config::Current->ShowChannelFilter;
+			config.ShowChannelFilter ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	config.ShowChannelFilter = !config.ShowChannelFilter;
 		ShowToolTip("Colour Channel Filter");
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
@@ -2370,8 +2360,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton
 		(
 			ImTextureID(Image_ContentView.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
-			Config::Current->ShowThumbnailView ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	Config::Current->ShowThumbnailView = !Config::Current->ShowThumbnailView;
+			config.ShowThumbnailView ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	config.ShowThumbnailView = !config.ShowThumbnailView;
 		ShowToolTip("Content Thumbnail View");
 
 		bool tileAvail = (CurrImage && CurrImage->IsLoaded()) ? !CropMode : false;
@@ -2379,11 +2369,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton
 		(
 			ImTextureID(Image_Tile.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
-			Config::Current->Tile ? ColourPressedBG : ColourBG, tileAvail ? ColourEnabledTint : ColourDisabledTint) && tileAvail
+			config.Tile ? ColourPressedBG : ColourBG, tileAvail ? ColourEnabledTint : ColourDisabledTint) && tileAvail
 		)
 		{
-			Config::Current->Tile = !Config::Current->Tile;
-			if (!Config::Current->Tile)
+			config.Tile = !config.Tile;
+			if (!config.Tile)
 				ResetPan();
 		}
 		ShowToolTip("Show Images Tiled");
@@ -2489,7 +2479,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 		ShowToolTip("Rotate Theta");
 
-		bool cropAvail = CurrImage && imgAvail && !Config::Current->Tile;
+		bool cropAvail = CurrImage && imgAvail && !config.Tile;
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
@@ -2499,7 +2489,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			CropMode = !CropMode;
 			if (CropMode)
-				Config::Current->Tile = false;
+				config.Tile = false;
 		}
 		ShowToolTip("Crop");
 
@@ -2509,24 +2499,24 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton
 		(
 			ImTextureID(Image_PropEdit.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
-			Config::Current->ShowPropsWindow ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	Config::Current->ShowPropsWindow = !Config::Current->ShowPropsWindow;
+			config.ShowPropsWindow ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	config.ShowPropsWindow = !config.ShowPropsWindow;
 		ShowToolTip("Image Properties");
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
 			ImTextureID(Image_InfoOverlay.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
-			Config::Current->ShowImageDetails ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	Config::Current->ShowImageDetails = !Config::Current->ShowImageDetails;
+			config.ShowImageDetails ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	config.ShowImageDetails = !config.ShowImageDetails;
 		ShowToolTip("Image Details Overlay");
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
 			ImTextureID(Image_MetaData.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
-			Config::Current->ShowImageMetaData ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	Config::Current->ShowImageMetaData = !Config::Current->ShowImageMetaData;
+			config.ShowImageMetaData ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	config.ShowImageMetaData = !config.ShowImageMetaData;
 		ShowToolTip("Image Meta-Data Overlay");
 
 		bool refreshAvail = CurrImage ? true : false;
@@ -2560,16 +2550,16 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if (ImGui::ImageButton
 		(
 			ImTextureID(Image_Help.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
-			Config::Current->ShowCheatSheet ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	Config::Current->ShowCheatSheet = !Config::Current->ShowCheatSheet;
+			config.ShowCheatSheet ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	config.ShowCheatSheet = !config.ShowCheatSheet;
 		ShowToolTip("Help");
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 		if (ImGui::ImageButton
 		(
 			ImTextureID(Image_Prefs.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
-			Config::Current->ShowPreferences ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	Config::Current->ShowPreferences = !Config::Current->ShowPreferences;
+			config.ShowPreferences ? ColourPressedBG : ColourBG, ColourEnabledTint)
+		)	config.ShowPreferences = !config.ShowPreferences;
 		ShowToolTip("Preferences");
 
 		ImGui::EndMainMenuBar();
@@ -2622,45 +2612,45 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (ImGui::IsPopupOpen(0u, ImGuiPopupFlags_AnyPopup))
 		io.ConfigFlags = ImGuiConfigFlags_NavEnableKeyboard;
 
-	if (Config::Current->ShowThumbnailView)
-		ShowThumbnailViewDialog(&Config::Current->ShowThumbnailView);
+	if (config.ShowThumbnailView)
+		ShowThumbnailViewDialog(&config.ShowThumbnailView);
 
-	if (Config::Current->ShowPropsWindow)
-		ShowPropertiesWindow(&Config::Current->ShowPropsWindow);
+	if (config.ShowPropsWindow)
+		ShowPropertiesWindow(&config.ShowPropsWindow);
 
-	if (Config::Current->ShowPixelEditor)
-		ShowPixelEditorOverlay(&Config::Current->ShowPixelEditor);
+	if (config.ShowPixelEditor)
+		ShowPixelEditorOverlay(&config.ShowPixelEditor);
 
-	if (Config::Current->ShowPreferences)
-		ShowPreferencesWindow(&Config::Current->ShowPreferences);
+	if (config.ShowPreferences)
+		ShowPreferencesWindow(&config.ShowPreferences);
 
-	if (Config::Current->ShowBindingsWindow)
+	if (config.ShowBindingsWindow)
 	{
-		Bindings::ShowBindingsWindow(&Config::Current->ShowBindingsWindow, BindingsWindowJustOpened);
+		Bindings::ShowBindingsWindow(&config.ShowBindingsWindow, BindingsWindowJustOpened);
 		BindingsWindowJustOpened = false;
 	}
 
-	if (Config::Current->ShowImageMetaData)
-		ShowImageMetaDataOverlay(&Config::Current->ShowImageMetaData);
+	if (config.ShowImageMetaData)
+		ShowImageMetaDataOverlay(&config.ShowImageMetaData);
 
-	if (Config::Current->ShowCheatSheet)
-		Bindings::ShowCheatSheetWindow(&Config::Current->ShowCheatSheet);
+	if (config.ShowCheatSheet)
+		Bindings::ShowCheatSheetWindow(&config.ShowCheatSheet);
 
-	if (Config::Current->ShowAbout)
-		ShowAboutPopup(&Config::Current->ShowAbout);
+	if (config.ShowAbout)
+		ShowAboutPopup(&config.ShowAbout);
 
-	if (Config::Current->ShowChannelFilter)
-		ShowChannelFilterOverlay(&Config::Current->ShowChannelFilter);
+	if (config.ShowChannelFilter)
+		ShowChannelFilterOverlay(&config.ShowChannelFilter);
 
 	ImGui::PopStyleVar();
 
-	if (Config::Current->ShowNavBar)
+	if (config.ShowNavBar)
 		DrawNavBar(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
 
-	if (Config::Current->ShowImageDetails)
+	if (config.ShowImageDetails)
 	{
 		float zoomPercent = GetZoomPercent();
-		ShowImageDetailsOverlay(&Config::Current->ShowImageDetails, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), CursorX, CursorY, zoomPercent);
+		ShowImageDetailsOverlay(&config.ShowImageDetails, 0.0f, float(topUIHeight), float(dispw), float(disph - bottomUIHeight - topUIHeight), CursorX, CursorY, zoomPercent);
 	}
 
 	ShowCropPopup(tVector4(left, right, top, bottom), tVector2(uoff, voff));
@@ -2682,14 +2672,14 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			// If we are supposed to reshuffle at the end of every slideshow loop, we do so here.
 			if
 			(
-				(Config::Current->GetSortKey() == Config::ProfileSettings::SortKeyEnum::Shuffle) &&
-				Config::Current->SlideshowAutoReshuffle && Config::Current->SlideshowLooping &&
+				(config.GetSortKey() == Config::ProfileSettings::SortKeyEnum::Shuffle) &&
+				config.SlideshowAutoReshuffle && config.SlideshowLooping &&
 				(CurrImage && !CurrImage->Next())
 			)
 			{
 				for (Image* i = Images.First(); i; i = i->Next())
 					i->RegenerateShuffleValue();
-				SortImages(Config::ProfileSettings::SortKeyEnum::Shuffle, Config::Current->SortAscending);
+				SortImages(Config::ProfileSettings::SortKeyEnum::Shuffle, config.SortAscending);
 
 				// We set to last after the reshuffle because the OnNext below will push it to the first
 				// one as needed. This way we always start from the first image after the reshuffle.
@@ -2702,7 +2692,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			if (!ok)
 				SlideshowPlaying = false;
 			else
-				SlideshowCountdown = Config::Current->SlideshowPeriod;
+				SlideshowCountdown = config.SlideshowPeriod;
 		}
 	}
 }
@@ -3928,6 +3918,7 @@ int main(int argc, char** argv)
 	#ifdef USE_IN_MEMORY_FONT_LOAD
 	for (int uisize = 0; uisize < int(Viewer::Config::ProfileSettings::UISizeEnum::NumSizes); uisize++)
 		io.Fonts->AddFontFromMemoryCompressedBase85TTF(RobotoFont_compressed_data_base85, 14.0f + float(uisize)*2.0f);
+
 	#else
 	tString fontFile = dataDir + "Roboto-Medium.ttf";
 	for (int uisize = 0; uisize < int(Viewer::Config::ProfileSettings::UISizeEnum::NumSizes); uisize++)

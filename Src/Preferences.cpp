@@ -146,9 +146,11 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				"On Select: Visible when click mouse. Hides when switch image or click outside image.\n"
 				"Auto Hide: Hides after inactivity timeout."
 			);
-
-			// const char* uiSizeItems[] = { "Nano", "Tiny", "Small", "Moderate", "Medium", "Large", "Huge", "Massive" };
+			#ifdef ALLOW_ALL_UI_SIZES
+			const char* uiSizeItems[] = { "Nano", "Tiny", "Small", "Moderate", "Medium", "Large", "Huge", "Massive" };
+			#else
 			const char* uiSizeItems[] = { "Nano", "Tiny", "Small" };
+			#endif
 			tStaticAssert(tNumElements(uiSizeItems) == int(Config::ProfileSettings::UISizeEnum::NumSizes));
 
 			ImGui::PushItemWidth(comboWidth);

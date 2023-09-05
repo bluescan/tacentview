@@ -135,23 +135,36 @@ struct ProfileSettings
 	int ReticleMode;
 	ReticleModeEnum GetReticleMode() const				{ return ReticleModeEnum(ReticleMode); }
 
+	//#define ALLOW_ALL_UI_SIZES
 	enum class UISizeEnum
 	{
 		// Nano, Tiny, Small, Moderate, Medium, Large, Huge, Massive.
-		Nano,			Smallest = Nano,
+		Nano,
 		Tiny,
-		Small,			Largest = Small,
-		NumSizes,
+		Small,
 
+		#ifdef ALLOW_ALL_UI_SIZES
 		// These will be the additional ones.
 		Moderate,
 		Medium,
 		Large,
 		Huge,
-		Massive
+		Massive,
+		#endif
+
+		NumSizes,
+		Smallest		= Nano,
+		Key				= Small,
+		Largest			= NumSizes-1,
 	};
+	
 	int UISize;											// In range [0, NumSizes).
 	UISizeEnum GetUISize() const						{ return UISizeEnum(UISize); }
+	float UISizeFlt() const								{ return float(UISize); }
+	float UISizeSmallestFlt() const						{ return float(UISizeEnum::Smallest); }
+	float UISizeKeyFlt() const							{ return float(UISizeEnum::Key); }
+	float UISizeLargestFlt() const						{ return float(UISizeEnum::Largest); }
+	float UISizeNormFlt() const							{ return float(UISize) / float(UISizeEnum::Largest); }
 
 	int ResampleFilter;									// Matches tImage::tResampleFilter. Used for image resize when saving and multiframe saving.
 	int ResampleEdgeMode;								// Matches tImage::tResampleEdgeMode. Used for image resize when saving and multiframe saving.

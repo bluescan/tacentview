@@ -885,7 +885,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 				comboWidth		= 124.0f;
 				aspectWidth		= 25.0f;
 				break;
-			case Viewer::Config::ProfileSettings::UISizeEnum::Large:
+			case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 				buttonWidth		= 66.0f;
 				shortcutTxtLeft	= 61.0f;
 				shortcutNavLeft	= 68.0f;
