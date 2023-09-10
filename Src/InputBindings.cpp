@@ -506,8 +506,9 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		if (justOpened)
 			profile = int(Config::GetProfile());
 
+		Config::ProfileSettings& config = *Config::Current;
 		float profileWidth, keyWidth, operationWidth, buttonWidth, removeAddSize;
-		switch (Config::Current->GetUISize())
+		switch (config.GetUISize())
 		{
 			case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 				profileWidth	= 104.0f;
@@ -855,9 +856,10 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 	tVector2 windowPos = GetDialogOrigin(DialogID::CheatSheet);
 	ImGui::SetNextWindowBgAlpha(0.80f);
 
+	Config::ProfileSettings& config = *Config::Current;
 	tVector2 windowSize;
 	float actionWidth, operatWidth;
-	switch (Config::Current->GetUISize())
+	switch (config.GetUISize())
 	{
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			actionWidth = 106.0f;
@@ -886,7 +888,7 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
 		const float rowHeight = 18.0f;
 		const int maxRowsToDisplay = 20;
-		int totalAssigned = Config::Current->InputBindings.GetTotalAssigned();
+		int totalAssigned = config.InputBindings.GetTotalAssigned();
 		const int numRowsToDisplay = tMin(maxRowsToDisplay, totalAssigned);
 		tVector2 outerSize = ImVec2(0.0f, rowHeight + rowHeight * float(numRowsToDisplay));
 		if (ImGui::BeginTable("CheatSheetTable", 2, tableFlags, outerSize))
@@ -912,7 +914,7 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 
 			for (int k = 0; k <= GLFW_KEY_LAST; k++)
 			{
-				KeyOps& keyops = Config::Current->InputBindings.GetKeyOps(k);
+				KeyOps& keyops = config.InputBindings.GetKeyOps(k);
 				if (!keyops.IsAnythingAssigned() || !IsKeySupported(k))
 					continue;
 

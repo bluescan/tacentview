@@ -204,17 +204,18 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			);
 		}
 
-		tColourf floatCol(Config::Current->BackgroundColour);
+		Config::ProfileSettings& config = *Config::Current;
+		tColourf floatCol(config.BackgroundColour);
 		if (ImGui::ColorEdit3("##Background", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))
 		{
-			Config::Current->BackgroundColour.Set(floatCol);
-			Config::Current->BackgroundColour.A = 0xFF;
+			config.BackgroundColour.Set(floatCol);
+			config.BackgroundColour.A = 0xFF;
 		}
 
 		ImGui::SameLine();
 		const char* backgroundItems[] = { "None", "Checker", "Solid" };
 		ImGui::PushItemWidth(83);
-		ImGui::Combo("##Background Style", &Config::Current->BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
+		ImGui::Combo("##Background Style", &config.BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 		ShowHelpMark("Background colour and style.\nThe blend-background button uses the colour regardless of style.");
@@ -229,7 +230,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 		if (ImGui::Button("Blend Background", tVector2(buttonWidth, 0.0f)))
 		{
 			CurrImage->Unbind();
-			CurrImage->AlphaBlendColour(Config::Current->BackgroundColour, true);
+			CurrImage->AlphaBlendColour(config.BackgroundColour, true);
 			CurrImage->Bind();
 			Viewer::SetWindowTitle();
 		}
@@ -343,8 +344,9 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	//
 	// UI size parameters.
 	//
+	Config::ProfileSettings& config = *Config::Current;
 	float okOffset;
-	switch (Config::Current->GetUISize())
+	switch (config.GetUISize())
 	{
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:		okOffset = 135.0f;	break;
 		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:		okOffset = 146.0f;	break;
@@ -645,9 +647,10 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 
 void Viewer::ShowAboutPopup(bool* popen)
 {
+	Config::ProfileSettings& config = *Config::Current;
 	tVector2 windowPos = GetDialogOrigin(DialogID::About);
 	tVector2 windowSize;
-	switch (Config::Current->GetUISize())
+	switch (config.GetUISize())
 	{
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:		windowSize.Set(240, 500);	break;
 		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:		windowSize.Set(280, 501);	break;
@@ -724,9 +727,10 @@ void Viewer::ShowAboutPopup(bool* popen)
 
 void Viewer::DoDeleteFileModal(bool deleteFilePressed)
 {
+	Config::ProfileSettings& config = *Config::Current;
 	if (deleteFilePressed)
 	{
-		if (!Config::Current->ConfirmDeletes)
+		if (!config.ConfirmDeletes)
 			DeleteImageFile(CurrImage->Filename, true);
 		else
 			ImGui::OpenPopup("Delete File");
@@ -748,7 +752,7 @@ void Viewer::DoDeleteFileModal(bool deleteFilePressed)
 	ImGui::Separator();
 
 	ImGui::NewLine();
-	ImGui::Checkbox("Confirm file deletions in the future?", &Config::Current->ConfirmDeletes);
+	ImGui::Checkbox("Confirm file deletions in the future?", &config.ConfirmDeletes);
 	ImGui::NewLine();
 
 	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
@@ -1119,9 +1123,10 @@ void Viewer::NavLogBar::Draw()
 
 	if (ImagesSubDirs.NumItems() > 0)
 	{
+		Config::ProfileSettings& config = *Config::Current;
 		ImGui::SameLine();
 		float offset;
-		switch (Config::Current->GetUISize())
+		switch (config.GetUISize())
 		{
 			case Config::ProfileSettings::UISizeEnum::Nano:		offset = 1.0f;	break;
 			case Config::ProfileSettings::UISizeEnum::Tiny:		offset = 0.0f;	break;

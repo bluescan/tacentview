@@ -135,7 +135,7 @@ struct ProfileSettings
 	int ReticleMode;
 	ReticleModeEnum GetReticleMode() const				{ return ReticleModeEnum(ReticleMode); }
 
-	// #define ALLOW_ALL_UI_SIZES
+	//#define ALLOW_ALL_UI_SIZES
 	enum class UISizeEnum
 	{
 		// Nano, Tiny, Small, Moderate, Medium, Large, Huge, Massive.

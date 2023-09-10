@@ -137,8 +137,9 @@ void Viewer::CropWidget::Update(const tVector4& imgext, const tVector2& mouse, c
 	TestSetHovered(LineV, mouse, tVector2(b, t), false);
 	TestSetHovered(LineH, mouse, tVector2(l, r), true);
 
+	Config::ProfileSettings& config = *Config::Current;
 	bool centerPressed = LineB.Pressed && LineT.Pressed && LineL.Pressed && LineR.Pressed && LineV.Pressed && LineH.Pressed;
-	bool aspectLocked = (Config::Current->GetCropAspectRatio() != tImage::tAspectRatio::Free);
+	bool aspectLocked = (config.GetCropAspectRatio() != tImage::tAspectRatio::Free);
 
 	if (centerPressed && aspectLocked)
 	{
@@ -168,7 +169,7 @@ void Viewer::CropWidget::Update(const tVector4& imgext, const tVector2& mouse, c
 	}
 	else if (aspectLocked)
 	{
-		float aspect = Config::Current->GetCropAspectRatioFloat();
+		float aspect = config.GetCropAspectRatioFloat();
 
 		// Top Left.
 		if (LineT.Pressed && LineL.Pressed)
@@ -307,7 +308,9 @@ void Viewer::CropWidget::MoveDirection(Viewer::CursorMove moveDir, const tMath::
 	int top = LineT.ImageVal;
 	int bottom = LineB.ImageVal;
 	Anchor hnd = LastSelectedHandle;
-	bool aspectLocked = (Config::Current->GetCropAspectRatio() != tImage::tAspectRatio::Free);
+	Config::ProfileSettings& config = *Config::Current;
+
+	bool aspectLocked = (config.GetCropAspectRatio() != tImage::tAspectRatio::Free);
 
 	if (aspectLocked)
 	{
@@ -441,10 +444,11 @@ void Viewer::CropWidget::ConstrainLines(int l, int r, int t, int b, const tMath:
 	}
 
 	// If we are in aspect-locked mode we need to 
-	bool aspectLocked = (Config::Current->GetCropAspectRatio() != tImage::tAspectRatio::Free);
+	Config::ProfileSettings& config = *Config::Current;
+	bool aspectLocked = (config.GetCropAspectRatio() != tImage::tAspectRatio::Free);
 	if (aspectLocked)
 	{
-		float cropAspect = Config::Current->GetCropAspectRatioFloat();
+		float cropAspect = config.GetCropAspectRatioFloat();
 		float width = float(r-l);
 		float height = float(t-b);
 		float imgAspect = width/height;
@@ -507,9 +511,10 @@ void Viewer::CropWidget::ConstrainCropLines(const tVector4& imgext, bool centerP
 		LineT.PressedDelta = imgext.T - LineT.ScreenVal;
 
 	// Aspect constrain.
-	if (Config::Current->GetCropAspectRatio() != tImage::tAspectRatio::Free)
+	Config::ProfileSettings& config = *Config::Current;
+	if (config.GetCropAspectRatio() != tImage::tAspectRatio::Free)
 	{
-		float aspect = Config::Current->GetCropAspectRatioFloat();
+		float aspect = config.GetCropAspectRatioFloat();
 		tAssert(aspect > 0.0f);
 
 		// Top Left.
@@ -865,8 +870,9 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 
 	if (ImGui::Begin("Crop", &CropMode, flags))
 	{
+		Config::ProfileSettings& config = *Config::Current;
 		float buttonWidth, shortcutNavLeft, shortcutTxtLeft, anchorSize, comboWidth, aspectWidth;
-		switch (Config::Current->GetUISize())
+		switch (config.GetUISize())
 		{
 			case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 				buttonWidth		= 55.0f;
@@ -930,7 +936,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		if (ImGui::Combo
 		(
 			"Aspect",
-			&Config::Current->CropAspectRatio,
+			&config.CropAspectRatio,
 			tImage::tAspectRatioNames,
 			int(tImage::tAspectRatio::NumRatios) + 1,
 			int(tImage::tAspectRatio::NumRatios) / 2
@@ -940,16 +946,16 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		}
 		ImGui::PopItemWidth();
 
-		if (Config::Current->GetCropAspectRatio() == tImage::tAspectRatio::User)
+		if (config.GetCropAspectRatio() == tImage::tAspectRatio::User)
 		{
 			ImGui::PushItemWidth(26.0f);
-			if (ImGui::InputInt("##Num", &Config::Current->CropAspectUserNum, 0, 0))
+			if (ImGui::InputInt("##Num", &config.CropAspectUserNum, 0, 0))
 				Viewer::Request_CropLineConstrain = true;
 			ImGui::SameLine(); ImGui::Text(":"); ImGui::SameLine();
-			if (ImGui::InputInt("##Den", &Config::Current->CropAspectUserDen, 0, 0))
+			if (ImGui::InputInt("##Den", &config.CropAspectUserDen, 0, 0))
 				Viewer::Request_CropLineConstrain = true;
 			ImGui::PopItemWidth();
-			tiClamp(Config::Current->CropAspectUserNum, 1, 99); tiClamp(Config::Current->CropAspectUserDen, 1, 99);
+			tiClamp(config.CropAspectUserNum, 1, 99); tiClamp(config.CropAspectUserDen, 1, 99);
 		}
 		else
 		{
@@ -965,13 +971,13 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		ImGui::Text("View Shortcuts");
 
 		ImGui::SameLine();
-		tString leftKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::PixelLeft);
+		tString leftKey = config.InputBindings.FindModKeyText(Bindings::Operation::PixelLeft);
 		tString leftDsc = Bindings::GetOperationDesc(Bindings::Operation::PixelLeft);
-		tString rghtKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::PixelRight);
+		tString rghtKey = config.InputBindings.FindModKeyText(Bindings::Operation::PixelRight);
 		tString rghtDsc = Bindings::GetOperationDesc(Bindings::Operation::PixelRight);
-		tString upKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::PixelUp);
+		tString upKey = config.InputBindings.FindModKeyText(Bindings::Operation::PixelUp);
 		tString upDsc = Bindings::GetOperationDesc(Bindings::Operation::PixelUp);
-		tString downKey = Config::Current->InputBindings.FindModKeyText(Bindings::Operation::PixelDown);
+		tString downKey = config.InputBindings.FindModKeyText(Bindings::Operation::PixelDown);
 		tString downDsc = Bindings::GetOperationDesc(Bindings::Operation::PixelDown);
 
 		tString toolTipText;

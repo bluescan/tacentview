@@ -41,8 +41,9 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		return;
 	}
 
+	Config::ProfileSettings& config = *Config::Current;
 	float buttonOffset, comboWidth;
-	switch (Config::Current->GetUISize())
+	switch (config.GetUISize())
 	{
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			buttonOffset	= 141.0f;
@@ -83,29 +84,29 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			}
 			#endif
 
-			ImGui::Checkbox("Background Extend", &Config::Current->BackgroundExtend);
+			ImGui::Checkbox("Background Extend", &config.BackgroundExtend);
 			if (!Config::Global.TransparentWorkArea)
 			{
 				const char* backgroundItems[] = { "None", "Checker", "Solid" };
 				ImGui::PushItemWidth(comboWidth);
-				ImGui::Combo("Background Style", &Config::Current->BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
+				ImGui::Combo("Background Style", &config.BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
 				ImGui::PopItemWidth();
 
-				if (Config::Current->GetBackgroundStyle() == Config::ProfileSettings::BackgroundStyleEnum::SolidColour)
+				if (config.GetBackgroundStyle() == Config::ProfileSettings::BackgroundStyleEnum::SolidColour)
 				{
-					tColourf floatCol(Config::Current->BackgroundColour);
+					tColourf floatCol(config.BackgroundColour);
 					if (ImGui::ColorEdit3("Solid Colour", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))
 					{
-						Config::Current->BackgroundColour.Set(floatCol);
-						Config::Current->BackgroundColour.A = 0xFF;
+						config.BackgroundColour.Set(floatCol);
+						config.BackgroundColour.A = 0xFF;
 					}
 
 					int preset = 0;
-					if (Config::Current->BackgroundColour == tColouri::black)
+					if (config.BackgroundColour == tColouri::black)
 						preset = 1;
-					else if (Config::Current->BackgroundColour == tColouri::lightgrey)
+					else if (config.BackgroundColour == tColouri::lightgrey)
 						preset = 2;
-					else if (Config::Current->BackgroundColour == tColouri::white)
+					else if (config.BackgroundColour == tColouri::white)
 						preset = 3;
 
 					ImGui::SameLine();
@@ -115,27 +116,27 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 					{
 						switch (preset)
 						{
-							case 1:		Config::Current->BackgroundColour = tColouri::black;		break;
-							case 2:		Config::Current->BackgroundColour = tColouri::lightgrey;	break;
-							case 3:		Config::Current->BackgroundColour = tColouri::white;		break;
+							case 1:		config.BackgroundColour = tColouri::black;		break;
+							case 2:		config.BackgroundColour = tColouri::lightgrey;	break;
+							case 3:		config.BackgroundColour = tColouri::white;		break;
 						}
 					}
 					ImGui::PopItemWidth();
 				}
 
-				if (Config::Current->GetBackgroundStyle() == Config::ProfileSettings::BackgroundStyleEnum::Checkerboard)
+				if (config.GetBackgroundStyle() == Config::ProfileSettings::BackgroundStyleEnum::Checkerboard)
 				{
 					ImGui::PushItemWidth(comboWidth);
-					ImGui::InputInt("Checker Size", &Config::Current->BackgroundCheckerboxSize);
+					ImGui::InputInt("Checker Size", &config.BackgroundCheckerboxSize);
 					ImGui::PopItemWidth();
-					tMath::tiClamp(Config::Current->BackgroundCheckerboxSize, 2, 256);
+					tMath::tiClamp(config.BackgroundCheckerboxSize, 2, 256);
 				}
 			}
 
 			// Reticle mode.
 			const char* reticleModeItems[] = { "Always Hidden", "Always Visible", "On Select", "Auto Hide" };
 			ImGui::PushItemWidth(comboWidth);
-			ImGui::Combo("Reticle Mode", &Config::Current->ReticleMode, reticleModeItems, tNumElements(reticleModeItems));
+			ImGui::Combo("Reticle Mode", &config.ReticleMode, reticleModeItems, tNumElements(reticleModeItems));
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark
@@ -154,7 +155,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			tStaticAssert(tNumElements(uiSizeItems) == int(Config::ProfileSettings::UISizeEnum::NumSizes));
 
 			ImGui::PushItemWidth(comboWidth);
-			ImGui::Combo("UI Size", &Config::Current->UISize, uiSizeItems, tNumElements(uiSizeItems));
+			ImGui::Combo("UI Size", &config.UISize, uiSizeItems, tNumElements(uiSizeItems));
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Overall size of UI widgets and font.");
@@ -168,57 +169,57 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			category = Config::Category_Slideshow;
 			ImGui::NewLine();
 			ImGui::PushItemWidth(110);
-			if (ImGui::InputDouble("Period (s)", &Config::Current->SlideshowPeriod, 0.001f, 1.0f, "%.3f"))
+			if (ImGui::InputDouble("Period (s)", &config.SlideshowPeriod, 0.001f, 1.0f, "%.3f"))
 			{
-				tiClampMin(Config::Current->SlideshowPeriod, 1.0/60.0);
-				Viewer::SlideshowCountdown = Config::Current->SlideshowPeriod;
+				tiClampMin(config.SlideshowPeriod, 1.0/60.0);
+				Viewer::SlideshowCountdown = config.SlideshowPeriod;
 			}
 			ImGui::PopItemWidth();
 			if (ImGui::Button("8 s"))
 			{
-				Config::Current->SlideshowPeriod = 8.0;
-				Viewer::SlideshowCountdown = Config::Current->SlideshowPeriod;
+				config.SlideshowPeriod = 8.0;
+				Viewer::SlideshowCountdown = config.SlideshowPeriod;
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("4 s"))
 			{
-				Config::Current->SlideshowPeriod = 4.0;
-				Viewer::SlideshowCountdown = Config::Current->SlideshowPeriod;
+				config.SlideshowPeriod = 4.0;
+				Viewer::SlideshowCountdown = config.SlideshowPeriod;
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("1 s"))
 			{
-				Config::Current->SlideshowPeriod = 1.0;
-				Viewer::SlideshowCountdown = Config::Current->SlideshowPeriod;
+				config.SlideshowPeriod = 1.0;
+				Viewer::SlideshowCountdown = config.SlideshowPeriod;
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("10fps"))
 			{
-				Config::Current->SlideshowPeriod = 1.0/10.0;
-				Viewer::SlideshowCountdown = Config::Current->SlideshowPeriod;
+				config.SlideshowPeriod = 1.0/10.0;
+				Viewer::SlideshowCountdown = config.SlideshowPeriod;
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("30fps"))
 			{
-				Config::Current->SlideshowPeriod = 1.0/30.0;
-				Viewer::SlideshowCountdown = Config::Current->SlideshowPeriod;
+				config.SlideshowPeriod = 1.0/30.0;
+				Viewer::SlideshowCountdown = config.SlideshowPeriod;
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("60fps"))
 			{
-				Config::Current->SlideshowPeriod = 1.0/60.0;
-				Viewer::SlideshowCountdown = Config::Current->SlideshowPeriod;
+				config.SlideshowPeriod = 1.0/60.0;
+				Viewer::SlideshowCountdown = config.SlideshowPeriod;
 			}
 
-			ImGui::Checkbox("Countdown Indicator", &Config::Current->SlideshowProgressArc);
+			ImGui::Checkbox("Countdown Indicator", &config.SlideshowProgressArc);
 			ImGui::SameLine();
 			ShowHelpMark("Display a time remaining indicator when slideshow active.");
 
-			ImGui::Checkbox("Auto Start", &Config::Current->SlideshowAutoStart);
+			ImGui::Checkbox("Auto Start", &config.SlideshowAutoStart);
 			ImGui::SameLine();
 			ShowHelpMark("Should slideshow start automatically on launch.");
 
-			ImGui::Checkbox("Looping", &Config::Current->SlideshowLooping);
+			ImGui::Checkbox("Looping", &config.SlideshowLooping);
 			ImGui::SameLine();
 			ShowHelpMark("Should slideshow loop after completion.");
 
@@ -227,7 +228,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 
 			Viewer::DoSortParameters(false);
-			ImGui::Checkbox("Auto Reshuffle", &Config::Current->SlideshowAutoReshuffle);
+			ImGui::Checkbox("Auto Reshuffle", &config.SlideshowAutoReshuffle);
 			ImGui::SameLine();
 			ShowHelpMark("If sort set to shuffle, reshuffle automatically after every loop.");
 
@@ -241,18 +242,18 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::NewLine();
 
 			ImGui::PushItemWidth(110);
-			ImGui::InputInt("Max Undo Steps", &Config::Current->MaxUndoSteps); ImGui::SameLine();
+			ImGui::InputInt("Max Undo Steps", &config.MaxUndoSteps); ImGui::SameLine();
 			ShowHelpMark("Maximum number of undo steps.");
-			tMath::tiClamp(Config::Current->MaxUndoSteps, 1, 32);
+			tMath::tiClamp(config.MaxUndoSteps, 1, 32);
 
 			ImGui::PushItemWidth(110);
-			ImGui::InputInt("Max Mem (MB)", &Config::Current->MaxImageMemMB); ImGui::SameLine();
+			ImGui::InputInt("Max Mem (MB)", &config.MaxImageMemMB); ImGui::SameLine();
 			ShowHelpMark("Approx memory use limit of this app. Minimum 256 MB.");
-			tMath::tiClampMin(Config::Current->MaxImageMemMB, 256);
+			tMath::tiClampMin(config.MaxImageMemMB, 256);
 
-			ImGui::InputInt("Max Cache Files", &Config::Current->MaxCacheFiles); ImGui::SameLine();
+			ImGui::InputInt("Max Cache Files", &config.MaxCacheFiles); ImGui::SameLine();
 			ShowHelpMark("Maximum number of cache files that may be created. Minimum 200.");
-			tMath::tiClampMin(Config::Current->MaxCacheFiles, 200);
+			tMath::tiClampMin(config.MaxCacheFiles, 200);
 			if (!DeleteAllCacheFilesOnExit)
 			{
 				if (ImGui::Button("Clear Cache On Exit"))
@@ -274,12 +275,12 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::Separator();
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 
-			ImGui::InputFloat("Gamma##Monitor", &Config::Current->MonitorGamma, 0.01f, 0.1f, "%.3f");
+			ImGui::InputFloat("Gamma##Monitor", &config.MonitorGamma, 0.01f, 0.1f, "%.3f");
 			ImGui::SameLine();
 			ShowHelpMark("Some image property windows allow gamma correction and the gamma to be specified (eg. HDR DDS files).\nThis setting allows you to set a custom value for what the gamma will be reset to in those dialogs.\nResetting this tab always chooses the industry-standard gamm of 2.2");
 			ImGui::PopItemWidth();
 
-			ImGui::Checkbox("Strict Loading", &Config::Current->StrictLoading); ImGui::SameLine();
+			ImGui::Checkbox("Strict Loading", &config.StrictLoading); ImGui::SameLine();
 			ShowHelpMark
 			(
 				"Some image files are ill-formed. If strict is true these files are not loaded.\n"
@@ -289,7 +290,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 			// If the orient loading value changes we need to reload any images that have the Orientation tag set in their meta-data.
 			// If the current image ends up not being unloaded, the 'Load' call exits immediately, so it's fast (i.e. it knows).
-			if (ImGui::Checkbox("Exif Orient Loading", &Config::Current->ExifOrientLoading))
+			if (ImGui::Checkbox("Exif Orient Loading", &config.ExifOrientLoading))
 			{
 				for (Image* i = Images.First(); i; i = i->Next())
 					if (i->Cached_MetaData.IsValid() && i->Cached_MetaData[tImage::tMetaTag::Orientation].IsSet())
@@ -300,19 +301,19 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::SameLine();
 			ShowHelpMark("If Exif meta-data contains camera orientation information this will take it into account\nwhen loading and display the image the correctly oriented/flipped. Mostly affects jpg files.");
 
-			ImGui::Checkbox("Detect APNG Inside PNG", &Config::Current->DetectAPNGInsidePNG); ImGui::SameLine();
+			ImGui::Checkbox("Detect APNG Inside PNG", &config.DetectAPNGInsidePNG); ImGui::SameLine();
 			ShowHelpMark("Some png image files are really apng files. If detecton is true these png files will be displayed animated.");
 
-			ImGui::Checkbox("Mipmap Chaining", &Config::Current->MipmapChaining); ImGui::SameLine();
+			ImGui::Checkbox("Mipmap Chaining", &config.MipmapChaining); ImGui::SameLine();
 			ShowHelpMark("Chaining generates mipmaps faster. No chaining gives slightly\nbetter results at cost of large generation time.");
 
 			ImGui::PushItemWidth(comboWidth*1.22f);
-			ImGui::Combo("Mip Filter", &Config::Current->MipmapFilter, tImage::tResampleFilterNames, 1+int(tImage::tResampleFilter::NumFilters), 1+int(tImage::tResampleFilter::NumFilters));
+			ImGui::Combo("Mip Filter", &config.MipmapFilter, tImage::tResampleFilterNames, 1+int(tImage::tResampleFilter::NumFilters), 1+int(tImage::tResampleFilter::NumFilters));
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Filtering method to use when generating minification mipmaps.\nUse None for no mipmapping.");
 
-			tString pasteTypeName = Config::Current->ClipboardPasteFileType;
+			tString pasteTypeName = config.ClipboardPasteFileType;
 			tSystem::tFileType pasteType = tSystem::tGetFileTypeFromName(pasteTypeName);
 			ImGui::PushItemWidth(comboWidth*1.22f);
 			if (ImGui::BeginCombo("Paste Type", pasteTypeName.Chr()))
@@ -324,7 +325,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 					tString ftName = tGetFileTypeName(ft);
 					if (ImGui::Selectable(ftName.Chr(), &selected))
-						Config::Current->ClipboardPasteFileType = ftName;
+						config.ClipboardPasteFileType = ftName;
 
 					if (selected)
 						ImGui::SetItemDefaultFocus();
@@ -348,15 +349,15 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		{
 			category = Config::Category_Interface;
 			ImGui::NewLine();
-			ImGui::Checkbox("Confirm Deletes", &Config::Current->ConfirmDeletes);
-			ImGui::Checkbox("Confirm File Overwrites", &Config::Current->ConfirmFileOverwrites);
-			ImGui::Checkbox("Auto Property Window", &Config::Current->AutoPropertyWindow);
-			ImGui::Checkbox("Auto Play Anims", &Config::Current->AutoPlayAnimatedImages);
+			ImGui::Checkbox("Confirm Deletes", &config.ConfirmDeletes);
+			ImGui::Checkbox("Confirm File Overwrites", &config.ConfirmFileOverwrites);
+			ImGui::Checkbox("Auto Property Window", &config.AutoPropertyWindow);
+			ImGui::Checkbox("Auto Play Anims", &config.AutoPlayAnimatedImages);
 
-			ImGui::Checkbox("Zoom Per Image", &Config::Current->ZoomPerImage);
+			ImGui::Checkbox("Zoom Per Image", &config.ZoomPerImage);
 			ImGui::EndTabItem();
 
-			if (!Config::Current->ZoomPerImage)
+			if (!config.ZoomPerImage)
 			{
 				const char* zoomModes[] = { "User", "Fit", "Downscale", "OneToOne" };
 				ImGui::PushItemWidth(comboWidth*0.9f);
@@ -405,7 +406,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	if (ImGui::Button("Reset Profile", tVector2(100.0f, 0.0f)))
 	{
 		Config::ResetProfile(Config::Category_AllNoBindings);
-		SlideshowCountdown = Config::Current->SlideshowPeriod;
+		SlideshowCountdown = config.SlideshowPeriod;
 	}
 	ShowToolTip
 	(
@@ -418,7 +419,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	if (ImGui::Button("Reset Tab", tVector2(100.0f, 0.0f)))
 	{
 		Config::ResetProfile(category);
-		SlideshowCountdown = Config::Current->SlideshowPeriod;
+		SlideshowCountdown = config.SlideshowPeriod;
 	}
 	ShowToolTip("Resets the current tab/category for the current profile (what you see above).");
 
@@ -431,8 +432,8 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		// If the global reset turns transparent work area off we can always safely clear the pending.
 		if (!Config::Global.TransparentWorkArea)
 			PendingTransparentWorkArea = false;
-		SlideshowCountdown = Config::Current->SlideshowPeriod;
-		ChangeScreenMode(Config::Current->FullscreenMode, true);
+		SlideshowCountdown = config.SlideshowPeriod;
+		ChangeScreenMode(config.FullscreenMode, true);
 	}
 	ShowToolTip
 	(

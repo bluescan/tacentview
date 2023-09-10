@@ -43,8 +43,9 @@ void Viewer::DoResizeWidthHeightInterface(int srcW, int srcH, int& dstW, int& ds
 	float aspect = float(srcW) / float(srcH);
 	static bool lockAspect = true;
 
+	Config::ProfileSettings& config = *Config::Current;
 	float dimWidth, dimOffset, powButtonWidth;
-	switch (Config::Current->GetUISize())
+	switch (config.GetUISize())
 	{
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			dimWidth		= 90.0f;
@@ -108,13 +109,15 @@ void Viewer::DoResizeFilterInterface(int srcW, int srcH, int dstW, int dstH)
 {
 	if ((dstW == srcW) && (dstH == srcH))
 		return;
+	Config::ProfileSettings& config = *Config::Current;
+
 	ImGui::SetNextItemWidth(168.0f);
-	ImGui::Combo("Filter", &Config::Current->ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
+	ImGui::Combo("Filter", &config.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 	ImGui::SameLine();
 	ShowHelpMark("Filtering method to use when resizing images.");
 
 	ImGui::SetNextItemWidth(168.0f);
-	ImGui::Combo("Edges", &Config::Current->ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
+	ImGui::Combo("Edges", &config.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
 	ImGui::SameLine();
 	ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");	
 }
@@ -122,16 +125,17 @@ void Viewer::DoResizeFilterInterface(int srcW, int srcH, int dstW, int dstH)
 
 void Viewer::DoResizeAnchorInterface()
 {
+	Config::ProfileSettings& config = *Config::Current;
 	static const char* longNames[3*3] = { "Top-Left", "Top-Middle", "Top-Right", "Middle-Left", "Middle", "Middle-Right", "Bottom-Left", "Bottom-Middle", "Bottom-Right" };
 
 	ImGui::NewLine();
 	ImGui::SetCursorPosX(58.0f);
-	ImGui::Text("Anchor: %s", (Config::Current->CropAnchor == -1) ? "Cursor Position" : longNames[Config::Current->CropAnchor]);
+	ImGui::Text("Anchor: %s", (config.CropAnchor == -1) ? "Cursor Position" : longNames[config.CropAnchor]);
 	ImGui::SameLine();
 	ShowHelpMark("Choose an anchor below. To use the cursor position, deselect the current anchor.");
 
 	float ancLeft, ancImgSize;
-	switch (Config::Current->GetUISize())
+	switch (config.GetUISize())
 	{
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			ancLeft		= 92.0f;
@@ -155,76 +159,76 @@ void Viewer::DoResizeAnchorInterface()
 	// Top Row
 	ImGui::SetCursorPosX(ancLeft);
 
-	bool selTL = (Config::Current->CropAnchor == int(Anchor::TL));
+	bool selTL = (config.CropAnchor == int(Anchor::TL));
 	ImGui::PushID("TL");
 	if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), imgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, selTL ? ColourEnabledTint : ColourDisabledTint))
-		Config::Current->CropAnchor = selTL ? -1 : int(Anchor::TL);
+		config.CropAnchor = selTL ? -1 : int(Anchor::TL);
 	ImGui::PopID();
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
-	bool selTM = (Config::Current->CropAnchor == int(Anchor::TM));
+	bool selTM = (config.CropAnchor == int(Anchor::TM));
 	ImGui::PushID("TM");
 	if (ImGui::ImageButton(ImTextureID(Image_AnchorBM.Bind()), imgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, selTM ? ColourEnabledTint : ColourDisabledTint))
-		Config::Current->CropAnchor = selTM ? -1 : int(Anchor::TM);
+		config.CropAnchor = selTM ? -1 : int(Anchor::TM);
 	ImGui::PopID();
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
-	bool selTR = (Config::Current->CropAnchor == int(Anchor::TR));
+	bool selTR = (config.CropAnchor == int(Anchor::TR));
 	ImGui::PushID("TR");
 	if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), imgSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, selTR ? ColourEnabledTint : ColourDisabledTint))
-		Config::Current->CropAnchor = selTR ? -1 : int(Anchor::TR);
+		config.CropAnchor = selTR ? -1 : int(Anchor::TR);
 	ImGui::PopID();
 
 	// Middle Row
 	ImGui::SetCursorPosX(ancLeft);
 
-	bool selML = (Config::Current->CropAnchor == int(Anchor::ML));
+	bool selML = (config.CropAnchor == int(Anchor::ML));
 	ImGui::PushID("ML");
 	if (ImGui::ImageButton(ImTextureID(Image_AnchorML.Bind()), imgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, selML ? ColourEnabledTint : ColourDisabledTint))
-		Config::Current->CropAnchor = selML ? -1 : int(Anchor::ML);
+		config.CropAnchor = selML ? -1 : int(Anchor::ML);
 	ImGui::PopID();
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
-	bool selMM = (Config::Current->CropAnchor == int(Anchor::MM));
+	bool selMM = (config.CropAnchor == int(Anchor::MM));
 	ImGui::PushID("MM");
 	if (ImGui::ImageButton(ImTextureID(Image_AnchorMM.Bind()), imgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, selMM ? ColourEnabledTint : ColourDisabledTint))
-		Config::Current->CropAnchor = selMM ? -1 : int(Anchor::MM);
+		config.CropAnchor = selMM ? -1 : int(Anchor::MM);
 	ImGui::PopID();
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
-	bool selMR = (Config::Current->CropAnchor == int(Anchor::MR));
+	bool selMR = (config.CropAnchor == int(Anchor::MR));
 	ImGui::PushID("MR");
 	if (ImGui::ImageButton(ImTextureID(Image_AnchorML.Bind()), imgSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, selMR ? ColourEnabledTint : ColourDisabledTint))
-		Config::Current->CropAnchor = selMR ? -1 : int(Anchor::MR);
+		config.CropAnchor = selMR ? -1 : int(Anchor::MR);
 	ImGui::PopID();
 
 	// Bottom Row
 	ImGui::SetCursorPosX(ancLeft);
 
-	bool selBL = (Config::Current->CropAnchor == int(Anchor::BL));
+	bool selBL = (config.CropAnchor == int(Anchor::BL));
 	ImGui::PushID("BL");
 	if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), imgSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, selBL ? ColourEnabledTint : ColourDisabledTint))
-		Config::Current->CropAnchor = selBL ? -1 : int(Anchor::BL);
+		config.CropAnchor = selBL ? -1 : int(Anchor::BL);
 	ImGui::PopID();
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
-	bool selBM = (Config::Current->CropAnchor == int(Anchor::BM));
+	bool selBM = (config.CropAnchor == int(Anchor::BM));
 	ImGui::PushID("BM");
 	if (ImGui::ImageButton(ImTextureID(Image_AnchorBM.Bind()), imgSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, selBM ? ColourEnabledTint : ColourDisabledTint))
-		Config::Current->CropAnchor = selBM ? -1 : int(Anchor::BM);
+		config.CropAnchor = selBM ? -1 : int(Anchor::BM);
 	ImGui::PopID();
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
-	bool selBR = (Config::Current->CropAnchor == int(Anchor::BR));
+	bool selBR = (config.CropAnchor == int(Anchor::BR));
 	ImGui::PushID("BR");
 	if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), imgSize, tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 1, ColourBG, selBR ? ColourEnabledTint : ColourDisabledTint))
-		Config::Current->CropAnchor = selBR ? -1 : int(Anchor::BR);
+		config.CropAnchor = selBR ? -1 : int(Anchor::BR);
 	ImGui::PopID();
 }
 
@@ -233,16 +237,17 @@ void Viewer::DoResizeCrop(int srcW, int srcH, int dstW, int dstH)
 {
 	if ((dstW != srcW) || (dstH != srcH))
 	{
+		Config::ProfileSettings& config = *Config::Current;
 		CurrImage->Unbind();
-		if (Config::Current->CropAnchor == -1)
+		if (config.CropAnchor == -1)
 		{
 			int originX = (Viewer::CursorX * (srcW - dstW)) / srcW;
 			int originY = (Viewer::CursorY * (srcH - dstH)) / srcH;
-			CurrImage->Crop(dstW, dstH, originX, originY, Config::Current->FillColour);
+			CurrImage->Crop(dstW, dstH, originX, originY, config.FillColour);
 		}
 		else
 		{
-			CurrImage->Crop(dstW, dstH, tPicture::Anchor(Config::Current->CropAnchor), Config::Current->FillColour);
+			CurrImage->Crop(dstW, dstH, tPicture::Anchor(config.CropAnchor), config.FillColour);
 		}
 		CurrImage->Bind();
 		Viewer::SetWindowTitle();
@@ -253,14 +258,15 @@ void Viewer::DoResizeCrop(int srcW, int srcH, int dstW, int dstH)
 
 void Viewer::DoFillColourInterface(const char* toolTipText, bool contactSheetFillColour)
 {
-	tColourf floatCol(contactSheetFillColour ? Config::Current->FillColourContact : Config::Current->FillColour);
+	Config::ProfileSettings& config = *Config::Current;
+	tColourf floatCol(contactSheetFillColour ? config.FillColourContact : config.FillColour);
 	ImGui::ColorEdit4
 	(
 		"Fill##Colour", floatCol.E,
 		ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_NoInputs
 	);
 
-	tColour4i* fillColour = contactSheetFillColour ? &Config::Current->FillColourContact : &Config::Current->FillColour;
+	tColour4i* fillColour = contactSheetFillColour ? &config.FillColourContact : &config.FillColour;
 	fillColour->Set(floatCol);
 	if (toolTipText)
 		ShowToolTip(toolTipText);
@@ -305,8 +311,9 @@ void Viewer::DoResizeImageModal(bool resizeImagePressed)
 	if (!ImGui::BeginPopupModal("Resize Image", &isOpenResizeImage, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 
+	Config::ProfileSettings& config = *Config::Current;
 	float buttonWidth;
-	switch (Config::Current->GetUISize())
+	switch (config.GetUISize())
 	{
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			buttonWidth		= 78.0f;
@@ -352,7 +359,7 @@ void Viewer::DoResizeImageModal(bool resizeImagePressed)
 		if ((dstW != srcW) || (dstH != srcH))
 		{
 			CurrImage->Unbind();
-			CurrImage->Resample(dstW, dstH, tImage::tResampleFilter(Config::Current->ResampleFilter), tImage::tResampleEdgeMode(Config::Current->ResampleEdgeMode));
+			CurrImage->Resample(dstW, dstH, tImage::tResampleFilter(config.ResampleFilter), tImage::tResampleEdgeMode(config.ResampleEdgeMode));
 			CurrImage->Bind();
 			Viewer::SetWindowTitle();
 			Viewer::ZoomDownscaleOnly();
@@ -445,8 +452,9 @@ void Viewer::DoResizeCanvasAnchorTab(bool firstOpen)
 	ImGui::Separator();
 	ImGui::NewLine();
 
+	Config::ProfileSettings& config = *Config::Current;
 	float buttonWidth;
-	switch (Config::Current->GetUISize())
+	switch (config.GetUISize())
 	{
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			buttonWidth		= 78.0f;
@@ -462,8 +470,8 @@ void Viewer::DoResizeCanvasAnchorTab(bool firstOpen)
 
 	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
-		Config::Current->CropAnchor		= 4;
-		Config::Current->FillColour		= tColouri::black;
+		config.CropAnchor		= 4;
+		config.FillColour		= tColouri::black;
 		dstW							= srcW;
 		dstH							= srcH;
 	}
@@ -513,8 +521,9 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool firstOpen)
 	ImGui::Separator();
 	ImGui::NewLine();
 
+	Config::ProfileSettings& config = *Config::Current;
 	float buttonWidth;
-	switch (Config::Current->GetUISize())
+	switch (config.GetUISize())
 	{
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			buttonWidth		= 78.0f;
@@ -530,7 +539,7 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool firstOpen)
 
 	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
-		Config::Current->FillColour.Set(Viewer::PixelColour);
+		config.FillColour.Set(Viewer::PixelColour);
 		channelR = true;
 		channelG = true;
 		channelB = true;
@@ -553,7 +562,7 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool firstOpen)
 			(channelA ? tCompBit_A : 0);
 
 		CurrImage->Unbind();
-		CurrImage->Deborder(Config::Current->FillColour, channels);
+		CurrImage->Deborder(config.FillColour, channels);
 		CurrImage->Bind();
 		Viewer::SetWindowTitle();
 		Viewer::ZoomDownscaleOnly();
@@ -569,6 +578,7 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 	tAssert(picture);
 	int srcW = picture->GetWidth();
 	int srcH = picture->GetHeight();
+	Config::ProfileSettings& config = *Config::Current;
 
 	ImGui::NewLine();
 
@@ -576,22 +586,22 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 	ImGui::Combo
 	(
 		"Aspect",
-		&Config::Current->ResizeAspectRatio,
+		&config.ResizeAspectRatio,
 		&tImage::tAspectRatioNames[1],
 		int(tImage::tAspectRatio::NumRatios),
 		int(tImage::tAspectRatio::NumRatios)/2
 	);
 	ImGui::PopItemWidth();
 
-	if (Config::Current->GetResizeAspectRatio() == tAspectRatio::User)
+	if (config.GetResizeAspectRatio() == tAspectRatio::User)
 	{
 		ImGui::SameLine();
 		ImGui::PushItemWidth(26.0f);
-		ImGui::InputInt("##Num", &Config::Current->ResizeAspectUserNum, 0, 0);
+		ImGui::InputInt("##Num", &config.ResizeAspectUserNum, 0, 0);
 		ImGui::SameLine(); ImGui::Text(":"); ImGui::SameLine();
-		ImGui::InputInt("##Den", &Config::Current->ResizeAspectUserDen, 0, 0);
+		ImGui::InputInt("##Den", &config.ResizeAspectUserDen, 0, 0);
 		ImGui::PopItemWidth();
-		tiClamp(Config::Current->ResizeAspectUserNum, 1, 99); tiClamp(Config::Current->ResizeAspectUserDen, 1, 99);
+		tiClamp(config.ResizeAspectUserNum, 1, 99); tiClamp(config.ResizeAspectUserDen, 1, 99);
 	}
 	else
 	{
@@ -601,13 +611,13 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 
 	ImGui::PushItemWidth(140);
 	const char* resizeAspectModes[] = { "Crop", "Letterbox" };
-	ImGui::Combo("Mode", &Config::Current->ResizeAspectMode, resizeAspectModes, tNumElements(resizeAspectModes), tNumElements(resizeAspectModes));
+	ImGui::Combo("Mode", &config.ResizeAspectMode, resizeAspectModes, tNumElements(resizeAspectModes), tNumElements(resizeAspectModes));
 	ImGui::PopItemWidth();
 
 	ImGui::SameLine();
 	ShowHelpMark("Crop mode cuts off sides resulting in a filled image.\nLetterbox mode adds coloured borders resulting in whole image being visible.");
 
-	if (Config::Current->ResizeAspectMode == 1)
+	if (config.ResizeAspectMode == 1)
 		DoFillColourInterface();
 
 	DoResizeAnchorInterface();
@@ -617,7 +627,7 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 	ImGui::NewLine();
 
 	float buttonWidth;
-	switch (Config::Current->GetUISize())
+	switch (config.GetUISize())
 	{
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			buttonWidth		= 78.0f;
@@ -633,12 +643,12 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 
 	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
-		Config::Current->CropAnchor				= 4;
-		Config::Current->FillColour				= tColouri::black;
-		Config::Current->ResizeAspectRatio		= int(tAspectRatio::Screen_16_9) - 1;
-		Config::Current->ResizeAspectUserNum	= 16;
-		Config::Current->ResizeAspectUserDen	= 9;
-		Config::Current->ResizeAspectMode		= 0;
+		config.CropAnchor				= 4;
+		config.FillColour				= tColouri::black;
+		config.ResizeAspectRatio		= int(tAspectRatio::Screen_16_9) - 1;
+		config.ResizeAspectUserNum	= 16;
+		config.ResizeAspectUserDen	= 9;
+		config.ResizeAspectMode		= 0;
 	}
 
 	ImGui::SameLine();
@@ -653,8 +663,8 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 		int dstH = srcH;
 		int dstW = srcW;
 		float srcAspect = float(srcW)/float(srcH);
-		float dstAspect = Config::Current->GetResizeAspectRatioFloat();
-		if (Config::Current->ResizeAspectMode == 0)
+		float dstAspect = config.GetResizeAspectRatioFloat();
+		if (config.ResizeAspectMode == 0)
 		{
 			// Crop Mode.
 			if (dstAspect > srcAspect)

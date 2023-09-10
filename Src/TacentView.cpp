@@ -558,43 +558,47 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 
 bool Viewer::Button(const char* label, const tMath::tVector2& size)
 {
-    return ImGui::Button(label, size) || (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter));
+	return ImGui::Button(label, size) || (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter));
 }
 
 
 Viewer::Config::ProfileSettings::ZoomModeEnum Viewer::GetZoomMode()
 {
-	if (Config::Current->ZoomPerImage && CurrImage)
+	Config::ProfileSettings& config = *Config::Current;
+	if (config.ZoomPerImage && CurrImage)
 		return CurrImage->ZoomMode;
 	else
-		return Config::Current->GetZoomMode();
+		return config.GetZoomMode();
 }
 
 
 void Viewer::SetZoomMode(Config::ProfileSettings::ZoomModeEnum mode)
 {
-	if (Config::Current->ZoomPerImage && CurrImage)
+	Config::ProfileSettings& config = *Config::Current;
+	if (config.ZoomPerImage && CurrImage)
 		CurrImage->ZoomMode = mode;
 	else
-		Config::Current->SetZoomMode(mode);
+		config.SetZoomMode(mode);
 }
 
 
 float Viewer::GetZoomPercent()
 {
-	if (Config::Current->ZoomPerImage && CurrImage)
+	Config::ProfileSettings& config = *Config::Current;
+	if (config.ZoomPerImage && CurrImage)
 		return CurrImage->ZoomPercent;
 	else
-		return Config::Current->ZoomPercent;
+		return config.ZoomPercent;
 }
 
 
 void Viewer::SetZoomPercent(float zoom)
 {
-	if (Config::Current->ZoomPerImage && CurrImage)
+	Config::ProfileSettings& config = *Config::Current;
+	if (config.ZoomPerImage && CurrImage)
 		CurrImage->ZoomPercent = zoom;
 	else
-		Config::Current->ZoomPercent = zoom;
+		config.ZoomPercent = zoom;
 }
 
 
@@ -611,11 +615,12 @@ void Viewer::PrintRedirectCallback(const char* text, int numChars)
 
 tVector2 Viewer::GetDialogOrigin(DialogID dialogID)
 {
+	Config::ProfileSettings& config = *Config::Current;
 	int hindex = int(dialogID) % 4;
 	int vindex = int(dialogID) / 4;
 
 	float topOffset, leftOffset, heightDelta;
-	switch (Config::Current->GetUISize())
+	switch (config.GetUISize())
 	{
 		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
@@ -644,7 +649,8 @@ tVector2 Viewer::GetDialogOrigin(DialogID dialogID)
 
 int Viewer::GetNavBarHeight()
 {
-	if (!Config::Current->ShowNavBar)
+	Config::ProfileSettings& config = *Config::Current;
+	if (!config.ShowNavBar)
 		return 0;
 
 	return NavBar.GetShowLog() ? 150 : 30;
@@ -740,7 +746,8 @@ void Viewer::PopulateImages()
 		ImagesLoadTimeSorted.Append(newImg);
 	}
 
-	SortImages(Config::Current->GetSortKey(), Config::Current->SortAscending);
+	Config::ProfileSettings& config = *Config::Current;
+	SortImages(config.GetSortKey(), config.SortAscending);
 	CurrImage = nullptr;
 }
 
@@ -803,11 +810,12 @@ void Viewer::SetCurrentImage(const tString& currFilename)
 
 void Viewer::AutoPropertyWindow()
 {
-	if (Config::Current->AutoPropertyWindow && CurrImage)
-		Config::Current->ShowPropsWindow = (CurrImage->TypeSupportsProperties() || (CurrImage->GetNumFrames() > 1));
+	Config::ProfileSettings& config = *Config::Current;
+	if (config.AutoPropertyWindow && CurrImage)
+		config.ShowPropsWindow = (CurrImage->TypeSupportsProperties() || (CurrImage->GetNumFrames() > 1));
 
 	if (SlideshowPlaying)
-		Config::Current->ShowPropsWindow = false;
+		config.ShowPropsWindow = false;
 }
 
 
@@ -826,9 +834,10 @@ void Viewer::LoadCurrImage()
 		return;
 	}
 
+	Config::ProfileSettings& config = *Config::Current;
 	if
 	(
-		Config::Current->AutoPlayAnimatedImages &&
+		config.AutoPlayAnimatedImages &&
 		(CurrImage->GetNumFrames() > 1) &&
 		FileTypes_MultiFrame.Contains(CurrImage->Filetype)
 	)
@@ -843,7 +852,7 @@ void Viewer::LoadCurrImage()
 
 	// We only need to consider unloading an image when a new one is loaded... in this function.
 	// We currently do not allow unloading when in slideshow and the frame duration is small.
-	bool slideshowSmallDuration = SlideshowPlaying && (Config::Current->SlideshowPeriod < 0.5f);
+	bool slideshowSmallDuration = SlideshowPlaying && (config.SlideshowPeriod < 0.5f);
 	if (imgJustLoaded && !slideshowSmallDuration)
 	{
 		ImagesLoadTimeSorted.Sort(Compare_ImageLoadTimeAscending);
@@ -852,7 +861,7 @@ void Viewer::LoadCurrImage()
 		for (tItList<Image>::Iter iter = ImagesLoadTimeSorted.First(); iter; iter++)
 			usedMem += int64((*iter).Info.MemSizeBytes);
 
-		int64 allowedMem = int64(Config::Current->MaxImageMemMB) * 1024 * 1024;
+		int64 allowedMem = int64(config.MaxImageMemMB) * 1024 * 1024;
 		if (usedMem > allowedMem)
 		{
 			tPrintf("Used image mem (%|64d) bigger than max (%|64d). Unloading.\n", usedMem, allowedMem);
@@ -880,12 +889,13 @@ void Viewer::LoadCurrImage()
 
 bool Viewer::OnPrevious()
 {
-	bool circ = SlideshowPlaying && Config::Current->SlideshowLooping;
+	Config::ProfileSettings& config = *Config::Current;
+	bool circ = SlideshowPlaying && config.SlideshowLooping;
 	if (!CurrImage || (!circ && !CurrImage->Prev()))
 		return false;
 
 	if (SlideshowPlaying)
-		SlideshowCountdown = Config::Current->SlideshowPeriod;
+		SlideshowCountdown = config.SlideshowPeriod;
 
 	CurrImage = circ ? Images.PrevCirc(CurrImage) : CurrImage->Prev();
 	LoadCurrImage();
@@ -895,12 +905,13 @@ bool Viewer::OnPrevious()
 
 bool Viewer::OnNext()
 {
-	bool circ = SlideshowPlaying && Config::Current->SlideshowLooping;
+	Config::ProfileSettings& config = *Config::Current;
+	bool circ = SlideshowPlaying && config.SlideshowLooping;
 	if (!CurrImage || (!circ && !CurrImage->Next()))
 		return false;
 
 	if (SlideshowPlaying)
-		SlideshowCountdown = Config::Current->SlideshowPeriod;
+		SlideshowCountdown = config.SlideshowPeriod;
 
 	CurrImage = circ ? Images.NextCirc(CurrImage) : CurrImage->Next();
 	LoadCurrImage();
@@ -1065,7 +1076,8 @@ void Viewer::DrawBackground(float l, float r, float b, float t, float drawW, flo
 	if (Config::Global.TransparentWorkArea)
 		return;
 
-	Config::ProfileSettings::BackgroundStyleEnum style = Config::Current->GetBackgroundStyle();
+	Config::ProfileSettings& config = *Config::Current;
+	Config::ProfileSettings::BackgroundStyleEnum style = config.GetBackgroundStyle();
 	bool overrideBG = CurrImage && CurrImage->OverrideBackgroundColour;
 	if (overrideBG)
 		style = Config::ProfileSettings::BackgroundStyleEnum::SolidColour;
@@ -1078,7 +1090,7 @@ void Viewer::DrawBackground(float l, float r, float b, float t, float drawW, flo
 		case Config::ProfileSettings::BackgroundStyleEnum::Checkerboard:
 		{
 			// Semitransparent checkerboard background.
-			float checkSize = float(Config::Current->BackgroundCheckerboxSize);
+			float checkSize = float(config.BackgroundCheckerboxSize);
 
 			// This is for efficiency. Why draw checrboxes where we don'e have to (off screen)?
 			// We cull in widths of 2*checkSize so the alternating checherbox colour works out.
@@ -1157,7 +1169,7 @@ void Viewer::DrawBackground(float l, float r, float b, float t, float drawW, flo
 
 		case Config::ProfileSettings::BackgroundStyleEnum::SolidColour:
 		{
-			tColour4i bgCol = Config::Current->BackgroundColour;
+			tColour4i bgCol = config.BackgroundColour;
 			if (overrideBG)
 				bgCol = CurrImage->BackgroundColourOverride;
 			glColor4ubv(bgCol.E);
@@ -1179,11 +1191,13 @@ bool Viewer::ConvertScreenPosToImagePos
 	const tVector4& lrtb, const tVector2& uvOff
 )
 {
+	Config::ProfileSettings& config = *Config::Current;
+
 	float picX = scrPos.x - lrtb.L;
 	float picY = (scrPos.y) - lrtb.B;
 	float normX = picX / (lrtb.R-lrtb.L);
 	float normY = picY / (lrtb.T-lrtb.B);
-	if (Config::Current->Tile)
+	if (config.Tile)
 	{
 		normX = tMath::tMod(normX, 1.0f);
 		if (normX < 0.0f) normX += 1.0f;
@@ -1203,7 +1217,7 @@ bool Viewer::ConvertScreenPosToImagePos
 	imgX = int(imposX);
 	imgY = int(imposY);
 	bool clamped = false;
-	if (!Config::Current->Tile)
+	if (!config.Tile)
 	{
 		if (((imgX < 0) || (imgX >= imagewi)) || ((imgY < 0) || (imgY >= imagehi)))
 			clamped = true;
@@ -1270,19 +1284,19 @@ void Viewer::ProgressArc(float radius, float percent, const ImVec4& colour, cons
 	if (percent <= 0.0f)
 		return;
 
-    const ImVec2 pos = window->DC.CursorPos;
+	const ImVec2 pos = window->DC.CursorPos;
 	window->DrawList->PathArcTo(pos, radius, IM_PI/2.0f-0.10f, IM_PI/2.0f + percent*IM_PI*2.0f +0.10f, segments-1);
-    window->DrawList->PathStroke(ImGui::GetColorU32(colourbg), false, thickness+1.5f);
+	window->DrawList->PathStroke(ImGui::GetColorU32(colourbg), false, thickness+1.5f);
 
 	window->DrawList->PathArcTo(pos, radius, IM_PI/2.0f, IM_PI/2.0f + percent*IM_PI*2.0f, segments-1);
-    window->DrawList->PathStroke(ImGui::GetColorU32(colour), false, thickness);
+	window->DrawList->PathStroke(ImGui::GetColorU32(colour), false, thickness);
 }
 
 
 int Viewer::DoMainMenuBar()
 {
-    ImGuiContext& ctx = *GImGui;
-    const ImGuiStyle& style = ctx.Style;
+	ImGuiContext& ctx = *GImGui;
+	const ImGuiStyle& style = ctx.Style;
 
 	// File requests.
 	bool openFilePressed			= Request_OpenFileModal;			Request_OpenFileModal				= false;
@@ -2473,7 +2487,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	// Scrubber
 	if
 	(
-		!CropMode && Config::Current->ShowPropsWindow &&
+		!CropMode && config.ShowPropsWindow &&
 		config.ShowFrameScrubber && CurrImage && (CurrImage->GetNumFrames() > 1) && !CurrImage->IsAltPictureEnabled()
 	)
 	{
@@ -2753,11 +2767,12 @@ bool Viewer::DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin)
 
 bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 {
-	if (!force && (Config::Current->FullscreenMode == fullscreen))
+	Config::ProfileSettings& config = *Config::Current;
+	if (!force && (config.FullscreenMode == fullscreen))
 		return false;
 
 	// If currently in windowed mode, remember our window geometry.
-	if (!force && !Config::Current->FullscreenMode)
+	if (!force && !config.FullscreenMode)
 	{
 		glfwGetWindowPos(Viewer::Window, &Viewer::Config::Global.WindowX, &Viewer::Config::Global.WindowY);
 		glfwGetWindowSize(Viewer::Window, &Viewer::Config::Global.WindowW, &Viewer::Config::Global.WindowH);
@@ -2795,7 +2810,7 @@ bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 		}
 	}
 	IgnoreNextCursorPosCallback = true;
-	Config::Current->FullscreenMode = fullscreen;
+	config.FullscreenMode = fullscreen;
 	return true;
 }
 
@@ -2838,9 +2853,9 @@ void Viewer::ChangeProfile(Profile profile)
 	// Note that the settings mentioned above are for the _default_ settings of the basic profile. There is nothing
 	// stopping the user from customizing the profile however they want. It is essentially a complete set of alternate
 	// settings, the only difference is the default values are different than the main profile.
-
+	Config::ProfileSettings& config = *Config::Current;
 	AutoPropertyWindow();
-	ChangeScreenMode(Config::Current->FullscreenMode, true);
+	ChangeScreenMode(config.FullscreenMode, true);
 }
 
 
@@ -2928,7 +2943,7 @@ bool Viewer::PasteImage()
 		return false;
 
 	clip::image img;
-    ok = clip::get_image(img);
+	ok = clip::get_image(img);
 	if (!ok)
 		return false;
 
@@ -2958,11 +2973,12 @@ bool Viewer::PasteImage()
 
 	// We are done with the img. We might as well clean it up now instead of waiting for scope to end.
 	img.reset();
+	Config::ProfileSettings& config = *Config::Current;
 
 	//
 	// Step 2. Determine filename.
 	//
-	tFileType pasteType = tGetFileTypeFromName(Config::Current->ClipboardPasteFileType);
+	tFileType pasteType = tGetFileTypeFromName(config.ClipboardPasteFileType);
 	tString filename;
 	tsPrintf
 	(
@@ -3050,7 +3066,7 @@ bool Viewer::PasteImage()
 	Image* newImg = new Image(filename);
 	Images.Append(newImg);
 	ImagesLoadTimeSorted.Append(newImg);
-	SortImages(Config::Current->GetSortKey(), Config::Current->SortAscending);
+	SortImages(config.GetSortKey(), config.SortAscending);
 	SetCurrentImage(filename);
 
 	// In the clip sample code the clipboard is clear()-ed. I don't think we'd want to do that.
@@ -3090,8 +3106,9 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 	// Now we need to query the key-binding system to find out what operation is associated
 	// with the received key. The current bindings are stored in the current config.
+	Config::ProfileSettings& config = *Config::Current;
 	uint32 viewerModifiers = Bindings::TranslateModifiers(modifiers);
-	Bindings::Operation operation = Config::Current->InputBindings.GetOperation(key, viewerModifiers);
+	Bindings::Operation operation = config.InputBindings.GetOperation(key, viewerModifiers);
 	bool imgAvail = CurrImage && CurrImage->IsLoaded();
 	switch (operation)
 	{
@@ -3136,13 +3153,13 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::UISizeInc:
-			Config::Current->UISize++;
-			tMath::tiClampMax(Config::Current->UISize, int(Config::ProfileSettings::UISizeEnum::Largest));
+			config.UISize++;
+			tMath::tiClampMax(config.UISize, int(Config::ProfileSettings::UISizeEnum::Largest));
 			break;
 
 		case Bindings::Operation::UISizeDec:
-			Config::Current->UISize--;
-			tMath::tiClampMin(Config::Current->UISize, 0);
+			config.UISize--;
+			tMath::tiClampMin(config.UISize, 0);
 			break;
 
 		case Bindings::Operation::ZoomIn:
@@ -3170,7 +3187,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::ZoomPerImage:
-			Config::Current->ZoomPerImage = !Config::Current->ZoomPerImage;
+			config.ZoomPerImage = !config.ZoomPerImage;
 			break;
 
 		case Bindings::Operation::ResetPan:
@@ -3228,7 +3245,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				break;
 			CropMode = !CropMode;
 			if (CropMode)
-				Config::Current->Tile = false;
+				config.Tile = false;
 			break;
 
 		case Bindings::Operation::ResizeImage:
@@ -3240,15 +3257,15 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::PixelEdit:
-			Viewer::Config::Current->ShowPixelEditor = !Viewer::Config::Current->ShowPixelEditor;
+			config.ShowPixelEditor = !config.ShowPixelEditor;
 			break;
 
 		case Bindings::Operation::PropertyEdit:
-			Config::Current->ShowPropsWindow = !Config::Current->ShowPropsWindow;
+			config.ShowPropsWindow = !config.ShowPropsWindow;
 			break;
 
 		case Bindings::Operation::ChannelFilter:
-			Config::Current->ShowChannelFilter = !Config::Current->ShowChannelFilter;
+			config.ShowChannelFilter = !config.ShowChannelFilter;
 			break;
 
 		case Bindings::Operation::Levels:
@@ -3265,7 +3282,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				{ DrawChannel_R = true; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = false; }
 			else
 				DrawChannel_R = !DrawChannel_R;
-			Config::Current->ShowChannelFilter = true;	
+			config.ShowChannelFilter = true;	
 			break;
 
 		case Bindings::Operation::GreenChannel:
@@ -3273,7 +3290,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				{ DrawChannel_R = false; DrawChannel_G = true; DrawChannel_B = false; DrawChannel_A = false; }
 			else
 				DrawChannel_G = !DrawChannel_G;
-			Config::Current->ShowChannelFilter = true;	
+			config.ShowChannelFilter = true;	
 			break;
 
 		case Bindings::Operation::BlueChannel:
@@ -3281,7 +3298,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				{ DrawChannel_R = false; DrawChannel_G = false; DrawChannel_B = true; DrawChannel_A = false; }
 			else
 				DrawChannel_B = !DrawChannel_B;
-			Config::Current->ShowChannelFilter = true;	
+			config.ShowChannelFilter = true;	
 			break;
 
 		case Bindings::Operation::AlphaChannel:
@@ -3289,7 +3306,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				{ DrawChannel_R = false; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = true; }
 			else
 				DrawChannel_A = !DrawChannel_A;
-			Config::Current->ShowChannelFilter = true;	
+			config.ShowChannelFilter = true;	
 			break;
 
 		case Bindings::Operation::ChannelAsIntensity:
@@ -3298,18 +3315,18 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				{ DrawChannel_R = true; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = false; }
 			else
 				{ DrawChannel_R = true; DrawChannel_G = true; DrawChannel_B = true; DrawChannel_A = true; }
-			Config::Current->ShowChannelFilter = true;	
+			config.ShowChannelFilter = true;	
 			break;
 
 		case Bindings::Operation::Details:
-			Viewer::Config::Current->ShowImageDetails = !Viewer::Config::Current->ShowImageDetails;
+			config.ShowImageDetails = !config.ShowImageDetails;
 			break;
 
 		case Bindings::Operation::Tile:
 			if (CropMode)
 				break;
-			Config::Current->Tile = !Config::Current->Tile;
-			if (!Config::Current->Tile)
+			config.Tile = !config.Tile;
+			if (!config.Tile)
 				ResetPan();
 			break;
 
@@ -3377,15 +3394,15 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::MenuBar:
-			if (!CropMode) Config::Current->ShowMenuBar = !Config::Current->ShowMenuBar;
+			if (!CropMode) config.ShowMenuBar = !config.ShowMenuBar;
 			break;
 
 		case Bindings::Operation::NavBar:
-			if (!CropMode) Config::Current->ShowNavBar = !Config::Current->ShowNavBar;
+			if (!CropMode) config.ShowNavBar = !config.ShowNavBar;
 			break;
 
 		case Bindings::Operation::Thumbnails:
-			Viewer::Config::Current->ShowThumbnailView = !Viewer::Config::Current->ShowThumbnailView;
+			config.ShowThumbnailView = !config.ShowThumbnailView;
 			break;
 
 		case Bindings::Operation::FileBrowser:
@@ -3401,21 +3418,21 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		}
 
 		case Bindings::Operation::SlideshowTimer:
-			Config::Current->SlideshowProgressArc = !Config::Current->SlideshowProgressArc;
+			config.SlideshowProgressArc = !config.SlideshowProgressArc;
 			break;
 
 		case Bindings::Operation::SlideshowReshuffle:
-			Config::Current->SlideshowAutoReshuffle = !Config::Current->SlideshowAutoReshuffle;
+			config.SlideshowAutoReshuffle = !config.SlideshowAutoReshuffle;
 			break;
 
 		case Bindings::Operation::CheatSheet:
-			Config::Current->ShowCheatSheet = !Config::Current->ShowCheatSheet;
+			config.ShowCheatSheet = !config.ShowCheatSheet;
 			break;
 
 		case Bindings::Operation::DebugLog:
 			NavBar.SetShowLog( !NavBar.GetShowLog() );
-			if (NavBar.GetShowLog() && !Config::Current->ShowNavBar)
-				Config::Current->ShowNavBar = true;
+			if (NavBar.GetShowLog() && !config.ShowNavBar)
+				config.ShowNavBar = true;
 			break;
 
 		case Bindings::Operation::ProfileMain:
@@ -3431,27 +3448,27 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::Preferences:
-			Config::Current->ShowPreferences = !Config::Current->ShowPreferences;
+			config.ShowPreferences = !config.ShowPreferences;
 			break;
 
 		case Bindings::Operation::KeyBindings:
-			Config::Current->ShowBindingsWindow = !Config::Current->ShowBindingsWindow;
-			if (Config::Current->ShowBindingsWindow) BindingsWindowJustOpened = true;
+			config.ShowBindingsWindow = !config.ShowBindingsWindow;
+			if (config.ShowBindingsWindow) BindingsWindowJustOpened = true;
 			break;
 
 		case Bindings::Operation::Fullscreen:
-			ChangeScreenMode(!Config::Current->FullscreenMode);
+			ChangeScreenMode(!config.FullscreenMode);
 			break;
 
 		case Bindings::Operation::Escape:
-			if (Config::Current->FullscreenMode)
+			if (config.FullscreenMode)
 				ChangeScreenMode(false);
 			else if ((Config::GetProfile() == Profile::Basic) || (Config::GetProfile() == Profile::Kiosk))
 				ChangeProfile(Profile::Main);
 			break;
 
 		case Bindings::Operation::EscapeSupportingQuit:
-			if (Config::Current->FullscreenMode)
+			if (config.FullscreenMode)
 				ChangeScreenMode(false);
 			else if ((Config::GetProfile() == Profile::Basic) || (Config::GetProfile() == Profile::Kiosk))
 				ChangeProfile(Profile::Main);
@@ -3472,7 +3489,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::MetaData:
-			Viewer::Config::Current->ShowImageMetaData = !Viewer::Config::Current->ShowImageMetaData;
+			config.ShowImageMetaData = !config.ShowImageMetaData;
 			break;
 	}
 }
@@ -3615,14 +3632,16 @@ void Viewer::IconifyCallback(GLFWwindow* window, int iconified)
 
 int Viewer::RemoveOldCacheFiles(const tString& cacheDir)
 {
+	Config::ProfileSettings& config = *Config::Current;
+
 	tList<tSystem::tFileInfo> cacheFiles;
 	tSystem::tFindFiles(cacheFiles, cacheDir, "bin");
 	int numFiles = cacheFiles.NumItems();
-	if (numFiles <= Config::Current->MaxCacheFiles)
+	if (numFiles <= config.MaxCacheFiles)
 		return 0;
 
 	cacheFiles.Sort(Compare_FileCreationTimeAscending);
-	int targetCount = tClampMin(Config::Current->MaxCacheFiles - 100, 0);
+	int targetCount = tClampMin(config.MaxCacheFiles - 100, 0);
 
 	int numToRemove = numFiles - targetCount;
 	tAssert(numToRemove >= 0);
@@ -3907,7 +3926,7 @@ int main(int argc, char** argv)
 	{
 		tPrintf("Failed to initialize GLAD\n");
 		return 10;
-    }
+	}
 	tPrintf("GLAD V %s\n", glGetString(GL_VERSION));
 
 	glfwSwapInterval(1); // Enable vsync
@@ -3956,10 +3975,11 @@ int main(int argc, char** argv)
 		io.Fonts->AddFontFromFileTTF(fontFile.Chr(), 14.0f + float(uisize)*2.0f);
 	#endif
 
-	tiClamp(Viewer::Config::Current->UISize, 0, io.Fonts->Fonts.Size - 1);
-	ImFont* font = io.Fonts->Fonts[Viewer::Config::Current->UISize];
+	Viewer::Config::ProfileSettings& config = *Viewer::Config::Current;
+	tiClamp(config.UISize, 0, io.Fonts->Fonts.Size - 1);
+	ImFont* font = io.Fonts->Fonts[config.UISize];
 	io.FontDefault = font;
-	Viewer::CurrentFontIndex = Viewer::Config::Current->UISize;
+	Viewer::CurrentFontIndex = config.UISize;
 
 	Viewer::LoadAppImages(dataDir);
 	Viewer::PopulateImages();
@@ -3989,13 +4009,13 @@ int main(int argc, char** argv)
 	glfwMakeContextCurrent(Viewer::Window);
 	glfwSwapBuffers(Viewer::Window);
 
-	if (Viewer::Config::Current->FullscreenMode)
+	if (config.FullscreenMode)
 		Viewer::ChangeScreenMode(true, true);
 
-	if (Viewer::Config::Current->SlideshowAutoStart)
+	if (config.SlideshowAutoStart)
 	{
 		Viewer::SlideshowPlaying = true;
-		Viewer::SlideshowCountdown = Viewer::Config::Current->SlideshowPeriod;
+		Viewer::SlideshowCountdown = config.SlideshowPeriod;
 		Viewer::DisappearCountdown = 0.0;
 	}
 
@@ -4030,11 +4050,11 @@ int main(int argc, char** argv)
 
 	// This is important. We need the destructors to run BEFORE we shutdown GLFW. Deconstructing the images may block for a bit while shutting
 	// down worker threads. We could show a 'shutting down' popup here if we wanted -- if Image::ThumbnailNumThreadsRunning is > 0.
-	Viewer::Images.Clear();	
+	Viewer::Images.Clear();
 	Viewer::UnloadAppImages();
 
 	// Get current window geometry and set in config file if we're not in fullscreen mode and not iconified.
-	if (!Viewer::Config::Current->FullscreenMode && !Viewer::WindowIconified)
+	if (!config.FullscreenMode && !Viewer::WindowIconified)
 	{
 		glfwGetWindowPos(Viewer::Window, &Viewer::Config::Global.WindowX, &Viewer::Config::Global.WindowY);
 

@@ -110,8 +110,9 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 	tVector2 windowPos = GetDialogOrigin(DialogID::Properties);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
+	Config::ProfileSettings& config = *Config::Current;
 	float nextWinWidth;
-	switch (Viewer::Config::Current->GetUISize())
+	switch (config.GetUISize())
 	{
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			nextWinWidth = 238.0f;
@@ -147,7 +148,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 	}
 
 	float itemWidth, buttonSize;
-	switch (Viewer::Config::Current->GetUISize())
+	switch (config.GetUISize())
 	{
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			itemWidth = 110.0f;
@@ -261,7 +262,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			bool scrubberDisplayed = false;
 			if ((numTextures >= 2) && !altEnabled)
 			{
-				ImGui::Checkbox("Scrubber", &Config::Current->ShowFrameScrubber);
+				ImGui::Checkbox("Scrubber", &config.ShowFrameScrubber);
 				anyUIDisplayed = true;
 				scrubberDisplayed = true;
 			}
@@ -399,7 +400,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			bool scrubberDisplayed = false;
 			if ((numTextures >= 2) && !altEnabled)
 			{
-				ImGui::Checkbox("Scrubber", &Config::Current->ShowFrameScrubber);
+				ImGui::Checkbox("Scrubber", &config.ShowFrameScrubber);
 				anyUIDisplayed = true;
 				scrubberDisplayed = true;
 			}
@@ -812,7 +813,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		}
 		ImGui::Checkbox("Preview Period", &CurrImage->FrameDurationPreviewEnabled);
 		ImGui::SameLine(); ShowHelpMark("If enabled this number of seconds is used for all frame periods while playing.");
-		ImGui::Checkbox("Scrubber", &Config::Current->ShowFrameScrubber);
+		ImGui::Checkbox("Scrubber", &config.ShowFrameScrubber);
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 		ImGui::Separator();

@@ -60,8 +60,9 @@ tString Viewer::MakeImageTooltipString(Viewer::Image* image, const tString& file
 
 void Viewer::DoSortParameters(bool singleLine)
 {
+	Config::ProfileSettings& config = *Config::Current;
 	float sortComboWidth;
-	switch (Config::Current->GetUISize())
+	switch (config.GetUISize())
 	{
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			sortComboWidth		= 110.0f;
@@ -88,25 +89,25 @@ void Viewer::DoSortParameters(bool singleLine)
 	ImGui::PushItemWidth(sortComboWidth);
 
 	tString label = singleLine ? "##Sort" : "Sort";
-	if (ImGui::Combo(label.Chr(), &Config::Current->SortKey, sortItems, tNumElements(sortItems), tNumElements(sortItems)/2))
-		SortImages(Config::Current->GetSortKey(), Config::Current->SortAscending);
+	if (ImGui::Combo(label.Chr(), &config.SortKey, sortItems, tNumElements(sortItems), tNumElements(sortItems)/2))
+		SortImages(config.GetSortKey(), config.SortAscending);
 	ShowToolTip("Specifies what property to sort by. An asterisk (*) means\nthe property is stored in image meta-data and may not be\npresent in all images. Shuffle means random order.");
 
-	if (Config::Current->GetSortKey() == Config::ProfileSettings::SortKeyEnum::Shuffle)
+	if (config.GetSortKey() == Config::ProfileSettings::SortKeyEnum::Shuffle)
 	{
 		ImGui::SameLine();
 		if (ImGui::Button(" Reshuffle "))
 		{
 			for (Image* i = Images.First(); i; i = i->Next())
 				i->RegenerateShuffleValue();
-			SortImages(Config::ProfileSettings::SortKeyEnum::Shuffle, Config::Current->SortAscending);
+			SortImages(Config::ProfileSettings::SortKeyEnum::Shuffle, config.SortAscending);
 		}
 	}
 
 	if (singleLine)
 		ImGui::SameLine();
-	if (ImGui::Checkbox("Ascending", &Config::Current->SortAscending))
-		SortImages(Config::Current->GetSortKey(), Config::Current->SortAscending);
+	if (ImGui::Checkbox("Ascending", &config.SortAscending))
+		SortImages(config.GetSortKey(), config.SortAscending);
 }
 
 
@@ -115,8 +116,9 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar;
 	tVector2 windowPos = GetDialogOrigin(DialogID::ContentView);
 
+	Config::ProfileSettings& config = *Config::Current;
 	tVector2 initialSize;
-	switch (Config::Current->GetUISize())
+	switch (config.GetUISize())
 	{
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:		initialSize.Set(586.0f, 480.0f);	break;
 		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:	initialSize.Set(602.0f, 488.0f);	break;
@@ -136,7 +138,7 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 	float viewOptionsHeight;
 	float viewOptionsOffset;
 	float progressTextOffset;
-	switch (Config::Current->GetUISize())
+	switch (config.GetUISize())
 	{
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			viewOptionsHeight	= 61.0f;
@@ -163,11 +165,11 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 	float visibleW = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 
 	float minSpacing = 4.0f;
-	float numPerRowF = ImGui::GetWindowContentRegionMax().x / (Config::Current->ThumbnailWidth + minSpacing);
+	float numPerRowF = ImGui::GetWindowContentRegionMax().x / (config.ThumbnailWidth + minSpacing);
 	int numPerRow = tMath::tClampMin(int(numPerRowF), 1);
-	float extra = ImGui::GetWindowContentRegionMax().x - (float(numPerRow) * (Config::Current->ThumbnailWidth + minSpacing));
+	float extra = ImGui::GetWindowContentRegionMax().x - (float(numPerRow) * (config.ThumbnailWidth + minSpacing));
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2(minSpacing + extra/float(numPerRow), minSpacing));
-	tVector2 thumbButtonSize(Config::Current->ThumbnailWidth, Config::Current->ThumbnailWidth*9.0f/16.0f); // 64 36, 32 18,
+	tVector2 thumbButtonSize(config.ThumbnailWidth, config.ThumbnailWidth*9.0f/16.0f); // 64 36, 32 18,
 	int thumbNum = 0;
 	int numGeneratedThumbs = 0;
 	static int numThumbsWhenSorted = 0;
@@ -242,19 +244,19 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 	ImGui::SetCursorPos(tVector2(0.0f, viewOptionsOffset));
 
 	ImGui::PushItemWidth(200);
-	ImGui::SliderFloat("Size", &Config::Current->ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth), "%.0f");
+	ImGui::SliderFloat("Size", &config.ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth), "%.0f");
 	ImGui::SameLine();
 	ImGui::PopItemWidth();
 
 	DoSortParameters(true);
 
 	// If we are sorting by a thumbnail cached key, resort if necessary.
-	Config::ProfileSettings::SortKeyEnum sortKey = Config::Current->GetSortKey();
+	Config::ProfileSettings::SortKeyEnum sortKey = config.GetSortKey();
 	if (Config::ProfileSettings::IsCachedSortKey(sortKey))
 	{
 		if (numThumbsWhenSorted != numGeneratedThumbs)
 		{
-			SortImages(sortKey, Config::Current->SortAscending);
+			SortImages(sortKey, config.SortAscending);
 			numThumbsWhenSorted = numGeneratedThumbs;
 		}
 	}
