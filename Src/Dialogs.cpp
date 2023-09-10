@@ -22,6 +22,11 @@
 #include "Version.cmake.h"
 using namespace tMath;
 
+namespace Viewer
+{
+	extern OutputLog OutLog;
+}
+
 
 void Viewer::ShowAboutPopup(bool* popen)
 {
@@ -316,7 +321,7 @@ void Viewer::DoRenameModal(bool renamePressed)
 
 // Parts of this class are a modification of the one that ships with Dear ImGui. The DearImGui
 // licence (MIT) may be found in the txt file Licence_DearImGui_MIT.txt in the Data folder.
-void Viewer::NavLogBar::ClearLog()
+void Viewer::OutputLog::ClearLog()
 {
 	LogBuf.clear();
 	LogLineOffsets.clear();
@@ -324,7 +329,7 @@ void Viewer::NavLogBar::ClearLog()
 }
 
 
-void Viewer::NavLogBar::AddLog(const char* fmt, ...)
+void Viewer::OutputLog::AddLog(const char* fmt, ...)
 {
 	int oldSize = LogBuf.size();
 	va_list args;
@@ -337,6 +342,104 @@ void Viewer::NavLogBar::AddLog(const char* fmt, ...)
 			LogLineOffsets.push_back(oldSize + 1);
 
 	LogScrollToBottom = true;
+}
+
+
+void Viewer::OutputLog::DrawLog()
+{
+	if (ImGui::Button("Clear"))
+		ClearLog();
+	float clrWidth = ImGui::GetItemRectSize().x;
+
+	ImGui::SameLine();
+	bool copy = ImGui::Button("Copy");
+	float cpyWidth = ImGui::GetItemRectSize().x;
+
+	ImGui::SameLine();
+
+	float fltWidth = ImGui::GetWindowWidth() - clrWidth - cpyWidth;
+	LogFilter.Draw("Filter", fltWidth-120.0f);
+	ImGui::SameLine();
+	Viewer::ShowHelpMark("Place a negative sign in front to exclude (-excluded).");
+
+	ImGui::Separator();
+	ImGui::BeginChild("scrolling", tVector2(0.0f, 0.0f), false, ImGuiWindowFlags_HorizontalScrollbar);
+	if (copy)
+		ImGui::LogToClipboard();
+
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2(0.0f, 0.0f));
+	const char* buf = LogBuf.begin();
+	const char* bufEnd = LogBuf.end();
+	if (LogFilter.IsActive())
+	{
+		for (int lineNo = 0; lineNo < LogLineOffsets.Size; lineNo++)
+		{
+			const char* lineStart = buf + LogLineOffsets[lineNo];
+			const char* lineEnd = (lineNo + 1 < LogLineOffsets.Size) ? (buf + LogLineOffsets[lineNo + 1] - 1) : bufEnd;
+			if (LogFilter.PassFilter(lineStart, lineEnd))
+				ImGui::TextUnformatted(lineStart, lineEnd);
+		}
+	}
+	else
+	{
+		// The simplest way to display the entire buffer is with ImGui::TextUnformatted(buf, buf_end); TextUnformatted
+		// has specialization for large blobs of text and will fast-forward to skip non-visible lines. Here we instead
+		// demonstrate using the clipper to only process lines that are within the visible area. If you have tens of
+		// thousands of items and their processing cost is non-negligible, coarse clipping them on your side is
+		// recommended.
+		//
+		// ImGuiListClipper requires a) random access into your data, and b) items all being the same height, both of
+		// which we can handle since we an array pointing to the beginning of each line of text. When using the filter
+		// (in the block of code above) we don't have random access into the data to display anymore, which is why we
+		// don't use the clipper. Storing or skimming through the search result would make it possible and would be
+		// recommended if you want to search through tens of thousands of entries.
+		ImGuiListClipper clipper;
+		clipper.Begin(LogLineOffsets.Size);
+		while (clipper.Step())
+		{
+			for (int lineNo = clipper.DisplayStart; lineNo < clipper.DisplayEnd; lineNo++)
+			{
+				const char* lineStart = buf + LogLineOffsets[lineNo];
+				const char* lineEnd = (lineNo + 1 < LogLineOffsets.Size) ? (buf + LogLineOffsets[lineNo + 1] - 1) : bufEnd;
+				ImGui::TextUnformatted(lineStart, lineEnd);
+			}
+		}
+		clipper.End();
+	}
+	ImGui::PopStyleVar();
+
+	if (LogScrollToBottom)
+		ImGui::SetScrollHereY(1.0f);
+
+	LogScrollToBottom = false;
+	ImGui::EndChild();
+}
+
+
+void Viewer::ShowOutputLogPopup(bool* popen)
+{
+	Config::ProfileSettings& config = *Config::Current;
+
+	tVector2 windowPos = GetDialogOrigin(DialogID::LogOutput);
+	tVector2 windowSize = tMath::tLinearLookup
+	(
+		config.UISizeFlt(), config.UISizeSmallestFlt(), config.UISizeLargestFlt(),
+		#ifdef ALLOW_ALL_UI_SIZES
+		tVector2(410.0f, 220.0f), tVector2(800.0f, 400.0f)
+		#else
+		tVector2(410.0f, 220.0f), tVector2(520.0f, 270.0f)
+		#endif
+	);
+
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSizeConstraints(tVector2(330.0f, 190.0f), tVector2(4096.0f, 4096.0f));
+	ImGuiWindowFlags flags = ImGuiWindowFlags_NoFocusOnAppearing;
+	if (ImGui::Begin("Output Log", popen, flags))
+	{
+		Viewer::OutLog.DrawLog();
+	}
+	ImGui::End();
 }
 
 
@@ -395,70 +498,4 @@ void Viewer::NavLogBar::Draw()
 			ImGui::EndCombo();
 		}
 	}
-
-	if (ShowLog)
-		DrawLog();
-}
-
-
-void Viewer::NavLogBar::DrawLog()
-{
-	if (ImGui::Button("Clear"))
-		ClearLog();
-
-	ImGui::SameLine();
-	bool copy = ImGui::Button("Copy");
-	ImGui::SameLine();
-	LogFilter.Draw("Filter", -100.0f);
-	ImGui::Separator();
-	ImGui::BeginChild("scrolling", tVector2(0.0f, 0.0f), false, ImGuiWindowFlags_HorizontalScrollbar);
-	if (copy)
-		ImGui::LogToClipboard();
-
-	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2(0.0f, 0.0f));
-	const char* buf = LogBuf.begin();
-	const char* bufEnd = LogBuf.end();
-	if (LogFilter.IsActive())
-	{
-		for (int lineNo = 0; lineNo < LogLineOffsets.Size; lineNo++)
-		{
-			const char* lineStart = buf + LogLineOffsets[lineNo];
-			const char* lineEnd = (lineNo + 1 < LogLineOffsets.Size) ? (buf + LogLineOffsets[lineNo + 1] - 1) : bufEnd;
-			if (LogFilter.PassFilter(lineStart, lineEnd))
-				ImGui::TextUnformatted(lineStart, lineEnd);
-		}
-	}
-	else
-	{
-		// The simplest way to display the entire buffer is with ImGui::TextUnformatted(buf, buf_end); TextUnformatted
-		// has specialization for large blobs of text and will fast-forward to skip non-visible lines. Here we instead
-		// demonstrate using the clipper to only process lines that are within the visible area. If you have tens of
-		// thousands of items and their processing cost is non-negligible, coarse clipping them on your side is
-		// recommended.
-		//
-		// ImGuiListClipper requires a) random access into your data, and b) items all being the same height, both of
-		// which we can handle since we an array pointing to the beginning of each line of text. When using the filter
-		// (in the block of code above) we don't have random access into the data to display anymore, which is why we
-		// don't use the clipper. Storing or skimming through the search result would make it possible and would be
-		// recommended if you want to search through tens of thousands of entries.
-		ImGuiListClipper clipper;
-		clipper.Begin(LogLineOffsets.Size);
-		while (clipper.Step())
-		{
-			for (int lineNo = clipper.DisplayStart; lineNo < clipper.DisplayEnd; lineNo++)
-			{
-				const char* lineStart = buf + LogLineOffsets[lineNo];
-				const char* lineEnd = (lineNo + 1 < LogLineOffsets.Size) ? (buf + LogLineOffsets[lineNo + 1] - 1) : bufEnd;
-				ImGui::TextUnformatted(lineStart, lineEnd);
-			}
-		}
-		clipper.End();
-	}
-	ImGui::PopStyleVar();
-
-	if (LogScrollToBottom)
-		ImGui::SetScrollHereY(1.0f);
-
-	LogScrollToBottom = false;
-	ImGui::EndChild();
 }

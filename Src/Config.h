@@ -64,6 +64,7 @@ struct ProfileSettings
 	bool ShowBindingsWindow;
 	bool ShowCheatSheet;
 	bool ShowAbout;
+	bool ShowOutputLog;
 
 	float ThumbnailWidth;
 

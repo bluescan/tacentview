@@ -334,6 +334,7 @@ void Config::ProfileSettings::Reset(Viewer::Profile profile, uint32 categories)
 		ShowBindingsWindow			= false;
 		ShowCheatSheet				= false;
 		ShowAbout					= false;
+		ShowOutputLog				= false;
 
 		ThumbnailWidth				= 128.0f;
 		OverlayCorner				= 1;
@@ -475,6 +476,7 @@ void Config::ProfileSettings::Load(tExpression expr)
 			ReadItem(ShowBindingsWindow);
 			ReadItem(ShowCheatSheet);
 			ReadItem(ShowAbout);
+			ReadItem(ShowOutputLog);
 			ReadItem(ThumbnailWidth);
 			ReadItem(SortKey);
 			ReadItem(SortAscending);
@@ -650,6 +652,7 @@ bool Config::ProfileSettings::Save(tExprWriter& writer) const
 	WriteItem(ShowBindingsWindow);
 	WriteItem(ShowCheatSheet);
 	WriteItem(ShowAbout);
+	WriteItem(ShowOutputLog);
 	WriteItem(ThumbnailWidth);
 	WriteItem(SortKey);
 	WriteItem(SortAscending);

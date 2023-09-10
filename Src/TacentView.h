@@ -143,6 +143,7 @@ namespace Viewer
 		CheatSheet,
 		About,
 		ChannelFilter,
+		LogOutput,
 		NumIDs
 	};
 	tMath::tVector2 GetDialogOrigin(DialogID);

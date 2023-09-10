@@ -23,23 +23,27 @@ namespace Viewer
 	void DoSnapMessageNoFileBrowseModal(bool justOpened);
 	void DoSnapMessageNoFrameTransModal(bool justOpened);
 	void DoRenameModal(bool renamePressed);
+	void ShowOutputLogPopup(bool* popen);
 
-	// Parts of this class are a modification of the one that ships with Dear ImGui. The DearImGui
-	// licence (MIT) may be found in the txt file Licence_DearImGui_MIT.txt in the Data folder.
 	class NavLogBar
 	{
 	public:
-		NavLogBar()												: LogScrollToBottom(true) { ClearLog(); }
+		NavLogBar()												{ }
 		void Draw();
-		void SetShowLog(bool enabled)							{ ShowLog = enabled; }
-		bool GetShowLog() const									{ return ShowLog; }
+	};
+
+	// Parts of this class are a modification of the one that ships with Dear ImGui. The DearImGui
+	// licence (MIT) may be found in the txt file Licence_DearImGui_MIT.txt in the Data folder.
+	class OutputLog
+	{
+	public:
+		OutputLog()												: LogScrollToBottom(true) { ClearLog(); }
+		void DrawLog();
 		void AddLog(const char* fmt, ...) IM_FMTARGS(2);
 
 	private:
 		void ClearLog();
-		void DrawLog();
 
-		bool ShowLog = false;
 		ImGuiTextBuffer LogBuf;
 		ImGuiTextFilter LogFilter;
 

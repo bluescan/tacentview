@@ -160,6 +160,8 @@ namespace Viewer
 	tFileDialog::FileDialog SaveAsDialog(tFileDialog::DialogMode::SaveFile, Viewer::FileTypes_Save);
 
 	NavLogBar NavBar;
+	OutputLog OutLog;
+
 	tString ImagesDir;
 	tList<tStringItem> ImagesSubDirs;
 	tList<Image> Images;
@@ -605,7 +607,7 @@ void Viewer::SetZoomPercent(float zoom)
 
 void Viewer::PrintRedirectCallback(const char* text, int numChars)
 {
-	NavBar.AddLog("%s", text);
+	OutLog.AddLog("%s", text);
 	
 	#ifdef PLATFORM_LINUX
 	// We have a terminal in Linux so use it.
@@ -654,7 +656,7 @@ int Viewer::GetNavBarHeight()
 	if (!config.ShowNavBar)
 		return 0;
 
-	return NavBar.GetShowLog() ? 150 : 30;
+	return 30;
 }
 
 
@@ -2690,6 +2692,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (config.ShowAbout)
 		ShowAboutPopup(&config.ShowAbout);
 
+	if (config.ShowOutputLog)
+		ShowOutputLogPopup(&config.ShowOutputLog);
+
 	if (config.ShowChannelFilter)
 		ShowChannelFilterOverlay(&config.ShowChannelFilter);
 
@@ -3431,9 +3436,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::DebugLog:
-			NavBar.SetShowLog( !NavBar.GetShowLog() );
-			if (NavBar.GetShowLog() && !config.ShowNavBar)
-				config.ShowNavBar = true;
+			config.ShowOutputLog = !config.ShowOutputLog;
 			break;
 
 		case Bindings::Operation::ProfileMain:
