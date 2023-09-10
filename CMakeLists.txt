@@ -61,6 +61,8 @@ message(STATUS "Viewer -- tacent_SOURCE_DIR: ${tacent_SOURCE_DIR}")
 add_executable(
 	${PROJECT_NAME}
 	WIN32
+	Src/ColourDialogs.cpp
+	Src/ColourDialogs.h
 	Src/Command.cpp
 	Src/Command.h
 	Src/CommandHelp.cpp

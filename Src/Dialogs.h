@@ -1,6 +1,6 @@
 // Dialogs.h
 //
-// Various dialogs and helpers including a log window, info overlay, cheatsheet, help window, and about window.
+// Various dialogs and helpers including a log window, info overlay, help window, and about window.
 //
 // Copyright (c) 2019-2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
@@ -17,9 +17,6 @@
 
 namespace Viewer
 {
-	void ShowPixelEditorOverlay(bool* popen);
-	void ShowChannelFilterOverlay(bool* popen);
-	void DoLevelsModal(bool levelsPressed);
 	void ShowAboutPopup(bool* popen);
 	void DoDeleteFileModal(bool deleteFilePressed);
 	void DoDeleteFileNoRecycleModal(bool deleteFileNoRecycPressed);

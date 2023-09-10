@@ -46,6 +46,7 @@
 #include "imgui_internal.h"			// For ProgressArc.
 #include "TacentView.h"
 #include "Image.h"
+#include "ColourDialogs.h"
 #include "Dialogs.h"
 #include "Details.h"
 #include "Preferences.h"
@@ -276,7 +277,7 @@ namespace Viewer
 	void DrawBackground(float l, float r, float b, float t, float drawW, float drawH);
 	void DrawNavBar(float x, float y, float w, float h);
 	int GetNavBarHeight();
-	int GetMenuBarHeight();
+
 	void PrintRedirectCallback(const char* text, int numChars);
 	void GlfwErrorCallback(int error, const char* description)															{ tPrintf("Glfw Error %d: %s\n", error, description); }
 	void SetWindowIcon(const tString& icoFile);
