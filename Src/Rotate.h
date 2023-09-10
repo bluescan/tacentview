@@ -1,8 +1,8 @@
 // Rotate.h
 //
-// Modal for rotating an image.
+// Modals for rotating an image.
 //
-// Copyright (c) 2020, 2021 Tristan Grimmer.
+// Copyright (c) 2020, 2021, 2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -20,4 +20,7 @@
 namespace Viewer
 {
 	void DoRotateImageModal(bool rotateImagePressed);
+
+	enum class LosslessTransformMode { None, Rot90ACW, Rot90CW, FlipH, FlipV };
+	void DoLosslessTransformModal(LosslessTransformMode);
 }

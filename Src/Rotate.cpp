@@ -1,6 +1,6 @@
 // Rotate.cpp
 //
-// Modal for rotating an image.
+// Modals for rotating an image.
 //
 // Copyright (c) 2020-2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
@@ -168,3 +168,137 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 	ImGui::EndPopup();
 }
 
+
+void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
+{
+	static const char* transName = nullptr;
+	static LosslessTransformMode currMode = LosslessTransformMode::None;
+	static bool isPerfect = false;
+	if (mode != LosslessTransformMode::None)
+	{
+		currMode = mode;
+		switch (mode)
+		{
+			case LosslessTransformMode::Rot90ACW:	transName = "Anti-clockwise 90° Rotation";	break;
+			case LosslessTransformMode::Rot90CW:	transName = "Clockwise 90° Rotation";		break;
+			case LosslessTransformMode::FlipH:		transName = "Horizontal Flip";				break;
+			case LosslessTransformMode::FlipV:		transName = "Vertical Flip";				break;
+		}
+		if (CurrImage->Filetype == tSystem::tFileType::JPG)
+		{
+			// @todo This isn't ideal as we are loading the jpg only to find out if a perfect
+			// lossless transformation is possible. Later the user may press the lossless button
+			// in which case we need to load the jpg again.
+			isPerfect = false;
+			tImage::tImageJPG jpg;
+			tImage::tImageJPG::LoadParams params;
+			params.Flags = tImage::tImageJPG::LoadFlag_NoDecompress;
+			jpg.Load(CurrImage->Filename, params);
+			if (jpg.IsValid())
+			{
+				switch (mode)
+				{
+					case LosslessTransformMode::Rot90ACW:	isPerfect = jpg.CanDoPerfectLosslessTransform(tImage::tImageJPG::Transform::Rotate90ACW);	break;
+					case LosslessTransformMode::Rot90CW:	isPerfect = jpg.CanDoPerfectLosslessTransform(tImage::tImageJPG::Transform::Rotate90CW);	break;
+					case LosslessTransformMode::FlipH:		isPerfect = jpg.CanDoPerfectLosslessTransform(tImage::tImageJPG::Transform::FlipH);			break;
+					case LosslessTransformMode::FlipV:		isPerfect = jpg.CanDoPerfectLosslessTransform(tImage::tImageJPG::Transform::FlipV);			break;
+				}
+			}
+		}
+		else
+		{
+			isPerfect = true;
+		}
+		ImGui::OpenPopup("Lossless Transform");
+	}
+
+	// The unused isOpenRen bool is just so we get a close button in ImGui.
+	bool isOpenRen = true;
+	if (!ImGui::BeginPopupModal("Lossless Transform", &isOpenRen, ImGuiWindowFlags_AlwaysAutoResize))
+		return;
+
+	ImGui::Text
+	(
+		"Tacent View supports lossless %ss.\n"
+		"\n"
+		"If you select 'Normal' the transform will be performed\n"
+		"but if you save to a lossy format it will need to re-compress.\n"
+		"\n"
+		"If you press 'Lossless' the transform will be applied directly\n"
+		"to the file without decompressing. The image will be saved\n"
+		"and reloaded. There is no undo but also no loss of quality.\n\n",
+		transName
+	);
+
+	if (!isPerfect)
+	{
+		ImGui::Text
+		(
+			"Note: For this file a perfect (area-preserving) transformation\n"
+			"is not possible because the width or height is not a multiple of\n"
+			"the JPeg MCU block-size. If you press 'Lossless' you will still\n"
+			"get a lossless image afterwards, but the right or bottom edge\n"
+			"will be slightly trimmed.\n\n"
+		);
+	}
+
+	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
+		ImGui::CloseCurrentPopup();
+
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 212.0f);
+	if (Viewer::Button("Normal", tVector2(100.0f, 0.0f)))
+	{
+		CurrImage->Unbind();
+		switch (currMode)
+		{
+			case LosslessTransformMode::Rot90ACW:	CurrImage->Rotate90(true);	break;
+			case LosslessTransformMode::Rot90CW:	CurrImage->Rotate90(false);	break;
+			case LosslessTransformMode::FlipH:		CurrImage->Flip(true);		break;
+			case LosslessTransformMode::FlipV:		CurrImage->Flip(false);		break;
+		}
+		CurrImage->Bind();
+		SetWindowTitle();
+		ImGui::CloseCurrentPopup();
+	}
+
+	ImGui::SameLine();
+	if (ImGui::IsWindowAppearing())
+		ImGui::SetKeyboardFocusHere();
+	if (Viewer::Button("Lossless", tVector2(100.0f, 0.0f)))
+	{
+		bool fileSaved = false;
+		switch (CurrImage->Filetype)
+		{
+			case tSystem::tFileType::JPG:
+			{
+				tImage::tImageJPG jpg;
+				tImage::tImageJPG::LoadParams params;
+				params.Flags = tImage::tImageJPG::LoadFlag_NoDecompress;
+				jpg.Load(CurrImage->Filename, params);
+				if (!jpg.IsValid())
+					break;
+				switch (currMode)
+				{
+					case LosslessTransformMode::Rot90ACW:	jpg.LosslessTransform(tImage::tImageJPG::Transform::Rotate90ACW);	break;
+					case LosslessTransformMode::Rot90CW:	jpg.LosslessTransform(tImage::tImageJPG::Transform::Rotate90CW);	break;
+					case LosslessTransformMode::FlipH:		jpg.LosslessTransform(tImage::tImageJPG::Transform::FlipH);			break;
+					case LosslessTransformMode::FlipV:		jpg.LosslessTransform(tImage::tImageJPG::Transform::FlipV);			break;
+				}
+				fileSaved = jpg.Save(CurrImage->Filename);
+				break;
+			}
+		}
+		if (fileSaved)
+		{
+			CurrImage->Unbind();
+			CurrImage->Unload(true);
+			CurrImage->Load();
+			CurrImage->Bind();
+			SetWindowTitle();
+		}
+		ImGui::CloseCurrentPopup();
+	}
+
+	ImGui::EndPopup();
+}

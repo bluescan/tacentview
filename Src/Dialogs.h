@@ -24,9 +24,6 @@ namespace Viewer
 	void DoSnapMessageNoFrameTransModal(bool justOpened);
 	void DoRenameModal(bool renamePressed);
 
-	enum class LosslessTransformMode { None, Rot90ACW, Rot90CW, FlipH, FlipV };
-	void DoLosslessTransformModal(LosslessTransformMode);
-
 	// Parts of this class are a modification of the one that ships with Dear ImGui. The DearImGui
 	// licence (MIT) may be found in the txt file Licence_DearImGui_MIT.txt in the Data folder.
 	class NavLogBar
