@@ -1220,8 +1220,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 		case DialogMode::SaveFile:		label = "Save File";		configPath = &ConfigSaveFilePath;	break;
 	}
 
-	float nextWinWidth = 660.0f;
-	float nextWinHeight = 400.0f;
+	float nextWinWidth, nextWinHeight;
 	switch (Viewer::Config::Current->GetUISize())
 	{
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
@@ -1232,6 +1231,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 			nextWinWidth = 720.0f;
 			nextWinHeight = 460.0f;
 			break;
+		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			nextWinWidth = 780.0f;
 			nextWinHeight = 520.0f;
@@ -1264,7 +1264,6 @@ FileDialog::DialogState FileDialog::DoPopup()
 	switch (Viewer::Config::Current->GetUISize())
 	{
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
-		default:
 			menuBarHeight	= 24.0f;
 			bottomBarRowA	= 20.0f;
 			bottomBarRowB	= 28.0f;
@@ -1286,6 +1285,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 			colWidthSize	= 65.0;
 			break;
 
+		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			menuBarHeight	= 28.0f;
 			bottomBarRowA	= 24.0f;

@@ -63,13 +63,13 @@ void Viewer::DoSortParameters(bool singleLine)
 	float sortComboWidth;
 	switch (Config::Current->GetUISize())
 	{
-		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			sortComboWidth		= 110.0f;
 			break;
 		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 			sortComboWidth		= 125.0f;
 			break;
+		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			sortComboWidth		= 140.0f;
 			break;
@@ -118,9 +118,9 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 	tVector2 initialSize;
 	switch (Config::Current->GetUISize())
 	{
-		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:		initialSize.Set(586.0f, 480.0f);	break;
 		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:	initialSize.Set(602.0f, 488.0f);	break;
+		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Small:	initialSize.Set(610.0f, 494.0f);	break;
 	}
 
@@ -138,7 +138,6 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 	float progressTextOffset;
 	switch (Config::Current->GetUISize())
 	{
-		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			viewOptionsHeight	= 61.0f;
 			viewOptionsOffset	= 4.0f;
@@ -149,6 +148,7 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 			viewOptionsOffset	= 4.0f;
 			progressTextOffset	= 475.0f;
 			break;
+		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			viewOptionsHeight	= 70.0f;
 			viewOptionsOffset	= 5.0f;

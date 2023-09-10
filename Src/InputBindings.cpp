@@ -509,7 +509,6 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		float profileWidth, keyWidth, operationWidth, buttonWidth, removeAddSize;
 		switch (Config::Current->GetUISize())
 		{
-			default:
 			case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 				profileWidth	= 104.0f;
 				keyWidth		= 120.0f;
@@ -524,6 +523,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 				buttonWidth		= 79.0f;
 				removeAddSize	= 22.5f;
 				break;
+			default:
 			case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 				profileWidth	= 130.0f;
 				keyWidth		= 154.0f;
@@ -856,11 +856,9 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 	ImGui::SetNextWindowBgAlpha(0.80f);
 
 	tVector2 windowSize;
-	float actionWidth;
-	float operatWidth;
+	float actionWidth, operatWidth;
 	switch (Config::Current->GetUISize())
 	{
-		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			actionWidth = 106.0f;
 			operatWidth = 238.0f;
@@ -871,6 +869,7 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 			operatWidth = 262.0f;
 			windowSize.Set(actionWidth+operatWidth, 442.0f);
 			break;
+		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			actionWidth = 130.0f;
 			operatWidth = 286.0f;

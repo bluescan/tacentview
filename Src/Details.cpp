@@ -197,7 +197,6 @@ void Viewer::ShowImageMetaDataOverlay(bool* popen)
 	int maxRowsToDisplay;
 	switch (Config::Current->GetUISize())
 	{
-		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			rowHeight			= 18.0f;
 			tagWidth			= 116.0f;
@@ -210,6 +209,7 @@ void Viewer::ShowImageMetaDataOverlay(bool* popen)
 			valWidth			= 230.0f;
 			maxRowsToDisplay	= 23;
 			break;
+		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			rowHeight			= 22.0f;
 			tagWidth			= 148.0f;

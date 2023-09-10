@@ -2333,6 +2333,9 @@ struct IMGUI_API ImGuiWindow
     int                     MemoryDrawListVtxCapacity;
     bool                    MemoryCompacted;                    // Set when window extraneous data have been garbage collected
 
+	// @tacent Allowing image buttons in the menubar means the height is not just a function of the font size.
+	float					MenuBarImageButtonHeight;
+
 public:
     ImGuiWindow(ImGuiContext* context, const char* name);
     ~ImGuiWindow();
@@ -2347,7 +2350,11 @@ public:
     float       CalcFontSize() const    { ImGuiContext& g = *GImGui; float scale = g.FontBaseSize * FontWindowScale; if (ParentWindow) scale *= ParentWindow->FontWindowScale; return scale; }
     float       TitleBarHeight() const  { ImGuiContext& g = *GImGui; return (Flags & ImGuiWindowFlags_NoTitleBar) ? 0.0f : CalcFontSize() + g.Style.FramePadding.y * 2.0f; }
     ImRect      TitleBarRect() const    { return ImRect(Pos, ImVec2(Pos.x + SizeFull.x, Pos.y + TitleBarHeight())); }
-    float       MenuBarHeight() const   { ImGuiContext& g = *GImGui; return (Flags & ImGuiWindowFlags_MenuBar) ? DC.MenuBarOffset.y + CalcFontSize() + g.Style.FramePadding.y * 2.0f : 0.0f; }
+
+	// @tacent Allowing image buttons in the menubar means the height is not just a function of the font size.
+    // float       MenuBarHeight() const   { ImGuiContext& g = *GImGui; return (Flags & ImGuiWindowFlags_MenuBar) ? DC.MenuBarOffset.y + CalcFontSize() + g.Style.FramePadding.y * 2.0f : 0.0f; }
+    float       MenuBarHeight() const   { ImGuiContext& g = *GImGui; return (Flags & ImGuiWindowFlags_MenuBar) ? DC.MenuBarOffset.y + ImMax(CalcFontSize(),MenuBarImageButtonHeight) + g.Style.FramePadding.y * 2.0f : 0.0f; }
+
     ImRect      MenuBarRect() const     { float y1 = Pos.y + TitleBarHeight(); return ImRect(Pos.x, y1, Pos.x + SizeFull.x, y1 + MenuBarHeight()); }
 };
 

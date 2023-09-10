@@ -343,12 +343,12 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	//
 	// UI size parameters.
 	//
-	float okOffset = 140.0f;
+	float okOffset;
 	switch (Config::Current->GetUISize())
 	{
-		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:		okOffset = 135.0f;	break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:	okOffset = 146.0f;	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:		okOffset = 146.0f;	break;
+		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Small:	okOffset = 158.0f;	break;
 	}
 
@@ -649,9 +649,9 @@ void Viewer::ShowAboutPopup(bool* popen)
 	tVector2 windowSize;
 	switch (Config::Current->GetUISize())
 	{
-		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:		windowSize.Set(240, 500);	break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:	windowSize.Set(280, 501);	break;
+		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:		windowSize.Set(280, 501);	break;
+		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Small:	windowSize.Set(320, 515);	break;
 	}
 
@@ -1120,11 +1120,12 @@ void Viewer::NavLogBar::Draw()
 	if (ImagesSubDirs.NumItems() > 0)
 	{
 		ImGui::SameLine();
-		float offset = 0.0f;
+		float offset;
 		switch (Config::Current->GetUISize())
 		{
 			case Config::ProfileSettings::UISizeEnum::Nano:		offset = 1.0f;	break;
-			case Config::ProfileSettings::UISizeEnum::Tiny:	offset = 0.0f;	break;
+			case Config::ProfileSettings::UISizeEnum::Tiny:		offset = 0.0f;	break;
+			default:
 			case Config::ProfileSettings::UISizeEnum::Small:	offset = -1.0f;	break;
 		}
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);

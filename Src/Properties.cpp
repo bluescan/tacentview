@@ -113,13 +113,13 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 	float nextWinWidth;
 	switch (Viewer::Config::Current->GetUISize())
 	{
-		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			nextWinWidth = 238.0f;
 			break;
 		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
 			nextWinWidth = 265.0f;
 			break;
+		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			nextWinWidth = 292.0f;
 			break;
@@ -149,7 +149,6 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 	float itemWidth, buttonSize;
 	switch (Viewer::Config::Current->GetUISize())
 	{
-		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			itemWidth = 110.0f;
 			buttonSize = 18.0f;
@@ -158,6 +157,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			itemWidth = 130.0f;
 			buttonSize = 22.0f;
 			break;
+		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			itemWidth = 150.0f;
 			buttonSize = 26.0f;

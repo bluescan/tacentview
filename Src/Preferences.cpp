@@ -44,7 +44,6 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	float buttonOffset, comboWidth;
 	switch (Config::Current->GetUISize())
 	{
-		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
 			buttonOffset	= 141.0f;
 			comboWidth		= 110.0f;
@@ -53,6 +52,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			buttonOffset	= 170.0f;
 			comboWidth		= 132.0f;
 			break;
+		default:
 		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
 			buttonOffset	= 191.0f;
 			comboWidth		= 146.0f;
