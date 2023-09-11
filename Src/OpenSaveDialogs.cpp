@@ -452,14 +452,14 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 	{
 		config.SaveFileGifBPP				= 8;
 		config.SaveFileGifQuantMethod		= int(tImage::tQuantize::Method::Wu);
-		config.SaveFileGifLoop			= 0;
+		config.SaveFileGifLoop				= 0;
 		config.SaveFileGifAlphaThreshold	= -1;
 		config.SaveFileGifDitherLevel		= 0.0f;
 		config.SaveFileGifFilterSize		= 1;
-		config.SaveFileGifSampleFactor	= 1;
-		config.SaveFileWebpDurOverride	= -1;
+		config.SaveFileGifSampleFactor		= 1;
+		config.SaveFileWebpDurOverride		= -1;
 		config.SaveFileGifDurOverride		= -1;
-		config.SaveFileGifDurMultiFrame	= 3;
+		config.SaveFileGifDurMultiFrame		= 3;
 	}
 }
 

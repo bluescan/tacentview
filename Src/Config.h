@@ -136,21 +136,19 @@ struct ProfileSettings
 	int ReticleMode;
 	ReticleModeEnum GetReticleMode() const				{ return ReticleModeEnum(ReticleMode); }
 
-	//#define ALLOW_ALL_UI_SIZES
+	// #define ALLOW_ALL_UI_SIZES
 	enum class UISizeEnum
-	{
-		// Nano, Tiny, Small, Moderate, Medium, Large, Huge, Massive.
-		Nano,
-		Tiny,
-		Small,
+	{								// Approx OS Scale Percent.
+		Nano,						// 75%
+		Tiny,						// 100%
+		Small,						// 125%
 
 		#ifdef ALLOW_ALL_UI_SIZES
-		// These will be the additional ones.
-		Moderate,
-		Medium,
-		Large,
-		Huge,
-		Massive,
+		Moderate,					// 150%
+		Medium,						// 175%
+		Large,						// 200%
+		Huge,						// 225%
+		Massive,					// 250%
 		#endif
 
 		NumSizes,
@@ -161,10 +159,10 @@ struct ProfileSettings
 	
 	int UISize;											// In range [0, NumSizes).
 	UISizeEnum GetUISize() const						{ return UISizeEnum(UISize); }
-	float UISizeFlt() const								{ return float(UISize); }
-	float UISizeSmallestFlt() const						{ return float(UISizeEnum::Smallest); }
-	float UISizeKeyFlt() const							{ return float(UISizeEnum::Key); }
-	float UISizeLargestFlt() const						{ return float(UISizeEnum::Largest); }
+	float UISizeFlt() const							{ return float(UISize); }
+	/*inline static */float UISizeSmallestFlt() const		{ return float(UISizeEnum::Smallest); }
+	/*inline static */float UISizeKeyFlt() const			{ return float(UISizeEnum::Key); }
+	/*inline static */float UISizeLargestFlt() const		{ return float(UISizeEnum::Largest); }
 	float UISizeNormFlt() const							{ return float(UISize) / float(UISizeEnum::Largest); }
 
 	int ResampleFilter;									// Matches tImage::tResampleFilter. Used for image resize when saving and multiframe saving.

@@ -1336,7 +1336,7 @@ int Viewer::DoMainMenuBar()
 		(
 			config.UISizeFlt(), config.UISizeSmallestFlt(), config.UISizeLargestFlt(),
 			#ifdef ALLOW_ALL_UI_SIZES
-			tVector2(26.0f, 26.0f), tVector2(50.0f, 50.0f)
+			tVector2(26.0f, 26.0f), tVector2(64.0f, 64.0f)
 			#else
 			tVector2(26.0f, 26.0f), tVector2(30.0f, 30.0f)
 			#endif
@@ -1346,7 +1346,7 @@ int Viewer::DoMainMenuBar()
 		(
 			config.UISizeFlt(), config.UISizeSmallestFlt(), config.UISizeLargestFlt(),
 			#ifdef ALLOW_ALL_UI_SIZES
-			tVector2(24.0f, 24.0f), tVector2(48.0f, 48.0f)
+			tVector2(24.0f, 24.0f), tVector2(62.0f, 62.0f)
 			#else
 			tVector2(24.0f, 24.0f), tVector2(28.0f, 28.0f)
 			#endif
@@ -2395,6 +2395,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	// what was submitted with CurrentFontIndex.
 	if (CurrentFontIndex != config.UISize)
 	{
+		#ifdef ALLOW_ALL_UI_SIZES
+		ImGuiStyle scaledStyle;
+		scaledStyle.ScaleAllSizes( tMath::tLisc(config.UISizeNormFlt(), 1.0f, 2.6f));
+		ImGui::GetStyle() = scaledStyle;
+		#endif
+
 		ImGuiIO& io = ImGui::GetIO();
 		tAssert(config.UISize < io.Fonts->Fonts.Size);
 		ImFont* font = io.Fonts->Fonts[config.UISize];
@@ -2406,7 +2412,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	// Show the big demo window. You can browse its code to learn more about Dear ImGui.
 	static bool showDemoWindow = false;
-	// static bool showDemoWindow = true;
+	//static bool showDemoWindow = true;
 	if (showDemoWindow)
 		ImGui::ShowDemoWindow(&showDemoWindow);
 
@@ -3971,7 +3977,7 @@ int main(int argc, char** argv)
 	#define USE_IN_MEMORY_FONT_LOAD
 	#ifdef USE_IN_MEMORY_FONT_LOAD
 	for (int uisize = 0; uisize < int(Viewer::Config::ProfileSettings::UISizeEnum::NumSizes); uisize++)
-		io.Fonts->AddFontFromMemoryCompressedBase85TTF(RobotoFont_compressed_data_base85, 14.0f + float(uisize)*2.0f);
+		io.Fonts->AddFontFromMemoryCompressedBase85TTF(RobotoFont_compressed_data_base85, 14.0f + float(uisize)*3.2f);
 
 	#else
 	tString fontFile = dataDir + "Roboto-Medium.ttf";
@@ -3984,6 +3990,12 @@ int main(int argc, char** argv)
 	ImFont* font = io.Fonts->Fonts[config.UISize];
 	io.FontDefault = font;
 	Viewer::CurrentFontIndex = config.UISize;
+
+	#ifdef ALLOW_ALL_UI_SIZES
+	ImGuiStyle scaledStyle;
+	scaledStyle.ScaleAllSizes( tMath::tLisc(config.UISizeNormFlt(), 1.0f, 2.6f));
+	ImGui::GetStyle() = scaledStyle;
+	#endif
 
 	Viewer::LoadAppImages(dataDir);
 	Viewer::PopulateImages();

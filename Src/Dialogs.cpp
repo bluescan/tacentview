@@ -357,12 +357,16 @@ void Viewer::OutputLog::DrawLog()
 
 	ImGui::SameLine();
 
-	float fltWidth = ImGui::GetWindowWidth() - clrWidth - cpyWidth;
-	LogFilter.Draw("Filter", fltWidth-120.0f);
+	float fltTextWidth = ImGui::CalcTextSize("Filter##[##?##]").x;
+	float fltWidth = ImGui::GetWindowWidth() - clrWidth - cpyWidth - fltTextWidth;
+	LogFilter.Draw("Filter", fltWidth);
 	ImGui::SameLine();
 	Viewer::ShowHelpMark("Place a negative sign in front to exclude (-excluded).");
 
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f*ImGui::GetStyle().ItemSpacing.y);
 	ImGui::Separator();
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetStyle().ItemSpacing.y);
+
 	ImGui::BeginChild("scrolling", tVector2(0.0f, 0.0f), false, ImGuiWindowFlags_HorizontalScrollbar);
 	if (copy)
 		ImGui::LogToClipboard();
@@ -425,15 +429,21 @@ void Viewer::ShowOutputLogPopup(bool* popen)
 	(
 		config.UISizeFlt(), config.UISizeSmallestFlt(), config.UISizeLargestFlt(),
 		#ifdef ALLOW_ALL_UI_SIZES
-		tVector2(410.0f, 220.0f), tVector2(800.0f, 400.0f)
+		tVector2(410.0f, 220.0f), tVector2(410.0f, 220.0f)*2.65f//tVector2(1100.0f, 570.0f)
 		#else
 		tVector2(410.0f, 220.0f), tVector2(520.0f, 270.0f)
 		#endif
 	);
 
+	// WIP RENAME Profile to ProfileEnum
+	// WIP RENAME ProfileSetting to Profile.
+	// WIP Make config functions static.
+	// WIP Add Tacent LinScaleInterpolate.
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+	// ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSizeConstraints(tVector2(330.0f, 190.0f), tVector2(4096.0f, 4096.0f));
+	tVector2 minConstraint = windowSize * 0.53f;
+	ImGui::SetNextWindowSizeConstraints(minConstraint, tVector2(4096.0f, 4096.0f));
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoFocusOnAppearing;
 	if (ImGui::Begin("Output Log", popen, flags))
 	{
