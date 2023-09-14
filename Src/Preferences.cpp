@@ -427,7 +427,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	{
 		Config::ResetAllProfiles(Config::Category_AllNoBindings);
 		Config::Global.Reset();
-		Config::SetProfile(Profile::Main);
+		Config::SetProfile(eProfile::Main);
 
 		// If the global reset turns transparent work area off we can always safely clear the pending.
 		if (!Config::Global.TransparentWorkArea)

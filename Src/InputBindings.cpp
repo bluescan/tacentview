@@ -303,7 +303,7 @@ bool Bindings::InputMap::AssignKey(int key, uint32 modifiers, Operation operatio
 }
 
 
-void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
+void Bindings::InputMap::Reset(Viewer::eProfile profile, bool onlyIfUnassigned)
 {
 	if (!onlyIfUnassigned)
 		Clear();
@@ -535,28 +535,28 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		}
 
 		ImGui::SetNextItemWidth(profileWidth);
-		ImGui::Combo("##ProfileToEdit", &profile, ProfileNamesLong, int(Profile::NumProfiles));
-		Config::ProfileSettings* settings = nullptr;
+		ImGui::Combo("##ProfileToEdit", &profile, ProfileNamesLong, int(eProfile::NumProfiles));
+		Config::ProfileSettings* prof = nullptr;
 		switch (profile)
 		{
 			default:
-			case int(Profile::Main):	settings = &Config::MainProfileSettings;	break;
-			case int(Profile::Basic):	settings = &Config::BasicProfileSettings;	break;
-			case int(Profile::Kiosk):	settings = &Config::KioskProfileSettings;	break;
+			case int(eProfile::Main):	prof = &Config::MainProfileSettings;	break;
+			case int(eProfile::Basic):	prof = &Config::BasicProfileSettings;	break;
+			case int(eProfile::Kiosk):	prof = &Config::KioskProfileSettings;	break;
 		}
-		tAssert(settings);
+		tAssert(prof);
 
 		ImGui::SameLine();
 		if (ImGui::Button("Reset", tVector2(buttonWidth, 0.0f)))
-			settings->InputBindings.Reset(Viewer::Profile(profile));
+			prof->InputBindings.Reset(Viewer::eProfile(profile));
 		ShowToolTip("Resets the key bindings to default for the chosen profile.");
 
 		ImGui::SameLine();
 		if (ImGui::Button("Reset All", tVector2(buttonWidth, 0.0f)))
 		{
-			Config::MainProfileSettings.InputBindings.Reset(Profile::Main);
-			Config::BasicProfileSettings.InputBindings.Reset(Profile::Basic);
-			Config::KioskProfileSettings.InputBindings.Reset(Profile::Kiosk);
+			Config::MainProfileSettings.InputBindings.Reset(eProfile::Main);
+			Config::BasicProfileSettings.InputBindings.Reset(eProfile::Basic);
+			Config::KioskProfileSettings.InputBindings.Reset(eProfile::Kiosk);
 		}
 		ShowToolTip("Resets the key bindings to default for all profiles.");
 
@@ -564,9 +564,9 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		if (ImGui::Button("Set All", tVector2(buttonWidth, 0.0f)))
 		{
 			// Operator= deals with the object being the same one, so just copy them both over indescriminately.
-			Config::MainProfileSettings.InputBindings = settings->InputBindings;
-			Config::BasicProfileSettings.InputBindings = settings->InputBindings;
-			Config::KioskProfileSettings.InputBindings = settings->InputBindings;
+			Config::MainProfileSettings.InputBindings = prof->InputBindings;
+			Config::BasicProfileSettings.InputBindings = prof->InputBindings;
+			Config::KioskProfileSettings.InputBindings = prof->InputBindings;
 		}
 		ShowToolTip("Copies the keybindings to all profiles. Useful if you want them all the same.");
 
@@ -582,7 +582,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
 		const float rowHeight = 25.0f;
 		const int maxRowsToDisplay = 16;
-		int totalAssigned = settings->InputBindings.GetTotalAssigned();
+		int totalAssigned = prof->InputBindings.GetTotalAssigned();
 		const int numRowsToDisplay = tMin(maxRowsToDisplay, totalAssigned);
 		tVector2 outerSize = ImVec2(0.0f, rowHeight + rowHeight * float(numRowsToDisplay));
 		if (ImGui::BeginTable("KeyBindingTable", 3, tableFlags, outerSize))
@@ -610,7 +610,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 			// Key[combo] Mods	Operation[combo]	 	[+] (brings up replace popup if necessary)
 			for (int k = 0; k <= GLFW_KEY_LAST; k++)
 			{
-				KeyOps& keyops = settings->InputBindings.GetKeyOps(k);
+				KeyOps& keyops = prof->InputBindings.GetKeyOps(k);
 
 				// Skip unsupported keys and don't display keys with nothing assigned.
 				if (!keyops.IsAnythingAssigned() || !IsKeySupported(k))
@@ -691,7 +691,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		}
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
-		ShowAddBindingSection(*settings, keyWidth, operationWidth, removeAddSize);
+		ShowAddBindingSection(*prof, keyWidth, operationWidth, removeAddSize);
 	}
 	ImGui::End();
 }

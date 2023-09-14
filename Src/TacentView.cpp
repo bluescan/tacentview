@@ -329,7 +329,7 @@ namespace Viewer
 	void FocusCallback(GLFWwindow*, int gotFocus);
 	void IconifyCallback(GLFWwindow*, int iconified);
 	void ProgressArc(float radius, float percent, const ImVec4& colour, const ImVec4& colourbg, float thickness = 4.0f, int segments = 32);
-	void ChangeProfile(Viewer::Profile);
+	void ChangeProfile(Viewer::eProfile);
 	bool CopyImage();
 	bool PasteImage();
 }
@@ -1421,20 +1421,20 @@ int Viewer::DoMainMenuBar()
 
 			// For all three profile menu items, changing to the currently activated is checked by ChangeProfile
 			// and does nothing. It is safe.
-			bool mainProfile = Config::GetProfile() == Profile::Main;
+			bool mainProfile = Config::GetProfile() == eProfile::Main;
 			tString mainProfKey = config.InputBindings.FindModKeyText(Bindings::Operation::ProfileMain);
 			if (ImGui::MenuItem("Main Profile", mainProfKey.Chz(), &mainProfile))
-				ChangeProfile(Profile::Main);
+				ChangeProfile(eProfile::Main);
 
-			bool basicProfile = Config::GetProfile() == Profile::Basic;
+			bool basicProfile = Config::GetProfile() == eProfile::Basic;
 			tString basicProfKey = config.InputBindings.FindModKeyText(Bindings::Operation::ProfileBasic);
 			if (ImGui::MenuItem("Basic Profile", basicProfKey.Chz(), &basicProfile))
-				ChangeProfile(Profile::Basic);
+				ChangeProfile(eProfile::Basic);
 
-			bool kioskProfile = Config::GetProfile() == Profile::Kiosk;
+			bool kioskProfile = Config::GetProfile() == eProfile::Kiosk;
 			tString kioskProfKey = config.InputBindings.FindModKeyText(Bindings::Operation::ProfileKiosk);
 			if (ImGui::MenuItem("Kiosk Profile", kioskProfKey.Chz(), &kioskProfile))
-				ChangeProfile(Profile::Kiosk);
+				ChangeProfile(eProfile::Kiosk);
 
 			ImGui::Separator();
 
@@ -1997,12 +1997,13 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	else
 		glClearColor(ColourClear.x, ColourClear.y, ColourClear.z, ColourClear.w);
 	glClear(GL_COLOR_BUFFER_BIT);
-///////////	int topUIHeight		= GetMenuBarHeight();
+	// @wip
+	///////////	int topUIHeight		= GetMenuBarHeight();
 
 	ImGui_ImplOpenGL2_NewFrame();		
 	ImGui_ImplGlfw_NewFrame();
 
-/////////////////
+	/////////////////
 	ImGui::NewFrame();
 	int dispw, disph;
 	glfwGetFramebufferSize(window, &dispw, &disph);
@@ -2397,7 +2398,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	{
 		#ifdef ALLOW_ALL_UI_SIZES
 		ImGuiStyle scaledStyle;
-		scaledStyle.ScaleAllSizes( tMath::tLisc(config.UISizeNormFlt(), 1.0f, 2.6f));
+		scaledStyle.ScaleAllSizes( tMath::tLini(config.UISizeNormFlt(), 1.0f, 2.6f));
 		ImGui::GetStyle() = scaledStyle;
 		#endif
 
@@ -2654,13 +2655,13 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::End();
 
 		// Exit basic or kiosk profile.
-		if ((Config::GetProfile() == Profile::Basic) || (Config::GetProfile() == Profile::Kiosk))
+		if ((Config::GetProfile() == eProfile::Basic) || (Config::GetProfile() == eProfile::Kiosk))
 		{
 			ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+mainButtonDim*4.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 			ImGui::SetNextWindowSize(tVector2(120.0f, mainButtonDim), ImGuiCond_Always);
 			ImGui::Begin("ToMainProfile", nullptr, flagsImgButton);
 			if (ImGui::Button("ESC", tVector2(50.0f, escButtonHeight)))
-				ChangeProfile(Profile::Main);
+				ChangeProfile(eProfile::Main);
 			ImGui::End();
 		}
 	}
@@ -2850,7 +2851,7 @@ void Viewer::ApplyZoomDelta(float zoomDelta)
 }
 
 
-void Viewer::ChangeProfile(Profile profile)
+void Viewer::ChangeProfile(eProfile profile)
 {
 	if (Config::GetProfile() == profile)
 		return;
@@ -3446,15 +3447,15 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::ProfileMain:
-			if (!CropMode && (Config::GetProfile() != Profile::Main)) ChangeProfile(Profile::Main);
+			if (!CropMode && (Config::GetProfile() != eProfile::Main)) ChangeProfile(eProfile::Main);
 			break;
 
 		case Bindings::Operation::ProfileBasic:
-			if (!CropMode && (Config::GetProfile() != Profile::Basic)) ChangeProfile(Profile::Basic);
+			if (!CropMode && (Config::GetProfile() != eProfile::Basic)) ChangeProfile(eProfile::Basic);
 			break;
 
 		case Bindings::Operation::ProfileKiosk:
-			if (!CropMode && (Config::GetProfile() != Profile::Kiosk)) ChangeProfile(Profile::Kiosk);
+			if (!CropMode && (Config::GetProfile() != eProfile::Kiosk)) ChangeProfile(eProfile::Kiosk);
 			break;
 
 		case Bindings::Operation::Preferences:
@@ -3473,15 +3474,15 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case Bindings::Operation::Escape:
 			if (config.FullscreenMode)
 				ChangeScreenMode(false);
-			else if ((Config::GetProfile() == Profile::Basic) || (Config::GetProfile() == Profile::Kiosk))
-				ChangeProfile(Profile::Main);
+			else if ((Config::GetProfile() == eProfile::Basic) || (Config::GetProfile() == eProfile::Kiosk))
+				ChangeProfile(eProfile::Main);
 			break;
 
 		case Bindings::Operation::EscapeSupportingQuit:
 			if (config.FullscreenMode)
 				ChangeScreenMode(false);
-			else if ((Config::GetProfile() == Profile::Basic) || (Config::GetProfile() == Profile::Kiosk))
-				ChangeProfile(Profile::Main);
+			else if ((Config::GetProfile() == eProfile::Basic) || (Config::GetProfile() == eProfile::Kiosk))
+				ChangeProfile(eProfile::Main);
 			else
 				Viewer::Request_Quit = true;				
 			break;
@@ -3835,19 +3836,19 @@ int main(int argc, char** argv)
 	
 	Viewer::Config::Load(cfgFile);
 
-	Viewer::Profile overrideProfile = Viewer::Profile::Invalid;
-	Viewer::Profile originalProfile = Viewer::Config::GetProfile();
+	Viewer::eProfile overrideProfile = Viewer::eProfile::Invalid;
+	Viewer::eProfile originalProfile = Viewer::Config::GetProfile();
 	if (Viewer::OptionProfile)
 	{
 		const tString& profStr = Viewer::OptionProfile.Arg1();
 		switch (tHash::tHashString(profStr.Chr()))
 		{
-			case tHash::tHashCT("main"):	overrideProfile = Viewer::Profile::Main;	break;
-			case tHash::tHashCT("basic"):	overrideProfile = Viewer::Profile::Basic;	break;
-			case tHash::tHashCT("kiosk"):	overrideProfile = Viewer::Profile::Kiosk;	break;
+			case tHash::tHashCT("main"):	overrideProfile = Viewer::eProfile::Main;	break;
+			case tHash::tHashCT("basic"):	overrideProfile = Viewer::eProfile::Basic;	break;
+			case tHash::tHashCT("kiosk"):	overrideProfile = Viewer::eProfile::Kiosk;	break;
 		}
 	}
-	if (overrideProfile != Viewer::Profile::Invalid)
+	if (overrideProfile != Viewer::eProfile::Invalid)
 		Viewer::Config::SetProfile(overrideProfile);
 
 	// If no file from commandline, see if there is one set in the config.
@@ -3993,7 +3994,7 @@ int main(int argc, char** argv)
 
 	#ifdef ALLOW_ALL_UI_SIZES
 	ImGuiStyle scaledStyle;
-	scaledStyle.ScaleAllSizes( tMath::tLisc(config.UISizeNormFlt(), 1.0f, 2.6f));
+	scaledStyle.ScaleAllSizes( tMath::tLini(config.UISizeNormFlt(), 1.0f, 2.6f));
 	ImGui::GetStyle() = scaledStyle;
 	#endif
 
@@ -4079,7 +4080,7 @@ int main(int argc, char** argv)
 	}
 
 	// If we called with --profile we don't save it as current. Before saving the config we restore the original.
-	if ((overrideProfile != Viewer::Profile::Invalid) && (originalProfile != Viewer::Profile::Invalid))
+	if ((overrideProfile != Viewer::eProfile::Invalid) && (originalProfile != Viewer::eProfile::Invalid))
 		Viewer::Config::SetProfile(originalProfile);
 
 	Viewer::Config::Global.TransparentWorkArea = Viewer::PendingTransparentWorkArea;

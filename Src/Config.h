@@ -47,7 +47,7 @@ enum Category
 // different profiles. Currently we only have two profiles: Main and Basic.
 struct ProfileSettings
 {
-	ProfileSettings(Profile profile)					: Name(), InputBindings() { Reset(profile, Category_All); }
+	ProfileSettings(eProfile profile)					: Name(), InputBindings() { Reset(profile, Category_All); }
 	tString Name;										// The name of the profile.
 
 	bool FullscreenMode;
@@ -136,7 +136,7 @@ struct ProfileSettings
 	int ReticleMode;
 	ReticleModeEnum GetReticleMode() const				{ return ReticleModeEnum(ReticleMode); }
 
-	// #define ALLOW_ALL_UI_SIZES
+	//#define ALLOW_ALL_UI_SIZES
 	enum class UISizeEnum
 	{								// Approx OS Scale Percent.
 		Nano,						// 75%
@@ -282,9 +282,9 @@ struct ProfileSettings
 	bool Save(tExprWriter&) const;						// Writes to the file tExprWriter was constructed with.
 	void Load(tExpr);									// Reads from the expression. Pass in a tExprReader if you want to load from a file directly.
 
-	// Yes, this struct only represents a single profile, but the defaults are different
-	// depending on which profile is chosen, so we need to pass it in.
-	void Reset(Viewer::Profile, uint32 categories);
+	// While this struct only represents a single profile, the defaults are
+	// different depending on which profile is chosen, so we need to pass it in.
+	void Reset(Viewer::eProfile, uint32 categories);
 };
 
 
@@ -317,8 +317,8 @@ void Load(const tString& filename);
 void Save(const tString& filename);
 
 // These apply to the current profile.
-void SetProfile(Profile);
-Profile GetProfile();
+void SetProfile(eProfile);
+eProfile GetProfile();
 const char* GetProfileName();
 
 // Current profile reset. If category is 'All' it resets all categories plus stuff not in a category.

@@ -435,10 +435,10 @@ void Viewer::ShowOutputLogPopup(bool* popen)
 		#endif
 	);
 
-	// WIP RENAME Profile to ProfileEnum
-	// WIP RENAME ProfileSetting to Profile.
-	// WIP Make config functions static.
-	// WIP Add Tacent LinScaleInterpolate.
+	// @wip WIP RENAME Profile to eProfile DONE
+	// @wip WIP RENAME ProfileSettings to Profile.
+	// @wip WIP Make config functions static.
+	// @wip WIP Add Tacent LinScaleInterpolate.
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	// ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);

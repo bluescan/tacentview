@@ -24,7 +24,7 @@ const char* ProfileNames[] =
 	"Basic",
 	"Kiosk"
 };
-tStaticAssert(tNumElements(ProfileNames) == int(Profile::NumProfiles));
+tStaticAssert(tNumElements(ProfileNames) == int(eProfile::NumProfiles));
 
 
 const char* ProfileNamesLong[] =
@@ -33,7 +33,7 @@ const char* ProfileNamesLong[] =
 	"Basic Profile",
 	"Kiosk Profile"
 };
-tStaticAssert(tNumElements(ProfileNamesLong) == int(Profile::NumProfiles));
+tStaticAssert(tNumElements(ProfileNamesLong) == int(eProfile::NumProfiles));
 
 
 }
