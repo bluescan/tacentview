@@ -1214,8 +1214,8 @@ bool Viewer::ConvertScreenPosToImagePos
 	float imagew = float(imagewi);
 	float imageh = float(imagehi);
 
-	float imposX = imagew * tMath::tLisc(normX, 0.0f + uvOff.u, 1.0f + uvOff.u);
-	float imposY = imageh * tMath::tLisc(normY, 0.0f + uvOff.v, 1.0f + uvOff.v);
+	float imposX = imagew * tMath::tLilo(normX, 0.0f + uvOff.u, 1.0f + uvOff.u);
+	float imposY = imageh * tMath::tLilo(normY, 0.0f + uvOff.v, 1.0f + uvOff.v);
 
 	imgX = int(imposX);
 	imgY = int(imposY);
