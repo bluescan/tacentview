@@ -276,7 +276,7 @@ public:
 	bool TypeSupportsProperties() const;
 
 	// Zoom can be stored per-image so we can flip between images without losing the setting.
-	Config::Profile::ZoomModeEnum ZoomMode = Config::Profile::ZoomModeEnum::DownscaleOnly;
+	Config::ProfileData::ZoomModeEnum ZoomMode = Config::ProfileData::ZoomModeEnum::DownscaleOnly;
 	float ZoomPercent = 100.0f;
 	void SetUndoEnabled(bool enabled)																					{ UndoEnabled = enabled; }
 

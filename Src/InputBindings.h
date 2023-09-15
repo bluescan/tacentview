@@ -170,7 +170,7 @@ namespace Bindings
 		// Sets all keys to their default operations. Some keys have different operations depending on the profile so we
 		// need to pass that in. If onlyIfUnassigned is true, the reset will only apply to keys that are not already
 		// bound to something. A 'key' here refers to the actual key plus any modifiers (ctrl, alt, shift).
-		void Reset(Viewer::eProfile, bool onlyIfUnassigned = false);
+		void Reset(Viewer::Profile, bool onlyIfUnassigned = false);
 
 		// Returns the operation assigned to a particular key and set of modifiers. This can also be used before an
 		// assign call to see what a current key is bound to so an already-assigned message can be dislayed if needed.

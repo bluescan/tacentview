@@ -172,27 +172,27 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	ImGui::Separator();
 
 	// Only display filter option if filtering will be used.
-	Config::Profile& config = *Config::Current;
+	Config::ProfileData& profile = Config::GetProfileData();
 	bool needFinalResize = ((finalWidth != contactWidth) || (finalHeight != contactHeight));
 	if (anyImageNeedsResize || needFinalResize)
 	{
 		if (anyImageNeedsResize)
 		{
-			ImGui::Combo("Frame Filter", &config.ResampleFilterContactFrame, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
+			ImGui::Combo("Frame Filter", &profile.ResampleFilterContactFrame, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 			ImGui::SameLine();
 			ShowHelpMark("Filtering method to use when resizing input frame images.");
 
-			ImGui::Combo("Frame Filter Edge Mode", &config.ResampleEdgeModeContactFrame, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
+			ImGui::Combo("Frame Filter Edge Mode", &profile.ResampleEdgeModeContactFrame, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
 			ImGui::SameLine();
 			ShowHelpMark("How frame filter chooses pixels along image edges. Use wrap for tiled textures.");
 		}
 		if (needFinalResize)
 		{
-			ImGui::Combo("Final Filter", &config.ResampleFilterContactFinal, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
+			ImGui::Combo("Final Filter", &profile.ResampleFilterContactFinal, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 			ImGui::SameLine();
 			ShowHelpMark("Filtering method to use when resizing output image.");
 
-			ImGui::Combo("Final Filter Edge Mode", &config.ResampleEdgeModeContactFinal, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
+			ImGui::Combo("Final Filter Edge Mode", &profile.ResampleEdgeModeContactFinal, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
 			ImGui::SameLine();
 			ShowHelpMark("How output filter chooses pixels along image edges. Use wrap for tiled textures.");
 		}
@@ -240,7 +240,7 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 
 		if (dirExists)
 		{
-			if (tFileExists(outFile) && config.ConfirmFileOverwrites)
+			if (tFileExists(outFile) && profile.ConfirmFileOverwrites)
 			{
 				ImGui::OpenPopup("Overwrite Contact Sheet File");
 			}
@@ -279,10 +279,10 @@ void Viewer::SaveContactSheetTo
 	int finalWidth, int finalHeight
 )
 {
-	Config::Profile& config = *Config::Current;
+	Config::ProfileData& profile = Config::GetProfileData();
 
 	tImage::tPicture outPic(contactWidth, contactHeight);
-	outPic.SetAll(config.FillColourContact);
+	outPic.SetAll(profile.FillColourContact);
 
 	// Do the work.
 	int frameWidth = contactWidth / numCols;
@@ -315,7 +315,7 @@ void Viewer::SaveContactSheetTo
 		if ((currImg->GetWidth() != frameWidth) || (currImg->GetHeight() != frameHeight))
 		{
 			resampled.Set(*currPic);
-			resampled.Resample(frameWidth, frameHeight, tImage::tResampleFilter(config.ResampleFilterContactFrame), tImage::tResampleEdgeMode(config.ResampleEdgeModeContactFrame));
+			resampled.Resample(frameWidth, frameHeight, tImage::tResampleFilter(profile.ResampleFilterContactFrame), tImage::tResampleEdgeMode(profile.ResampleEdgeModeContactFrame));
 		}
 		else
 		{
@@ -344,7 +344,7 @@ void Viewer::SaveContactSheetTo
 		}
 	}
 
-	tFileType saveFileType = tGetFileTypeFromName(config.SaveFileType);
+	tFileType saveFileType = tGetFileTypeFromName(profile.SaveFileType);
 	if ((finalWidth == contactWidth) && (finalHeight == contactHeight))
 	{
 		tPrintf("No resizing of output [%s] image needed.\n", tSystem::tGetFileBaseName(outFile).Chr());
@@ -353,7 +353,7 @@ void Viewer::SaveContactSheetTo
 	else
 	{
 		tImage::tPicture finalResampled(outPic);
-		finalResampled.Resample(finalWidth, finalHeight, tImage::tResampleFilter(config.ResampleFilterContactFinal), tImage::tResampleEdgeMode(config.ResampleEdgeModeContactFinal));
+		finalResampled.Resample(finalWidth, finalHeight, tImage::tResampleFilter(profile.ResampleFilterContactFinal), tImage::tResampleEdgeMode(profile.ResampleEdgeModeContactFinal));
 		SavePictureAs(finalResampled, outFile, saveFileType, true);
 	}
 

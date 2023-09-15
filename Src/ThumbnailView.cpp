@@ -60,18 +60,18 @@ tString Viewer::MakeImageTooltipString(Viewer::Image* image, const tString& file
 
 void Viewer::DoSortParameters(bool singleLine)
 {
-	Config::Profile& config = *Config::Current;
+	Config::ProfileData& profile = Config::GetProfileData();
 	float sortComboWidth;
-	switch (config.GetUISize())
+	switch (profile.GetUISize())
 	{
-		case Viewer::Config::Profile::UISizeEnum::Nano:
+		case Viewer::Config::ProfileData::UISizeEnum::Nano:
 			sortComboWidth		= 110.0f;
 			break;
-		case Viewer::Config::Profile::UISizeEnum::Tiny:
+		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
 			sortComboWidth		= 125.0f;
 			break;
 		default:
-		case Viewer::Config::Profile::UISizeEnum::Small:
+		case Viewer::Config::ProfileData::UISizeEnum::Small:
 			sortComboWidth		= 140.0f;
 			break;
 	}
@@ -85,29 +85,29 @@ void Viewer::DoSortParameters(bool singleLine)
 		"Shuffle"
 	};
 
-	tStaticAssert(tNumElements(sortItems) == int(Config::Profile::SortKeyEnum::NumKeys));
+	tStaticAssert(tNumElements(sortItems) == int(Config::ProfileData::SortKeyEnum::NumKeys));
 	ImGui::PushItemWidth(sortComboWidth);
 
 	tString label = singleLine ? "##Sort" : "Sort";
-	if (ImGui::Combo(label.Chr(), &config.SortKey, sortItems, tNumElements(sortItems), tNumElements(sortItems)/2))
-		SortImages(config.GetSortKey(), config.SortAscending);
+	if (ImGui::Combo(label.Chr(), &profile.SortKey, sortItems, tNumElements(sortItems), tNumElements(sortItems)/2))
+		SortImages(profile.GetSortKey(), profile.SortAscending);
 	ShowToolTip("Specifies what property to sort by. An asterisk (*) means\nthe property is stored in image meta-data and may not be\npresent in all images. Shuffle means random order.");
 
-	if (config.GetSortKey() == Config::Profile::SortKeyEnum::Shuffle)
+	if (profile.GetSortKey() == Config::ProfileData::SortKeyEnum::Shuffle)
 	{
 		ImGui::SameLine();
 		if (ImGui::Button(" Reshuffle "))
 		{
 			for (Image* i = Images.First(); i; i = i->Next())
 				i->RegenerateShuffleValue();
-			SortImages(Config::Profile::SortKeyEnum::Shuffle, config.SortAscending);
+			SortImages(Config::ProfileData::SortKeyEnum::Shuffle, profile.SortAscending);
 		}
 	}
 
 	if (singleLine)
 		ImGui::SameLine();
-	if (ImGui::Checkbox("Ascending", &config.SortAscending))
-		SortImages(config.GetSortKey(), config.SortAscending);
+	if (ImGui::Checkbox("Ascending", &profile.SortAscending))
+		SortImages(profile.GetSortKey(), profile.SortAscending);
 }
 
 
@@ -116,14 +116,14 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar;
 	tVector2 windowPos = GetDialogOrigin(DialogID::ContentView);
 
-	Config::Profile& config = *Config::Current;
+	Config::ProfileData& profile = Config::GetProfileData();
 	tVector2 initialSize;
-	switch (config.GetUISize())
+	switch (profile.GetUISize())
 	{
-		case Viewer::Config::Profile::UISizeEnum::Nano:		initialSize.Set(586.0f, 480.0f);	break;
-		case Viewer::Config::Profile::UISizeEnum::Tiny:		initialSize.Set(602.0f, 488.0f);	break;
+		case Viewer::Config::ProfileData::UISizeEnum::Nano:		initialSize.Set(586.0f, 480.0f);	break;
+		case Viewer::Config::ProfileData::UISizeEnum::Tiny:		initialSize.Set(602.0f, 488.0f);	break;
 		default:
-		case Viewer::Config::Profile::UISizeEnum::Small:	initialSize.Set(610.0f, 494.0f);	break;
+		case Viewer::Config::ProfileData::UISizeEnum::Small:	initialSize.Set(610.0f, 494.0f);	break;
 	}
 
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
@@ -138,20 +138,20 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 	float viewOptionsHeight;
 	float viewOptionsOffset;
 	float progressTextOffset;
-	switch (config.GetUISize())
+	switch (profile.GetUISize())
 	{
-		case Viewer::Config::Profile::UISizeEnum::Nano:
+		case Viewer::Config::ProfileData::UISizeEnum::Nano:
 			viewOptionsHeight	= 61.0f;
 			viewOptionsOffset	= 4.0f;
 			progressTextOffset	= 460.0f;
 			break;
-		case Viewer::Config::Profile::UISizeEnum::Tiny:
+		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
 			viewOptionsHeight	= 65.0f;
 			viewOptionsOffset	= 4.0f;
 			progressTextOffset	= 475.0f;
 			break;
 		default:
-		case Viewer::Config::Profile::UISizeEnum::Small:
+		case Viewer::Config::ProfileData::UISizeEnum::Small:
 			viewOptionsHeight	= 70.0f;
 			viewOptionsOffset	= 5.0f;
 			progressTextOffset	= 490.0f;
@@ -165,11 +165,11 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 	float visibleW = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 
 	float minSpacing = 4.0f;
-	float numPerRowF = ImGui::GetWindowContentRegionMax().x / (config.ThumbnailWidth + minSpacing);
+	float numPerRowF = ImGui::GetWindowContentRegionMax().x / (profile.ThumbnailWidth + minSpacing);
 	int numPerRow = tMath::tClampMin(int(numPerRowF), 1);
-	float extra = ImGui::GetWindowContentRegionMax().x - (float(numPerRow) * (config.ThumbnailWidth + minSpacing));
+	float extra = ImGui::GetWindowContentRegionMax().x - (float(numPerRow) * (profile.ThumbnailWidth + minSpacing));
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2(minSpacing + extra/float(numPerRow), minSpacing));
-	tVector2 thumbButtonSize(config.ThumbnailWidth, config.ThumbnailWidth*9.0f/16.0f); // 64 36, 32 18,
+	tVector2 thumbButtonSize(profile.ThumbnailWidth, profile.ThumbnailWidth*9.0f/16.0f); // 64 36, 32 18,
 	int thumbNum = 0;
 	int numGeneratedThumbs = 0;
 	static int numThumbsWhenSorted = 0;
@@ -244,19 +244,19 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 	ImGui::SetCursorPos(tVector2(0.0f, viewOptionsOffset));
 
 	ImGui::PushItemWidth(200);
-	ImGui::SliderFloat("Size", &config.ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth), "%.0f");
+	ImGui::SliderFloat("Size", &profile.ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth), "%.0f");
 	ImGui::SameLine();
 	ImGui::PopItemWidth();
 
 	DoSortParameters(true);
 
 	// If we are sorting by a thumbnail cached key, resort if necessary.
-	Config::Profile::SortKeyEnum sortKey = config.GetSortKey();
-	if (Config::Profile::IsCachedSortKey(sortKey))
+	Config::ProfileData::SortKeyEnum sortKey = profile.GetSortKey();
+	if (Config::ProfileData::IsCachedSortKey(sortKey))
 	{
 		if (numThumbsWhenSorted != numGeneratedThumbs)
 		{
-			SortImages(sortKey, config.SortAscending);
+			SortImages(sortKey, profile.SortAscending);
 			numThumbsWhenSorted = numGeneratedThumbs;
 		}
 	}

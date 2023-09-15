@@ -204,18 +204,18 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			);
 		}
 
-		Config::Profile& config = *Config::Current;
-		tColourf floatCol(config.BackgroundColour);
+		Config::ProfileData& profile = Config::GetProfileData();
+		tColourf floatCol(profile.BackgroundColour);
 		if (ImGui::ColorEdit3("##Background", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))
 		{
-			config.BackgroundColour.Set(floatCol);
-			config.BackgroundColour.A = 0xFF;
+			profile.BackgroundColour.Set(floatCol);
+			profile.BackgroundColour.A = 0xFF;
 		}
 
 		ImGui::SameLine();
 		const char* backgroundItems[] = { "None", "Checker", "Solid" };
 		ImGui::PushItemWidth(83);
-		ImGui::Combo("##Background Style", &config.BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
+		ImGui::Combo("##Background Style", &profile.BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 		ShowHelpMark("Background colour and style.\nThe blend-background button uses the colour regardless of style.");
@@ -230,7 +230,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 		if (ImGui::Button("Blend Background", tVector2(buttonWidth, 0.0f)))
 		{
 			CurrImage->Unbind();
-			CurrImage->AlphaBlendColour(config.BackgroundColour, true);
+			CurrImage->AlphaBlendColour(profile.BackgroundColour, true);
 			CurrImage->Bind();
 			Viewer::SetWindowTitle();
 		}
@@ -344,14 +344,14 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	//
 	// UI size parameters.
 	//
-	Config::Profile& config = *Config::Current;
+	Config::ProfileData& profile = Config::GetProfileData();
 	float okOffset;
-	switch (config.GetUISize())
+	switch (profile.GetUISize())
 	{
-		case Viewer::Config::Profile::UISizeEnum::Nano:		okOffset = 135.0f;	break;
-		case Viewer::Config::Profile::UISizeEnum::Tiny:		okOffset = 146.0f;	break;
+		case Viewer::Config::ProfileData::UISizeEnum::Nano:		okOffset = 135.0f;	break;
+		case Viewer::Config::ProfileData::UISizeEnum::Tiny:		okOffset = 146.0f;	break;
 		default:
-		case Viewer::Config::Profile::UISizeEnum::Small:	okOffset = 158.0f;	break;
+		case Viewer::Config::ProfileData::UISizeEnum::Small:	okOffset = 158.0f;	break;
 	}
 
 	const char* channelItems[] = { "RGB", "Red", "Green", "Blue", "Alpha" };

@@ -40,32 +40,32 @@ namespace Config
 {
 	const int ConfigFileVersion = 3;
 
-	GlobalSettings Global;
-	Profile MainProfile(eProfile::Main);
-	Profile BasicProfile(eProfile::Basic);
-	Profile KioskProfile(eProfile::Kiosk);
-	Profile* Current = &MainProfile;
+	GlobalData Global;
+	ProfileData MainProfile(Profile::Main);
+	ProfileData BasicProfile(Profile::Basic);
+	ProfileData KioskProfile(Profile::Kiosk);
+	ProfileData* Current = &MainProfile;
 }
 
 
-void Config::SetProfile(eProfile profile)
+void Config::SetProfile(Profile profile)
 {
-	if (profile == eProfile(Global.CurrentProfile))
+	if (profile == Profile(Global.CurrentProfile))
 		return;
 
 	switch (profile)
 	{
-		case eProfile::Main:	Current = &MainProfile;		break;
-		case eProfile::Basic:	Current = &BasicProfile;	break;
-		case eProfile::Kiosk:	Current = &KioskProfile;	break;
+		case Profile::Main:		Current = &MainProfile;		break;
+		case Profile::Basic:	Current = &BasicProfile;	break;
+		case Profile::Kiosk:	Current = &KioskProfile;	break;
 	}
 	Global.CurrentProfile = int(profile);
 }
 
 
-Viewer::eProfile Config::GetProfile()
+Viewer::Profile Config::GetProfile()
 {
-	return eProfile(Global.CurrentProfile);
+	return Profile(Global.CurrentProfile);
 }
 
 
@@ -77,15 +77,15 @@ const char* Config::GetProfileName()
 
 void Config::ResetProfile(uint32 categories)
 {
-	Current->Reset(eProfile(Global.CurrentProfile), categories);
+	Current->Reset(Profile(Global.CurrentProfile), categories);
 }
 
 
 void Config::ResetAllProfiles(uint32 categories)
 {
-	MainProfile.Reset(eProfile::Main, categories);
-	BasicProfile.Reset(eProfile::Basic, categories);
-	KioskProfile.Reset(eProfile::Kiosk, categories);
+	MainProfile.Reset(Profile::Main, categories);
+	BasicProfile.Reset(Profile::Basic, categories);
+	KioskProfile.Reset(Profile::Kiosk, categories);
 }
 
 
@@ -181,13 +181,13 @@ void Config::Load(const tString& filename)
 	// These are correct. Basically the loaded bools will only be false if the information
 	// wasn't present in the config file at all. If it's not there, reset the values.
 	if (!loadedMainProfile)
-		MainProfile.Reset(Viewer::eProfile::Main, Category_All);
+		MainProfile.Reset(Viewer::Profile::Main, Category_All);
 
 	if (!loadedBasicProfile)
-		BasicProfile.Reset(Viewer::eProfile::Basic, Category_All);
+		BasicProfile.Reset(Viewer::Profile::Basic, Category_All);
 
 	if (!loadedKioskProfile)
-		KioskProfile.Reset(Viewer::eProfile::Kiosk, Category_All);
+		KioskProfile.Reset(Viewer::Profile::Kiosk, Category_All);
 
 	if (!loadedFileDialog)
 		tFileDialog::Reset();
@@ -198,9 +198,9 @@ void Config::Load(const tString& filename)
 	// if the new operations default bindings do not have the key already reassigned to something else, we should
 	// assign them here.
 	bool onlyIfUnassigned = true;
-	MainProfile.InputBindings.Reset(Viewer::eProfile::Main, onlyIfUnassigned);
-	BasicProfile.InputBindings.Reset(Viewer::eProfile::Basic, onlyIfUnassigned);
-	KioskProfile.InputBindings.Reset(Viewer::eProfile::Kiosk, onlyIfUnassigned);
+	MainProfile.InputBindings.Reset(Viewer::Profile::Main, onlyIfUnassigned);
+	BasicProfile.InputBindings.Reset(Viewer::Profile::Basic, onlyIfUnassigned);
+	KioskProfile.InputBindings.Reset(Viewer::Profile::Kiosk, onlyIfUnassigned);
 
 	// Add stuff here if you care about what version you loaded from.
 	if (Global.ConfigVersion <= 2)
@@ -211,17 +211,17 @@ void Config::Load(const tString& filename)
 
 	// I think it makes sense to restore the currently selected profile when the config file is loaded.
 	// This means if you were in Basic profile when you close, you will be in basic when you start the app again.
-	switch (eProfile(Global.CurrentProfile))
+	switch (Profile(Global.CurrentProfile))
 	{
-		case eProfile::Main:	Current = &MainProfile;		break;
-		case eProfile::Basic:	Current = &BasicProfile;	break;
-		case eProfile::Kiosk:	Current = &KioskProfile;	break;
+		case Profile::Main:		Current = &MainProfile;		break;
+		case Profile::Basic:	Current = &BasicProfile;	break;
+		case Profile::Kiosk:	Current = &KioskProfile;	break;
 		default:				Current = &MainProfile;		break;
 	}
 }
 
 
-void Config::GlobalSettings::Save(tExprWriter& writer)
+void Config::GlobalData::Save(tExprWriter& writer)
 {
 	writer.Begin();
 	writer.Indent();
@@ -244,7 +244,7 @@ void Config::GlobalSettings::Save(tExprWriter& writer)
 }
 
 
-void Config::GlobalSettings::GetScreenSize(int& screenW, int& screenH)
+void Config::GlobalData::GetScreenSize(int& screenW, int& screenH)
 {
 	GLFWmonitor* monitor		= glfwGetPrimaryMonitor();
 	const GLFWvidmode* mode		= monitor ? glfwGetVideoMode(monitor) : nullptr;
@@ -253,7 +253,7 @@ void Config::GlobalSettings::GetScreenSize(int& screenW, int& screenH)
 }
 
 
-void Config::GlobalSettings::Load(tExpression expr)
+void Config::GlobalData::Load(tExpression expr)
 {
 	for (tExpr e = expr.Item1(); e.IsValid(); e = e.Next())
 	{
@@ -287,10 +287,10 @@ void Config::GlobalSettings::Load(tExpression expr)
 }
 
 
-void Config::GlobalSettings::Reset()
+void Config::GlobalData::Reset()
 {
 	ConfigVersion = ConfigFileVersion;
-	CurrentProfile = int(eProfile::Main);
+	CurrentProfile = int(Profile::Main);
 
 	int screenW, screenH;
 	GetScreenSize(screenW, screenH);
@@ -316,19 +316,19 @@ void Config::GlobalSettings::Reset()
 }
 
 
-void Config::Profile::Reset(Viewer::eProfile profile, uint32 categories)
+void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 {
 	if (categories & Category_Unspecified)
 	{
-		FullscreenMode				= (profile == eProfile::Kiosk) ? true : false;
-		ShowMenuBar					= (profile == eProfile::Basic) || (profile == eProfile::Kiosk) ? false : true;
-		ShowNavBar					= (profile == eProfile::Basic) || (profile == eProfile::Kiosk) ? false : true;
-		ShowImageDetails			= (profile == eProfile::Basic) || (profile == eProfile::Kiosk) ? false : true;
+		FullscreenMode				= (profile == Profile::Kiosk) ? true : false;
+		ShowMenuBar					= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? false : true;
+		ShowNavBar					= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? false : true;
+		ShowImageDetails			= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? false : true;
 		ShowImageMetaData			= false;
 		ShowPixelEditor				= false;
 		ShowPreferences				= false;
 		ShowChannelFilter			= false;
-		ShowFrameScrubber			= (profile == eProfile::Basic) || (profile == eProfile::Kiosk) ? false : true;
+		ShowFrameScrubber			= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? false : true;
 		ShowThumbnailView			= false;
 		ShowPropsWindow				= false;
 		ShowBindingsWindow			= false;
@@ -392,34 +392,34 @@ void Config::Profile::Reset(Viewer::eProfile profile, uint32 categories)
 
 	if (categories & Category_Display)
 	{
-		BackgroundStyle				= (profile == eProfile::Basic) || (profile == eProfile::Kiosk) ? int(BackgroundStyleEnum::None) : int(BackgroundStyleEnum::Checkerboard);
+		BackgroundStyle				= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? int(BackgroundStyleEnum::None) : int(BackgroundStyleEnum::Checkerboard);
 		BackgroundCheckerboxSize	= 16;
 		BackgroundColour			= tColouri::black;
 		BackgroundExtend			= false;
 		switch (profile)
 		{
 			default:
-			case eProfile::Main:	ReticleMode = int(ReticleModeEnum::OnSelect);		break;
-			case eProfile::Basic:	ReticleMode = int(ReticleModeEnum::AutoHide);		break;
-			case eProfile::Kiosk:	ReticleMode = int(ReticleModeEnum::AlwaysHidden);	break;
+			case Profile::Main:		ReticleMode = int(ReticleModeEnum::OnSelect);		break;
+			case Profile::Basic:	ReticleMode = int(ReticleModeEnum::AutoHide);		break;
+			case Profile::Kiosk:	ReticleMode = int(ReticleModeEnum::AlwaysHidden);	break;
 		}
-		UISize						= (profile == eProfile::Kiosk) ? int(UISizeEnum::Small) : int(UISizeEnum::Tiny);
+		UISize						= (profile == Profile::Kiosk) ? int(UISizeEnum::Small) : int(UISizeEnum::Tiny);
 	}
 
 	if (categories & Category_Slideshow)
 	{
-		SlideshowAutoStart			= (profile == eProfile::Kiosk) ? true : false;
-		SlideshowLooping			= (profile == eProfile::Basic) || (profile == eProfile::Kiosk) ? true : false;
+		SlideshowAutoStart			= (profile == Profile::Kiosk) ? true : false;
+		SlideshowLooping			= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? true : false;
 		SlideshowProgressArc		= true;
 		switch (profile)
 		{
 			default:				
-			case eProfile::Main:	SlideshowPeriod = 4.0f;		break;
-			case eProfile::Basic:	SlideshowPeriod = 8.0f;		break;
-			case eProfile::Kiosk:	SlideshowPeriod = 16.0f;	break;
+			case Profile::Main:		SlideshowPeriod = 4.0f;		break;
+			case Profile::Basic:	SlideshowPeriod = 8.0f;		break;
+			case Profile::Kiosk:	SlideshowPeriod = 16.0f;	break;
 		}
 
-		SortKey						= (profile == eProfile::Kiosk) ? int(SortKeyEnum::Shuffle) : int(SortKeyEnum::FileName);
+		SortKey						= (profile == Profile::Kiosk) ? int(SortKeyEnum::Shuffle) : int(SortKeyEnum::FileName);
 		SortAscending				= true;
 		SlideshowAutoReshuffle		= true;
 	}
@@ -442,11 +442,11 @@ void Config::Profile::Reset(Viewer::eProfile profile, uint32 categories)
 	{
 		ConfirmDeletes				= true;
 		ConfirmFileOverwrites		= true;
-		AutoPropertyWindow			= (profile == eProfile::Basic) || (profile == eProfile::Kiosk) ? false : true;
+		AutoPropertyWindow			= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? false : true;
 		AutoPlayAnimatedImages		= true;
-		ZoomMode					= (profile == eProfile::Kiosk) ? int(ZoomModeEnum::Fit) : int(ZoomModeEnum::DownscaleOnly);
+		ZoomMode					= (profile == Profile::Kiosk) ? int(ZoomModeEnum::Fit) : int(ZoomModeEnum::DownscaleOnly);
 		ZoomPercent					= 100.0f;
-		ZoomPerImage				= (profile == eProfile::Kiosk) ? false : true;
+		ZoomPerImage				= (profile == Profile::Kiosk) ? false : true;
 	}
 
 	if (categories & Category_Bindings)
@@ -456,7 +456,7 @@ void Config::Profile::Reset(Viewer::eProfile profile, uint32 categories)
 }
 
 
-void Config::Profile::Load(tExpression expr)
+void Config::ProfileData::Load(tExpression expr)
 {
 	for (tExpr e = expr.Item1(); e.IsValid(); e = e.Next())
 	{
@@ -630,7 +630,7 @@ void Config::Profile::Load(tExpression expr)
 }
 
 
-bool Config::Profile::Save(tExprWriter& writer) const
+bool Config::ProfileData::Save(tExprWriter& writer) const
 {
 	writer.Begin();
 	writer.Indent();

@@ -26,17 +26,17 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 {
 	// This overlay function is pretty much taken from the DearImGui demo code.
 	const float margin = 6.0f;
-	Config::Profile& config = *Config::Current;
+	Config::ProfileData& profile = Config::GetProfileData();
 
 	tVector2 windowPos = tVector2
 	(
-		x + ((config.OverlayCorner & 1) ? w - margin : margin),
-		y + ((config.OverlayCorner & 2) ? h - margin : margin)
+		x + ((profile.OverlayCorner & 1) ? w - margin : margin),
+		y + ((profile.OverlayCorner & 2) ? h - margin : margin)
 	);
 	tVector2 windowPivot = tVector2
 	(
-		(config.OverlayCorner & 1) ? 1.0f : 0.0f,
-		(config.OverlayCorner & 2) ? 1.0f : 0.0f
+		(profile.OverlayCorner & 1) ? 1.0f : 0.0f,
+		(profile.OverlayCorner & 2) ? 1.0f : 0.0f
 	);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, windowPivot);
 	ImGui::SetNextWindowBgAlpha(0.6f);
@@ -120,10 +120,10 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 
 		if (ImGui::BeginPopupContextWindow())
 		{
-			if (ImGui::MenuItem("Top-left",		nullptr, config.OverlayCorner == 0)) config.OverlayCorner = 0;
-			if (ImGui::MenuItem("Top-right",	nullptr, config.OverlayCorner == 1)) config.OverlayCorner = 1;
-			if (ImGui::MenuItem("Bottom-left",  nullptr, config.OverlayCorner == 2)) config.OverlayCorner = 2;
-			if (ImGui::MenuItem("Bottom-right", nullptr, config.OverlayCorner == 3)) config.OverlayCorner = 3;
+			if (ImGui::MenuItem("Top-left",		nullptr, profile.OverlayCorner == 0)) profile.OverlayCorner = 0;
+			if (ImGui::MenuItem("Top-right",	nullptr, profile.OverlayCorner == 1)) profile.OverlayCorner = 1;
+			if (ImGui::MenuItem("Bottom-left",  nullptr, profile.OverlayCorner == 2)) profile.OverlayCorner = 2;
+			if (ImGui::MenuItem("Bottom-right", nullptr, profile.OverlayCorner == 3)) profile.OverlayCorner = 3;
 			if (popen && ImGui::MenuItem("Close")) *popen = false;
 			ImGui::EndPopup();
 		}
@@ -194,25 +194,25 @@ void Viewer::ShowImageMetaDataOverlay(bool* popen)
 	tVector2 windowPos = GetDialogOrigin(DialogID::MetaData);
 	ImGui::SetNextWindowBgAlpha(0.90f);
 
-	Config::Profile& config = *Config::Current;
+	Config::ProfileData& profile = Config::GetProfileData();
 	float rowHeight, tagWidth, valWidth;
 	int maxRowsToDisplay;
-	switch (config.GetUISize())
+	switch (profile.GetUISize())
 	{
-		case Viewer::Config::Profile::UISizeEnum::Nano:
+		case Viewer::Config::ProfileData::UISizeEnum::Nano:
 			rowHeight			= 18.0f;
 			tagWidth			= 116.0f;
 			valWidth			= 200.0f;
 			maxRowsToDisplay	= 25;
 			break;
-		case Viewer::Config::Profile::UISizeEnum::Tiny:
+		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
 			rowHeight			= 20.0f;
 			tagWidth			= 132.0f;
 			valWidth			= 230.0f;
 			maxRowsToDisplay	= 23;
 			break;
 		default:
-		case Viewer::Config::Profile::UISizeEnum::Small:
+		case Viewer::Config::ProfileData::UISizeEnum::Small:
 			rowHeight			= 22.0f;
 			tagWidth			= 148.0f;
 			valWidth			= 260.0f;

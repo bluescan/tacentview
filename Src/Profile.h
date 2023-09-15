@@ -17,7 +17,7 @@
 
 namespace Viewer
 {
-	enum class eProfile
+	enum class Profile
 	{
 		Main,
 		Basic,
@@ -26,8 +26,8 @@ namespace Viewer
 		Invalid = NumProfiles
 	};
 
-	const char* GetProfileName(eProfile);
-	const char* GetProfileNameLong(eProfile);
+	const char* GetProfileName(Profile);
+	const char* GetProfileNameLong(Profile);
 
 	extern const char* ProfileNames[];
 	extern const char* ProfileNamesLong[];
@@ -37,13 +37,13 @@ namespace Viewer
 // Implementation only below.
 
 
-inline const char* Viewer::GetProfileName(eProfile profile)
+inline const char* Viewer::GetProfileName(Profile profile)
 {
 	return ProfileNames[int(profile)];
 }
 
 
-inline const char* Viewer::GetProfileNameLong(eProfile profile)
+inline const char* Viewer::GetProfileNameLong(Profile profile)
 {
 	return ProfileNamesLong[int(profile)];
 }

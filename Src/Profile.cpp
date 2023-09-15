@@ -2,7 +2,7 @@
 //
 // The viewer profile enum.
 //
-// Copyright (c) 2022 Tristan Grimmer.
+// Copyright (c) 2022, 2023 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -24,7 +24,7 @@ const char* ProfileNames[] =
 	"Basic",
 	"Kiosk"
 };
-tStaticAssert(tNumElements(ProfileNames) == int(eProfile::NumProfiles));
+tStaticAssert(tNumElements(ProfileNames) == int(Profile::NumProfiles));
 
 
 const char* ProfileNamesLong[] =
@@ -33,7 +33,7 @@ const char* ProfileNamesLong[] =
 	"Basic Profile",
 	"Kiosk Profile"
 };
-tStaticAssert(tNumElements(ProfileNamesLong) == int(eProfile::NumProfiles));
+tStaticAssert(tNumElements(ProfileNamesLong) == int(Profile::NumProfiles));
 
 
 }

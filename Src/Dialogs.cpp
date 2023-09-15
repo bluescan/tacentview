@@ -30,15 +30,15 @@ namespace Viewer
 
 void Viewer::ShowAboutPopup(bool* popen)
 {
-	Config::Profile& config = *Config::Current;
+	Config::ProfileData& profile = Config::GetProfileData();
 	tVector2 windowPos = GetDialogOrigin(DialogID::About);
 	tVector2 windowSize;
-	switch (config.GetUISize())
+	switch (profile.GetUISize())
 	{
-		case Viewer::Config::Profile::UISizeEnum::Nano:		windowSize.Set(240, 500);	break;
-		case Viewer::Config::Profile::UISizeEnum::Tiny:		windowSize.Set(280, 501);	break;
+		case Viewer::Config::ProfileData::UISizeEnum::Nano:		windowSize.Set(240, 500);	break;
+		case Viewer::Config::ProfileData::UISizeEnum::Tiny:		windowSize.Set(280, 501);	break;
 		default:
-		case Viewer::Config::Profile::UISizeEnum::Small:	windowSize.Set(320, 515);	break;
+		case Viewer::Config::ProfileData::UISizeEnum::Small:	windowSize.Set(320, 515);	break;
 	}
 
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
@@ -110,10 +110,10 @@ void Viewer::ShowAboutPopup(bool* popen)
 
 void Viewer::DoDeleteFileModal(bool deleteFilePressed)
 {
-	Config::Profile& config = *Config::Current;
+	Config::ProfileData& profile = Config::GetProfileData();
 	if (deleteFilePressed)
 	{
-		if (!config.ConfirmDeletes)
+		if (!profile.ConfirmDeletes)
 			DeleteImageFile(CurrImage->Filename, true);
 		else
 			ImGui::OpenPopup("Delete File");
@@ -135,7 +135,7 @@ void Viewer::DoDeleteFileModal(bool deleteFilePressed)
 	ImGui::Separator();
 
 	ImGui::NewLine();
-	ImGui::Checkbox("Confirm file deletions in the future?", &config.ConfirmDeletes);
+	ImGui::Checkbox("Confirm file deletions in the future?", &profile.ConfirmDeletes);
 	ImGui::NewLine();
 
 	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
@@ -422,20 +422,20 @@ void Viewer::OutputLog::DrawLog()
 
 void Viewer::ShowOutputLogPopup(bool* popen)
 {
-	Config::Profile& config = *Config::Current;
+	Config::ProfileData& profile = Config::GetProfileData();
 
 	tVector2 windowPos = GetDialogOrigin(DialogID::LogOutput);
 	tVector2 windowSize = tMath::tLinearLookup
 	(
-		config.UISizeFlt(), config.UISizeSmallestFlt(), config.UISizeLargestFlt(),
+		profile.UISizeFlt(), profile.UISizeSmallestFlt(), profile.UISizeLargestFlt(),
 		#ifdef ALLOW_ALL_UI_SIZES
-		tVector2(410.0f, 220.0f), tVector2(410.0f, 220.0f)*2.65f//tVector2(1100.0f, 570.0f)
+		tVector2(410.0f, 220.0f), tVector2(410.0f, 220.0f)*2.65f
 		#else
 		tVector2(410.0f, 220.0f), tVector2(520.0f, 270.0f)
 		#endif
 	);
 
-	// @wip WIP RENAME Profile to eProfile DONE
+	// @wip WIP RENAME Profile to Profile DONE
 	// @wip WIP RENAME Profile to Profile.
 	// @wip WIP Make config functions static.
 	// @wip WIP Add Tacent LinScaleInterpolate.
@@ -479,15 +479,15 @@ void Viewer::NavLogBar::Draw()
 
 	if (ImagesSubDirs.NumItems() > 0)
 	{
-		Config::Profile& config = *Config::Current;
+		Config::ProfileData& profile = Config::GetProfileData();
 		ImGui::SameLine();
 		float offset;
-		switch (config.GetUISize())
+		switch (profile.GetUISize())
 		{
-			case Config::Profile::UISizeEnum::Nano:		offset = 1.0f;	break;
-			case Config::Profile::UISizeEnum::Tiny:		offset = 0.0f;	break;
+			case Config::ProfileData::UISizeEnum::Nano:		offset = 1.0f;	break;
+			case Config::ProfileData::UISizeEnum::Tiny:		offset = 0.0f;	break;
 			default:
-			case Config::Profile::UISizeEnum::Small:	offset = -1.0f;	break;
+			case Config::ProfileData::UISizeEnum::Small:	offset = -1.0f;	break;
 		}
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
 		if (ImGui::BeginCombo("##combo", nullptr, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightLargest | ImGuiComboFlags_NoPreview))

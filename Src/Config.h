@@ -45,9 +45,9 @@ enum Category
 
 // The Profile struct represents a single set of all configurable parameters. There can be multiple instances for
 // different profiles. Currently we have three profiles: Main, Basic, and Kiosk.
-struct Profile
+struct ProfileData
 {
-	Profile(eProfile profile)							: Name(), InputBindings() { Reset(profile, Category_All); }
+	ProfileData(Profile profile)						: Name(), InputBindings() { Reset(profile, Category_All); }
 	tString Name;										// The name of the profile.
 
 	bool FullscreenMode;
@@ -152,9 +152,9 @@ struct Profile
 		#endif
 
 		NumSizes,
-		Smallest		= Nano,
-		Key				= Small,
-		Largest			= NumSizes-1,
+		Smallest					= Nano,
+		Key							= Small,
+		Largest						= NumSizes-1,
 	};
 	
 	int UISize;											// In range [0, NumSizes).
@@ -285,13 +285,13 @@ struct Profile
 
 	// While this struct only represents a single profile, the defaults are
 	// different depending on which profile is chosen, so we need to pass it in.
-	void Reset(Viewer::eProfile, uint32 categories);
+	void Reset(Viewer::Profile, uint32 categories);
 };
 
 
-struct GlobalSettings
+struct GlobalData
 {
-	GlobalSettings()									{ Reset(); }
+	GlobalData()										{ Reset(); }
 
 	void Save(tExprWriter&);
 	void Load(tExpr);
@@ -318,9 +318,10 @@ void Load(const tString& filename);
 void Save(const tString& filename);
 
 // These apply to the current profile.
-void SetProfile(eProfile);
-eProfile GetProfile();
+void SetProfile(Profile);
+Profile GetProfile();
 const char* GetProfileName();
+ProfileData& GetProfileData();
 
 // Current profile reset. If category is 'All' it resets all categories plus stuff not in a category.
 void ResetProfile(uint32 categories);
@@ -331,11 +332,20 @@ void ResetAllProfiles(uint32 categories);
 // Resets all profiles. All categories. Calls ResetAllProfiles with All as the category.
 void ResetAllProfiles();
 
-extern GlobalSettings Global;
-extern Profile* Current;
-extern Profile MainProfile;
-extern Profile BasicProfile;
-extern Profile KioskProfile;
+extern GlobalData Global;
+extern ProfileData MainProfile;
+extern ProfileData BasicProfile;
+extern ProfileData KioskProfile;
+extern ProfileData* Current;
 
 
-} }
+}
+
+
+inline Config::ProfileData& Config::GetProfileData()
+{
+	return *Config::Current;
+}
+
+
+}

@@ -118,27 +118,27 @@ void Image::RegenerateShuffleValue()
 
 void Image::ResetLoadParams()
 {
-	Config::Profile& config = *Config::Current;
+	Config::ProfileData& profile = Config::GetProfileData();
 
 	LoadParams_ASTC.Reset();
-	LoadParams_ASTC.Gamma = config.MonitorGamma;
+	LoadParams_ASTC.Gamma = profile.MonitorGamma;
 
 	LoadParams_DDS.Reset();
-	LoadParams_DDS.Gamma = config.MonitorGamma;
+	LoadParams_DDS.Gamma = profile.MonitorGamma;
 
 	LoadParams_EXR.Reset();
-	LoadParams_EXR.Gamma = config.MonitorGamma;
+	LoadParams_EXR.Gamma = profile.MonitorGamma;
 
 	LoadParams_HDR.Reset();
-	LoadParams_HDR.Gamma = config.MonitorGamma;
+	LoadParams_HDR.Gamma = profile.MonitorGamma;
 
 	LoadParams_JPG.Reset();
 
 	LoadParams_KTX.Reset();
-	LoadParams_KTX.Gamma = config.MonitorGamma;
+	LoadParams_KTX.Gamma = profile.MonitorGamma;
 
 	LoadParams_PKM.Reset();
-	LoadParams_PKM.Gamma = config.MonitorGamma;
+	LoadParams_PKM.Gamma = profile.MonitorGamma;
 
 	LoadParams_PNG.Reset();
 	LoadParams_DetectAPNGInsidePNG = false;
@@ -183,9 +183,9 @@ bool Image::Load(bool loadParamsFromConfig)
 	// not something we want to do before actually loading an image. If DetectAPNGInsidePNG is
 	// false, the PNG loader will always be used for .png files even if they have an apng inside.
 	// The designers of apng made the format backwards compatible with single-frame png loaders.
-	Config::Profile& config = *Config::Current;
+	Config::ProfileData& profile = Config::GetProfileData();
 	tSystem::tFileType loadingFiletype = Filetype;
-	bool detectAPNGInsidePNG = loadParamsFromConfig ? config.DetectAPNGInsidePNG : LoadParams_DetectAPNGInsidePNG;
+	bool detectAPNGInsidePNG = loadParamsFromConfig ? profile.DetectAPNGInsidePNG : LoadParams_DetectAPNGInsidePNG;
 	if ((Filetype == tSystem::tFileType::PNG) && detectAPNGInsidePNG && tImageAPNG::IsAnimatedPNG(Filename))
 		loadingFiletype = tSystem::tFileType::APNG;
 
@@ -327,8 +327,8 @@ bool Image::Load(bool loadParamsFromConfig)
 			{
 				params.Reset();
 				params.Flags =
-					(config.StrictLoading		? tImageJPG::LoadFlag_Strict		: 0) |
-					(config.ExifOrientLoading	? tImageJPG::LoadFlag_ExifOrient	: 0);
+					(profile.StrictLoading		? tImageJPG::LoadFlag_Strict		: 0) |
+					(profile.ExifOrientLoading	? tImageJPG::LoadFlag_ExifOrient	: 0);
 			}
 
 			bool ok = jpg.Load(Filename, params);
@@ -357,7 +357,7 @@ bool Image::Load(bool loadParamsFromConfig)
 			{
 				params.Reset();
 				params.Flags =
-					(!config.StrictLoading	? tImagePNG::LoadFlag_AllowJPG		: 0);
+					(!profile.StrictLoading	? tImagePNG::LoadFlag_AllowJPG		: 0);
 			}
 
 			bool ok = png.Load(Filename, params);
@@ -460,9 +460,9 @@ bool Image::Load(bool loadParamsFromConfig)
 			tImageDDS::LoadParams params(LoadParams_DDS);
 			if (loadParamsFromConfig)
 			{
-				if (config.StrictLoading && !(params.Flags & tImageDDS::LoadFlag_StrictLoading))
+				if (profile.StrictLoading && !(params.Flags & tImageDDS::LoadFlag_StrictLoading))
 					params.Flags |= tImageDDS::LoadFlag_StrictLoading;
-				else if (!config.StrictLoading && (params.Flags & tImageDDS::LoadFlag_StrictLoading))
+				else if (!profile.StrictLoading && (params.Flags & tImageDDS::LoadFlag_StrictLoading))
 					params.Flags &= ~tImageDDS::LoadFlag_StrictLoading;
 			}
 
@@ -584,7 +584,7 @@ bool Image::Load(bool loadParamsFromConfig)
 
 bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveParams, bool onlyCurrentPic) const
 {
-	Config::Profile& config = *Config::Current;
+	Config::ProfileData& profile = Config::GetProfileData();
 	bool success = false;
 	switch (fileType)
 	{
@@ -598,13 +598,13 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 			if (useConfigSaveParams)
 			{
 				params.Format = tImageTGA::tFormat::Auto;
-				switch (config.SaveFileTgaDepthMode)
+				switch (profile.SaveFileTgaDepthMode)
 				{
 					case 1: params.Format = tImageTGA::tFormat::BPP24;		break;
 					case 2: params.Format = tImageTGA::tFormat::BPP32;		break;
 				}
 
-				params.Compression = config.SaveFileTgaRLE ? tImageTGA::tCompression::RLE : tImageTGA::tCompression::None;
+				params.Compression = profile.SaveFileTgaRLE ? tImageTGA::tCompression::RLE : tImageTGA::tCompression::None;
 			}
 
 			tImageTGA::tFormat savedFmt = tga.Save(outFile, params);
@@ -623,7 +623,7 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 			if (useConfigSaveParams)
 			{
 				params.Format = tImagePNG::tFormat::Auto;
-				switch (config.SaveFilePngDepthMode)
+				switch (profile.SaveFilePngDepthMode)
 				{
 					case 1: params.Format = tImagePNG::tFormat::BPP24;		break;
 					case 2: params.Format = tImagePNG::tFormat::BPP32;		break;
@@ -643,7 +643,7 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 			tImageJPG jpg(*picture, false);
 			tImageJPG::SaveParams params(SaveParamsJPG);
 			if (useConfigSaveParams)
-				params.Quality = config.SaveFileJpegQuality;
+				params.Quality = profile.SaveFileJpegQuality;
 
 			success = jpg.Save(outFile, params);
 			break;
@@ -688,14 +688,14 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 			tImageGIF::SaveParams params(SaveParamsGIF);
 			if (useConfigSaveParams)
 			{
-				params.Format					= tPixelFormat(int(tPixelFormat::FirstPalette) + config.SaveFileGifBPP - 1);
-				params.Method					= tQuantize::Method(config.SaveFileGifQuantMethod);
-				params.Loop						= config.SaveFileGifLoop;
-				params.AlphaThreshold			= config.SaveFileGifAlphaThreshold;
-				params.OverrideFrameDuration	= config.SaveFileGifDurOverride;
-				params.DitherLevel				= double(config.SaveFileGifDitherLevel);
-				params.FilterSize				= (config.SaveFileGifFilterSize * 2) + 1;
-				params.SampleFactor				= config.SaveFileGifSampleFactor;
+				params.Format					= tPixelFormat(int(tPixelFormat::FirstPalette) + profile.SaveFileGifBPP - 1);
+				params.Method					= tQuantize::Method(profile.SaveFileGifQuantMethod);
+				params.Loop						= profile.SaveFileGifLoop;
+				params.AlphaThreshold			= profile.SaveFileGifAlphaThreshold;
+				params.OverrideFrameDuration	= profile.SaveFileGifDurOverride;
+				params.DitherLevel				= double(profile.SaveFileGifDitherLevel);
+				params.FilterSize				= (profile.SaveFileGifFilterSize * 2) + 1;
+				params.SampleFactor				= profile.SaveFileGifSampleFactor;
 			}
 			success = gif.Save(outFile, params);
 			break;
@@ -740,9 +740,9 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 			tImageWEBP::SaveParams params(SaveParamsWEBP);
 			if (useConfigSaveParams)
 			{
-				params.Lossy = config.SaveFileWebpLossy;
-				params.QualityCompstr = config.SaveFileWebpQualComp;
-				params.OverrideFrameDuration = config.SaveFileWebpDurOverride;
+				params.Lossy = profile.SaveFileWebpLossy;
+				params.QualityCompstr = profile.SaveFileWebpQualComp;
+				params.OverrideFrameDuration = profile.SaveFileWebpDurOverride;
 			}
 			success = webp.Save(outFile, params);
 			break;
@@ -759,14 +759,14 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 			if (useConfigSaveParams)
 			{
 				params.Format = tImageQOI::tFormat::Auto;
-				switch (config.SaveFileQoiDepthMode)
+				switch (profile.SaveFileQoiDepthMode)
 				{
 					case 1: params.Format = tImageQOI::tFormat::BPP24;		break;
 					case 2: params.Format = tImageQOI::tFormat::BPP32;		break;
 				}
 
 				params.Space = tImageQOI::tSpace::Auto;
-				switch (config.SaveFileQoiColourSpace)
+				switch (profile.SaveFileQoiColourSpace)
 				{
 					case 1: params.Space = tImageQOI::tSpace::sRGB;			break;
 					case 2: params.Space = tImageQOI::tSpace::Linear;		break;
@@ -816,7 +816,7 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 			tImageAPNG apng(frames, true);
 			tImageAPNG::SaveParams params(SaveParamsAPNG);
 			if (useConfigSaveParams)
-				params.OverrideFrameDuration = config.SaveFileApngDurOverride;
+				params.OverrideFrameDuration = profile.SaveFileApngDurOverride;
 			tImageAPNG::tFormat savedFormat = apng.Save(outFile, params);
 			success = (savedFormat != tImageAPNG::tFormat::Invalid);
 			break;
@@ -833,7 +833,7 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 			if (useConfigSaveParams)
 			{
 				params.Format = tImageBMP::tFormat::Auto;
-				switch (config.SaveFileBmpDepthMode)
+				switch (profile.SaveFileBmpDepthMode)
 				{
 					case 1: params.Format = tImageBMP::tFormat::BPP24;		break;
 					case 2: params.Format = tImageBMP::tFormat::BPP32;		break;
@@ -883,8 +883,8 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 			tImageTIFF::SaveParams params(SaveParamsTIFF);
 			if (useConfigSaveParams)
 			{
-				params.UseZLibCompression = config.SaveFileTiffZLibDeflate;
-				params.OverrideFrameDuration = config.SaveFileTiffDurOverride;
+				params.UseZLibCompression = profile.SaveFileTiffZLibDeflate;
+				params.OverrideFrameDuration = profile.SaveFileTiffDurOverride;
 			}
 			success = tiff.Save(outFile, params);
 			break;
@@ -1651,7 +1651,7 @@ uint64 Image::Bind()
 {
 	// We bind in a particular order starting with alternate picture if enabled and valid and
 	// then current picture. In all cases if the texture ID is already valid, we use it right away and early exit.
-	Config::Profile& config = *Config::Current;
+	Config::ProfileData& profile = Config::GetProfileData();
 	if (AltPictureEnabled && AltPicture.IsValid())
 	{
 		if (TexIDAlt != 0)
@@ -1665,7 +1665,7 @@ uint64 Image::Bind()
 			return 0;
 
 		tList<tLayer> layers;
-		AltPicture.GenerateLayers(layers, tResampleFilter(config.MipmapFilter), tResampleEdgeMode::Clamp, config.MipmapChaining);
+		AltPicture.GenerateLayers(layers, tResampleFilter(profile.MipmapFilter), tResampleEdgeMode::Clamp, profile.MipmapChaining);
 		BindLayers(layers, TexIDAlt);
 		return TexIDAlt;
 	}
@@ -1692,7 +1692,7 @@ uint64 Image::Bind()
 		glGenTextures(1, &picture->TextureID);
 
 		tList<tLayer> layers;
-		picture->GenerateLayers(layers, tResampleFilter(config.MipmapFilter), tResampleEdgeMode::Clamp, config.MipmapChaining);
+		picture->GenerateLayers(layers, tResampleFilter(profile.MipmapFilter), tResampleEdgeMode::Clamp, profile.MipmapChaining);
 		BindLayers(layers, picture->TextureID);
 	}
 	return GetCurrentPic()->TextureID;
@@ -1715,12 +1715,6 @@ void Image::Unbind()
 		glDeleteTextures(1, &TexIDAlt);
 		TexIDAlt = 0;
 	}
-
-//	if (TexIDAdj != 0)
-//	{
-//		glDeleteTextures(1, &TexIDAdj);
-//		TexIDAdj = 0;
-//	}
 }
 
 
@@ -1893,9 +1887,9 @@ uint64 Image::BindThumbnail()
 		if (TexIDThumbnail == 0)
 			return 0;
 
-		Config::Profile& config = *Config::Current;
+		Config::ProfileData& profile = Config::GetProfileData();
 		tList<tLayer> layers;
-		ThumbnailPicture.GenerateLayers(layers, tResampleFilter(config.MipmapFilter), tResampleEdgeMode::Clamp, config.MipmapChaining);
+		ThumbnailPicture.GenerateLayers(layers, tResampleFilter(profile.MipmapFilter), tResampleEdgeMode::Clamp, profile.MipmapChaining);
 		BindLayers(layers, TexIDThumbnail);
 		return TexIDThumbnail;
 	}

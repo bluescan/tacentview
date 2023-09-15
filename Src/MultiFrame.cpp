@@ -124,16 +124,16 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 	if (ImGui::Button("Reset From Images") && CurrImage)
 		ComputeMaxWidthHeight(outWidth, outHeight);
 
-	Config::Profile& config = *Config::Current;
+	Config::ProfileData& profile = Config::GetProfileData();
 
 	// @todo This is not a cheap call. No need to do it every frame, only when dims change above.
 	if (!AllDimensionsMatch(outWidth, outHeight))
 	{
-		ImGui::Combo("Filter", &config.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
+		ImGui::Combo("Filter", &profile.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 		ImGui::SameLine();
 		ShowHelpMark("Filtering method to use when resizing images.");
 
-		ImGui::Combo("Filter Edge Mode", &config.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
+		ImGui::Combo("Filter Edge Mode", &profile.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
 		ImGui::SameLine();
 		ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");
 	}
@@ -177,7 +177,7 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 
 		if (dirExists)
 		{
-			if (tFileExists(outFile) && config.ConfirmFileOverwrites)
+			if (tFileExists(outFile) && profile.ConfirmFileOverwrites)
 			{
 				ImGui::OpenPopup("Overwrite Image File");
 			}
@@ -210,7 +210,7 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 
 void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeight)
 {
-	Config::Profile& config = *Config::Current;
+	Config::ProfileData& profile = Config::GetProfileData();
 	tList<tFrame> frames;
 	for (Image* img = Images.First(); img; img = img->Next())
 	{
@@ -226,28 +226,28 @@ void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeigh
 
 		tImage::tPicture resampled(*currPic);
 		if ((resampled.GetWidth() != outWidth) || (resampled.GetHeight() != outHeight))
-			resampled.Resample(outWidth, outHeight, tImage::tResampleFilter(config.ResampleFilter), tImage::tResampleEdgeMode(config.ResampleEdgeMode));
+			resampled.Resample(outWidth, outHeight, tImage::tResampleFilter(profile.ResampleFilter), tImage::tResampleEdgeMode(profile.ResampleEdgeMode));
 
 		tFrame* frame = new tFrame(resampled.StealPixels(), outWidth, outHeight, currPic->Duration);
 		frames.Append(frame);
 	}
 
 	bool success = false;
-	tFileType fileType = tGetFileTypeFromName( config.SaveFileTypeMultiFrame );
+	tFileType fileType = tGetFileTypeFromName( profile.SaveFileTypeMultiFrame );
 	switch (fileType)
 	{
 		case tFileType::GIF:
 		{
 			tImageGIF gif(frames, true);
 			tImageGIF::SaveParams params;
-			params.Format					= tPixelFormat(int(tPixelFormat::FirstPalette) + config.SaveFileGifBPP - 1);
-			params.Method					= tQuantize::Method(config.SaveFileGifQuantMethod);
-			params.Loop						= config.SaveFileGifLoop;
-			params.AlphaThreshold			= config.SaveFileGifAlphaThreshold;
-			params.OverrideFrameDuration	= config.SaveFileGifDurMultiFrame;
-			params.DitherLevel				= double(config.SaveFileGifDitherLevel);
-			params.FilterSize				= (config.SaveFileGifFilterSize * 2) + 1;
-			params.SampleFactor				= config.SaveFileGifSampleFactor;
+			params.Format					= tPixelFormat(int(tPixelFormat::FirstPalette) + profile.SaveFileGifBPP - 1);
+			params.Method					= tQuantize::Method(profile.SaveFileGifQuantMethod);
+			params.Loop						= profile.SaveFileGifLoop;
+			params.AlphaThreshold			= profile.SaveFileGifAlphaThreshold;
+			params.OverrideFrameDuration	= profile.SaveFileGifDurMultiFrame;
+			params.DitherLevel				= double(profile.SaveFileGifDitherLevel);
+			params.FilterSize				= (profile.SaveFileGifFilterSize * 2) + 1;
+			params.SampleFactor				= profile.SaveFileGifSampleFactor;
 			success = gif.Save(outFile, params);
 			break;
 		}
@@ -255,7 +255,7 @@ void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeigh
 		case tFileType::WEBP:
 		{
 			tImageWEBP webp(frames, true);
-			success = webp.Save(outFile, config.SaveFileWebpLossy, config.SaveFileWebpQualComp, config.SaveFileWebpDurMultiFrame);
+			success = webp.Save(outFile, profile.SaveFileWebpLossy, profile.SaveFileWebpQualComp, profile.SaveFileWebpDurMultiFrame);
 			break;
 		}
 
@@ -263,7 +263,7 @@ void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeigh
 		{
 			tImageAPNG apng(frames, true);
 			tImageAPNG::SaveParams params;
-			params.OverrideFrameDuration = config.SaveFileApngDurMultiFrame;
+			params.OverrideFrameDuration = profile.SaveFileApngDurMultiFrame;
 			tImageAPNG::tFormat savedFormat = apng.Save(outFile, params);
 			success = (savedFormat != tImageAPNG::tFormat::Invalid);
 			break;
@@ -273,8 +273,8 @@ void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeigh
 		{
 			tImageTIFF tiff(frames, true);
 			tImageTIFF::SaveParams params;
-			params.UseZLibCompression = config.SaveFileTiffZLibDeflate;
-			params.OverrideFrameDuration = config.SaveFileTiffDurMultiFrame;
+			params.UseZLibCompression = profile.SaveFileTiffZLibDeflate;
+			params.OverrideFrameDuration = profile.SaveFileTiffDurMultiFrame;
 			success = tiff.Save(outFile, params);
 			break;
 		}
@@ -429,7 +429,7 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 		ImGui::SetKeyboardFocusHere();		
 	if (Viewer::Button("Extract", tVector2(100.0f, 0.0f)))
 	{
-		Config::Profile& config = *Config::Current;
+		Config::ProfileData& profile = Config::GetProfileData();
 		bool dirExists = tDirExists(destDir);
 		if (!dirExists)
 		{
@@ -452,7 +452,7 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 				extractedFilenames.Append(new tStringItem(frameFile));
 			}
 
-			if (config.ConfirmFileOverwrites)
+			if (profile.ConfirmFileOverwrites)
 			{
 				overwriteFiles.Empty();
 				for (tStringItem* exFile = extractedFilenames.First(); exFile; exFile = exFile->Next())

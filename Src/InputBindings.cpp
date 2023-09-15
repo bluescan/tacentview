@@ -26,7 +26,7 @@ namespace Viewer
 
 namespace Bindings
 {
-	void ShowAddBindingSection(Config::Profile& settings, float keyWidth, float operationWidth, float removeAddSize);
+	void ShowAddBindingSection(Config::ProfileData& settings, float keyWidth, float operationWidth, float removeAddSize);
 	void InitKeyNameTables();
 
 	const int MaxKeyNameLength = 16;
@@ -303,7 +303,7 @@ bool Bindings::InputMap::AssignKey(int key, uint32 modifiers, Operation operatio
 }
 
 
-void Bindings::InputMap::Reset(Viewer::eProfile profile, bool onlyIfUnassigned)
+void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 {
 	if (!onlyIfUnassigned)
 		Clear();
@@ -502,22 +502,22 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize;
 	if (ImGui::Begin("Keyboard Bindings", popen, flags))
 	{
-		static int profile = 0;
+		static int profileIdx = 0;
 		if (justOpened)
-			profile = int(Config::GetProfile());
+			profileIdx = int(Config::GetProfile());
 
-		Config::Profile& config = *Config::Current;
+		Config::ProfileData& profileData = Config::GetProfileData();
 		float profileWidth, keyWidth, operationWidth, buttonWidth, removeAddSize;
-		switch (config.GetUISize())
+		switch (profileData.GetUISize())
 		{
-			case Viewer::Config::Profile::UISizeEnum::Nano:
+			case Viewer::Config::ProfileData::UISizeEnum::Nano:
 				profileWidth	= 104.0f;
 				keyWidth		= 120.0f;
 				operationWidth	= 240.0f;
 				buttonWidth		= 72.0f;
 				removeAddSize	= 21.0f;
 				break;
-			case Viewer::Config::Profile::UISizeEnum::Tiny:
+			case Viewer::Config::ProfileData::UISizeEnum::Tiny:
 				profileWidth	= 117.0f;
 				keyWidth		= 137.0f;
 				operationWidth	= 261.0f;
@@ -525,7 +525,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 				removeAddSize	= 22.5f;
 				break;
 			default:
-			case Viewer::Config::Profile::UISizeEnum::Small:
+			case Viewer::Config::ProfileData::UISizeEnum::Small:
 				profileWidth	= 130.0f;
 				keyWidth		= 154.0f;
 				operationWidth	= 282.0f;
@@ -535,28 +535,28 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		}
 
 		ImGui::SetNextItemWidth(profileWidth);
-		ImGui::Combo("##ProfileToEdit", &profile, ProfileNamesLong, int(eProfile::NumProfiles));
-		Config::Profile* prof = nullptr;
-		switch (profile)
+		ImGui::Combo("##ProfileToEdit", &profileIdx, ProfileNamesLong, int(Profile::NumProfiles));
+		Config::ProfileData* prof = nullptr;
+		switch (profileIdx)
 		{
 			default:
-			case int(eProfile::Main):	prof = &Config::MainProfile;	break;
-			case int(eProfile::Basic):	prof = &Config::BasicProfile;	break;
-			case int(eProfile::Kiosk):	prof = &Config::KioskProfile;	break;
+			case int(Profile::Main):	prof = &Config::MainProfile;	break;
+			case int(Profile::Basic):	prof = &Config::BasicProfile;	break;
+			case int(Profile::Kiosk):	prof = &Config::KioskProfile;	break;
 		}
 		tAssert(prof);
 
 		ImGui::SameLine();
 		if (ImGui::Button("Reset", tVector2(buttonWidth, 0.0f)))
-			prof->InputBindings.Reset(Viewer::eProfile(profile));
+			prof->InputBindings.Reset(Viewer::Profile(profileIdx));
 		ShowToolTip("Resets the key bindings to default for the chosen profile.");
 
 		ImGui::SameLine();
 		if (ImGui::Button("Reset All", tVector2(buttonWidth, 0.0f)))
 		{
-			Config::MainProfile.InputBindings.Reset(eProfile::Main);
-			Config::BasicProfile.InputBindings.Reset(eProfile::Basic);
-			Config::KioskProfile.InputBindings.Reset(eProfile::Kiosk);
+			Config::MainProfile.InputBindings.Reset(Profile::Main);
+			Config::BasicProfile.InputBindings.Reset(Profile::Basic);
+			Config::KioskProfile.InputBindings.Reset(Profile::Kiosk);
 		}
 		ShowToolTip("Resets the key bindings to default for all profiles.");
 
@@ -697,7 +697,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 }
 
 
-void Bindings::ShowAddBindingSection(Config::Profile& settings, float keyWidth, float operationWidth, float removeAddSize)
+void Bindings::ShowAddBindingSection(Config::ProfileData& settings, float keyWidth, float operationWidth, float removeAddSize)
 {
 	uint32 tableFlags = ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
 	const float rowHeight = 25.0f;
@@ -856,23 +856,23 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 	tVector2 windowPos = GetDialogOrigin(DialogID::CheatSheet);
 	ImGui::SetNextWindowBgAlpha(0.80f);
 
-	Config::Profile& config = *Config::Current;
+	Config::ProfileData& profile = Config::GetProfileData();
 	tVector2 windowSize;
 	float actionWidth, operatWidth;
-	switch (config.GetUISize())
+	switch (profile.GetUISize())
 	{
-		case Viewer::Config::Profile::UISizeEnum::Nano:
+		case Viewer::Config::ProfileData::UISizeEnum::Nano:
 			actionWidth = 106.0f;
 			operatWidth = 238.0f;
 			windowSize.Set(actionWidth+operatWidth, 438.0f);
 			break;
-		case Viewer::Config::Profile::UISizeEnum::Tiny:
+		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
 			actionWidth = 114.0f;
 			operatWidth = 262.0f;
 			windowSize.Set(actionWidth+operatWidth, 442.0f);
 			break;
 		default:
-		case Viewer::Config::Profile::UISizeEnum::Small:
+		case Viewer::Config::ProfileData::UISizeEnum::Small:
 			actionWidth = 130.0f;
 			operatWidth = 286.0f;
 			windowSize.Set(actionWidth+operatWidth, 446.0f);
@@ -888,7 +888,7 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
 		const float rowHeight = 18.0f;
 		const int maxRowsToDisplay = 20;
-		int totalAssigned = config.InputBindings.GetTotalAssigned();
+		int totalAssigned = profile.InputBindings.GetTotalAssigned();
 		const int numRowsToDisplay = tMin(maxRowsToDisplay, totalAssigned);
 		tVector2 outerSize = ImVec2(0.0f, rowHeight + rowHeight * float(numRowsToDisplay));
 		if (ImGui::BeginTable("CheatSheetTable", 2, tableFlags, outerSize))
@@ -914,7 +914,7 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 
 			for (int k = 0; k <= GLFW_KEY_LAST; k++)
 			{
-				KeyOps& keyops = config.InputBindings.GetKeyOps(k);
+				KeyOps& keyops = profile.InputBindings.GetKeyOps(k);
 				if (!keyops.IsAnythingAssigned() || !IsKeySupported(k))
 					continue;
 

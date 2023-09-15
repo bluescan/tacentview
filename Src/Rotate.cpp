@@ -44,8 +44,8 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 	ImGui::DragFloat("Fine Tune Drag", &RotateAnglePreview, 0.01f);
 	ImGui::NewLine();
 
-	Config::Profile& config = *Config::Current;
-	ImGui::Combo("Up Filter", &config.ResampleFilterRotateUp, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
+	Config::ProfileData& profile = Config::GetProfileData();
+	ImGui::Combo("Up Filter", &profile.ResampleFilterRotateUp, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
 	ImGui::SameLine();
 	ShowHelpMark
 	(
@@ -54,9 +54,9 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 		"nearest neighbour, fast, for pixel art."
 	);
 
-	if (config.ResampleFilterRotateUp != int(tResampleFilter(tResampleFilter::None)))
+	if (profile.ResampleFilterRotateUp != int(tResampleFilter(tResampleFilter::None)))
 	{
-		ImGui::Combo("Down Filter", &config.ResampleFilterRotateDown, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
+		ImGui::Combo("Down Filter", &profile.ResampleFilterRotateDown, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
 		ImGui::SameLine();
 		ShowHelpMark
 		(
@@ -67,7 +67,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 	}
 
 	static const char* modeNames[] = { "Fill", "Crop", "Crop Resize" };
-	ImGui::Combo("Mode", &config.RotateMode, modeNames, tNumElements(modeNames), tNumElements(modeNames));
+	ImGui::Combo("Mode", &profile.RotateMode, modeNames, tNumElements(modeNames), tNumElements(modeNames));
 	ImGui::SameLine();
 	ShowHelpMark
 	(
@@ -78,7 +78,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 		"degrees on either side. If the rotation is mostly vertical, the reciprical aspect is used."
 	);
 
-	if (config.GetRotateMode() == Config::Profile::RotateModeEnum::Fill)
+	if (profile.GetRotateMode() == Config::ProfileData::RotateModeEnum::Fill)
 		DoFillColourInterface();
 
 	ImGui::NewLine();
@@ -88,7 +88,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 	if (Viewer::Button("Reset", tVector2(100.0f, 0.0f)))
 	{
 		RotateAnglePreview = 0.0f;
-		config.SetRotateMode(Config::Profile::RotateModeEnum::Fill);
+		profile.SetRotateMode(Config::ProfileData::RotateModeEnum::Fill);
 	}
 
 	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
@@ -118,12 +118,12 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 		CurrImage->Unbind();
 		CurrImage->Rotate
 		(
-			tDegToRad(RotateAnglePreview), config.FillColour,
-			tResampleFilter(config.ResampleFilterRotateUp),
-			tResampleFilter(config.ResampleFilterRotateDown)
+			tDegToRad(RotateAnglePreview), profile.FillColour,
+			tResampleFilter(profile.ResampleFilterRotateUp),
+			tResampleFilter(profile.ResampleFilterRotateDown)
 		);
 
-		if ((config.GetRotateMode() == Config::Profile::RotateModeEnum::Crop) || (config.GetRotateMode() == Config::Profile::RotateModeEnum::CropResize))
+		if ((profile.GetRotateMode() == Config::ProfileData::RotateModeEnum::Crop) || (profile.GetRotateMode() == Config::ProfileData::RotateModeEnum::CropResize))
 		{
 			// If one of the crop modes is selected we need to crop the edges. Since rectangles are made of lines and there
 			// is symmetry and we can compute the reduced size by subtracting the original size from the rotated size.
@@ -153,10 +153,10 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 			CurrImage->Crop(newW, newH, tPicture::Anchor::MiddleMiddle);
 		}
 
-		if (config.GetRotateMode() == Config::Profile::RotateModeEnum::CropResize)
+		if (profile.GetRotateMode() == Config::ProfileData::RotateModeEnum::CropResize)
 		{
 			// The crop is done. Now resample.
-			tResampleFilter filter = (config.ResampleFilterRotateUp != int(tResampleFilter::None)) ? tResampleFilter(config.ResampleFilterRotateUp) : tResampleFilter::Nearest;
+			tResampleFilter filter = (profile.ResampleFilterRotateUp != int(tResampleFilter::None)) ? tResampleFilter(profile.ResampleFilterRotateUp) : tResampleFilter::Nearest;
 			CurrImage->Resample(origW, origH, filter, tResampleEdgeMode::Clamp);
 		}
 
