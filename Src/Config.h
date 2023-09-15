@@ -31,23 +31,23 @@ enum Category
 { 
 	Category_None,
 
-	Category_Unspecified			= 1 << 0,		// Everything that's not in a category below.
-	Category_Display				= 1 << 1,		// Includes background and aspect settings.
+	Category_Unspecified			= 1 << 0,			// Everything that's not in a category below.
+	Category_Display				= 1 << 1,			// Includes background and aspect settings.
 	Category_Slideshow				= 1 << 2,
 	Category_System					= 1 << 3,
 	Category_Interface				= 1 << 4,
-	Category_Bindings				= 1 << 5,		// Key bindings.
+	Category_Bindings				= 1 << 5,			// Key bindings.
 
 	Category_All					= 0xFFFFFFFF,
 	Category_AllNoBindings			= Category_All & ~Category_Bindings
 };
 
 
-// The ProfileSettings struct represents a single set of all configurable parameters. There can be multiple instances for
-// different profiles. Currently we only have two profiles: Main and Basic.
-struct ProfileSettings
+// The Profile struct represents a single set of all configurable parameters. There can be multiple instances for
+// different profiles. Currently we have three profiles: Main, Basic, and Kiosk.
+struct Profile
 {
-	ProfileSettings(eProfile profile)					: Name(), InputBindings() { Reset(profile, Category_All); }
+	Profile(eProfile profile)							: Name(), InputBindings() { Reset(profile, Category_All); }
 	tString Name;										// The name of the profile.
 
 	bool FullscreenMode;
@@ -159,10 +159,11 @@ struct ProfileSettings
 	
 	int UISize;											// In range [0, NumSizes).
 	UISizeEnum GetUISize() const						{ return UISizeEnum(UISize); }
-	float UISizeFlt() const							{ return float(UISize); }
-	/*inline static */float UISizeSmallestFlt() const		{ return float(UISizeEnum::Smallest); }
-	/*inline static */float UISizeKeyFlt() const			{ return float(UISizeEnum::Key); }
-	/*inline static */float UISizeLargestFlt() const		{ return float(UISizeEnum::Largest); }
+	float UISizeFlt() const								{ return float(UISize); }
+	// @wip WIP FIX
+	/*inline static */float UISizeSmallestFlt() const	{ return float(UISizeEnum::Smallest); }
+	/*inline static */float UISizeKeyFlt() const		{ return float(UISizeEnum::Key); }
+	/*inline static */float UISizeLargestFlt() const	{ return float(UISizeEnum::Largest); }
 	float UISizeNormFlt() const							{ return float(UISize) / float(UISizeEnum::Largest); }
 
 	int ResampleFilter;									// Matches tImage::tResampleFilter. Used for image resize when saving and multiframe saving.
@@ -331,10 +332,10 @@ void ResetAllProfiles(uint32 categories);
 void ResetAllProfiles();
 
 extern GlobalSettings Global;
-extern ProfileSettings* Current;
-extern ProfileSettings MainProfileSettings;
-extern ProfileSettings BasicProfileSettings;
-extern ProfileSettings KioskProfileSettings;
+extern Profile* Current;
+extern Profile MainProfile;
+extern Profile BasicProfile;
+extern Profile KioskProfile;
 
 
 } }

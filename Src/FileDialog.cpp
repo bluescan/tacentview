@@ -1220,20 +1220,20 @@ FileDialog::DialogState FileDialog::DoPopup()
 		case DialogMode::SaveFile:		label = "Save File";		configPath = &ConfigSaveFilePath;	break;
 	}
 
-	Viewer::Config::ProfileSettings& config = *Viewer::Config::Current;
+	Viewer::Config::Profile& config = *Viewer::Config::Current;
 	float nextWinWidth, nextWinHeight;
 	switch (config.GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
+		case Viewer::Config::Profile::UISizeEnum::Nano:
 			nextWinWidth = 660.0f;
 			nextWinHeight = 400.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::Profile::UISizeEnum::Tiny:
 			nextWinWidth = 720.0f;
 			nextWinHeight = 460.0f;
 			break;
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::Profile::UISizeEnum::Small:
 			nextWinWidth = 780.0f;
 			nextWinHeight = 520.0f;
 			break;
@@ -1264,7 +1264,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 	float menuBarHeight, bottomBarRowA, bottomBarRowB, colWidthIcon, colWidthName, colWidthTime, colWidthType, colWidthSize;
 	switch (config.GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
+		case Viewer::Config::Profile::UISizeEnum::Nano:
 			menuBarHeight	= 24.0f;
 			bottomBarRowA	= 20.0f;
 			bottomBarRowB	= 28.0f;
@@ -1275,7 +1275,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 			colWidthSize	= 60.0;
 			break;
 
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::Profile::UISizeEnum::Tiny:
 			menuBarHeight	= 26.0f;
 			bottomBarRowA	= 22.0f;
 			bottomBarRowB	= 30.0f;
@@ -1287,7 +1287,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 			break;
 
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::Profile::UISizeEnum::Small:
 			menuBarHeight	= 28.0f;
 			bottomBarRowA	= 24.0f;
 			bottomBarRowB	= 32.0f;

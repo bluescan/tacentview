@@ -43,22 +43,22 @@ void Viewer::DoResizeWidthHeightInterface(int srcW, int srcH, int& dstW, int& ds
 	float aspect = float(srcW) / float(srcH);
 	static bool lockAspect = true;
 
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	float dimWidth, dimOffset, powButtonWidth;
 	switch (config.GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
+		case Viewer::Config::Profile::UISizeEnum::Nano:
 			dimWidth		= 90.0f;
 			dimOffset		= 140.0f;
 			powButtonWidth	= 44.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::Profile::UISizeEnum::Tiny:
 			dimWidth		= 100.0f;
 			dimOffset		= 156.0f;
 			powButtonWidth	= 47.0f;
 			break;
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::Profile::UISizeEnum::Small:
 			dimWidth		= 110.0f;
 			dimOffset		= 172.0f;
 			powButtonWidth	= 50.0f;
@@ -109,7 +109,7 @@ void Viewer::DoResizeFilterInterface(int srcW, int srcH, int dstW, int dstH)
 {
 	if ((dstW == srcW) && (dstH == srcH))
 		return;
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 
 	ImGui::SetNextItemWidth(168.0f);
 	ImGui::Combo("Filter", &config.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
@@ -125,7 +125,7 @@ void Viewer::DoResizeFilterInterface(int srcW, int srcH, int dstW, int dstH)
 
 void Viewer::DoResizeAnchorInterface()
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	static const char* longNames[3*3] = { "Top-Left", "Top-Middle", "Top-Right", "Middle-Left", "Middle", "Middle-Right", "Bottom-Left", "Bottom-Middle", "Bottom-Right" };
 
 	ImGui::NewLine();
@@ -137,16 +137,16 @@ void Viewer::DoResizeAnchorInterface()
 	float ancLeft, ancImgSize;
 	switch (config.GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
+		case Viewer::Config::Profile::UISizeEnum::Nano:
 			ancLeft		= 92.0f;
 			ancImgSize	= 24.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::Profile::UISizeEnum::Tiny:
 			ancLeft		= 100.0f;
 			ancImgSize	= 26.0f;
 			break;
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::Profile::UISizeEnum::Small:
 			ancLeft		= 109.0f;
 			ancImgSize	= 28.0f;
 			break;
@@ -237,7 +237,7 @@ void Viewer::DoResizeCrop(int srcW, int srcH, int dstW, int dstH)
 {
 	if ((dstW != srcW) || (dstH != srcH))
 	{
-		Config::ProfileSettings& config = *Config::Current;
+		Config::Profile& config = *Config::Current;
 		CurrImage->Unbind();
 		if (config.CropAnchor == -1)
 		{
@@ -258,7 +258,7 @@ void Viewer::DoResizeCrop(int srcW, int srcH, int dstW, int dstH)
 
 void Viewer::DoFillColourInterface(const char* toolTipText, bool contactSheetFillColour)
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	tColourf floatCol(contactSheetFillColour ? config.FillColourContact : config.FillColour);
 	ImGui::ColorEdit4
 	(
@@ -311,18 +311,18 @@ void Viewer::DoResizeImageModal(bool resizeImagePressed)
 	if (!ImGui::BeginPopupModal("Resize Image", &isOpenResizeImage, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	float buttonWidth;
 	switch (config.GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
+		case Viewer::Config::Profile::UISizeEnum::Nano:
 			buttonWidth		= 78.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::Profile::UISizeEnum::Tiny:
 			buttonWidth		= 86.0f;
 			break;
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::Profile::UISizeEnum::Small:
 			buttonWidth		= 94.0f;
 			break;
 	}
@@ -452,18 +452,18 @@ void Viewer::DoResizeCanvasAnchorTab(bool firstOpen)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	float buttonWidth;
 	switch (config.GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
+		case Viewer::Config::Profile::UISizeEnum::Nano:
 			buttonWidth		= 78.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::Profile::UISizeEnum::Tiny:
 			buttonWidth		= 86.0f;
 			break;
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::Profile::UISizeEnum::Small:
 			buttonWidth		= 94.0f;
 			break;
 	}
@@ -521,18 +521,18 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool firstOpen)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	float buttonWidth;
 	switch (config.GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
+		case Viewer::Config::Profile::UISizeEnum::Nano:
 			buttonWidth		= 78.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::Profile::UISizeEnum::Tiny:
 			buttonWidth		= 86.0f;
 			break;
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::Profile::UISizeEnum::Small:
 			buttonWidth		= 94.0f;
 			break;
 	}
@@ -578,7 +578,7 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 	tAssert(picture);
 	int srcW = picture->GetWidth();
 	int srcH = picture->GetHeight();
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 
 	ImGui::NewLine();
 
@@ -629,23 +629,23 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 	float buttonWidth;
 	switch (config.GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
+		case Viewer::Config::Profile::UISizeEnum::Nano:
 			buttonWidth		= 78.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::Profile::UISizeEnum::Tiny:
 			buttonWidth		= 86.0f;
 			break;
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::Profile::UISizeEnum::Small:
 			buttonWidth		= 94.0f;
 			break;
 	}
 
 	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
-		config.CropAnchor				= 4;
-		config.FillColour				= tColouri::black;
-		config.ResizeAspectRatio		= int(tAspectRatio::Screen_16_9) - 1;
+		config.CropAnchor			= 4;
+		config.FillColour			= tColouri::black;
+		config.ResizeAspectRatio	= int(tAspectRatio::Screen_16_9) - 1;
 		config.ResizeAspectUserNum	= 16;
 		config.ResizeAspectUserDen	= 9;
 		config.ResizeAspectMode		= 0;

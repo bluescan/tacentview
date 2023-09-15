@@ -41,20 +41,20 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		return;
 	}
 
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	float buttonOffset, comboWidth;
 	switch (config.GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
+		case Viewer::Config::Profile::UISizeEnum::Nano:
 			buttonOffset	= 141.0f;
 			comboWidth		= 110.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::Profile::UISizeEnum::Tiny:
 			buttonOffset	= 170.0f;
 			comboWidth		= 132.0f;
 			break;
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::Profile::UISizeEnum::Small:
 			buttonOffset	= 191.0f;
 			comboWidth		= 146.0f;
 			break;
@@ -92,7 +92,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				ImGui::Combo("Background Style", &config.BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
 				ImGui::PopItemWidth();
 
-				if (config.GetBackgroundStyle() == Config::ProfileSettings::BackgroundStyleEnum::SolidColour)
+				if (config.GetBackgroundStyle() == Config::Profile::BackgroundStyleEnum::SolidColour)
 				{
 					tColourf floatCol(config.BackgroundColour);
 					if (ImGui::ColorEdit3("Solid Colour", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))
@@ -124,7 +124,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 					ImGui::PopItemWidth();
 				}
 
-				if (config.GetBackgroundStyle() == Config::ProfileSettings::BackgroundStyleEnum::Checkerboard)
+				if (config.GetBackgroundStyle() == Config::Profile::BackgroundStyleEnum::Checkerboard)
 				{
 					ImGui::PushItemWidth(comboWidth);
 					ImGui::InputInt("Checker Size", &config.BackgroundCheckerboxSize);
@@ -152,7 +152,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			#else
 			const char* uiSizeItems[] = { "Nano", "Tiny", "Small" };
 			#endif
-			tStaticAssert(tNumElements(uiSizeItems) == int(Config::ProfileSettings::UISizeEnum::NumSizes));
+			tStaticAssert(tNumElements(uiSizeItems) == int(Config::Profile::UISizeEnum::NumSizes));
 
 			ImGui::PushItemWidth(comboWidth);
 			ImGui::Combo("UI Size", &config.UISize, uiSizeItems, tNumElements(uiSizeItems));
@@ -364,18 +364,18 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				int zoomMode = int(GetZoomMode());
 				if (ImGui::Combo("Zoom Mode", &zoomMode, zoomModes, tNumElements(zoomModes)))
 				{
-					switch (Config::ProfileSettings::ZoomModeEnum(zoomMode))
+					switch (Config::Profile::ZoomModeEnum(zoomMode))
 					{
-						case Config::ProfileSettings::ZoomModeEnum::Fit:
-						case Config::ProfileSettings::ZoomModeEnum::DownscaleOnly:
+						case Config::Profile::ZoomModeEnum::Fit:
+						case Config::Profile::ZoomModeEnum::DownscaleOnly:
 							ResetPan();
 							break;
-						case Config::ProfileSettings::ZoomModeEnum::OneToOne:
+						case Config::Profile::ZoomModeEnum::OneToOne:
 							SetZoomPercent(100.0f);
 							ResetPan();
 							break;
 					}
-					SetZoomMode( Config::ProfileSettings::ZoomModeEnum(zoomMode) );
+					SetZoomMode( Config::Profile::ZoomModeEnum(zoomMode) );
 				}
 				ImGui::PopItemWidth();
 				ImGui::SameLine();

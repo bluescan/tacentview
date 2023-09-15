@@ -26,7 +26,7 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 {
 	// This overlay function is pretty much taken from the DearImGui demo code.
 	const float margin = 6.0f;
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 
 	tVector2 windowPos = tVector2
 	(
@@ -194,25 +194,25 @@ void Viewer::ShowImageMetaDataOverlay(bool* popen)
 	tVector2 windowPos = GetDialogOrigin(DialogID::MetaData);
 	ImGui::SetNextWindowBgAlpha(0.90f);
 
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	float rowHeight, tagWidth, valWidth;
 	int maxRowsToDisplay;
 	switch (config.GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
+		case Viewer::Config::Profile::UISizeEnum::Nano:
 			rowHeight			= 18.0f;
 			tagWidth			= 116.0f;
 			valWidth			= 200.0f;
 			maxRowsToDisplay	= 25;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::Profile::UISizeEnum::Tiny:
 			rowHeight			= 20.0f;
 			tagWidth			= 132.0f;
 			valWidth			= 230.0f;
 			maxRowsToDisplay	= 23;
 			break;
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::Profile::UISizeEnum::Small:
 			rowHeight			= 22.0f;
 			tagWidth			= 148.0f;
 			valWidth			= 260.0f;

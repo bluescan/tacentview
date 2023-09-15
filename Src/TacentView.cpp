@@ -294,8 +294,8 @@ namespace Viewer
 	// result in ascending order if they return a < b and descending if they return a > b.
 	struct ImageCompareFunctionObject
 	{
-		ImageCompareFunctionObject(Config::ProfileSettings::SortKeyEnum key, bool ascending) : Key(key), Ascending(ascending) { }
-		Config::ProfileSettings::SortKeyEnum Key;
+		ImageCompareFunctionObject(Config::Profile::SortKeyEnum key, bool ascending) : Key(key), Ascending(ascending) { }
+		Config::Profile::SortKeyEnum Key;
 		bool Ascending;
 
 		// This is what makes it a magical function object.
@@ -340,105 +340,105 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 	switch (Key)
 	{
 		default:
-		case Config::ProfileSettings::SortKeyEnum::FileName:
+		case Config::Profile::SortKeyEnum::FileName:
 		{
 			const char8_t* A = a.Filename.Chars();
 			const char8_t* B = b.Filename.Chars();
 			return Ascending ? (tStricmp(A, B) < 0) : (tStricmp(A, B) > 0);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::FileModTime:
+		case Config::Profile::SortKeyEnum::FileModTime:
 		{
 			time_t A = a.FileModTime;
 			time_t B = b.FileModTime;
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::FileSize:
+		case Config::Profile::SortKeyEnum::FileSize:
 		{
 			uint64 A = a.FileSizeB;
 			uint64 B = b.FileSizeB;
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::FileType:
+		case Config::Profile::SortKeyEnum::FileType:
 		{
 			const char* A = tGetExtension(a.Filetype).Chr();
 			const char* B = tGetExtension(b.Filetype).Chr();
 			return Ascending ? (tStricmp(A, B) < 0) : (tStricmp(A, B) > 0);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::ImageArea:
+		case Config::Profile::SortKeyEnum::ImageArea:
 		{
 			int A = a.Cached_PrimaryArea;
 			int B = b.Cached_PrimaryArea;
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::ImageWidth:
+		case Config::Profile::SortKeyEnum::ImageWidth:
 		{
 			int A = a.Cached_PrimaryWidth;
 			int B = b.Cached_PrimaryWidth;
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::ImageHeight:
+		case Config::Profile::SortKeyEnum::ImageHeight:
 		{
 			int A = a.Cached_PrimaryHeight;
 			int B = b.Cached_PrimaryHeight;
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::MetaLatitude:
+		case Config::Profile::SortKeyEnum::MetaLatitude:
 		{
 			float A = a.Cached_MetaData[tImage::tMetaTag::LatitudeDD].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::LatitudeDD].Float : -100.0f;
 			float B = b.Cached_MetaData[tImage::tMetaTag::LatitudeDD].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::LatitudeDD].Float : -100.0f;
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::MetaLongitude:
+		case Config::Profile::SortKeyEnum::MetaLongitude:
 		{
 			float A = a.Cached_MetaData[tImage::tMetaTag::LongitudeDD].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::LongitudeDD].Float : -200.0f;
 			float B = b.Cached_MetaData[tImage::tMetaTag::LongitudeDD].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::LongitudeDD].Float : -200.0f;
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::MetaAltitude:
+		case Config::Profile::SortKeyEnum::MetaAltitude:
 		{
 			float A = a.Cached_MetaData[tImage::tMetaTag::Altitude].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::Altitude].Float : -1000.0f;
 			float B = b.Cached_MetaData[tImage::tMetaTag::Altitude].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::Altitude].Float : -1000.0f;
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::MetaRoll:
+		case Config::Profile::SortKeyEnum::MetaRoll:
 		{
 			float A = a.Cached_MetaData[tImage::tMetaTag::Roll].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::Roll].Float : 0.0f;
 			float B = b.Cached_MetaData[tImage::tMetaTag::Roll].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::Roll].Float : 0.0f;
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::MetaPitch:
+		case Config::Profile::SortKeyEnum::MetaPitch:
 		{
 			float A = a.Cached_MetaData[tImage::tMetaTag::Pitch].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::Pitch].Float : 0.0f;
 			float B = b.Cached_MetaData[tImage::tMetaTag::Pitch].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::Pitch].Float : 0.0f;
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::MetaYaw:
+		case Config::Profile::SortKeyEnum::MetaYaw:
 		{
 			float A = a.Cached_MetaData[tImage::tMetaTag::Yaw].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::Yaw].Float : 0.0f;
 			float B = b.Cached_MetaData[tImage::tMetaTag::Yaw].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::Yaw].Float : 0.0f;
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::MetaSpeed:
+		case Config::Profile::SortKeyEnum::MetaSpeed:
 		{
 			float A = a.Cached_MetaData[tImage::tMetaTag::Speed].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::Speed].Float : 0.0f;
 			float B = b.Cached_MetaData[tImage::tMetaTag::Speed].IsSet() ? b.Cached_MetaData[tImage::tMetaTag::Speed].Float : 0.0f;
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::MetaShutterSpeed:
+		case Config::Profile::SortKeyEnum::MetaShutterSpeed:
 		{
 			// Camera Shutter 'Speed' is measured in 1/s. 125 => 1/125th second. 0.0 (infinite) is considered the default for sorting purposes.
 			float A = a.Cached_MetaData[tImage::tMetaTag::ShutterSpeed].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::ShutterSpeed].Float : 0.0f;
@@ -446,7 +446,7 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::MetaExposureTime:
+		case Config::Profile::SortKeyEnum::MetaExposureTime:
 		{
 			// Exposure time is how long the shutter is open for. Basically the inverse of the shutter speed.
 			// I don't know why EXIF data duplicates this explicitely. 0.0s is considered the default for exposure time.
@@ -455,7 +455,7 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::MetaFStop:
+		case Config::Profile::SortKeyEnum::MetaFStop:
 		{
 			// No existing lens can get down to an f-stop of 0.5. That;s why we use 0.5 as the default.
 			float A = a.Cached_MetaData[tImage::tMetaTag::FStop].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::FStop].Float : 0.5f;
@@ -463,7 +463,7 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::MetaISO:
+		case Config::Profile::SortKeyEnum::MetaISO:
 		{
 			// ISO as low as 25 exist. 100-200 is 'normal' speed film. 400 is fast (but grainy). We use 0 as default.
 			float A = a.Cached_MetaData[tImage::tMetaTag::ISO].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::ISO].Float : 0.0f;
@@ -471,7 +471,7 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::MetaAperture:
+		case Config::Profile::SortKeyEnum::MetaAperture:
 		{
 			// Aperture in APEX units can't get down to 0. We use 0 as default.
 			float A = a.Cached_MetaData[tImage::tMetaTag::Aperture].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::Aperture].Float : 0.0f;
@@ -479,7 +479,7 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::MetaOrientation:
+		case Config::Profile::SortKeyEnum::MetaOrientation:
 		{
 			// All non-90-degree transforms are grouped at the start. All 90-degree transforms have larger values.
 			// This allows for meaningful sorting. The default 0 means 'unspecified'.
@@ -488,7 +488,7 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::MetaBrightness:
+		case Config::Profile::SortKeyEnum::MetaBrightness:
 		{
 			// Aperture in APEX Bv units. 0 is dark -- about 3.4candelas/(m^2). We use 0 as default.
 			float A = a.Cached_MetaData[tImage::tMetaTag::Brightness].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::Brightness].Float : 0.0f;
@@ -496,7 +496,7 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::MetaFlash:
+		case Config::Profile::SortKeyEnum::MetaFlash:
 		{
 			// Flash used is 0 for not used, 1 for used. We use 0 for default.
 			uint32 A = a.Cached_MetaData[tImage::tMetaTag::FlashUsed].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::FlashUsed].Uint32 : 0;
@@ -504,7 +504,7 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::MetaFocalLength:
+		case Config::Profile::SortKeyEnum::MetaFocalLength:
 		{
 			// Focal length in mm.  We use 0 as default which means unknown.
 			float A = a.Cached_MetaData[tImage::tMetaTag::FocalLength].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::FocalLength].Float : 0.0f;
@@ -512,7 +512,7 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 			return Ascending ? (A < B) : (A > B);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::MetaTimeTaken:
+		case Config::Profile::SortKeyEnum::MetaTimeTaken:
 		{
 			// String sort works because fields are ordered nicely. "YYYY-MM-DD hh:mm:ss". From Wikipedia: "The first
 			// photographic camera developed for commercial manufacture was a daguerreotype camera, built by Alphonse
@@ -523,7 +523,7 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 			return Ascending ? (tStrcmp(A, B) < 0) : (tStrcmp(A, B) > 0);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::MetaTimeModified:
+		case Config::Profile::SortKeyEnum::MetaTimeModified:
 		{
 			// String sort works because fields are ordered nicely. "YYYY-MM-DD hh:mm:ss". We use the same default as TimeTaken.
 			const char8_t* A = a.Cached_MetaData[tImage::tMetaTag::DateTimeChange].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::DateTimeChange].String.Chars() : u8"1839-01-01 00:00:00";
@@ -531,7 +531,7 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 			return Ascending ? (tStrcmp(A, B) < 0) : (tStrcmp(A, B) > 0);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::MetaCameraMake:
+		case Config::Profile::SortKeyEnum::MetaCameraMake:
 		{
 			// Empty string used for default. Empty is less than all other non-empty strings.
 			const char8_t* A = a.Cached_MetaData[tImage::tMetaTag::MakeModelSerial].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::MakeModelSerial].String.Chars() : u8"";
@@ -539,7 +539,7 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 			return Ascending ? (tStricmp(A, B) < 0) : (tStricmp(A, B) > 0);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::MetaDescription:
+		case Config::Profile::SortKeyEnum::MetaDescription:
 		{
 			// Empty string used for default. Empty is less than all other non-empty strings.
 			const char8_t* A = a.Cached_MetaData[tImage::tMetaTag::Description].IsSet() ? a.Cached_MetaData[tImage::tMetaTag::Description].String.Chars() : u8"";
@@ -547,7 +547,7 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 			return Ascending ? (tStricmp(A, B) < 0) : (tStricmp(A, B) > 0);
 		}
 
-		case Config::ProfileSettings::SortKeyEnum::Shuffle:
+		case Config::Profile::SortKeyEnum::Shuffle:
 		{
 			uint32 A = a.ShuffleValue;
 			uint32 B = b.ShuffleValue;
@@ -565,9 +565,9 @@ bool Viewer::Button(const char* label, const tMath::tVector2& size)
 }
 
 
-Viewer::Config::ProfileSettings::ZoomModeEnum Viewer::GetZoomMode()
+Viewer::Config::Profile::ZoomModeEnum Viewer::GetZoomMode()
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	if (config.ZoomPerImage && CurrImage)
 		return CurrImage->ZoomMode;
 	else
@@ -575,9 +575,9 @@ Viewer::Config::ProfileSettings::ZoomModeEnum Viewer::GetZoomMode()
 }
 
 
-void Viewer::SetZoomMode(Config::ProfileSettings::ZoomModeEnum mode)
+void Viewer::SetZoomMode(Config::Profile::ZoomModeEnum mode)
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	if (config.ZoomPerImage && CurrImage)
 		CurrImage->ZoomMode = mode;
 	else
@@ -587,7 +587,7 @@ void Viewer::SetZoomMode(Config::ProfileSettings::ZoomModeEnum mode)
 
 float Viewer::GetZoomPercent()
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	if (config.ZoomPerImage && CurrImage)
 		return CurrImage->ZoomPercent;
 	else
@@ -597,7 +597,7 @@ float Viewer::GetZoomPercent()
 
 void Viewer::SetZoomPercent(float zoom)
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	if (config.ZoomPerImage && CurrImage)
 		CurrImage->ZoomPercent = zoom;
 	else
@@ -618,7 +618,7 @@ void Viewer::PrintRedirectCallback(const char* text, int numChars)
 
 tVector2 Viewer::GetDialogOrigin(DialogID dialogID)
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	int hindex = int(dialogID) % 4;
 	int vindex = int(dialogID) / 4;
 
@@ -626,17 +626,17 @@ tVector2 Viewer::GetDialogOrigin(DialogID dialogID)
 	switch (config.GetUISize())
 	{
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
+		case Viewer::Config::Profile::UISizeEnum::Nano:
 			topOffset	= 64.0f;
 			leftOffset	= 30.0f;
 			heightDelta = 22.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::Profile::UISizeEnum::Tiny:
 			topOffset	= 66.0f;
 			leftOffset	= 32.0f;
 			heightDelta = 24.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::Profile::UISizeEnum::Small:
 			topOffset	= 68.0f;
 			leftOffset	= 34.0f;
 			heightDelta = 26.0f;
@@ -652,7 +652,7 @@ tVector2 Viewer::GetDialogOrigin(DialogID dialogID)
 
 int Viewer::GetNavBarHeight()
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	if (!config.ShowNavBar)
 		return 0;
 
@@ -749,13 +749,13 @@ void Viewer::PopulateImages()
 		ImagesLoadTimeSorted.Append(newImg);
 	}
 
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	SortImages(config.GetSortKey(), config.SortAscending);
 	CurrImage = nullptr;
 }
 
 
-void Viewer::SortImages(Config::ProfileSettings::SortKeyEnum key, bool ascending)
+void Viewer::SortImages(Config::Profile::SortKeyEnum key, bool ascending)
 {
 	ImageCompareFunctionObject compObj(key, ascending);
 	Images.Sort(compObj);
@@ -813,7 +813,7 @@ void Viewer::SetCurrentImage(const tString& currFilename)
 
 void Viewer::AutoPropertyWindow()
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	if (config.AutoPropertyWindow && CurrImage)
 		config.ShowPropsWindow = (CurrImage->TypeSupportsProperties() || (CurrImage->GetNumFrames() > 1));
 
@@ -837,7 +837,7 @@ void Viewer::LoadCurrImage()
 		return;
 	}
 
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	if
 	(
 		config.AutoPlayAnimatedImages &&
@@ -892,7 +892,7 @@ void Viewer::LoadCurrImage()
 
 bool Viewer::OnPrevious()
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	bool circ = SlideshowPlaying && config.SlideshowLooping;
 	if (!CurrImage || (!circ && !CurrImage->Prev()))
 		return false;
@@ -908,7 +908,7 @@ bool Viewer::OnPrevious()
 
 bool Viewer::OnNext()
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	bool circ = SlideshowPlaying && config.SlideshowLooping;
 	if (!CurrImage || (!circ && !CurrImage->Next()))
 		return false;
@@ -1079,18 +1079,18 @@ void Viewer::DrawBackground(float l, float r, float b, float t, float drawW, flo
 	if (Config::Global.TransparentWorkArea)
 		return;
 
-	Config::ProfileSettings& config = *Config::Current;
-	Config::ProfileSettings::BackgroundStyleEnum style = config.GetBackgroundStyle();
+	Config::Profile& config = *Config::Current;
+	Config::Profile::BackgroundStyleEnum style = config.GetBackgroundStyle();
 	bool overrideBG = CurrImage && CurrImage->OverrideBackgroundColour;
 	if (overrideBG)
-		style = Config::ProfileSettings::BackgroundStyleEnum::SolidColour;
+		style = Config::Profile::BackgroundStyleEnum::SolidColour;
 
 	switch (style)
 	{
-		case Config::ProfileSettings::BackgroundStyleEnum::None:
+		case Config::Profile::BackgroundStyleEnum::None:
 			return;
 
-		case Config::ProfileSettings::BackgroundStyleEnum::Checkerboard:
+		case Config::Profile::BackgroundStyleEnum::Checkerboard:
 		{
 			// Semitransparent checkerboard background.
 			float checkSize = float(config.BackgroundCheckerboxSize);
@@ -1170,7 +1170,7 @@ void Viewer::DrawBackground(float l, float r, float b, float t, float drawW, flo
 			break;
 		}
 
-		case Config::ProfileSettings::BackgroundStyleEnum::SolidColour:
+		case Config::Profile::BackgroundStyleEnum::SolidColour:
 		{
 			tColour4i bgCol = config.BackgroundColour;
 			if (overrideBG)
@@ -1194,7 +1194,7 @@ bool Viewer::ConvertScreenPosToImagePos
 	const tVector4& lrtb, const tVector2& uvOff
 )
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 
 	float picX = scrPos.x - lrtb.L;
 	float picY = (scrPos.y) - lrtb.B;
@@ -1326,7 +1326,7 @@ int Viewer::DoMainMenuBar()
 	losslessTransformPressed		= Request_LosslessTrnsModal;		Request_LosslessTrnsModal			= LosslessTransformMode::None;
 
 	int menuBarHeight = 0;
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	if (config.ShowMenuBar)
 	{
 		ImGui::SetNextWindowPos(tVector2(0.0f, 0.0f));
@@ -1356,7 +1356,7 @@ int Viewer::DoMainMenuBar()
 		if (window)
 			window->MenuBarImageButtonHeight = toolImageSize.y;
 
-		Config::ProfileSettings::ZoomModeEnum zoomMode = GetZoomMode();
+		Config::Profile::ZoomModeEnum zoomMode = GetZoomMode();
 
 		//
 		// File Menu.
@@ -1616,36 +1616,36 @@ int Viewer::DoMainMenuBar()
 
 			ImGui::Separator();
 
-			bool userMode = (zoomMode == Config::ProfileSettings::ZoomModeEnum::User);
+			bool userMode = (zoomMode == Config::Profile::ZoomModeEnum::User);
 			if (ImGui::MenuItem("Zoom User", nullptr, &userMode))
 			{
 				ResetPan();
-				SetZoomMode(Config::ProfileSettings::ZoomModeEnum::User);
+				SetZoomMode(Config::Profile::ZoomModeEnum::User);
 			}
 
-			bool fitMode = (zoomMode == Config::ProfileSettings::ZoomModeEnum::Fit);
+			bool fitMode = (zoomMode == Config::Profile::ZoomModeEnum::Fit);
 			tString zoomFitKey = config.InputBindings.FindModKeyText(Bindings::Operation::ZoomFit);
 			if (ImGui::MenuItem("Zoom Fit", zoomFitKey.Chz(), &fitMode))
 			{
 				ResetPan();
-				SetZoomMode(Config::ProfileSettings::ZoomModeEnum::Fit);
+				SetZoomMode(Config::Profile::ZoomModeEnum::Fit);
 			}
 
-			bool downscale = (zoomMode == Config::ProfileSettings::ZoomModeEnum::DownscaleOnly);
+			bool downscale = (zoomMode == Config::Profile::ZoomModeEnum::DownscaleOnly);
 			tString zoomDSKey = config.InputBindings.FindModKeyText(Bindings::Operation::ZoomDownscaleOnly);
 			if (ImGui::MenuItem("Zoom Downscale", zoomDSKey.Chz(), &downscale))
 			{
 				ResetPan();
-				SetZoomMode(Config::ProfileSettings::ZoomModeEnum::DownscaleOnly);
+				SetZoomMode(Config::Profile::ZoomModeEnum::DownscaleOnly);
 			}
 
-			bool oneToOne = (zoomMode == Config::ProfileSettings::ZoomModeEnum::OneToOne);
+			bool oneToOne = (zoomMode == Config::Profile::ZoomModeEnum::OneToOne);
 			tString zoomOneKey = config.InputBindings.FindModKeyText(Bindings::Operation::ZoomOneToOne);
 			if (ImGui::MenuItem("Zoom 1:1", zoomOneKey.Chz(), &oneToOne))
 			{
 				SetZoomPercent(100.0f);
 				ResetPan();
-				SetZoomMode(Config::ProfileSettings::ZoomModeEnum::OneToOne);
+				SetZoomMode(Config::Profile::ZoomModeEnum::OneToOne);
 			}
 
 			ImGui::PushItemWidth(70);
@@ -1991,19 +1991,16 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (dopoll)
 		glfwPollEvents();
 
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	if (Config::Global.TransparentWorkArea)
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	else
 		glClearColor(ColourClear.x, ColourClear.y, ColourClear.z, ColourClear.w);
 	glClear(GL_COLOR_BUFFER_BIT);
-	// @wip
-	///////////	int topUIHeight		= GetMenuBarHeight();
 
 	ImGui_ImplOpenGL2_NewFrame();		
 	ImGui_ImplGlfw_NewFrame();
 
-	/////////////////
 	ImGui::NewFrame();
 	int dispw, disph;
 	glfwGetFramebufferSize(window, &dispw, &disph);
@@ -2057,7 +2054,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	float mouseY = workH - float(mouseYd);
 	int mouseXi = int(mouseX);
 	int mouseYi = int(mouseY);
-	Config::ProfileSettings::ZoomModeEnum zoomMode = GetZoomMode();
+	Config::Profile::ZoomModeEnum zoomMode = GetZoomMode();
 	bool imgAvail = CurrImage && CurrImage->IsLoaded();
 
 	if (imgAvail)
@@ -2074,7 +2071,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		draww = float(workAreaW);
 		drawh = float(workAreaH);
 
-		if (zoomMode == Config::ProfileSettings::ZoomModeEnum::DownscaleOnly)
+		if (zoomMode == Config::Profile::ZoomModeEnum::DownscaleOnly)
 		{
 			SetZoomPercent(100.0f);
 			float zoomh = draww / iw;
@@ -2082,7 +2079,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			if ((iw > draww) || (ih > drawh))
 				SetZoomPercent(100.0f * tMath::tMin(zoomh, zoomv));
 		}
-		else if (zoomMode == Config::ProfileSettings::ZoomModeEnum::Fit)
+		else if (zoomMode == Config::Profile::ZoomModeEnum::Fit)
 		{
 			float zoomh = draww / iw;
 			float zoomv = drawh / ih;
@@ -2296,17 +2293,17 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			switch (config.GetReticleMode())
 			{
-				case Config::ProfileSettings::ReticleModeEnum::AlwaysVisible:
+				case Config::Profile::ReticleModeEnum::AlwaysVisible:
 					reticleVisible = true;
 
-				case Config::ProfileSettings::ReticleModeEnum::AlwaysHidden:
+				case Config::Profile::ReticleModeEnum::AlwaysHidden:
 					break;
 
-				case Config::ProfileSettings::ReticleModeEnum::OnSelect:
+				case Config::Profile::ReticleModeEnum::OnSelect:
 					reticleVisible = ReticleVisibleOnSelect;
 					break;
 
-				case Config::ProfileSettings::ReticleModeEnum::AutoHide:
+				case Config::Profile::ReticleModeEnum::AutoHide:
 					reticleVisible = (DisappearCountdown > 0.0);
 					break;
 			}
@@ -2439,14 +2436,14 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	tVector2 mainArrowSize;
 	switch (config.GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
+		case Viewer::Config::Profile::UISizeEnum::Nano:
 			mainArrowSize.Set(16.0f, 56.0f);
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::Profile::UISizeEnum::Tiny:
 			mainArrowSize.Set(18.0f, 63.0f);
 			break;
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::Profile::UISizeEnum::Small:
 			mainArrowSize.Set(20.0f, 70.0f);
 			break;
 	}
@@ -2533,18 +2530,18 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		float mainButtonImgDim, mainButtonDim, escButtonHeight;
 		switch (config.GetUISize())
 		{
-			case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
+			case Viewer::Config::Profile::UISizeEnum::Nano:
 				mainButtonImgDim	= 24.0f;
 				mainButtonDim		= 40.0f;
 				escButtonHeight		= 28.0f;
 				break;
-			case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+			case Viewer::Config::Profile::UISizeEnum::Tiny:
 				mainButtonImgDim	= 26.0f;
 				mainButtonDim		= 42.0f;
 				escButtonHeight		= 30.0f;
 				break;
 			default:
-			case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			case Viewer::Config::Profile::UISizeEnum::Small:
 				mainButtonImgDim	= 28.0f;
 				mainButtonDim		= 44.0f;
 				escButtonHeight		= 32.0f;
@@ -2730,14 +2727,14 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			// If we are supposed to reshuffle at the end of every slideshow loop, we do so here.
 			if
 			(
-				(config.GetSortKey() == Config::ProfileSettings::SortKeyEnum::Shuffle) &&
+				(config.GetSortKey() == Config::Profile::SortKeyEnum::Shuffle) &&
 				config.SlideshowAutoReshuffle && config.SlideshowLooping &&
 				(CurrImage && !CurrImage->Next())
 			)
 			{
 				for (Image* i = Images.First(); i; i = i->Next())
 					i->RegenerateShuffleValue();
-				SortImages(Config::ProfileSettings::SortKeyEnum::Shuffle, config.SortAscending);
+				SortImages(Config::Profile::SortKeyEnum::Shuffle, config.SortAscending);
 
 				// We set to last after the reshuffle because the OnNext below will push it to the first
 				// one as needed. This way we always start from the first image after the reshuffle.
@@ -2780,7 +2777,7 @@ bool Viewer::DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin)
 
 bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	if (!force && (config.FullscreenMode == fullscreen))
 		return false;
 
@@ -2834,7 +2831,7 @@ void Viewer::ApplyZoomDelta(float zoomDelta)
 	float zoomOrig = GetZoomPercent();
 
 	// Any manual zoom adjustment causes the zoom mode to switch to User.
-	SetZoomMode(Config::ProfileSettings::ZoomModeEnum::User);
+	SetZoomMode(Config::Profile::ZoomModeEnum::User);
 	float zoomPercent = zoomOrig + zoomDelta;
 
 	// Make sure the zoom percent always hits 100 exactly.
@@ -2866,7 +2863,7 @@ void Viewer::ChangeProfile(eProfile profile)
 	// Note that the settings mentioned above are for the _default_ settings of the basic profile. There is nothing
 	// stopping the user from customizing the profile however they want. It is essentially a complete set of alternate
 	// settings, the only difference is the default values are different than the main profile.
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	AutoPropertyWindow();
 	ChangeScreenMode(config.FullscreenMode, true);
 }
@@ -2875,14 +2872,14 @@ void Viewer::ChangeProfile(eProfile profile)
 void Viewer::ZoomFit()
 {
 	ResetPan();
-	SetZoomMode(Config::ProfileSettings::ZoomModeEnum::Fit);
+	SetZoomMode(Config::Profile::ZoomModeEnum::Fit);
 }
 
 
 void Viewer::ZoomDownscaleOnly()
 {
 	ResetPan();
-	SetZoomMode(Config::ProfileSettings::ZoomModeEnum::DownscaleOnly);
+	SetZoomMode(Config::Profile::ZoomModeEnum::DownscaleOnly);
 }
 
 
@@ -2986,7 +2983,7 @@ bool Viewer::PasteImage()
 
 	// We are done with the img. We might as well clean it up now instead of waiting for scope to end.
 	img.reset();
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 
 	//
 	// Step 2. Determine filename.
@@ -3119,7 +3116,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 	// Now we need to query the key-binding system to find out what operation is associated
 	// with the received key. The current bindings are stored in the current config.
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	uint32 viewerModifiers = Bindings::TranslateModifiers(modifiers);
 	Bindings::Operation operation = config.InputBindings.GetOperation(key, viewerModifiers);
 	bool imgAvail = CurrImage && CurrImage->IsLoaded();
@@ -3167,7 +3164,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case Bindings::Operation::UISizeInc:
 			config.UISize++;
-			tMath::tiClampMax(config.UISize, int(Config::ProfileSettings::UISizeEnum::Largest));
+			tMath::tiClampMax(config.UISize, int(Config::Profile::UISizeEnum::Largest));
 			break;
 
 		case Bindings::Operation::UISizeDec:
@@ -3185,18 +3182,18 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case Bindings::Operation::ZoomFit:
 			ResetPan();
-			SetZoomMode(Config::ProfileSettings::ZoomModeEnum::Fit);
+			SetZoomMode(Config::Profile::ZoomModeEnum::Fit);
 			break;
 
 		case Bindings::Operation::ZoomDownscaleOnly:
 			ResetPan();
-			SetZoomMode(Config::ProfileSettings::ZoomModeEnum::DownscaleOnly);
+			SetZoomMode(Config::Profile::ZoomModeEnum::DownscaleOnly);
 			break;
 
 		case Bindings::Operation::ZoomOneToOne:
 			SetZoomPercent(100.0f);
 			ResetPan();
-			SetZoomMode(Config::ProfileSettings::ZoomModeEnum::OneToOne);
+			SetZoomMode(Config::Profile::ZoomModeEnum::OneToOne);
 			break;
 
 		case Bindings::Operation::ZoomPerImage:
@@ -3580,7 +3577,7 @@ void Viewer::ScrollWheelCallback(GLFWwindow* window, double x, double y)
 
 	DisappearCountdown = DisappearDuration;
 
-	SetZoomMode(Config::ProfileSettings::ZoomModeEnum::User);
+	SetZoomMode(Config::Profile::ZoomModeEnum::User);
 	if (CurrImage && CurrImage->IsLoaded())
 	{
 		float percentChange = (y > 0.0) ? 0.1f : 1.0f-0.909090909f;
@@ -3643,7 +3640,7 @@ void Viewer::IconifyCallback(GLFWwindow* window, int iconified)
 
 int Viewer::RemoveOldCacheFiles(const tString& cacheDir)
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 
 	tList<tSystem::tFileInfo> cacheFiles;
 	tSystem::tFindFiles(cacheFiles, cacheDir, "bin");
@@ -3977,16 +3974,16 @@ int main(int argc, char** argv)
 	// sure it will still be faster.
 	#define USE_IN_MEMORY_FONT_LOAD
 	#ifdef USE_IN_MEMORY_FONT_LOAD
-	for (int uisize = 0; uisize < int(Viewer::Config::ProfileSettings::UISizeEnum::NumSizes); uisize++)
+	for (int uisize = 0; uisize < int(Viewer::Config::Profile::UISizeEnum::NumSizes); uisize++)
 		io.Fonts->AddFontFromMemoryCompressedBase85TTF(RobotoFont_compressed_data_base85, 14.0f + float(uisize)*3.2f);
 
 	#else
 	tString fontFile = dataDir + "Roboto-Medium.ttf";
-	for (int uisize = 0; uisize < int(Viewer::Config::ProfileSettings::UISizeEnum::NumSizes); uisize++)
+	for (int uisize = 0; uisize < int(Viewer::Config::Profile::UISizeEnum::NumSizes); uisize++)
 		io.Fonts->AddFontFromFileTTF(fontFile.Chr(), 14.0f + float(uisize)*2.0f);
 	#endif
 
-	Viewer::Config::ProfileSettings& config = *Viewer::Config::Current;
+	Viewer::Config::Profile& config = *Viewer::Config::Current;
 	tiClamp(config.UISize, 0, io.Fonts->Fonts.Size - 1);
 	ImFont* font = io.Fonts->Fonts[config.UISize];
 	io.FontDefault = font;

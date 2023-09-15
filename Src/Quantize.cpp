@@ -128,18 +128,18 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 	if (!ImGui::BeginPopupModal("Quantize", &isOpenQuantizeImage, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	float buttonWidth;
 	switch (config.GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
+		case Viewer::Config::Profile::UISizeEnum::Nano:
 			buttonWidth		= 78.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::Profile::UISizeEnum::Tiny:
 			buttonWidth		= 86.0f;
 			break;
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::Profile::UISizeEnum::Small:
 			buttonWidth		= 94.0f;
 			break;
 	}

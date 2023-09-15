@@ -44,7 +44,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 	ImGui::DragFloat("Fine Tune Drag", &RotateAnglePreview, 0.01f);
 	ImGui::NewLine();
 
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	ImGui::Combo("Up Filter", &config.ResampleFilterRotateUp, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
 	ImGui::SameLine();
 	ShowHelpMark
@@ -78,7 +78,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 		"degrees on either side. If the rotation is mostly vertical, the reciprical aspect is used."
 	);
 
-	if (config.GetRotateMode() == Config::ProfileSettings::RotateModeEnum::Fill)
+	if (config.GetRotateMode() == Config::Profile::RotateModeEnum::Fill)
 		DoFillColourInterface();
 
 	ImGui::NewLine();
@@ -88,7 +88,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 	if (Viewer::Button("Reset", tVector2(100.0f, 0.0f)))
 	{
 		RotateAnglePreview = 0.0f;
-		config.SetRotateMode(Config::ProfileSettings::RotateModeEnum::Fill);
+		config.SetRotateMode(Config::Profile::RotateModeEnum::Fill);
 	}
 
 	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
@@ -123,7 +123,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 			tResampleFilter(config.ResampleFilterRotateDown)
 		);
 
-		if ((config.GetRotateMode() == Config::ProfileSettings::RotateModeEnum::Crop) || (config.GetRotateMode() == Config::ProfileSettings::RotateModeEnum::CropResize))
+		if ((config.GetRotateMode() == Config::Profile::RotateModeEnum::Crop) || (config.GetRotateMode() == Config::Profile::RotateModeEnum::CropResize))
 		{
 			// If one of the crop modes is selected we need to crop the edges. Since rectangles are made of lines and there
 			// is symmetry and we can compute the reduced size by subtracting the original size from the rotated size.
@@ -153,7 +153,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 			CurrImage->Crop(newW, newH, tPicture::Anchor::MiddleMiddle);
 		}
 
-		if (config.GetRotateMode() == Config::ProfileSettings::RotateModeEnum::CropResize)
+		if (config.GetRotateMode() == Config::Profile::RotateModeEnum::CropResize)
 		{
 			// The crop is done. Now resample.
 			tResampleFilter filter = (config.ResampleFilterRotateUp != int(tResampleFilter::None)) ? tResampleFilter(config.ResampleFilterRotateUp) : tResampleFilter::Nearest;

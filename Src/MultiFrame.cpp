@@ -124,7 +124,7 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 	if (ImGui::Button("Reset From Images") && CurrImage)
 		ComputeMaxWidthHeight(outWidth, outHeight);
 
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 
 	// @todo This is not a cheap call. No need to do it every frame, only when dims change above.
 	if (!AllDimensionsMatch(outWidth, outHeight))
@@ -210,7 +210,7 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 
 void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeight)
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	tList<tFrame> frames;
 	for (Image* img = Images.First(); img; img = img->Next())
 	{
@@ -429,7 +429,7 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 		ImGui::SetKeyboardFocusHere();		
 	if (Viewer::Button("Extract", tVector2(100.0f, 0.0f)))
 	{
-		Config::ProfileSettings& config = *Config::Current;
+		Config::Profile& config = *Config::Current;
 		bool dirExists = tDirExists(destDir);
 		if (!dirExists)
 		{

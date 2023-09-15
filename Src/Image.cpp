@@ -118,7 +118,7 @@ void Image::RegenerateShuffleValue()
 
 void Image::ResetLoadParams()
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 
 	LoadParams_ASTC.Reset();
 	LoadParams_ASTC.Gamma = config.MonitorGamma;
@@ -183,7 +183,7 @@ bool Image::Load(bool loadParamsFromConfig)
 	// not something we want to do before actually loading an image. If DetectAPNGInsidePNG is
 	// false, the PNG loader will always be used for .png files even if they have an apng inside.
 	// The designers of apng made the format backwards compatible with single-frame png loaders.
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	tSystem::tFileType loadingFiletype = Filetype;
 	bool detectAPNGInsidePNG = loadParamsFromConfig ? config.DetectAPNGInsidePNG : LoadParams_DetectAPNGInsidePNG;
 	if ((Filetype == tSystem::tFileType::PNG) && detectAPNGInsidePNG && tImageAPNG::IsAnimatedPNG(Filename))
@@ -584,7 +584,7 @@ bool Image::Load(bool loadParamsFromConfig)
 
 bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveParams, bool onlyCurrentPic) const
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	bool success = false;
 	switch (fileType)
 	{
@@ -1651,7 +1651,7 @@ uint64 Image::Bind()
 {
 	// We bind in a particular order starting with alternate picture if enabled and valid and
 	// then current picture. In all cases if the texture ID is already valid, we use it right away and early exit.
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	if (AltPictureEnabled && AltPicture.IsValid())
 	{
 		if (TexIDAlt != 0)
@@ -1893,7 +1893,7 @@ uint64 Image::BindThumbnail()
 		if (TexIDThumbnail == 0)
 			return 0;
 
-		Config::ProfileSettings& config = *Config::Current;
+		Config::Profile& config = *Config::Current;
 		tList<tLayer> layers;
 		ThumbnailPicture.GenerateLayers(layers, tResampleFilter(config.MipmapFilter), tResampleEdgeMode::Clamp, config.MipmapChaining);
 		BindLayers(layers, TexIDThumbnail);

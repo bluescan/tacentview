@@ -172,7 +172,7 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	ImGui::Separator();
 
 	// Only display filter option if filtering will be used.
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	bool needFinalResize = ((finalWidth != contactWidth) || (finalHeight != contactHeight));
 	if (anyImageNeedsResize || needFinalResize)
 	{
@@ -279,7 +279,7 @@ void Viewer::SaveContactSheetTo
 	int finalWidth, int finalHeight
 )
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 
 	tImage::tPicture outPic(contactWidth, contactHeight);
 	outPic.SetAll(config.FillColourContact);

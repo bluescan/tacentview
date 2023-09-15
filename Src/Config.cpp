@@ -41,10 +41,10 @@ namespace Config
 	const int ConfigFileVersion = 3;
 
 	GlobalSettings Global;
-	ProfileSettings MainProfileSettings(eProfile::Main);
-	ProfileSettings BasicProfileSettings(eProfile::Basic);
-	ProfileSettings KioskProfileSettings(eProfile::Kiosk);
-	ProfileSettings* Current = &MainProfileSettings;
+	Profile MainProfile(eProfile::Main);
+	Profile BasicProfile(eProfile::Basic);
+	Profile KioskProfile(eProfile::Kiosk);
+	Profile* Current = &MainProfile;
 }
 
 
@@ -55,9 +55,9 @@ void Config::SetProfile(eProfile profile)
 
 	switch (profile)
 	{
-		case eProfile::Main:	Current = &MainProfileSettings;		break;
-		case eProfile::Basic:	Current = &BasicProfileSettings;	break;
-		case eProfile::Kiosk:	Current = &KioskProfileSettings;	break;
+		case eProfile::Main:	Current = &MainProfile;		break;
+		case eProfile::Basic:	Current = &BasicProfile;	break;
+		case eProfile::Kiosk:	Current = &KioskProfile;	break;
 	}
 	Global.CurrentProfile = int(profile);
 }
@@ -83,9 +83,9 @@ void Config::ResetProfile(uint32 categories)
 
 void Config::ResetAllProfiles(uint32 categories)
 {
-	MainProfileSettings.Reset(eProfile::Main, categories);
-	BasicProfileSettings.Reset(eProfile::Basic, categories);
-	KioskProfileSettings.Reset(eProfile::Kiosk, categories);
+	MainProfile.Reset(eProfile::Main, categories);
+	BasicProfile.Reset(eProfile::Basic, categories);
+	KioskProfile.Reset(eProfile::Kiosk, categories);
 }
 
 
@@ -107,18 +107,18 @@ void Config::Save(const tString& filename)
 	writer.CR();
 	writer.CR();
 
-	MainProfileSettings.Name = "MainProfile";
-	MainProfileSettings.Save(writer);
+	MainProfile.Name = "MainProfile";
+	MainProfile.Save(writer);
 	writer.CR();
 	writer.CR();
 
-	BasicProfileSettings.Name = "BasicProfile";
-	BasicProfileSettings.Save(writer);
+	BasicProfile.Name = "BasicProfile";
+	BasicProfile.Save(writer);
 	writer.CR();
 	writer.CR();
 
-	KioskProfileSettings.Name = "KioskProfile";
-	KioskProfileSettings.Save(writer);
+	KioskProfile.Name = "KioskProfile";
+	KioskProfile.Save(writer);
 	writer.CR();
 
 	// Save the file dialog settings.
@@ -132,7 +132,7 @@ void Config::Load(const tString& filename)
 	{
 		Global.Reset();
 		ResetAllProfiles();
-		Current = &MainProfileSettings;
+		Current = &MainProfile;
 		tFileDialog::Reset();
 		return;
 	}
@@ -153,17 +153,17 @@ void Config::Load(const tString& filename)
 				break;
 
 			case tHash::tHashCT("MainProfile"):
-				MainProfileSettings.Load(e);
+				MainProfile.Load(e);
 				loadedMainProfile = true;
 				break;
 
 			case tHash::tHashCT("BasicProfile"):
-				BasicProfileSettings.Load(e);
+				BasicProfile.Load(e);
 				loadedBasicProfile = true;
 				break;
 
 			case tHash::tHashCT("KioskProfile"):
-				KioskProfileSettings.Load(e);
+				KioskProfile.Load(e);
 				loadedKioskProfile = true;
 				break;
 
@@ -181,13 +181,13 @@ void Config::Load(const tString& filename)
 	// These are correct. Basically the loaded bools will only be false if the information
 	// wasn't present in the config file at all. If it's not there, reset the values.
 	if (!loadedMainProfile)
-		MainProfileSettings.Reset(Viewer::eProfile::Main, Category_All);
+		MainProfile.Reset(Viewer::eProfile::Main, Category_All);
 
 	if (!loadedBasicProfile)
-		BasicProfileSettings.Reset(Viewer::eProfile::Basic, Category_All);
+		BasicProfile.Reset(Viewer::eProfile::Basic, Category_All);
 
 	if (!loadedKioskProfile)
-		KioskProfileSettings.Reset(Viewer::eProfile::Kiosk, Category_All);
+		KioskProfile.Reset(Viewer::eProfile::Kiosk, Category_All);
 
 	if (!loadedFileDialog)
 		tFileDialog::Reset();
@@ -198,9 +198,9 @@ void Config::Load(const tString& filename)
 	// if the new operations default bindings do not have the key already reassigned to something else, we should
 	// assign them here.
 	bool onlyIfUnassigned = true;
-	MainProfileSettings.InputBindings.Reset(Viewer::eProfile::Main, onlyIfUnassigned);
-	BasicProfileSettings.InputBindings.Reset(Viewer::eProfile::Basic, onlyIfUnassigned);
-	KioskProfileSettings.InputBindings.Reset(Viewer::eProfile::Kiosk, onlyIfUnassigned);
+	MainProfile.InputBindings.Reset(Viewer::eProfile::Main, onlyIfUnassigned);
+	BasicProfile.InputBindings.Reset(Viewer::eProfile::Basic, onlyIfUnassigned);
+	KioskProfile.InputBindings.Reset(Viewer::eProfile::Kiosk, onlyIfUnassigned);
 
 	// Add stuff here if you care about what version you loaded from.
 	if (Global.ConfigVersion <= 2)
@@ -213,10 +213,10 @@ void Config::Load(const tString& filename)
 	// This means if you were in Basic profile when you close, you will be in basic when you start the app again.
 	switch (eProfile(Global.CurrentProfile))
 	{
-		case eProfile::Main:	Current = &MainProfileSettings;		break;
-		case eProfile::Basic:	Current = &BasicProfileSettings;	break;
-		case eProfile::Kiosk:	Current = &KioskProfileSettings;	break;
-		default:				Current = &MainProfileSettings;		break;
+		case eProfile::Main:	Current = &MainProfile;		break;
+		case eProfile::Basic:	Current = &BasicProfile;	break;
+		case eProfile::Kiosk:	Current = &KioskProfile;	break;
+		default:				Current = &MainProfile;		break;
 	}
 }
 
@@ -316,7 +316,7 @@ void Config::GlobalSettings::Reset()
 }
 
 
-void Config::ProfileSettings::Reset(Viewer::eProfile profile, uint32 categories)
+void Config::Profile::Reset(Viewer::eProfile profile, uint32 categories)
 {
 	if (categories & Category_Unspecified)
 	{
@@ -456,7 +456,7 @@ void Config::ProfileSettings::Reset(Viewer::eProfile profile, uint32 categories)
 }
 
 
-void Config::ProfileSettings::Load(tExpression expr)
+void Config::Profile::Load(tExpression expr)
 {
 	for (tExpr e = expr.Item1(); e.IsValid(); e = e.Next())
 	{
@@ -630,7 +630,7 @@ void Config::ProfileSettings::Load(tExpression expr)
 }
 
 
-bool Config::ProfileSettings::Save(tExprWriter& writer) const
+bool Config::Profile::Save(tExprWriter& writer) const
 {
 	writer.Begin();
 	writer.Indent();

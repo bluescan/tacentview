@@ -42,7 +42,7 @@ namespace Viewer
 
 	// This function saves the picture to the filename specified.
 	bool SaveImageAs(Image&, const tString& outFile);
-	bool SaveResizeImageAs(Image&, const tString& outFile, int width, int height, float scale = 1.0f, Config::ProfileSettings::SizeModeEnum = Config::ProfileSettings::SizeModeEnum::SetWidthAndHeight);
+	bool SaveResizeImageAs(Image&, const tString& outFile, int width, int height, float scale = 1.0f, Config::Profile::SizeModeEnum = Config::Profile::SizeModeEnum::SetWidthAndHeight);
 	void DoSavePopup();
 	void DoSaveUnsupportedTypePopup();
 
@@ -101,18 +101,18 @@ void Viewer::DoSaveModal(bool savePressed)
 		ImGui::OpenPopup(label.Chr());
 	}
 
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	float nextWinWidth;
 	switch (config.GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
+		case Viewer::Config::Profile::UISizeEnum::Nano:
 			nextWinWidth = 300.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::Profile::UISizeEnum::Tiny:
 			nextWinWidth = 325.0f;
 			break;
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::Profile::UISizeEnum::Small:
 			nextWinWidth = 350.0f;
 			break;
 	}
@@ -155,18 +155,18 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 		ImGui::OpenPopup(label.Chr());
 	}
 
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	float nextWinWidth;
 	switch (config.GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
+		case Viewer::Config::Profile::UISizeEnum::Nano:
 			nextWinWidth = 300.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::Profile::UISizeEnum::Tiny:
 			nextWinWidth = 325.0f;
 			break;
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::Profile::UISizeEnum::Small:
 			nextWinWidth = 350.0f;
 			break;
 	}
@@ -187,7 +187,7 @@ void Viewer::DoSavePopup()
 	tAssert(CurrImage);
 	tPicture* picture = CurrImage->GetCurrentPic();
 	tAssert(picture);
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 
 	// This gets the filetype from the filename. We then update the current config.
 	tFileType saveType = tGetFileType(SaveAsFile);
@@ -303,7 +303,7 @@ void Viewer::DoSaveUnsupportedTypePopup()
 tString Viewer::DoSubFolder()
 {
 	// Output sub-folder.
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	char subFolder[256]; tMemset(subFolder, 0, 256);
 	tStrncpy(subFolder, config.SaveSubFolder.Chr(), 255);
 
@@ -330,7 +330,7 @@ tString Viewer::DoSubFolder()
 
 tSystem::tFileType Viewer::DoSaveChooseFiletype()
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	tString fileTypeName = config.SaveFileType;
 	tFileType fileType = tGetFileTypeFromName(fileTypeName);
 
@@ -362,7 +362,7 @@ tSystem::tFileType Viewer::DoSaveChooseFiletype()
 
 void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	const int itemWidth = 160;
 
 	ImGui::SetNextItemWidth(itemWidth);
@@ -466,7 +466,7 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 
 void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	switch (fileType)
 	{
 		case tFileType::TGA:
@@ -575,7 +575,7 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 
 tString Viewer::DoSaveFiletypeMultiFrame()
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	tString fileTypeName = config.SaveFileTypeMultiFrame;
 	tFileType fileType = tGetFileTypeFromName(fileTypeName);
 	const int itemWidth = 160;
@@ -665,7 +665,7 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 		return false;
 	}
 
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	tFileType fileType = tGetFileTypeFromName( config.SaveFileType );
 	bool success = img.Save(outFile, fileType);
 	if (success)
@@ -677,7 +677,7 @@ bool Viewer::SaveImageAs(Image& img, const tString& outFile)
 }
 
 
-bool Viewer::SaveResizeImageAs(Image& img, const tString& outFile, int width, int height, float scale, Config::ProfileSettings::SizeModeEnum sizeMode)
+bool Viewer::SaveResizeImageAs(Image& img, const tString& outFile, int width, int height, float scale, Config::Profile::SizeModeEnum sizeMode)
 {
 	// We make sure to maintain the loaded/unloaded state. This function may be called many times in succession
 	// so we don't want them all in memory at once by indiscriminantly loading them all.
@@ -708,30 +708,30 @@ bool Viewer::SaveResizeImageAs(Image& img, const tString& outFile, int width, in
 
 	switch (sizeMode)
 	{
-		case Config::ProfileSettings::SizeModeEnum::Percent:
+		case Config::Profile::SizeModeEnum::Percent:
 			if (tMath::tApproxEqual(scale, 1.0f, 0.01f))
 				break;
 			outW = int( tRound(float(outW)*scale) );
 			outH = int( tRound(float(outH)*scale) );
 			break;
 
-		case Config::ProfileSettings::SizeModeEnum::SetWidthAndHeight:
+		case Config::Profile::SizeModeEnum::SetWidthAndHeight:
 			outW = width;
 			outH = height;
 			break;
 
-		case Config::ProfileSettings::SizeModeEnum::SetWidthRetainAspect:
+		case Config::Profile::SizeModeEnum::SetWidthRetainAspect:
 			outW = width;
 			outH = int( tRound(float(width) / aspect) );
 			break;
 
-		case Config::ProfileSettings::SizeModeEnum::SetHeightRetainAspect:
+		case Config::Profile::SizeModeEnum::SetHeightRetainAspect:
 			outH = height;
 			outW = int( tRound(float(height) * aspect) );
 			break;
 	};
 
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	tMath::tiClampMin(outW, 4);
 	tMath::tiClampMin(outH, 4);
 	if ((outPic.GetWidth() != outW) || (outPic.GetHeight() != outH))
@@ -782,7 +782,7 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 
 	ImGui::Separator();
 
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	static int width = 512;
 	static int height = 512;
 	static float percent = 100.0f;
@@ -790,26 +790,26 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 	ImGui::Combo("Size Mode", &config.SaveAllSizeMode, sizeModeNames, tNumElements(sizeModeNames));
 	switch (config.GetSaveAllSizeMode())
 	{
-		case Config::ProfileSettings::SizeModeEnum::Percent:
+		case Config::Profile::SizeModeEnum::Percent:
 			ImGui::InputFloat("Percent", &percent, 1.0f, 10.0f, "%.1f");	ImGui::SameLine();	ShowHelpMark("Percent of original size.");
 			break;
 
-		case Config::ProfileSettings::SizeModeEnum::SetWidthAndHeight:
+		case Config::Profile::SizeModeEnum::SetWidthAndHeight:
 			ImGui::InputInt("Width", &width);	ImGui::SameLine();	ShowHelpMark("Output width in pixels for all images.");
 			ImGui::InputInt("Height", &height);	ImGui::SameLine();	ShowHelpMark("Output height in pixels for all images.");
 			break;
 
-		case Config::ProfileSettings::SizeModeEnum::SetWidthRetainAspect:
+		case Config::Profile::SizeModeEnum::SetWidthRetainAspect:
 			ImGui::InputInt("Width", &width);	ImGui::SameLine();	ShowHelpMark("Output width in pixels for all images.");
 			break;
 
-		case Config::ProfileSettings::SizeModeEnum::SetHeightRetainAspect:
+		case Config::Profile::SizeModeEnum::SetHeightRetainAspect:
 			ImGui::InputInt("Height", &height);	ImGui::SameLine();	ShowHelpMark("Output height in pixels for all images.");
 			break;
 	};
 
 	ImGui::Separator();
-	if (!((config.GetSaveAllSizeMode() == Config::ProfileSettings::SizeModeEnum::Percent) && (percent == 100.0f)))
+	if (!((config.GetSaveAllSizeMode() == Config::Profile::SizeModeEnum::Percent) && (percent == 100.0f)))
 	{
 		ImGui::Combo("Filter", &config.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 		ImGui::SameLine();
@@ -906,7 +906,7 @@ void Viewer::GetFilesNeedingOverwrite(const tString& destDir, tList<tStringItem>
 void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFiles, bool& pressedOK, bool& pressedCancel)
 {
 	tAssert(!overwriteFiles.IsEmpty());
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 
 	tString dir = tSystem::tGetDir(*overwriteFiles.First());
 	ImGui::Text("The Following Files");
@@ -957,7 +957,7 @@ void Viewer::SaveAllImages(const tString& destDir, const tString& extension, flo
 {
 	float scale = percent/100.0f;
 	tString currFile = CurrImage ? CurrImage->Filename : tString();
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 
 	bool anySaved = false;
 	for (Image* image = Images.First(); image; image = image->Next())
@@ -1008,7 +1008,7 @@ void Viewer::AddSavedImageIfNecessary(const tString& savedFile)
 
 void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool& pressedCancel)
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 
 	tString file = tSystem::tGetFileName(outFile);
 	tString dir = tSystem::tGetDir(outFile);
@@ -1049,7 +1049,7 @@ bool Viewer::SavePictureAs(tImage::tPicture& picture, const tString& outFile, tF
 	if (!picture.IsValid())
 		return false;
 
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	bool success = false;
 	switch (fileType)
 	{

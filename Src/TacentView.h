@@ -114,14 +114,14 @@ namespace Viewer
 	void SetCurrentImage(const tString& currFilename = tString());
 	void LoadCurrImage();
 	bool ChangeScreenMode(bool fullscreeen, bool force = false);
-	void SortImages(Config::ProfileSettings::SortKeyEnum, bool ascending);
+	void SortImages(Config::Profile::SortKeyEnum, bool ascending);
 	bool DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin);
 	void SetWindowTitle();
 
-	Config::ProfileSettings::ZoomModeEnum GetZoomMode();		// Reads the ZoomModePerImage setting to see where to get the zoom mode.
-	void SetZoomMode(Config::ProfileSettings::ZoomModeEnum);	// Reads the ZoomModePerImage setting to see where to set the zoom mode.
-	float GetZoomPercent();										// Reads the ZoomModePerImage setting to see where to get the zoom percent.
-	void SetZoomPercent(float);									// Reads the ZoomModePerImage setting to see where to set the zoom percent.
+	Config::Profile::ZoomModeEnum GetZoomMode();		// Reads the ZoomModePerImage setting to see where to get the zoom mode.
+	void SetZoomMode(Config::Profile::ZoomModeEnum);	// Reads the ZoomModePerImage setting to see where to set the zoom mode.
+	float GetZoomPercent();								// Reads the ZoomModePerImage setting to see where to get the zoom percent.
+	void SetZoomPercent(float);							// Reads the ZoomModePerImage setting to see where to set the zoom percent.
 	void ZoomFit();
 	void ZoomDownscaleOnly();
 

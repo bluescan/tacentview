@@ -204,7 +204,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			);
 		}
 
-		Config::ProfileSettings& config = *Config::Current;
+		Config::Profile& config = *Config::Current;
 		tColourf floatCol(config.BackgroundColour);
 		if (ImGui::ColorEdit3("##Background", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))
 		{
@@ -344,14 +344,14 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	//
 	// UI size parameters.
 	//
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	float okOffset;
 	switch (config.GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:		okOffset = 135.0f;	break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:		okOffset = 146.0f;	break;
+		case Viewer::Config::Profile::UISizeEnum::Nano:		okOffset = 135.0f;	break;
+		case Viewer::Config::Profile::UISizeEnum::Tiny:		okOffset = 146.0f;	break;
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:	okOffset = 158.0f;	break;
+		case Viewer::Config::Profile::UISizeEnum::Small:	okOffset = 158.0f;	break;
 	}
 
 	const char* channelItems[] = { "RGB", "Red", "Green", "Blue", "Alpha" };

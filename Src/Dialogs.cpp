@@ -30,15 +30,15 @@ namespace Viewer
 
 void Viewer::ShowAboutPopup(bool* popen)
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	tVector2 windowPos = GetDialogOrigin(DialogID::About);
 	tVector2 windowSize;
 	switch (config.GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:		windowSize.Set(240, 500);	break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:		windowSize.Set(280, 501);	break;
+		case Viewer::Config::Profile::UISizeEnum::Nano:		windowSize.Set(240, 500);	break;
+		case Viewer::Config::Profile::UISizeEnum::Tiny:		windowSize.Set(280, 501);	break;
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:	windowSize.Set(320, 515);	break;
+		case Viewer::Config::Profile::UISizeEnum::Small:	windowSize.Set(320, 515);	break;
 	}
 
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
@@ -110,7 +110,7 @@ void Viewer::ShowAboutPopup(bool* popen)
 
 void Viewer::DoDeleteFileModal(bool deleteFilePressed)
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	if (deleteFilePressed)
 	{
 		if (!config.ConfirmDeletes)
@@ -422,7 +422,7 @@ void Viewer::OutputLog::DrawLog()
 
 void Viewer::ShowOutputLogPopup(bool* popen)
 {
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 
 	tVector2 windowPos = GetDialogOrigin(DialogID::LogOutput);
 	tVector2 windowSize = tMath::tLinearLookup
@@ -436,7 +436,7 @@ void Viewer::ShowOutputLogPopup(bool* popen)
 	);
 
 	// @wip WIP RENAME Profile to eProfile DONE
-	// @wip WIP RENAME ProfileSettings to Profile.
+	// @wip WIP RENAME Profile to Profile.
 	// @wip WIP Make config functions static.
 	// @wip WIP Add Tacent LinScaleInterpolate.
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
@@ -479,15 +479,15 @@ void Viewer::NavLogBar::Draw()
 
 	if (ImagesSubDirs.NumItems() > 0)
 	{
-		Config::ProfileSettings& config = *Config::Current;
+		Config::Profile& config = *Config::Current;
 		ImGui::SameLine();
 		float offset;
 		switch (config.GetUISize())
 		{
-			case Config::ProfileSettings::UISizeEnum::Nano:		offset = 1.0f;	break;
-			case Config::ProfileSettings::UISizeEnum::Tiny:		offset = 0.0f;	break;
+			case Config::Profile::UISizeEnum::Nano:		offset = 1.0f;	break;
+			case Config::Profile::UISizeEnum::Tiny:		offset = 0.0f;	break;
 			default:
-			case Config::ProfileSettings::UISizeEnum::Small:	offset = -1.0f;	break;
+			case Config::Profile::UISizeEnum::Small:	offset = -1.0f;	break;
 		}
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
 		if (ImGui::BeginCombo("##combo", nullptr, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightLargest | ImGuiComboFlags_NoPreview))

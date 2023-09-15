@@ -110,18 +110,18 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 	tVector2 windowPos = GetDialogOrigin(DialogID::Properties);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	float nextWinWidth;
 	switch (config.GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
+		case Viewer::Config::Profile::UISizeEnum::Nano:
 			nextWinWidth = 238.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::Profile::UISizeEnum::Tiny:
 			nextWinWidth = 265.0f;
 			break;
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::Profile::UISizeEnum::Small:
 			nextWinWidth = 292.0f;
 			break;
 	}
@@ -150,16 +150,16 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 	float itemWidth, buttonSize;
 	switch (config.GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
+		case Viewer::Config::Profile::UISizeEnum::Nano:
 			itemWidth = 110.0f;
 			buttonSize = 18.0f;
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::Profile::UISizeEnum::Tiny:
 			itemWidth = 130.0f;
 			buttonSize = 22.0f;
 			break;
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::Profile::UISizeEnum::Small:
 			itemWidth = 150.0f;
 			buttonSize = 26.0f;
 			break;

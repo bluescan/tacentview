@@ -26,7 +26,7 @@ namespace Viewer
 
 namespace Bindings
 {
-	void ShowAddBindingSection(Config::ProfileSettings& settings, float keyWidth, float operationWidth, float removeAddSize);
+	void ShowAddBindingSection(Config::Profile& settings, float keyWidth, float operationWidth, float removeAddSize);
 	void InitKeyNameTables();
 
 	const int MaxKeyNameLength = 16;
@@ -506,18 +506,18 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		if (justOpened)
 			profile = int(Config::GetProfile());
 
-		Config::ProfileSettings& config = *Config::Current;
+		Config::Profile& config = *Config::Current;
 		float profileWidth, keyWidth, operationWidth, buttonWidth, removeAddSize;
 		switch (config.GetUISize())
 		{
-			case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
+			case Viewer::Config::Profile::UISizeEnum::Nano:
 				profileWidth	= 104.0f;
 				keyWidth		= 120.0f;
 				operationWidth	= 240.0f;
 				buttonWidth		= 72.0f;
 				removeAddSize	= 21.0f;
 				break;
-			case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+			case Viewer::Config::Profile::UISizeEnum::Tiny:
 				profileWidth	= 117.0f;
 				keyWidth		= 137.0f;
 				operationWidth	= 261.0f;
@@ -525,7 +525,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 				removeAddSize	= 22.5f;
 				break;
 			default:
-			case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+			case Viewer::Config::Profile::UISizeEnum::Small:
 				profileWidth	= 130.0f;
 				keyWidth		= 154.0f;
 				operationWidth	= 282.0f;
@@ -536,13 +536,13 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 
 		ImGui::SetNextItemWidth(profileWidth);
 		ImGui::Combo("##ProfileToEdit", &profile, ProfileNamesLong, int(eProfile::NumProfiles));
-		Config::ProfileSettings* prof = nullptr;
+		Config::Profile* prof = nullptr;
 		switch (profile)
 		{
 			default:
-			case int(eProfile::Main):	prof = &Config::MainProfileSettings;	break;
-			case int(eProfile::Basic):	prof = &Config::BasicProfileSettings;	break;
-			case int(eProfile::Kiosk):	prof = &Config::KioskProfileSettings;	break;
+			case int(eProfile::Main):	prof = &Config::MainProfile;	break;
+			case int(eProfile::Basic):	prof = &Config::BasicProfile;	break;
+			case int(eProfile::Kiosk):	prof = &Config::KioskProfile;	break;
 		}
 		tAssert(prof);
 
@@ -554,9 +554,9 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		ImGui::SameLine();
 		if (ImGui::Button("Reset All", tVector2(buttonWidth, 0.0f)))
 		{
-			Config::MainProfileSettings.InputBindings.Reset(eProfile::Main);
-			Config::BasicProfileSettings.InputBindings.Reset(eProfile::Basic);
-			Config::KioskProfileSettings.InputBindings.Reset(eProfile::Kiosk);
+			Config::MainProfile.InputBindings.Reset(eProfile::Main);
+			Config::BasicProfile.InputBindings.Reset(eProfile::Basic);
+			Config::KioskProfile.InputBindings.Reset(eProfile::Kiosk);
 		}
 		ShowToolTip("Resets the key bindings to default for all profiles.");
 
@@ -564,9 +564,9 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		if (ImGui::Button("Set All", tVector2(buttonWidth, 0.0f)))
 		{
 			// Operator= deals with the object being the same one, so just copy them both over indescriminately.
-			Config::MainProfileSettings.InputBindings = prof->InputBindings;
-			Config::BasicProfileSettings.InputBindings = prof->InputBindings;
-			Config::KioskProfileSettings.InputBindings = prof->InputBindings;
+			Config::MainProfile.InputBindings = prof->InputBindings;
+			Config::BasicProfile.InputBindings = prof->InputBindings;
+			Config::KioskProfile.InputBindings = prof->InputBindings;
 		}
 		ShowToolTip("Copies the keybindings to all profiles. Useful if you want them all the same.");
 
@@ -697,7 +697,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 }
 
 
-void Bindings::ShowAddBindingSection(Config::ProfileSettings& settings, float keyWidth, float operationWidth, float removeAddSize)
+void Bindings::ShowAddBindingSection(Config::Profile& settings, float keyWidth, float operationWidth, float removeAddSize)
 {
 	uint32 tableFlags = ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
 	const float rowHeight = 25.0f;
@@ -856,23 +856,23 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 	tVector2 windowPos = GetDialogOrigin(DialogID::CheatSheet);
 	ImGui::SetNextWindowBgAlpha(0.80f);
 
-	Config::ProfileSettings& config = *Config::Current;
+	Config::Profile& config = *Config::Current;
 	tVector2 windowSize;
 	float actionWidth, operatWidth;
 	switch (config.GetUISize())
 	{
-		case Viewer::Config::ProfileSettings::UISizeEnum::Nano:
+		case Viewer::Config::Profile::UISizeEnum::Nano:
 			actionWidth = 106.0f;
 			operatWidth = 238.0f;
 			windowSize.Set(actionWidth+operatWidth, 438.0f);
 			break;
-		case Viewer::Config::ProfileSettings::UISizeEnum::Tiny:
+		case Viewer::Config::Profile::UISizeEnum::Tiny:
 			actionWidth = 114.0f;
 			operatWidth = 262.0f;
 			windowSize.Set(actionWidth+operatWidth, 442.0f);
 			break;
 		default:
-		case Viewer::Config::ProfileSettings::UISizeEnum::Small:
+		case Viewer::Config::Profile::UISizeEnum::Small:
 			actionWidth = 130.0f;
 			operatWidth = 286.0f;
 			windowSize.Set(actionWidth+operatWidth, 446.0f);
