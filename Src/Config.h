@@ -152,7 +152,7 @@ struct ProfileData
 		Smallest					= Nano,
 		Largest						= NumSizes-1,
 	};
-	
+
 	int UISize;											// In range [0, NumSizes).
 	UISizeEnum GetUISize() const						{ return UISizeEnum(UISize); }
 	float GetUISizeNorm() const							{ return float(UISize) / float(UISizeEnum::Largest); }

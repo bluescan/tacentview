@@ -25,13 +25,6 @@ namespace Viewer
 	void DoRenameModal(bool renamePressed);
 	void ShowOutputLogPopup(bool* popen);
 
-	class NavLogBar
-	{
-	public:
-		NavLogBar()												{ }
-		void Draw();
-	};
-
 	// Parts of this class are a modification of the one that ships with Dear ImGui. The DearImGui
 	// licence (MIT) may be found in the txt file Licence_DearImGui_MIT.txt in the Data folder.
 	class OutputLog

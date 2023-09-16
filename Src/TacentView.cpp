@@ -159,7 +159,6 @@ namespace Viewer
 	tFileDialog::FileDialog OpenDirDialog(tFileDialog::DialogMode::OpenDir);
 	tFileDialog::FileDialog SaveAsDialog(tFileDialog::DialogMode::SaveFile, Viewer::FileTypes_Save);
 
-	NavLogBar NavBar;
 	OutputLog OutLog;
 
 	tString ImagesDir;
@@ -260,8 +259,8 @@ namespace Viewer
 	float CursorMouseY								= -1.0f;
 	float RotateAnglePreview						= 0.0f;
 
-	int Dispw										= 1;
-	int Disph										= 1;
+	int DispW										= 1;
+	int DispH										= 1;
 	int PanOffsetX									= 0;
 	int PanOffsetY									= 0;
 	int PanDragDownOffsetX							= 0;
@@ -284,9 +283,6 @@ namespace Viewer
 	uint64 FrameNumber								= 0;
 
 	void DrawBackground(float l, float r, float b, float t, float drawW, float drawH);
-	void DrawNavBar(float x, float y, float w, float h);
-	int GetNavBarHeight();
-
 	void PrintRedirectCallback(const char* text, int numChars);
 	void GlfwErrorCallback(int error, const char* description)															{ tPrintf("Glfw Error %d: %s\n", error, description); }
 	void SetWindowIcon(const tString& icoFile);
@@ -327,6 +323,8 @@ namespace Viewer
 
 	void Update(GLFWwindow* window, double dt, bool dopoll = true);
 	int  DoMainMenuBar();																								// Returns height.
+	int  GetNavBarHeight();
+	void DoNavBar(int dispWidth, int dispHeight, int barHeight);
 	void WindowRefreshFun(GLFWwindow* window)																			{ Update(window, 0.0, false); }
 	void KeyCallback(GLFWwindow*, int key, int scancode, int action, int modifiers);
 	void MouseButtonCallback(GLFWwindow*, int mouseButton, int x, int y);
@@ -654,39 +652,6 @@ tVector2 Viewer::GetDialogOrigin(DialogID dialogID)
 	float x = leftOffset + widthDelta*float(hindex);
 	float y = topOffset + heightDelta*float(vindex);
 	return tVector2(x, y);
-}
-
-
-int Viewer::GetNavBarHeight()
-{
-	Config::ProfileData& profile = Config::GetProfileData();
-	if (!profile.ShowNavBar)
-		return 0;
-
-	return 30;
-}
-
-
-void Viewer::DrawNavBar(float x, float y, float w, float h)
-{
-	// We take advantage of the fact that multiple calls to Begin()/End() are appending to the same window.
-	ImGui::SetNextWindowSize(tVector2(w, h), ImGuiCond_Always);
-	ImGui::SetNextWindowPos(tVector2(x, y), ImGuiCond_Always);
-
-	// Push A
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(1.0f, 1.0f));
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-
-	int flags =
-		ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
-		ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar;
-	ImGui::Begin("NavBar", nullptr, flags);
-	NavBar.Draw();
-	ImGui::End();
-
-	// Pop A
-	ImGui::PopStyleVar(3);
 }
 
 
@@ -1968,6 +1933,101 @@ int Viewer::DoMainMenuBar()
 }
 
 
+int Viewer::GetNavBarHeight()
+{
+	Config::ProfileData& profile = Config::GetProfileData();
+	if (!profile.ShowNavBar)
+		return 0;
+
+	int barHeight = profile.GetUIParamScaled(30, 60);
+	return barHeight;
+}
+
+
+void Viewer::DoNavBar(int dispw, int disph, int barHeight)
+{
+	if (barHeight <= 0)
+		return;
+
+	float x = 0.0f;
+	float y = float(disph - barHeight);
+	float w = float(dispw);
+	float h = float(barHeight);
+	
+	// We take advantage of the fact that multiple calls to Begin()/End() are appending to the same window.
+	ImGui::SetNextWindowSize(tVector2(w, h), ImGuiCond_Always);
+	ImGui::SetNextWindowPos(tVector2(x, y), ImGuiCond_Always);
+
+	// Push A
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(1.0f, 1.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
+	int flags =
+		ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
+		ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar;
+	ImGui::Begin("NavBar", nullptr, flags);
+
+	ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10.0f);
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
+
+	if
+	(
+		ImGui::ImageButton(ImTextureID(Image_UpFolder.Bind()), tVector2(20.0f, 20.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+		Viewer::ColourBG, tVector4(1.00f, 1.00f, 1.00f, 1.00f))
+	)
+	{
+		tString upDir = tSystem::tGetUpDir(ImagesDir);
+		if (!upDir.IsEmpty())
+		{
+			CurrImageFile = upDir + "dummyfile.txt";
+			PopulateImages();
+			SetCurrentImage();
+			SetWindowTitle();
+		}
+	}
+	ImGui::SameLine();
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
+	ImGui::Text("%s", ImagesDir.Chr());
+
+	if (ImagesSubDirs.NumItems() > 0)
+	{
+		Config::ProfileData& profile = Config::GetProfileData();
+		ImGui::SameLine();
+		float offset;
+		switch (profile.GetUISize())
+		{
+			case Config::ProfileData::UISizeEnum::Nano:		offset = 1.0f;	break;
+			case Config::ProfileData::UISizeEnum::Tiny:		offset = 0.0f;	break;
+			default:
+			case Config::ProfileData::UISizeEnum::Small:	offset = -1.0f;	break;
+		}
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
+		if (ImGui::BeginCombo("##combo", nullptr, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightLargest | ImGuiComboFlags_NoPreview))
+		{
+			for (tStringItem* subDir = ImagesSubDirs.First(); subDir; subDir = subDir->Next())
+			{
+				bool isSelected = false;
+				if (ImGui::Selectable(subDir->Chr(), isSelected))
+				{
+					// Selection made. This only runs once.
+					CurrImageFile = ImagesDir + *subDir + "/" + "dummyfile.txt";
+					PopulateImages();
+					SetCurrentImage();
+					SetWindowTitle();
+					break;
+				}
+			}
+			ImGui::EndCombo();
+		}
+	}
+	ImGui::End();
+
+	// Pop A
+	ImGui::PopStyleVar(3);
+}
+
+
 void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 {
 	// Poll and handle events like inputs, window resize, etc. You can read the io.WantCaptureMouse,
@@ -1994,10 +2054,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	ImGui::NewFrame();
 	int dispw, disph;
 	glfwGetFramebufferSize(window, &dispw, &disph);
-	if ((dispw != Dispw) || (disph != Disph))
+	if ((dispw != DispW) || (disph != DispH))
 	{
-		Dispw = dispw;
-		Disph = disph;
+		DispW = dispw;
+		DispH = disph;
 		if (!GetPanX() && !GetPanY())
 			ResetPan();
 	}
@@ -2010,12 +2070,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	//
 	// Step 2 - Draw and process the bottom nav bar and remember its height.
 	//
-	int bottomUIHeight	= GetNavBarHeight();
-	if (profile.ShowNavBar)
-		DrawNavBar(0.0f, float(disph - bottomUIHeight), float(dispw), float(bottomUIHeight));
+	int bottomUIHeight = GetNavBarHeight();
+	DoNavBar(DispW, DispH, bottomUIHeight);
 
-	int workAreaW = Dispw;
-	int workAreaH = Disph - bottomUIHeight - topUIHeight;
+	int workAreaW = DispW;
+	int workAreaH = DispH - bottomUIHeight - topUIHeight;
 	float workAreaAspect = float(workAreaW)/float(workAreaH);
 
 	glViewport(0, bottomUIHeight, workAreaW, workAreaH);
@@ -2039,7 +2098,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	glfwGetCursorPos(window, &mouseXd, &mouseYd);
 
 	// Make origin lower-left.
-	float workH = float(Disph - GetNavBarHeight());
+	float workH = float(DispH - bottomUIHeight);
 	float mouseX = float(mouseXd);
 	float mouseY = workH - float(mouseYd);
 	int mouseXi = int(mouseX);
@@ -3505,7 +3564,7 @@ void Viewer::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press,
 
 	double xposd, yposd;
 	glfwGetCursorPos(window, &xposd, &yposd);
-	float workH = float(Disph - GetNavBarHeight());
+	float workH = float(DispH - GetNavBarHeight());
 
 	// Make origin lower-left.
 	float mouseX = float(xposd);
