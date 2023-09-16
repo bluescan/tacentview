@@ -274,6 +274,13 @@ namespace Viewer
 	const tVector4 ColourPressedBG					= tVector4(0.21f, 0.45f, 0.21f, 1.00f);
 	const tVector4 ColourClear						= tVector4(0.10f, 0.10f, 0.12f, 1.00f);
 
+	// UI scaling and HighDPI support. Scale is driven by decision on min/max font sizes.
+	const float MinFontPointSize					= 14.0f;
+	const float MaxFontPointSize					= 36.4f;
+	const float MinUIScale							= 1.0f;
+	const float MaxUIScale							= MaxFontPointSize / MinFontPointSize;
+	const float FontStepPointSize					= (MaxFontPointSize - MinFontPointSize) / (int(Config::ProfileData::UISizeEnum::NumSizes) - 1);
+
 	uint64 FrameNumber								= 0;
 
 	void DrawBackground(float l, float r, float b, float t, float drawW, float drawH);
@@ -1332,25 +1339,8 @@ int Viewer::DoMainMenuBar()
 		ImGui::SetNextWindowPos(tVector2(0.0f, 0.0f));
 		ImGui::BeginMainMenuBar();
 
-		tVector2 colourButtonSize = tMath::tLinearLookup
-		(
-			profile.UISizeFlt(), profile.UISizeSmallestFlt(), profile.UISizeLargestFlt(),
-			#ifdef ALLOW_ALL_UI_SIZES
-			tVector2(26.0f, 26.0f), tVector2(64.0f, 64.0f)
-			#else
-			tVector2(26.0f, 26.0f), tVector2(30.0f, 30.0f)
-			#endif
-		);
-
-		tVector2 toolImageSize = tMath::tLinearLookup
-		(
-			profile.UISizeFlt(), profile.UISizeSmallestFlt(), profile.UISizeLargestFlt(),
-			#ifdef ALLOW_ALL_UI_SIZES
-			tVector2(24.0f, 24.0f), tVector2(62.0f, 62.0f)
-			#else
-			tVector2(24.0f, 24.0f), tVector2(28.0f, 28.0f)
-			#endif
-		);
+		tVector2 colourButtonSize = profile.GetUIParamScaled(tVector2(26.0f, 26.0f), tVector2(64.0f, 64.0f));
+		tVector2 toolImageSize = profile.GetUIParamScaled(tVector2(24.0f, 24.0f), tVector2(62.0f, 62.0f));
 
 		ImGuiWindow* window = ImGui::GetCurrentWindow();
 		if (window)
@@ -2391,13 +2381,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	// Did the font change? This may happen if a) the font was changed in the prefs, b) reset was pressed, or c) inc/dec UISize
 	// operation was executed. Note that fontCurrent may be null if ImGui hasn't updated it from last time so instead we track
 	// what was submitted with CurrentFontIndex.
-	if (CurrentFontIndex != profile.UISize)
+	if (CurrentFontIndex != int(profile.GetUISize()))
 	{
-		#ifdef ALLOW_ALL_UI_SIZES
+		float uiSizeScale = tMath::tLini(profile.GetUISizeNorm(), Viewer::MinUIScale, Viewer::MaxUIScale);
 		ImGuiStyle scaledStyle;
-		scaledStyle.ScaleAllSizes( tMath::tLini(profile.UISizeNormFlt(), 1.0f, 2.6f));
+		scaledStyle.ScaleAllSizes(uiSizeScale);
 		ImGui::GetStyle() = scaledStyle;
-		#endif
 
 		ImGuiIO& io = ImGui::GetIO();
 		tAssert(profile.UISize < io.Fonts->Fonts.Size);
@@ -3164,7 +3153,11 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case Bindings::Operation::UISizeInc:
 			profile.UISize++;
+			#ifdef RESTRICT_UI_SIZES
+			tMath::tiClampMax(profile.UISize, 2);
+			#else
 			tMath::tiClampMax(profile.UISize, int(Config::ProfileData::UISizeEnum::Largest));
+			#endif
 			break;
 
 		case Bindings::Operation::UISizeDec:
@@ -3967,20 +3960,20 @@ int main(int argc, char** argv)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	// Fonts must be added from smallest to largest and number of adds needs to match UIMode::NumModes.
-	// I'm leaving the original AddFont calls here because they work and I haven't profiled which gives faster
-	// bootup times. I imagine add font from memory is faster since fewer files to open, but the exe load
+	// Fonts must be added from smallest to largest and the number of adds needs to match UIMode::NumModes.
+	// The original AddFont calls left here for refernece. They work and but I haven't profiled which gives
+	// faster bootup times. I imagine add font from memory is faster since fewer files to open, but the exe load
 	// for the in-memory method might actually take longer (and it also has to decode). In any case, pretty
 	// sure it will still be faster.
 	#define USE_IN_MEMORY_FONT_LOAD
 	#ifdef USE_IN_MEMORY_FONT_LOAD
 	for (int uisize = 0; uisize < int(Viewer::Config::ProfileData::UISizeEnum::NumSizes); uisize++)
-		io.Fonts->AddFontFromMemoryCompressedBase85TTF(RobotoFont_compressed_data_base85, 14.0f + float(uisize)*3.2f);
+		io.Fonts->AddFontFromMemoryCompressedBase85TTF(RobotoFont_compressed_data_base85, Viewer::MinFontPointSize + float(uisize)*Viewer::FontStepPointSize);
 
 	#else
 	tString fontFile = dataDir + "Roboto-Medium.ttf";
 	for (int uisize = 0; uisize < int(Viewer::Config::ProfileData::UISizeEnum::NumSizes); uisize++)
-		io.Fonts->AddFontFromFileTTF(fontFile.Chr(), 14.0f + float(uisize)*2.0f);
+		io.Fonts->AddFontFromFileTTF(fontFile.Chr(), Viewer::MinFontPointSize + float(uisize)*Viewer::FontStepPointSize);
 	#endif
 
 	Viewer::Config::ProfileData& profile = *Viewer::Config::Current;
@@ -3989,11 +3982,10 @@ int main(int argc, char** argv)
 	io.FontDefault = font;
 	Viewer::CurrentFontIndex = profile.UISize;
 
-	#ifdef ALLOW_ALL_UI_SIZES
+	float uiSizeScale = tMath::tLini(profile.GetUISizeNorm(), Viewer::MinUIScale, Viewer::MaxUIScale);
 	ImGuiStyle scaledStyle;
-	scaledStyle.ScaleAllSizes( tMath::tLini(profile.UISizeNormFlt(), 1.0f, 2.6f));
+	scaledStyle.ScaleAllSizes(uiSizeScale);
 	ImGui::GetStyle() = scaledStyle;
-	#endif
 
 	Viewer::LoadAppImages(dataDir);
 	Viewer::PopulateImages();

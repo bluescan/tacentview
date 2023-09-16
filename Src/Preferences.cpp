@@ -147,15 +147,20 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				"On Select: Visible when click mouse. Hides when switch image or click outside image.\n"
 				"Auto Hide: Hides after inactivity timeout."
 			);
-			#ifdef ALLOW_ALL_UI_SIZES
-			const char* uiSizeItems[] = { "Nano", "Tiny", "Small", "Moderate", "Medium", "Large", "Huge", "Massive" };
-			#else
+
+			#ifdef RESTRICT_UI_SIZES
 			const char* uiSizeItems[] = { "Nano", "Tiny", "Small" };
-			#endif
+			#else
+			const char* uiSizeItems[] = { "Nano", "Tiny", "Small", "Moderate", "Medium", "Large", "Huge", "Massive" };
 			tStaticAssert(tNumElements(uiSizeItems) == int(Config::ProfileData::UISizeEnum::NumSizes));
+			#endif
 
 			ImGui::PushItemWidth(comboWidth);
+			#ifdef RESTRICT_UI_SIZES
+			ImGui::Combo("UI Size", &profile.UISize, uiSizeItems, 3);
+			#else
 			ImGui::Combo("UI Size", &profile.UISize, uiSizeItems, tNumElements(uiSizeItems));
+			#endif
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Overall size of UI widgets and font.");

@@ -425,22 +425,10 @@ void Viewer::ShowOutputLogPopup(bool* popen)
 	Config::ProfileData& profile = Config::GetProfileData();
 
 	tVector2 windowPos = GetDialogOrigin(DialogID::LogOutput);
-	tVector2 windowSize = tMath::tLinearLookup
-	(
-		profile.UISizeFlt(), profile.UISizeSmallestFlt(), profile.UISizeLargestFlt(),
-		#ifdef ALLOW_ALL_UI_SIZES
-		tVector2(410.0f, 220.0f), tVector2(410.0f, 220.0f)*2.65f
-		#else
-		tVector2(410.0f, 220.0f), tVector2(520.0f, 270.0f)
-		#endif
-	);
+	tVector2 windowSize = profile.GetUIParamScaled(tVector2(410.0f, 220.0f), 2.65f);
 
-	// @wip WIP RENAME Profile to Profile DONE
-	// @wip WIP RENAME Profile to Profile.
-	// @wip WIP Make config functions static.
-	// @wip WIP Add Tacent LinScaleInterpolate.
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	// ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+	// @wip ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
 	tVector2 minConstraint = windowSize * 0.53f;
 	ImGui::SetNextWindowSizeConstraints(minConstraint, tVector2(4096.0f, 4096.0f));

@@ -515,7 +515,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				tMath::tiClamp(CurrImage->LoadParams_ASTC.Gamma, 0.5f, 4.0f);
 			}
 
-			// WIP Add detection of HDR blocks to tImageASTC.
+			// @wip Add detection of HDR blocks to tImageASTC.
 			// if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || (CurrImage->Info.SrcColourSpace == tColourSpace::Linear))
 			if (1)
 			{

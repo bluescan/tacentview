@@ -136,35 +136,31 @@ struct ProfileData
 	int ReticleMode;
 	ReticleModeEnum GetReticleMode() const				{ return ReticleModeEnum(ReticleMode); }
 
-	//#define ALLOW_ALL_UI_SIZES
+	#define RESTRICT_UI_SIZES
 	enum class UISizeEnum
 	{								// Approx OS Scale Percent.
 		Nano,						// 75%
 		Tiny,						// 100%
 		Small,						// 125%
-
-		#ifdef ALLOW_ALL_UI_SIZES
 		Moderate,					// 150%
 		Medium,						// 175%
 		Large,						// 200%
 		Huge,						// 225%
 		Massive,					// 250%
-		#endif
 
 		NumSizes,
 		Smallest					= Nano,
-		Key							= Small,
 		Largest						= NumSizes-1,
 	};
 	
 	int UISize;											// In range [0, NumSizes).
 	UISizeEnum GetUISize() const						{ return UISizeEnum(UISize); }
-	float UISizeFlt() const								{ return float(UISize); }
-	// @wip WIP FIX
-	/*inline static */float UISizeSmallestFlt() const	{ return float(UISizeEnum::Smallest); }
-	/*inline static */float UISizeKeyFlt() const		{ return float(UISizeEnum::Key); }
-	/*inline static */float UISizeLargestFlt() const	{ return float(UISizeEnum::Largest); }
-	float UISizeNormFlt() const							{ return float(UISize) / float(UISizeEnum::Largest); }
+	float GetUISizeNorm() const							{ return float(UISize) / float(UISizeEnum::Largest); }
+
+	// Returns the scaled parameter based on the current UI size. You may enter the base param value along with
+	// a scale used to represent the full size, or explicitly provide the fullParam value.
+	template<typename T> T GetUIParamScaled(const T& param, float fullScale);
+	template<typename T> T GetUIParamScaled(const T& param, const T& fullParam);
 
 	int ResampleFilter;									// Matches tImage::tResampleFilter. Used for image resize when saving and multiframe saving.
 	int ResampleEdgeMode;								// Matches tImage::tResampleEdgeMode. Used for image resize when saving and multiframe saving.
@@ -339,13 +335,37 @@ extern ProfileData KioskProfile;
 extern ProfileData* Current;
 
 
-}
+} }
 
 
-inline Config::ProfileData& Config::GetProfileData()
+// Implementation below this line.
+
+
+inline Viewer::Config::ProfileData& Viewer::Config::GetProfileData()
 {
-	return *Config::Current;
+	return *Viewer::Config::Current;
 }
 
 
+template<typename T> T Viewer::Config::ProfileData::GetUIParamScaled(const T& param, float fullScale)
+{
+	T scaled = tMath::tLinearLookup
+	(
+		float(UISize), float(UISizeEnum::Smallest), float(UISizeEnum::Largest),
+		param, param*fullScale
+	);
+
+	return scaled;
+}
+
+
+template<typename T> T Viewer::Config::ProfileData::GetUIParamScaled(const T& param, const T& fullParam)
+{
+	T scaled = tMath::tLinearLookup
+	(
+		float(UISize), float(UISizeEnum::Smallest), float(UISizeEnum::Largest),
+		param, fullParam
+	);
+
+	return scaled;
 }
