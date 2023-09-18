@@ -38,17 +38,20 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 		(profile.OverlayCorner & 1) ? 1.0f : 0.0f,
 		(profile.OverlayCorner & 2) ? 1.0f : 0.0f
 	);
+
+	float winWidth = profile.GetUIParamScaled(146.0f, 2.5f);
+	ImGui::SetNextWindowSize(tVector2(winWidth, 0.0f), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, windowPivot);
 	ImGui::SetNextWindowBgAlpha(0.6f);
 	ImGuiWindowFlags flags =
-		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
-		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollbar;
+		ImGuiWindowFlags_NoMove				| ImGuiWindowFlags_NoTitleBar		| ImGuiWindowFlags_NoResize				|
+		ImGuiWindowFlags_AlwaysAutoResize	| ImGuiWindowFlags_NoSavedSettings	| ImGuiWindowFlags_NoFocusOnAppearing	|
+		ImGuiWindowFlags_NoNav				| ImGuiWindowFlags_NoScrollbar;
 
 	if (ImGui::Begin("ImageDetails", popen, flags))
 	{
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX()+30);
-		ImGui::Text("Image   Details         ");
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + winWidth*0.18f);
+		ImGui::Text("Image   Details");
 
 		ShowToolTip
 		(
@@ -68,7 +71,9 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 		{
 			tColourf floatCol(PixelColour);
 			tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
-			if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, tVector2(15,15)))
+
+			float colourButtonSize = profile.GetUIParamScaled(15.0f, 2.5f);
+			if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, tVector2(colourButtonSize, colourButtonSize)))
 				ImGui::OpenPopup("CopyColourOverlayAs");
 
 			if (ImGui::BeginPopup("CopyColourOverlayAs"))
