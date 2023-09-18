@@ -157,10 +157,11 @@ struct ProfileData
 	UISizeEnum GetUISize() const						{ return UISizeEnum(UISize); }
 	float GetUISizeNorm() const							{ return float(UISize) / float(UISizeEnum::Largest); }
 
-	// Returns the scaled parameter based on the current UI size. You may enter the base param value along with
-	// a scale used to represent the full size, or explicitly provide the fullParam value.
+	// Returns the UI parameter based on the current UI size. You enter the base param value. For the first function,
+	// GetUIParamScaled, you also enter the full-sized scale. For the second variant, GetUIParamExtent, you also enter
+	// the full-sized extent. This latter function allows non-uniform scaling of multi-dimensional types.
 	template<typename T> T GetUIParamScaled(const T& param, float fullScale);
-	template<typename T> T GetUIParamScaled(const T& param, const T& fullParam);
+	template<typename T> T GetUIParamExtent(const T& param, const T& fullParam);
 
 	int ResampleFilter;									// Matches tImage::tResampleFilter. Used for image resize when saving and multiframe saving.
 	int ResampleEdgeMode;								// Matches tImage::tResampleEdgeMode. Used for image resize when saving and multiframe saving.
@@ -352,14 +353,14 @@ template<typename T> T Viewer::Config::ProfileData::GetUIParamScaled(const T& pa
 	T scaled = tMath::tLinearLookup
 	(
 		float(UISize), float(UISizeEnum::Smallest), float(UISizeEnum::Largest),
-		param, param*fullScale
+		param, T(param*fullScale)
 	);
 
 	return scaled;
 }
 
 
-template<typename T> T Viewer::Config::ProfileData::GetUIParamScaled(const T& param, const T& fullParam)
+template<typename T> T Viewer::Config::ProfileData::GetUIParamExtent(const T& param, const T& fullParam)
 {
 	T scaled = tMath::tLinearLookup
 	(

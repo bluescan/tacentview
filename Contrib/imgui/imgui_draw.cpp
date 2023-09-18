@@ -171,7 +171,7 @@ using namespace IMGUI_STB_NAMESPACE;
 // [SECTION] Style functions
 //-----------------------------------------------------------------------------
 
-// @tacent begin
+// @tacent-divergence begin
 #if 0
 void ImGui::StyleColorsDark(ImGuiStyle* dst)
 {
@@ -301,7 +301,7 @@ void ImGui::StyleColorsDark(ImGuiStyle* dst)
     colors[ImGuiCol_ModalWindowDimBg]       = ImVec4(0.0f, 0.0f, 0.0f, 0.00f);
 }
 #endif
-// @tacent end
+// @tacent-divergence end
 
 void ImGui::StyleColorsClassic(ImGuiStyle* dst)
 {

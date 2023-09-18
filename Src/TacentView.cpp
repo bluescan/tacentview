@@ -1304,8 +1304,8 @@ int Viewer::DoMainMenuBar()
 		ImGui::SetNextWindowPos(tVector2(0.0f, 0.0f));
 		ImGui::BeginMainMenuBar();
 
-		tVector2 colourButtonSize = profile.GetUIParamScaled(tVector2(26.0f, 26.0f), tVector2(64.0f, 64.0f));
-		tVector2 toolImageSize = profile.GetUIParamScaled(tVector2(24.0f, 24.0f), tVector2(62.0f, 62.0f));
+		tVector2 colourButtonSize = profile.GetUIParamExtent(tVector2(26.0f, 26.0f), tVector2(64.0f, 64.0f));
+		tVector2 toolImageSize = profile.GetUIParamExtent(tVector2(24.0f, 24.0f), tVector2(62.0f, 62.0f));
 
 		ImGuiWindow* window = ImGui::GetCurrentWindow();
 		if (window)
@@ -1939,7 +1939,7 @@ int Viewer::GetNavBarHeight()
 	if (!profile.ShowNavBar)
 		return 0;
 
-	int barHeight = profile.GetUIParamScaled(30, 60);
+	int barHeight = profile.GetUIParamExtent(30, 72);
 	return barHeight;
 }
 
@@ -1953,28 +1953,30 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 	float y = float(disph - barHeight);
 	float w = float(dispw);
 	float h = float(barHeight);
-	
-	// We take advantage of the fact that multiple calls to Begin()/End() are appending to the same window.
+
 	ImGui::SetNextWindowSize(tVector2(w, h), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(tVector2(x, y), ImGuiCond_Always);
+	Config::ProfileData& profile = Config::GetProfileData();
 
 	// Push A
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(1.0f, 1.0f));
+	float ypad = profile.GetUIParamExtent(2.0f, 4.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(10.0f, ypad));
 
 	int flags =
-		ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
-		ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar;
+		ImGuiWindowFlags_NoResize	| ImGuiWindowFlags_NoMove		| ImGuiWindowFlags_NoCollapse	|
+		ImGuiWindowFlags_NoTitleBar	| ImGuiWindowFlags_NoScrollbar	;
+
 	ImGui::Begin("NavBar", nullptr, flags);
-
-	ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10.0f);
-	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
-
+	tVector2 upDirButtonSize = profile.GetUIParamScaled(tVector2(25.0f, 25.0f), 2.5f);
 	if
 	(
-		ImGui::ImageButton(ImTextureID(Image_UpFolder.Bind()), tVector2(20.0f, 20.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
-		Viewer::ColourBG, tVector4(1.00f, 1.00f, 1.00f, 1.00f))
+		ImGui::ImageButton
+		(
+			ImTextureID(Image_UpFolder.Bind()), upDirButtonSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f),
+			1, Viewer::ColourBG, tVector4(1.0f, 1.0f, 1.0f, 1.0f)
+		)
 	)
 	{
 		tString upDir = tSystem::tGetUpDir(ImagesDir);
@@ -1986,24 +1988,17 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 			SetWindowTitle();
 		}
 	}
+
+	float textYOffset = profile.GetUIParamExtent(6.0f, 15.0f);
 	ImGui::SameLine();
-	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + textYOffset);
 	ImGui::Text("%s", ImagesDir.Chr());
 
 	if (ImagesSubDirs.NumItems() > 0)
 	{
-		Config::ProfileData& profile = Config::GetProfileData();
 		ImGui::SameLine();
-		float offset;
-		switch (profile.GetUISize())
-		{
-			case Config::ProfileData::UISizeEnum::Nano:		offset = 1.0f;	break;
-			case Config::ProfileData::UISizeEnum::Tiny:		offset = 0.0f;	break;
-			default:
-			case Config::ProfileData::UISizeEnum::Small:	offset = -1.0f;	break;
-		}
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
-		if (ImGui::BeginCombo("##combo", nullptr, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightLargest | ImGuiComboFlags_NoPreview))
+		float comboSize = profile.GetUIParamExtent(27.0f, 64.0f);		
+		if (ImGui::BeginCombo("##navcombo", nullptr, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightLargest | ImGuiComboFlags_NoPreview, comboSize))
 		{
 			for (tStringItem* subDir = ImagesSubDirs.First(); subDir; subDir = subDir->Next())
 			{

@@ -55,7 +55,7 @@
 #define GL_SILENCE_DEPRECATION
 #include <OpenGL/gl.h>
 
-// @tacent Include glad for linux.
+// @tacent-divergence Include glad for linux.
 #elif defined(PLATFORM_WINDOWS)
 #include <GL/gl.h>
 #else

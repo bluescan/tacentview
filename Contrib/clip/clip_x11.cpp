@@ -23,7 +23,7 @@
 #include <thread>
 #include <vector>
 
-// @tacentview
+// @tacent-divergence
 #define HAVE_PNG_H
 
 #ifdef HAVE_PNG_H

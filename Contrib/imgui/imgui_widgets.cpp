@@ -1394,7 +1394,7 @@ void ImGui::AlignTextToFramePadding()
 }
 
 // Horizontal/vertical separating line
-// @tacent Added thickness.
+// @tacent-divergence Added thickness.
 void ImGui::SeparatorEx(ImGuiSeparatorFlags flags, float thickness)
 {
     ImGuiWindow* window = GetCurrentWindow();
@@ -1451,7 +1451,7 @@ void ImGui::SeparatorEx(ImGuiSeparatorFlags flags, float thickness)
         if (item_visible)
         {
             // Draw
-            // @tacent Added thickness.
+            // @tacent-divergence Added thickness.
             window->DrawList->AddLine(bb.Min, ImVec2(bb.Max.x, bb.Min.y), GetColorU32(ImGuiCol_Separator), thickness);
             if (g.LogEnabled)
                 LogRenderedText(&bb.Min, "--------------------------------\n");
@@ -1465,7 +1465,7 @@ void ImGui::SeparatorEx(ImGuiSeparatorFlags flags, float thickness)
     }
 }
 
-// @tacent Added thickness.
+// @tacent-divergence Added thickness.
 void ImGui::Separator(float thickness)
 {
     ImGuiContext& g = *GImGui;
@@ -1609,7 +1609,7 @@ static float CalcMaxPopupHeightFromItemCount(int items_count)
     return (g.FontSize + g.Style.ItemSpacing.y) * items_count - g.Style.ItemSpacing.y + (g.Style.WindowPadding.y * 2);
 }
 
-bool ImGui::BeginCombo(const char* label, const char* preview_value, ImGuiComboFlags flags)
+bool ImGui::BeginCombo(const char* label, const char* preview_value, ImGuiComboFlags flags, float arrowSizeOverride /* tacent-divergence */)
 {
     ImGuiContext& g = *GImGui;
     ImGuiWindow* window = GetCurrentWindow();
@@ -1623,10 +1623,21 @@ bool ImGui::BeginCombo(const char* label, const char* preview_value, ImGuiComboF
     const ImGuiID id = window->GetID(label);
     IM_ASSERT((flags & (ImGuiComboFlags_NoArrowButton | ImGuiComboFlags_NoPreview)) != (ImGuiComboFlags_NoArrowButton | ImGuiComboFlags_NoPreview)); // Can't use both flags together
 
-    const float arrow_size = (flags & ImGuiComboFlags_NoArrowButton) ? 0.0f : GetFrameHeight();
+    float arrow_size = (flags & ImGuiComboFlags_NoArrowButton) ? 0.0f : GetFrameHeight();
+
+	// @tacent-divergence
+	float arrow_scale = ((arrowSizeOverride > 0.0f) && arrow_size) ? arrowSizeOverride/arrow_size : 1.0f;
+	if (arrowSizeOverride > 0.0f)
+		arrow_size = arrowSizeOverride;
+
     const ImVec2 label_size = CalcTextSize(label, NULL, true);
     const float w = (flags & ImGuiComboFlags_NoPreview) ? arrow_size : CalcItemWidth();
-    const ImRect bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(w, label_size.y + style.FramePadding.y * 2.0f));
+    ImRect bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(w, label_size.y + style.FramePadding.y * 2.0f));
+
+    // @tacent-divergence
+	if (arrowSizeOverride > 0.0f)
+		bb = ImRect(window->DC.CursorPos, window->DC.CursorPos + ImVec2(w, w));
+
     const ImRect total_bb(bb.Min, bb.Max + ImVec2(label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f, 0.0f));
     ItemSize(total_bb, style.FramePadding.y);
     if (!ItemAdd(total_bb, id, &bb))
@@ -1655,7 +1666,13 @@ bool ImGui::BeginCombo(const char* label, const char* preview_value, ImGuiComboF
         ImU32 text_col = GetColorU32(ImGuiCol_Text);
         window->DrawList->AddRectFilled(ImVec2(value_x2, bb.Min.y), bb.Max, bg_col, style.FrameRounding, (w <= arrow_size) ? ImDrawFlags_RoundCornersAll : ImDrawFlags_RoundCornersRight);
         if (value_x2 + arrow_size - style.FramePadding.x <= bb.Max.x)
-            RenderArrow(window->DrawList, ImVec2(value_x2 + style.FramePadding.y, bb.Min.y + style.FramePadding.y), text_col, ImGuiDir_Down, 1.0f);
+        {
+            // @tacent_divergence Added arrow_scale and arrowSizeOverride.
+            if (arrowSizeOverride > 0.0f)
+                RenderArrow(window->DrawList, ImVec2(bb.Min.x + (bb.Max.x-bb.Min.x)/2.0f - (arrow_size*0.27f), bb.Min.y + style.FramePadding.y), text_col, ImGuiDir_Down, arrow_scale);
+            else
+                RenderArrow(window->DrawList, ImVec2(value_x2 + style.FramePadding.y, bb.Min.y + style.FramePadding.y), text_col, ImGuiDir_Down, 1.0f);
+        }
     }
     RenderFrameBorder(bb.Min, bb.Max, style.FrameRounding);
 
@@ -6227,7 +6244,7 @@ bool ImGui::CollapsingHeader(const char* label, bool* p_visible, ImGuiTreeNodeFl
     ImGuiID id = window->GetID(label);
     flags |= ImGuiTreeNodeFlags_CollapsingHeader;
     if (p_visible)
-        // @tacent fix C++20 warning on GCC11.2 by casting to int.
+        // @tacent-divergence Fix C++20 warning on GCC11.2 by casting to int.
         flags |= int(ImGuiTreeNodeFlags_AllowItemOverlap) | int(ImGuiTreeNodeFlags_ClipLabelForTrailingButton);
     bool is_open = TreeNodeBehavior(id, flags, label);
     if (p_visible != NULL)
@@ -7031,7 +7048,7 @@ bool ImGui::BeginMenuEx(const char* label, const char* icon, bool enabled)
         PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(style.ItemSpacing.x * 2.0f, style.ItemSpacing.y));
         float w = label_size.x;
 
-		// @tacent
+		// @tacent-divergence
 		float menuBarHeight = window->MenuBarHeight();
 		float fontHeight = window->CalcFontSize();
 		float textOffset = (menuBarHeight - fontHeight)/2.0f - 2.0f*style.ItemSpacing.y;
@@ -7041,7 +7058,7 @@ bool ImGui::BeginMenuEx(const char* label, const char* icon, bool enabled)
         pressed = Selectable("", menu_is_open, selectable_flags, ImVec2(w, 0.0f));
         RenderText(text_pos, label);
 
-		// @tacent
+		// @tacent-divergence
 		window->DC.CurrLineTextBaseOffset -= textOffset;
 
         PopStyleVar();

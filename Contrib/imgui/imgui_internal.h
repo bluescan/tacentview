@@ -2333,7 +2333,7 @@ struct IMGUI_API ImGuiWindow
     int                     MemoryDrawListVtxCapacity;
     bool                    MemoryCompacted;                    // Set when window extraneous data have been garbage collected
 
-	// @tacent Allowing image buttons in the menubar means the height is not just a function of the font size.
+	// @tacent-divergence Allowing image buttons in the menubar means the height is not just a function of the font size.
 	float					MenuBarImageButtonHeight;
 
 public:
@@ -2351,7 +2351,7 @@ public:
     float       TitleBarHeight() const  { ImGuiContext& g = *GImGui; return (Flags & ImGuiWindowFlags_NoTitleBar) ? 0.0f : CalcFontSize() + g.Style.FramePadding.y * 2.0f; }
     ImRect      TitleBarRect() const    { return ImRect(Pos, ImVec2(Pos.x + SizeFull.x, Pos.y + TitleBarHeight())); }
 
-	// @tacent Allowing image buttons in the menubar means the height is not just a function of the font size.
+	// @tacent-divergence Allowing image buttons in the menubar means the height is not just a function of the font size.
     // float       MenuBarHeight() const   { ImGuiContext& g = *GImGui; return (Flags & ImGuiWindowFlags_MenuBar) ? DC.MenuBarOffset.y + CalcFontSize() + g.Style.FramePadding.y * 2.0f : 0.0f; }
     float       MenuBarHeight() const   { ImGuiContext& g = *GImGui; return (Flags & ImGuiWindowFlags_MenuBar) ? DC.MenuBarOffset.y + ImMax(CalcFontSize(),MenuBarImageButtonHeight) + g.Style.FramePadding.y * 2.0f : 0.0f; }
 
@@ -3083,7 +3083,7 @@ namespace ImGui
     IMGUI_API bool          ArrowButtonEx(const char* str_id, ImGuiDir dir, ImVec2 size_arg, ImGuiButtonFlags flags = 0);
     IMGUI_API bool          ImageButtonEx(ImGuiID id, ImTextureID texture_id, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& bg_col, const ImVec4& tint_col);
 
-    // @tacent Added thickness.
+    // @tacent-divergence Added thickness.
     IMGUI_API void          SeparatorEx(ImGuiSeparatorFlags flags, float thickness);
 
     IMGUI_API bool          CheckboxFlags(const char* label, ImS64* flags, ImS64 flags_value);
