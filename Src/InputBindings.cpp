@@ -857,39 +857,28 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 	ImGui::SetNextWindowBgAlpha(0.80f);
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	tVector2 windowSize;
-	float actionWidth, operatWidth;
-	switch (profile.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:
-			actionWidth = 106.0f;
-			operatWidth = 238.0f;
-			windowSize.Set(actionWidth+operatWidth, 438.0f);
-			break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-			actionWidth = 114.0f;
-			operatWidth = 262.0f;
-			windowSize.Set(actionWidth+operatWidth, 442.0f);
-			break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:
-			actionWidth = 130.0f;
-			operatWidth = 286.0f;
-			windowSize.Set(actionWidth+operatWidth, 446.0f);
-			break;
-	}
+	float actionWidth = profile.GetUIParamScaled(106.0f, 2.5f);
+	float operatWidth = profile.GetUIParamScaled(238.0f, 2.5f);
+	float windowHeight = profile.GetUIParamExtent(380.0f, 940.0f);
 
+	tVector2 windowSize(actionWidth+operatWidth, windowHeight);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
 
-	if (ImGui::Begin("Cheat Sheet", popen, flags))
+	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(0.0f, 1.0f));
+
+	tString title;
+	tsPrintf(title, "Cheat Sheet (%s Profile)", Config::GetProfileName());
+
+	if (ImGui::Begin(title.Chr(), popen, flags))
 	{
 		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
-		const float rowHeight = 18.0f;
-		const int maxRowsToDisplay = 20;
+		const int maxRowsToDisplay =17;
+		const float rowHeight = profile.GetUIParamScaled(18.0f, 2.5f);
 		int totalAssigned = profile.InputBindings.GetTotalAssigned();
 		const int numRowsToDisplay = tMin(maxRowsToDisplay, totalAssigned);
+
 		tVector2 outerSize = ImVec2(0.0f, rowHeight + rowHeight * float(numRowsToDisplay));
 		if (ImGui::BeginTable("CheatSheetTable", 2, tableFlags, outerSize))
 		{
@@ -940,18 +929,16 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 			ImGui::EndTable();
 		}
 
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2);
-		ImGui::Text("Current Profile: %s", Config::GetProfileName());
-
-		ImGui::SameLine();
-		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-		if (ImGui::Button("Close", tVector2(100.0f, 0.0f)))
+		tVector2 buttonSize = profile.GetUIParamScaled(tVector2(100.0f, 22.0f), 2.5f);
+		tVector2 buttonPad(buttonSize.x*1.06f, buttonSize.y*1.22);
+		ImGui::SetCursorPos(tVector2(ImGui::GetWindowContentRegionMax()) - buttonPad);
+		if (ImGui::Button("Close", buttonSize))
 		{
 			if (popen)
 				*popen = false;
 		}
 	}
-
+	ImGui::PopStyleVar();
 	ImGui::End();
 }
 
