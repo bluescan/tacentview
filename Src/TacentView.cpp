@@ -2465,24 +2465,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		DisappearCountdown -= dt;
 	tVector2 mousePos(mouseX, mouseY);
 
-	tVector2 mainArrowSize;
-	switch (profile.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:
-			mainArrowSize.Set(16.0f, 56.0f);
-			break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-			mainArrowSize.Set(18.0f, 63.0f);
-			break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:
-			mainArrowSize.Set(20.0f, 70.0f);
-			break;
-	}
+	tVector2 prevNextArrowSize = profile.GetUIParamExtent(tVector2(18.0f, 72.0f), tVector2(32.0f, 128.0f));
+	float prevNextArrowMargin = 10.0f;
 
+	// Previous arrow.
 	tVector2 rectCenterPrevArrow(0.0f, float(workAreaH)*0.5f);
-	tVector2 mainArrowWindowSize = mainArrowSize + tVector2(18.0f, 14.0f);
-	tARect2 hitAreaPrevArrow(rectCenterPrevArrow, 160.0f);
+	tARect2 hitAreaPrevArrow(rectCenterPrevArrow, prevNextArrowSize.y*2.0f);
 	if
 	(
 		!CropMode &&
@@ -2490,21 +2478,24 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		((CurrImage != Images.First()) || (SlideshowPlaying && profile.SlideshowLooping))
 	)
 	{
-		// Previous arrow.
-		ImGui::SetNextWindowPos(tVector2(-4.0f, float(topUIHeight) + float(workAreaH)*0.5f - mainArrowWindowSize.y/2.0f - 4.0f));
-		ImGui::SetNextWindowSize(mainArrowWindowSize, ImGuiCond_Always);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(0.0f, 0.0f));
+		ImGui::SetNextWindowPos(tVector2(prevNextArrowMargin, float(topUIHeight) + float(workAreaH)*0.5f - prevNextArrowSize.y/2.0f));
+		ImGui::SetNextWindowSize(prevNextArrowSize, ImGuiCond_Always);
 		ImGui::Begin("PrevArrow", nullptr, flagsImgButton);
-		// Originally was doing the SetCursor instead of the -4.
-		// ImGui::SetCursorPos(tVector2(6, 2));
 		ImGui::PushID("MainPrevArrow");
-		if (ImGui::ImageButton(ImTextureID(Image_NextSide_PrevSide.Bind()), mainArrowSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 3, tVector4::zero, tVector4::one))
-			OnPrevious();
+		if (ImGui::ImageButton
+		(
+			ImTextureID(Image_NextSide_PrevSide.Bind()), prevNextArrowSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 0,
+			tVector4::zero, tVector4::one)
+		)	OnPrevious();
 		ImGui::PopID();
 		ImGui::End();
+		ImGui::PopStyleVar();
 	}
 
+	// Next arrow.
 	tVector2 rectCenterNextArrow(float(workAreaW), float(workAreaH)*0.5f);
-	tARect2 hitAreaNextArrow(rectCenterNextArrow, 160.0f);
+	tARect2 hitAreaNextArrow(rectCenterNextArrow, prevNextArrowSize.y*2.0f);
 	if
 	(
 		!CropMode &&
@@ -2512,15 +2503,19 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		((CurrImage != Images.Last()) || (SlideshowPlaying && profile.SlideshowLooping))
 	)
 	{
-		// Next arrow.
-		ImGui::SetNextWindowPos(tVector2(workAreaW - mainArrowWindowSize.x, float(topUIHeight) + float(workAreaH) * 0.5f - mainArrowWindowSize.y/2.0f - 4.0f));
-		ImGui::SetNextWindowSize(mainArrowWindowSize, ImGuiCond_Always);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(0.0f, 0.0f));
+		ImGui::SetNextWindowPos(tVector2(workAreaW - prevNextArrowSize.x - prevNextArrowMargin, float(topUIHeight) + float(workAreaH)*0.5f - prevNextArrowSize.y/2.0f));
+		ImGui::SetNextWindowSize(prevNextArrowSize, ImGuiCond_Always);
 		ImGui::Begin("NextArrow", nullptr, flagsImgButton);
 		ImGui::PushID("MainNextArrow");
-		if (ImGui::ImageButton(ImTextureID(Image_NextSide_PrevSide.Bind()), mainArrowSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 3, tVector4::zero, tVector4::one))
-			OnNext();
+		if (ImGui::ImageButton
+		(
+			ImTextureID(Image_NextSide_PrevSide.Bind()), prevNextArrowSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 0,
+			tVector4::zero, tVector4::one)
+		)	OnNext();
 		ImGui::PopID();
 		ImGui::End();
+		ImGui::PopStyleVar();
 	}
 
 	// Scrubber
