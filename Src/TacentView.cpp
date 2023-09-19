@@ -1975,7 +1975,7 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 		ImGui::ImageButton
 		(
 			ImTextureID(Image_UpFolder.Bind()), upDirButtonSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f),
-			1, Viewer::ColourBG, tVector4(1.0f, 1.0f, 1.0f, 1.0f)
+			1, Viewer::ColourBG, tVector4::one
 		)
 	)
 	{
@@ -2461,17 +2461,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGuiWindowFlags_NoTitleBar		|	ImGuiWindowFlags_NoScrollbar	|	ImGuiWindowFlags_NoMove			| ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoCollapse		|	ImGuiWindowFlags_NoNav			|	ImGuiWindowFlags_NoBackground	| ImGuiWindowFlags_NoBringToFrontOnFocus;
 
-	if (SlideshowPlaying && (profile.SlideshowPeriod >= 1.0f) && profile.SlideshowProgressArc)
-	{
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+7.0f, float(topUIHeight) + float(workAreaH) - 93.0f));
-		ImGui::Begin("SlideProgress", nullptr, flagsImgButton | ImGuiWindowFlags_NoInputs);
-		ImGui::SetCursorPos(tVector2(15, 14));
-
-		float percent = float(SlideshowCountdown / profile.SlideshowPeriod);
-		ProgressArc(8.0f, percent, ImVec4(1.0f, 1.0f, 1.0f, 1.0f), Viewer::ColourClear);
-		ImGui::End();
-	}
-
 	if (!ImGui::GetIO().WantCaptureMouse)
 		DisappearCountdown -= dt;
 	tVector2 mousePos(mouseX, mouseY);
@@ -2508,7 +2497,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		// Originally was doing the SetCursor instead of the -4.
 		// ImGui::SetCursorPos(tVector2(6, 2));
 		ImGui::PushID("MainPrevArrow");
-		if (ImGui::ImageButton(ImTextureID(Image_NextSide_PrevSide.Bind()), mainArrowSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 3, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
+		if (ImGui::ImageButton(ImTextureID(Image_NextSide_PrevSide.Bind()), mainArrowSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 3, tVector4::zero, tVector4::one))
 			OnPrevious();
 		ImGui::PopID();
 		ImGui::End();
@@ -2528,7 +2517,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::SetNextWindowSize(mainArrowWindowSize, ImGuiCond_Always);
 		ImGui::Begin("NextArrow", nullptr, flagsImgButton);
 		ImGui::PushID("MainNextArrow");
-		if (ImGui::ImageButton(ImTextureID(Image_NextSide_PrevSide.Bind()), mainArrowSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 3, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
+		if (ImGui::ImageButton(ImTextureID(Image_NextSide_PrevSide.Bind()), mainArrowSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 3, tVector4::zero, tVector4::one))
 			OnNext();
 		ImGui::PopID();
 		ImGui::End();
@@ -2541,10 +2530,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		profile.ShowFrameScrubber && CurrImage && (CurrImage->GetNumFrames() > 1) && !CurrImage->IsAltPictureEnabled()
 	)
 	{
-		ImGui::SetNextWindowPos(tVector2(0.0f, float(topUIHeight) + float(workAreaH) - 34.0f));
-		ImGui::SetNextWindowSize(tVector2(float(workAreaW), 5.0f), ImGuiCond_Always);
+		float scrubOffset = profile.GetUIParamScaled(34.0f, 2.5f);
+		ImGui::SetNextWindowPos(tVector2(0.0f, float(topUIHeight) + float(workAreaH) - scrubOffset));
+		ImGui::SetNextWindowSize(tVector2(float(workAreaW), 0.0f), ImGuiCond_Always);
 		ImGui::Begin("Scrubber", nullptr, flagsImgButton);
-		
+
 		ImGui::PushItemWidth(-1);	// Push E
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(7.0f, 2.0f));
 		int frmNum = CurrImage->FrameNum + 1;
@@ -2560,93 +2550,93 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::End();
 	}
 
-	tVector2 rectMinControlButtons(float(workAreaW)/2.0f-200.0f, 0.0f);
-	tVector2 rectMaxControlButtons(float(workAreaW)/2.0f+200.0f, 90.0f);
+	float mainButtonImgDim	= profile.GetUIParamScaled(26.0f, 2.5f);
+	float mainButtonHSpace	= profile.GetUIParamScaled(8.0f, 2.5f);
+	float mainButtonHDelta	= mainButtonImgDim + mainButtonHSpace;
+	float hitAreaHeight		= profile.GetUIParamScaled(100.0f, 2.5f);
+
+	float minHitRectX = (workAreaW>>1) - mainButtonHDelta*5.0f;
+	float maxHitRectX = (workAreaW>>1) + mainButtonHDelta*5.0f;
+	tVector2 rectMinControlButtons(minHitRectX, 0.0f);
+	tVector2 rectMaxControlButtons(maxHitRectX, hitAreaHeight);
 	tARect2 hitAreaControlButtons(rectMinControlButtons, rectMaxControlButtons);
-	float buttonHeightOffset = 69.0f;
+
+	float buttonHeightOffset = profile.GetUIParamScaled(62.0f, 2.5f);
 	if
 	(
 		!CropMode &&
-		((DisappearCountdown > 0.0) || hitAreaControlButtons.IsPointInside(mousePos))
+		((DisappearCountdown > 0.0) ||
+		hitAreaControlButtons.IsPointInside(mousePos))
 	)
 	{
-		float mainButtonImgDim, mainButtonDim, escButtonHeight;
-		switch (profile.GetUISize())
-		{
-			case Viewer::Config::ProfileData::UISizeEnum::Nano:
-				mainButtonImgDim	= 24.0f;
-				mainButtonDim		= 40.0f;
-				escButtonHeight		= 28.0f;
-				break;
-			case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-				mainButtonImgDim	= 26.0f;
-				mainButtonDim		= 42.0f;
-				escButtonHeight		= 30.0f;
-				break;
-			default:
-			case Viewer::Config::ProfileData::UISizeEnum::Small:
-				mainButtonImgDim	= 28.0f;
-				mainButtonDim		= 44.0f;
-				escButtonHeight		= 32.0f;
-				break;
-		}
 		tVector2 mainButtonImgSize(mainButtonImgDim, mainButtonImgDim);
-		tVector2 mainButtonSize(mainButtonDim, mainButtonDim);
+		tVector2 mainButtonSize(mainButtonImgDim, mainButtonImgDim);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(0.0f, 0.0f));
 
 		// Center pan button.
 		if (GetPanX() || GetPanY())
 		{
-			ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-mainButtonDim*4.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
+			ImGui::SetNextWindowPos(tVector2((workAreaW>>1) - mainButtonImgDim/2.0f - mainButtonHDelta*4.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 			ImGui::SetNextWindowSize(mainButtonSize, ImGuiCond_Always);
 			ImGui::Begin("CenterPan", nullptr, flagsImgButton);
-			if (ImGui::ImageButton(ImTextureID(Image_AnchorMM.Bind()), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
-				ResetPan();
+			if (ImGui::ImageButton
+			(
+				ImTextureID(Image_AnchorMM.Bind()), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 0,
+				tVector4::zero, tVector4::one)
+			)	ResetPan();
 			ImGui::End();
 		}
 
 		// Looping button.
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-mainButtonDim*3.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1) - mainButtonImgDim/2.0f - mainButtonHDelta*3.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(mainButtonSize, ImGuiCond_Always);
 		ImGui::Begin("Repeat", nullptr, flagsImgButton);
 		uint64 playModeImageID = profile.SlideshowLooping ? Image_PlayOnce.Bind() : Image_PlayLoop.Bind();
-		if (ImGui::ImageButton(ImTextureID(playModeImageID), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0.0f, 0.0f, 0.0f, 0.0f), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
-			profile.SlideshowLooping = !profile.SlideshowLooping;
+		if (ImGui::ImageButton
+		(
+			ImTextureID(playModeImageID), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 0,
+			tVector4::zero, tVector4::one)
+		)	profile.SlideshowLooping = !profile.SlideshowLooping;
 		ImGui::End();
 
 		// Skip to beginning button.
 		bool prevAvail = (CurrImage != Images.First()) || SlideshowPlaying;
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-mainButtonDim*2.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1) - mainButtonImgDim/2.0f - mainButtonHDelta*2.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(mainButtonSize, ImGuiCond_Always);
 		ImGui::Begin("SkipBegin", nullptr, flagsImgButton);
 		ImGui::PushID("MainSkipBegin");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_SkipEnd_SkipBegin.Bind()), mainButtonImgSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 2,
+			ImTextureID(Image_SkipEnd_SkipBegin.Bind()), mainButtonImgSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 0,
 			ColourBG, prevAvail ? ColourEnabledTint : ColourDisabledTint) && prevAvail
 		)	OnSkipBegin();
 		ImGui::PopID();
 		ImGui::End();
 
 		// Prev button.
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f-mainButtonDim*1.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1) - mainButtonImgDim/2.0f - mainButtonHDelta*1.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(mainButtonSize, ImGuiCond_Always);
 		ImGui::Begin("Prev", nullptr, flagsImgButton);
 		ImGui::PushID("MainPrev");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_Next_Prev.Bind()), mainButtonImgSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 2,
+			ImTextureID(Image_Next_Prev.Bind()), mainButtonImgSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 0,
 			ColourBG, prevAvail ? ColourEnabledTint : ColourDisabledTint) && prevAvail
 		)	OnPrevious();
 		ImGui::PopID();
 		ImGui::End();
 
 		// Slideshow Play/Stop button.
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+mainButtonDim*0.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1) - mainButtonImgDim/2.0f + mainButtonHDelta*0.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(mainButtonSize, ImGuiCond_Always);
 		ImGui::Begin("Slideshow", nullptr, flagsImgButton);
 		uint64 psImageID = SlideshowPlaying ? Image_Stop.Bind() : Image_Play_PlayRev.Bind();
 		ImGui::PushID("MainPlayStop");
-		if (ImGui::ImageButton(ImTextureID(psImageID), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0,0,0,0), tVector4(1,1,1,1)))
+		if (ImGui::ImageButton
+		(
+			ImTextureID(psImageID), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 0,
+			tVector4::zero, tVector4::one)
+		)
 		{
 			SlideshowPlaying = !SlideshowPlaying;
 			SlideshowCountdown = profile.SlideshowPeriod;
@@ -2660,50 +2650,76 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		// Next button.
 		bool nextAvail = (CurrImage != Images.Last()) || SlideshowPlaying;
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+mainButtonDim*1.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1) - mainButtonImgDim/2.0f + mainButtonHDelta*1.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(mainButtonSize, ImGuiCond_Always);
 		ImGui::Begin("Next", nullptr, flagsImgButton);
 		ImGui::PushID("MainNext");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_Next_Prev.Bind()), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2,
+			ImTextureID(Image_Next_Prev.Bind()), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 0,
 			ColourBG, nextAvail ? ColourEnabledTint : ColourDisabledTint) && nextAvail
 		)	OnNext();
 		ImGui::PopID();
 		ImGui::End();
 
 		// Skip to end button.
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+mainButtonDim*2.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1) - mainButtonImgDim/2.0f + mainButtonHDelta*2.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(mainButtonSize, ImGuiCond_Always);
 		ImGui::Begin("SkipEnd", nullptr, flagsImgButton);
 		ImGui::PushID("MainSkipEnd");
 		if (ImGui::ImageButton
 		(
-			ImTextureID(Image_SkipEnd_SkipBegin.Bind()), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2,
+			ImTextureID(Image_SkipEnd_SkipBegin.Bind()), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 0,
 			ColourBG, nextAvail ? ColourEnabledTint : ColourDisabledTint) && nextAvail
 		)	OnSkipEnd();
 		ImGui::PopID();
 		ImGui::End();
 
 		// Fullscreen / Windowed button.
-		ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+mainButtonDim*3.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
+		ImGui::SetNextWindowPos(tVector2((workAreaW>>1) - mainButtonImgDim/2.0f + mainButtonHDelta*3.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 		ImGui::SetNextWindowSize(mainButtonSize, ImGuiCond_Always);
 		ImGui::Begin("Fullscreen", nullptr, flagsImgButton);
 		uint64 fsImageID = profile.FullscreenMode ? Image_Windowed.Bind() : Image_Fullscreen.Bind();
-		if (ImGui::ImageButton(ImTextureID(fsImageID), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 2, tVector4(0,0,0,0), tVector4(1.0f, 1.0f, 1.0f, 1.0f)))
-			ChangeScreenMode(!profile.FullscreenMode);
+		if (ImGui::ImageButton
+		(
+			ImTextureID(fsImageID), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 0,
+			tVector4::zero, tVector4::one)
+		)	ChangeScreenMode(!profile.FullscreenMode);
 		ImGui::End();
 
 		// Exit basic or kiosk profile.
 		if ((Config::GetProfile() == Profile::Basic) || (Config::GetProfile() == Profile::Kiosk))
 		{
-			ImGui::SetNextWindowPos(tVector2((workAreaW>>1)-22.0f+mainButtonDim*4.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
-			ImGui::SetNextWindowSize(tVector2(120.0f, mainButtonDim), ImGuiCond_Always);
+			ImGui::SetNextWindowPos(tVector2((workAreaW>>1) - mainButtonImgDim/2.0f + mainButtonHDelta*4.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
+			ImGui::SetNextWindowSize(tVector2(0.0f, mainButtonImgDim), ImGuiCond_Always);
 			ImGui::Begin("ToMainProfile", nullptr, flagsImgButton);
-			if (ImGui::Button("ESC", tVector2(50.0f, escButtonHeight)))
+			float escButtonWidth = profile.GetUIParamScaled(50.0f, 2.5f);
+			if (ImGui::Button("ESC", tVector2(escButtonWidth, mainButtonImgDim)))
 				ChangProfile(Profile::Main);
 			ImGui::End();
 		}
+
+		ImGui::PopStyleVar();
+	}
+
+	// Slideshow progress arc.
+	if (SlideshowPlaying && (profile.SlideshowPeriod >= 1.0f) && profile.SlideshowProgressArc)
+	{
+		float arcRadius = profile.GetUIParamScaled(8.0f, 2.5f);
+		float arcHOffset = profile.GetUIParamScaled(97.0f, 2.5f);
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(0.0f, 0.0f));
+
+		ImGui::SetNextWindowPos(tVector2(((workAreaW>>1) - arcRadius*2.0f), float(topUIHeight) + float(workAreaH) - arcHOffset));
+		ImGui::SetNextWindowSize(tVector2(arcRadius*2.0f, arcRadius*2.0f), ImGuiCond_Always);
+		ImGui::Begin("SlideProgress", nullptr, flagsImgButton | ImGuiWindowFlags_NoInputs);
+		ImGui::SetCursorPos(tVector2(arcRadius*2.0f, arcRadius*2.0f - 1.0f));
+
+		float percent = float(SlideshowCountdown / profile.SlideshowPeriod);
+		ProgressArc(arcRadius, percent, ImVec4(1.0f, 1.0f, 1.0f, 1.0f), Viewer::ColourClear, arcRadius/2.0f);
+		ImGui::End();
+
+		ImGui::PopStyleVar();
 	}
 
 	// If any modal is open we allow keyboard navigation. For non-modal we do not as we need the keyboard
