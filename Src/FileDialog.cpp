@@ -1220,26 +1220,11 @@ FileDialog::DialogState FileDialog::DoPopup()
 		case DialogMode::SaveFile:		label = "Save File";		configPath = &ConfigSaveFilePath;	break;
 	}
 
-	Viewer::Config::ProfileData& config = *Viewer::Config::Current;
-	float nextWinWidth, nextWinHeight;
-	switch (config.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:
-			nextWinWidth = 660.0f;
-			nextWinHeight = 400.0f;
-			break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-			nextWinWidth = 720.0f;
-			nextWinHeight = 460.0f;
-			break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:
-			nextWinWidth = 780.0f;
-			nextWinHeight = 520.0f;
-			break;
-	}
-
-	ImGui::SetNextWindowSize(tVector2(nextWinWidth, nextWinHeight), ImGuiCond_Appearing);
+	ImGuiContext& ctx = *GImGui;
+	const ImGuiStyle& style = ctx.Style;
+	Viewer::Config::ProfileData& profile = *Viewer::Config::Current;
+	tVector2 nextWinSize = profile.GetUIParamScaled(tVector2(660.0f, 400.0f), 2.5f);
+	ImGui::SetNextWindowSize(nextWinSize, ImGuiCond_Appearing);
 
 	tStringItem* selectPathItemName = nullptr;
 	bool setYScrollToSel = false;
@@ -1251,53 +1236,28 @@ FileDialog::DialogState FileDialog::DoPopup()
 			setYScrollToSel = true;
 	}
 
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4.0f, 5.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2::zero);
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 	if (!ImGui::BeginPopupModal(label, &isOpen, ImGuiWindowFlags_MenuBar))
 	{
-		ImGui::PopStyleVar();
+		ImGui::PopStyleVar(2);
 		return DialogState::Closed;
 	}
 
+	ImGui::PopStyleVar();
 	DialogState state = DialogState::Open;
 	Result.Clear();
 
-	float menuBarHeight, bottomBarRowA, bottomBarRowB, colWidthIcon, colWidthName, colWidthTime, colWidthType, colWidthSize;
-	switch (config.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:
-			menuBarHeight	= 24.0f;
-			bottomBarRowA	= 20.0f;
-			bottomBarRowB	= 28.0f;
-			colWidthIcon	= 24.0f;
-			colWidthName	= 190.0f;
-			colWidthTime	= 120.0f;
-			colWidthType	= 36.0f;
-			colWidthSize	= 60.0;
-			break;
-
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-			menuBarHeight	= 26.0f;
-			bottomBarRowA	= 22.0f;
-			bottomBarRowB	= 30.0f;
-			colWidthIcon	= 26.0f;
-			colWidthName	= 200.0f;
-			colWidthTime	= 135.0f;
-			colWidthType	= 41.0f;
-			colWidthSize	= 65.0;
-			break;
-
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:
-			menuBarHeight	= 28.0f;
-			bottomBarRowA	= 24.0f;
-			bottomBarRowB	= 32.0f;
-			colWidthIcon	= 28.0f;
-			colWidthName	= 210.0f;
-			colWidthTime	= 150.0f;
-			colWidthType	= 46.0f;
-			colWidthSize	= 70.0;
-			break;
-	}
+	// float menuBarHeight = profile.GetUIParamScaled(24.0, 2.5f);
+	tVector2 toolImageSize = profile.GetUIParamExtent(tVector2(24.0f, 24.0f), tVector2(62.0f, 62.0f));
+	float menuBarHeight = toolImageSize.y + style.ItemSpacing.y*2.0f;
+	float bottomBarRowA = profile.GetUIParamScaled(20.0, 2.5f);
+	float bottomBarRowB = profile.GetUIParamScaled(28.0, 2.5f);
+	float colWidthIcon = profile.GetUIParamScaled(24.0, 2.5f);
+	float colWidthName = profile.GetUIParamScaled(190.0, 2.5f);
+	float colWidthTime = profile.GetUIParamScaled(120.0, 2.5f);
+	float colWidthType = profile.GetUIParamScaled(36.0, 2.5f);
+	float colWidthSize = profile.GetUIParamScaled(60.0, 2.5f);
 	float bottomBarHeight = bottomBarRowA + bottomBarRowB;
 
 	//
@@ -1305,14 +1265,17 @@ FileDialog::DialogState FileDialog::DoPopup()
 	//
 	if (ImGui::BeginMenuBar())
 	{
-		tVector2 ToolImageSize							(24.0f, menuBarHeight);
+		ImGuiWindow* window = ImGui::GetCurrentWindow();
+		if (window)
+			window->MenuBarImageButtonHeight = toolImageSize.y + style.ItemSpacing.y*2.0f;
 
 		// Up directory.
 		uint64 upImgID = Viewer::Image_UpFolder.Bind();
 		bool upAvail = SelectedNode && SelectedNode->Parent;
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::ImageButton
 		(
-			ImTextureID(upImgID), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(upImgID), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			ColourBG, upAvail ? ColourEnabledTint : ColourDisabledTint) && upAvail
 		)
 		{
@@ -1340,9 +1303,10 @@ FileDialog::DialogState FileDialog::DoPopup()
 
 		// Show hidden.
 		uint64 showHiddenImgID = Viewer::Image_ShowHidden.Bind();
+		ImGui::SameLine();
 		if (ImGui::ImageButton
 		(
-			ImTextureID(showHiddenImgID), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(showHiddenImgID), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			ConfigShowHidden ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)
 		{
@@ -1352,9 +1316,10 @@ FileDialog::DialogState FileDialog::DoPopup()
 
 		// Refresh.
 		uint64 refreshImgID = Viewer::Image_RotateTheta.Bind();
+		ImGui::SameLine();
 		if (ImGui::ImageButton
 		(
-			ImTextureID(refreshImgID), ToolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
+			ImTextureID(refreshImgID), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			ColourBG, ColourEnabledTint)
 		)
 		{
@@ -1380,6 +1345,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 		}
 		ShowToolTip("Refresh");
 
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::BeginMenu("View##FileDialog"))
 		{
 			ImGui::MenuItem("Show Hidden", "", &ConfigShowHidden);
@@ -1391,7 +1357,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 		ImGui::EndMenuBar();
 	}
 	ImGui::PopStyleVar();
-	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 6.0f);
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f*style.ItemSpacing.y);
 	//
 	// End of menubar.
 	//
@@ -1402,7 +1368,8 @@ FileDialog::DialogState FileDialog::DoPopup()
 	int outerTableFlags = ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable;
 	if (ImGui::BeginTable("FileDialogTable", 2, outerTableFlags, tVector2(0.0f, -(bottomBarHeight + menuBarHeight))))
 	{
-		ImGui::TableSetupColumn("LeftTreeColumn", ImGuiTableColumnFlags_WidthFixed, 160.0f);
+		float leftTreeWidth = profile.GetUIParamScaled(160.0f, 2.5f);
+		ImGui::TableSetupColumn("LeftTreeColumn", ImGuiTableColumnFlags_WidthFixed, leftTreeWidth);
 		ImGui::TableSetupColumn("RightContentColumn", ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableNextRow();
 
@@ -1549,6 +1516,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 				// Do the content rows. We could use ImGuiListClipper here but so far, even with thousands of files in
 				// the Contents list, it is very responsive. Also, since it's a list rather than an array, we'd still
 				// need a 'Next' loop to get to the right clipper starting point (clipper.DisplayStart).
+				tVector2 iconSize = profile.GetUIParamScaled(tVector2(16.0f, 16.0f), 2.5f);
 				for (ContentItem* item = SelectedNode->Contents.First(); item; item = item->Next())
 				{
 					// There were two ways to implement hidden. Invalidate everything and enumerate the filesystem objects again (less memory)
@@ -1562,7 +1530,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 					ImGui::TableNextColumn();
 					uint64 imgID = item->IsDir ? Viewer::Image_Folder.Bind() : Viewer::Image_File.Bind();
 					ImGui::SetCursorPosX(ImGui::GetCursorPosX()+4.0f);
-					ImGui::Image(ImTextureID(imgID), tVector2(16.0f, 16.0f), tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), Viewer::ColourEnabledTint);
+					ImGui::Image(ImTextureID(imgID), iconSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), Viewer::ColourEnabledTint);
 
 					// The name column selectable spans all columns.
 					ImGui::TableNextColumn();
@@ -1592,6 +1560,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 
 	bool resultAvail = false;
 	ContentItem* selItem = SelectedNode ? SelectedNode->FindSelectedItem() : nullptr;
+	float actionButtonWidth = profile.GetUIParamScaled(70.0f, 2.5f);
 	switch (Mode)
 	{
 		case DialogMode::OpenFile:
@@ -1613,8 +1582,8 @@ FileDialog::DialogState FileDialog::DoPopup()
 			ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - bottomBarRowA);
 			if (resultAvail)
 			{
-				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
-				if (Viewer::Button("Open", tVector2(70.0f, 0.0f)))
+				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 2.0f*actionButtonWidth - style.ItemSpacing.x);		// X2 because of the cancel button to right.
+				if (Viewer::Button("Open", tVector2(actionButtonWidth, 0.0f)))
 				{
 					Result = NodeToDir(SelectedNode) + selItem->Name;
 					state = DialogState::OK;
@@ -1640,8 +1609,8 @@ FileDialog::DialogState FileDialog::DoPopup()
 			ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - bottomBarRowA);
 			if ((fileType != tFileType::Invalid) && (SaveFileResult.length() > 0))
 			{
-				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
-				if (Viewer::Button("Save", tVector2(70.0f, 0.0f)))
+				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 2.0f*actionButtonWidth - style.ItemSpacing.x);		// X2 because of the cancel button to right.
+				if (Viewer::Button("Save", tVector2(actionButtonWidth, 0.0f)))
 				{
 					tString extension = tSystem::tGetExtension(fileType);
 					Result = NodeToDir(SelectedNode) + tString(SaveFileResult.c_str()) + "." + extension;
@@ -1674,8 +1643,8 @@ FileDialog::DialogState FileDialog::DoPopup()
 			ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - bottomBarRowA);
 			if (resultAvail)
 			{
-				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
-				if (Viewer::Button("Open", tVector2(70.0f, 0.0f)))
+				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 2.0f*actionButtonWidth - style.ItemSpacing.x);		// X2 because of the cancel button to right.
+				if (Viewer::Button("Open", tVector2(actionButtonWidth, 0.0f)))
 				{
 					Result = NodeToDir(SelectedNode);
 					state = DialogState::OK;
@@ -1687,12 +1656,12 @@ FileDialog::DialogState FileDialog::DoPopup()
 	}
 
 	// The cancel button is the same for all modes.
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 70.0f);
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - actionButtonWidth);
 
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
 
-	if (Viewer::Button("Cancel", tVector2(70.0f, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(actionButtonWidth, 0.0f)))
 		state = DialogState::Cancel;
 
 	if (state != DialogState::Open)
@@ -1708,9 +1677,15 @@ void FileDialog::DoFileTypesDropdown(bool supportMultipleTypes)
 	if (FileTypes.IsEmpty())
 		return;
 
+	ImGuiContext& ctx = *GImGui;
+	const ImGuiStyle& style = ctx.Style;
+	Viewer::Config::ProfileData& profile = *Viewer::Config::Current;
+	float dropdownWidth = profile.GetUIParamScaled(140.0f, 2.5f);
+	dropdownWidth += style.ItemSpacing.x;
+
 	ImGui::SameLine();
-	ImGui::SetNextItemWidth(140);
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 140.0f);
+	ImGui::SetNextItemWidth(dropdownWidth);
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - dropdownWidth);
 
 	// Nothing selected means all types used.
 	bool anySelected = FileTypes.AnySelected();
