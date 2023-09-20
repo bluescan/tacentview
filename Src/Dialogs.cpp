@@ -32,14 +32,7 @@ void Viewer::ShowAboutPopup(bool* popen)
 {
 	Config::ProfileData& profile = Config::GetProfileData();
 	tVector2 windowPos = GetDialogOrigin(DialogID::About);
-	tVector2 windowSize;
-	switch (profile.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:		windowSize.Set(240, 500);	break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:		windowSize.Set(280, 501);	break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:	windowSize.Set(320, 515);	break;
-	}
+	tVector2 windowSize = profile.GetUIParamScaled(tVector2(260.0f, 400.0f), 2.5f);
 
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
