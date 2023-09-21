@@ -112,20 +112,23 @@ void Viewer::DoResizeAnchorInterface()
 	Config::ProfileData& profile = Config::GetProfileData();
 	static const char* longNames[3*3] = { "Top-Left", "Top-Middle", "Top-Right", "Middle-Left", "Middle", "Middle-Right", "Bottom-Left", "Bottom-Middle", "Bottom-Right" };
 
+	float ancTextPos	= profile.GetUIParamScaled(72.0f, 2.5f);
 	ImGui::NewLine();
-	ImGui::SetCursorPosX(58.0f);
+	ImGui::SetCursorPosX(ancTextPos);
 	ImGui::Text("Anchor: %s", (profile.CropAnchor == -1) ? "Cursor Position" : longNames[profile.CropAnchor]);
 	ImGui::SameLine();
 	ShowHelpMark("Choose an anchor below. To use the cursor position, deselect the current anchor.");
 
+	// Anchors.
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2::zero);
 	float ancLeft		= profile.GetUIParamScaled(92.0f, 2.5f);
 	float ancImgSize	= profile.GetUIParamScaled(24.0f, 2.5f);
-
-	tVector2 imgSize(ancImgSize, ancImgSize);
-	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 7.0f);
-	float ancSpace = 6.0f;
+	float ancTopMargin	= profile.GetUIParamScaled(7.0f, 2.5f);
+	float ancSpacing	= profile.GetUIParamScaled(2.0f, 2.5f);
+	tVector2 imgSize	(ancImgSize, ancImgSize);
 
 	// Top Row
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ancTopMargin);
 	ImGui::SetCursorPosX(ancLeft);
 
 	bool selTL = (profile.CropAnchor == int(Anchor::TL));
@@ -135,7 +138,7 @@ void Viewer::DoResizeAnchorInterface()
 	ImGui::PopID();
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
+	ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ancSpacing);
 	bool selTM = (profile.CropAnchor == int(Anchor::TM));
 	ImGui::PushID("TM");
 	if (ImGui::ImageButton(ImTextureID(Image_AnchorBM.Bind()), imgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, selTM ? ColourEnabledTint : ColourDisabledTint))
@@ -143,7 +146,7 @@ void Viewer::DoResizeAnchorInterface()
 	ImGui::PopID();
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
+	ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ancSpacing);
 	bool selTR = (profile.CropAnchor == int(Anchor::TR));
 	ImGui::PushID("TR");
 	if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), imgSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, selTR ? ColourEnabledTint : ColourDisabledTint))
@@ -151,6 +154,7 @@ void Viewer::DoResizeAnchorInterface()
 	ImGui::PopID();
 
 	// Middle Row
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ancSpacing);
 	ImGui::SetCursorPosX(ancLeft);
 
 	bool selML = (profile.CropAnchor == int(Anchor::ML));
@@ -160,7 +164,7 @@ void Viewer::DoResizeAnchorInterface()
 	ImGui::PopID();
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
+	ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ancSpacing);
 	bool selMM = (profile.CropAnchor == int(Anchor::MM));
 	ImGui::PushID("MM");
 	if (ImGui::ImageButton(ImTextureID(Image_AnchorMM.Bind()), imgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, selMM ? ColourEnabledTint : ColourDisabledTint))
@@ -168,7 +172,7 @@ void Viewer::DoResizeAnchorInterface()
 	ImGui::PopID();
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
+	ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ancSpacing);
 	bool selMR = (profile.CropAnchor == int(Anchor::MR));
 	ImGui::PushID("MR");
 	if (ImGui::ImageButton(ImTextureID(Image_AnchorML.Bind()), imgSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, selMR ? ColourEnabledTint : ColourDisabledTint))
@@ -176,6 +180,7 @@ void Viewer::DoResizeAnchorInterface()
 	ImGui::PopID();
 
 	// Bottom Row
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ancSpacing);
 	ImGui::SetCursorPosX(ancLeft);
 
 	bool selBL = (profile.CropAnchor == int(Anchor::BL));
@@ -185,7 +190,7 @@ void Viewer::DoResizeAnchorInterface()
 	ImGui::PopID();
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
+	ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ancSpacing);
 	bool selBM = (profile.CropAnchor == int(Anchor::BM));
 	ImGui::PushID("BM");
 	if (ImGui::ImageButton(ImTextureID(Image_AnchorBM.Bind()), imgSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, selBM ? ColourEnabledTint : ColourDisabledTint))
@@ -193,12 +198,14 @@ void Viewer::DoResizeAnchorInterface()
 	ImGui::PopID();
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ancSpace);
+	ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ancSpacing);
 	bool selBR = (profile.CropAnchor == int(Anchor::BR));
 	ImGui::PushID("BR");
 	if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), imgSize, tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 1, ColourBG, selBR ? ColourEnabledTint : ColourDisabledTint))
 		profile.CropAnchor = selBR ? -1 : int(Anchor::BR);
 	ImGui::PopID();
+
+	ImGui::PopStyleVar();
 }
 
 
