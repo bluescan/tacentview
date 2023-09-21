@@ -200,8 +200,8 @@ void Viewer::ShowImageMetaDataOverlay(bool* popen)
 	ImGui::SetNextWindowBgAlpha(0.90f);
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float rowHeight			= profile.GetUIParamScaled(18.0f, 2.5f);
-	float tagWidth			= profile.GetUIParamScaled(116.0f, 2.5f);
+	float rowHeight			= profile.GetUIParamScaled(18.0f, 2.5f) + 4.0f;
+	float tagWidth			= profile.GetUIParamScaled(122.0f, 2.5f);
 	float valWidth			= profile.GetUIParamScaled(200.0f, 2.5f);
 	int maxRowsToDisplay	= profile.GetUIParamExtent(25, 18);
 
