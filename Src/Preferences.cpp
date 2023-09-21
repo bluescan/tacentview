@@ -42,23 +42,8 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	}
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonOffset, comboWidth;
-	switch (profile.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:
-			buttonOffset	= 141.0f;
-			comboWidth		= 110.0f;
-			break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-			buttonOffset	= 170.0f;
-			comboWidth		= 132.0f;
-			break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:
-			buttonOffset	= 191.0f;
-			comboWidth		= 146.0f;
-			break;
-	}
+	float buttonOffset	= profile.GetUIParamScaled(141.0f, 2.5f);
+	float comboWidth	= profile.GetUIParamScaled(110.0f, 2.5f);
 
 	bool tab = false;
 	uint32 category = Config::Category_None;

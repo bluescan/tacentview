@@ -200,33 +200,13 @@ void Viewer::ShowImageMetaDataOverlay(bool* popen)
 	ImGui::SetNextWindowBgAlpha(0.90f);
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float rowHeight, tagWidth, valWidth;
-	int maxRowsToDisplay;
-	switch (profile.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:
-			rowHeight			= 18.0f;
-			tagWidth			= 116.0f;
-			valWidth			= 200.0f;
-			maxRowsToDisplay	= 25;
-			break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-			rowHeight			= 20.0f;
-			tagWidth			= 132.0f;
-			valWidth			= 230.0f;
-			maxRowsToDisplay	= 23;
-			break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:
-			rowHeight			= 22.0f;
-			tagWidth			= 148.0f;
-			valWidth			= 260.0f;
-			maxRowsToDisplay	= 21;
-			break;
-	}
+	float rowHeight			= profile.GetUIParamScaled(18.0f, 2.5f);
+	float tagWidth			= profile.GetUIParamScaled(116.0f, 2.5f);
+	float valWidth			= profile.GetUIParamScaled(200.0f, 2.5f);
+	int maxRowsToDisplay	= profile.GetUIParamExtent(25, 18);
 
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Appearing);
-	ImGuiWindowFlags flags = 
+	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
 		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
 

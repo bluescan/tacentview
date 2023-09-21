@@ -627,27 +627,11 @@ tVector2 Viewer::GetDialogOrigin(DialogID dialogID)
 	int hindex = int(dialogID) % 4;
 	int vindex = int(dialogID) / 4;
 
-	float topOffset, leftOffset, heightDelta;
-	switch (profile.GetUISize())
-	{
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:
-			topOffset	= 64.0f;
-			leftOffset	= 30.0f;
-			heightDelta = 22.0f;
-			break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-			topOffset	= 66.0f;
-			leftOffset	= 32.0f;
-			heightDelta = 24.0f;
-			break;
-		case Viewer::Config::ProfileData::UISizeEnum::Small:
-			topOffset	= 68.0f;
-			leftOffset	= 34.0f;
-			heightDelta = 26.0f;
-			break;
-	}
+	float topOffset		= profile.GetUIParamScaled(64.0f, 2.5f);
+	float leftOffset	= profile.GetUIParamScaled(30.0f, 2.5f);
+	float heightDelta	= profile.GetUIParamScaled(22.0f, 2.5f);
 
+	// @wip
 	float widthDelta = 200.0f;
 	float x = leftOffset + widthDelta*float(hindex);
 	float y = topOffset + heightDelta*float(vindex);

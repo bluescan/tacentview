@@ -43,27 +43,11 @@ void Viewer::DoResizeWidthHeightInterface(int srcW, int srcH, int& dstW, int& ds
 	float aspect = float(srcW) / float(srcH);
 	static bool lockAspect = true;
 
-	Config::ProfileData& profile = Config::GetProfileData();
-	float dimWidth, dimOffset, powButtonWidth;
-	switch (profile.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:
-			dimWidth		= 90.0f;
-			dimOffset		= 140.0f;
-			powButtonWidth	= 44.0f;
-			break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-			dimWidth		= 100.0f;
-			dimOffset		= 156.0f;
-			powButtonWidth	= 47.0f;
-			break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:
-			dimWidth		= 110.0f;
-			dimOffset		= 172.0f;
-			powButtonWidth	= 50.0f;
-			break;
-	}
+	Config::ProfileData& profile	= Config::GetProfileData();
+	float dimWidth					= profile.GetUIParamScaled(90.0f, 2.5f);
+	float dimOffset					= profile.GetUIParamScaled(140.0f, 2.5f);
+	float powButtonWidth			= profile.GetUIParamScaled(44.0f, 2.5f);
+
 	static char lo[32];
 	static char hi[32];
 
@@ -134,23 +118,8 @@ void Viewer::DoResizeAnchorInterface()
 	ImGui::SameLine();
 	ShowHelpMark("Choose an anchor below. To use the cursor position, deselect the current anchor.");
 
-	float ancLeft, ancImgSize;
-	switch (profile.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:
-			ancLeft		= 92.0f;
-			ancImgSize	= 24.0f;
-			break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-			ancLeft		= 100.0f;
-			ancImgSize	= 26.0f;
-			break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:
-			ancLeft		= 109.0f;
-			ancImgSize	= 28.0f;
-			break;
-	}
+	float ancLeft		= profile.GetUIParamScaled(92.0f, 2.5f);
+	float ancImgSize	= profile.GetUIParamScaled(24.0f, 2.5f);
 
 	tVector2 imgSize(ancImgSize, ancImgSize);
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 7.0f);
@@ -312,20 +281,7 @@ void Viewer::DoResizeImageModal(bool resizeImagePressed)
 		return;
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth;
-	switch (profile.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:
-			buttonWidth		= 78.0f;
-			break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-			buttonWidth		= 86.0f;
-			break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:
-			buttonWidth		= 94.0f;
-			break;
-	}
+	float buttonWidth = profile.GetUIParamScaled(78.0f, 2.5f);
 
 	tAssert(CurrImage);		tPicture* picture = CurrImage->GetCurrentPic();		tAssert(picture);
 	int srcW				= picture->GetWidth();
@@ -453,20 +409,7 @@ void Viewer::DoResizeCanvasAnchorTab(bool firstOpen)
 	ImGui::NewLine();
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth;
-	switch (profile.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:
-			buttonWidth		= 78.0f;
-			break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-			buttonWidth		= 86.0f;
-			break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:
-			buttonWidth		= 94.0f;
-			break;
-	}
+	float buttonWidth = profile.GetUIParamScaled(78.0f, 2.5f);
 
 	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
@@ -522,20 +465,7 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool firstOpen)
 	ImGui::NewLine();
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth;
-	switch (profile.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:
-			buttonWidth		= 78.0f;
-			break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-			buttonWidth		= 86.0f;
-			break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:
-			buttonWidth		= 94.0f;
-			break;
-	}
+	float buttonWidth = profile.GetUIParamScaled(78.0f, 2.5f);
 
 	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
@@ -626,20 +556,7 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	float buttonWidth;
-	switch (profile.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:
-			buttonWidth		= 78.0f;
-			break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-			buttonWidth		= 86.0f;
-			break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:
-			buttonWidth		= 94.0f;
-			break;
-	}
+	float buttonWidth = profile.GetUIParamScaled(78.0f, 2.5f);
 
 	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{

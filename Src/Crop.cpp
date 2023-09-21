@@ -856,7 +856,12 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 	if (!CropMode)
 		return;
 
-	tVector2 windowPos = tVector2((lrtb.R+lrtb.L)/2.0f - 90.0f, 48.0f);
+	Config::ProfileData& profile = Config::GetProfileData();
+	float windowWidth = profile.GetUIParamScaled(198.0f, 2.5f);
+	float windowVOffset = profile.GetUIParamScaled(48.0f, 2.5f);
+	tVector2 windowPos = tVector2((lrtb.R+lrtb.L)/2.0f - windowWidth/2.0f, windowVOffset);
+	tVector2 windowSize(windowWidth, -1.0f);
+	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 	if (justOpened)
 		ImGui::SetNextWindowPos(windowPos);
 	else
@@ -870,36 +875,11 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 
 	if (ImGui::Begin("Crop", &CropMode, flags))
 	{
-		Config::ProfileData& profile = Config::GetProfileData();
-		float buttonWidth, shortcutNavLeft, shortcutTxtLeft, anchorSize, comboWidth, aspectWidth;
-		switch (profile.GetUISize())
-		{
-			case Viewer::Config::ProfileData::UISizeEnum::Nano:
-				buttonWidth		= 55.0f;
-				shortcutTxtLeft	= 57.0f;
-				shortcutNavLeft	= 58.0f;
-				anchorSize		= 24.0f;
-				comboWidth		= 102.0f;
-				aspectWidth		= 24.0f;
-				break;
-			case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-				buttonWidth		= 61.0f;
-				shortcutTxtLeft	= 61.0f;
-				shortcutNavLeft	= 64.0f;
-				anchorSize		= 26.0f;
-				comboWidth		= 124.0f;
-				aspectWidth		= 25.0f;
-				break;
-			default:
-			case Viewer::Config::ProfileData::UISizeEnum::Small:
-				buttonWidth		= 66.0f;
-				shortcutTxtLeft	= 61.0f;
-				shortcutNavLeft	= 68.0f;
-				anchorSize		= 28.0f;
-				comboWidth		= 132.0f;
-				aspectWidth		= 26.0f;
-				break;
-		}
+		float buttonWidth		= profile.GetUIParamScaled(55.0f, 2.5f);
+		float shortcutTxtLeft	= profile.GetUIParamScaled(57.0f, 2.5f);
+		float anchorSize		= profile.GetUIParamScaled(24.0f, 2.5f);
+		float comboWidth		= profile.GetUIParamScaled(102.0f, 2.5f);
+		float aspectWidth		= profile.GetUIParamScaled(24.0f, 2.5f);
 
 		//
 		// Crop info display.
@@ -921,7 +901,8 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		int margB = minY;
 		int margT = origH - maxY - 1;
 
-		float col = ImGui::GetCursorPosX() + 86.0f;
+		float textDataColumnOffset = profile.GetUIParamScaled(86.0f, 2.5f);
+		float col = ImGui::GetCursorPosX() + textDataColumnOffset;
 		ImGui::Text("Bot Left");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("X:%d Y:%d", minX, minY);
 		ImGui::Text("Top Right");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("X:%d Y:%d", maxX, maxY);
 		ImGui::Text("H Margins");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("L:%d R:%d", margL, margR);
@@ -948,7 +929,8 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 
 		if (profile.GetCropAspectRatio() == tImage::tAspectRatio::User)
 		{
-			ImGui::PushItemWidth(26.0f);
+			float inputWidth = profile.GetUIParamScaled(26.0f, 2.5f);
+			ImGui::PushItemWidth(inputWidth);
 			if (ImGui::InputInt("##Num", &profile.CropAspectUserNum, 0, 0))
 				Viewer::Request_CropLineConstrain = true;
 			ImGui::SameLine(); ImGui::Text(":"); ImGui::SameLine();
@@ -998,11 +980,15 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		ShowHelpMark(toolTipText.Chr());
 
 		tVector2 shortcutImageSize(anchorSize, anchorSize);
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
-		float panNavSpace = 6.0f;
+
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2::zero);
+		float navSpacing	= profile.GetUIParamScaled(2.0f, 2.5f);
+		float navWidth		= 3.0f*(anchorSize+2.0f) + 2.0f*navSpacing;		// The anchorSize+2 is because when we draw the image buttons we have a frame padding of 1 on either side.
+		float topNavMargin	= profile.GetUIParamScaled(3.0f, 2.5f);
 
 		// Top Row
-		ImGui::SetCursorPosX(shortcutNavLeft);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + topNavMargin);
+		ImGui::SetCursorPosX(windowWidth/2.0f - navWidth/2.0f);
 
 		ImGui::PushID("TL");
 		if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), shortcutImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
@@ -1010,21 +996,22 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		ImGui::PopID();
 
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + navSpacing);
 		ImGui::PushID("TM");
 		if (ImGui::ImageButton(ImTextureID(Image_AnchorBM.Bind()), shortcutImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::TM;
 		ImGui::PopID();
 
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + navSpacing);
 		ImGui::PushID("TR");
 		if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), shortcutImageSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::TR;	
 		ImGui::PopID();
 
 		// Middle Row
-		ImGui::SetCursorPosX(shortcutNavLeft);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + navSpacing);
+		ImGui::SetCursorPosX(windowWidth/2.0f - navWidth/2.0f);
 
 		ImGui::PushID("ML");
 		if (ImGui::ImageButton(ImTextureID(Image_AnchorML.Bind()), shortcutImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
@@ -1032,21 +1019,22 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		ImGui::PopID();
 
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + navSpacing);
 		ImGui::PushID("MM");
 		if (ImGui::ImageButton(ImTextureID(Image_AnchorMM.Bind()), shortcutImageSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::MM;
 		ImGui::PopID();
 
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + navSpacing);
 		ImGui::PushID("MR");
 		if (ImGui::ImageButton(ImTextureID(Image_AnchorML.Bind()), shortcutImageSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::MR;
 		ImGui::PopID();
 
 		// Bottom Row.
-		ImGui::SetCursorPosX(shortcutNavLeft);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + navSpacing);
+		ImGui::SetCursorPosX(windowWidth/2.0f - navWidth/2.0f);
 
 		ImGui::PushID("BL");
 		if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), shortcutImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, ColourEnabledTint))
@@ -1054,18 +1042,20 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		ImGui::PopID();
 
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + navSpacing);
 		ImGui::PushID("BM");
 		if (ImGui::ImageButton(ImTextureID(Image_AnchorBM.Bind()), shortcutImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::BM;
 		ImGui::PopID();
 
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() - panNavSpace);
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + navSpacing);
 		ImGui::PushID("BR");
 		if (ImGui::ImageButton(ImTextureID(Image_AnchorBL.Bind()), shortcutImageSize, tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 1, ColourBG, ColourEnabledTint))
 			Request_PanSnap = Anchor::BR;
 		ImGui::PopID();
+
+		ImGui::PopStyleVar();
 
 		if (Request_PanSnap != Anchor::Invalid)
 			CropGizmo.LastSelectedHandle = Request_PanSnap;
@@ -1073,7 +1063,8 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		//
 		// Buttons.
 		//
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 7.0f);
+		float botButtonMargin = profile.GetUIParamScaled(7.0f, 2.5f);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + botButtonMargin);
 		if (ImGui::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 			CropMode = false;
 

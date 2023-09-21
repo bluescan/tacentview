@@ -61,20 +61,7 @@ tString Viewer::MakeImageTooltipString(Viewer::Image* image, const tString& file
 void Viewer::DoSortParameters(bool singleLine)
 {
 	Config::ProfileData& profile = Config::GetProfileData();
-	float sortComboWidth;
-	switch (profile.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:
-			sortComboWidth		= 110.0f;
-			break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-			sortComboWidth		= 125.0f;
-			break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:
-			sortComboWidth		= 140.0f;
-			break;
-	}
+	float sortComboWidth = profile.GetUIParamScaled(110.0f, 2.5f);
 
 	const char* sortItems[] =
 	{
@@ -117,14 +104,7 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 	tVector2 windowPos = GetDialogOrigin(DialogID::ContentView);
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	tVector2 initialSize;
-	switch (profile.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:		initialSize.Set(586.0f, 480.0f);	break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:		initialSize.Set(602.0f, 488.0f);	break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:	initialSize.Set(610.0f, 494.0f);	break;
-	}
+	tVector2 initialSize = profile.GetUIParamScaled(tVector2(586.0f, 480.0f), 2.5f);
 
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(initialSize, ImGuiCond_FirstUseEver);
@@ -135,32 +115,13 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 		return;
 	}
 
-	float viewOptionsHeight;
-	float viewOptionsOffset;
-	float progressTextOffset;
-	switch (profile.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:
-			viewOptionsHeight	= 61.0f;
-			viewOptionsOffset	= 4.0f;
-			progressTextOffset	= 460.0f;
-			break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-			viewOptionsHeight	= 65.0f;
-			viewOptionsOffset	= 4.0f;
-			progressTextOffset	= 475.0f;
-			break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:
-			viewOptionsHeight	= 70.0f;
-			viewOptionsOffset	= 5.0f;
-			progressTextOffset	= 490.0f;
-			break;
-	}
+	float viewOptionsHeight		= profile.GetUIParamScaled(61.0f, 2.5f);
+	float viewOptionsOffset		= profile.GetUIParamScaled(4.0f, 2.5f);
+	float progressTextOffset	= profile.GetUIParamScaled(460.0f, 2.5f);
 
 	ImGuiWindowFlags thumbWindowFlags = 0;
 	ImGui::BeginChild("Thumbnails", tVector2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight()-viewOptionsHeight), false, thumbWindowFlags);
-	
+
 	ImGuiStyle& style = ImGui::GetStyle();
 	float visibleW = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 

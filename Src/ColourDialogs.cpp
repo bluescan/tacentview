@@ -345,14 +345,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	// UI size parameters.
 	//
 	Config::ProfileData& profile = Config::GetProfileData();
-	float okOffset;
-	switch (profile.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:		okOffset = 135.0f;	break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:		okOffset = 146.0f;	break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:	okOffset = 158.0f;	break;
-	}
+	float okOffset = profile.GetUIParamScaled(135.0f, 2.5f);
 
 	const char* channelItems[] = { "RGB", "Red", "Green", "Blue", "Alpha" };
 	if (ImGui::BeginTabBar("LevelsTabBar", ImGuiTabBarFlags_None))

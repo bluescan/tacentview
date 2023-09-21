@@ -111,21 +111,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float nextWinWidth;
-	switch (profile.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:
-			nextWinWidth = 238.0f;
-			break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-			nextWinWidth = 265.0f;
-			break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:
-			nextWinWidth = 292.0f;
-			break;
-	}
-
+	float nextWinWidth = profile.GetUIParamScaled(238.0f, 2.5f);
 	ImGui::SetNextWindowSize(tVector2(nextWinWidth, -1.0f), ImGuiCond_Always);
 
 	if (!ImGui::Begin("Properties", popen, windowFlags))
@@ -147,23 +133,8 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		return;
 	}
 
-	float itemWidth, buttonSize;
-	switch (profile.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:
-			itemWidth = 110.0f;
-			buttonSize = 18.0f;
-			break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-			itemWidth = 130.0f;
-			buttonSize = 22.0f;
-			break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:
-			itemWidth = 150.0f;
-			buttonSize = 26.0f;
-			break;
-	}
+	float itemWidth = profile.GetUIParamScaled(110.0f, 2.5f);
+	float buttonSize = profile.GetUIParamScaled(18.0f, 2.5f);
 
 	bool fileTypeSectionDisplayed = false;
 	switch (CurrImage->Filetype)

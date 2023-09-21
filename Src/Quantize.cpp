@@ -129,20 +129,7 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 		return;
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth;
-	switch (profile.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:
-			buttonWidth		= 78.0f;
-			break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-			buttonWidth		= 86.0f;
-			break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:
-			buttonWidth		= 94.0f;
-			break;
-	}
+	float buttonWidth = profile.GetUIParamScaled(78.0f, 2.5f);
 
 	tAssert(CurrImage);
 	static int method = int(tImage::tQuantize::Method::Wu);

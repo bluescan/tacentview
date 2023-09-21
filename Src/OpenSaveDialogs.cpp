@@ -103,21 +103,6 @@ void Viewer::DoSaveModal(bool savePressed)
 
 	Config::ProfileData& profile = Config::GetProfileData();
 	float nextWinWidth = profile.GetUIParamScaled(300.0f, 2.5f);
-	/*
-	switch (profile.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:
-			nextWinWidth = 300.0f;
-			break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-			nextWinWidth = 325.0f;
-			break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:
-			nextWinWidth = 350.0f;
-			break;
-	}
-	*/
 
 	// The unused isOpenSaveOptions bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isOpenSaveOptions = true;
@@ -159,21 +144,6 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 
 	Config::ProfileData& profile = Config::GetProfileData();
 	float nextWinWidth = profile.GetUIParamScaled(300.0f, 2.5f);
-	/*
-	switch (profile.GetUISize())
-	{
-		case Viewer::Config::ProfileData::UISizeEnum::Nano:
-			nextWinWidth = 300.0f;
-			break;
-		case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-			nextWinWidth = 325.0f;
-			break;
-		default:
-		case Viewer::Config::ProfileData::UISizeEnum::Small:
-			nextWinWidth = 350.0f;
-			break;
-	}
-	*/
 
 	// The unused isOpenSaveOptions bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isOpenSaveOptions = true;
