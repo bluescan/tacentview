@@ -100,27 +100,50 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 
 	static char lo[32];
 	static char hi[32];
-	tVector2 bsize(50.0f, 0.0f);
-	const int itemWidth = 160;
+
+	Config::ProfileData& profile = Config::GetProfileData();
+	float itemWidth		= profile.GetUIParamScaled(160.0f, 2.5f);
+	float powButWidth	= profile.GetUIParamScaled(60.0f, 2.5f);
+	float powButOffset	= profile.GetUIParamScaled(252.0f, 2.5f);
+	float buttonWidth	= profile.GetUIParamScaled(100.0f, 2.5f);
+
+	tVector2 powSize(powButWidth, 0.0f);
 
 	ImGui::SetNextItemWidth(itemWidth);
 	if (ImGui::InputInt("Frame Width", &frameWidth))
 		anyImageNeedsResize = AnyImageNeedsResize(frameWidth, frameHeight);
 	tiClampMin(frameWidth, 4);
-	int loP2W = tNextLowerPower2(frameWidth);	tiClampMin(loP2W, 4);	tsPrintf(lo, "%d##framewidth", loP2W);
-	ImGui::SameLine(); if (ImGui::Button(lo, bsize)) frameWidth = loP2W;
-	int hiP2W = tNextHigherPower2(frameWidth);							tsPrintf(hi, "%d##framewidth", hiP2W);
-	ImGui::SameLine(); if (ImGui::Button(hi, bsize)) frameWidth = hiP2W;
-	ImGui::SameLine(); ShowHelpMark("Single frame width in pixels.");
+	int loP2W = tNextLowerPower2(frameWidth);
+	tiClampMin(loP2W, 4);
+	tsPrintf(lo, "%d##framewidth", loP2W);
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(powButOffset);
+	if (ImGui::Button(lo, powSize))
+		frameWidth = loP2W;
+	int hiP2W = tNextHigherPower2(frameWidth);
+	tsPrintf(hi, "%d##framewidth", hiP2W);
+	ImGui::SameLine();
+	if (ImGui::Button(hi, powSize))
+		frameWidth = hiP2W;
+	ImGui::SameLine();
+	ShowHelpMark("Single frame width in pixels.");
 
 	ImGui::SetNextItemWidth(itemWidth);
 	if (ImGui::InputInt("Frame Height", &frameHeight))
 		anyImageNeedsResize = AnyImageNeedsResize(frameWidth, frameHeight);
 	tiClampMin(frameHeight, 4);
-	int loP2H = tNextLowerPower2(frameHeight);	tiClampMin(loP2H, 4);	tsPrintf(lo, "%d##frameheight", loP2H);
-	ImGui::SameLine(); if (ImGui::Button(lo, bsize)) frameHeight = loP2H;
-	int hiP2H = tNextHigherPower2(frameHeight);							tsPrintf(hi, "%d##frameheight", hiP2H);
-	ImGui::SameLine(); if (ImGui::Button(hi, bsize)) frameHeight = hiP2H;
+	int loP2H = tNextLowerPower2(frameHeight);
+	tiClampMin(loP2H, 4);
+	tsPrintf(lo, "%d##frameheight", loP2H);
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(powButOffset);
+	if (ImGui::Button(lo, powSize))
+		frameHeight = loP2H;
+	int hiP2H = tNextHigherPower2(frameHeight);
+	tsPrintf(hi, "%d##frameheight", hiP2H);
+	ImGui::SameLine();
+	if (ImGui::Button(hi, powSize))
+		frameHeight = hiP2H;
 	ImGui::SameLine(); ShowHelpMark("Single frame height in pixels.");
 
 	ImGui::SetNextItemWidth(itemWidth);
@@ -149,22 +172,40 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Final Width", &finalWidth);
 	tiClampMin(finalWidth, 4);
-	loP2W = tNextLowerPower2(finalWidth);	tiClampMin(loP2W, 4);	tsPrintf(lo, "%d##width", loP2W);
-	ImGui::SameLine(); if (ImGui::Button(lo, bsize)) finalWidth = loP2W;
-	hiP2W = tNextHigherPower2(finalWidth);							tsPrintf(hi, "%d##width", hiP2W);
-	ImGui::SameLine(); if (ImGui::Button(hi, bsize)) finalWidth = hiP2W;
-	ImGui::SameLine(); ShowHelpMark("Final scaled output sheet width in pixels.");
+	loP2W = tNextLowerPower2(finalWidth);
+	tiClampMin(loP2W, 4);
+	tsPrintf(lo, "%d##width", loP2W);
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(powButOffset);
+	if (ImGui::Button(lo, powSize))
+		finalWidth = loP2W;
+	hiP2W = tNextHigherPower2(finalWidth);
+	tsPrintf(hi, "%d##width", hiP2W);
+	ImGui::SameLine();
+	if (ImGui::Button(hi, powSize))
+		finalWidth = hiP2W;
+	ImGui::SameLine();
+	ShowHelpMark("Final scaled output sheet width in pixels.");
 
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Final Height", &finalHeight);
 	tiClampMin(finalHeight, 4);
-	loP2H = tNextLowerPower2(finalHeight);	tiClampMin(loP2H, 4);	tsPrintf(lo, "%d##height", loP2H);
-	ImGui::SameLine(); if (ImGui::Button(lo, bsize)) finalHeight = loP2H;
-	hiP2H = tNextHigherPower2(finalHeight);							tsPrintf(hi, "%d##height", hiP2H);
-	ImGui::SameLine(); if (ImGui::Button(hi, bsize)) finalHeight = hiP2H;
-	ImGui::SameLine(); ShowHelpMark("Final scaled output sheet height in pixels.");
+	loP2H = tNextLowerPower2(finalHeight);
+	tiClampMin(loP2H, 4);
+	tsPrintf(lo, "%d##height", loP2H);
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(powButOffset);
+	if (ImGui::Button(lo, powSize))
+		finalHeight = loP2H;
+	hiP2H = tNextHigherPower2(finalHeight);
+	tsPrintf(hi, "%d##height", hiP2H);
+	ImGui::SameLine();
+	if (ImGui::Button(hi, powSize))
+		finalHeight = hiP2H;
+	ImGui::SameLine();
+	ShowHelpMark("Final scaled output sheet height in pixels.");
 
-	if (ImGui::Button("Reset", tVector2(100.0f, 0.0f)))
+	if (ImGui::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		finalWidth = contactWidth;
 		finalHeight = contactHeight;
@@ -172,7 +213,6 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	ImGui::Separator();
 
 	// Only display filter option if filtering will be used.
-	Config::ProfileData& profile = Config::GetProfileData();
 	bool needFinalResize = ((finalWidth != contactWidth) || (finalHeight != contactHeight));
 	if (anyImageNeedsResize || needFinalResize)
 	{
@@ -219,17 +259,17 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	ImGui::Text(genMsg.Chr());
 
 	ImGui::NewLine();
-	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 	ImGui::SameLine();
 	
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
 
 	tString outFile = destDir + tString(filename) + extensionWithDot;
 	bool closeThisModal = false;
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("Generate", tVector2(100.0f, 0.0f)) && (numImg >= 2))
+	if (Viewer::Button("Generate", tVector2(buttonWidth, 0.0f)) && (numImg >= 2))
 	{
 		bool dirExists = tDirExists(destDir);
 		if (!dirExists)
