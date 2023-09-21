@@ -247,19 +247,21 @@ void Viewer::DoFillColourInterface(const char* toolTipText, bool contactSheetFil
 	if (toolTipText)
 		ShowToolTip(toolTipText);
 
+	float buttonWidth = profile.GetUIParamScaled(63.0f, 2.5f);
+
 	ImGui::SameLine();
 	tPicture* picture = CurrImage ? CurrImage->GetCurrentPic() : nullptr;
-	if (ImGui::Button("Origin", tVector2(63.0f, 0.0f)) && picture)
+	if (ImGui::Button("Origin", tVector2(buttonWidth, 0.0f)) && picture)
 		fillColour->Set(picture->GetPixel(0, 0));
 	ShowToolTip("Pick the colour from pixel (0, 0) in the current image.");
 
 	ImGui::SameLine();
-	if (ImGui::Button("Cursor", tVector2(63.0f, 0.0f)))
+	if (ImGui::Button("Cursor", tVector2(buttonWidth, 0.0f)))
 		fillColour->Set(Viewer::PixelColour);
 	ShowToolTip("Pick the colour from the cursor pixel in the current image.");
 
 	ImGui::SameLine();
-	if (ImGui::Button("Reset", tVector2(63.0f, 0.0f)))
+	if (ImGui::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		if (contactSheetFillColour)
 			fillColour->Set(tColour4i::transparent);
@@ -516,10 +518,11 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 	int srcW = picture->GetWidth();
 	int srcH = picture->GetHeight();
 	Config::ProfileData& profile = Config::GetProfileData();
+	float comboWidth = profile.GetUIParamScaled(108.0f, 2.5f);
+	float inputWidth = profile.GetUIParamScaled(26.0f, 2.5f);
 
 	ImGui::NewLine();
-
-	ImGui::PushItemWidth(140);
+	ImGui::PushItemWidth(comboWidth);
 	ImGui::Combo
 	(
 		"Aspect",
@@ -533,7 +536,7 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 	if (profile.GetResizeAspectRatio() == tAspectRatio::User)
 	{
 		ImGui::SameLine();
-		ImGui::PushItemWidth(26.0f);
+		ImGui::PushItemWidth(inputWidth);
 		ImGui::InputInt("##Num", &profile.ResizeAspectUserNum, 0, 0);
 		ImGui::SameLine(); ImGui::Text(":"); ImGui::SameLine();
 		ImGui::InputInt("##Den", &profile.ResizeAspectUserDen, 0, 0);
@@ -546,7 +549,7 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 		ShowHelpMark("Aspect ratio for resizing.\nUser means enter the aspect ratio manually.\nFor the print presets the L means Landscape.");
 	}
 
-	ImGui::PushItemWidth(140);
+	ImGui::PushItemWidth(comboWidth);
 	const char* resizeAspectModes[] = { "Crop", "Letterbox" };
 	ImGui::Combo("Mode", &profile.ResizeAspectMode, resizeAspectModes, tNumElements(resizeAspectModes), tNumElements(resizeAspectModes));
 	ImGui::PopItemWidth();

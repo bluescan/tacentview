@@ -136,7 +136,7 @@ struct ProfileData
 	int ReticleMode;
 	ReticleModeEnum GetReticleMode() const				{ return ReticleModeEnum(ReticleMode); }
 
-	#define RESTRICT_UI_SIZES
+	// #define RESTRICT_UI_SIZES
 	enum class UISizeEnum
 	{								// Approx OS Scale Percent.
 		Nano,						// 75%
