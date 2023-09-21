@@ -2029,8 +2029,13 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 	ImGui_ImplOpenGL2_NewFrame();		
 	ImGui_ImplGlfw_NewFrame();
-
 	ImGui::NewFrame();
+
+	#ifdef CONFIG_DEBUG
+	ImGuiStackSizes stackSizes;
+	stackSizes.SetToCurrentState();
+	#endif
+
 	int dispw, disph;
 	glfwGetFramebufferSize(window, &dispw, &disph);
 	if ((dispw != DispW) || (disph != DispH))
@@ -2747,6 +2752,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	}
 
 	ShowCropPopup(tVector4(left, right, top, bottom), tVector2(uoff, voff));
+
+	#ifdef CONFIG_DEBUG
+	stackSizes.CompareWithCurrentState();
+	#endif
 
 	ImGui::Render();
 	glViewport(0, 0, dispw, disph);
@@ -4079,8 +4088,8 @@ int main(int argc, char** argv)
 	while (!glfwWindowShouldClose(Viewer::Window) && !Viewer::Request_Quit)
 	{
 		double currUpdateTime = glfwGetTime();
-
 		double elapsed = tMath::tMin(currUpdateTime - lastUpdateTime, 1.0/30.0);
+
 		Viewer::Update(Viewer::Window, elapsed);
 
 		// Modal dialogs only seem to work after the first Update. May be a ImGui bug?

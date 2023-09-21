@@ -78,6 +78,8 @@ void Viewer::DoSortParameters(bool singleLine)
 	tString label = singleLine ? "##Sort" : "Sort";
 	if (ImGui::Combo(label.Chr(), &profile.SortKey, sortItems, tNumElements(sortItems), tNumElements(sortItems)/2))
 		SortImages(profile.GetSortKey(), profile.SortAscending);
+
+	ImGui::PopItemWidth();
 	ShowToolTip("Specifies what property to sort by. An asterisk (*) means\nthe property is stored in image meta-data and may not be\npresent in all images. Shuffle means random order.");
 
 	if (profile.GetSortKey() == Config::ProfileData::SortKeyEnum::Shuffle)
@@ -115,9 +117,12 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 		return;
 	}
 
-	float viewOptionsHeight		= profile.GetUIParamScaled(61.0f, 2.5f);
-	float viewOptionsOffset		= profile.GetUIParamScaled(4.0f, 2.5f);
+	float barHeight				= profile.GetUIParamScaled(4.0f, 2.5f);
+	float viewOptionsHeight		= profile.GetUIParamScaled(66.0f, 2.5f) + barHeight;
+	float optionsHeight			= profile.GetUIParamScaled(20.0f, 2.5f) + barHeight;
 	float progressTextOffset	= profile.GetUIParamScaled(460.0f, 2.5f);
+	float thumbItemInfoHeight	= profile.GetUIParamScaled(32.0f, 2.5f);
+	float minSpacing			= profile.GetUIParamScaled(4.0f, 2.5f);
 
 	ImGuiWindowFlags thumbWindowFlags = 0;
 	ImGui::BeginChild("Thumbnails", tVector2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight()-viewOptionsHeight), false, thumbWindowFlags);
@@ -125,15 +130,15 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 	ImGuiStyle& style = ImGui::GetStyle();
 	float visibleW = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 
-	float minSpacing = 4.0f;
 	float numPerRowF = ImGui::GetWindowContentRegionMax().x / (profile.ThumbnailWidth + minSpacing);
 	int numPerRow = tMath::tClampMin(int(numPerRowF), 1);
 	float extra = ImGui::GetWindowContentRegionMax().x - (float(numPerRow) * (profile.ThumbnailWidth + minSpacing));
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2(minSpacing + extra/float(numPerRow), minSpacing));
-	tVector2 thumbButtonSize(profile.ThumbnailWidth, profile.ThumbnailWidth*9.0f/16.0f); // 64 36, 32 18,
+	tVector2 thumbButtonSize(profile.ThumbnailWidth, profile.ThumbnailWidth*9.0f/16.0f);
 	int thumbNum = 0;
 	int numGeneratedThumbs = 0;
 	static int numThumbsWhenSorted = 0;
+	
 	for (Image* i = Images.First(); i; i = i->Next(), thumbNum++)
 	{
 		tVector2 cursor = ImGui::GetCursorPos();
@@ -151,7 +156,7 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 			numGeneratedThumbs++;
 
 		// Unlike other widgets, BeginChild ALWAYS needs a corresponding EndChild, even if it's invisible.
-		bool visible = ImGui::BeginChild("ThumbItem", thumbButtonSize+tVector2(0.0f, 32.0f), false, ImGuiWindowFlags_NoDecoration);
+		bool visible = ImGui::BeginChild("ThumbItem", thumbButtonSize+tVector2(0.0f, thumbItemInfoHeight), false, ImGuiWindowFlags_NoDecoration);
 		int maxNonVisibleThumbThreads = 3;
 		if (visible)
 		{
@@ -197,15 +202,22 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 
 		ImGui::PopID();
 	}
+
 	ImGui::PopStyleVar();
 	ImGui::EndChild();
 
 	ImGuiWindowFlags viewOptionsWindowFlags = ImGuiWindowFlags_NoScrollbar;
-	ImGui::BeginChild("ViewOptions", tVector2(ImGui::GetWindowContentRegionWidth(), 40), false, viewOptionsWindowFlags);
-	ImGui::SetCursorPos(tVector2(0.0f, viewOptionsOffset));
 
-	ImGui::PushItemWidth(200);
+	float viewOptionsMargin = profile.GetUIParamScaled(10.0f, 2.5f);
+	float optOffset = (ImGui::GetWindowHeight() - ImGui::GetCursorPosY() - optionsHeight) / 2.0f;
+
+	ImGui::SetCursorPos(tVector2(viewOptionsMargin, ImGui::GetCursorPosY() + optOffset));
+	ImGui::BeginChild("ViewOptions", tVector2(ImGui::GetWindowWidth()-viewOptionsMargin*2.0f, optionsHeight), false, viewOptionsWindowFlags);
+
+	float sizeSliderWidth = profile.GetUIParamScaled(200.0f, 2.5f);
+	ImGui::PushItemWidth(sizeSliderWidth);
 	ImGui::SliderFloat("Size", &profile.ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth), "%.0f");
+	tiClampMin(profile.ThumbnailWidth, float(Image::ThumbMinDispWidth));
 	ImGui::SameLine();
 	ImGui::PopItemWidth();
 
@@ -227,7 +239,7 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 		tString progText;
 		tsPrintf(progText, "%d/%d", numGeneratedThumbs, Images.GetNumItems());
 		tVector2 textSize = ImGui::CalcTextSize(progText.Chr());
-		float rightx = ImGui::GetWindowContentRegionMax().x - 4.0f;
+		float rightx = ImGui::GetWindowContentRegionMax().x - 8.0f;
 		float textx = rightx - textSize.x;
 
 		if (textx > progressTextOffset)
@@ -236,10 +248,9 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 			ImGui::SetCursorPosX(textx);
 			ImGui::Text(progText.Chr());
 		}
-		ImGui::ProgressBar(float(numGeneratedThumbs)/float(Images.GetNumItems()), tVector2(rightx, 4), "");
+		ImGui::ProgressBar(float(numGeneratedThumbs)/float(Images.GetNumItems()), tVector2(rightx, barHeight), "");
 	}
 
-	ImGui::PopItemWidth();
 	ImGui::EndChild();
 	ImGui::End();
 }

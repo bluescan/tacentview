@@ -9100,6 +9100,10 @@ void ImGuiStackSizes::SetToCurrentState()
     SizeOfItemFlagsStack = (short)g.ItemFlagsStack.Size;
     SizeOfBeginPopupStack = (short)g.BeginPopupStack.Size;
     SizeOfDisabledStack = (short)g.DisabledStackSize;
+
+	// @tacent-divergence
+	SizeOfItemWidthStack = (short)window->DC.ItemWidthStack.Size;
+	SizeOfTextWrapPosStack = (short)window->DC.TextWrapPosStack.Size;
 }
 
 // Compare to detect usage errors
@@ -9123,6 +9127,10 @@ void ImGuiStackSizes::CompareWithCurrentState()
     IM_ASSERT(SizeOfStyleVarStack   >= g.StyleVarStack.Size     && "PushStyleVar/PopStyleVar Mismatch!");
     IM_ASSERT(SizeOfFontStack       >= g.FontStack.Size         && "PushFont/PopFont Mismatch!");
     IM_ASSERT(SizeOfFocusScopeStack == g.FocusScopeStack.Size   && "PushFocusScope/PopFocusScope Mismatch!");
+
+	// @tacent-divergence
+	IM_ASSERT(SizeOfItemWidthStack		== window->DC.ItemWidthStack.Size		&& "PushItemWidth/PopItemWidth Mismatch!");
+	IM_ASSERT(SizeOfTextWrapPosStack	== window->DC.TextWrapPosStack.Size		&& "PushTextWrapPos/PopTextWrapPos Mismatch!");
 }
 
 

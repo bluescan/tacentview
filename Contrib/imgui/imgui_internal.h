@@ -1179,6 +1179,10 @@ struct IMGUI_API ImGuiStackSizes
     short   SizeOfBeginPopupStack;
     short   SizeOfDisabledStack;
 
+	// @tacent-divergence
+	short	SizeOfItemWidthStack;
+	short	SizeOfTextWrapPosStack;
+
     ImGuiStackSizes() { memset(this, 0, sizeof(*this)); }
     void SetToCurrentState();
     void CompareWithCurrentState();
