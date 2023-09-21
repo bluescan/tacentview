@@ -506,33 +506,13 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		if (justOpened)
 			profileIdx = int(Config::GetProfile());
 
-		Config::ProfileData& profileData = Config::GetProfileData();
-		float profileWidth, keyWidth, operationWidth, buttonWidth, removeAddSize;
-		switch (profileData.GetUISize())
-		{
-			case Viewer::Config::ProfileData::UISizeEnum::Nano:
-				profileWidth	= 104.0f;
-				keyWidth		= 120.0f;
-				operationWidth	= 240.0f;
-				buttonWidth		= 72.0f;
-				removeAddSize	= 21.0f;
-				break;
-			case Viewer::Config::ProfileData::UISizeEnum::Tiny:
-				profileWidth	= 117.0f;
-				keyWidth		= 137.0f;
-				operationWidth	= 261.0f;
-				buttonWidth		= 79.0f;
-				removeAddSize	= 22.5f;
-				break;
-			default:
-			case Viewer::Config::ProfileData::UISizeEnum::Small:
-				profileWidth	= 130.0f;
-				keyWidth		= 154.0f;
-				operationWidth	= 282.0f;
-				buttonWidth		= 86.0f;
-				removeAddSize	= 24.0f;
-				break;
-		}
+		Config::ProfileData& profile = Config::GetProfileData();
+		float profileWidth		= profile.GetUIParamScaled(104.0f, 2.5f);
+		float keyWidth			= profile.GetUIParamScaled(132.0f, 2.5f);
+		float operationWidth	= profile.GetUIParamScaled(240.0f, 2.5f);
+		float buttonWidth		= profile.GetUIParamScaled(75.0f, 2.5f);
+		float removeAddSize		= profile.GetUIParamScaled(21.0f, 2.5f);
+		float removeColSize		= profile.GetUIParamScaled(20.0f, 2.5f);
 
 		ImGui::SetNextItemWidth(profileWidth);
 		ImGui::Combo("##ProfileToEdit", &profileIdx, ProfileNamesLong, int(Profile::NumProfiles));
@@ -589,7 +569,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		{
 			ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed, keyWidth);//ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableSetupColumn("Operation", ImGuiTableColumnFlags_WidthFixed, operationWidth);
-			ImGui::TableSetupColumn("##Remove", ImGuiTableColumnFlags_WidthFixed, 20.0f);
+			ImGui::TableSetupColumn("##Remove", ImGuiTableColumnFlags_WidthFixed, removeColSize);
 			ImGui::TableSetupScrollFreeze(0, 1); // Top row fixed.
 			ImGui::TableHeadersRow();
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3);
@@ -681,7 +661,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 					if (!permanent)
 					{
 						char blabel[64];
-						tsPrintf(blabel, " - ##b%d_%d", k, m);
+						tsPrintf(blabel, "-##b%d_%d", k, m);
 						if (ImGui::Button(blabel, tVector2(removeAddSize, removeAddSize)))
 							keyops.Operations[m] = Operation::None;
 					}
@@ -702,11 +682,16 @@ void Bindings::ShowAddBindingSection(Config::ProfileData& settings, float keyWid
 	uint32 tableFlags = ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
 	const float rowHeight = 25.0f;
 	tVector2 outerSize = ImVec2(0.0f, rowHeight);
+
+	Config::ProfileData& profile = Config::GetProfileData();
+	float removeColSize		= profile.GetUIParamScaled(20.0f, 2.5f);
+	float buttonSize		= profile.GetUIParamScaled(100.0f, 2.5f);
+
 	if (ImGui::BeginTable("KeyAssignTable", 3, tableFlags, outerSize))
 	{
 		ImGui::TableSetupColumn("##AssignKey", ImGuiTableColumnFlags_WidthFixed, keyWidth);
 		ImGui::TableSetupColumn("##AssignOperation", ImGuiTableColumnFlags_WidthFixed, operationWidth);
-		ImGui::TableSetupColumn("##Assign", ImGuiTableColumnFlags_WidthFixed, 20.0f);
+		ImGui::TableSetupColumn("##Assign", ImGuiTableColumnFlags_WidthFixed, removeColSize);
 
 		ImGui::TableNextRow();
 		ImGui::TableSetColumnIndex(0);
@@ -786,7 +771,7 @@ void Bindings::ShowAddBindingSection(Config::ProfileData& settings, float keyWid
 
 		// This binding is considered permanent/unchangeable.
 		bool permanent = IsPermanentBinding(addKey, addMods);
-		if (ImGui::Button(" + ##AddBinding", tVector2(removeAddSize, removeAddSize)))
+		if (ImGui::Button("+##AddBinding", tVector2(removeAddSize, removeAddSize)))
 		{
 			if (addOp != Operation::None)
 			{
@@ -829,14 +814,14 @@ void Bindings::ShowAddBindingSection(Config::ProfileData& settings, float keyWid
 			ImGui::Text(msg.Chr());
 			ImGui::NewLine();
 
-			if (ImGui::Button("Cancel##AssignWarn", tVector2(100.0f, 0.0f)))
+			if (ImGui::Button("Cancel##AssignWarn", tVector2(buttonSize, 0.0f)))
 				ImGui::CloseCurrentPopup();
 
 			if (!permanent)
 			{
 				ImGui::SameLine();
-				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-				if (ImGui::Button("Replace##AssignWarn", tVector2(100.0f, 0.0f)))
+				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonSize);
+				if (ImGui::Button("Replace##AssignWarn", tVector2(buttonSize, 0.0f)))
 				{
 					settings.InputBindings.AssignKey(addKey, addMods, Operation(addOp));
 					ImGui::CloseCurrentPopup();
