@@ -44,6 +44,8 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	Config::ProfileData& profile = Config::GetProfileData();
 	float buttonOffset	= profile.GetUIParamScaled(141.0f, 2.5f);
 	float comboWidth	= profile.GetUIParamScaled(110.0f, 2.5f);
+	float itemWidth		= profile.GetUIParamScaled(110.0f, 2.5f);
+	float buttonWidth	= profile.GetUIParamScaled(100.0f, 2.5f);
 
 	bool tab = false;
 	uint32 category = Config::Category_None;
@@ -158,7 +160,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		{
 			category = Config::Category_Slideshow;
 			ImGui::NewLine();
-			ImGui::PushItemWidth(110);
+			ImGui::PushItemWidth(itemWidth);
 			if (ImGui::InputDouble("Period (s)", &profile.SlideshowPeriod, 0.001f, 1.0f, "%.3f"))
 			{
 				tiClampMin(profile.SlideshowPeriod, 1.0/60.0);
@@ -231,12 +233,11 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			category = Config::Category_System;
 			ImGui::NewLine();
 
-			ImGui::PushItemWidth(110);
+			ImGui::PushItemWidth(itemWidth);	// PUSH IWA
 			ImGui::InputInt("Max Undo Steps", &profile.MaxUndoSteps); ImGui::SameLine();
 			ShowHelpMark("Maximum number of undo steps.");
 			tMath::tiClamp(profile.MaxUndoSteps, 1, 32);
 
-			ImGui::PushItemWidth(110);
 			ImGui::InputInt("Max Mem (MB)", &profile.MaxImageMemMB); ImGui::SameLine();
 			ShowHelpMark("Approx memory use limit of this app. Minimum 256 MB.");
 			tMath::tiClampMin(profile.MaxImageMemMB, 256);
@@ -268,7 +269,8 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::InputFloat("Gamma##Monitor", &profile.MonitorGamma, 0.01f, 0.1f, "%.3f");
 			ImGui::SameLine();
 			ShowHelpMark("Some image property windows allow gamma correction and the gamma to be specified (eg. HDR DDS files).\nThis setting allows you to set a custom value for what the gamma will be reset to in those dialogs.\nResetting this tab always chooses the industry-standard gamm of 2.2");
-			ImGui::PopItemWidth();
+
+			ImGui::PopItemWidth();		// POP IWA
 
 			ImGui::Checkbox("Strict Loading", &profile.StrictLoading); ImGui::SameLine();
 			ShowHelpMark
@@ -392,7 +394,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	ImGui::Separator();
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 
-	if (ImGui::Button("Reset Profile", tVector2(100.0f, 0.0f)))
+	if (ImGui::Button("Reset Profile", tVector2(buttonWidth, 0.0f)))
 	{
 		Config::ResetProfile(Config::Category_AllNoBindings);
 		SlideshowCountdown = profile.SlideshowPeriod;
@@ -405,14 +407,14 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(buttonOffset);
-	if (ImGui::Button("Reset Tab", tVector2(100.0f, 0.0f)))
+	if (ImGui::Button("Reset Tab", tVector2(buttonWidth, 0.0f)))
 	{
 		Config::ResetProfile(category);
 		SlideshowCountdown = profile.SlideshowPeriod;
 	}
 	ShowToolTip("Resets the current tab/category for the current profile (what you see above).");
 
-	if (ImGui::Button("Reset All", tVector2(100.0f, 0.0f)))
+	if (ImGui::Button("Reset All", tVector2(buttonWidth, 0.0f)))
 	{
 		Config::ResetAllProfiles(Config::Category_AllNoBindings);
 		Config::Global.Reset();
@@ -432,7 +434,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(buttonOffset);
-	if (ImGui::Button("Close", tVector2(100.0f, 0.0f)))
+	if (ImGui::Button("Close", tVector2(buttonWidth, 0.0f)))
 	{
 		if (popen)
 			*popen = false;

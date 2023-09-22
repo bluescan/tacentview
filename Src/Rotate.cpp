@@ -36,6 +36,9 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 		return;
 	}
 
+	Config::ProfileData& profile = Config::GetProfileData();
+	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
+
 	if (rotateImagePressed)
 		Viewer::ResetPan();
 
@@ -44,7 +47,6 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 	ImGui::DragFloat("Fine Tune Drag", &RotateAnglePreview, 0.01f);
 	ImGui::NewLine();
 
-	Config::ProfileData& profile = Config::GetProfileData();
 	ImGui::Combo("Up Filter", &profile.ResampleFilterRotateUp, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
 	ImGui::SameLine();
 	ShowHelpMark
@@ -85,24 +87,24 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	if (Viewer::Button("Reset", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		RotateAnglePreview = 0.0f;
 		profile.SetRotateMode(Config::ProfileData::RotateModeEnum::Fill);
 	}
 
-	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 	{
 		RotateAnglePreview = 0.0f;
 		ImGui::CloseCurrentPopup();
 	}
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
 
-	if (Viewer::Button("Rotate", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Rotate", tVector2(buttonWidth, 0.0f)))
 	{
 		tPicture* picture = CurrImage->GetCurrentPic();
 		if (!picture)
@@ -174,6 +176,10 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 	static const char* transName = nullptr;
 	static LosslessTransformMode currMode = LosslessTransformMode::None;
 	static bool isPerfect = false;
+
+	Config::ProfileData& profile = Config::GetProfileData();
+	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
+
 	if (mode != LosslessTransformMode::None)
 	{
 		currMode = mode;
@@ -242,12 +248,12 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 		);
 	}
 
-	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 212.0f);
-	if (Viewer::Button("Normal", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Normal", tVector2(buttonWidth, 0.0f)))
 	{
 		CurrImage->Unbind();
 		switch (currMode)
@@ -265,7 +271,7 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 	ImGui::SameLine();
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("Lossless", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Lossless", tVector2(buttonWidth, 0.0f)))
 	{
 		bool fileSaved = false;
 		switch (CurrImage->Filetype)

@@ -55,6 +55,9 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 	static tColourf floatColReset = tColourf::black;
 	if (ImGui::Begin("Edit Pixel", popen, flags))
 	{
+		Config::ProfileData& profile = Config::GetProfileData();
+		float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
+
 		static int lastCursorX = -1;
 		static int lastCursorY = -1;
 		static Image* lastImage = nullptr;
@@ -86,7 +89,7 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 		tVector4 resetVecCol(floatColReset.E);
 		bool resetPressed2 = ImGui::ColorButton("Reset Colour", resetVecCol, 0);
 		ImGui::SameLine();
-		bool resetPressed = ImGui::Button("Reset", tVector2(100.0f, 0.0f));
+		bool resetPressed = ImGui::Button("Reset", tVector2(buttonWidth, 0.0f));
 		ImGui::SameLine();
 		if (resetPressed || resetPressed2)
 		{
@@ -106,7 +109,7 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 		ImGui::SameLine();
 		ImGui::Checkbox("Live", &live);
 		ImGui::SameLine();
-		if (!live && ImGui::Button("Apply", tVector2(100.0f, 0.0f)))
+		if (!live && ImGui::Button("Apply", tVector2(buttonWidth, 0.0f)))
 		{
 			CurrImage->Unbind();
 			tColouri col; col.Set(floatCol);
@@ -345,7 +348,8 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	// UI size parameters.
 	//
 	Config::ProfileData& profile = Config::GetProfileData();
-	float okOffset = profile.GetUIParamScaled(135.0f, 2.5f);
+	float okOffset		= profile.GetUIParamScaled(135.0f, 2.5f);
+	float buttonWidth	= profile.GetUIParamScaled(100.0f, 2.5f);
 
 	const char* channelItems[] = { "RGB", "Red", "Green", "Blue", "Alpha" };
 	if (ImGui::BeginTabBar("LevelsTabBar", ImGuiTabBarFlags_None))
@@ -605,7 +609,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	if (Viewer::Button("Reset", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		CurrImage->AdjustGetDefaults(brightness, contrast, levelsBlack, levelsMid, levelsWhite, levelsOutBlack, levelsOutWhite);
 		powerMidGamma = true;
@@ -618,7 +622,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 		CurrImage->Bind();
 	}
 
-	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 	{
 		Viewer::SetWindowTitle();
 		ImGui::CloseCurrentPopup();
@@ -628,7 +632,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	ImGui::SetCursorPosX(ImGui::GetCursorPosX() + okOffset);
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("OK", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("OK", tVector2(buttonWidth, 0.0f)))
 	{
 		okPressed = true;
 		Viewer::SetWindowTitle();

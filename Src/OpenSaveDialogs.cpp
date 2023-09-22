@@ -891,6 +891,7 @@ void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFi
 {
 	tAssert(!overwriteFiles.IsEmpty());
 	Config::ProfileData& profile = Config::GetProfileData();
+	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
 
 	tString dir = tSystem::tGetDir(*overwriteFiles.First());
 	ImGui::Text("The Following Files");
@@ -918,16 +919,16 @@ void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFi
 
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 	{
 		pressedCancel = true;
 		ImGui::CloseCurrentPopup();
 	}
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
 
-	if (Viewer::Button("Overwrite", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Overwrite", tVector2(buttonWidth, 0.0f)))
 	{
 		pressedOK = true;
 		ImGui::CloseCurrentPopup();
@@ -993,6 +994,7 @@ void Viewer::AddSavedImageIfNecessary(const tString& savedFile)
 void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool& pressedCancel)
 {
 	Config::ProfileData& profile = Config::GetProfileData();
+	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
 
 	tString file = tSystem::tGetFileName(outFile);
 	tString dir = tSystem::tGetDir(outFile);
@@ -1007,18 +1009,18 @@ void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool&
 	ImGui::Checkbox("Confirm file overwrites in the future?", &profile.ConfirmFileOverwrites);
 	ImGui::NewLine();
 
-	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 	{
 		pressedCancel = true;
 		ImGui::CloseCurrentPopup();
 	}
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
 
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("OK", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("OK", tVector2(buttonWidth, 0.0f)))
 	{
 		pressedOK = true;
 		ImGui::CloseCurrentPopup();

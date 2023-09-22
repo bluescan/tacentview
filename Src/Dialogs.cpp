@@ -117,6 +117,7 @@ void Viewer::DoDeleteFileModal(bool deleteFilePressed)
 	if (!ImGui::BeginPopupModal("Delete File", &isOpenDeleteFile, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 
+	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
 	tString fullname = CurrImage->Filename;
 	tString file = tSystem::tGetFileName(fullname);
 	tString dir = tSystem::tGetDir(fullname);
@@ -131,15 +132,15 @@ void Viewer::DoDeleteFileModal(bool deleteFilePressed)
 	ImGui::Checkbox("Confirm file deletions in the future?", &profile.ConfirmDeletes);
 	ImGui::NewLine();
 
-	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
 
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("OK", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("OK", tVector2(buttonWidth, 0.0f)))
 	{
 		DeleteImageFile(fullname, true);
 		ImGui::CloseCurrentPopup();
@@ -159,6 +160,9 @@ void Viewer::DoDeleteFileNoRecycleModal(bool deleteFileNoRecycPressed)
 	if (!ImGui::BeginPopupModal("Delete File Permanently", &isOpenPerm, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 
+	Config::ProfileData& profile = Config::GetProfileData();
+	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
+
 	tString fullname = CurrImage->Filename;
 	tString file = tSystem::tGetFileName(fullname);
 	tString dir = tSystem::tGetDir(fullname);
@@ -173,16 +177,16 @@ void Viewer::DoDeleteFileNoRecycleModal(bool deleteFileNoRecycPressed)
 	ImGui::Text("This operation cannot be undone. The file\nwill be deleted permanently.");
 	ImGui::NewLine();
 
-	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SetItemDefaultFocus();
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
 
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("OK", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("OK", tVector2(buttonWidth, 0.0f)))
 	{
 		DeleteImageFile(fullname, false);
 		ImGui::CloseCurrentPopup();
@@ -211,6 +215,9 @@ void Viewer::DoSnapMessageNoFileBrowseModal(bool justPressed)
 		return;
 	}
 	
+	Config::ProfileData& profile = Config::GetProfileData();
+	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
+
 	ImGui::Text
 	(
 		"The Snap version of Tacent View does not\n"
@@ -219,8 +226,8 @@ void Viewer::DoSnapMessageNoFileBrowseModal(bool justPressed)
 		"you need the feature on Linux."
 	);
 	ImGui::NewLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
+	if (ImGui::Button("OK", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::EndPopup();
@@ -246,6 +253,9 @@ void Viewer::DoSnapMessageNoFrameTransModal(bool justPressed)
 		return;
 	}
 
+	Config::ProfileData& profile = Config::GetProfileData();
+	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
+
 	ImGui::Text
 	(
 		"The Snap version of Tacent View does not\n"
@@ -254,8 +264,8 @@ void Viewer::DoSnapMessageNoFrameTransModal(bool justPressed)
 		"you need the feature on Linux."
 	);
 	ImGui::NewLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
-	if (ImGui::Button("OK", tVector2(100.0f, 0.0f)))
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
+	if (ImGui::Button("OK", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::EndPopup();
@@ -272,6 +282,9 @@ void Viewer::DoRenameModal(bool renamePressed)
 	if (!ImGui::BeginPopupModal("Rename File", &isOpenRen, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 
+	Config::ProfileData& profile = Config::GetProfileData();
+	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
+
 	tString fullname = CurrImage->Filename;
 	tString origname = tSystem::tGetFileName(fullname);
 
@@ -284,15 +297,15 @@ void Viewer::DoRenameModal(bool renamePressed)
 		nameChanged = true;
 	ImGui::NewLine();
 
-	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
 
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("OK", tVector2(100.0f, 0.0f)) || nameChanged)
+	if (Viewer::Button("OK", tVector2(buttonWidth, 0.0f)) || nameChanged)
 	{
 		if (origname != newname)
 		{
