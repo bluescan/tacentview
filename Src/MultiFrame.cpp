@@ -97,7 +97,14 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 	static int outHeight = 256;
 	static char lo[32];
 	static char hi[32];
-	const int itemWidth = 160;
+
+	Config::ProfileData& profile = Config::GetProfileData();
+	float itemWidth		= profile.GetUIParamScaled(160.0f, 2.5f);
+	float powButWidth	= profile.GetUIParamScaled(60.0f, 2.5f);
+	float powButOffset	= profile.GetUIParamScaled(220.0f, 2.5f);
+	float buttonWidth	= profile.GetUIParamScaled(100.0f, 2.5f);
+	float comboWidth	= profile.GetUIParamScaled(160.0f, 2.5f);
+	tVector2 powSize(powButWidth, 0.0f);
 
 	// If just opened, loop through all the images and choose the largest width and height.
 	if (saveMultiFramePressed)
@@ -106,33 +113,51 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Width", &outWidth);
 	tiClampMin(outWidth, 4);
-	int loP2W = tNextLowerPower2(outWidth);		tiClampMin(loP2W, 4);	tsPrintf(lo, "w%d", loP2W);
-	ImGui::SameLine(); if (ImGui::Button(lo)) outWidth = loP2W;
-	int hiP2W = tNextHigherPower2(outWidth);							tsPrintf(hi, "w%d", hiP2W);
-	ImGui::SameLine(); if (ImGui::Button(hi)) outWidth = hiP2W;
-	ImGui::SameLine(); ShowHelpMark("Output width in pixels.");
+	int loP2W = tNextLowerPower2(outWidth);
+	tiClampMin(loP2W, 4);
+	tsPrintf(lo, "%d##outwidthlo", loP2W);
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(powButOffset);
+	if (ImGui::Button(lo, powSize))
+		outWidth = loP2W;
+	int hiP2W = tNextHigherPower2(outWidth);
+	tsPrintf(hi, "%d##outwidthhi", hiP2W);
+	ImGui::SameLine();
+	if (ImGui::Button(hi, powSize))
+		outWidth = hiP2W;
+	ImGui::SameLine();
+	ShowHelpMark("Output width in pixels.");
 
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Height", &outHeight);
 	tiClampMin(outHeight, 4);
-	int loP2H = tNextLowerPower2(outHeight);	tiClampMin(loP2H, 4);	tsPrintf(lo, "h%d", loP2H);
-	ImGui::SameLine(); if (ImGui::Button(lo)) outHeight = loP2H;
-	int hiP2H = tNextHigherPower2(outHeight);							tsPrintf(hi, "h%d", hiP2H);
-	ImGui::SameLine(); if (ImGui::Button(hi)) outHeight = hiP2H;
-	ImGui::SameLine(); ShowHelpMark("Output height in pixels.");
+	int loP2H = tNextLowerPower2(outHeight);
+	tiClampMin(loP2H, 4);
+	tsPrintf(lo, "%d##outheightlo", loP2H);
+	ImGui::SameLine();
+	ImGui::SetCursorPosX(powButOffset);
+	if (ImGui::Button(lo, powSize))
+		outHeight = loP2H;
+	int hiP2H = tNextHigherPower2(outHeight);
+	tsPrintf(hi, "%d##outheighthi", hiP2H);
+	ImGui::SameLine();
+	if (ImGui::Button(hi, powSize))
+		outHeight = hiP2H;
+	ImGui::SameLine();
+	ShowHelpMark("Output height in pixels.");
 
 	if (ImGui::Button("Reset From Images") && CurrImage)
 		ComputeMaxWidthHeight(outWidth, outHeight);
 
-	Config::ProfileData& profile = Config::GetProfileData();
-
 	// @todo This is not a cheap call. No need to do it every frame, only when dims change above.
 	if (!AllDimensionsMatch(outWidth, outHeight))
 	{
+		ImGui::SetNextItemWidth(comboWidth);
 		ImGui::Combo("Filter", &profile.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 		ImGui::SameLine();
 		ShowHelpMark("Filtering method to use when resizing images.");
 
+		ImGui::SetNextItemWidth(comboWidth);
 		ImGui::Combo("Filter Edge Mode", &profile.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
 		ImGui::SameLine();
 		ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");
@@ -157,16 +182,16 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 	ImGui::Text(genMsg.Chr());
 
 	ImGui::NewLine();
-	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 	ImGui::SameLine();
 
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
 	tString outFile = destDir + tString(filename) + "." + extension;
 	bool closeThisModal = false;
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("Generate", tVector2(100.0f, 0.0f)) && (numImg >= 2))
+	if (Viewer::Button("Generate", tVector2(buttonWidth, 0.0f)) && (numImg >= 2))
 	{
 		bool dirExists = tDirExists(destDir);
 		if (!dirExists)

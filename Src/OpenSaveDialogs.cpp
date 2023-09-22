@@ -560,7 +560,8 @@ tString Viewer::DoSaveFiletypeMultiFrame()
 	Config::ProfileData& profile = Config::GetProfileData();
 	tString fileTypeName = profile.SaveFileTypeMultiFrame;
 	tFileType fileType = tGetFileTypeFromName(fileTypeName);
-	const int itemWidth = 160;
+
+	float itemWidth = profile.GetUIParamScaled(160.0f, 2.5f);
 
 	ImGui::SetNextItemWidth(itemWidth);
 	if (ImGui::BeginCombo("File Type", fileTypeName.Chr()))

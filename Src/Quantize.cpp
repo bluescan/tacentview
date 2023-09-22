@@ -129,7 +129,8 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 		return;
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(78.0f, 2.5f);
+	float buttonWidth	= profile.GetUIParamScaled(78.0f, 2.5f);
+	float itemWidth		= profile.GetUIParamScaled(180.0f, 2.5f);
 
 	tAssert(CurrImage);
 	static int method = int(tImage::tQuantize::Method::Wu);
@@ -137,7 +138,6 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 	static float spatialDitherLevel = 0.0f;
 	static int neuSampleFactor = 1;
 	static int numColours = 256;
-	const float itemWidth = 180.0f;
 
 	DoQuantizeInterface(method, spatialFilterSize, spatialDitherLevel, neuSampleFactor, itemWidth);
 

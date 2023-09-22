@@ -115,13 +115,13 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	tiClampMin(frameWidth, 4);
 	int loP2W = tNextLowerPower2(frameWidth);
 	tiClampMin(loP2W, 4);
-	tsPrintf(lo, "%d##framewidth", loP2W);
+	tsPrintf(lo, "%d##framewidthlo", loP2W);
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(powButOffset);
 	if (ImGui::Button(lo, powSize))
 		frameWidth = loP2W;
 	int hiP2W = tNextHigherPower2(frameWidth);
-	tsPrintf(hi, "%d##framewidth", hiP2W);
+	tsPrintf(hi, "%d##framewidthhi", hiP2W);
 	ImGui::SameLine();
 	if (ImGui::Button(hi, powSize))
 		frameWidth = hiP2W;
@@ -134,13 +134,13 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	tiClampMin(frameHeight, 4);
 	int loP2H = tNextLowerPower2(frameHeight);
 	tiClampMin(loP2H, 4);
-	tsPrintf(lo, "%d##frameheight", loP2H);
+	tsPrintf(lo, "%d##frameheightlo", loP2H);
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(powButOffset);
 	if (ImGui::Button(lo, powSize))
 		frameHeight = loP2H;
 	int hiP2H = tNextHigherPower2(frameHeight);
-	tsPrintf(hi, "%d##frameheight", hiP2H);
+	tsPrintf(hi, "%d##frameheighthi", hiP2H);
 	ImGui::SameLine();
 	if (ImGui::Button(hi, powSize))
 		frameHeight = hiP2H;
@@ -174,13 +174,13 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	tiClampMin(finalWidth, 4);
 	loP2W = tNextLowerPower2(finalWidth);
 	tiClampMin(loP2W, 4);
-	tsPrintf(lo, "%d##width", loP2W);
+	tsPrintf(lo, "%d##widthlo", loP2W);
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(powButOffset);
 	if (ImGui::Button(lo, powSize))
 		finalWidth = loP2W;
 	hiP2W = tNextHigherPower2(finalWidth);
-	tsPrintf(hi, "%d##width", hiP2W);
+	tsPrintf(hi, "%d##widthhi", hiP2W);
 	ImGui::SameLine();
 	if (ImGui::Button(hi, powSize))
 		finalWidth = hiP2W;
@@ -192,13 +192,13 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	tiClampMin(finalHeight, 4);
 	loP2H = tNextLowerPower2(finalHeight);
 	tiClampMin(loP2H, 4);
-	tsPrintf(lo, "%d##height", loP2H);
+	tsPrintf(lo, "%d##heightlo", loP2H);
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(powButOffset);
 	if (ImGui::Button(lo, powSize))
 		finalHeight = loP2H;
 	hiP2H = tNextHigherPower2(finalHeight);
-	tsPrintf(hi, "%d##height", hiP2H);
+	tsPrintf(hi, "%d##heighthi", hiP2H);
 	ImGui::SameLine();
 	if (ImGui::Button(hi, powSize))
 		finalHeight = hiP2H;
@@ -218,20 +218,24 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	{
 		if (anyImageNeedsResize)
 		{
+			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::Combo("Frame Filter", &profile.ResampleFilterContactFrame, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 			ImGui::SameLine();
 			ShowHelpMark("Filtering method to use when resizing input frame images.");
 
+			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::Combo("Frame Filter Edge Mode", &profile.ResampleEdgeModeContactFrame, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
 			ImGui::SameLine();
 			ShowHelpMark("How frame filter chooses pixels along image edges. Use wrap for tiled textures.");
 		}
 		if (needFinalResize)
 		{
+			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::Combo("Final Filter", &profile.ResampleFilterContactFinal, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 			ImGui::SameLine();
 			ShowHelpMark("Filtering method to use when resizing output image.");
 
+			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::Combo("Final Filter Edge Mode", &profile.ResampleEdgeModeContactFinal, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
 			ImGui::SameLine();
 			ShowHelpMark("How output filter chooses pixels along image edges. Use wrap for tiled textures.");
