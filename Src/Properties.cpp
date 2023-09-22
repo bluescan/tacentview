@@ -17,6 +17,9 @@
 #include "Config.h"
 #include "Image.h"
 #include "TacentView.h"
+#include "imgui.h"
+#include "imgui_internal.h"
+
 using namespace tMath;
 using namespace tImage;
 
@@ -66,7 +69,7 @@ bool Viewer::DoAltCubemapDisplay(tString& texTypeName)
 			CurrImage->Bind();
 		}
 		ShowToolTip("Display all cubemap sides in a T-layout.");
-		texTypeName = "Cubemap Side";
+		texTypeName = "Cube Side";
 		anyDraw = true;
 	}
 
@@ -86,13 +89,12 @@ bool Viewer::DoChooseDisplayImage(tString& texTypeName, float itemWidth)
 			tsPrintf(imageNumText, "%s (%d)", texTypeName.Chr(), numTextures);
 
 			int oneBasedTextureNum = CurrImage->FrameNum + 1;
-			ImGui::PushItemWidth(itemWidth);
+			ImGui::SetNextItemWidth(itemWidth);
 			if (ImGui::InputInt(imageNumText.Chr(), &oneBasedTextureNum))
 			{
 				CurrImage->FrameNum = oneBasedTextureNum - 1;
 				tMath::tiClamp(CurrImage->FrameNum, 0, numTextures-1);
 			}
-			ImGui::PopItemWidth();
 			ImGui::SameLine(); ShowHelpMark("Which mipmap or cubemap side to display.\nCubemap sides left-handed +X,-X,+Y,-Y,+Z,-Z");
 
 		}
@@ -134,7 +136,8 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 	}
 
 	float itemWidth = profile.GetUIParamScaled(110.0f, 2.5f);
-	float buttonSize = profile.GetUIParamScaled(18.0f, 2.5f);
+	float imageSize = profile.GetUIParamScaled(18.0f, 2.5f);
+	tVector2 imgButtonSize(imageSize, imageSize);
 
 	bool fileTypeSectionDisplayed = false;
 	switch (CurrImage->Filetype)
@@ -169,7 +172,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			if (CurrImage->LoadParams_DDS.Flags & tImageDDS::LoadFlag_AutoGamma)
 				gammaMode = 3;
 			const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB", "Auto" };
-			ImGui::PushItemWidth(itemWidth);
+			ImGui::SetNextItemWidth(itemWidth);
 			if (ImGui::Combo("Gamma Corr", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
 			{
 				CurrImage->LoadParams_DDS.Flags &= ~(tImageDDS::LoadFlag_GammaCompression | tImageDDS::LoadFlag_SRGBCompression | tImageDDS::LoadFlag_AutoGamma);
@@ -178,7 +181,6 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (gammaMode == 3) CurrImage->LoadParams_DDS.Flags |= tImageDDS::LoadFlag_AutoGamma;
 				reloadChanges = true;
 			}
-			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark
 			(
@@ -195,10 +197,9 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			);
 			if (gammaMode == 1)
 			{
-				ImGui::PushItemWidth(itemWidth);
+				ImGui::SetNextItemWidth(itemWidth);
 				if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_DDS.Gamma, 0.01f, 0.1f, "%.3f"))
 					reloadChanges = true;
-				ImGui::PopItemWidth();
 				ImGui::SameLine();
 				ShowHelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
 				tMath::tiClamp(CurrImage->LoadParams_DDS.Gamma, 0.5f, 4.0f);
@@ -208,10 +209,9 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || tIsASTCFormat(CurrImage->Info.SrcPixelFormat))
 			{
 				bool expEnabled = (CurrImage->LoadParams_DDS.Flags & tImageDDS::LoadFlag_ToneMapExposure);
-				ImGui::PushItemWidth(itemWidth);
+				ImGui::SetNextItemWidth(itemWidth);
 				if (ImGui::InputFloat("Exposure", &CurrImage->LoadParams_DDS.Exposure, 0.001f, 0.05f, "%.4f", expEnabled ? 0 : ImGuiInputTextFlags_ReadOnly))
 					reloadChanges = true;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
-				ImGui::PopItemWidth();
 				ImGui::SameLine();
 				if (ImGui::CheckboxFlags("##ExposureEnabled", &CurrImage->LoadParams_DDS.Flags, tImageDDS::LoadFlag_ToneMapExposure))
 					reloadChanges = true;
@@ -242,8 +242,8 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			{
 				if (scrubberDisplayed)
 					ImGui::SameLine();
-				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 110.0f);
-				if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
+				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - itemWidth);
+				if (ImGui::Button("Reset", tVector2(itemWidth, 0.0f)))
 				{
 					CurrImage->ResetLoadParams();
 					CurrImage->FrameNum = 0;
@@ -302,7 +302,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			if (CurrImage->LoadParams_KTX.Flags & tImageKTX::LoadFlag_AutoGamma)
 				gammaMode = 3;
 			const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB", "Auto" };
-			ImGui::PushItemWidth(itemWidth);
+			ImGui::SetNextItemWidth(itemWidth);
 			if (ImGui::Combo("Gamma Corr", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
 			{
 				CurrImage->LoadParams_KTX.Flags &= ~(tImageKTX::LoadFlag_GammaCompression | tImageKTX::LoadFlag_SRGBCompression | tImageKTX::LoadFlag_AutoGamma);
@@ -311,7 +311,6 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (gammaMode == 3) CurrImage->LoadParams_KTX.Flags |= tImageKTX::LoadFlag_AutoGamma;
 				reloadChanges = true;
 			}
-			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark
 			(
@@ -328,10 +327,9 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			);
 			if (gammaMode == 1)
 			{
-				ImGui::PushItemWidth(itemWidth);
+				ImGui::SetNextItemWidth(itemWidth);
 				if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_KTX.Gamma, 0.01f, 0.1f, "%.3f"))
 					reloadChanges = true;
-				ImGui::PopItemWidth();
 				ImGui::SameLine();
 				ShowHelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
 				tMath::tiClamp(CurrImage->LoadParams_KTX.Gamma, 0.5f, 4.0f);
@@ -346,10 +344,9 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			)
 			{
 				bool expEnabled = (CurrImage->LoadParams_KTX.Flags & tImageKTX::LoadFlag_ToneMapExposure);
-				ImGui::PushItemWidth(itemWidth);
+				ImGui::SetNextItemWidth(itemWidth);
 				if (ImGui::InputFloat("Exposure", &CurrImage->LoadParams_KTX.Exposure, 0.001f, 0.05f, "%.4f", expEnabled ? 0 : ImGuiInputTextFlags_ReadOnly))
 					reloadChanges = true;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
-				ImGui::PopItemWidth();
 				ImGui::SameLine();
 				if (ImGui::CheckboxFlags("##ExposureEnabled", &CurrImage->LoadParams_KTX.Flags, tImageKTX::LoadFlag_ToneMapExposure))
 					reloadChanges = true;
@@ -365,7 +362,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (ImGui::CheckboxFlags("Spread Luminance", &CurrImage->LoadParams_KTX.Flags, tImageKTX::LoadFlag_SpreadLuminance))
 					reloadChanges = true;
 				ImGui::SameLine();
-				ShowHelpMark("Luminance-only dds files are represented in this viewer as having a red channel only,\nIf spread is true, the channel is spread to all RGB channels to create a grey-scale image.");
+				ShowHelpMark("Luminance-only ktx/ktx2 files are represented in this viewer as having a red channel only,\nIf spread is true, the channel is spread to all RGB channels to create a grey-scale image.");
 			}
 
 			bool scrubberDisplayed = false;
@@ -380,8 +377,8 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			{
 				if (scrubberDisplayed)
 					ImGui::SameLine();
-				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 110.0f);
-				if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
+				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - itemWidth);
+				if (ImGui::Button("Reset", tVector2(itemWidth, 0.0f)))
 				{
 					CurrImage->ResetLoadParams();
 					CurrImage->FrameNum = 0;
@@ -413,15 +410,13 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		{
 			bool reloadChanges = false;
 
-			// Colour Profile.
 			int colourProfile = int(CurrImage->LoadParams_ASTC.Profile);			
-			ImGui::PushItemWidth(itemWidth);
+			ImGui::SetNextItemWidth(itemWidth);
 			if (ImGui::Combo("Colour Profile", &colourProfile, tColourProfileShortNames, tNumElements(tColourProfileShortNames)-1))
 			{
 				CurrImage->LoadParams_ASTC.Profile = tColourProfile(colourProfile);
 				reloadChanges = true;
 			}
-			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark
 			(
@@ -451,7 +446,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			if (CurrImage->LoadParams_ASTC.Flags & tImageASTC::LoadFlag_AutoGamma)
 				gammaMode = 3;
 			const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB", "Auto" };
-			ImGui::PushItemWidth(itemWidth);
+			ImGui::SetNextItemWidth(itemWidth);
 			if (ImGui::Combo("Gamma Corr", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
 			{
 				CurrImage->LoadParams_ASTC.Flags &= ~(tImageASTC::LoadFlag_GammaCompression | tImageASTC::LoadFlag_SRGBCompression | tImageASTC::LoadFlag_AutoGamma);
@@ -460,7 +455,6 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (gammaMode == 3) CurrImage->LoadParams_ASTC.Flags |= tImageASTC::LoadFlag_AutoGamma;
 				reloadChanges = true;
 			}
-			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark
 			(
@@ -477,10 +471,9 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			);
 			if (gammaMode == 1)
 			{
-				ImGui::PushItemWidth(itemWidth);
+				ImGui::SetNextItemWidth(itemWidth);
 				if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_ASTC.Gamma, 0.01f, 0.1f, "%.3f"))
 					reloadChanges = true;
-				ImGui::PopItemWidth();
 				ImGui::SameLine();
 				ShowHelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
 				tMath::tiClamp(CurrImage->LoadParams_ASTC.Gamma, 0.5f, 4.0f);
@@ -491,10 +484,9 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			if (1)
 			{
 				bool expEnabled = (CurrImage->LoadParams_ASTC.Flags & tImageASTC::LoadFlag_ToneMapExposure);
-				ImGui::PushItemWidth(itemWidth);
+				ImGui::SetNextItemWidth(itemWidth);
 				if (ImGui::InputFloat("Exposure", &CurrImage->LoadParams_ASTC.Exposure, 0.001f, 0.05f, "%.4f", expEnabled ? 0 : ImGuiInputTextFlags_ReadOnly))
 					reloadChanges = true;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
-				ImGui::PopItemWidth();
 				ImGui::SameLine();
 				if (ImGui::CheckboxFlags("##ExposureEnabled", &CurrImage->LoadParams_ASTC.Flags, tImageASTC::LoadFlag_ToneMapExposure))
 					reloadChanges = true;
@@ -503,8 +495,8 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				tMath::tiClamp(CurrImage->LoadParams_ASTC.Exposure, 0.0f, 4.0f);
 			}
 
-			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 110.0f);
-			if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
+			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - itemWidth);
+			if (ImGui::Button("Reset", tVector2(itemWidth, 0.0f)))
 			{
 				CurrImage->ResetLoadParams();
 				CurrImage->FrameNum = 0;
@@ -535,7 +527,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			if (CurrImage->LoadParams_PKM.Flags & tImagePKM::LoadFlag_AutoGamma)
 				gammaMode = 3;
 			const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB", "Auto" };
-			ImGui::PushItemWidth(itemWidth);
+			ImGui::SetNextItemWidth(itemWidth);
 			if (ImGui::Combo("Gamma Corr", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
 			{
 				CurrImage->LoadParams_PKM.Flags &= ~(tImagePKM::LoadFlag_GammaCompression | tImagePKM::LoadFlag_SRGBCompression | tImagePKM::LoadFlag_AutoGamma);
@@ -544,7 +536,6 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (gammaMode == 3) CurrImage->LoadParams_PKM.Flags |= tImagePKM::LoadFlag_AutoGamma;
 				reloadChanges = true;
 			}
-			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark
 			(
@@ -561,10 +552,9 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			);
 			if (gammaMode == 1)
 			{
-				ImGui::PushItemWidth(itemWidth);
+				ImGui::SetNextItemWidth(itemWidth);
 				if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_PKM.Gamma, 0.01f, 0.1f, "%.3f"))
 					reloadChanges = true;
-				ImGui::PopItemWidth();
 				ImGui::SameLine();
 				ShowHelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
 				tMath::tiClamp(CurrImage->LoadParams_PKM.Gamma, 0.5f, 4.0f);
@@ -578,8 +568,8 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				ShowHelpMark("Luminance-only pkm files are represented in this viewer as having a red channel only,\nIf spread is true, the channel is spread to all RGB channels to create a grey-scale image.");
 			}
 
-			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 110.0f);
-			if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
+			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - itemWidth);
+			if (ImGui::Button("Reset", tVector2(itemWidth, 0.0f)))
 			{
 				CurrImage->ResetLoadParams();
 				reloadChanges = true;
@@ -600,24 +590,22 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ImGui::Text("Radiance HDR");
 			bool reloadChanges = false;
 
-			ImGui::PushItemWidth(itemWidth);
+			ImGui::SetNextItemWidth(itemWidth);
 			if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_HDR.Gamma, 0.01f, 0.1f, "%.3f"))
 				reloadChanges = true;
-			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Gamma to use [0.6, 3.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
 			tMath::tiClamp(CurrImage->LoadParams_HDR.Gamma, 0.6f, 3.0f);
 
-			ImGui::PushItemWidth(itemWidth);
+			ImGui::SetNextItemWidth(itemWidth);
 			if (ImGui::InputInt("Exposure", &CurrImage->LoadParams_HDR.Exposure))
 				reloadChanges = true;
-			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Exposure adjustment [-10, 10]. Hold Ctrl to speedup.");
 			tMath::tiClamp(CurrImage->LoadParams_HDR.Exposure, -10, 10);
 
-			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 110.0f);
-			if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
+			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - itemWidth);
+			if (ImGui::Button("Reset", tVector2(itemWidth, 0.0f)))
 			{
 				CurrImage->ResetLoadParams();
 				reloadChanges = true;
@@ -638,48 +626,43 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ImGui::Text("OpenEXR");
 			bool reloadChanges = false;
 
-			ImGui::PushItemWidth(itemWidth);
+			ImGui::SetNextItemWidth(itemWidth);
 			if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_EXR.Gamma, 0.01f, 0.1f, "%.3f"))
 				reloadChanges = true;
-			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Gamma to use [0.6, 3.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
 			tMath::tiClamp(CurrImage->LoadParams_EXR.Gamma, 0.6f, 3.0f);
 
-			ImGui::PushItemWidth(itemWidth);
+			ImGui::SetNextItemWidth(itemWidth);
 			if (ImGui::InputFloat("Exposure", &CurrImage->LoadParams_EXR.Exposure, 0.01f, 0.1f, "%.3f"))
 				reloadChanges = true;
-			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Exposure adjustment [-10.0, 10.0]. Hold Ctrl to speedup.");
 			tMath::tiClamp(CurrImage->LoadParams_EXR.Exposure, -10.0f, 10.0f);
 
-			ImGui::PushItemWidth(itemWidth);
+			ImGui::SetNextItemWidth(itemWidth);
 			if (ImGui::InputFloat("Defog", &CurrImage->LoadParams_EXR.Defog, 0.001f, 0.01f, "%.3f"))
 				reloadChanges = true;
-			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Remove fog strength [0.0, 0.1]. Hold Ctrl to speedup. Try to keep under 0.01");
 			tMath::tiClamp(CurrImage->LoadParams_EXR.Defog, 0.0f, 0.1f);
 
-			ImGui::PushItemWidth(itemWidth);
+			ImGui::SetNextItemWidth(itemWidth);
 			if (ImGui::InputFloat("Knee Low", &CurrImage->LoadParams_EXR.KneeLow, 0.01f, 0.1f, "%.3f"))
 				reloadChanges = true;
-			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Lower bound knee taper [-3.0, 3.0]. Hold Ctrl to speedup.");
 			tMath::tiClamp(CurrImage->LoadParams_EXR.KneeLow, -3.0f, 3.0f);
 
-			ImGui::PushItemWidth(itemWidth);
+			ImGui::SetNextItemWidth(itemWidth);
 			if (ImGui::InputFloat("Knee High", &CurrImage->LoadParams_EXR.KneeHigh, 0.01f, 0.1f, "%.3f"))
 				reloadChanges = true;
-			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Upper bound knee taper [3.5, 7.5]. Hold Ctrl to speedup.");
 			tMath::tiClamp(CurrImage->LoadParams_EXR.KneeHigh, 3.5f, 7.5f);
 
-			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 110.0f);
-			if (ImGui::Button("Reset", tVector2(110.0f, 0.0f)))
+			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - itemWidth);
+			if (ImGui::Button("Reset", tVector2(itemWidth, 0.0f)))
 			{
 				CurrImage->ResetLoadParams();
 				reloadChanges = true;
@@ -726,22 +709,24 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ImGui::Separator();
 
 		int oneBasedFrameNum = CurrImage->FrameNum + 1;
-		ImGui::PushItemWidth(itemWidth);
 		tString frameStr;
 		tsPrintf(frameStr, "Frame (%d)##Frame", CurrImage->GetNumFrames());
+		ImGui::SetNextItemWidth(itemWidth);
 		if (ImGui::InputInt(frameStr.Chr(), &oneBasedFrameNum))
 		{
 			CurrImage->FrameNum = oneBasedFrameNum - 1;
 			tMath::tiClamp(CurrImage->FrameNum, 0, CurrImage->GetNumFrames()-1);
 		}
-		ImGui::PopItemWidth();
 		ImGui::SameLine(); ShowHelpMark("Which image in a multiframe file to display.");
+
+		float durButtonSpacing = profile.GetUIParamExtent(4.0f, 10.0f);
+		ImGuiContext& ctx = *GImGui;
+		const ImGuiStyle& style = ctx.Style;
 
 		if (CurrImage->FrameDurationPreviewEnabled)
 		{
-			ImGui::PushItemWidth(itemWidth);
+			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::InputFloat("Period", &CurrImage->FrameDurationPreview, 0.01f, 0.1f, "%.4f");
-			ImGui::PopItemWidth();
 
 			tMath::tiClamp(CurrImage->FrameDurationPreview, 0.0f, 60.0f);
 			ImGui::SameLine();
@@ -753,34 +738,37 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			}
 			ImGui::SameLine(); ShowHelpMark("Sets every frame period to the preview period in seconds.");
 
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2(durButtonSpacing, style.ItemSpacing.y));
 			if (ImGui::Button("1.0s"))	CurrImage->FrameDurationPreview = 1.0f;			ImGui::SameLine();
 			if (ImGui::Button("0.5s"))	CurrImage->FrameDurationPreview = 0.5f;			ImGui::SameLine();
 			if (ImGui::Button("0.1s"))	CurrImage->FrameDurationPreview = 0.1f;			ImGui::SameLine();
 			if (ImGui::Button("30Hz"))	CurrImage->FrameDurationPreview = 1.0f/30.0f;	ImGui::SameLine();
 			if (ImGui::Button("60Hz"))	CurrImage->FrameDurationPreview = 1.0f/60.0f;	ImGui::SameLine();
 			ShowHelpMark("Predefined frame period buttons.");
+			ImGui::PopStyleVar();
 		}
 		else
 		{
 			tPicture* currFramePic = CurrImage->GetCurrentPic();
 			float duration = currFramePic->Duration;
 			char frameDurText[64];
-			ImGui::PushItemWidth(itemWidth);
+			ImGui::SetNextItemWidth(itemWidth);
 			if (ImGui::InputFloat("Period", &duration, 0.01f, 0.1f, "%.4f", ImGuiInputTextFlags_EnterReturnsTrue))
 			{
 				tMath::tiClamp(duration, 0.0f, 60.0f);
 				CurrImage->SetFrameDuration(duration);
 				SetWindowTitle();
 			}
-			ImGui::PopItemWidth();
 			ImGui::SameLine(); ShowHelpMark("This frame's period in seconds.");
 
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2(durButtonSpacing, style.ItemSpacing.y));
 			if (ImGui::Button("1.0s"))	{ CurrImage->SetFrameDuration(1.0f); SetWindowTitle(); }		ImGui::SameLine();
 			if (ImGui::Button("0.5s"))	{ CurrImage->SetFrameDuration(0.5f); SetWindowTitle(); }		ImGui::SameLine();
 			if (ImGui::Button("0.1s"))	{ CurrImage->SetFrameDuration(0.1f); SetWindowTitle(); }		ImGui::SameLine();
 			if (ImGui::Button("30Hz"))	{ CurrImage->SetFrameDuration(1.0f/30.0f); SetWindowTitle(); }	ImGui::SameLine();
 			if (ImGui::Button("60Hz"))	{ CurrImage->SetFrameDuration(1.0f/60.0f); SetWindowTitle(); }	ImGui::SameLine();
 			ShowHelpMark("Predefined frame period buttons.");
+			ImGui::PopStyleVar();
 		}
 		ImGui::Checkbox("Preview Period", &CurrImage->FrameDurationPreviewEnabled);
 		ImGui::SameLine(); ShowHelpMark("If enabled this number of seconds is used for all frame periods while playing.");
@@ -791,7 +779,8 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
 
-		tVector2 imgButtonSize(buttonSize, buttonSize);
+		float itemHSpacing = profile.GetUIParamExtent(8.0f, 32.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2(itemHSpacing, style.ItemSpacing.y));
 
 		uint64 loopImageID = CurrImage->FramePlayLooping ? Image_PlayOnce.Bind() : Image_PlayLoop.Bind();
 		if (ImGui::ImageButton(ImTextureID(loopImageID), imgButtonSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 2, ColourBG, ColourEnabledTint))
@@ -865,6 +854,8 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		)	CurrImage->FrameNum = numFrames-1;
 		ImGui::PopID();
 		ImGui::SameLine();
+
+		ImGui::PopStyleVar();
 	}
 
 	ImGui::End();
