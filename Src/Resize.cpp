@@ -93,14 +93,16 @@ void Viewer::DoResizeFilterInterface(int srcW, int srcH, int dstW, int dstH)
 {
 	if ((dstW == srcW) && (dstH == srcH))
 		return;
-	Config::ProfileData& profile = Config::GetProfileData();
 
-	ImGui::SetNextItemWidth(168.0f);
+	Config::ProfileData& profile = Config::GetProfileData();
+	float comboWidth = profile.GetUIParamScaled(168.0f, 2.5f);
+
+	ImGui::SetNextItemWidth(comboWidth);
 	ImGui::Combo("Filter", &profile.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 	ImGui::SameLine();
 	ShowHelpMark("Filtering method to use when resizing images.");
 
-	ImGui::SetNextItemWidth(168.0f);
+	ImGui::SetNextItemWidth(comboWidth);
 	ImGui::Combo("Edges", &profile.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
 	ImGui::SameLine();
 	ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");	
@@ -549,10 +551,9 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 		ShowHelpMark("Aspect ratio for resizing.\nUser means enter the aspect ratio manually.\nFor the print presets the L means Landscape.");
 	}
 
-	ImGui::PushItemWidth(comboWidth);
 	const char* resizeAspectModes[] = { "Crop", "Letterbox" };
+	ImGui::SetNextItemWidth(comboWidth);
 	ImGui::Combo("Mode", &profile.ResizeAspectMode, resizeAspectModes, tNumElements(resizeAspectModes), tNumElements(resizeAspectModes));
-	ImGui::PopItemWidth();
 
 	ImGui::SameLine();
 	ShowHelpMark("Crop mode cuts off sides resulting in a filled image.\nLetterbox mode adds coloured borders resulting in whole image being visible.");

@@ -73,13 +73,10 @@ void Viewer::DoSortParameters(bool singleLine)
 	};
 
 	tStaticAssert(tNumElements(sortItems) == int(Config::ProfileData::SortKeyEnum::NumKeys));
-	ImGui::PushItemWidth(sortComboWidth);
-
 	tString label = singleLine ? "##Sort" : "Sort";
+	ImGui::SetNextItemWidth(sortComboWidth);
 	if (ImGui::Combo(label.Chr(), &profile.SortKey, sortItems, tNumElements(sortItems), tNumElements(sortItems)/2))
 		SortImages(profile.GetSortKey(), profile.SortAscending);
-
-	ImGui::PopItemWidth();
 	ShowToolTip("Specifies what property to sort by. An asterisk (*) means\nthe property is stored in image meta-data and may not be\npresent in all images. Shuffle means random order.");
 
 	if (profile.GetSortKey() == Config::ProfileData::SortKeyEnum::Shuffle)

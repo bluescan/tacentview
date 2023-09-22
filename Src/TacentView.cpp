@@ -1288,8 +1288,9 @@ int Viewer::DoMainMenuBar()
 		ImGui::SetNextWindowPos(tVector2(0.0f, 0.0f));
 		ImGui::BeginMainMenuBar();
 
-		tVector2 colourButtonSize = profile.GetUIParamExtent(tVector2(26.0f, 26.0f), tVector2(64.0f, 64.0f));
-		tVector2 toolImageSize = profile.GetUIParamExtent(tVector2(24.0f, 24.0f), tVector2(62.0f, 62.0f));
+		tVector2 colourButtonSize	= profile.GetUIParamExtent(tVector2(26.0f, 26.0f), tVector2(64.0f, 64.0f));
+		tVector2 toolImageSize		= profile.GetUIParamExtent(tVector2(24.0f, 24.0f), tVector2(62.0f, 62.0f));
+		float zoomComboWidth		= profile.GetUIParamScaled(70.0f, 2.5f);
 
 		ImGuiWindow* window = ImGui::GetCurrentWindow();
 		if (window)
@@ -1587,7 +1588,6 @@ int Viewer::DoMainMenuBar()
 				SetZoomMode(Config::ProfileData::ZoomModeEnum::OneToOne);
 			}
 
-			ImGui::PushItemWidth(70);
 			const char* zoomItems[] = { "Zoom", "20%", "50%", "100%", "150%", "200%", "400%", "800%", "1200%", "1800%", "2500%"};
 			float zoomVals[] = { -1.0f, 20.0f, 50.0f, 100.0f, 150.0f, 200.0f, 400.0f, 800.0f, 1200.0f, 1800.0f, 2500.0f };
 			float zoomPercent = GetZoomPercent();
@@ -1596,9 +1596,9 @@ int Viewer::DoMainMenuBar()
 
 			// We use the zoom combo only as a chooser. It always displays index 0 (Zoom) when not expanded.
 			int zoomIdx = 0;
+			ImGui::SetNextItemWidth(zoomComboWidth);
 			if (ImGui::Combo(currZoomStr.Chr(), &zoomIdx, zoomItems, tNumElements(zoomItems)) && (zoomIdx > 0) && CurrImage && CurrImage->IsLoaded())
 				ApplyZoomDelta(zoomVals[zoomIdx]-zoomPercent);
-			ImGui::PopItemWidth();
 
 			tString zoomPerImageKey = profile.InputBindings.FindModKeyText(Bindings::Operation::ZoomPerImage);
 			ImGui::MenuItem("Zoom Per Image", zoomPerImageKey.Chz(), &profile.ZoomPerImage);

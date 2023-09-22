@@ -75,9 +75,8 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			if (!Config::Global.TransparentWorkArea)
 			{
 				const char* backgroundItems[] = { "None", "Checker", "Solid" };
-				ImGui::PushItemWidth(comboWidth);
+				ImGui::SetNextItemWidth(comboWidth);
 				ImGui::Combo("Background Style", &profile.BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
-				ImGui::PopItemWidth();
 
 				if (profile.GetBackgroundStyle() == Config::ProfileData::BackgroundStyleEnum::SolidColour)
 				{
@@ -98,7 +97,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 					ImGui::SameLine();
 					const char* presetColours[] = { "Custom", "Black", "Grey", "White" };
-					ImGui::PushItemWidth(comboWidth*0.64f);
+					ImGui::SetNextItemWidth(comboWidth*0.64f);
 					if (ImGui::Combo("Preset", &preset, presetColours, tNumElements(presetColours)))
 					{
 						switch (preset)
@@ -108,7 +107,6 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 							case 3:		profile.BackgroundColour = tColouri::white;		break;
 						}
 					}
-					ImGui::PopItemWidth();
 				}
 
 				if (profile.GetBackgroundStyle() == Config::ProfileData::BackgroundStyleEnum::Checkerboard)
@@ -122,9 +120,8 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 			// Reticle mode.
 			const char* reticleModeItems[] = { "Always Hidden", "Always Visible", "On Select", "Auto Hide" };
-			ImGui::PushItemWidth(comboWidth);
+			ImGui::SetNextItemWidth(comboWidth);
 			ImGui::Combo("Reticle Mode", &profile.ReticleMode, reticleModeItems, tNumElements(reticleModeItems));
-			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark
 			(

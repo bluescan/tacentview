@@ -32,11 +32,12 @@ namespace Viewer
 	float HistogramCallbackBridge(void* data, int index);
 	struct HistogramCallback
 	{
-		HistogramCallback(Image::AdjChan channels, bool logarithmic, tImage::tPicture* picture) : Channels(channels), Logarithmic(logarithmic), Picture(picture) { }
+		HistogramCallback(Image::AdjChan channels, bool logarithmic, tImage::tPicture* picture, int numIndices) : Channels(channels), Logarithmic(logarithmic), Picture(picture), NumIndices(numIndices) { }
 		float GetCount(int index) const;
 		Image::AdjChan Channels;
 		bool Logarithmic;
 		tImage::tPicture* Picture;
+		int NumIndices;
 	};
 }
 
@@ -279,8 +280,11 @@ float Viewer::HistogramCallbackBridge(void* data, int index)
 
 float Viewer::HistogramCallback::GetCount(int index) const
 {
-	if (!Picture || (index >= tImage::tPicture::NumGroups))
+	if (!Picture || (index >= NumIndices))
 		return 0.0f;
+
+	int groupIndex = tMath::tLinearInterp(float(index), 0.0f, float(NumIndices-1), 0, tImage::tPicture::NumGroups-1);
+	tiClamp(groupIndex, 0, tImage::tPicture::NumGroups-1);
 	float* table = nullptr;
 	switch (Channels)
 	{
@@ -290,7 +294,7 @@ float Viewer::HistogramCallback::GetCount(int index) const
 		case Image::AdjChan::B:		table = Picture->HistogramB;	break;
 		case Image::AdjChan::A:		table = Picture->HistogramA;	break;
 	}
-	float count = table[index];
+	float count = table[groupIndex];
 	return (Logarithmic && (count > 0)) ? tMath::tLog(count) : count;
 }
 
@@ -350,6 +354,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	Config::ProfileData& profile = Config::GetProfileData();
 	float okOffset		= profile.GetUIParamScaled(135.0f, 2.5f);
 	float buttonWidth	= profile.GetUIParamScaled(100.0f, 2.5f);
+	float itemWidth		= profile.GetUIParamScaled(258.0f, 2.5f);
 
 	const char* channelItems[] = { "RGB", "Red", "Green", "Blue", "Alpha" };
 	if (ImGui::BeginTabBar("LevelsTabBar", ImGuiTabBarFlags_None))
@@ -432,7 +437,8 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			}
 			tString histName;  tsPrintf(histName,  "%s Intensity", channelItems[channels]);
 			tString histLabel; tsPrintf(histLabel, "Max %d\n\nHistogram", int(max));
-			HistogramCallback histoCB(Image::AdjChan(channels), logarithmicHisto, pic);
+			tVector2 histSize = profile.GetUIParamScaled(tVector2(256.0f, 80.0f), 2.5f);
+			HistogramCallback histoCB(Image::AdjChan(channels), logarithmicHisto, pic, int(histSize.x));
 			if (logarithmicHisto)
 				max = tMath::tLog(max);
 
@@ -440,13 +446,13 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 2);
 
 			// Why the +1 to NumGroups? It may be a an out-by-1 mistake in PlotHistogram. I can't hover the last group with my mouse without the +1.
-			ImGui::PlotHistogram(histLabel.Chr(), HistogramCallbackBridge, &histoCB, tImage::tPicture::NumGroups+1, 0, histName.Chr(), 0.0f, max, ImVec2(256, 80));
+			ImGui::PlotHistogram(histLabel.Chr(), HistogramCallbackBridge, &histoCB, int(histSize.x), 0, histName.Chr(), 0.0f, max, histSize);
 			ImGui::PopStyleColor();
 
 			//
 			// Black/mid/white point sliders.
 			//
-			ImGui::PushItemWidth(258);
+			ImGui::PushItemWidth(itemWidth);
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(6.0f, 1.0f));
 			ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, 8.0);
 			modified = ImGui::SliderFloat("Black Point", &levelsBlack, 0.0f, 1.0f)		|| modified;
@@ -524,7 +530,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			//
 			// Contrast slider.
 			//
-			ImGui::PushItemWidth(258);
+			ImGui::PushItemWidth(itemWidth);
 			modified = ImGui::SliderFloat("Contrast", &contrast, 0.0f, 1.0f) || modified;
 
 			//
@@ -580,7 +586,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			//
 			// Brightness slider.
 			//
-			ImGui::PushItemWidth(258);
+			ImGui::PushItemWidth(itemWidth);
 			modified = ImGui::SliderFloat("Brightness", &brightness, 0.0f, 1.0f) || modified;
 
 			//
