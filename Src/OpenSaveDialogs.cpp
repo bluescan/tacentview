@@ -448,7 +448,7 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 {
 	Config::ProfileData& profile = Config::GetProfileData();
 	float comboWidth = profile.GetUIParamScaled(80.0f, 2.5f);
-	float sliderWidth = profile.GetUIParamScaled(166.0f, 2.5f);
+	float sliderWidth = profile.GetUIParamScaled(160.0f, 2.5f);
 	switch (fileType)
 	{
 		case tFileType::TGA:
@@ -578,7 +578,7 @@ tString Viewer::DoSaveFiletypeMultiFrame()
 			if (selected)
 				ImGui::SetItemDefaultFocus();
 		}
-		
+
 		ImGui::EndCombo();
 	}
 	ImGui::SameLine();

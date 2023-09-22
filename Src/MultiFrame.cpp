@@ -352,6 +352,10 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 	if (!ImGui::BeginPopupModal("Extract Frames", &isOpenExtractFrames, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 
+	Config::ProfileData& profile = Config::GetProfileData();
+	float inputWidth	= profile.GetUIParamScaled(160.0f, 2.5f);
+	float buttonWidth	= profile.GetUIParamScaled(100.0f, 2.5f);
+
 	int numFrames = CurrImage->GetNumFrames();
 
 	// These two statics are in lock-step for efficiency.
@@ -397,15 +401,14 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 			outBaseName[127] = '\0';
 		}
 	}
-	const int itemWidth = 160;
-	ImGui::SetNextItemWidth(itemWidth);
+	ImGui::SetNextItemWidth(inputWidth);
 	ImGui::InputText("Base Filename", outBaseName, tNumElements(outBaseName));
 	tString baseHelp;
 	tString extension = tGetExtension(fileType);
 	tsPrintf(baseHelp, "The output base filename without extension.\nSaved files will be:\n%s_001.%s,\n%s_002.%s,\netc.", outBaseName, extension.Chr(), outBaseName, extension.Chr());
 	ImGui::SameLine(); ShowHelpMark(baseHelp.Chr());
 
-	ImGui::SetNextItemWidth(itemWidth);
+	ImGui::SetNextItemWidth(inputWidth);
 	if (ImGui::InputText("Frames", framesToExtract, tNumElements(framesToExtract)))
 	{
 		frameSet.Set( tString(framesToExtract) );
@@ -440,11 +443,11 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 	);
 
 	ImGui::NewLine();
-	if (Viewer::Button("Cancel", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 	ImGui::SameLine();
 
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 100.0f);
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
 
 	// This needs to be static since DoSaveModal is called for every frame the modal is open.
 	static tList<tStringItem> overwriteFiles(tListMode::Static);
@@ -452,7 +455,7 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();		
-	if (Viewer::Button("Extract", tVector2(100.0f, 0.0f)))
+	if (Viewer::Button("Extract", tVector2(buttonWidth, 0.0f)))
 	{
 		Config::ProfileData& profile = Config::GetProfileData();
 		bool dirExists = tDirExists(destDir);
