@@ -105,7 +105,7 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	float itemWidth		= profile.GetUIParamScaled(160.0f, 2.5f);
 	float powButWidth	= profile.GetUIParamScaled(60.0f, 2.5f);
 	float powButOffset	= profile.GetUIParamScaled(252.0f, 2.5f);
-	float buttonWidth	= profile.GetUIParamScaled(100.0f, 2.5f);
+	float buttonWidth	= profile.GetUIParamScaled(76.0f, 2.5f);
 
 	tVector2 powSize(powButWidth, 0.0f);
 

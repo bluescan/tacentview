@@ -42,7 +42,6 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	}
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonOffset	= profile.GetUIParamScaled(141.0f, 2.5f);
 	float comboWidth	= profile.GetUIParamScaled(110.0f, 2.5f);
 	float itemWidth		= profile.GetUIParamScaled(110.0f, 2.5f);
 	float buttonWidth	= profile.GetUIParamScaled(100.0f, 2.5f);
@@ -403,7 +402,8 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	);
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(buttonOffset);
+	ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - buttonWidth);
+
 	if (ImGui::Button("Reset Tab", tVector2(buttonWidth, 0.0f)))
 	{
 		Config::ResetProfile(category);
@@ -430,7 +430,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	);
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(buttonOffset);
+	ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - buttonWidth);
 	if (ImGui::Button("Close", tVector2(buttonWidth, 0.0f)))
 	{
 		if (popen)

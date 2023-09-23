@@ -169,7 +169,7 @@ void Viewer::DoSavePopup()
 
 	DoSaveFiletypeOptions(saveType);
 
-	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
+	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
 	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 	ImGui::SameLine();
@@ -265,7 +265,7 @@ void Viewer::DoSaveUnsupportedTypePopup()
 	ImGui::NewLine();
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
+	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
 
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
 	bool closeThisModal = false;
@@ -428,7 +428,7 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 		tsaPrintf(desc, " WARNING: Scolorq at large BPPs may take\n a long time for large images.");
 	ImGui::Text(desc.Chr());
 
-	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
+	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
 	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		profile.SaveFileGifBPP				= 8;
@@ -994,7 +994,7 @@ void Viewer::AddSavedImageIfNecessary(const tString& savedFile)
 void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool& pressedCancel)
 {
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
+	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
 
 	tString file = tSystem::tGetFileName(outFile);
 	tString dir = tSystem::tGetDir(outFile);

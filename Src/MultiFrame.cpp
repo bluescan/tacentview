@@ -102,7 +102,7 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 	float itemWidth		= profile.GetUIParamScaled(160.0f, 2.5f);
 	float powButWidth	= profile.GetUIParamScaled(60.0f, 2.5f);
 	float powButOffset	= profile.GetUIParamScaled(220.0f, 2.5f);
-	float buttonWidth	= profile.GetUIParamScaled(100.0f, 2.5f);
+	float buttonWidth	= profile.GetUIParamScaled(76.0f, 2.5f);
 	float comboWidth	= profile.GetUIParamScaled(160.0f, 2.5f);
 	tVector2 powSize(powButWidth, 0.0f);
 
@@ -354,7 +354,7 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 
 	Config::ProfileData& profile = Config::GetProfileData();
 	float inputWidth	= profile.GetUIParamScaled(160.0f, 2.5f);
-	float buttonWidth	= profile.GetUIParamScaled(100.0f, 2.5f);
+	float buttonWidth	= profile.GetUIParamScaled(76.0f, 2.5f);
 
 	int numFrames = CurrImage->GetNumFrames();
 

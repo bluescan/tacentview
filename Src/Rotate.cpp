@@ -37,7 +37,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 	}
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
+	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
 
 	if (rotateImagePressed)
 		Viewer::ResetPan();
@@ -178,7 +178,7 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 	static bool isPerfect = false;
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
+	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
 
 	if (mode != LosslessTransformMode::None)
 	{
@@ -252,7 +252,7 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 212.0f);
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth*2.0f - ImGui::GetStyle().ItemSpacing.x);
 	if (Viewer::Button("Normal", tVector2(buttonWidth, 0.0f)))
 	{
 		CurrImage->Unbind();

@@ -352,8 +352,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	// UI size parameters.
 	//
 	Config::ProfileData& profile = Config::GetProfileData();
-	float okOffset		= profile.GetUIParamScaled(135.0f, 2.5f);
-	float buttonWidth	= profile.GetUIParamScaled(100.0f, 2.5f);
+	float buttonWidth	= profile.GetUIParamScaled(76.0f, 2.5f);
 	float itemWidth		= profile.GetUIParamScaled(258.0f, 2.5f);
 
 	const char* channelItems[] = { "RGB", "Red", "Green", "Blue", "Alpha" };
@@ -635,7 +634,8 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	}
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetCursorPosX() + okOffset);
+	
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
 	if (Viewer::Button("OK", tVector2(buttonWidth, 0.0f)))

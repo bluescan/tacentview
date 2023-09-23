@@ -117,7 +117,7 @@ void Viewer::DoDeleteFileModal(bool deleteFilePressed)
 	if (!ImGui::BeginPopupModal("Delete File", &isOpenDeleteFile, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 
-	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
+	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
 	tString fullname = CurrImage->Filename;
 	tString file = tSystem::tGetFileName(fullname);
 	tString dir = tSystem::tGetDir(fullname);
@@ -161,7 +161,7 @@ void Viewer::DoDeleteFileNoRecycleModal(bool deleteFileNoRecycPressed)
 		return;
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
+	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
 
 	tString fullname = CurrImage->Filename;
 	tString file = tSystem::tGetFileName(fullname);
@@ -216,7 +216,7 @@ void Viewer::DoSnapMessageNoFileBrowseModal(bool justPressed)
 	}
 	
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
+	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
 
 	ImGui::Text
 	(
@@ -254,7 +254,7 @@ void Viewer::DoSnapMessageNoFrameTransModal(bool justPressed)
 	}
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
+	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
 
 	ImGui::Text
 	(
@@ -283,7 +283,7 @@ void Viewer::DoRenameModal(bool renamePressed)
 		return;
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
+	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
 
 	tString fullname = CurrImage->Filename;
 	tString origname = tSystem::tGetFileName(fullname);
