@@ -57,7 +57,7 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 	if (ImGui::Begin("Edit Pixel", popen, flags))
 	{
 		Config::ProfileData& profile = Config::GetProfileData();
-		float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
+		float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
 
 		static int lastCursorX = -1;
 		static int lastCursorY = -1;
@@ -209,6 +209,9 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 		}
 
 		Config::ProfileData& profile = Config::GetProfileData();
+		float comboWidth	= profile.GetUIParamScaled(80.0f, 2.5f);
+		float buttonWidth	= profile.GetUIParamScaled(120.0f, 2.5f);
+
 		tColourf floatCol(profile.BackgroundColour);
 		if (ImGui::ColorEdit3("##Background", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))
 		{
@@ -218,9 +221,8 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 
 		ImGui::SameLine();
 		const char* backgroundItems[] = { "None", "Checker", "Solid" };
-		ImGui::PushItemWidth(83);
+		ImGui::SetNextItemWidth(comboWidth);
 		ImGui::Combo("##Background Style", &profile.BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
-		ImGui::PopItemWidth();
 		ImGui::SameLine();
 		ShowHelpMark("Background colour and style.\nThe blend-background button uses the colour regardless of style.");
 
@@ -229,8 +231,6 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 
 		ImGui::Text("Modify");
-
-		float buttonWidth = 134.0f;
 		if (ImGui::Button("Blend Background", tVector2(buttonWidth, 0.0f)))
 		{
 			CurrImage->Unbind();

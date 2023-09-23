@@ -285,9 +285,10 @@ tString Viewer::DoSubFolder()
 	char subFolder[256]; tMemset(subFolder, 0, 256);
 	tStrncpy(subFolder, profile.SaveSubFolder.Chr(), 255);
 
-	float itemWidth = profile.GetUIParamScaled(160.0f, 2.5f);
-	ImGui::SetNextItemWidth(itemWidth);	
+	float itemWidth		= profile.GetUIParamScaled(160.0f, 2.5f);
+	float buttonWidth	= profile.GetUIParamScaled(76.0f, 2.5f);
 
+	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputText("SubFolder", subFolder, 256);
 	profile.SaveSubFolder.Set(subFolder);
 	tString destDir = ImagesDir;
@@ -296,11 +297,11 @@ tString Viewer::DoSubFolder()
 	tString toolTipText;
 	tsPrintf(toolTipText, "Save to %s", destDir.Chr());
 	ShowToolTip(toolTipText.Chr());
-	ImGui::SameLine();
-	if (ImGui::Button("Default"))
+
+	if (ImGui::Button("Default", tVector2(buttonWidth, 0.0f)))
 		profile.SaveSubFolder.Set("Saved");
 	ImGui::SameLine();
-	if (ImGui::Button("Here"))
+	if (ImGui::Button("Here", tVector2(buttonWidth, 0.0f)))
 		profile.SaveSubFolder.Clear();
 
 	return destDir;
@@ -447,14 +448,15 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 {
 	Config::ProfileData& profile = Config::GetProfileData();
-	float comboWidth = profile.GetUIParamScaled(80.0f, 2.5f);
-	float sliderWidth = profile.GetUIParamScaled(160.0f, 2.5f);
+	float itemWidth = profile.GetUIParamScaled(160.0f, 2.5f);
+
+	ImGui::PushItemWidth(itemWidth);
+
 	switch (fileType)
 	{
 		case tFileType::TGA:
 		{
 			const char* tgaModeItems[] = { "Auto", "24 BPP", "32 BPP" };
-			ImGui::SetNextItemWidth(comboWidth);
 			ImGui::Combo("Bits Per Pixel", &profile.SaveFileTgaDepthMode , tgaModeItems, tNumElements(tgaModeItems));
 			ImGui::SameLine();
 			ShowHelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.");
@@ -468,7 +470,6 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 		case tFileType::PNG:
 		{
 			const char* pngModeItems[] = { "Auto", "24 BPP", "32 BPP" };
-			ImGui::SetNextItemWidth(comboWidth);
 			ImGui::Combo("Bits Per Pixel", &profile.SaveFilePngDepthMode , pngModeItems, tNumElements(pngModeItems));
 			ImGui::SameLine();
 			ShowHelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.");
@@ -476,7 +477,6 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 		}
 
 		case tFileType::JPG:
-			ImGui::SetNextItemWidth(sliderWidth);
 			ImGui::SliderInt("Quality", &profile.SaveFileJpegQuality, 1, 100, "%d");
 			break;
 
@@ -486,7 +486,6 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 
 		case tFileType::WEBP:
 			ImGui::Checkbox("Lossy", &profile.SaveFileWebpLossy);
-			ImGui::SetNextItemWidth(sliderWidth);
 			if (profile.SaveFileWebpLossy)
 			{
 				ImGui::SliderFloat("Quality", &profile.SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
@@ -497,7 +496,6 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 				ImGui::SliderFloat("Compression", &profile.SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
 				ImGui::SameLine(); ShowHelpMark("Non-lossy selected. This is the image compression strength.\nBigger is slower and yields smaller files.");
 			}
-			ImGui::SetNextItemWidth(sliderWidth);
 			ImGui::SliderInt("Duration Override", &profile.SaveFileWebpDurOverride, -1, 10000, "%d");
 			ImGui::SameLine(); ShowHelpMark("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
 			if (Viewer::Button("1.0s"))  profile.SaveFileWebpDurOverride = 1000; ImGui::SameLine();
@@ -509,13 +507,11 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 		case tFileType::QOI:
 		{
 			const char* qoiModeItems[] = { "Auto", "24 BPP", "32 BPP" };
-			ImGui::SetNextItemWidth(comboWidth);
 			ImGui::Combo("Bits Per Pixel", &profile.SaveFileQoiDepthMode , qoiModeItems, tNumElements(qoiModeItems));
 			ImGui::SameLine();
 			ShowHelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.");
 
 			const char* qoiSpaceItems[] = { "Auto", "sRGB", "Linear" };
-			ImGui::SetNextItemWidth(comboWidth);
 			ImGui::Combo("Colour Space", &profile.SaveFileQoiColourSpace , qoiSpaceItems, tNumElements(qoiSpaceItems));
 			ImGui::SameLine();
 			ShowHelpMark("Colour space to store in the saved file.\nAuto: Use current colour space as it was loaded.\nsRGB: The default for most images.\nLinear: For images used in lighting calculations.");
@@ -523,7 +519,6 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 		}
 
 		case tFileType::APNG:
-			ImGui::SetNextItemWidth(sliderWidth);
 			ImGui::SliderInt("Duration Override", &profile.SaveFileApngDurOverride, -1, 10000, "%d");
 			ImGui::SameLine(); ShowHelpMark("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
 			if (Viewer::Button("1.0s"))  profile.SaveFileApngDurOverride = 1000; ImGui::SameLine();
@@ -535,7 +530,6 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 		case tFileType::BMP:
 		{
 			const char* bmpModeItems[] = { "Auto", "24 BPP", "32 BPP" };
-			ImGui::SetNextItemWidth(comboWidth);
 			ImGui::Combo("Bits Per Pixel", &profile.SaveFileBmpDepthMode , bmpModeItems, tNumElements(bmpModeItems));
 			ImGui::SameLine();
 			ShowHelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.");
@@ -543,7 +537,6 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 		}
 
 		case tFileType::TIFF:
-			ImGui::SetNextItemWidth(sliderWidth);
 			ImGui::SliderInt("Duration Override", &profile.SaveFileTiffDurOverride, -1, 10000, "%d");
 			ImGui::SameLine(); ShowHelpMark("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
 			if (Viewer::Button("1.0s"))  profile.SaveFileTiffDurOverride = 1000; ImGui::SameLine();
@@ -552,6 +545,8 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			if (Viewer::Button("60fps")) profile.SaveFileTiffDurOverride = 16;
 			break;
 	}
+
+	ImGui::PopItemWidth();
 }
 
 
@@ -741,7 +736,21 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 	if (!ImGui::BeginPopupModal("Save All", &isOpenSaveAll, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 
-	ImGui::Text("Save all %d images to the image type you select.", Images.GetNumItems()); ImGui::SameLine();
+	ImGui::Text("Save all %d images to the image type you select.", Images.GetNumItems());
+
+	ImGui::Separator();
+
+	Config::ProfileData& profile = Config::GetProfileData();
+	float buttonWidth	= profile.GetUIParamScaled(76.0f, 2.5f);
+	float itemWidth		= profile.GetUIParamScaled(160.0f, 2.5f);
+
+	ImGui::PushItemWidth(itemWidth);
+	static int width = 512;
+	static int height = 512;
+	static float percent = 100.0f;
+	const char* sizeModeNames[] = { "Percent of Original", "Set Width and Height", "Set Width - Keep Aspect", "Set Height - Keep Aspect" };
+	ImGui::Combo("Size Mode", &profile.SaveAllSizeMode, sizeModeNames, tNumElements(sizeModeNames));
+	ImGui::SameLine();
 	ShowHelpMark
 	(
 		"Images may be resized based on the Size Mode:\n"
@@ -754,24 +763,14 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 		"  Scales all images to specified width and\n"
 		"  height, possibly non-uniformly.\n"
 		"\n"
-		"  Set Width - Retain Aspect\n"
+		"  Set Width - Keep Aspect\n"
 		"  All images will have specified width. Always\n"
 		"  uniform scale. Varying height.\n"
 		"\n"
-		"  Set Height - Retain Aspect\n"
+		"  Set Height - Keep Aspect\n"
 		"  All images will have specified height. Always\n"
 		"  uniform scale. Varying width.\n"
 	);
-
-	ImGui::Separator();
-
-	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
-	static int width = 512;
-	static int height = 512;
-	static float percent = 100.0f;
-	const char* sizeModeNames[] = { "Percent of Original", "Set Width and Height", "Set Width - Retain Aspect", "Set Height - Retain Aspect" };
-	ImGui::Combo("Size Mode", &profile.SaveAllSizeMode, sizeModeNames, tNumElements(sizeModeNames));
 	switch (profile.GetSaveAllSizeMode())
 	{
 		case Config::ProfileData::SizeModeEnum::Percent:
@@ -805,6 +804,7 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 	}
 	tMath::tiClampMin(width, 4);
 	tMath::tiClampMin(height, 4);
+	ImGui::PopItemWidth();
 
 	tFileType fileType = DoSaveChooseFiletype();
 	DoSaveFiletypeOptions(fileType);
@@ -891,7 +891,7 @@ void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFi
 {
 	tAssert(!overwriteFiles.IsEmpty());
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(100.0f, 2.5f);
+	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
 
 	tString dir = tSystem::tGetDir(*overwriteFiles.First());
 	ImGui::Text("The Following Files");
