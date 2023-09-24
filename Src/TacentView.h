@@ -134,7 +134,7 @@ namespace Viewer
 
 	enum class DialogID
 	{
-		ContentView,
+		ThumbnailView,
 		Properties,
 		PixelEditor,
 		Preferences,

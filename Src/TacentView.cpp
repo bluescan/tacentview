@@ -627,7 +627,7 @@ tVector2 Viewer::GetDialogOrigin(DialogID dialogID)
 	int hindex = int(dialogID) % 4;
 	int vindex = int(dialogID) / 4;
 
-	float topOffset		= profile.GetUIParamScaled(64.0f, 2.5f);
+	float topOffset		= profile.GetUIParamExtent(82.0f, 160.0f);
 	float leftOffset	= profile.GetUIParamScaled(30.0f, 2.5f);
 	float heightDelta	= profile.GetUIParamScaled(22.0f, 2.5f);
 

@@ -100,7 +100,7 @@ void Viewer::DoSortParameters(bool singleLine)
 void Viewer::ShowThumbnailViewDialog(bool* popen)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar;
-	tVector2 windowPos = GetDialogOrigin(DialogID::ContentView);
+	tVector2 windowPos = GetDialogOrigin(DialogID::ThumbnailView);
 
 	Config::ProfileData& profile = Config::GetProfileData();
 	tVector2 initialSize = profile.GetUIParamScaled(tVector2(586.0f, 480.0f), 2.5f);

@@ -1226,6 +1226,11 @@ FileDialog::DialogState FileDialog::DoPopup()
 	tVector2 nextWinSize = profile.GetUIParamScaled(tVector2(660.0f, 400.0f), 2.5f);
 	ImGui::SetNextWindowSize(nextWinSize, ImGuiCond_Appearing);
 
+	// Center the window. This seems to be default behaviour so leaving it commented out.
+	//	tVector2 winSize = ImGui::GetWindowSize();
+	//	tVector2 nextWinPos = (winSize - nextWinSize) / 2.0f;
+	//	ImGui::SetNextWindowPos(nextWinPos, ImGuiCond_Appearing);
+
 	tStringItem* selectPathItemName = nullptr;
 	bool setYScrollToSel = false;
 	if (PopupJustOpened)
