@@ -42,9 +42,8 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	}
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float comboWidth	= profile.GetUIParamScaled(110.0f, 2.5f);
-	float itemWidth		= profile.GetUIParamScaled(110.0f, 2.5f);
 	float buttonWidth	= profile.GetUIParamScaled(100.0f, 2.5f);
+	float rightButtons	= profile.GetUIParamScaled(159.0f, 2.5f);
 
 	bool tab = false;
 	uint32 category = Config::Category_None;
@@ -53,6 +52,8 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		tab = ImGui::BeginTabItem("Display", nullptr, ImGuiTabItemFlags_NoTooltip);
 		if (tab)
 		{
+			float itemWidth					= profile.GetUIParamScaled(120.0f, 2.5f);
+			float presetColourComboWidth	= profile.GetUIParamScaled(100.0f, 2.5f);
 			category = Config::Category_Display;
 			ImGui::NewLine();
 			ImGui::Checkbox("Transparent Work Area", &PendingTransparentWorkArea);
@@ -74,7 +75,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			if (!Config::Global.TransparentWorkArea)
 			{
 				const char* backgroundItems[] = { "None", "Checker", "Solid" };
-				ImGui::SetNextItemWidth(comboWidth);
+				ImGui::SetNextItemWidth(itemWidth);
 				ImGui::Combo("Background Style", &profile.BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
 
 				if (profile.GetBackgroundStyle() == Config::ProfileData::BackgroundStyleEnum::SolidColour)
@@ -96,7 +97,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 					ImGui::SameLine();
 					const char* presetColours[] = { "Custom", "Black", "Grey", "White" };
-					ImGui::SetNextItemWidth(comboWidth*0.64f);
+					ImGui::SetNextItemWidth(presetColourComboWidth);
 					if (ImGui::Combo("Preset", &preset, presetColours, tNumElements(presetColours)))
 					{
 						switch (preset)
@@ -110,7 +111,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 				if (profile.GetBackgroundStyle() == Config::ProfileData::BackgroundStyleEnum::Checkerboard)
 				{
-					ImGui::PushItemWidth(comboWidth);
+					ImGui::PushItemWidth(itemWidth);
 					ImGui::InputInt("Checker Size", &profile.BackgroundCheckerboxSize);
 					ImGui::PopItemWidth();
 					tMath::tiClamp(profile.BackgroundCheckerboxSize, 2, 256);
@@ -119,7 +120,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 			// Reticle mode.
 			const char* reticleModeItems[] = { "Always Hidden", "Always Visible", "On Select", "Auto Hide" };
-			ImGui::SetNextItemWidth(comboWidth);
+			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::Combo("Reticle Mode", &profile.ReticleMode, reticleModeItems, tNumElements(reticleModeItems));
 			ImGui::SameLine();
 			ShowHelpMark
@@ -131,19 +132,11 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				"Auto Hide: Hides after inactivity timeout."
 			);
 
-			#ifdef RESTRICT_UI_SIZES
-			const char* uiSizeItems[] = { "Nano", "Tiny", "Small" };
-			#else
 			const char* uiSizeItems[] = { "Nano", "Tiny", "Small", "Moderate", "Medium", "Large", "Huge", "Massive" };
 			tStaticAssert(tNumElements(uiSizeItems) == int(Config::ProfileData::UISizeEnum::NumSizes));
-			#endif
 
-			ImGui::PushItemWidth(comboWidth);
-			#ifdef RESTRICT_UI_SIZES
-			ImGui::Combo("UI Size", &profile.UISize, uiSizeItems, 3);
-			#else
+			ImGui::PushItemWidth(itemWidth);
 			ImGui::Combo("UI Size", &profile.UISize, uiSizeItems, tNumElements(uiSizeItems));
-			#endif
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Overall size of UI widgets and font.");
@@ -155,27 +148,28 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		if (tab)
 		{
 			category = Config::Category_Slideshow;
+			float inputWidth	= profile.GetUIParamScaled(110.0f, 2.5f);
+
 			ImGui::NewLine();
-			ImGui::PushItemWidth(itemWidth);
+			ImGui::SetNextItemWidth(inputWidth);
 			if (ImGui::InputDouble("Period (s)", &profile.SlideshowPeriod, 0.001f, 1.0f, "%.3f"))
 			{
 				tiClampMin(profile.SlideshowPeriod, 1.0/60.0);
 				Viewer::SlideshowCountdown = profile.SlideshowPeriod;
 			}
-			ImGui::PopItemWidth();
-			if (ImGui::Button("8 s"))
+			if (ImGui::Button("8s"))
 			{
 				profile.SlideshowPeriod = 8.0;
 				Viewer::SlideshowCountdown = profile.SlideshowPeriod;
 			}
 			ImGui::SameLine();
-			if (ImGui::Button("4 s"))
+			if (ImGui::Button("4s"))
 			{
 				profile.SlideshowPeriod = 4.0;
 				Viewer::SlideshowCountdown = profile.SlideshowPeriod;
 			}
 			ImGui::SameLine();
-			if (ImGui::Button("1 s"))
+			if (ImGui::Button("1s"))
 			{
 				profile.SlideshowPeriod = 1.0;
 				Viewer::SlideshowCountdown = profile.SlideshowPeriod;
@@ -227,34 +221,39 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		if (tab)
 		{
 			category = Config::Category_System;
+			float itemWidth			= profile.GetUIParamScaled(100.0f, 2.5f);
+			float mipFiltWidth		= profile.GetUIParamScaled(144.0f, 2.5f);
+			float sysButtonWidth	= profile.GetUIParamScaled(126.0f, 2.5f);
 			ImGui::NewLine();
 
-			ImGui::PushItemWidth(itemWidth);	// PUSH IWA
+			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::InputInt("Max Undo Steps", &profile.MaxUndoSteps); ImGui::SameLine();
 			ShowHelpMark("Maximum number of undo steps.");
 			tMath::tiClamp(profile.MaxUndoSteps, 1, 32);
 
+			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::InputInt("Max Mem (MB)", &profile.MaxImageMemMB); ImGui::SameLine();
 			ShowHelpMark("Approx memory use limit of this app. Minimum 256 MB.");
 			tMath::tiClampMin(profile.MaxImageMemMB, 256);
 
+			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::InputInt("Max Cache Files", &profile.MaxCacheFiles); ImGui::SameLine();
 			ShowHelpMark("Maximum number of cache files that may be created. Minimum 200.");
 			tMath::tiClampMin(profile.MaxCacheFiles, 200);
 			if (!DeleteAllCacheFilesOnExit)
 			{
-				if (ImGui::Button("Clear Cache On Exit"))
+				if (ImGui::Button("Clear Cache On Exit", tVector2(sysButtonWidth, 0.0f)))
 					DeleteAllCacheFilesOnExit = true;
 				ImGui::SameLine(); ShowHelpMark("Cache will be cleared on exit.");
 			}
 			else
 			{
-				if (ImGui::Button("Cancel Clear Cache"))
+				if (ImGui::Button("Cancel Clear Cache", tVector2(sysButtonWidth, 0.0f)))
 					DeleteAllCacheFilesOnExit = false;
 				ImGui::SameLine(); ShowHelpMark("Cache will no longer be cleared on exit.");
 			}
 
-			if (ImGui::Button("Reset Bookmarks"))
+			if (ImGui::Button("Reset Bookmarks", tVector2(sysButtonWidth, 0.0f)))
 				tFileDialog::Reset();
 			ImGui::SameLine(); ShowHelpMark("Reset File Dialog Bookmarks.");
 
@@ -262,11 +261,37 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::Separator();
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 
+			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::InputFloat("Gamma##Monitor", &profile.MonitorGamma, 0.01f, 0.1f, "%.3f");
 			ImGui::SameLine();
 			ShowHelpMark("Some image property windows allow gamma correction and the gamma to be specified (eg. HDR DDS files).\nThis setting allows you to set a custom value for what the gamma will be reset to in those dialogs.\nResetting this tab always chooses the industry-standard gamm of 2.2");
 
-			ImGui::PopItemWidth();		// POP IWA
+			tString pasteTypeName = profile.ClipboardPasteFileType;
+			tSystem::tFileType pasteType = tSystem::tGetFileTypeFromName(pasteTypeName);
+			ImGui::SetNextItemWidth(itemWidth);
+			if (ImGui::BeginCombo("Paste Type", pasteTypeName.Chr()))
+			{
+				for (tSystem::tFileTypes::tFileTypeItem* item = FileTypes_ClipboardPaste.First(); item; item = item->Next())
+				{
+					tSystem::tFileType ft = item->FileType;
+					bool selected = (ft == pasteType);
+
+					tString ftName = tGetFileTypeName(ft);
+					if (ImGui::Selectable(ftName.Chr(), &selected))
+						profile.ClipboardPasteFileType = ftName;
+
+					if (selected)
+						ImGui::SetItemDefaultFocus();
+				}				
+				ImGui::EndCombo();
+			}
+			ImGui::SameLine();
+			ShowHelpMark
+			(
+				"When an image is pasted from the clipboard it creates a new image of this type.\n"
+				"Valid types are ones that are lossless or support lossless encoding like webp.\n"
+				"Pasted images support alpha channel. If no alpha it saves the image without it." 
+			);
 
 			ImGui::Checkbox("Strict Loading", &profile.StrictLoading); ImGui::SameLine();
 			ShowHelpMark
@@ -295,39 +320,10 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::Checkbox("Mipmap Chaining", &profile.MipmapChaining); ImGui::SameLine();
 			ShowHelpMark("Chaining generates mipmaps faster. No chaining gives slightly\nbetter results at cost of large generation time.");
 
-			ImGui::PushItemWidth(comboWidth*1.22f);
+			ImGui::SetNextItemWidth(mipFiltWidth);
 			ImGui::Combo("Mip Filter", &profile.MipmapFilter, tImage::tResampleFilterNames, 1+int(tImage::tResampleFilter::NumFilters), 1+int(tImage::tResampleFilter::NumFilters));
-			ImGui::PopItemWidth();
 			ImGui::SameLine();
 			ShowHelpMark("Filtering method to use when generating minification mipmaps.\nUse None for no mipmapping.");
-
-			tString pasteTypeName = profile.ClipboardPasteFileType;
-			tSystem::tFileType pasteType = tSystem::tGetFileTypeFromName(pasteTypeName);
-			ImGui::PushItemWidth(comboWidth*1.22f);
-			if (ImGui::BeginCombo("Paste Type", pasteTypeName.Chr()))
-			{
-				for (tSystem::tFileTypes::tFileTypeItem* item = FileTypes_ClipboardPaste.First(); item; item = item->Next())
-				{
-					tSystem::tFileType ft = item->FileType;
-					bool selected = (ft == pasteType);
-
-					tString ftName = tGetFileTypeName(ft);
-					if (ImGui::Selectable(ftName.Chr(), &selected))
-						profile.ClipboardPasteFileType = ftName;
-
-					if (selected)
-						ImGui::SetItemDefaultFocus();
-				}				
-				ImGui::EndCombo();
-			}
-			ImGui::PopItemWidth();
-			ImGui::SameLine();
-			ShowHelpMark
-			(
-				"When an image is pasted from the clipboard it creates a new image of this type.\n"
-				"Valid types are ones that are lossless or support lossless encoding like webp.\n"
-				"Pasted images support alpha channel. If no alpha it saves the image without it." 
-			);
 	
 			ImGui::EndTabItem();
 		}
@@ -336,6 +332,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		if (tab)
 		{
 			category = Config::Category_Interface;
+			float comboWidth = profile.GetUIParamScaled(120.0f, 2.5f);
 			ImGui::NewLine();
 			ImGui::Checkbox("Confirm Deletes",			&profile.ConfirmDeletes);
 			ImGui::Checkbox("Confirm File Overwrites",	&profile.ConfirmFileOverwrites);
@@ -347,7 +344,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			if (!profile.ZoomPerImage)
 			{
 				const char* zoomModes[] = { "User", "Fit", "Downscale", "OneToOne" };
-				ImGui::PushItemWidth(comboWidth*0.9f);
+				ImGui::PushItemWidth(comboWidth);
 				int zoomMode = int(GetZoomMode());
 				if (ImGui::Combo("Zoom Mode", &zoomMode, zoomModes, tNumElements(zoomModes)))
 				{
@@ -377,7 +374,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				);
 
 				float zoom = Viewer::GetZoomPercent();
-				ImGui::PushItemWidth(comboWidth*0.9f);
+				ImGui::PushItemWidth(comboWidth);
 				if (ImGui::InputFloat("Zoom Percent", &zoom, 0.01f, 0.1f, "%.3f"))
 					Viewer::SetZoomPercent(zoom);
 				ImGui::PopItemWidth();
@@ -402,8 +399,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	);
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - buttonWidth);
-
+	ImGui::SetCursorPosX(rightButtons);
 	if (ImGui::Button("Reset Tab", tVector2(buttonWidth, 0.0f)))
 	{
 		Config::ResetProfile(category);
@@ -430,7 +426,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	);
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - buttonWidth);
+	ImGui::SetCursorPosX(rightButtons);
 	if (ImGui::Button("Close", tVector2(buttonWidth, 0.0f)))
 	{
 		if (popen)

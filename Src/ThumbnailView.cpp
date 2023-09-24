@@ -61,7 +61,7 @@ tString Viewer::MakeImageTooltipString(Viewer::Image* image, const tString& file
 void Viewer::DoSortParameters(bool singleLine)
 {
 	Config::ProfileData& profile = Config::GetProfileData();
-	float sortComboWidth = profile.GetUIParamScaled(110.0f, 2.5f);
+	float sortComboWidth = profile.GetUIParamScaled(120.0f, 2.5f);
 
 	const char* sortItems[] =
 	{

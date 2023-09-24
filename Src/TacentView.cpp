@@ -3211,11 +3211,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 		case Bindings::Operation::UISizeInc:
 			profile.UISize++;
-			#ifdef RESTRICT_UI_SIZES
-			tMath::tiClampMax(profile.UISize, 2);
-			#else
 			tMath::tiClampMax(profile.UISize, int(Config::ProfileData::UISizeEnum::Largest));
-			#endif
 			break;
 
 		case Bindings::Operation::UISizeDec:

@@ -585,11 +585,7 @@ void Config::ProfileData::Load(tExpression expr)
 	tiClamp		(BackgroundStyle, 0, int(BackgroundStyleEnum::NumStyles)-1);
 	tiClamp		(BackgroundCheckerboxSize, 2, 256);
 	tiClamp		(ReticleMode, 0, int(ReticleModeEnum::NumModes)-1);
-	#ifdef RESTRICT_UI_SIZES
-	tiClamp		(UISize, 0, 2);
-	#else
 	tiClamp		(UISize, 0, int(UISizeEnum::Largest));
-	#endif
 	tiClamp		(OverlayCorner, 0, 3);
 	tiClamp		(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
 	tiClamp		(SortKey, 0, int(SortKeyEnum::NumKeys)-1);
