@@ -30,9 +30,8 @@ namespace Viewer
 
 void Viewer::ShowAboutPopup(bool* popen)
 {
-	Config::ProfileData& profile = Config::GetProfileData();
 	tVector2 windowPos = GetDialogOrigin(DialogID::About);
-	tVector2 windowSize = profile.GetUIParamScaled(tVector2(260.0f, 400.0f), 2.5f);
+	tVector2 windowSize = Viewer::GetUIParamScaled(tVector2(260.0f, 400.0f), 2.5f);
 
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
@@ -117,7 +116,7 @@ void Viewer::DoDeleteFileModal(bool deleteFilePressed)
 	if (!ImGui::BeginPopupModal("Delete File", &isOpenDeleteFile, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 
-	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
 	tString fullname = CurrImage->Filename;
 	tString file = tSystem::tGetFileName(fullname);
 	tString dir = tSystem::tGetDir(fullname);
@@ -160,8 +159,7 @@ void Viewer::DoDeleteFileNoRecycleModal(bool deleteFileNoRecycPressed)
 	if (!ImGui::BeginPopupModal("Delete File Permanently", &isOpenPerm, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 
-	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
 
 	tString fullname = CurrImage->Filename;
 	tString file = tSystem::tGetFileName(fullname);
@@ -214,10 +212,8 @@ void Viewer::DoSnapMessageNoFileBrowseModal(bool justPressed)
 	{
 		return;
 	}
-	
-	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
 
+	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
 	ImGui::Text
 	(
 		"The Snap version of Tacent View does not\n"
@@ -253,9 +249,7 @@ void Viewer::DoSnapMessageNoFrameTransModal(bool justPressed)
 		return;
 	}
 
-	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
-
+	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
 	ImGui::Text
 	(
 		"The Snap version of Tacent View does not\n"
@@ -282,9 +276,7 @@ void Viewer::DoRenameModal(bool renamePressed)
 	if (!ImGui::BeginPopupModal("Rename File", &isOpenRen, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 
-	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
-
+	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
 	tString fullname = CurrImage->Filename;
 	tString origname = tSystem::tGetFileName(fullname);
 
@@ -428,10 +420,8 @@ void Viewer::OutputLog::DrawLog()
 
 void Viewer::ShowOutputLogPopup(bool* popen)
 {
-	Config::ProfileData& profile = Config::GetProfileData();
-
 	tVector2 windowPos = GetDialogOrigin(DialogID::LogOutput);
-	tVector2 windowSize = profile.GetUIParamScaled(tVector2(410.0f, 220.0f), 2.65f);
+	tVector2 windowSize = Viewer::GetUIParamScaled(tVector2(410.0f, 220.0f), 2.65f);
 
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	// @wip ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);

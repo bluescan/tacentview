@@ -506,13 +506,12 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		if (justOpened)
 			profileIdx = int(Config::GetProfile());
 
-		Config::ProfileData& profile = Config::GetProfileData();
-		float profileWidth		= profile.GetUIParamScaled(104.0f, 2.5f);
-		float keyWidth			= profile.GetUIParamScaled(132.0f, 2.5f);
-		float operationWidth	= profile.GetUIParamScaled(240.0f, 2.5f);
-		float buttonWidth		= profile.GetUIParamScaled(75.0f, 2.5f);
-		float removeAddSize		= profile.GetUIParamScaled(21.0f, 2.5f);
-		float removeColSize		= profile.GetUIParamScaled(20.0f, 2.5f);
+		float profileWidth		= Viewer::GetUIParamScaled(104.0f, 2.5f);
+		float keyWidth			= Viewer::GetUIParamScaled(132.0f, 2.5f);
+		float operationWidth	= Viewer::GetUIParamScaled(240.0f, 2.5f);
+		float buttonWidth		= Viewer::GetUIParamScaled(75.0f, 2.5f);
+		float removeAddSize		= Viewer::GetUIParamScaled(21.0f, 2.5f);
+		float removeColSize		= Viewer::GetUIParamScaled(20.0f, 2.5f);
 
 		ImGui::SetNextItemWidth(profileWidth);
 		ImGui::Combo("##ProfileToEdit", &profileIdx, ProfileNamesLong, int(Profile::NumProfiles));
@@ -683,9 +682,8 @@ void Bindings::ShowAddBindingSection(Config::ProfileData& settings, float keyWid
 	const float rowHeight = 25.0f;
 	tVector2 outerSize = ImVec2(0.0f, rowHeight);
 
-	Config::ProfileData& profile = Config::GetProfileData();
-	float removeColSize		= profile.GetUIParamScaled(20.0f, 2.5f);
-	float buttonSize		= profile.GetUIParamScaled(100.0f, 2.5f);
+	float removeColSize		= Viewer::GetUIParamScaled(20.0f, 2.5f);
+	float buttonSize		= Viewer::GetUIParamScaled(100.0f, 2.5f);
 
 	if (ImGui::BeginTable("KeyAssignTable", 3, tableFlags, outerSize))
 	{
@@ -841,10 +839,9 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 	tVector2 windowPos = GetDialogOrigin(DialogID::CheatSheet);
 	ImGui::SetNextWindowBgAlpha(0.80f);
 
-	Config::ProfileData& profile = Config::GetProfileData();
-	float actionWidth = profile.GetUIParamScaled(106.0f, 2.5f);
-	float operatWidth = profile.GetUIParamScaled(238.0f, 2.5f);
-	float windowHeight = profile.GetUIParamExtent(380.0f, 940.0f);
+	float actionWidth = Viewer::GetUIParamScaled(106.0f, 2.5f);
+	float operatWidth = Viewer::GetUIParamScaled(238.0f, 2.5f);
+	float windowHeight = Viewer::GetUIParamExtent(380.0f, 940.0f);
 
 	tVector2 windowSize(actionWidth+operatWidth, windowHeight);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
@@ -858,9 +855,10 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 
 	if (ImGui::Begin(title.Chr(), popen, flags))
 	{
+		Config::ProfileData& profile = Config::GetProfileData();
 		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
 		const int maxRowsToDisplay =17;
-		const float rowHeight = profile.GetUIParamScaled(18.0f, 2.5f);
+		const float rowHeight = Viewer::GetUIParamScaled(18.0f, 2.5f);
 		int totalAssigned = profile.InputBindings.GetTotalAssigned();
 		const int numRowsToDisplay = tMin(maxRowsToDisplay, totalAssigned);
 
@@ -914,7 +912,7 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 			ImGui::EndTable();
 		}
 
-		tVector2 buttonSize = profile.GetUIParamScaled(tVector2(100.0f, 22.0f), 2.5f);
+		tVector2 buttonSize = Viewer::GetUIParamScaled(tVector2(100.0f, 22.0f), 2.5f);
 		tVector2 buttonPad(buttonSize.x*1.06f, buttonSize.y*1.22);
 		ImGui::SetCursorPos(tVector2(ImGui::GetWindowContentRegionMax()) - buttonPad);
 		if (ImGui::Button("Close", buttonSize))

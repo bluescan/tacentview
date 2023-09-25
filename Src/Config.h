@@ -138,6 +138,7 @@ struct ProfileData
 
 	enum class UISizeEnum
 	{								// Approx OS Scale Percent.
+		Auto	= -1,				// Determine the size to use based on the OS setting.
 		Nano,						// 75%
 		Tiny,						// 100%
 		Small,						// 125%
@@ -150,17 +151,11 @@ struct ProfileData
 		NumSizes,
 		Smallest					= Nano,
 		Largest						= NumSizes-1,
+		Invalid						= NumSizes
 	};
 
-	int UISize;											// In range [0, NumSizes).
+	int UISize;											// In range [-1, NumSizes).
 	UISizeEnum GetUISize() const						{ return UISizeEnum(UISize); }
-	float GetUISizeNorm() const							{ return float(UISize) / float(UISizeEnum::Largest); }
-
-	// Returns the UI parameter based on the current UI size. You enter the base param value. For the first function,
-	// GetUIParamScaled, you also enter the full-sized scale. For the second variant, GetUIParamExtent, you also enter
-	// the full-sized extent. This latter function allows non-uniform scaling of multi-dimensional types.
-	template<typename T> T GetUIParamScaled(const T& param, float fullScale);
-	template<typename T> T GetUIParamExtent(const T& param, const T& fullParam);
 
 	int ResampleFilter;									// Matches tImage::tResampleFilter. Used for image resize when saving and multiframe saving.
 	int ResampleEdgeMode;								// Matches tImage::tResampleEdgeMode. Used for image resize when saving and multiframe saving.
@@ -344,28 +339,4 @@ extern ProfileData* Current;
 inline Viewer::Config::ProfileData& Viewer::Config::GetProfileData()
 {
 	return *Viewer::Config::Current;
-}
-
-
-template<typename T> T Viewer::Config::ProfileData::GetUIParamScaled(const T& param, float fullScale)
-{
-	T scaled = tMath::tLinearLookup
-	(
-		float(UISize), float(UISizeEnum::Smallest), float(UISizeEnum::Largest),
-		param, T(param*fullScale)
-	);
-
-	return scaled;
-}
-
-
-template<typename T> T Viewer::Config::ProfileData::GetUIParamExtent(const T& param, const T& fullParam)
-{
-	T scaled = tMath::tLinearLookup
-	(
-		float(UISize), float(UISizeEnum::Smallest), float(UISizeEnum::Largest),
-		param, fullParam
-	);
-
-	return scaled;
 }

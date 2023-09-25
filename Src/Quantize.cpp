@@ -123,16 +123,15 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 	if (quantizeImagePressed)
 		ImGui::OpenPopup("Quantize");
 
-	Config::ProfileData& profile = Config::GetProfileData();
-	float modalWidth = profile.GetUIParamScaled(296.0f, 2.5f);
+	float modalWidth = Viewer::GetUIParamScaled(296.0f, 2.5f);
 
 	bool isOpenQuantizeImage = true;
 	ImGui::SetNextWindowSize(tVector2(modalWidth, 0.0f));
 	if (!ImGui::BeginPopupModal("Quantize", &isOpenQuantizeImage, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 
-	float buttonWidth	= profile.GetUIParamScaled(76.0f, 2.5f);
-	float itemWidth		= profile.GetUIParamScaled(160.0f, 2.5f);
+	float buttonWidth	= Viewer::GetUIParamScaled(76.0f, 2.5f);
+	float itemWidth		= Viewer::GetUIParamScaled(160.0f, 2.5f);
 
 	tAssert(CurrImage);
 	static int method = int(tImage::tQuantize::Method::Wu);

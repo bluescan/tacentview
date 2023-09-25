@@ -103,6 +103,8 @@ namespace Viewer
 	extern const tMath::tVector4 ColourPressedBG;
 	extern const tMath::tVector4 ColourClear;
 
+	extern Viewer::Config::ProfileData::UISizeEnum CurrentUISize;
+
 	const double DisappearDuration	= 4.0;
 
 	// Helper to display a little (?) mark which shows a tooltip when hovered.
@@ -131,6 +133,12 @@ namespace Viewer
 
 	// This is a wrapper for ImGui::Button that also returns true if enter pressed.
 	bool Button(const char* label, const tMath::tVector2& size = tMath::tVector2::zero);
+
+	// Returns the UI parameter based on the current UI size. You enter the base param value. For the first function,
+	// GetUIParamScaled, you also enter the full-sized scale. For the second variant, GetUIParamExtent, you also enter
+	// the full-sized extent. This latter function allows non-uniform scaling of multi-dimensional types.
+	template<typename T> T GetUIParamScaled(const T& param, float fullScale);
+	template<typename T> T GetUIParamExtent(const T& param, const T& fullParam);
 
 	enum class DialogID
 	{
@@ -162,4 +170,35 @@ namespace Viewer
 		tMath::tVector2& scrPos, int imgX, int imgY, const tMath::tVector4& lrtb,
 		const tMath::tVector2& uvOff, bool centerPixel = false
 	);
+}
+
+
+// Implementation below this line.
+
+
+template<typename T> T Viewer::GetUIParamScaled(const T& param, float fullScale)
+{
+	tAssert(CurrentUISize != Config::ProfileData::UISizeEnum::Auto);
+	tAssert(CurrentUISize != Config::ProfileData::UISizeEnum::Invalid);
+	T scaled = tMath::tLinearLookup
+	(
+		float(CurrentUISize), float(Config::ProfileData::UISizeEnum::Smallest), float(Config::ProfileData::UISizeEnum::Largest),
+		param, T(param*fullScale)
+	);
+
+	return scaled;
+}
+
+
+template<typename T> T Viewer::GetUIParamExtent(const T& param, const T& fullParam)
+{
+	tAssert(CurrentUISize != Config::ProfileData::UISizeEnum::Auto);
+	tAssert(CurrentUISize != Config::ProfileData::UISizeEnum::Invalid);
+	T scaled = tMath::tLinearLookup
+	(
+		float(CurrentUISize), float(Config::ProfileData::UISizeEnum::Smallest), float(Config::ProfileData::UISizeEnum::Largest),
+		param, fullParam
+	);
+
+	return scaled;
 }

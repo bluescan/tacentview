@@ -98,12 +98,11 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 	static char lo[32];
 	static char hi[32];
 
-	Config::ProfileData& profile = Config::GetProfileData();
-	float itemWidth		= profile.GetUIParamScaled(160.0f, 2.5f);
-	float powButWidth	= profile.GetUIParamScaled(60.0f, 2.5f);
-	float powButOffset	= profile.GetUIParamScaled(220.0f, 2.5f);
-	float buttonWidth	= profile.GetUIParamScaled(76.0f, 2.5f);
-	float comboWidth	= profile.GetUIParamScaled(160.0f, 2.5f);
+	float itemWidth		= Viewer::GetUIParamScaled(160.0f, 2.5f);
+	float powButWidth	= Viewer::GetUIParamScaled(60.0f, 2.5f);
+	float powButOffset	= Viewer::GetUIParamScaled(220.0f, 2.5f);
+	float buttonWidth	= Viewer::GetUIParamScaled(76.0f, 2.5f);
+	float comboWidth	= Viewer::GetUIParamScaled(160.0f, 2.5f);
 	tVector2 powSize(powButWidth, 0.0f);
 
 	// If just opened, loop through all the images and choose the largest width and height.
@@ -148,6 +147,8 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 
 	if (ImGui::Button("Reset From Images") && CurrImage)
 		ComputeMaxWidthHeight(outWidth, outHeight);
+
+	Config::ProfileData& profile = Config::GetProfileData();
 
 	// @todo This is not a cheap call. No need to do it every frame, only when dims change above.
 	if (!AllDimensionsMatch(outWidth, outHeight))
@@ -352,9 +353,8 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 	if (!ImGui::BeginPopupModal("Extract Frames", &isOpenExtractFrames, ImGuiWindowFlags_AlwaysAutoResize))
 		return;
 
-	Config::ProfileData& profile = Config::GetProfileData();
-	float inputWidth	= profile.GetUIParamScaled(160.0f, 2.5f);
-	float buttonWidth	= profile.GetUIParamScaled(76.0f, 2.5f);
+	float inputWidth	= Viewer::GetUIParamScaled(160.0f, 2.5f);
+	float buttonWidth	= Viewer::GetUIParamScaled(76.0f, 2.5f);
 
 	int numFrames = CurrImage->GetNumFrames();
 

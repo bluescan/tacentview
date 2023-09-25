@@ -43,10 +43,9 @@ void Viewer::DoResizeWidthHeightInterface(int srcW, int srcH, int& dstW, int& ds
 	float aspect = float(srcW) / float(srcH);
 	static bool lockAspect = true;
 
-	Config::ProfileData& profile	= Config::GetProfileData();
-	float dimWidth					= profile.GetUIParamScaled(90.0f, 2.5f);
-	float dimOffset					= profile.GetUIParamScaled(140.0f, 2.5f);
-	float powButtonWidth			= profile.GetUIParamScaled(44.0f, 2.5f);
+	float dimWidth					= Viewer::GetUIParamScaled(90.0f, 2.5f);
+	float dimOffset					= Viewer::GetUIParamScaled(140.0f, 2.5f);
+	float powButtonWidth			= Viewer::GetUIParamScaled(44.0f, 2.5f);
 
 	static char lo[32];
 	static char hi[32];
@@ -94,7 +93,7 @@ void Viewer::DoResizeFilterInterface(int srcW, int srcH, int dstW, int dstH)
 		return;
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float comboWidth = profile.GetUIParamScaled(168.0f, 2.5f);
+	float comboWidth = Viewer::GetUIParamScaled(168.0f, 2.5f);
 
 	ImGui::SetNextItemWidth(comboWidth);
 	ImGui::Combo("Filter", &profile.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
@@ -113,7 +112,7 @@ void Viewer::DoResizeAnchorInterface()
 	Config::ProfileData& profile = Config::GetProfileData();
 	static const char* longNames[3*3] = { "Top-Left", "Top-Middle", "Top-Right", "Middle-Left", "Middle", "Middle-Right", "Bottom-Left", "Bottom-Middle", "Bottom-Right" };
 
-	float ancTextPos	= profile.GetUIParamScaled(72.0f, 2.5f);
+	float ancTextPos	= Viewer::GetUIParamScaled(72.0f, 2.5f);
 	ImGui::NewLine();
 	ImGui::SetCursorPosX(ancTextPos);
 	ImGui::Text("Anchor: %s", (profile.CropAnchor == -1) ? "Cursor Position" : longNames[profile.CropAnchor]);
@@ -122,10 +121,10 @@ void Viewer::DoResizeAnchorInterface()
 
 	// Anchors.
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2::zero);
-	float ancLeft		= profile.GetUIParamScaled(92.0f, 2.5f);
-	float ancImgSize	= profile.GetUIParamScaled(24.0f, 2.5f);
-	float ancTopMargin	= profile.GetUIParamScaled(7.0f, 2.5f);
-	float ancSpacing	= profile.GetUIParamScaled(2.0f, 2.5f);
+	float ancLeft		= Viewer::GetUIParamScaled(92.0f, 2.5f);
+	float ancImgSize	= Viewer::GetUIParamScaled(24.0f, 2.5f);
+	float ancTopMargin	= Viewer::GetUIParamScaled(7.0f, 2.5f);
+	float ancSpacing	= Viewer::GetUIParamScaled(2.0f, 2.5f);
 	tVector2 imgSize	(ancImgSize, ancImgSize);
 
 	// Top Row
@@ -248,7 +247,7 @@ void Viewer::DoFillColourInterface(const char* toolTipText, bool contactSheetFil
 	if (toolTipText)
 		ShowToolTip(toolTipText);
 
-	float buttonWidth = profile.GetUIParamScaled(63.0f, 2.5f);
+	float buttonWidth = Viewer::GetUIParamScaled(63.0f, 2.5f);
 
 	ImGui::SameLine();
 	tPicture* picture = CurrImage ? CurrImage->GetCurrentPic() : nullptr;
@@ -291,7 +290,7 @@ void Viewer::DoResizeImageModal(bool resizeImagePressed)
 		return;
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(78.0f, 2.5f);
+	float buttonWidth = Viewer::GetUIParamScaled(78.0f, 2.5f);
 
 	tAssert(CurrImage);		tPicture* picture = CurrImage->GetCurrentPic();		tAssert(picture);
 	int srcW				= picture->GetWidth();
@@ -419,7 +418,7 @@ void Viewer::DoResizeCanvasAnchorTab(bool firstOpen)
 	ImGui::NewLine();
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(78.0f, 2.5f);
+	float buttonWidth = Viewer::GetUIParamScaled(78.0f, 2.5f);
 
 	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
@@ -475,7 +474,7 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool firstOpen)
 	ImGui::NewLine();
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(78.0f, 2.5f);
+	float buttonWidth = Viewer::GetUIParamScaled(78.0f, 2.5f);
 
 	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
@@ -519,8 +518,8 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 	int srcW = picture->GetWidth();
 	int srcH = picture->GetHeight();
 	Config::ProfileData& profile = Config::GetProfileData();
-	float comboWidth = profile.GetUIParamScaled(108.0f, 2.5f);
-	float inputWidth = profile.GetUIParamScaled(26.0f, 2.5f);
+	float comboWidth = Viewer::GetUIParamScaled(108.0f, 2.5f);
+	float inputWidth = Viewer::GetUIParamScaled(26.0f, 2.5f);
 
 	ImGui::NewLine();
 	ImGui::PushItemWidth(comboWidth);
@@ -566,7 +565,7 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	float buttonWidth = profile.GetUIParamScaled(78.0f, 2.5f);
+	float buttonWidth = Viewer::GetUIParamScaled(78.0f, 2.5f);
 
 	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{

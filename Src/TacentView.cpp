@@ -208,7 +208,6 @@ namespace Viewer
 	Image Image_DefaultThumbnail;
 
 	GLFWwindow* Window								= nullptr;
-	int CurrentFontIndex							= -1;
 	double DisappearCountdown						= DisappearDuration;
 	double SlideshowCountdown						= 0.0;
 	bool SlideshowPlaying							= false;
@@ -279,8 +278,16 @@ namespace Viewer
 	const float MinUIScale							= 1.0f;
 	const float MaxUIScale							= MaxFontPointSize / MinFontPointSize;
 	const float FontStepPointSize					= (MaxFontPointSize - MinFontPointSize) / (int(Config::ProfileData::UISizeEnum::NumSizes) - 1);
+	Config::ProfileData::UISizeEnum CurrentUISize	= Config::ProfileData::UISizeEnum::Invalid;
 
 	uint64 FrameNumber								= 0;
+
+	// This reads the UI size from the current profile. If the profile is set to auto it queries the OS scale settings.
+	// It always returns a valid (non-auto) UI size.
+	Config::ProfileData::UISizeEnum GetDesiredUISize();
+
+	// This function expects a valid (non-auto) UI size. It updates the style and ImGui font that are in use.
+	void SetUISize(Viewer::Config::ProfileData::UISizeEnum);
 
 	void DrawBackground(float l, float r, float b, float t, float drawW, float drawH);
 	void PrintRedirectCallback(const char* text, int numChars);
@@ -623,13 +630,12 @@ void Viewer::PrintRedirectCallback(const char* text, int numChars)
 
 tVector2 Viewer::GetDialogOrigin(DialogID dialogID)
 {
-	Config::ProfileData& profile = Config::GetProfileData();
 	int hindex = int(dialogID) % 4;
 	int vindex = int(dialogID) / 4;
 
-	float topOffset		= profile.GetUIParamExtent(82.0f, 160.0f);
-	float leftOffset	= profile.GetUIParamScaled(30.0f, 2.5f);
-	float heightDelta	= profile.GetUIParamScaled(22.0f, 2.5f);
+	float topOffset		= Viewer::GetUIParamExtent(82.0f, 160.0f);
+	float leftOffset	= Viewer::GetUIParamScaled(30.0f, 2.5f);
+	float heightDelta	= Viewer::GetUIParamScaled(22.0f, 2.5f);
 
 	// @wip
 	float widthDelta = 200.0f;
@@ -1288,9 +1294,9 @@ int Viewer::DoMainMenuBar()
 		ImGui::SetNextWindowPos(tVector2(0.0f, 0.0f));
 		ImGui::BeginMainMenuBar();
 
-		tVector2 colourButtonSize	= profile.GetUIParamExtent(tVector2(26.0f, 26.0f), tVector2(64.0f, 64.0f));
-		tVector2 toolImageSize		= profile.GetUIParamExtent(tVector2(24.0f, 24.0f), tVector2(62.0f, 62.0f));
-		float zoomComboWidth		= profile.GetUIParamScaled(70.0f, 2.5f);
+		tVector2 colourButtonSize	= Viewer::GetUIParamExtent(tVector2(26.0f, 26.0f), tVector2(64.0f, 64.0f));
+		tVector2 toolImageSize		= Viewer::GetUIParamExtent(tVector2(24.0f, 24.0f), tVector2(62.0f, 62.0f));
+		float zoomComboWidth		= Viewer::GetUIParamScaled(70.0f, 2.5f);
 
 		ImGuiWindow* window = ImGui::GetCurrentWindow();
 		if (window)
@@ -1923,7 +1929,7 @@ int Viewer::GetNavBarHeight()
 	if (!profile.ShowNavBar)
 		return 0;
 
-	int barHeight = profile.GetUIParamExtent(30, 72);
+	int barHeight = Viewer::GetUIParamExtent(30, 72);
 	return barHeight;
 }
 
@@ -1940,10 +1946,9 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 
 	ImGui::SetNextWindowSize(tVector2(w, h), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(tVector2(x, y), ImGuiCond_Always);
-	Config::ProfileData& profile = Config::GetProfileData();
 
 	// Push A
-	float ypad = profile.GetUIParamExtent(2.0f, 4.0f);
+	float ypad = Viewer::GetUIParamExtent(2.0f, 4.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(10.0f, ypad));
@@ -1953,7 +1958,7 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 		ImGuiWindowFlags_NoTitleBar	| ImGuiWindowFlags_NoScrollbar	;
 
 	ImGui::Begin("NavBar", nullptr, flags);
-	tVector2 upDirButtonSize = profile.GetUIParamScaled(tVector2(25.0f, 25.0f), 2.5f);
+	tVector2 upDirButtonSize = Viewer::GetUIParamScaled(tVector2(25.0f, 25.0f), 2.5f);
 	if
 	(
 		ImGui::ImageButton
@@ -1973,7 +1978,7 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 		}
 	}
 
-	float textYOffset = profile.GetUIParamExtent(6.0f, 15.0f);
+	float textYOffset = Viewer::GetUIParamExtent(6.0f, 15.0f);
 	ImGui::SameLine();
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + textYOffset);
 	ImGui::Text("%s", ImagesDir.Chr());
@@ -1981,7 +1986,7 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 	if (ImagesSubDirs.NumItems() > 0)
 	{
 		ImGui::SameLine();
-		float comboSize = profile.GetUIParamExtent(27.0f, 64.0f);		
+		float comboSize = Viewer::GetUIParamExtent(27.0f, 64.0f);		
 		if (ImGui::BeginCombo("##navcombo", nullptr, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightLargest | ImGuiComboFlags_NoPreview, comboSize))
 		{
 			for (tStringItem* subDir = ImagesSubDirs.First(); subDir; subDir = subDir->Next())
@@ -2004,6 +2009,67 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 
 	// Pop A
 	ImGui::PopStyleVar(3);
+}
+
+
+Viewer::Config::ProfileData::UISizeEnum Viewer::GetDesiredUISize()
+{
+	Config::ProfileData& profile = *Viewer::Config::Current;
+	Config::ProfileData::UISizeEnum profSize = profile.GetUISize();
+	if (profSize == Config::ProfileData::UISizeEnum::Invalid)
+		return Config::ProfileData::UISizeEnum::Tiny;
+
+	if (profSize == Config::ProfileData::UISizeEnum::Auto)
+	{
+		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+		if (!monitor)
+			return Config::ProfileData::UISizeEnum::Tiny;
+
+		float xscale = 0.0f; float yscale = 0.0f;
+		glfwGetMonitorContentScale(monitor, &xscale, &yscale);
+		if ((xscale <= 0.0f) || (yscale <= 0.0f) || !tApproxEqual(xscale, yscale, 0.001f))
+			return Config::ProfileData::UISizeEnum::Tiny;
+		else if (xscale < (0.75f + 1.00f)/2.0f)
+			return Viewer::Config::ProfileData::UISizeEnum::Nano;
+		else if (xscale < (1.00f + 1.25f)/2.0f)
+			return Viewer::Config::ProfileData::UISizeEnum::Tiny;
+		else if (xscale < (1.25f + 1.50f)/2.0f)
+			return Viewer::Config::ProfileData::UISizeEnum::Small;
+		else if (xscale < (1.50f + 1.75f)/2.0f)
+			return Viewer::Config::ProfileData::UISizeEnum::Moderate;
+		else if (xscale < (1.75f + 2.00f)/2.0f)
+			return Viewer::Config::ProfileData::UISizeEnum::Medium;
+		else if (xscale < (2.00f + 2.25f)/2.0f)
+			return Viewer::Config::ProfileData::UISizeEnum::Large;
+		else if (xscale < (2.25f + 2.50f)/2.0f)
+			return Viewer::Config::ProfileData::UISizeEnum::Huge;
+		else
+			return Viewer::Config::ProfileData::UISizeEnum::Massive;
+	}
+
+	return profSize;
+}
+
+
+void Viewer::SetUISize(Viewer::Config::ProfileData::UISizeEnum uiSize)
+{
+	tAssert(uiSize >= Config::ProfileData::UISizeEnum::Smallest);
+	tAssert(uiSize <= Config::ProfileData::UISizeEnum::Largest);
+	ImGuiIO& io = ImGui::GetIO();
+
+	// Update the font.
+	tAssert(int(uiSize) < io.Fonts->Fonts.Size);
+	ImFont* font = io.Fonts->Fonts[int(uiSize)];
+	io.FontDefault = font;
+
+	// Update the style scale.
+	float uiSizeNorm = float(uiSize) / float(Config::ProfileData::UISizeEnum::Largest);
+	float uiSizeScale = tMath::tLini(uiSizeNorm, Viewer::MinUIScale, Viewer::MaxUIScale);
+	ImGuiStyle scaledStyle;
+	scaledStyle.ScaleAllSizes(uiSizeScale);
+	ImGui::GetStyle() = scaledStyle;
+
+	CurrentUISize = uiSize;
 }
 
 
@@ -2421,24 +2487,11 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		lastCropMode = CropMode;
 	}
 
-	// Did the font change? This may happen if a) the font was changed in the prefs, b) reset was pressed, or c) inc/dec UISize
+	// Did the UI size change? This may happen if a) the font was changed in the prefs, b) reset was pressed, or c) inc/dec UISize
 	// operation was executed. Note that fontCurrent may be null if ImGui hasn't updated it from last time so instead we track
-	// what was submitted with CurrentFontIndex.
-	if (CurrentFontIndex != int(profile.GetUISize()))
-	{
-		float uiSizeScale = tMath::tLini(profile.GetUISizeNorm(), Viewer::MinUIScale, Viewer::MaxUIScale);
-		ImGuiStyle scaledStyle;
-		scaledStyle.ScaleAllSizes(uiSizeScale);
-		ImGui::GetStyle() = scaledStyle;
-
-		ImGuiIO& io = ImGui::GetIO();
-		tAssert(profile.UISize < io.Fonts->Fonts.Size);
-		ImFont* font = io.Fonts->Fonts[profile.UISize];
-		ImGui::PushID((void*)font);
-		io.FontDefault = font;
-		ImGui::PopID();
-		CurrentFontIndex = profile.UISize;
-	}
+	// what was submitted with CurrentUISize.
+	if (CurrentUISize != GetDesiredUISize())
+		SetUISize(GetDesiredUISize());
 
 	// Show the big demo window. You can browse its code to learn more about Dear ImGui.
 	static bool showDemoWindow = false;
@@ -2454,7 +2507,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		DisappearCountdown -= dt;
 	tVector2 mousePos(mouseX, mouseY);
 
-	tVector2 prevNextArrowSize = profile.GetUIParamExtent(tVector2(18.0f, 72.0f), tVector2(32.0f, 128.0f));
+	tVector2 prevNextArrowSize = Viewer::GetUIParamExtent(tVector2(18.0f, 72.0f), tVector2(32.0f, 128.0f));
 	float prevNextArrowMargin = 10.0f;
 
 	// Previous arrow.
@@ -2514,7 +2567,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		profile.ShowFrameScrubber && CurrImage && (CurrImage->GetNumFrames() > 1) && !CurrImage->IsAltPictureEnabled()
 	)
 	{
-		float scrubOffset = profile.GetUIParamScaled(34.0f, 2.5f);
+		float scrubOffset = Viewer::GetUIParamScaled(34.0f, 2.5f);
 		ImGui::SetNextWindowPos(tVector2(0.0f, float(topUIHeight) + float(workAreaH) - scrubOffset));
 		ImGui::SetNextWindowSize(tVector2(float(workAreaW), 0.0f), ImGuiCond_Always);
 		ImGui::Begin("Scrubber", nullptr, flagsImgButton);
@@ -2534,10 +2587,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::End();
 	}
 
-	float mainButtonImgDim	= profile.GetUIParamScaled(26.0f, 2.5f);
-	float mainButtonHSpace	= profile.GetUIParamScaled(8.0f, 2.5f);
+	float mainButtonImgDim	= Viewer::GetUIParamScaled(26.0f, 2.5f);
+	float mainButtonHSpace	= Viewer::GetUIParamScaled(8.0f, 2.5f);
 	float mainButtonHDelta	= mainButtonImgDim + mainButtonHSpace;
-	float hitAreaHeight		= profile.GetUIParamScaled(100.0f, 2.5f);
+	float hitAreaHeight		= Viewer::GetUIParamScaled(100.0f, 2.5f);
 
 	float minHitRectX = (workAreaW>>1) - mainButtonHDelta*5.0f;
 	float maxHitRectX = (workAreaW>>1) + mainButtonHDelta*5.0f;
@@ -2545,7 +2598,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	tVector2 rectMaxControlButtons(maxHitRectX, hitAreaHeight);
 	tARect2 hitAreaControlButtons(rectMinControlButtons, rectMaxControlButtons);
 
-	float buttonHeightOffset = profile.GetUIParamScaled(62.0f, 2.5f);
+	float buttonHeightOffset = Viewer::GetUIParamScaled(62.0f, 2.5f);
 	if
 	(
 		!CropMode &&
@@ -2677,7 +2730,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::SetNextWindowPos(tVector2((workAreaW>>1) - mainButtonImgDim/2.0f + mainButtonHDelta*4.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 			ImGui::SetNextWindowSize(tVector2(0.0f, mainButtonImgDim), ImGuiCond_Always);
 			ImGui::Begin("ToMainProfile", nullptr, flagsImgButton);
-			float escButtonWidth = profile.GetUIParamScaled(50.0f, 2.5f);
+			float escButtonWidth = Viewer::GetUIParamScaled(50.0f, 2.5f);
 			if (ImGui::Button("ESC", tVector2(escButtonWidth, mainButtonImgDim)))
 				ChangProfile(Profile::Main);
 			ImGui::End();
@@ -2689,8 +2742,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	// Slideshow progress arc.
 	if (SlideshowPlaying && (profile.SlideshowPeriod >= 1.0f) && profile.SlideshowProgressArc)
 	{
-		float arcRadius = profile.GetUIParamScaled(8.0f, 2.5f);
-		float arcHOffset = profile.GetUIParamScaled(97.0f, 2.5f);
+		float arcRadius = Viewer::GetUIParamScaled(8.0f, 2.5f);
+		float arcHOffset = Viewer::GetUIParamScaled(97.0f, 2.5f);
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(0.0f, 0.0f));
 
@@ -3210,14 +3263,22 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::UISizeInc:
-			profile.UISize++;
-			tMath::tiClampMax(profile.UISize, int(Config::ProfileData::UISizeEnum::Largest));
+		{
+			int sizeInt = profile.UISize;
+			if ((sizeInt >= int(Config::ProfileData::UISizeEnum::Smallest)) && (sizeInt <= int(Config::ProfileData::UISizeEnum::Largest)-1))
+				sizeInt++;
+			profile.UISize = sizeInt;
 			break;
+		}
 
 		case Bindings::Operation::UISizeDec:
-			profile.UISize--;
-			tMath::tiClampMin(profile.UISize, 0);
+		{
+			int sizeInt = profile.UISize;
+			if ((sizeInt >= int(Config::ProfileData::UISizeEnum::Smallest)+1) && (sizeInt <= int(Config::ProfileData::UISizeEnum::Largest)))
+				sizeInt--;
+			profile.UISize = sizeInt;
 			break;
+		}
 
 		case Bindings::Operation::ZoomIn:
 			if (imgAvail) ApplyZoomDelta(tMath::tRound(GetZoomPercent()*0.1f));
@@ -4030,16 +4091,7 @@ int main(int argc, char** argv)
 		io.Fonts->AddFontFromFileTTF(fontFile.Chr(), Viewer::MinFontPointSize + float(uisize)*Viewer::FontStepPointSize);
 	#endif
 
-	Viewer::Config::ProfileData& profile = *Viewer::Config::Current;
-	tiClamp(profile.UISize, 0, io.Fonts->Fonts.Size - 1);
-	ImFont* font = io.Fonts->Fonts[profile.UISize];
-	io.FontDefault = font;
-	Viewer::CurrentFontIndex = profile.UISize;
-
-	float uiSizeScale = tMath::tLini(profile.GetUISizeNorm(), Viewer::MinUIScale, Viewer::MaxUIScale);
-	ImGuiStyle scaledStyle;
-	scaledStyle.ScaleAllSizes(uiSizeScale);
-	ImGui::GetStyle() = scaledStyle;
+	Viewer::SetUISize( Viewer::GetDesiredUISize() );
 
 	Viewer::LoadAppImages(dataDir);
 	Viewer::PopulateImages();
@@ -4069,6 +4121,7 @@ int main(int argc, char** argv)
 	glfwMakeContextCurrent(Viewer::Window);
 	glfwSwapBuffers(Viewer::Window);
 
+	Viewer::Config::ProfileData& profile = *Viewer::Config::Current;
 	if (profile.FullscreenMode)
 		Viewer::ChangeScreenMode(true, true);
 

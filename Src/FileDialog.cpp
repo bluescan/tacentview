@@ -1222,8 +1222,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 
 	ImGuiContext& ctx = *GImGui;
 	const ImGuiStyle& style = ctx.Style;
-	Viewer::Config::ProfileData& profile = *Viewer::Config::Current;
-	tVector2 nextWinSize = profile.GetUIParamScaled(tVector2(660.0f, 400.0f), 2.5f);
+	tVector2 nextWinSize = Viewer::GetUIParamScaled(tVector2(660.0f, 400.0f), 2.5f);
 	ImGui::SetNextWindowSize(nextWinSize, ImGuiCond_Appearing);
 
 	// Center the window. This seems to be default behaviour so leaving it commented out.
@@ -1253,16 +1252,15 @@ FileDialog::DialogState FileDialog::DoPopup()
 	DialogState state = DialogState::Open;
 	Result.Clear();
 
-	// float menuBarHeight = profile.GetUIParamScaled(24.0, 2.5f);
-	tVector2 toolImageSize = profile.GetUIParamExtent(tVector2(24.0f, 24.0f), tVector2(62.0f, 62.0f));
+	tVector2 toolImageSize = Viewer::GetUIParamExtent(tVector2(24.0f, 24.0f), tVector2(62.0f, 62.0f));
 	float menuBarHeight = toolImageSize.y + style.ItemSpacing.y*2.0f;
-	float bottomBarRowA = profile.GetUIParamScaled(20.0, 2.5f);
-	float bottomBarRowB = profile.GetUIParamScaled(28.0, 2.5f);
-	float colWidthIcon = profile.GetUIParamScaled(24.0, 2.5f);
-	float colWidthName = profile.GetUIParamScaled(190.0, 2.5f);
-	float colWidthTime = profile.GetUIParamScaled(120.0, 2.5f);
-	float colWidthType = profile.GetUIParamScaled(36.0, 2.5f);
-	float colWidthSize = profile.GetUIParamScaled(60.0, 2.5f);
+	float bottomBarRowA = Viewer::GetUIParamScaled(20.0, 2.5f);
+	float bottomBarRowB = Viewer::GetUIParamScaled(28.0, 2.5f);
+	float colWidthIcon = Viewer::GetUIParamScaled(24.0, 2.5f);
+	float colWidthName = Viewer::GetUIParamScaled(190.0, 2.5f);
+	float colWidthTime = Viewer::GetUIParamScaled(120.0, 2.5f);
+	float colWidthType = Viewer::GetUIParamScaled(36.0, 2.5f);
+	float colWidthSize = Viewer::GetUIParamScaled(60.0, 2.5f);
 	float bottomBarHeight = bottomBarRowA + bottomBarRowB;
 
 	//
@@ -1373,7 +1371,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 	int outerTableFlags = ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable;
 	if (ImGui::BeginTable("FileDialogTable", 2, outerTableFlags, tVector2(0.0f, -(bottomBarHeight + menuBarHeight))))
 	{
-		float leftTreeWidth = profile.GetUIParamScaled(160.0f, 2.5f);
+		float leftTreeWidth = Viewer::GetUIParamScaled(160.0f, 2.5f);
 		ImGui::TableSetupColumn("LeftTreeColumn", ImGuiTableColumnFlags_WidthFixed, leftTreeWidth);
 		ImGui::TableSetupColumn("RightContentColumn", ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableNextRow();
@@ -1521,7 +1519,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 				// Do the content rows. We could use ImGuiListClipper here but so far, even with thousands of files in
 				// the Contents list, it is very responsive. Also, since it's a list rather than an array, we'd still
 				// need a 'Next' loop to get to the right clipper starting point (clipper.DisplayStart).
-				tVector2 iconSize = profile.GetUIParamScaled(tVector2(16.0f, 16.0f), 2.5f);
+				tVector2 iconSize = Viewer::GetUIParamScaled(tVector2(16.0f, 16.0f), 2.5f);
 				for (ContentItem* item = SelectedNode->Contents.First(); item; item = item->Next())
 				{
 					// There were two ways to implement hidden. Invalidate everything and enumerate the filesystem objects again (less memory)
@@ -1565,7 +1563,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 
 	bool resultAvail = false;
 	ContentItem* selItem = SelectedNode ? SelectedNode->FindSelectedItem() : nullptr;
-	float actionButtonWidth = profile.GetUIParamScaled(70.0f, 2.5f);
+	float actionButtonWidth = Viewer::GetUIParamScaled(70.0f, 2.5f);
 	switch (Mode)
 	{
 		case DialogMode::OpenFile:
@@ -1684,8 +1682,7 @@ void FileDialog::DoFileTypesDropdown(bool supportMultipleTypes)
 
 	ImGuiContext& ctx = *GImGui;
 	const ImGuiStyle& style = ctx.Style;
-	Viewer::Config::ProfileData& profile = *Viewer::Config::Current;
-	float dropdownWidth = profile.GetUIParamScaled(140.0f, 2.5f);
+	float dropdownWidth = Viewer::GetUIParamScaled(140.0f, 2.5f);
 	dropdownWidth += style.ItemSpacing.x;
 
 	ImGui::SameLine();

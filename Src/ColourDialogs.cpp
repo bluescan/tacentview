@@ -56,8 +56,7 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 	static tColourf floatColReset = tColourf::black;
 	if (ImGui::Begin("Edit Pixel", popen, flags))
 	{
-		Config::ProfileData& profile = Config::GetProfileData();
-		float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
+		float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
 
 		static int lastCursorX = -1;
 		static int lastCursorY = -1;
@@ -208,10 +207,10 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			);
 		}
 
-		Config::ProfileData& profile = Config::GetProfileData();
-		float comboWidth	= profile.GetUIParamScaled(80.0f, 2.5f);
-		float buttonWidth	= profile.GetUIParamScaled(120.0f, 2.5f);
+		float comboWidth	= Viewer::GetUIParamScaled(80.0f, 2.5f);
+		float buttonWidth	= Viewer::GetUIParamScaled(120.0f, 2.5f);
 
+		Config::ProfileData& profile = Config::GetProfileData();
 		tColourf floatCol(profile.BackgroundColour);
 		if (ImGui::ColorEdit3("##Background", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))
 		{
@@ -351,9 +350,8 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	//
 	// UI size parameters.
 	//
-	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth	= profile.GetUIParamScaled(76.0f, 2.5f);
-	float itemWidth		= profile.GetUIParamScaled(258.0f, 2.5f);
+	float buttonWidth	= Viewer::GetUIParamScaled(76.0f, 2.5f);
+	float itemWidth		= Viewer::GetUIParamScaled(258.0f, 2.5f);
 
 	const char* channelItems[] = { "RGB", "Red", "Green", "Blue", "Alpha" };
 	if (ImGui::BeginTabBar("LevelsTabBar", ImGuiTabBarFlags_None))
@@ -436,7 +434,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			}
 			tString histName;  tsPrintf(histName,  "%s Intensity", channelItems[channels]);
 			tString histLabel; tsPrintf(histLabel, "Max %d\n\nHistogram", int(max));
-			tVector2 histSize = profile.GetUIParamScaled(tVector2(256.0f, 80.0f), 2.5f);
+			tVector2 histSize = Viewer::GetUIParamScaled(tVector2(256.0f, 80.0f), 2.5f);
 			HistogramCallback histoCB(Image::AdjChan(channels), logarithmicHisto, pic, int(histSize.x));
 			if (logarithmicHisto)
 				max = tMath::tLog(max);

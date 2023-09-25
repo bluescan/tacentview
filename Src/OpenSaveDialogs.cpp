@@ -101,8 +101,7 @@ void Viewer::DoSaveModal(bool savePressed)
 		ImGui::OpenPopup(label.Chr());
 	}
 
-	Config::ProfileData& profile = Config::GetProfileData();
-	float nextWinWidth = profile.GetUIParamScaled(300.0f, 2.5f);
+	float nextWinWidth = Viewer::GetUIParamScaled(300.0f, 2.5f);
 
 	// The unused isOpenSaveOptions bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isOpenSaveOptions = true;
@@ -142,8 +141,7 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 		ImGui::OpenPopup(label.Chr());
 	}
 
-	Config::ProfileData& profile = Config::GetProfileData();
-	float nextWinWidth = profile.GetUIParamScaled(300.0f, 2.5f);
+	float nextWinWidth = Viewer::GetUIParamScaled(300.0f, 2.5f);
 
 	// The unused isOpenSaveOptions bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isOpenSaveOptions = true;
@@ -169,7 +167,7 @@ void Viewer::DoSavePopup()
 
 	DoSaveFiletypeOptions(saveType);
 
-	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
 	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 	ImGui::SameLine();
@@ -264,8 +262,7 @@ void Viewer::DoSaveUnsupportedTypePopup()
 	ImGui::Text("%s", support.Chr());
 	ImGui::NewLine();
 
-	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
 
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
 	bool closeThisModal = false;
@@ -285,8 +282,8 @@ tString Viewer::DoSubFolder()
 	char subFolder[256]; tMemset(subFolder, 0, 256);
 	tStrncpy(subFolder, profile.SaveSubFolder.Chr(), 255);
 
-	float itemWidth		= profile.GetUIParamScaled(160.0f, 2.5f);
-	float buttonWidth	= profile.GetUIParamScaled(76.0f, 2.5f);
+	float itemWidth		= Viewer::GetUIParamScaled(160.0f, 2.5f);
+	float buttonWidth	= Viewer::GetUIParamScaled(76.0f, 2.5f);
 
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputText("SubFolder", subFolder, 256);
@@ -314,7 +311,7 @@ tSystem::tFileType Viewer::DoSaveChooseFiletype()
 	tString fileTypeName = profile.SaveFileType;
 	tFileType fileType = tGetFileTypeFromName(fileTypeName);
 
-	float itemWidth = profile.GetUIParamScaled(160.0f, 2.5f);
+	float itemWidth = Viewer::GetUIParamScaled(160.0f, 2.5f);
 	ImGui::SetNextItemWidth(itemWidth);
 	if (ImGui::BeginCombo("File Type", fileTypeName.Chr()))
 	{
@@ -343,7 +340,7 @@ tSystem::tFileType Viewer::DoSaveChooseFiletype()
 void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 {
 	Config::ProfileData& profile = Config::GetProfileData();
-	float itemWidth = profile.GetUIParamScaled(160.0f, 2.5f);
+	float itemWidth = Viewer::GetUIParamScaled(160.0f, 2.5f);
 
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::SliderInt("Bits per Pixel", &profile.SaveFileGifBPP, 1, 8, "%d");
@@ -428,7 +425,7 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 		tsaPrintf(desc, " WARNING: Scolorq at large BPPs may take\n a long time for large images.");
 	ImGui::Text(desc.Chr());
 
-	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
 	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		profile.SaveFileGifBPP				= 8;
@@ -448,7 +445,7 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 {
 	Config::ProfileData& profile = Config::GetProfileData();
-	float itemWidth = profile.GetUIParamScaled(160.0f, 2.5f);
+	float itemWidth = Viewer::GetUIParamScaled(160.0f, 2.5f);
 
 	ImGui::PushItemWidth(itemWidth);
 
@@ -556,7 +553,7 @@ tString Viewer::DoSaveFiletypeMultiFrame()
 	tString fileTypeName = profile.SaveFileTypeMultiFrame;
 	tFileType fileType = tGetFileTypeFromName(fileTypeName);
 
-	float itemWidth = profile.GetUIParamScaled(160.0f, 2.5f);
+	float itemWidth = Viewer::GetUIParamScaled(160.0f, 2.5f);
 
 	ImGui::SetNextItemWidth(itemWidth);
 	if (ImGui::BeginCombo("File Type", fileTypeName.Chr()))
@@ -740,15 +737,15 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 
 	ImGui::Separator();
 
-	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth	= profile.GetUIParamScaled(76.0f, 2.5f);
-	float itemWidth		= profile.GetUIParamScaled(160.0f, 2.5f);
+	float buttonWidth	= Viewer::GetUIParamScaled(76.0f, 2.5f);
+	float itemWidth		= Viewer::GetUIParamScaled(160.0f, 2.5f);
 
 	ImGui::PushItemWidth(itemWidth);
 	static int width = 512;
 	static int height = 512;
 	static float percent = 100.0f;
 	const char* sizeModeNames[] = { "Percent of Original", "Set Width and Height", "Set Width - Keep Aspect", "Set Height - Keep Aspect" };
+	Config::ProfileData& profile = Config::GetProfileData();
 	ImGui::Combo("Size Mode", &profile.SaveAllSizeMode, sizeModeNames, tNumElements(sizeModeNames));
 	ImGui::SameLine();
 	ShowHelpMark
@@ -891,7 +888,7 @@ void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFi
 {
 	tAssert(!overwriteFiles.IsEmpty());
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
 
 	tString dir = tSystem::tGetDir(*overwriteFiles.First());
 	ImGui::Text("The Following Files");
@@ -994,7 +991,7 @@ void Viewer::AddSavedImageIfNecessary(const tString& savedFile)
 void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool& pressedCancel)
 {
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
 
 	tString file = tSystem::tGetFileName(outFile);
 	tString dir = tSystem::tGetDir(outFile);

@@ -403,7 +403,7 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 			case Profile::Basic:	ReticleMode = int(ReticleModeEnum::AutoHide);		break;
 			case Profile::Kiosk:	ReticleMode = int(ReticleModeEnum::AlwaysHidden);	break;
 		}
-		UISize						= (profile == Profile::Kiosk) ? int(UISizeEnum::Small) : int(UISizeEnum::Tiny);
+		UISize						= int(UISizeEnum::Auto);
 	}
 
 	if (categories & Category_Slideshow)
@@ -585,7 +585,7 @@ void Config::ProfileData::Load(tExpression expr)
 	tiClamp		(BackgroundStyle, 0, int(BackgroundStyleEnum::NumStyles)-1);
 	tiClamp		(BackgroundCheckerboxSize, 2, 256);
 	tiClamp		(ReticleMode, 0, int(ReticleModeEnum::NumModes)-1);
-	tiClamp		(UISize, 0, int(UISizeEnum::Largest));
+	tiClamp		(UISize, int(UISizeEnum::Auto), int(UISizeEnum::Largest));
 	tiClamp		(OverlayCorner, 0, 3);
 	tiClamp		(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
 	tiClamp		(SortKey, 0, int(SortKeyEnum::NumKeys)-1);

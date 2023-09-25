@@ -26,7 +26,7 @@ using namespace tMath;
 
 void Viewer::ShowPreferencesWindow(bool* popen)
 {
-	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize;
+	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar;
 
 	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
 	// do it to make the Demo applications a little more welcoming.
@@ -42,8 +42,8 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	}
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth	= profile.GetUIParamScaled(100.0f, 2.5f);
-	float rightButtons	= profile.GetUIParamScaled(159.0f, 2.5f);
+	float buttonWidth	= Viewer::GetUIParamScaled(100.0f, 2.5f);
+	float rightButtons	= Viewer::GetUIParamScaled(159.0f, 2.5f);
 
 	bool tab = false;
 	uint32 category = Config::Category_None;
@@ -52,8 +52,8 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		tab = ImGui::BeginTabItem("Display", nullptr, ImGuiTabItemFlags_NoTooltip);
 		if (tab)
 		{
-			float itemWidth					= profile.GetUIParamScaled(120.0f, 2.5f);
-			float presetColourComboWidth	= profile.GetUIParamScaled(100.0f, 2.5f);
+			float itemWidth					= Viewer::GetUIParamScaled(110.0f, 2.5f);
+			float presetColourComboWidth	= Viewer::GetUIParamScaled(100.0f, 2.5f);
 			category = Config::Category_Display;
 			ImGui::NewLine();
 			ImGui::Checkbox("Transparent Work Area", &PendingTransparentWorkArea);
@@ -132,14 +132,23 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				"Auto Hide: Hides after inactivity timeout."
 			);
 
-			const char* uiSizeItems[] = { "Nano", "Tiny", "Small", "Moderate", "Medium", "Large", "Huge", "Massive" };
-			tStaticAssert(tNumElements(uiSizeItems) == int(Config::ProfileData::UISizeEnum::NumSizes));
+			const char* uiSizeItems[] = { "Auto", "Nano", "Tiny", "Small", "Moderate", "Medium", "Large", "Huge", "Massive" };
+			tStaticAssert(tNumElements(uiSizeItems) == int(Config::ProfileData::UISizeEnum::NumSizes)+1);
 
-			ImGui::PushItemWidth(itemWidth);
-			ImGui::Combo("UI Size", &profile.UISize, uiSizeItems, tNumElements(uiSizeItems));
-			ImGui::PopItemWidth();
+			ImGui::SetNextItemWidth(itemWidth);
+			int sizeInt = profile.UISize + 1;
+			ImGui::Combo("UI Size", &sizeInt, uiSizeItems, tNumElements(uiSizeItems));
+			profile.UISize = sizeInt - 1;
+			if (sizeInt == 0)
+			{
+				ImGui::SameLine();
+				tString currSizeStr;
+				tsPrintf(currSizeStr, "(%s)", uiSizeItems[int(Viewer::CurrentUISize)+1]);
+				ImGui::Text(currSizeStr.Chr());
+			}
+
 			ImGui::SameLine();
-			ShowHelpMark("Overall size of UI widgets and font.");
+			ShowHelpMark("Overall size of UI widgets and font.\nIf set to 'auto' uses the OS scale setting.");
 
 			ImGui::EndTabItem();
 		}
@@ -148,7 +157,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		if (tab)
 		{
 			category = Config::Category_Slideshow;
-			float inputWidth	= profile.GetUIParamScaled(110.0f, 2.5f);
+			float inputWidth	= Viewer::GetUIParamScaled(110.0f, 2.5f);
 
 			ImGui::NewLine();
 			ImGui::SetNextItemWidth(inputWidth);
@@ -221,9 +230,9 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		if (tab)
 		{
 			category = Config::Category_System;
-			float itemWidth			= profile.GetUIParamScaled(100.0f, 2.5f);
-			float mipFiltWidth		= profile.GetUIParamScaled(144.0f, 2.5f);
-			float sysButtonWidth	= profile.GetUIParamScaled(126.0f, 2.5f);
+			float itemWidth			= Viewer::GetUIParamScaled(100.0f, 2.5f);
+			float mipFiltWidth		= Viewer::GetUIParamScaled(144.0f, 2.5f);
+			float sysButtonWidth	= Viewer::GetUIParamScaled(126.0f, 2.5f);
 			ImGui::NewLine();
 
 			ImGui::SetNextItemWidth(itemWidth);
@@ -332,7 +341,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		if (tab)
 		{
 			category = Config::Category_Interface;
-			float comboWidth = profile.GetUIParamScaled(120.0f, 2.5f);
+			float comboWidth = Viewer::GetUIParamScaled(120.0f, 2.5f);
 			ImGui::NewLine();
 			ImGui::Checkbox("Confirm Deletes",			&profile.ConfirmDeletes);
 			ImGui::Checkbox("Confirm File Overwrites",	&profile.ConfirmFileOverwrites);

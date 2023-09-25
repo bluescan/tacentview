@@ -37,7 +37,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 	}
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
 
 	if (rotateImagePressed)
 		Viewer::ResetPan();
@@ -177,8 +177,7 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 	static LosslessTransformMode currMode = LosslessTransformMode::None;
 	static bool isPerfect = false;
 
-	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = profile.GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
 
 	if (mode != LosslessTransformMode::None)
 	{

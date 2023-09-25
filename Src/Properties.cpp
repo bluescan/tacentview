@@ -113,7 +113,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float nextWinWidth = profile.GetUIParamScaled(238.0f, 2.5f);
+	float nextWinWidth = Viewer::GetUIParamScaled(238.0f, 2.5f);
 	ImGui::SetNextWindowSize(tVector2(nextWinWidth, -1.0f), ImGuiCond_Always);
 
 	if (!ImGui::Begin("Properties", popen, windowFlags))
@@ -135,8 +135,8 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		return;
 	}
 
-	float itemWidth = profile.GetUIParamScaled(110.0f, 2.5f);
-	float imageSize = profile.GetUIParamScaled(18.0f, 2.5f);
+	float itemWidth = Viewer::GetUIParamScaled(110.0f, 2.5f);
+	float imageSize = Viewer::GetUIParamScaled(18.0f, 2.5f);
 	tVector2 imgButtonSize(imageSize, imageSize);
 
 	bool fileTypeSectionDisplayed = false;
@@ -719,7 +719,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		}
 		ImGui::SameLine(); ShowHelpMark("Which image in a multiframe file to display.");
 
-		float durButtonSpacing = profile.GetUIParamExtent(4.0f, 10.0f);
+		float durButtonSpacing = Viewer::GetUIParamExtent(4.0f, 10.0f);
 		ImGuiContext& ctx = *GImGui;
 		const ImGuiStyle& style = ctx.Style;
 
@@ -779,7 +779,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
 
-		float itemHSpacing = profile.GetUIParamExtent(8.0f, 32.0f);
+		float itemHSpacing = Viewer::GetUIParamExtent(8.0f, 32.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2(itemHSpacing, style.ItemSpacing.y));
 
 		uint64 loopImageID = CurrImage->FramePlayLooping ? Image_PlayOnce.Bind() : Image_PlayLoop.Bind();
