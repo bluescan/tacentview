@@ -3265,6 +3265,8 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case Bindings::Operation::UISizeInc:
 		{
 			int sizeInt = profile.UISize;
+			if (sizeInt == int(Config::ProfileData::UISizeEnum::Auto))
+				sizeInt = int(Viewer::CurrentUISize);
 			if ((sizeInt >= int(Config::ProfileData::UISizeEnum::Smallest)) && (sizeInt <= int(Config::ProfileData::UISizeEnum::Largest)-1))
 				sizeInt++;
 			profile.UISize = sizeInt;
@@ -3274,6 +3276,8 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case Bindings::Operation::UISizeDec:
 		{
 			int sizeInt = profile.UISize;
+			if (sizeInt == int(Config::ProfileData::UISizeEnum::Auto))
+				sizeInt = int(Viewer::CurrentUISize);
 			if ((sizeInt >= int(Config::ProfileData::UISizeEnum::Smallest)+1) && (sizeInt <= int(Config::ProfileData::UISizeEnum::Largest)))
 				sizeInt--;
 			profile.UISize = sizeInt;
