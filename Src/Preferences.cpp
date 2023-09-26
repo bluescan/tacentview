@@ -52,9 +52,9 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		tab = ImGui::BeginTabItem("Display", nullptr, ImGuiTabItemFlags_NoTooltip);
 		if (tab)
 		{
+			category = Config::Category_Display;
 			float itemWidth					= Viewer::GetUIParamScaled(110.0f, 2.5f);
 			float presetColourComboWidth	= Viewer::GetUIParamScaled(100.0f, 2.5f);
-			category = Config::Category_Display;
 			ImGui::NewLine();
 			ImGui::Checkbox("Transparent Work Area", &PendingTransparentWorkArea);
 			#ifndef PACKAGE_SNAP
@@ -137,8 +137,13 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 			ImGui::SetNextItemWidth(itemWidth);
 			int sizeInt = profile.UISize + 1;
-			ImGui::Combo("UI Size", &sizeInt, uiSizeItems, tNumElements(uiSizeItems));
-			profile.UISize = sizeInt - 1;
+
+			if (ImGui::Combo("UI Size", &sizeInt, uiSizeItems, tNumElements(uiSizeItems)))
+			{
+				profile.UISize = sizeInt - 1;
+				Viewer::UpdateDesiredUISize();
+			}
+
 			if (sizeInt == 0)
 			{
 				ImGui::SameLine();
@@ -399,6 +404,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	if (ImGui::Button("Reset Profile", tVector2(buttonWidth, 0.0f)))
 	{
 		Config::ResetProfile(Config::Category_AllNoBindings);
+		Viewer::UpdateDesiredUISize();
 		SlideshowCountdown = profile.SlideshowPeriod;
 	}
 	ShowToolTip
@@ -412,6 +418,8 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	if (ImGui::Button("Reset Tab", tVector2(buttonWidth, 0.0f)))
 	{
 		Config::ResetProfile(category);
+		if (category == Config::Category_Display)
+			Viewer::UpdateDesiredUISize();
 		SlideshowCountdown = profile.SlideshowPeriod;
 	}
 	ShowToolTip("Resets the current tab/category for the current profile (what you see above).");
@@ -421,6 +429,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		Config::ResetAllProfiles(Config::Category_AllNoBindings);
 		Config::Global.Reset();
 		Config::SetProfile(Profile::Main);
+		Viewer::UpdateDesiredUISize();
 
 		// If the global reset turns transparent work area off we can always safely clear the pending.
 		if (!Config::Global.TransparentWorkArea)

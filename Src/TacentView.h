@@ -134,6 +134,12 @@ namespace Viewer
 	// This is a wrapper for ImGui::Button that also returns true if enter pressed.
 	bool Button(const char* label, const tMath::tVector2& size = tMath::tVector2::zero);
 
+	// This reads the UI size from the current profile. If the profile is set to auto it queries the OS scale settings.
+	// The performance profile of the OS query is unknown so it is assumed to be an expensive call. This function should
+	// not be called every frame. After it determines the desired UISize it sets the DesiredUISzie variable. It is
+	// always set to a valid (non-auto) UI size after this call.
+	void UpdateDesiredUISize();
+
 	// Returns the UI parameter based on the current UI size. You enter the base param value. For the first function,
 	// GetUIParamScaled, you also enter the full-sized scale. For the second variant, GetUIParamExtent, you also enter
 	// the full-sized extent. This latter function allows non-uniform scaling of multi-dimensional types.

@@ -281,10 +281,7 @@ namespace Viewer
 	Config::ProfileData::UISizeEnum CurrentUISize	= Config::ProfileData::UISizeEnum::Invalid;
 
 	uint64 FrameNumber								= 0;
-
-	// This reads the UI size from the current profile. If the profile is set to auto it queries the OS scale settings.
-	// It always returns a valid (non-auto) UI size.
-	Config::ProfileData::UISizeEnum GetDesiredUISize();
+	Config::ProfileData::UISizeEnum DesiredUISize	= Config::ProfileData::UISizeEnum::Invalid;
 
 	// This function expects a valid (non-auto) UI size. It updates the style and ImGui font that are in use.
 	void SetUISize(Viewer::Config::ProfileData::UISizeEnum);
@@ -2012,42 +2009,53 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 }
 
 
-Viewer::Config::ProfileData::UISizeEnum Viewer::GetDesiredUISize()
+void Viewer::UpdateDesiredUISize()
 {
 	Config::ProfileData& profile = *Viewer::Config::Current;
 	Config::ProfileData::UISizeEnum profSize = profile.GetUISize();
-	if (profSize == Config::ProfileData::UISizeEnum::Invalid)
-		return Config::ProfileData::UISizeEnum::Tiny;
-
-	if (profSize == Config::ProfileData::UISizeEnum::Auto)
+	switch (profSize)
 	{
-		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-		if (!monitor)
-			return Config::ProfileData::UISizeEnum::Tiny;
+		case Config::ProfileData::UISizeEnum::Invalid:
+			DesiredUISize = Config::ProfileData::UISizeEnum::Tiny;
+			return;
 
-		float xscale = 0.0f; float yscale = 0.0f;
-		glfwGetMonitorContentScale(monitor, &xscale, &yscale);
-		if ((xscale <= 0.0f) || (yscale <= 0.0f) || !tApproxEqual(xscale, yscale, 0.001f))
-			return Config::ProfileData::UISizeEnum::Tiny;
-		else if (xscale < (0.75f + 1.00f)/2.0f)
-			return Viewer::Config::ProfileData::UISizeEnum::Nano;
-		else if (xscale < (1.00f + 1.25f)/2.0f)
-			return Viewer::Config::ProfileData::UISizeEnum::Tiny;
-		else if (xscale < (1.25f + 1.50f)/2.0f)
-			return Viewer::Config::ProfileData::UISizeEnum::Small;
-		else if (xscale < (1.50f + 1.75f)/2.0f)
-			return Viewer::Config::ProfileData::UISizeEnum::Moderate;
-		else if (xscale < (1.75f + 2.00f)/2.0f)
-			return Viewer::Config::ProfileData::UISizeEnum::Medium;
-		else if (xscale < (2.00f + 2.25f)/2.0f)
-			return Viewer::Config::ProfileData::UISizeEnum::Large;
-		else if (xscale < (2.25f + 2.50f)/2.0f)
-			return Viewer::Config::ProfileData::UISizeEnum::Huge;
-		else
-			return Viewer::Config::ProfileData::UISizeEnum::Massive;
+		case Config::ProfileData::UISizeEnum::Auto:
+		{
+			GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+			if (!monitor)
+			{
+				DesiredUISize = Config::ProfileData::UISizeEnum::Tiny;
+				return;
+			}
+
+			float xscale = 0.0f; float yscale = 0.0f;
+			glfwGetMonitorContentScale(monitor, &xscale, &yscale);
+			if ((xscale <= 0.0f) || (yscale <= 0.0f) || !tApproxEqual(xscale, yscale, 0.001f))
+				DesiredUISize = Config::ProfileData::UISizeEnum::Tiny;
+			else if (xscale < (0.75f + 1.00f)/2.0f)
+				DesiredUISize = Config::ProfileData::UISizeEnum::Nano;
+			else if (xscale < (1.00f + 1.25f)/2.0f)
+				DesiredUISize = Config::ProfileData::UISizeEnum::Tiny;
+			else if (xscale < (1.25f + 1.50f)/2.0f)
+				DesiredUISize = Config::ProfileData::UISizeEnum::Small;
+			else if (xscale < (1.50f + 1.75f)/2.0f)
+				DesiredUISize = Config::ProfileData::UISizeEnum::Moderate;
+			else if (xscale < (1.75f + 2.00f)/2.0f)
+				DesiredUISize = Config::ProfileData::UISizeEnum::Medium;
+			else if (xscale < (2.00f + 2.25f)/2.0f)
+				DesiredUISize = Config::ProfileData::UISizeEnum::Large;
+			else if (xscale < (2.25f + 2.50f)/2.0f)
+				DesiredUISize = Config::ProfileData::UISizeEnum::Huge;
+			else
+				DesiredUISize = Config::ProfileData::UISizeEnum::Massive;
+
+			return;
+		}
+
+		default:
+			DesiredUISize = profSize;
+			return;
 	}
-
-	return profSize;
 }
 
 
@@ -2490,8 +2498,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	// Did the UI size change? This may happen if a) the font was changed in the prefs, b) reset was pressed, or c) inc/dec UISize
 	// operation was executed. Note that fontCurrent may be null if ImGui hasn't updated it from last time so instead we track
 	// what was submitted with CurrentUISize.
-	if (CurrentUISize != GetDesiredUISize())
-		SetUISize(GetDesiredUISize());
+	if (CurrentUISize != DesiredUISize)
+		SetUISize(DesiredUISize);
 
 	// Show the big demo window. You can browse its code to learn more about Dear ImGui.
 	static bool showDemoWindow = false;
@@ -3269,7 +3277,11 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				sizeInt = int(Viewer::CurrentUISize);
 			if ((sizeInt >= int(Config::ProfileData::UISizeEnum::Smallest)) && (sizeInt <= int(Config::ProfileData::UISizeEnum::Largest)-1))
 				sizeInt++;
-			profile.UISize = sizeInt;
+			if (profile.UISize != sizeInt)
+			{
+				profile.UISize = sizeInt;
+				UpdateDesiredUISize();
+			}
 			break;
 		}
 
@@ -3280,7 +3292,11 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				sizeInt = int(Viewer::CurrentUISize);
 			if ((sizeInt >= int(Config::ProfileData::UISizeEnum::Smallest)+1) && (sizeInt <= int(Config::ProfileData::UISizeEnum::Largest)))
 				sizeInt--;
-			profile.UISize = sizeInt;
+			if (profile.UISize != sizeInt)
+			{
+				profile.UISize = sizeInt;
+				UpdateDesiredUISize();
+			}
 			break;
 		}
 
@@ -3720,6 +3736,7 @@ void Viewer::FocusCallback(GLFWwindow* window, int gotFocus)
 	tList<tSystem::tFileInfo> files;
 	ImagesDir = FindImageFilesInCurrentFolder(files);
 	PopulateImagesSubDirs();
+	UpdateDesiredUISize();
 
 	// We sort here so ComputeImagesHash always returns consistent values.
 	files.Sort(Compare_AlphabeticalAscending, tListSortAlgorithm::Merge);
@@ -4095,7 +4112,8 @@ int main(int argc, char** argv)
 		io.Fonts->AddFontFromFileTTF(fontFile.Chr(), Viewer::MinFontPointSize + float(uisize)*Viewer::FontStepPointSize);
 	#endif
 
-	Viewer::SetUISize( Viewer::GetDesiredUISize() );
+	Viewer::UpdateDesiredUISize();
+	Viewer::SetUISize(Viewer::DesiredUISize);
 
 	Viewer::LoadAppImages(dataDir);
 	Viewer::PopulateImages();
