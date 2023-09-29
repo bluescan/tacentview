@@ -320,7 +320,7 @@ namespace Viewer
 	void ApplyZoomDelta(float zoomDelta);
 	void AutoPropertyWindow();
 
-	tString FindImageFilesInCurrentFolder(tList<tSystem::tFileInfo>& foundFiles);	// Returns the image folder.
+	tString FindImagesInCurrImageFileDir(tList<tSystem::tFileInfo>& foundFiles);	// Returns the image folder.
 	tuint256 ComputeImagesHash(const tList<tSystem::tFileInfo>& files);
 	int RemoveOldCacheFiles(const tString& cacheDir);								// Returns num removed.
 
@@ -636,7 +636,6 @@ tVector2 Viewer::GetDialogOrigin(DialogID dialogID)
 	float leftOffset	= Viewer::GetUIParamScaled(30.0f, 2.5f);
 	float heightDelta	= Viewer::GetUIParamScaled(22.0f, 2.5f);
 
-	// @wip
 	float widthDelta = 200.0f;
 	float x = leftOffset + widthDelta*float(hindex);
 	float y = topOffset + heightDelta*float(vindex);
@@ -644,11 +643,13 @@ tVector2 Viewer::GetDialogOrigin(DialogID dialogID)
 }
 
 
-tString Viewer::FindImageFilesInCurrentFolder(tList<tSystem::tFileInfo>& foundFiles)
+tString Viewer::FindImagesInCurrImageFileDir(tList<tSystem::tFileInfo>& foundFiles)
 {
-	tString imagesDir = tSystem::tGetCurrentDir();
+	tString imagesDir;
 	if (!CurrImageFile.IsEmpty() && tSystem::tIsAbsolutePath(CurrImageFile))
 		imagesDir = tSystem::tGetDir(CurrImageFile);
+	else
+		imagesDir = tSystem::tGetCurrentDir();
 
 	tPrintf("Finding image files in %s\n", imagesDir.Chr());
 	tSystem::tExtensions extensions(FileTypes_Load);
@@ -695,7 +696,7 @@ void Viewer::PopulateImages()
 	ImagesLoadTimeSorted.Clear();
 
 	tList<tSystem::tFileInfo> foundFiles;
-	ImagesDir = FindImageFilesInCurrentFolder(foundFiles);
+	ImagesDir = FindImagesInCurrImageFileDir(foundFiles);
 	PopulateImagesSubDirs();
 
 	// We sort here so ComputeImagesHash always returns consistent values.
@@ -2135,7 +2136,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		glClearColor(ColourClear.x, ColourClear.y, ColourClear.z, ColourClear.w);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	// We deal with changine the UI size before ImGui_ImplOpenGL2_NewFrame. This is because modifying UI size
+	// We deal with changing the UI size before ImGui_ImplOpenGL2_NewFrame. This is because modifying UI size
 	// may need to add a new font texture atlas. Adding a font must happen outside of BeginFrame/EndFrame.
 	// If one is added and bd->FontTexture is already set, ImGui_ImplOpenGL2_NewFrame will ignore trying to add
 	// a new one. The UI size may change if a) the size was changed in the prefs, b) reset was pressed, or
@@ -3771,7 +3772,7 @@ void Viewer::FocusCallback(GLFWwindow* window, int gotFocus)
 
 	// If we got focus, rescan the current folder to see if the hash is different.
 	tList<tSystem::tFileInfo> files;
-	ImagesDir = FindImageFilesInCurrentFolder(files);
+	ImagesDir = FindImagesInCurrImageFileDir(files);
 	PopulateImagesSubDirs();
 	UpdateDesiredUISize();
 
@@ -3786,10 +3787,9 @@ void Viewer::FocusCallback(GLFWwindow* window, int gotFocus)
 	{
 		tPrintf("Hash mismatch. Dir contents changed. Resynching.\n");
 		PopulateImages();
-		if (!CurrImageFile.IsEmpty())
-			SetCurrentImage(CurrImageFile);
-		else
-			SetCurrentImage();
+
+		// This deals with CurrImageFile being empty.
+		SetCurrentImage(CurrImageFile);
 	}
 	else
 	{
@@ -4135,10 +4135,9 @@ int main(int argc, char** argv)
 
 	Viewer::LoadAppImages(dataDir);
 	Viewer::PopulateImages();
-	if (!Viewer::CurrImageFile.IsEmpty())
-		Viewer::SetCurrentImage(Viewer::CurrImageFile);
-	else
-		Viewer::SetCurrentImage();
+
+	// SetCurrentImage deals with CurrImageFile being empty.
+	Viewer::SetCurrentImage(Viewer::CurrImageFile);
 
 	if (Viewer::Config::Global.TransparentWorkArea)
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
