@@ -151,7 +151,8 @@ struct ProfileData
 		NumSizes,
 		Smallest					= Nano,
 		Largest						= NumSizes-1,
-		Invalid						= NumSizes
+		Invalid						= NumSizes,
+		All							= Auto
 	};
 
 	int UISize;											// In range [-1, NumSizes).

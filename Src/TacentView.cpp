@@ -62,6 +62,7 @@
 #include "Config.h"
 #include "InputBindings.h"
 #include "Command.h"
+#include "RobotoFontBase85.cpp"
 #include "Version.cmake.h"
 using namespace tStd;
 using namespace tSystem;
@@ -278,10 +279,11 @@ namespace Viewer
 	const float MinUIScale							= 1.0f;
 	const float MaxUIScale							= MaxFontPointSize / MinFontPointSize;
 	const float FontStepPointSize					= (MaxFontPointSize - MinFontPointSize) / (int(Config::ProfileData::UISizeEnum::NumSizes) - 1);
+	Config::ProfileData::UISizeEnum FontUISizeAdded	= Config::ProfileData::UISizeEnum::Invalid;
 	Config::ProfileData::UISizeEnum CurrentUISize	= Config::ProfileData::UISizeEnum::Invalid;
+	Config::ProfileData::UISizeEnum DesiredUISize	= Config::ProfileData::UISizeEnum::Invalid;
 
 	uint64 FrameNumber								= 0;
-	Config::ProfileData::UISizeEnum DesiredUISize	= Config::ProfileData::UISizeEnum::Invalid;
 
 	// This function expects a valid (non-auto) UI size. It updates the style and ImGui font that are in use.
 	void SetUISize(Viewer::Config::ProfileData::UISizeEnum);
@@ -2063,11 +2065,43 @@ void Viewer::SetUISize(Viewer::Config::ProfileData::UISizeEnum uiSize)
 {
 	tAssert(uiSize >= Config::ProfileData::UISizeEnum::Smallest);
 	tAssert(uiSize <= Config::ProfileData::UISizeEnum::Largest);
+	int uiSizeInt = int(uiSize);
 	ImGuiIO& io = ImGui::GetIO();
 
+	// The first step is to make sure ImGui has the font added. FontUISizeAdded stores either Invalid
+	// meaning no fonts have been added, ALL meaning all font sizes (for all UISizes) have been added,
+	// or a particular IU size meaning ONLY that size has been added. If it's invalid, we start by ONLY
+	// adding a single font. This speeds things up if no further size changes are made. Otherwise, if
+	// we don't have the font size we need, we load them all.
+	if (FontUISizeAdded == Config::ProfileData::UISizeEnum::Invalid)
+	{
+		// Calling destroy is safe if no texture is currently bound.
+		ImGui_ImplOpenGL2_DestroyFontsTexture();
+		io.Fonts->AddFontFromMemoryCompressedBase85TTF(RobotoFont_compressed_data_base85, MinFontPointSize + float(uiSizeInt)*FontStepPointSize);
+
+		// This will call build on the font atlas for us.
+		ImGui_ImplOpenGL2_CreateFontsTexture();
+		FontUISizeAdded = uiSize;
+	}
+	if ((FontUISizeAdded != uiSize) && (FontUISizeAdded != Config::ProfileData::UISizeEnum::All))
+	{
+		ImGui_ImplOpenGL2_DestroyFontsTexture();
+		io.Fonts->Clear();
+		for (int uisize = 0; uisize < int(Viewer::Config::ProfileData::UISizeEnum::NumSizes); uisize++)
+			io.Fonts->AddFontFromMemoryCompressedBase85TTF(RobotoFont_compressed_data_base85, Viewer::MinFontPointSize + float(uisize)*Viewer::FontStepPointSize);
+		ImGui_ImplOpenGL2_CreateFontsTexture();
+		FontUISizeAdded = Config::ProfileData::UISizeEnum::All;
+	}
+
+	int fontIndex = -1;
+	if (FontUISizeAdded == uiSize)
+		fontIndex = 0;
+	else if (FontUISizeAdded == Config::ProfileData::UISizeEnum::All)
+		fontIndex = uiSizeInt;
+
 	// Update the font.
-	tAssert(int(uiSize) < io.Fonts->Fonts.Size);
-	ImFont* font = io.Fonts->Fonts[int(uiSize)];
+	tAssert((fontIndex >= 0) && (fontIndex < io.Fonts->Fonts.Size));
+	ImFont* font = io.Fonts->Fonts[fontIndex];
 	io.FontDefault = font;
 
 	// Update the style scale.
@@ -2101,7 +2135,15 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		glClearColor(ColourClear.x, ColourClear.y, ColourClear.z, ColourClear.w);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	ImGui_ImplOpenGL2_NewFrame();		
+	// We deal with changine the UI size before ImGui_ImplOpenGL2_NewFrame. This is because modifying UI size
+	// may need to add a new font texture atlas. Adding a font must happen outside of BeginFrame/EndFrame.
+	// If one is added and bd->FontTexture is already set, ImGui_ImplOpenGL2_NewFrame will ignore trying to add
+	// a new one. The UI size may change if a) the size was changed in the prefs, b) reset was pressed, or
+	// c) inc/dec UISize operation was executed.
+	if (CurrentUISize != DesiredUISize)
+		SetUISize(DesiredUISize);
+
+	ImGui_ImplOpenGL2_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
@@ -2495,12 +2537,6 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		lastCropMode = CropMode;
 	}
 
-	// Did the UI size change? This may happen if a) the font was changed in the prefs, b) reset was pressed, or c) inc/dec UISize
-	// operation was executed. Note that fontCurrent may be null if ImGui hasn't updated it from last time so instead we track
-	// what was submitted with CurrentUISize.
-	if (CurrentUISize != DesiredUISize)
-		SetUISize(DesiredUISize);
-
 	// Show the big demo window. You can browse its code to learn more about Dear ImGui.
 	static bool showDemoWindow = false;
 	//static bool showDemoWindow = true;
@@ -2818,6 +2854,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	stackSizes.CompareWithCurrentState();
 	#endif
 
+	// This calls ImGui::EndFrame for us.
 	ImGui::Render();
 	glViewport(0, 0, dispw, disph);
 	ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
@@ -3876,9 +3913,6 @@ void Viewer::UnloadAppImages()
 }
 
 
-#include "RobotoFontBase85.cpp"
-
-
 int main(int argc, char** argv)
 {
 	#ifdef PLATFORM_WINDOWS
@@ -3969,7 +4003,7 @@ int main(int argc, char** argv)
 		const tString& profStr = Viewer::OptionProfile.Arg1();
 		switch (tHash::tHashString(profStr.Chr()))
 		{
-			case tHash::tHashCT("main"):	overridProfile = Viewer::Profile::Main;	break;
+			case tHash::tHashCT("main"):	overridProfile = Viewer::Profile::Main;		break;
 			case tHash::tHashCT("basic"):	overridProfile = Viewer::Profile::Basic;	break;
 			case tHash::tHashCT("kiosk"):	overridProfile = Viewer::Profile::Kiosk;	break;
 		}
@@ -4096,24 +4130,8 @@ int main(int argc, char** argv)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	// Fonts must be added from smallest to largest and the number of adds needs to match UIMode::NumModes.
-	// The original AddFont calls left here for refernece. They work and but I haven't profiled which gives
-	// faster bootup times. I imagine add font from memory is faster since fewer files to open, but the exe load
-	// for the in-memory method might actually take longer (and it also has to decode). In any case, pretty
-	// sure it will still be faster.
-	#define USE_IN_MEMORY_FONT_LOAD
-	#ifdef USE_IN_MEMORY_FONT_LOAD
-	for (int uisize = 0; uisize < int(Viewer::Config::ProfileData::UISizeEnum::NumSizes); uisize++)
-		io.Fonts->AddFontFromMemoryCompressedBase85TTF(RobotoFont_compressed_data_base85, Viewer::MinFontPointSize + float(uisize)*Viewer::FontStepPointSize);
-
-	#else
-	tString fontFile = dataDir + "Roboto-Medium.ttf";
-	for (int uisize = 0; uisize < int(Viewer::Config::ProfileData::UISizeEnum::NumSizes); uisize++)
-		io.Fonts->AddFontFromFileTTF(fontFile.Chr(), Viewer::MinFontPointSize + float(uisize)*Viewer::FontStepPointSize);
-	#endif
-
+	// Before we load the single font we currently need in the update loop, we need to know what the desired UI size is.
 	Viewer::UpdateDesiredUISize();
-	Viewer::SetUISize(Viewer::DesiredUISize);
 
 	Viewer::LoadAppImages(dataDir);
 	Viewer::PopulateImages();
