@@ -676,6 +676,22 @@ void Viewer::PopulateImagesSubDirs()
 {
 	ImagesSubDirs.Clear();
 
+	#ifdef PLATFORM_WINDOWS
+	if (ImagesDir == "/")
+	{
+		tList<tStringItem> foundDrives;
+		tSystem::tGetDrives(foundDrives);
+		for (tStringItem* drv = foundDrives.First(); drv; drv = drv->Next())
+		{
+			tDriveInfo driveInfo;
+			bool ok = tSystem::tGetDriveInfo(driveInfo, *drv, false, true);
+			if (driveInfo.DriveState == tDriveState::Ready)
+				ImagesSubDirs.Append(new tStringItem(*drv));
+		}
+		return;
+	}
+	#endif
+
 	tList<tStringItem> foundDirs;
 	tFindDirs(foundDirs, ImagesDir, false);
 	for (tStringItem* dir = foundDirs.First(); dir; dir = dir->Next())
@@ -1969,6 +1985,14 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 	)
 	{
 		tString upDir = tSystem::tGetUpDir(ImagesDir);
+
+		#ifdef PLATFORM_WINDOWS
+		// Windows has drive letters at the root. By checking if the upDir did not change we can
+		// allow "/" to represent the root before all drive letters.
+		if (upDir == ImagesDir)
+			upDir = "/";
+		#endif
+
 		if (!upDir.IsEmpty())
 		{
 			CurrImageFile = upDir + "dummyfile.txt";
@@ -1995,6 +2019,10 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 				if (ImGui::Selectable(subDir->Chr(), isSelected))
 				{
 					// Selection made. This only runs once.
+					#ifdef PLATFORM_WINDOWS
+					if (ImagesDir == "/")
+						ImagesDir.Clear();
+					#endif
 					CurrImageFile = ImagesDir + *subDir + "/" + "dummyfile.txt";
 					PopulateImages();
 					SetCurrentImage();

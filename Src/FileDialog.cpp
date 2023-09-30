@@ -238,10 +238,10 @@ bool Bookmark::Set(Type type)
 		for (tStringItem* drive = drives.First(); drive; drive = drive->Next())
 		{
 			tDriveInfo driveInfo;
-			bool ok = tGetDriveInfo(driveInfo, *drive);
+			bool ok = tGetDriveInfo(driveInfo, *drive, false, true);
 
-			// This excludes the old A: and B: typically used for floppies.
-			if (ok && (driveInfo.DriveType != tDriveType::Removable))
+			// This excludes the old A: and B: typically used for floppies. The drive must also be ready.
+			if (ok && (driveInfo.DriveType != tDriveType::Floppy) && (driveInfo.DriveState == tDriveState::Ready))
 			{
 				root = *drive;
 				break;
@@ -814,6 +814,11 @@ void FileDialog::PopulateTrees()
 	tSystem::tGetDrives(drives);
 	for (tStringItem* drive = drives.First(); drive; drive = drive->Next())
 	{
+		tDriveInfo driveInfo;
+		bool ok = tSystem::tGetDriveInfo(driveInfo, *drive, false, true);
+		if (!ok || (driveInfo.DriveState != tDriveState::Ready))
+			continue;
+
 		TreeNode* driveNode = new TreeNode(*drive, false, this, RootTreeNode);
 		RootTreeNode->AppendChild(driveNode);	
 	}
