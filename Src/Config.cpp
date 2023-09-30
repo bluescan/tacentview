@@ -396,6 +396,7 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		BackgroundCheckerboxSize	= 16;
 		BackgroundColour			= tColouri::black;
 		BackgroundExtend			= false;
+		ShowNavFilenameAlways		= false;
 		switch (profile)
 		{
 			default:
@@ -465,6 +466,7 @@ void Config::ProfileData::Load(tExpression expr)
 			ReadItem(FullscreenMode);
 			ReadItem(ShowMenuBar);
 			ReadItem(ShowNavBar);
+			ReadItem(ShowNavFilenameAlways);
 			ReadItem(ShowImageDetails);
 			ReadItem(ShowImageMetaData);
 			ReadItem(ShowPixelEditor);
@@ -641,6 +643,7 @@ bool Config::ProfileData::Save(tExprWriter& writer) const
 	WriteItem(FullscreenMode);
 	WriteItem(ShowMenuBar);
 	WriteItem(ShowNavBar);
+	WriteItem(ShowNavFilenameAlways);
 	WriteItem(ShowImageDetails);
 	WriteItem(ShowImageMetaData);
 	WriteItem(ShowPixelEditor);

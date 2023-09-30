@@ -57,7 +57,7 @@ namespace Viewer
 	extern tFileDialog::FileDialog SaveAsDialog;
 
 	extern Image* CurrImage;
-	extern tString CurrImageFile;
+	extern tString ImageToLoad;
 	extern tString ImagesDir;
 	extern tList<tStringItem> ImagesSubDirs;
 	extern tList<Viewer::Image> Images;

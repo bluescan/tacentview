@@ -53,6 +53,7 @@ struct ProfileData
 	bool FullscreenMode;
 	bool ShowMenuBar;
 	bool ShowNavBar;
+	bool ShowNavFilenameAlways;
 	bool ShowImageDetails;
 	bool ShowImageMetaData;
 	bool ShowPixelEditor;

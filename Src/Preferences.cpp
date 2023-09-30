@@ -56,6 +56,16 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			float itemWidth					= Viewer::GetUIParamScaled(110.0f, 2.5f);
 			float presetColourComboWidth	= Viewer::GetUIParamScaled(100.0f, 2.5f);
 			ImGui::NewLine();
+
+			ImGui::Checkbox("Always Show Filename", &profile.ShowNavFilenameAlways);
+			ImGui::SameLine();
+			ShowHelpMark
+			(
+				"When false the filename is only shown at the right of the nav-bar in\n"
+				"fullscreen mode because the window title-bar is not visible. When set\n"
+				"to true the filename is displayed there all the time."
+			);
+
 			ImGui::Checkbox("Transparent Work Area", &PendingTransparentWorkArea);
 			#ifndef PACKAGE_SNAP
 			if (PendingTransparentWorkArea != Config::Global.TransparentWorkArea)
@@ -138,7 +148,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::SetNextItemWidth(itemWidth);
 			int sizeInt = profile.UISize + 1;
 
-			if (ImGui::Combo("UI Size", &sizeInt, uiSizeItems, tNumElements(uiSizeItems)))
+			if (ImGui::Combo("UI Size", &sizeInt, uiSizeItems, tNumElements(uiSizeItems), tNumElements(uiSizeItems)))
 			{
 				profile.UISize = sizeInt - 1;
 				Viewer::UpdateDesiredUISize();

@@ -168,7 +168,7 @@ namespace Viewer
 	tItList<Image> ImagesLoadTimeSorted(tListMode::External);		// We don't need static here cuz the list is only used after main().
 	tuint256 ImagesHash												= 0;
 	Image* CurrImage												= nullptr;
-	tString CurrImageFile;
+	tString ImageToLoad;
 
 	void LoadAppImages(const tString& dataDir);
 	void UnloadAppImages();
@@ -320,7 +320,7 @@ namespace Viewer
 	void ApplyZoomDelta(float zoomDelta);
 	void AutoPropertyWindow();
 
-	tString FindImagesInCurrImageFileDir(tList<tSystem::tFileInfo>& foundFiles);	// Returns the image folder.
+	tString FindImagesInImageToLoadDir(tList<tSystem::tFileInfo>& foundFiles);		// Returns the image folder.
 	tuint256 ComputeImagesHash(const tList<tSystem::tFileInfo>& files);
 	int RemoveOldCacheFiles(const tString& cacheDir);								// Returns num removed.
 
@@ -643,11 +643,11 @@ tVector2 Viewer::GetDialogOrigin(DialogID dialogID)
 }
 
 
-tString Viewer::FindImagesInCurrImageFileDir(tList<tSystem::tFileInfo>& foundFiles)
+tString Viewer::FindImagesInImageToLoadDir(tList<tSystem::tFileInfo>& foundFiles)
 {
 	tString imagesDir;
-	if (!CurrImageFile.IsEmpty() && tSystem::tIsAbsolutePath(CurrImageFile))
-		imagesDir = tSystem::tGetDir(CurrImageFile);
+	if (!ImageToLoad.IsEmpty() && tSystem::tIsAbsolutePath(ImageToLoad))
+		imagesDir = tSystem::tGetDir(ImageToLoad);
 	else
 		imagesDir = tSystem::tGetCurrentDir();
 
@@ -712,7 +712,7 @@ void Viewer::PopulateImages()
 	ImagesLoadTimeSorted.Clear();
 
 	tList<tSystem::tFileInfo> foundFiles;
-	ImagesDir = FindImagesInCurrImageFileDir(foundFiles);
+	ImagesDir = FindImagesInImageToLoadDir(foundFiles);
 	PopulateImagesSubDirs();
 
 	// We sort here so ComputeImagesHash always returns consistent values.
@@ -1962,12 +1962,13 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 
 	ImGui::SetNextWindowSize(tVector2(w, h), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(tVector2(x, y), ImGuiCond_Always);
+	float navVPad = Viewer::GetUIParamExtent(2.0f, 4.0f);
+	float navHPad = 10.0f;
 
 	// Push A
-	float ypad = Viewer::GetUIParamExtent(2.0f, 4.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(10.0f, ypad));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(navHPad, navVPad));
 
 	int flags =
 		ImGuiWindowFlags_NoResize	| ImGuiWindowFlags_NoMove		| ImGuiWindowFlags_NoCollapse	|
@@ -1995,7 +1996,7 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 
 		if (!upDir.IsEmpty())
 		{
-			CurrImageFile = upDir + "dummyfile.txt";
+			ImageToLoad = upDir + "dummyfile.txt";
 			PopulateImages();
 			SetCurrentImage();
 			SetWindowTitle();
@@ -2006,10 +2007,11 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 	ImGui::SameLine();
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + textYOffset);
 	ImGui::Text("%s", ImagesDir.Chr());
+	ImGui::SameLine();
+	float navRight = ImGui::GetCursorPosX();
 
 	if (ImagesSubDirs.NumItems() > 0)
 	{
-		ImGui::SameLine();
 		float comboSize = Viewer::GetUIParamExtent(27.0f, 64.0f);		
 		if (ImGui::BeginCombo("##navcombo", nullptr, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightLargest | ImGuiComboFlags_NoPreview, comboSize))
 		{
@@ -2023,7 +2025,7 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 					if (ImagesDir == "/")
 						ImagesDir.Clear();
 					#endif
-					CurrImageFile = ImagesDir + *subDir + "/" + "dummyfile.txt";
+					ImageToLoad = ImagesDir + *subDir + "/" + "dummyfile.txt";
 					PopulateImages();
 					SetCurrentImage();
 					SetWindowTitle();
@@ -2032,7 +2034,31 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 			}
 			ImGui::EndCombo();
 		}
+		ImGui::SameLine();
+		navRight = ImGui::GetCursorPosX();
 	}
+
+	// Display the filename on the right.
+	Config::ProfileData& profile = Config::GetProfileData();
+	if
+	(
+		CurrImage && CurrImage->Filename.IsValid() &&
+		(profile.ShowNavFilenameAlways || profile.FullscreenMode)
+	)
+	{
+		tString fname = tGetFileName(CurrImage->Filename);
+		tVector2 textSize = ImGui::CalcTextSize(fname.Chr());
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + textYOffset);
+		float textStartX = w - textSize.x - navHPad;
+		
+		// Only display if it's not going to overlap with the dir navigation on the left.
+		if (textStartX > navRight)
+		{
+			ImGui::SetCursorPosX(textStartX);
+			ImGui::Text(fname.Chr());
+		}
+	}
+
 	ImGui::End();
 
 	// Pop A
@@ -2940,7 +2966,7 @@ bool Viewer::DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin)
 		
 	if (deleted)
 	{
-		CurrImageFile = nextImgFile;		// We set this so if we lose and gain focus, we go back to the current image.
+		ImageToLoad = nextImgFile;		// We set this so if we lose and gain focus, we go back to the current image.
 		PopulateImages();
 		SetCurrentImage(nextImgFile);
 	}
@@ -3787,7 +3813,7 @@ void Viewer::FileDropCallback(GLFWwindow* window, int count, const char** files)
 		return;
 
 	tString file = tString(files[0]);
-	CurrImageFile = file;
+	ImageToLoad = file;
 	PopulateImages();
 	SetCurrentImage(file);
 }
@@ -3800,7 +3826,7 @@ void Viewer::FocusCallback(GLFWwindow* window, int gotFocus)
 
 	// If we got focus, rescan the current folder to see if the hash is different.
 	tList<tSystem::tFileInfo> files;
-	ImagesDir = FindImagesInCurrImageFileDir(files);
+	ImagesDir = FindImagesInImageToLoadDir(files);
 	PopulateImagesSubDirs();
 	UpdateDesiredUISize();
 
@@ -3816,8 +3842,8 @@ void Viewer::FocusCallback(GLFWwindow* window, int gotFocus)
 		tPrintf("Hash mismatch. Dir contents changed. Resynching.\n");
 		PopulateImages();
 
-		// This deals with CurrImageFile being empty.
-		SetCurrentImage(CurrImageFile);
+		// This deals with ImageToLoad being empty.
+		SetCurrentImage(ImageToLoad);
 	}
 	else
 	{
@@ -3959,13 +3985,13 @@ int main(int argc, char** argv)
 
 	if (Viewer::ParamImageFiles.IsPresent())
 	{
-		Viewer::CurrImageFile = Viewer::ParamImageFiles.Get();
+		Viewer::ImageToLoad = Viewer::ParamImageFiles.Get();
 
 		#ifdef PLATFORM_WINDOWS
 		tString dest(MAX_PATH);
-		int numchars = GetLongPathNameA(Viewer::CurrImageFile.Chr(), dest.Txt(), MAX_PATH);
+		int numchars = GetLongPathNameA(Viewer::ImageToLoad.Chr(), dest.Txt(), MAX_PATH);
 		if (numchars > 0)
-			Viewer::CurrImageFile = dest;
+			Viewer::ImageToLoad = dest;
 		#endif
 	}
 
@@ -4040,8 +4066,8 @@ int main(int argc, char** argv)
 		Viewer::Config::SetProfile(overridProfile);
 
 	// If no file from commandline, see if there is one set in the profile.
-	if (Viewer::CurrImageFile.IsEmpty() && Viewer::Config::Global.LastOpenPath.IsValid())
-		Viewer::CurrImageFile = Viewer::Config::Global.LastOpenPath;
+	if (Viewer::ImageToLoad.IsEmpty() && Viewer::Config::Global.LastOpenPath.IsValid())
+		Viewer::ImageToLoad = Viewer::Config::Global.LastOpenPath;
 
 	Viewer::PendingTransparentWorkArea = Viewer::Config::Global.TransparentWorkArea;
 
@@ -4164,8 +4190,8 @@ int main(int argc, char** argv)
 	Viewer::LoadAppImages(dataDir);
 	Viewer::PopulateImages();
 
-	// SetCurrentImage deals with CurrImageFile being empty.
-	Viewer::SetCurrentImage(Viewer::CurrImageFile);
+	// SetCurrentImage deals with ImageToLoad being empty.
+	Viewer::SetCurrentImage(Viewer::ImageToLoad);
 
 	if (Viewer::Config::Global.TransparentWorkArea)
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
