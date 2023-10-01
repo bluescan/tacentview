@@ -1963,7 +1963,7 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 	ImGui::SetNextWindowSize(tVector2(w, h), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(tVector2(x, y), ImGuiCond_Always);
 	float navVPad = Viewer::GetUIParamExtent(2.0f, 5.0f);
-	float navHPad = 10.0f;
+	float navHPad = Viewer::GetUIParamExtent(8.0f, 14.0f);
 
 	// Push A
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
