@@ -1962,7 +1962,7 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 
 	ImGui::SetNextWindowSize(tVector2(w, h), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(tVector2(x, y), ImGuiCond_Always);
-	float navVPad = Viewer::GetUIParamExtent(2.0f, 4.0f);
+	float navVPad = Viewer::GetUIParamExtent(2.0f, 5.0f);
 	float navHPad = 10.0f;
 
 	// Push A
@@ -2006,13 +2006,14 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 	float textYOffset = Viewer::GetUIParamExtent(6.0f, 15.0f);
 	ImGui::SameLine();
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + textYOffset);
+	float textYPos = ImGui::GetCursorPosY();
 	ImGui::Text("%s", ImagesDir.Chr());
 	ImGui::SameLine();
 	float navRight = ImGui::GetCursorPosX();
 
 	if (ImagesSubDirs.NumItems() > 0)
 	{
-		float comboSize = Viewer::GetUIParamExtent(27.0f, 64.0f);		
+		float comboSize = Viewer::GetUIParamExtent(27.0f, 64.0f);
 		if (ImGui::BeginCombo("##navcombo", nullptr, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightLargest | ImGuiComboFlags_NoPreview, comboSize))
 		{
 			for (tStringItem* subDir = ImagesSubDirs.First(); subDir; subDir = subDir->Next())
@@ -2035,6 +2036,7 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 			ImGui::EndCombo();
 		}
 		ImGui::SameLine();
+		textYPos = navVPad + Viewer::GetUIParamExtent(3.4f, 8.0f);
 		navRight = ImGui::GetCursorPosX();
 	}
 
@@ -2048,12 +2050,12 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 	{
 		tString fname = tGetFileName(CurrImage->Filename);
 		tVector2 textSize = ImGui::CalcTextSize(fname.Chr());
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + textYOffset);
 		float textStartX = w - textSize.x - navHPad;
 		
 		// Only display if it's not going to overlap with the dir navigation on the left.
 		if (textStartX > navRight)
 		{
+			ImGui::SetCursorPosY(textYPos);
 			ImGui::SetCursorPosX(textStartX);
 			ImGui::Text(fname.Chr());
 		}
