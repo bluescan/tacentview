@@ -870,7 +870,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
 		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoFocusOnAppearing	|
-		ImGuiWindowFlags_NoNav;
+		ImGuiWindowFlags_NoNav				|	ImGuiWindowFlags_NoScrollbar;
 
 	if (ImGui::Begin("Crop", &CropMode, flags))
 	{

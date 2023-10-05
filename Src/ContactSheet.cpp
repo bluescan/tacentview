@@ -66,9 +66,10 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 
 	// The unused isOpenContactSheet bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isOpenContactSheet = true;
-	if (!ImGui::BeginPopupModal("Contact Sheet", &isOpenContactSheet, ImGuiWindowFlags_AlwaysAutoResize))
+	if (!ImGui::BeginPopupModal("Contact Sheet", &isOpenContactSheet, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 		return;
 
+	const ImGuiStyle& style = ImGui::GetStyle();
 	static int frameWidth = 256;
 	static int frameHeight = 256;
 	static bool anyImageNeedsResize = false;
@@ -143,7 +144,8 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	ImGui::SameLine();
 	if (ImGui::Button(hi, powSize))
 		frameHeight = hiP2H;
-	ImGui::SameLine(); ShowHelpMark("Single frame height in pixels.");
+	ImGui::SameLine();
+	ShowHelpMark("Single frame height in pixels.");
 
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Columns", &numCols);
@@ -267,10 +269,12 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 		ImGui::CloseCurrentPopup();
 	ImGui::SameLine();
 	
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
-
 	tString outFile = destDir + tString(filename) + extensionWithDot;
 	bool closeThisModal = false;
+
+	float genButOffset	= Viewer::GetUIParamScaled(324.0f, 2.5f);
+	ImGui::SetCursorPosX(genButOffset);
+
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
 	if (Viewer::Button("Generate", tVector2(buttonWidth, 0.0f)) && (numImg >= 2))
@@ -298,7 +302,7 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 
 	// The unused isOpen bool is just so we get a close button in ImGui.
 	bool isOpen = true;
-	if (ImGui::BeginPopupModal("Overwrite Contact Sheet File", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
+	if (ImGui::BeginPopupModal("Overwrite Contact Sheet File", &isOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 	{
 		bool pressedOK = false, pressedCancel = false;
 		DoOverwriteFileModal(outFile, pressedOK, pressedCancel);

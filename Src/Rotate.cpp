@@ -30,7 +30,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 		ImGui::OpenPopup("Rotate Image");
 
 	bool isOpenRotateImage = true;
-	if (!ImGui::BeginPopupModal("Rotate Image", &isOpenRotateImage, ImGuiWindowFlags_AlwaysAutoResize))
+	if (!ImGui::BeginPopupModal("Rotate Image", &isOpenRotateImage, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 	{
 		RotateAnglePreview = 0.0f;
 		return;
@@ -100,7 +100,9 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 	}
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
+
+	float rotOffset = Viewer::GetUIParamScaled(254.0f, 2.5f);
+	ImGui::SetCursorPosX(rotOffset);
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
 
@@ -219,7 +221,7 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 
 	// The unused isOpenRen bool is just so we get a close button in ImGui.
 	bool isOpenRen = true;
-	if (!ImGui::BeginPopupModal("Lossless Transform", &isOpenRen, ImGuiWindowFlags_AlwaysAutoResize))
+	if (!ImGui::BeginPopupModal("Lossless Transform", &isOpenRen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 		return;
 
 	ImGui::Text
@@ -251,7 +253,9 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth*2.0f - ImGui::GetStyle().ItemSpacing.x);
+
+	float normLossOffset = Viewer::GetUIParamScaled(180.0f, 2.5f);
+	ImGui::SetCursorPosX(normLossOffset);
 	if (Viewer::Button("Normal", tVector2(buttonWidth, 0.0f)))
 	{
 		CurrImage->Unbind();

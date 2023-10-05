@@ -105,7 +105,7 @@ bool Viewer::DoChooseDisplayImage(tString& texTypeName, float itemWidth)
 
 void Viewer::ShowPropertiesWindow(bool* popen)
 {
-	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize; // | ImGuiWindowFlags_NoFocusOnAppearing;
+	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar;
 
 	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
 	// do it to make the Demo applications a little more welcoming.
@@ -242,6 +242,8 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			{
 				if (scrubberDisplayed)
 					ImGui::SameLine();
+
+				// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - itemWidth);
 				if (ImGui::Button("Reset", tVector2(itemWidth, 0.0f)))
 				{
@@ -377,6 +379,8 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			{
 				if (scrubberDisplayed)
 					ImGui::SameLine();
+
+				// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - itemWidth);
 				if (ImGui::Button("Reset", tVector2(itemWidth, 0.0f)))
 				{
@@ -495,6 +499,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				tMath::tiClamp(CurrImage->LoadParams_ASTC.Exposure, 0.0f, 4.0f);
 			}
 
+			// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - itemWidth);
 			if (ImGui::Button("Reset", tVector2(itemWidth, 0.0f)))
 			{
@@ -568,6 +573,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				ShowHelpMark("Luminance-only pkm files are represented in this viewer as having a red channel only,\nIf spread is true, the channel is spread to all RGB channels to create a grey-scale image.");
 			}
 
+			// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - itemWidth);
 			if (ImGui::Button("Reset", tVector2(itemWidth, 0.0f)))
 			{
@@ -604,6 +610,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ShowHelpMark("Exposure adjustment [-10, 10]. Hold Ctrl to speedup.");
 			tMath::tiClamp(CurrImage->LoadParams_HDR.Exposure, -10, 10);
 
+			// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - itemWidth);
 			if (ImGui::Button("Reset", tVector2(itemWidth, 0.0f)))
 			{
@@ -661,6 +668,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			ShowHelpMark("Upper bound knee taper [3.5, 7.5]. Hold Ctrl to speedup.");
 			tMath::tiClamp(CurrImage->LoadParams_EXR.KneeHigh, 3.5f, 7.5f);
 
+			// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - itemWidth);
 			if (ImGui::Button("Reset", tVector2(itemWidth, 0.0f)))
 			{
@@ -720,8 +728,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		ImGui::SameLine(); ShowHelpMark("Which image in a multiframe file to display.");
 
 		float durButtonSpacing = Viewer::GetUIParamExtent(4.0f, 10.0f);
-		ImGuiContext& ctx = *GImGui;
-		const ImGuiStyle& style = ctx.Style;
+		const ImGuiStyle& style = ImGui::GetStyle();
 
 		if (CurrImage->FrameDurationPreviewEnabled)
 		{

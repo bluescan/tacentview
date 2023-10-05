@@ -499,7 +499,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 	tVector2 windowPos = GetDialogOrigin(DialogID::Bindings);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
-	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize;
+	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar;
 	if (ImGui::Begin("Keyboard Bindings", popen, flags))
 	{
 		static int profileIdx = 0;
@@ -559,8 +559,11 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 
 		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
-		const float rowHeight = 25.0f;
-		const int maxRowsToDisplay = 16;
+
+		float rowHeight			= Viewer::GetUIParamExtent(24.85f, 61.0f);
+		int maxRowsToDisplay	= Viewer::GetUIParamExtent(16, 11);
+		float keyTextOffsetY	= Viewer::GetUIParamScaled(3.0f, 2.5f);
+
 		int totalAssigned = prof->InputBindings.GetTotalAssigned();
 		const int numRowsToDisplay = tMin(maxRowsToDisplay, totalAssigned);
 		tVector2 outerSize = ImVec2(0.0f, rowHeight + rowHeight * float(numRowsToDisplay));
@@ -605,6 +608,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 
 					// Key/mods column.
 					ImGui::TableSetColumnIndex(0);
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() + keyTextOffsetY);
 					ImGui::Text( GetModKeyText(k, m).Chr() );
 
 					// The operation column.
@@ -683,7 +687,7 @@ void Bindings::ShowAddBindingSection(Config::ProfileData& settings, float keyWid
 	tVector2 outerSize = ImVec2(0.0f, rowHeight);
 
 	float removeColSize		= Viewer::GetUIParamScaled(20.0f, 2.5f);
-	float buttonSize		= Viewer::GetUIParamScaled(100.0f, 2.5f);
+	float buttonSize		= Viewer::GetUIParamScaled(80.0f, 2.5f);
 
 	if (ImGui::BeginTable("KeyAssignTable", 3, tableFlags, outerSize))
 	{
@@ -786,7 +790,7 @@ void Bindings::ShowAddBindingSection(Config::ProfileData& settings, float keyWid
 		ShowToolTip("Adds the new keybinding. Warns if already assigned to something else.");
 
 		bool isOpen = true;
-		if (ImGui::BeginPopupModal("Key Assignment Warning", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
+		if (ImGui::BeginPopupModal("Key Assignment Warning", &isOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 		{
 			tString msg;
 			if (permanent)
@@ -818,7 +822,9 @@ void Bindings::ShowAddBindingSection(Config::ProfileData& settings, float keyWid
 			if (!permanent)
 			{
 				ImGui::SameLine();
-				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonSize);
+
+				float buttonOffset = Viewer::GetUIParamScaled(236.0f, 2.5f);
+				ImGui::SetCursorPosX(buttonOffset);
 				if (ImGui::Button("Replace##AssignWarn", tVector2(buttonSize, 0.0f)))
 				{
 					settings.InputBindings.AssignKey(addKey, addMods, Operation(addOp));
@@ -847,7 +853,7 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
-	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollbar;
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(0.0f, 1.0f));
 
 	tString title;

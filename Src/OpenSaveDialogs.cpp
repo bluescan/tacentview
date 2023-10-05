@@ -86,7 +86,7 @@ void Viewer::DoOpenDirModal(bool openDirPressed)
 }
 
 
-void Viewer::DoSaveModal(bool savePressed)
+void Viewer::DoSaveCurrentModal(bool savePressed)
 {
 	static tString label;
 	if (!CurrImage)
@@ -106,7 +106,7 @@ void Viewer::DoSaveModal(bool savePressed)
 	// The unused isOpenSaveOptions bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isOpenSaveOptions = true;
 	ImGui::SetNextWindowSize(tVector2(nextWinWidth, 0.0f));
-	if (!ImGui::BeginPopupModal(label.Chr(), &isOpenSaveOptions, ImGuiWindowFlags_AlwaysAutoResize))
+	if (!ImGui::BeginPopupModal(label.Chr(), &isOpenSaveOptions, ImGuiWindowFlags_NoScrollbar))
 		return;
 
 	tFileType saveType = tGetFileType(SaveAsFile);
@@ -146,7 +146,7 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 	// The unused isOpenSaveOptions bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isOpenSaveOptions = true;
 	ImGui::SetNextWindowSize(tVector2(nextWinWidth, 0.0f));
-	if (!ImGui::BeginPopupModal(label.Chr(), &isOpenSaveOptions, ImGuiWindowFlags_AlwaysAutoResize))
+	if (!ImGui::BeginPopupModal(label.Chr(), &isOpenSaveOptions, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 		return;
 
 	DoSavePopup();
@@ -171,7 +171,8 @@ void Viewer::DoSavePopup()
 	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 	ImGui::SameLine();
-	
+
+	// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
 	bool closeThisModal = false;
 
@@ -209,7 +210,7 @@ void Viewer::DoSavePopup()
 
 	// The unused isOpen bool is just so we get a close button in ImGui. 
 	bool isOpen = true;
-	if (ImGui::BeginPopupModal("Overwrite File", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
+	if (ImGui::BeginPopupModal("Overwrite File", &isOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 	{
 		bool pressedOK = false, pressedCancel = false;
 		DoOverwriteFileModal(SaveAsFile, pressedOK, pressedCancel);
@@ -264,6 +265,7 @@ void Viewer::DoSaveUnsupportedTypePopup()
 
 	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
 
+	// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
 	bool closeThisModal = false;
 
@@ -730,7 +732,7 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 
 	// The unused isOpenSaveAll bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isOpenSaveAll = true;
-	if (!ImGui::BeginPopupModal("Save All", &isOpenSaveAll, ImGuiWindowFlags_AlwaysAutoResize))
+	if (!ImGui::BeginPopupModal("Save All", &isOpenSaveAll, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 		return;
 
 	ImGui::Text("Save all %d images to the image type you select.", Images.GetNumItems());
@@ -809,14 +811,17 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 	ImGui::Separator();
 	tString destDir = DoSubFolder();
 
+	ImGui::Separator();
+
 	ImGui::NewLine();
 	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
+	float saveAllOffset = Viewer::GetUIParamScaled(200.0f, 2.5f);
+	ImGui::SetCursorPosX(saveAllOffset);
 
-	// This needs to be static since DoSaveModal is called for every frame the modal is open.
+	// This needs to be static since this function is called for every frame the modal is open.
 	static tList<tStringItem> overwriteFiles(tListMode::Static);
 	bool closeThisModal = false;
 
@@ -849,7 +854,7 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 
 	// The unused isOpen bool is just so we get a close button in ImGui. 
 	bool isOpen = true;
-	if (ImGui::BeginPopupModal("Overwrite Multiple Files", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
+	if (ImGui::BeginPopupModal("Overwrite Multiple Files", &isOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 	{
 		bool pressedOK = false, pressedCancel = false;
 		DoOverwriteMultipleFilesModal(overwriteFiles, pressedOK, pressedCancel);
@@ -890,6 +895,8 @@ void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFi
 	Config::ProfileData& profile = Config::GetProfileData();
 	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
 
+	// @wip For both filename and folder we need to restrict the string width using that function I haven't written
+	// yet to crop a string to a specific width and optionally add an ellisis.
 	tString dir = tSystem::tGetDir(*overwriteFiles.First());
 	ImGui::Text("The Following Files");
 	ImGui::Indent();
@@ -923,8 +930,9 @@ void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFi
 	}
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
 
+	float overwriteOffset = Viewer::GetUIParamScaled(280.0f, 2.5f);
+	ImGui::SetCursorPosX(overwriteOffset);
 	if (Viewer::Button("Overwrite", tVector2(buttonWidth, 0.0f)))
 	{
 		pressedOK = true;
@@ -993,6 +1001,8 @@ void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool&
 	Config::ProfileData& profile = Config::GetProfileData();
 	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
 
+	// @wip For both filename and folder we need to restrict the string width using that function I haven't written
+	// yet to crop a string to a specific width and optionally add an ellisis.
 	tString file = tSystem::tGetFileName(outFile);
 	tString dir = tSystem::tGetDir(outFile);
 	ImGui::Text("Overwrite file");
@@ -1013,8 +1023,9 @@ void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool&
 	}
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
 
+	float okOffset = Viewer::GetUIParamScaled(280.0f, 2.5f);
+	ImGui::SetCursorPosX(okOffset);
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
 	if (Viewer::Button("OK", tVector2(buttonWidth, 0.0f)))

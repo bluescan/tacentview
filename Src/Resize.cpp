@@ -247,13 +247,13 @@ void Viewer::DoFillColourInterface(const char* toolTipText, bool contactSheetFil
 	if (toolTipText)
 		ShowToolTip(toolTipText);
 
-	float buttonWidth = Viewer::GetUIParamScaled(63.0f, 2.5f);
+	float buttonWidth = Viewer::GetUIParamScaled(56.0f, 2.5f);
 
 	ImGui::SameLine();
 	tPicture* picture = CurrImage ? CurrImage->GetCurrentPic() : nullptr;
 	if (ImGui::Button("Origin", tVector2(buttonWidth, 0.0f)) && picture)
 		fillColour->Set(picture->GetPixel(0, 0));
-	ShowToolTip("Pick the colour from pixel (0, 0) in the current image.");
+	ShowToolTip("Pick the colour from pixel (0,0) in the current image.");
 
 	ImGui::SameLine();
 	if (ImGui::Button("Cursor", tVector2(buttonWidth, 0.0f)))
@@ -286,7 +286,7 @@ void Viewer::DoResizeImageModal(bool resizeImagePressed)
 		ImGui::OpenPopup("Resize Image");
 
 	bool isOpenResizeImage = true;
-	if (!ImGui::BeginPopupModal("Resize Image", &isOpenResizeImage, ImGuiWindowFlags_AlwaysAutoResize))
+	if (!ImGui::BeginPopupModal("Resize Image", &isOpenResizeImage, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 		return;
 
 	Config::ProfileData& profile = Config::GetProfileData();
@@ -340,7 +340,7 @@ void Viewer::DoResizeCanvasModal(bool resizeCanvasPressed)
 	if (resizeCanvasPressed)
 		ImGui::OpenPopup("Resize Canvas");
 	bool isOpenResizeCanvas = true;
-	if (!ImGui::BeginPopupModal("Resize Canvas", &isOpenResizeCanvas, ImGuiWindowFlags_AlwaysAutoResize))
+	if (!ImGui::BeginPopupModal("Resize Canvas", &isOpenResizeCanvas, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 		return;
 
 	static bool firstOpenAnchor = false;

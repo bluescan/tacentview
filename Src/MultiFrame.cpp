@@ -90,7 +90,7 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 
 	// The unused isOpenMultiFrame bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isOpenMultiFrame = true;
-	if (!ImGui::BeginPopupModal("Multi Frame", &isOpenMultiFrame, ImGuiWindowFlags_AlwaysAutoResize))
+	if (!ImGui::BeginPopupModal("Multi Frame", &isOpenMultiFrame, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 		return;
 
 	static int outWidth = 256;
@@ -187,7 +187,8 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 		ImGui::CloseCurrentPopup();
 	ImGui::SameLine();
 
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
+	float genOffset = Viewer::GetUIParamScaled(294.0f, 2.5f);
+	ImGui::SetCursorPosX(genOffset);
 	tString outFile = destDir + tString(filename) + "." + extension;
 	bool closeThisModal = false;
 	if (ImGui::IsWindowAppearing())
@@ -217,7 +218,7 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 
 	// The unused isOpen bool is just so we get a close button in ImGui. 
 	bool isOpen = true;
-	if (ImGui::BeginPopupModal("Overwrite image File", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
+	if (ImGui::BeginPopupModal("Overwrite image File", &isOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 	{
 		bool pressedOK = false, pressedCancel = false;
 		DoOverwriteFileModal(outFile, pressedOK, pressedCancel);
@@ -350,7 +351,7 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 
 	// The unused isOpenExtractFrames bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isOpenExtractFrames = true;
-	if (!ImGui::BeginPopupModal("Extract Frames", &isOpenExtractFrames, ImGuiWindowFlags_AlwaysAutoResize))
+	if (!ImGui::BeginPopupModal("Extract Frames", &isOpenExtractFrames, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 		return;
 
 	float inputWidth	= Viewer::GetUIParamScaled(160.0f, 2.5f);
@@ -447,9 +448,10 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 		ImGui::CloseCurrentPopup();
 	ImGui::SameLine();
 
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
+	float extOffset = Viewer::GetUIParamScaled(230.0f, 2.5f);
+	ImGui::SetCursorPosX(extOffset);
 
-	// This needs to be static since DoSaveModal is called for every frame the modal is open.
+	// This needs to be static since this function is called for every frame the modal is open.
 	static tList<tStringItem> overwriteFiles(tListMode::Static);
 	bool closeThisModal = false;
 
@@ -507,7 +509,7 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 
 	// The unused isOpen bool is just so we get a close button in ImGui. 
 	bool isOpen = true;
-	if (ImGui::BeginPopupModal("Extract Overwrite Popup", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
+	if (ImGui::BeginPopupModal("Extract Overwrite Popup", &isOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 	{
 		bool pressedOK = false, pressedCancel = false;
 		Viewer::DoOverwriteMultipleFilesModal(overwriteFiles, pressedOK, pressedCancel);

@@ -123,11 +123,10 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 	if (quantizeImagePressed)
 		ImGui::OpenPopup("Quantize");
 
-	float modalWidth = Viewer::GetUIParamScaled(296.0f, 2.5f);
-
+	float modalWidth = Viewer::GetUIParamScaled(308.0f, 2.5f);
 	bool isOpenQuantizeImage = true;
 	ImGui::SetNextWindowSize(tVector2(modalWidth, 0.0f));
-	if (!ImGui::BeginPopupModal("Quantize", &isOpenQuantizeImage, ImGuiWindowFlags_AlwaysAutoResize))
+	if (!ImGui::BeginPopupModal("Quantize", &isOpenQuantizeImage, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 		return;
 
 	float buttonWidth	= Viewer::GetUIParamScaled(76.0f, 2.5f);
@@ -198,6 +197,8 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
+
+	// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();

@@ -629,6 +629,7 @@ ContentItem::ContentItem(const tSystem::tFileInfo& fileInfo) :
 	// File type field.
 	FileType = tSystem::tGetFileType(Name);
 	FileTypeString.Set(tSystem::tGetFileTypeName(FileType));
+	FileTypeString.ToUpper();
 
 	// File size field.
 	FileSize = fileInfo.FileSize;
@@ -1225,8 +1226,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 		case DialogMode::SaveFile:		label = "Save File";		configPath = &ConfigSaveFilePath;	break;
 	}
 
-	ImGuiContext& ctx = *GImGui;
-	const ImGuiStyle& style = ctx.Style;
+	const ImGuiStyle& style = ImGui::GetStyle();
 	tVector2 nextWinSize = Viewer::GetUIParamScaled(tVector2(660.0f, 400.0f), 2.5f);
 	ImGui::SetNextWindowSize(nextWinSize, ImGuiCond_Appearing);
 
@@ -1245,11 +1245,10 @@ FileDialog::DialogState FileDialog::DoPopup()
 			setYScrollToSel = true;
 	}
 
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2::zero);
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 	if (!ImGui::BeginPopupModal(label, &isOpen, ImGuiWindowFlags_MenuBar))
 	{
-		ImGui::PopStyleVar(2);
+		ImGui::PopStyleVar();
 		return DialogState::Closed;
 	}
 
@@ -1259,14 +1258,12 @@ FileDialog::DialogState FileDialog::DoPopup()
 
 	tVector2 toolImageSize = Viewer::GetUIParamExtent(tVector2(24.0f, 24.0f), tVector2(62.0f, 62.0f));
 	float menuBarHeight = toolImageSize.y + style.ItemSpacing.y*2.0f;
-	float bottomBarRowA = Viewer::GetUIParamScaled(20.0, 2.5f);
-	float bottomBarRowB = Viewer::GetUIParamScaled(28.0, 2.5f);
 	float colWidthIcon = Viewer::GetUIParamScaled(24.0, 2.5f);
 	float colWidthName = Viewer::GetUIParamScaled(190.0, 2.5f);
 	float colWidthTime = Viewer::GetUIParamScaled(120.0, 2.5f);
-	float colWidthType = Viewer::GetUIParamScaled(36.0, 2.5f);
+	float colWidthType = Viewer::GetUIParamScaled(39.0, 2.5f);
 	float colWidthSize = Viewer::GetUIParamScaled(60.0, 2.5f);
-	float bottomBarHeight = bottomBarRowA + bottomBarRowB;
+	float bottomBarHeight = Viewer::GetUIParamExtent(52.0f, 140.0f);
 
 	//
 	// Begin MenuBar
@@ -1275,7 +1272,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 	{
 		ImGuiWindow* window = ImGui::GetCurrentWindow();
 		if (window)
-			window->MenuBarImageButtonHeight = toolImageSize.y + style.ItemSpacing.y*2.0f;
+			window->MenuBarImageButtonHeight = toolImageSize.y;// + style.ItemSpacing.y*1.0f;
 
 		// Up directory.
 		uint64 upImgID = Viewer::Image_UpFolder.Bind();
@@ -1353,7 +1350,6 @@ FileDialog::DialogState FileDialog::DoPopup()
 		}
 		ShowToolTip("Refresh");
 
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::BeginMenu("View##FileDialog"))
 		{
 			ImGui::MenuItem("Show Hidden", "", &ConfigShowHidden);
@@ -1364,8 +1360,8 @@ FileDialog::DialogState FileDialog::DoPopup()
 
 		ImGui::EndMenuBar();
 	}
-	ImGui::PopStyleVar();
-	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f*style.ItemSpacing.y);
+
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 4.0f*style.ItemSpacing.y);
 	//
 	// End of menubar.
 	//
@@ -1569,6 +1565,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 	bool resultAvail = false;
 	ContentItem* selItem = SelectedNode ? SelectedNode->FindSelectedItem() : nullptr;
 	float actionButtonWidth = Viewer::GetUIParamScaled(70.0f, 2.5f);
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 	switch (Mode)
 	{
 		case DialogMode::OpenFile:
@@ -1584,12 +1581,17 @@ FileDialog::DialogState FileDialog::DoPopup()
 			if (!resultAvail)
 				ImGui::PopStyleColor();
 
-			DoFileTypesDropdown(true);
+			if (!FileTypes.IsEmpty())
+			{
+				ImGui::SameLine();
+				DoFileTypesDropdown(true);
+			}
 
 			// Open button and set final Result to be picked up.
-			ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - bottomBarRowA);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y );
 			if (resultAvail)
 			{
+				// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 2.0f*actionButtonWidth - style.ItemSpacing.x);		// X2 because of the cancel button to right.
 				if (Viewer::Button("Open", tVector2(actionButtonWidth, 0.0f)))
 				{
@@ -1610,13 +1612,18 @@ FileDialog::DialogState FileDialog::DoPopup()
 			ImGui::SetNextItemWidth( ImGui::GetWindowContentRegionMax().x / 2.0f );
 			ImGui::InputTextWithHint("##File Name", "File Name Sans Extension", &SaveFileResult);
 
-			DoFileTypesDropdown(false);
+			if (!FileTypes.IsEmpty())
+			{
+				ImGui::SameLine();
+				DoFileTypesDropdown(false);
+			}
 			tFileType fileType = FileTypes.GetFirstSelectedType();
 
 			// Save button and set final Result to be picked up.
-			ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - bottomBarRowA);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y );
 			if ((fileType != tFileType::Invalid) && (SaveFileResult.length() > 0))
 			{
+				// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 2.0f*actionButtonWidth - style.ItemSpacing.x);		// X2 because of the cancel button to right.
 				if (Viewer::Button("Save", tVector2(actionButtonWidth, 0.0f)))
 				{
@@ -1648,9 +1655,10 @@ FileDialog::DialogState FileDialog::DoPopup()
 				ImGui::PopStyleColor();
 
 			// Open button and set final Result to be picked up.
-			ImGui::SetCursorPosY(ImGui::GetWindowContentRegionMax().y - bottomBarRowA);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y );
 			if (resultAvail)
 			{
+				// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 2.0f*actionButtonWidth - style.ItemSpacing.x);		// X2 because of the cancel button to right.
 				if (Viewer::Button("Open", tVector2(actionButtonWidth, 0.0f)))
 				{
@@ -1664,6 +1672,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 	}
 
 	// The cancel button is the same for all modes.
+	// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - actionButtonWidth);
 
 	if (ImGui::IsWindowAppearing())
@@ -1682,16 +1691,13 @@ FileDialog::DialogState FileDialog::DoPopup()
 
 void FileDialog::DoFileTypesDropdown(bool supportMultipleTypes)
 {
-	if (FileTypes.IsEmpty())
-		return;
-
-	ImGuiContext& ctx = *GImGui;
-	const ImGuiStyle& style = ctx.Style;
+	const ImGuiStyle& style = ImGui::GetStyle();
 	float dropdownWidth = Viewer::GetUIParamScaled(140.0f, 2.5f);
 	dropdownWidth += style.ItemSpacing.x;
 
-	ImGui::SameLine();
 	ImGui::SetNextItemWidth(dropdownWidth);
+
+	// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - dropdownWidth);
 
 	// Nothing selected means all types used.
@@ -1712,7 +1718,7 @@ void FileDialog::DoFileTypesDropdown(bool supportMultipleTypes)
 		currChosen = FileTypes.GetSelectedString(tSystem::tFileTypes::Separator::CommaSpace, 4);
 	}
 
-	if (ImGui::BeginCombo("##TypeFilter", currChosen.Chr()))
+	if (ImGui::BeginCombo("##TypeFilter", currChosen.Chr(), ImGuiComboFlags_HeightLarge))
 	{
 		if (supportMultipleTypes && ImGui::Selectable("All Types", allTypes))
 		{

@@ -206,8 +206,8 @@ void Viewer::ShowImageMetaDataOverlay(bool* popen)
 
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Appearing);
 	ImGuiWindowFlags flags =
-		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
-		ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+		ImGuiWindowFlags_AlwaysAutoResize	| ImGuiWindowFlags_NoSavedSettings	| ImGuiWindowFlags_NoScrollbar |
+		ImGuiWindowFlags_NoFocusOnAppearing	| ImGuiWindowFlags_NoNav;
 
 	if (ImGui::Begin("Meta Data", popen, flags))
 	{

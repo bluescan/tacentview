@@ -217,7 +217,7 @@ namespace Viewer
 
 	bool Request_OpenFileModal						= false;
 	bool Request_OpenDirModal						= false;
-	bool Request_SaveModal							= false;
+	bool Request_SaveCurrentModal					= false;
 	bool Request_SaveAsModal						= false;
 	bool Request_SaveAllModal						= false;
 	bool Request_ResizeImageModal					= false;
@@ -1276,13 +1276,12 @@ void Viewer::ProgressArc(float radius, float percent, const ImVec4& colour, cons
 
 int Viewer::DoMainMenuBar()
 {
-	ImGuiContext& ctx = *GImGui;
-	const ImGuiStyle& style = ctx.Style;
+	const ImGuiStyle& style = ImGui::GetStyle();
 
 	// File requests.
 	bool openFilePressed			= Request_OpenFileModal;			Request_OpenFileModal				= false;
 	bool openDirPressed				= Request_OpenDirModal;				Request_OpenDirModal				= false;
-	bool savePressed				= Request_SaveModal;				Request_SaveModal					= false;
+	bool saveCurrentPressed			= Request_SaveCurrentModal;			Request_SaveCurrentModal			= false;
 	bool saveAsPressed				= Request_SaveAsModal;				Request_SaveAsModal					= false;
 	bool saveAllPressed				= Request_SaveAllModal;				Request_SaveAllModal				= false;
 	bool saveContactSheetPressed	= Request_ContactSheetModal;		Request_ContactSheetModal			= false;
@@ -1342,7 +1341,7 @@ int Viewer::DoMainMenuBar()
 			tString saveKey = profile.InputBindings.FindModKeyText(Bindings::Operation::Save);
 			bool saveEnabled = CurrImage ? true : false;
 			if (ImGui::MenuItem("Save...", saveKey.Chz(), false, saveEnabled))
-				savePressed = true;
+				saveCurrentPressed = true;
 
 			tString saveAsKey = profile.InputBindings.FindModKeyText(Bindings::Operation::SaveAs);
 			bool saveAsEnabled = CurrImage ? true : false;
@@ -1897,8 +1896,7 @@ int Viewer::DoMainMenuBar()
 	// that require an update every frame. This could be reorganized so that when the operation is executed (in the
 	// big keybindings switch) the call to open the popup is performed, but we'd still need the dialog updates here,
 	// so this gives better encapsulation.
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4.0f, 3.0f));		// Push D
-
+	//
 	// We deal with all the modals in a single place. Modals are slightly special as we allow keyboard nav during
 	// modals but not otherwise as it would interfere with the viewer's keyboard bindings. We start setting nav off.
 	ImGuiIO& io = ImGui::GetIO();
@@ -1910,7 +1908,7 @@ int Viewer::DoMainMenuBar()
 	DoOpenFileModal					(openFilePressed);
 	DoOpenDirModal					(openDirPressed);
 
-	DoSaveModal						(savePressed);
+	DoSaveCurrentModal				(saveCurrentPressed);
 	DoSaveAsModal					(saveAsPressed);
 
 	DoSaveAllModal					(saveAllPressed);
@@ -1934,7 +1932,6 @@ int Viewer::DoMainMenuBar()
 	DoQuantizeModal					(quantizePressed);
 	DoLosslessTransformModal		(losslessTransformPressed);
 
-	ImGui::PopStyleVar();			// Pop D
 	return menuBarHeight;
 }
 
@@ -3602,7 +3599,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 
 		case Bindings::Operation::Save:
-			if (imgAvail) Request_SaveModal = true;
+			if (imgAvail) Request_SaveCurrentModal = true;
 			break;
 
 		case Bindings::Operation::SaveAs:

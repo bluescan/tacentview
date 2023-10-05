@@ -25,7 +25,7 @@ namespace Viewer
 	void DoOpenFileModal(bool openFilePressed);
 	void DoOpenDirModal(bool openDirPressed);
 
-	void DoSaveModal(bool savePressed);
+	void DoSaveCurrentModal(bool savePressed);
 	void DoSaveAsModal(bool savePressed);
 	void DoSaveAllModal(bool saveAllPressed);
 

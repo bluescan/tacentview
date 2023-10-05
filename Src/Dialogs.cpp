@@ -113,29 +113,52 @@ void Viewer::DoDeleteFileModal(bool deleteFilePressed)
 
 	// The unused isOpenDeleteFile bool is just so we get a close button in ImGui.
 	bool isOpenDeleteFile = true;
-	if (!ImGui::BeginPopupModal("Delete File", &isOpenDeleteFile, ImGuiWindowFlags_AlwaysAutoResize))
+	if (!ImGui::BeginPopupModal("Delete File", &isOpenDeleteFile, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 		return;
 
 	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
 	tString fullname = CurrImage->Filename;
 	tString file = tSystem::tGetFileName(fullname);
 	tString dir = tSystem::tGetDir(fullname);
+
+	// @wip
+	// Create a function based on the stuff in CalcTextSize that crops a string
+	// to a particular size based on the current font/scale. Something like
+	// tString CropStringToWidth(const tString& src, int width, bool ellipsis = true, bool keepStart = true)
+	// If ellipsis is true the returned string may strt or end with "...". The total width of the
+	// returned string (including the ellipsis) fits in width. If ellipsis is false it may fit a few more
+	// characters. If keepStart is true, the start of src will always be kept and the ellipsis, if requested
+	// and required, will be at the end. If keepStart is false, the end of src will always be kept, and the
+	// ellipsis, if requested and required, will be at the start of src. Could also support middle ellipsis.
+	//
+	// float maxPathWidth = Viewer::GetUIParamScaled(327.0f, 2.5f);
+	// float fileWidth = ImGui::CalcTextSize(file.Chr()).x;
+	// if (fileWidth > maxPathWidth)
+
 	ImGui::Text("Delete File");
-		ImGui::Indent(); ImGui::Text("%s", file.Chr()); ImGui::Unindent();
+	ImGui::Indent();
+		ImGui::Text("%s", file.Chr());
+	ImGui::Unindent();
+
 	ImGui::Text("In Folder");
-		ImGui::Indent(); ImGui::Text("%s", dir.Chr()); ImGui::Unindent();
-	ImGui::NewLine();
+	ImGui::Indent();
+		ImGui::Text("%s", dir.Chr());
+	ImGui::Unindent();
+
+	ImGuiStyle& style = ImGui::GetStyle();
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 	ImGui::Separator();
 
-	ImGui::NewLine();
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 	ImGui::Checkbox("Confirm file deletions in the future?", &profile.ConfirmDeletes);
-	ImGui::NewLine();
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 
 	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
+	float okOffset = Viewer::GetUIParamScaled(300.0f, 2.5f);
+	ImGui::SetCursorPosX(okOffset);
 
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
@@ -156,7 +179,7 @@ void Viewer::DoDeleteFileNoRecycleModal(bool deleteFileNoRecycPressed)
 
 	// The unused isOpenPerm bool is just so we get a close button in ImGui.
 	bool isOpenPerm = true;
-	if (!ImGui::BeginPopupModal("Delete File Permanently", &isOpenPerm, ImGuiWindowFlags_AlwaysAutoResize))
+	if (!ImGui::BeginPopupModal("Delete File Permanently", &isOpenPerm, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 		return;
 
 	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
@@ -165,22 +188,31 @@ void Viewer::DoDeleteFileNoRecycleModal(bool deleteFileNoRecycPressed)
 	tString file = tSystem::tGetFileName(fullname);
 	tString dir = tSystem::tGetDir(fullname);
 	ImGui::Text("Delete File");
-		ImGui::Indent(); ImGui::Text("%s", file.Chr()); ImGui::Unindent();
+	ImGui::Indent();
+		ImGui::Text("%s", file.Chr());
+	ImGui::Unindent();
+	
 	ImGui::Text("In Folder");
-		ImGui::Indent(); ImGui::Text("%s", dir.Chr()); ImGui::Unindent();
-	ImGui::NewLine();
-	ImGui::Separator();
-	ImGui::NewLine();
+	ImGui::Indent();
+		ImGui::Text("%s", dir.Chr());
+	ImGui::Unindent();
 
-	ImGui::Text("This operation cannot be undone. The file\nwill be deleted permanently.");
-	ImGui::NewLine();
+	ImGuiStyle& style = ImGui::GetStyle();
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
+	ImGui::Separator();
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
+
+	ImGui::Text("This cannot be undone. File deletion will be permanent.");
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f*style.ItemSpacing.y);
 
 	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SetItemDefaultFocus();
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
+
+	float okOffset = Viewer::GetUIParamScaled(300.0f, 2.5f);
+	ImGui::SetCursorPosX(okOffset);
 
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
@@ -197,7 +229,7 @@ void Viewer::DoDeleteFileNoRecycleModal(bool deleteFileNoRecycPressed)
 void Viewer::DoSnapMessageNoFileBrowseModal(bool justPressed)
 {
 	if (justPressed)
-		ImGui::OpenPopup("Message_NoFileBrowse");
+		ImGui::OpenPopup("Snap Message##NoFileBrowse");
 
 	// The unused isMessage bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isMessage = true;
@@ -205,8 +237,8 @@ void Viewer::DoSnapMessageNoFileBrowseModal(bool justPressed)
 	(
 		!ImGui::BeginPopupModal
 		(
-			"Message_NoFileBrowse", &isMessage,
-			ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
+			"Snap Message##NoFileBrowse", &isMessage,
+			ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize
 		)
 	)
 	{
@@ -218,11 +250,14 @@ void Viewer::DoSnapMessageNoFileBrowseModal(bool justPressed)
 	(
 		"The Snap version of Tacent View does not\n"
 		"support opening Nautilus or Dolphin.\n\n"
-		"Please use the deb install or compile if\n"
-		"you need the feature on Linux."
+		"Please use the deb install or build from\n"
+		"source if you need this feature on Linux."
 	);
 	ImGui::NewLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
+
+	float okOffset = Viewer::GetUIParamScaled(170.0f, 2.5f);
+	ImGui::SetCursorPosX(okOffset);
+
 	if (ImGui::Button("OK", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
@@ -233,7 +268,7 @@ void Viewer::DoSnapMessageNoFileBrowseModal(bool justPressed)
 void Viewer::DoSnapMessageNoFrameTransModal(bool justPressed)
 {
 	if (justPressed)
-		ImGui::OpenPopup("Message_NoFrameTrans");
+		ImGui::OpenPopup("Snap Message##NoTransparentWorkArea");
 
 	// The unused isMessage bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isMessage = true;
@@ -241,8 +276,8 @@ void Viewer::DoSnapMessageNoFrameTransModal(bool justPressed)
 	(
 		!ImGui::BeginPopupModal
 		(
-			"Message_NoFrameTrans", &isMessage,
-			ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
+			"Snap Message##NoTransparentWorkArea", &isMessage,
+			ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize
 		)
 	)
 	{
@@ -254,11 +289,13 @@ void Viewer::DoSnapMessageNoFrameTransModal(bool justPressed)
 	(
 		"The Snap version of Tacent View does not\n"
 		"support transparent work area.\n\n"
-		"Please use the deb install or compile if\n"
-		"you need the feature on Linux."
+		"Please use the deb install or build from\n"
+		"source if you need this feature on Linux."
 	);
 	ImGui::NewLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
+
+	float okOffset = Viewer::GetUIParamScaled(170.0f, 2.5f);
+	ImGui::SetCursorPosX(okOffset);
 	if (ImGui::Button("OK", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
@@ -273,7 +310,7 @@ void Viewer::DoRenameModal(bool renamePressed)
 
 	// The unused isOpenRen bool is just so we get a close button in ImGui.
 	bool isOpenRen = true;
-	if (!ImGui::BeginPopupModal("Rename File", &isOpenRen, ImGuiWindowFlags_AlwaysAutoResize))
+	if (!ImGui::BeginPopupModal("Rename File", &isOpenRen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 		return;
 
 	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
@@ -293,7 +330,9 @@ void Viewer::DoRenameModal(bool renamePressed)
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
+
+	float okOffset = Viewer::GetUIParamScaled(165.0f, 2.5f);
+	ImGui::SetCursorPosX(okOffset);
 
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();

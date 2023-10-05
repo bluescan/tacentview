@@ -46,10 +46,14 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 {
 	tVector2 windowPos = GetDialogOrigin(DialogID::PixelEditor);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
+
+	// I imagine NoResize is implied by AlwaysAutoResize. However I have seen cases where
+	// a scrollbar width gets reserved even with AutoResize is on. This is why we're using
+	// NoScrollBar every time we use AutoResize.
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
 		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoFocusOnAppearing	|
-		ImGuiWindowFlags_NoNav;
+		ImGuiWindowFlags_NoNav				|	ImGuiWindowFlags_NoScrollbar;
 
 	static bool live = true;
 	static tColourf floatCol = tColourf::black;
@@ -141,7 +145,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
-		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoNav;
+		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoNav				|	ImGuiWindowFlags_NoScrollbar;
 
 	if (ImGui::Begin("Channel Filter", popen, flags))
 	{
@@ -330,7 +334,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	}
 
 	bool isOpenLevels = true;
-	if (!ImGui::BeginPopupModal("Adjust Levels", &isOpenLevels, ImGuiWindowFlags_AlwaysAutoResize))
+	if (!ImGui::BeginPopupModal("Adjust Levels", &isOpenLevels, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 	{
 		if (popupOpen)
 		{
@@ -630,10 +634,10 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 		Viewer::SetWindowTitle();
 		ImGui::CloseCurrentPopup();
 	}
-
 	ImGui::SameLine();
-	
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
+
+	float okOffset = Viewer::GetUIParamScaled(264.0f, 2.5f);
+	ImGui::SetCursorPosX(okOffset);
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
 	if (Viewer::Button("OK", tVector2(buttonWidth, 0.0f)))
