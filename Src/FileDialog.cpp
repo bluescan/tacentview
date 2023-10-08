@@ -20,6 +20,7 @@
 #include "imgui_stdlib.h"		// For editing a std::string.
 #include "FileDialog.h"
 #include "TacentView.h"
+#include "GuiUtil.h"
 #include "Image.h"
 #include "Config.h"
 using namespace tStd;
@@ -1227,7 +1228,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 	}
 
 	const ImGuiStyle& style = ImGui::GetStyle();
-	tVector2 nextWinSize = Viewer::GetUIParamScaled(tVector2(660.0f, 400.0f), 2.5f);
+	tVector2 nextWinSize = Gutil::GetUIParamScaled(tVector2(660.0f, 400.0f), 2.5f);
 	ImGui::SetNextWindowSize(nextWinSize, ImGuiCond_Appearing);
 
 	// Center the window. This seems to be default behaviour so leaving it commented out.
@@ -1256,14 +1257,14 @@ FileDialog::DialogState FileDialog::DoPopup()
 	DialogState state = DialogState::Open;
 	Result.Clear();
 
-	tVector2 toolImageSize = Viewer::GetUIParamExtent(tVector2(24.0f, 24.0f), tVector2(62.0f, 62.0f));
+	tVector2 toolImageSize = Gutil::GetUIParamExtent(tVector2(24.0f, 24.0f), tVector2(62.0f, 62.0f));
 	float menuBarHeight = toolImageSize.y + style.ItemSpacing.y*2.0f;
-	float colWidthIcon = Viewer::GetUIParamScaled(24.0, 2.5f);
-	float colWidthName = Viewer::GetUIParamScaled(190.0, 2.5f);
-	float colWidthTime = Viewer::GetUIParamScaled(120.0, 2.5f);
-	float colWidthType = Viewer::GetUIParamScaled(39.0, 2.5f);
-	float colWidthSize = Viewer::GetUIParamScaled(60.0, 2.5f);
-	float bottomBarHeight = Viewer::GetUIParamExtent(52.0f, 140.0f);
+	float colWidthIcon = Gutil::GetUIParamScaled(24.0, 2.5f);
+	float colWidthName = Gutil::GetUIParamScaled(190.0, 2.5f);
+	float colWidthTime = Gutil::GetUIParamScaled(120.0, 2.5f);
+	float colWidthType = Gutil::GetUIParamScaled(39.0, 2.5f);
+	float colWidthSize = Gutil::GetUIParamScaled(60.0, 2.5f);
+	float bottomBarHeight = Gutil::GetUIParamExtent(52.0f, 140.0f);
 
 	//
 	// Begin MenuBar
@@ -1372,7 +1373,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 	int outerTableFlags = ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable;
 	if (ImGui::BeginTable("FileDialogTable", 2, outerTableFlags, tVector2(0.0f, -(bottomBarHeight + menuBarHeight))))
 	{
-		float leftTreeWidth = Viewer::GetUIParamScaled(160.0f, 2.5f);
+		float leftTreeWidth = Gutil::GetUIParamScaled(160.0f, 2.5f);
 		ImGui::TableSetupColumn("LeftTreeColumn", ImGuiTableColumnFlags_WidthFixed, leftTreeWidth);
 		ImGui::TableSetupColumn("RightContentColumn", ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableNextRow();
@@ -1520,7 +1521,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 				// Do the content rows. We could use ImGuiListClipper here but so far, even with thousands of files in
 				// the Contents list, it is very responsive. Also, since it's a list rather than an array, we'd still
 				// need a 'Next' loop to get to the right clipper starting point (clipper.DisplayStart).
-				tVector2 iconSize = Viewer::GetUIParamScaled(tVector2(16.0f, 16.0f), 2.5f);
+				tVector2 iconSize = Gutil::GetUIParamScaled(tVector2(16.0f, 16.0f), 2.5f);
 				for (ContentItem* item = SelectedNode->Contents.First(); item; item = item->Next())
 				{
 					// There were two ways to implement hidden. Invalidate everything and enumerate the filesystem objects again (less memory)
@@ -1564,7 +1565,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 
 	bool resultAvail = false;
 	ContentItem* selItem = SelectedNode ? SelectedNode->FindSelectedItem() : nullptr;
-	float actionButtonWidth = Viewer::GetUIParamScaled(70.0f, 2.5f);
+	float actionButtonWidth = Gutil::GetUIParamScaled(70.0f, 2.5f);
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 	switch (Mode)
 	{
@@ -1593,7 +1594,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 			{
 				// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 2.0f*actionButtonWidth - style.ItemSpacing.x);		// X2 because of the cancel button to right.
-				if (Viewer::Button("Open", tVector2(actionButtonWidth, 0.0f)))
+				if (Gutil::Button("Open", tVector2(actionButtonWidth, 0.0f)))
 				{
 					Result = NodeToDir(SelectedNode) + selItem->Name;
 					state = DialogState::OK;
@@ -1625,7 +1626,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 			{
 				// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 2.0f*actionButtonWidth - style.ItemSpacing.x);		// X2 because of the cancel button to right.
-				if (Viewer::Button("Save", tVector2(actionButtonWidth, 0.0f)))
+				if (Gutil::Button("Save", tVector2(actionButtonWidth, 0.0f)))
 				{
 					tString extension = tSystem::tGetExtension(fileType);
 					Result = NodeToDir(SelectedNode) + tString(SaveFileResult.c_str()) + "." + extension;
@@ -1660,7 +1661,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 			{
 				// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 2.0f*actionButtonWidth - style.ItemSpacing.x);		// X2 because of the cancel button to right.
-				if (Viewer::Button("Open", tVector2(actionButtonWidth, 0.0f)))
+				if (Gutil::Button("Open", tVector2(actionButtonWidth, 0.0f)))
 				{
 					Result = NodeToDir(SelectedNode);
 					state = DialogState::OK;
@@ -1678,7 +1679,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
 
-	if (Viewer::Button("Cancel", tVector2(actionButtonWidth, 0.0f)))
+	if (Gutil::Button("Cancel", tVector2(actionButtonWidth, 0.0f)))
 		state = DialogState::Cancel;
 
 	if (state != DialogState::Open)
@@ -1692,7 +1693,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 void FileDialog::DoFileTypesDropdown(bool supportMultipleTypes)
 {
 	const ImGuiStyle& style = ImGui::GetStyle();
-	float dropdownWidth = Viewer::GetUIParamScaled(140.0f, 2.5f);
+	float dropdownWidth = Gutil::GetUIParamScaled(140.0f, 2.5f);
 	dropdownWidth += style.ItemSpacing.x;
 
 	ImGui::SetNextItemWidth(dropdownWidth);

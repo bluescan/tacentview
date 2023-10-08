@@ -17,8 +17,10 @@
 #include "imgui.h"
 #include "ThumbnailView.h"
 #include "TacentView.h"
+#include "GuiUtil.h"
 #include "Image.h"
 using namespace tMath;
+using namespace Gutil;
 
 
 namespace Viewer
@@ -61,7 +63,7 @@ tString Viewer::MakeImageTooltipString(Viewer::Image* image, const tString& file
 void Viewer::DoSortParameters(bool singleLine)
 {
 	Config::ProfileData& profile = Config::GetProfileData();
-	float sortComboWidth = Viewer::GetUIParamScaled(120.0f, 2.5f);
+	float sortComboWidth = Gutil::GetUIParamScaled(120.0f, 2.5f);
 
 	const char* sortItems[] =
 	{
@@ -103,7 +105,7 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 	tVector2 windowPos = GetDialogOrigin(DialogID::ThumbnailView);
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	tVector2 initialSize = Viewer::GetUIParamScaled(tVector2(586.0f, 480.0f), 2.5f);
+	tVector2 initialSize = Gutil::GetUIParamScaled(tVector2(586.0f, 480.0f), 2.5f);
 
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(initialSize, ImGuiCond_FirstUseEver);
@@ -114,12 +116,12 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 		return;
 	}
 
-	float barHeight				= Viewer::GetUIParamScaled(4.0f, 2.5f);
-	float viewOptionsHeight		= Viewer::GetUIParamScaled(66.0f, 2.5f) + barHeight;
-	float optionsHeight			= Viewer::GetUIParamScaled(20.0f, 2.5f) + barHeight;
-	float progressTextOffset	= Viewer::GetUIParamScaled(460.0f, 2.5f);
-	float thumbItemInfoHeight	= Viewer::GetUIParamScaled(32.0f, 2.5f);
-	float minSpacing			= Viewer::GetUIParamScaled(4.0f, 2.5f);
+	float barHeight				= Gutil::GetUIParamScaled(4.0f, 2.5f);
+	float viewOptionsHeight		= Gutil::GetUIParamScaled(66.0f, 2.5f) + barHeight;
+	float optionsHeight			= Gutil::GetUIParamScaled(20.0f, 2.5f) + barHeight;
+	float progressTextOffset	= Gutil::GetUIParamScaled(460.0f, 2.5f);
+	float thumbItemInfoHeight	= Gutil::GetUIParamScaled(32.0f, 2.5f);
+	float minSpacing			= Gutil::GetUIParamScaled(4.0f, 2.5f);
 
 	ImGuiWindowFlags thumbWindowFlags = 0;
 	ImGui::BeginChild("Thumbnails", tVector2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight()-viewOptionsHeight), false, thumbWindowFlags);
@@ -205,13 +207,13 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 
 	ImGuiWindowFlags viewOptionsWindowFlags = ImGuiWindowFlags_NoScrollbar;
 
-	float viewOptionsMargin = Viewer::GetUIParamScaled(10.0f, 2.5f);
+	float viewOptionsMargin = Gutil::GetUIParamScaled(10.0f, 2.5f);
 	float optOffset = (ImGui::GetWindowHeight() - ImGui::GetCursorPosY() - optionsHeight) / 2.0f;
 
 	ImGui::SetCursorPos(tVector2(viewOptionsMargin, ImGui::GetCursorPosY() + optOffset));
 	ImGui::BeginChild("ViewOptions", tVector2(ImGui::GetWindowWidth()-viewOptionsMargin*2.0f, optionsHeight), false, viewOptionsWindowFlags);
 
-	float sizeSliderWidth = Viewer::GetUIParamScaled(200.0f, 2.5f);
+	float sizeSliderWidth = Gutil::GetUIParamScaled(200.0f, 2.5f);
 	ImGui::PushItemWidth(sizeSliderWidth);
 	ImGui::SliderFloat("Size", &profile.ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth), "%.0f");
 	tiClampMin(profile.ThumbnailWidth, float(Image::ThumbMinDispWidth));

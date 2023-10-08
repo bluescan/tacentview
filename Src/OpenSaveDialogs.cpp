@@ -22,6 +22,7 @@
 #include <Image/tImageBMP.h>
 #include <Image/tImageTIFF.h>
 #include "imgui.h"
+#include "GuiUtil.h"
 #include "OpenSaveDialogs.h"
 #include "Image.h"
 #include "TacentView.h"
@@ -32,6 +33,7 @@ using namespace tSystem;
 using namespace tMath;
 using namespace tImage;
 using namespace tFileDialog;
+using namespace Gutil;
 
 
 namespace Viewer
@@ -101,7 +103,7 @@ void Viewer::DoSaveCurrentModal(bool savePressed)
 		ImGui::OpenPopup(label.Chr());
 	}
 
-	float nextWinWidth = Viewer::GetUIParamScaled(300.0f, 2.5f);
+	float nextWinWidth = Gutil::GetUIParamScaled(300.0f, 2.5f);
 
 	// The unused isOpenSaveOptions bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isOpenSaveOptions = true;
@@ -141,7 +143,7 @@ void Viewer::DoSaveAsModal(bool saveAsPressed)
 		ImGui::OpenPopup(label.Chr());
 	}
 
-	float nextWinWidth = Viewer::GetUIParamScaled(300.0f, 2.5f);
+	float nextWinWidth = Gutil::GetUIParamScaled(300.0f, 2.5f);
 
 	// The unused isOpenSaveOptions bool is just so we get a close button in ImGui. Returns false if popup not open.
 	bool isOpenSaveOptions = true;
@@ -167,8 +169,8 @@ void Viewer::DoSavePopup()
 
 	DoSaveFiletypeOptions(saveType);
 
-	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
-	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	float buttonWidth = Gutil::GetUIParamScaled(76.0f, 2.5f);
+	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 	ImGui::SameLine();
 
@@ -178,7 +180,7 @@ void Viewer::DoSavePopup()
 
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("Save", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Save", tVector2(buttonWidth, 0.0f)))
 	{
 		if (tFileExists(SaveAsFile) && profile.ConfirmFileOverwrites)
 		{
@@ -263,7 +265,7 @@ void Viewer::DoSaveUnsupportedTypePopup()
 	ImGui::Text("%s", support.Chr());
 	ImGui::NewLine();
 
-	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth = Gutil::GetUIParamScaled(76.0f, 2.5f);
 
 	// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
@@ -272,7 +274,7 @@ void Viewer::DoSaveUnsupportedTypePopup()
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
 
-	if (Viewer::Button("OK", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("OK", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 }
 
@@ -284,8 +286,8 @@ tString Viewer::DoSubFolder()
 	char subFolder[256]; tMemset(subFolder, 0, 256);
 	tStrncpy(subFolder, profile.SaveSubFolder.Chr(), 255);
 
-	float itemWidth		= Viewer::GetUIParamScaled(160.0f, 2.5f);
-	float buttonWidth	= Viewer::GetUIParamScaled(76.0f, 2.5f);
+	float itemWidth		= Gutil::GetUIParamScaled(160.0f, 2.5f);
+	float buttonWidth	= Gutil::GetUIParamScaled(76.0f, 2.5f);
 
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputText("SubFolder", subFolder, 256);
@@ -313,7 +315,7 @@ tSystem::tFileType Viewer::DoSaveChooseFiletype()
 	tString fileTypeName = profile.SaveFileType;
 	tFileType fileType = tGetFileTypeFromName(fileTypeName);
 
-	float itemWidth = Viewer::GetUIParamScaled(160.0f, 2.5f);
+	float itemWidth = Gutil::GetUIParamScaled(160.0f, 2.5f);
 	ImGui::SetNextItemWidth(itemWidth);
 	if (ImGui::BeginCombo("File Type", fileTypeName.Chr()))
 	{
@@ -342,7 +344,7 @@ tSystem::tFileType Viewer::DoSaveChooseFiletype()
 void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 {
 	Config::ProfileData& profile = Config::GetProfileData();
-	float itemWidth = Viewer::GetUIParamScaled(160.0f, 2.5f);
+	float itemWidth = Gutil::GetUIParamScaled(160.0f, 2.5f);
 
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::SliderInt("Bits per Pixel", &profile.SaveFileGifBPP, 1, 8, "%d");
@@ -382,21 +384,21 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 		ImGui::InputInt("Duration Override", &profile.SaveFileGifDurOverride);
 		tiClamp(profile.SaveFileGifDurOverride, -1, 1000);
 		ImGui::SameLine(); ShowHelpMark("In 1/100 seconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
-		if (Viewer::Button("1.0s"))  profile.SaveFileGifDurOverride = 100; ImGui::SameLine();
-		if (Viewer::Button("0.5s"))  profile.SaveFileGifDurOverride = 50;  ImGui::SameLine();
-		if (Viewer::Button("15fps")) profile.SaveFileGifDurOverride = 6;   ImGui::SameLine();
-		if (Viewer::Button("30fps")) profile.SaveFileGifDurOverride = 3;
+		if (Gutil::Button("1.0s"))  profile.SaveFileGifDurOverride = 100; ImGui::SameLine();
+		if (Gutil::Button("0.5s"))  profile.SaveFileGifDurOverride = 50;  ImGui::SameLine();
+		if (Gutil::Button("15fps")) profile.SaveFileGifDurOverride = 6;   ImGui::SameLine();
+		if (Gutil::Button("30fps")) profile.SaveFileGifDurOverride = 3;
 	}
 	else
 	{
 		ImGui::InputInt("Frame Duration", &profile.SaveFileGifDurMultiFrame);
 		tiClamp(profile.SaveFileGifDurMultiFrame, 0, 1000);
 		ImGui::SameLine(); ShowHelpMark("In 1/100 seconds.");
-		if (Viewer::Button("1.0s"))  profile.SaveFileGifDurMultiFrame = 100; ImGui::SameLine();
-		if (Viewer::Button("0.5s"))  profile.SaveFileGifDurMultiFrame = 50;  ImGui::SameLine();
-		if (Viewer::Button("15fps")) profile.SaveFileGifDurMultiFrame = 6;   ImGui::SameLine();
-		if (Viewer::Button("30fps")) profile.SaveFileGifDurMultiFrame = 3;   ImGui::SameLine();
-		if (Viewer::Button("50fps")) profile.SaveFileGifDurMultiFrame = 2;
+		if (Gutil::Button("1.0s"))  profile.SaveFileGifDurMultiFrame = 100; ImGui::SameLine();
+		if (Gutil::Button("0.5s"))  profile.SaveFileGifDurMultiFrame = 50;  ImGui::SameLine();
+		if (Gutil::Button("15fps")) profile.SaveFileGifDurMultiFrame = 6;   ImGui::SameLine();
+		if (Gutil::Button("30fps")) profile.SaveFileGifDurMultiFrame = 3;   ImGui::SameLine();
+		if (Gutil::Button("50fps")) profile.SaveFileGifDurMultiFrame = 2;
 	}
 
 	ImGui::SetNextItemWidth(itemWidth);
@@ -427,8 +429,8 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 		tsaPrintf(desc, " WARNING: Scolorq at large BPPs may take\n a long time for large images.");
 	ImGui::Text(desc.Chr());
 
-	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
-	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
+	float buttonWidth = Gutil::GetUIParamScaled(76.0f, 2.5f);
+	if (Gutil::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		profile.SaveFileGifBPP				= 8;
 		profile.SaveFileGifQuantMethod		= int(tImage::tQuantize::Method::Wu);
@@ -447,7 +449,7 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 {
 	Config::ProfileData& profile = Config::GetProfileData();
-	float itemWidth = Viewer::GetUIParamScaled(160.0f, 2.5f);
+	float itemWidth = Gutil::GetUIParamScaled(160.0f, 2.5f);
 
 	ImGui::PushItemWidth(itemWidth);
 
@@ -497,10 +499,10 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			}
 			ImGui::SliderInt("Duration Override", &profile.SaveFileWebpDurOverride, -1, 10000, "%d");
 			ImGui::SameLine(); ShowHelpMark("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
-			if (Viewer::Button("1.0s"))  profile.SaveFileWebpDurOverride = 1000; ImGui::SameLine();
-			if (Viewer::Button("0.5s"))  profile.SaveFileWebpDurOverride = 500;  ImGui::SameLine();
-			if (Viewer::Button("30fps")) profile.SaveFileWebpDurOverride = 33;   ImGui::SameLine();
-			if (Viewer::Button("60fps")) profile.SaveFileWebpDurOverride = 16;
+			if (Gutil::Button("1.0s"))  profile.SaveFileWebpDurOverride = 1000; ImGui::SameLine();
+			if (Gutil::Button("0.5s"))  profile.SaveFileWebpDurOverride = 500;  ImGui::SameLine();
+			if (Gutil::Button("30fps")) profile.SaveFileWebpDurOverride = 33;   ImGui::SameLine();
+			if (Gutil::Button("60fps")) profile.SaveFileWebpDurOverride = 16;
 			break;
 
 		case tFileType::QOI:
@@ -520,10 +522,10 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 		case tFileType::APNG:
 			ImGui::SliderInt("Duration Override", &profile.SaveFileApngDurOverride, -1, 10000, "%d");
 			ImGui::SameLine(); ShowHelpMark("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
-			if (Viewer::Button("1.0s"))  profile.SaveFileApngDurOverride = 1000; ImGui::SameLine();
-			if (Viewer::Button("0.5s"))  profile.SaveFileApngDurOverride = 500;  ImGui::SameLine();
-			if (Viewer::Button("30fps")) profile.SaveFileApngDurOverride = 33;   ImGui::SameLine();
-			if (Viewer::Button("60fps")) profile.SaveFileApngDurOverride = 16;
+			if (Gutil::Button("1.0s"))  profile.SaveFileApngDurOverride = 1000; ImGui::SameLine();
+			if (Gutil::Button("0.5s"))  profile.SaveFileApngDurOverride = 500;  ImGui::SameLine();
+			if (Gutil::Button("30fps")) profile.SaveFileApngDurOverride = 33;   ImGui::SameLine();
+			if (Gutil::Button("60fps")) profile.SaveFileApngDurOverride = 16;
 			break;
 
 		case tFileType::BMP:
@@ -538,10 +540,10 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 		case tFileType::TIFF:
 			ImGui::SliderInt("Duration Override", &profile.SaveFileTiffDurOverride, -1, 10000, "%d");
 			ImGui::SameLine(); ShowHelpMark("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
-			if (Viewer::Button("1.0s"))  profile.SaveFileTiffDurOverride = 1000; ImGui::SameLine();
-			if (Viewer::Button("0.5s"))  profile.SaveFileTiffDurOverride = 500;  ImGui::SameLine();
-			if (Viewer::Button("30fps")) profile.SaveFileTiffDurOverride = 33;   ImGui::SameLine();
-			if (Viewer::Button("60fps")) profile.SaveFileTiffDurOverride = 16;
+			if (Gutil::Button("1.0s"))  profile.SaveFileTiffDurOverride = 1000; ImGui::SameLine();
+			if (Gutil::Button("0.5s"))  profile.SaveFileTiffDurOverride = 500;  ImGui::SameLine();
+			if (Gutil::Button("30fps")) profile.SaveFileTiffDurOverride = 33;   ImGui::SameLine();
+			if (Gutil::Button("60fps")) profile.SaveFileTiffDurOverride = 16;
 			break;
 	}
 
@@ -555,7 +557,7 @@ tString Viewer::DoSaveFiletypeMultiFrame()
 	tString fileTypeName = profile.SaveFileTypeMultiFrame;
 	tFileType fileType = tGetFileTypeFromName(fileTypeName);
 
-	float itemWidth = Viewer::GetUIParamScaled(160.0f, 2.5f);
+	float itemWidth = Gutil::GetUIParamScaled(160.0f, 2.5f);
 
 	ImGui::SetNextItemWidth(itemWidth);
 	if (ImGui::BeginCombo("File Type", fileTypeName.Chr()))
@@ -739,8 +741,8 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 
 	ImGui::Separator();
 
-	float buttonWidth	= Viewer::GetUIParamScaled(76.0f, 2.5f);
-	float itemWidth		= Viewer::GetUIParamScaled(160.0f, 2.5f);
+	float buttonWidth	= Gutil::GetUIParamScaled(76.0f, 2.5f);
+	float itemWidth		= Gutil::GetUIParamScaled(160.0f, 2.5f);
 
 	ImGui::PushItemWidth(itemWidth);
 	static int width = 512;
@@ -814,11 +816,11 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 	ImGui::Separator();
 
 	ImGui::NewLine();
-	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
-	float saveAllOffset = Viewer::GetUIParamScaled(200.0f, 2.5f);
+	float saveAllOffset = Gutil::GetUIParamScaled(200.0f, 2.5f);
 	ImGui::SetCursorPosX(saveAllOffset);
 
 	// This needs to be static since this function is called for every frame the modal is open.
@@ -827,7 +829,7 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("Save All", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Save All", tVector2(buttonWidth, 0.0f)))
 	{
 		bool dirExists = tDirExists(destDir);
 		if (!dirExists)
@@ -893,7 +895,7 @@ void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFi
 {
 	tAssert(!overwriteFiles.IsEmpty());
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth = Gutil::GetUIParamScaled(76.0f, 2.5f);
 
 	// @wip For both filename and folder we need to restrict the string width using that function I haven't written
 	// yet to crop a string to a specific width and optionally add an ellisis.
@@ -923,7 +925,7 @@ void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFi
 
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 	{
 		pressedCancel = true;
 		ImGui::CloseCurrentPopup();
@@ -931,9 +933,9 @@ void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFi
 
 	ImGui::SameLine();
 
-	float overwriteOffset = Viewer::GetUIParamScaled(280.0f, 2.5f);
+	float overwriteOffset = Gutil::GetUIParamScaled(280.0f, 2.5f);
 	ImGui::SetCursorPosX(overwriteOffset);
-	if (Viewer::Button("Overwrite", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Overwrite", tVector2(buttonWidth, 0.0f)))
 	{
 		pressedOK = true;
 		ImGui::CloseCurrentPopup();
@@ -999,7 +1001,7 @@ void Viewer::AddSavedImageIfNecessary(const tString& savedFile)
 void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool& pressedCancel)
 {
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth = Gutil::GetUIParamScaled(76.0f, 2.5f);
 
 	// @wip For both filename and folder we need to restrict the string width using that function I haven't written
 	// yet to crop a string to a specific width and optionally add an ellisis.
@@ -1016,7 +1018,7 @@ void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool&
 	ImGui::Checkbox("Confirm file overwrites in the future?", &profile.ConfirmFileOverwrites);
 	ImGui::NewLine();
 
-	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 	{
 		pressedCancel = true;
 		ImGui::CloseCurrentPopup();
@@ -1024,11 +1026,11 @@ void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool&
 
 	ImGui::SameLine();
 
-	float okOffset = Viewer::GetUIParamScaled(280.0f, 2.5f);
+	float okOffset = Gutil::GetUIParamScaled(280.0f, 2.5f);
 	ImGui::SetCursorPosX(okOffset);
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("OK", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("OK", tVector2(buttonWidth, 0.0f)))
 	{
 		pressedOK = true;
 		ImGui::CloseCurrentPopup();

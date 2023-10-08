@@ -18,8 +18,10 @@
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL declarations.
 #include "InputBindings.h"
 #include "TacentView.h"
+#include "GuiUtil.h"
 using namespace tStd;
 using namespace tMath;
+using namespace Gutil;
 namespace Viewer
 {
 
@@ -506,12 +508,12 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		if (justOpened)
 			profileIdx = int(Config::GetProfile());
 
-		float profileWidth		= Viewer::GetUIParamScaled(104.0f, 2.5f);
-		float keyWidth			= Viewer::GetUIParamScaled(132.0f, 2.5f);
-		float operationWidth	= Viewer::GetUIParamScaled(240.0f, 2.5f);
-		float buttonWidth		= Viewer::GetUIParamScaled(75.0f, 2.5f);
-		float removeAddSize		= Viewer::GetUIParamScaled(21.0f, 2.5f);
-		float removeColSize		= Viewer::GetUIParamScaled(20.0f, 2.5f);
+		float profileWidth		= Gutil::GetUIParamScaled(104.0f, 2.5f);
+		float keyWidth			= Gutil::GetUIParamScaled(132.0f, 2.5f);
+		float operationWidth	= Gutil::GetUIParamScaled(240.0f, 2.5f);
+		float buttonWidth		= Gutil::GetUIParamScaled(75.0f, 2.5f);
+		float removeAddSize		= Gutil::GetUIParamScaled(21.0f, 2.5f);
+		float removeColSize		= Gutil::GetUIParamScaled(20.0f, 2.5f);
 
 		ImGui::SetNextItemWidth(profileWidth);
 		ImGui::Combo("##ProfileToEdit", &profileIdx, ProfileNamesLong, int(Profile::NumProfiles));
@@ -560,9 +562,9 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 
 		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
 
-		float rowHeight			= Viewer::GetUIParamExtent(24.85f, 61.0f);
-		int maxRowsToDisplay	= Viewer::GetUIParamExtent(16, 11);
-		float keyTextOffsetY	= Viewer::GetUIParamScaled(3.0f, 2.5f);
+		float rowHeight			= Gutil::GetUIParamExtent(24.85f, 61.0f);
+		int maxRowsToDisplay	= Gutil::GetUIParamExtent(16, 11);
+		float keyTextOffsetY	= Gutil::GetUIParamScaled(3.0f, 2.5f);
 
 		int totalAssigned = prof->InputBindings.GetTotalAssigned();
 		const int numRowsToDisplay = tMin(maxRowsToDisplay, totalAssigned);
@@ -686,8 +688,8 @@ void Bindings::ShowAddBindingSection(Config::ProfileData& settings, float keyWid
 	const float rowHeight = 25.0f;
 	tVector2 outerSize = ImVec2(0.0f, rowHeight);
 
-	float removeColSize		= Viewer::GetUIParamScaled(20.0f, 2.5f);
-	float buttonSize		= Viewer::GetUIParamScaled(80.0f, 2.5f);
+	float removeColSize		= Gutil::GetUIParamScaled(20.0f, 2.5f);
+	float buttonSize		= Gutil::GetUIParamScaled(80.0f, 2.5f);
 
 	if (ImGui::BeginTable("KeyAssignTable", 3, tableFlags, outerSize))
 	{
@@ -823,7 +825,7 @@ void Bindings::ShowAddBindingSection(Config::ProfileData& settings, float keyWid
 			{
 				ImGui::SameLine();
 
-				float buttonOffset = Viewer::GetUIParamScaled(236.0f, 2.5f);
+				float buttonOffset = Gutil::GetUIParamScaled(236.0f, 2.5f);
 				ImGui::SetCursorPosX(buttonOffset);
 				if (ImGui::Button("Replace##AssignWarn", tVector2(buttonSize, 0.0f)))
 				{
@@ -845,9 +847,9 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 	tVector2 windowPos = GetDialogOrigin(DialogID::CheatSheet);
 	ImGui::SetNextWindowBgAlpha(0.80f);
 
-	float actionWidth = Viewer::GetUIParamScaled(106.0f, 2.5f);
-	float operatWidth = Viewer::GetUIParamScaled(238.0f, 2.5f);
-	float windowHeight = Viewer::GetUIParamExtent(380.0f, 940.0f);
+	float actionWidth = Gutil::GetUIParamScaled(106.0f, 2.5f);
+	float operatWidth = Gutil::GetUIParamScaled(238.0f, 2.5f);
+	float windowHeight = Gutil::GetUIParamExtent(380.0f, 940.0f);
 
 	tVector2 windowSize(actionWidth+operatWidth, windowHeight);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
@@ -864,7 +866,7 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 		Config::ProfileData& profile = Config::GetProfileData();
 		uint32 tableFlags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter;
 		const int maxRowsToDisplay =17;
-		const float rowHeight = Viewer::GetUIParamScaled(18.0f, 2.5f);
+		const float rowHeight = Gutil::GetUIParamScaled(18.0f, 2.5f);
 		int totalAssigned = profile.InputBindings.GetTotalAssigned();
 		const int numRowsToDisplay = tMin(maxRowsToDisplay, totalAssigned);
 
@@ -918,7 +920,7 @@ void Bindings::ShowCheatSheetWindow(bool* popen)
 			ImGui::EndTable();
 		}
 
-		tVector2 buttonSize = Viewer::GetUIParamScaled(tVector2(100.0f, 22.0f), 2.5f);
+		tVector2 buttonSize = Gutil::GetUIParamScaled(tVector2(100.0f, 22.0f), 2.5f);
 		tVector2 buttonPad(buttonSize.x*1.06f, buttonSize.y*1.22);
 		ImGui::SetCursorPos(tVector2(ImGui::GetWindowContentRegionMax()) - buttonPad);
 		if (ImGui::Button("Close", buttonSize))

@@ -18,10 +18,12 @@
 #include <Math/tColour.h>
 #include <Math/tGeometry.h>
 #include <System/tPrint.h>
+#include "GuiUtil.h"
 #include "Crop.h"
 #include "TacentView.h"
 #include "Image.h"
 using namespace tMath;
+using namespace Gutil;
 
 
 namespace Viewer
@@ -856,8 +858,8 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 	if (!CropMode)
 		return;
 
-	float windowWidth = Viewer::GetUIParamScaled(198.0f, 2.5f);
-	float windowVOffset = Viewer::GetUIParamScaled(48.0f, 2.5f);
+	float windowWidth = Gutil::GetUIParamScaled(198.0f, 2.5f);
+	float windowVOffset = Gutil::GetUIParamScaled(48.0f, 2.5f);
 	tVector2 windowPos = tVector2((lrtb.R+lrtb.L)/2.0f - windowWidth/2.0f, windowVOffset);
 	tVector2 windowSize(windowWidth, -1.0f);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
@@ -874,11 +876,11 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 
 	if (ImGui::Begin("Crop", &CropMode, flags))
 	{
-		float buttonWidth		= Viewer::GetUIParamScaled(55.0f, 2.5f);
-		float shortcutTxtLeft	= Viewer::GetUIParamScaled(57.0f, 2.5f);
-		float anchorSize		= Viewer::GetUIParamScaled(24.0f, 2.5f);
-		float comboWidth		= Viewer::GetUIParamScaled(102.0f, 2.5f);
-		float aspectWidth		= Viewer::GetUIParamScaled(24.0f, 2.5f);
+		float buttonWidth		= Gutil::GetUIParamScaled(55.0f, 2.5f);
+		float shortcutTxtLeft	= Gutil::GetUIParamScaled(57.0f, 2.5f);
+		float anchorSize		= Gutil::GetUIParamScaled(24.0f, 2.5f);
+		float comboWidth		= Gutil::GetUIParamScaled(102.0f, 2.5f);
+		float aspectWidth		= Gutil::GetUIParamScaled(24.0f, 2.5f);
 
 		//
 		// Crop info display.
@@ -900,7 +902,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		int margB = minY;
 		int margT = origH - maxY - 1;
 
-		float textDataColumnOffset = Viewer::GetUIParamScaled(86.0f, 2.5f);
+		float textDataColumnOffset = Gutil::GetUIParamScaled(86.0f, 2.5f);
 		float col = ImGui::GetCursorPosX() + textDataColumnOffset;
 		ImGui::Text("Bot Left");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("X:%d Y:%d", minX, minY);
 		ImGui::Text("Top Right");	ImGui::SameLine(); ImGui::SetCursorPosX(col); ImGui::Text("X:%d Y:%d", maxX, maxY);
@@ -929,7 +931,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 
 		if (profile.GetCropAspectRatio() == tImage::tAspectRatio::User)
 		{
-			float inputWidth = Viewer::GetUIParamScaled(26.0f, 2.5f);
+			float inputWidth = Gutil::GetUIParamScaled(26.0f, 2.5f);
 			ImGui::PushItemWidth(inputWidth);
 			if (ImGui::InputInt("##Num", &profile.CropAspectUserNum, 0, 0))
 				Viewer::Request_CropLineConstrain = true;
@@ -982,9 +984,9 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		tVector2 shortcutImageSize(anchorSize, anchorSize);
 
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2::zero);
-		float navSpacing	= Viewer::GetUIParamScaled(2.0f, 2.5f);
+		float navSpacing	= Gutil::GetUIParamScaled(2.0f, 2.5f);
 		float navWidth		= 3.0f*(anchorSize+2.0f) + 2.0f*navSpacing;		// The anchorSize+2 is because when we draw the image buttons we have a frame padding of 1 on either side.
-		float topNavMargin	= Viewer::GetUIParamScaled(3.0f, 2.5f);
+		float topNavMargin	= Gutil::GetUIParamScaled(3.0f, 2.5f);
 
 		// Top Row
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + topNavMargin);
@@ -1063,7 +1065,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		//
 		// Buttons.
 		//
-		float botButtonMargin = Viewer::GetUIParamScaled(7.0f, 2.5f);
+		float botButtonMargin = Gutil::GetUIParamScaled(7.0f, 2.5f);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + botButtonMargin);
 		if (ImGui::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 			CropMode = false;
@@ -1087,7 +1089,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 			CurrImage->Unbind();
 			CurrImage->Crop(newW, newH, minX, minY, tColouri::transparent);
 			CurrImage->Bind();
-			Viewer::SetWindowTitle();
+			Gutil::SetWindowTitle();
 			CropMode = false;
 			ResetPan();
 		}

@@ -23,11 +23,13 @@
 #include "OpenSaveDialogs.h"
 #include "TacentView.h"
 #include "Image.h"
+#include "GuiUtil.h"
 #include "Config.h"
 using namespace tStd;
 using namespace tMath;
 using namespace tSystem;
 using namespace tImage;
+using namespace Gutil;
 
 
 namespace Viewer
@@ -98,11 +100,11 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 	static char lo[32];
 	static char hi[32];
 
-	float itemWidth		= Viewer::GetUIParamScaled(160.0f, 2.5f);
-	float powButWidth	= Viewer::GetUIParamScaled(60.0f, 2.5f);
-	float powButOffset	= Viewer::GetUIParamScaled(220.0f, 2.5f);
-	float buttonWidth	= Viewer::GetUIParamScaled(76.0f, 2.5f);
-	float comboWidth	= Viewer::GetUIParamScaled(160.0f, 2.5f);
+	float itemWidth		= Gutil::GetUIParamScaled(160.0f, 2.5f);
+	float powButWidth	= Gutil::GetUIParamScaled(60.0f, 2.5f);
+	float powButOffset	= Gutil::GetUIParamScaled(220.0f, 2.5f);
+	float buttonWidth	= Gutil::GetUIParamScaled(76.0f, 2.5f);
+	float comboWidth	= Gutil::GetUIParamScaled(160.0f, 2.5f);
 	tVector2 powSize(powButWidth, 0.0f);
 
 	// If just opened, loop through all the images and choose the largest width and height.
@@ -183,17 +185,17 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 	ImGui::Text(genMsg.Chr());
 
 	ImGui::NewLine();
-	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 	ImGui::SameLine();
 
-	float genOffset = Viewer::GetUIParamScaled(294.0f, 2.5f);
+	float genOffset = Gutil::GetUIParamScaled(294.0f, 2.5f);
 	ImGui::SetCursorPosX(genOffset);
 	tString outFile = destDir + tString(filename) + "." + extension;
 	bool closeThisModal = false;
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("Generate", tVector2(buttonWidth, 0.0f)) && (numImg >= 2))
+	if (Gutil::Button("Generate", tVector2(buttonWidth, 0.0f)) && (numImg >= 2))
 	{
 		bool dirExists = tDirExists(destDir);
 		if (!dirExists)
@@ -354,8 +356,8 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 	if (!ImGui::BeginPopupModal("Extract Frames", &isOpenExtractFrames, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 		return;
 
-	float inputWidth	= Viewer::GetUIParamScaled(160.0f, 2.5f);
-	float buttonWidth	= Viewer::GetUIParamScaled(76.0f, 2.5f);
+	float inputWidth	= Gutil::GetUIParamScaled(160.0f, 2.5f);
+	float buttonWidth	= Gutil::GetUIParamScaled(76.0f, 2.5f);
 
 	int numFrames = CurrImage->GetNumFrames();
 
@@ -444,11 +446,11 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 	);
 
 	ImGui::NewLine();
-	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 	ImGui::SameLine();
 
-	float extOffset = Viewer::GetUIParamScaled(230.0f, 2.5f);
+	float extOffset = Gutil::GetUIParamScaled(230.0f, 2.5f);
 	ImGui::SetCursorPosX(extOffset);
 
 	// This needs to be static since this function is called for every frame the modal is open.
@@ -457,7 +459,7 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();		
-	if (Viewer::Button("Extract", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Extract", tVector2(buttonWidth, 0.0f)))
 	{
 		Config::ProfileData& profile = Config::GetProfileData();
 		bool dirExists = tDirExists(destDir);

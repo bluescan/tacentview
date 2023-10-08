@@ -17,12 +17,14 @@
 #include "ContactSheet.h"
 #include "OpenSaveDialogs.h"
 #include "TacentView.h"
+#include "GuiUtil.h"
 #include "Image.h"
 namespace Viewer { extern void DoFillColourInterface(const char* = nullptr, bool = false); }
 using namespace tStd;
 using namespace tMath;
 using namespace tSystem;
 using namespace tImage;
+using namespace Gutil;
 
 
 namespace Viewer
@@ -102,10 +104,10 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	static char lo[32];
 	static char hi[32];
 
-	float itemWidth		= Viewer::GetUIParamScaled(160.0f, 2.5f);
-	float powButWidth	= Viewer::GetUIParamScaled(60.0f, 2.5f);
-	float powButOffset	= Viewer::GetUIParamScaled(252.0f, 2.5f);
-	float buttonWidth	= Viewer::GetUIParamScaled(76.0f, 2.5f);
+	float itemWidth		= Gutil::GetUIParamScaled(160.0f, 2.5f);
+	float powButWidth	= Gutil::GetUIParamScaled(60.0f, 2.5f);
+	float powButOffset	= Gutil::GetUIParamScaled(252.0f, 2.5f);
+	float buttonWidth	= Gutil::GetUIParamScaled(76.0f, 2.5f);
 
 	tVector2 powSize(powButWidth, 0.0f);
 
@@ -265,19 +267,19 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	ImGui::Text(genMsg.Chr());
 
 	ImGui::NewLine();
-	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 	ImGui::SameLine();
 	
 	tString outFile = destDir + tString(filename) + extensionWithDot;
 	bool closeThisModal = false;
 
-	float genButOffset	= Viewer::GetUIParamScaled(324.0f, 2.5f);
+	float genButOffset	= Gutil::GetUIParamScaled(324.0f, 2.5f);
 	ImGui::SetCursorPosX(genButOffset);
 
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("Generate", tVector2(buttonWidth, 0.0f)) && (numImg >= 2))
+	if (Gutil::Button("Generate", tVector2(buttonWidth, 0.0f)) && (numImg >= 2))
 	{
 		bool dirExists = tDirExists(destDir);
 		if (!dirExists)

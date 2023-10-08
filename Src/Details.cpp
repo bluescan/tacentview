@@ -18,8 +18,10 @@
 #include "Config.h"
 #include "Image.h"
 #include "TacentView.h"
+#include "GuiUtil.h"
 using namespace tMath;
 using namespace tImage;
+using namespace Gutil;
 
 
 void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY, float zoom)
@@ -39,7 +41,7 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 		(profile.OverlayCorner & 2) ? 1.0f : 0.0f
 	);
 
-	float winWidth = Viewer::GetUIParamScaled(146.0f, 2.5f);
+	float winWidth = Gutil::GetUIParamScaled(146.0f, 2.5f);
 	ImGui::SetNextWindowSize(tVector2(winWidth, 0.0f), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, windowPivot);
 	ImGui::SetNextWindowBgAlpha(0.6f);
@@ -72,7 +74,7 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 			tColourf floatCol(PixelColour);
 			tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
 
-			float colourButtonSize = Viewer::GetUIParamScaled(15.0f, 2.5f);
+			float colourButtonSize = Gutil::GetUIParamScaled(15.0f, 2.5f);
 			if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, tVector2(colourButtonSize, colourButtonSize)))
 				ImGui::OpenPopup("CopyColourOverlayAs");
 
@@ -199,10 +201,10 @@ void Viewer::ShowImageMetaDataOverlay(bool* popen)
 	tVector2 windowPos = GetDialogOrigin(DialogID::MetaData);
 	ImGui::SetNextWindowBgAlpha(0.90f);
 
-	float rowHeight			= Viewer::GetUIParamScaled(18.0f, 2.5f) + 4.0f;
-	float tagWidth			= Viewer::GetUIParamScaled(122.0f, 2.5f);
-	float valWidth			= Viewer::GetUIParamScaled(200.0f, 2.5f);
-	int maxRowsToDisplay	= Viewer::GetUIParamExtent(25, 18);
+	float rowHeight			= Gutil::GetUIParamScaled(18.0f, 2.5f) + 4.0f;
+	float tagWidth			= Gutil::GetUIParamScaled(122.0f, 2.5f);
+	float valWidth			= Gutil::GetUIParamScaled(200.0f, 2.5f);
+	int maxRowsToDisplay	= Gutil::GetUIParamExtent(25, 18);
 
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Appearing);
 	ImGuiWindowFlags flags =

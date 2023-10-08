@@ -16,10 +16,12 @@
 #include "Resize.h"
 #include "Image.h"
 #include "TacentView.h"
+#include "GuiUtil.h"
 using namespace tStd;
 using namespace tSystem;
 using namespace tMath;
 using namespace tImage;
+using namespace Gutil;
 
 
 namespace Viewer
@@ -43,9 +45,9 @@ void Viewer::DoResizeWidthHeightInterface(int srcW, int srcH, int& dstW, int& ds
 	float aspect = float(srcW) / float(srcH);
 	static bool lockAspect = true;
 
-	float dimWidth					= Viewer::GetUIParamScaled(90.0f, 2.5f);
-	float dimOffset					= Viewer::GetUIParamScaled(140.0f, 2.5f);
-	float powButtonWidth			= Viewer::GetUIParamScaled(44.0f, 2.5f);
+	float dimWidth					= Gutil::GetUIParamScaled(90.0f, 2.5f);
+	float dimOffset					= Gutil::GetUIParamScaled(140.0f, 2.5f);
+	float powButtonWidth			= Gutil::GetUIParamScaled(44.0f, 2.5f);
 
 	static char lo[32];
 	static char hi[32];
@@ -62,7 +64,8 @@ void Viewer::DoResizeWidthHeightInterface(int srcW, int srcH, int& dstW, int& ds
 	if (ImGui::Button(lo, tVector2(powButtonWidth, 0.0f)))			{ dstW = loP2W; if (lockAspect) dstH = int( float(dstW) / aspect ); }
 	ImGui::SameLine();
 	if (ImGui::Button(hi, tVector2(powButtonWidth, 0.0f)))			{ dstW = hiP2W; if (lockAspect) dstH = int( float(dstW) / aspect ); }
-	ImGui::SameLine(); ShowHelpMark("Final output width in pixels.\nIf dimensions match current no scaling.");
+	ImGui::SameLine();
+	ShowHelpMark("Final output width in pixels.\nIf dimensions match current no scaling.");
 
 	if (ImGui::Checkbox("Lock Aspect", &lockAspect) && lockAspect)
 	{
@@ -83,7 +86,8 @@ void Viewer::DoResizeWidthHeightInterface(int srcW, int srcH, int& dstW, int& ds
 	ImGui::SameLine();
 	if (ImGui::Button(hi, tVector2(powButtonWidth, 0.0f)))			{ dstH = hiP2H; if (lockAspect) dstW = int( float(dstH) * aspect ); }
 
-	ImGui::SameLine(); ShowHelpMark("Final output height in pixels.\nIf dimensions match current no scaling.");
+	ImGui::SameLine();
+	ShowHelpMark("Final output height in pixels.\nIf dimensions match current no scaling.");
 }
 
 
@@ -93,7 +97,7 @@ void Viewer::DoResizeFilterInterface(int srcW, int srcH, int dstW, int dstH)
 		return;
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float comboWidth = Viewer::GetUIParamScaled(168.0f, 2.5f);
+	float comboWidth = Gutil::GetUIParamScaled(168.0f, 2.5f);
 
 	ImGui::SetNextItemWidth(comboWidth);
 	ImGui::Combo("Filter", &profile.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
@@ -112,7 +116,7 @@ void Viewer::DoResizeAnchorInterface()
 	Config::ProfileData& profile = Config::GetProfileData();
 	static const char* longNames[3*3] = { "Top-Left", "Top-Middle", "Top-Right", "Middle-Left", "Middle", "Middle-Right", "Bottom-Left", "Bottom-Middle", "Bottom-Right" };
 
-	float ancTextPos	= Viewer::GetUIParamScaled(72.0f, 2.5f);
+	float ancTextPos	= Gutil::GetUIParamScaled(72.0f, 2.5f);
 	ImGui::NewLine();
 	ImGui::SetCursorPosX(ancTextPos);
 	ImGui::Text("Anchor: %s", (profile.CropAnchor == -1) ? "Cursor Position" : longNames[profile.CropAnchor]);
@@ -121,10 +125,10 @@ void Viewer::DoResizeAnchorInterface()
 
 	// Anchors.
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2::zero);
-	float ancLeft		= Viewer::GetUIParamScaled(92.0f, 2.5f);
-	float ancImgSize	= Viewer::GetUIParamScaled(24.0f, 2.5f);
-	float ancTopMargin	= Viewer::GetUIParamScaled(7.0f, 2.5f);
-	float ancSpacing	= Viewer::GetUIParamScaled(2.0f, 2.5f);
+	float ancLeft		= Gutil::GetUIParamScaled(92.0f, 2.5f);
+	float ancImgSize	= Gutil::GetUIParamScaled(24.0f, 2.5f);
+	float ancTopMargin	= Gutil::GetUIParamScaled(7.0f, 2.5f);
+	float ancSpacing	= Gutil::GetUIParamScaled(2.0f, 2.5f);
 	tVector2 imgSize	(ancImgSize, ancImgSize);
 
 	// Top Row
@@ -226,7 +230,7 @@ void Viewer::DoResizeCrop(int srcW, int srcH, int dstW, int dstH)
 			CurrImage->Crop(dstW, dstH, tPicture::Anchor(profile.CropAnchor), profile.FillColour);
 		}
 		CurrImage->Bind();
-		Viewer::SetWindowTitle();
+		Gutil::SetWindowTitle();
 		Viewer::ZoomDownscaleOnly();
 	}
 }
@@ -247,7 +251,7 @@ void Viewer::DoFillColourInterface(const char* toolTipText, bool contactSheetFil
 	if (toolTipText)
 		ShowToolTip(toolTipText);
 
-	float buttonWidth = Viewer::GetUIParamScaled(56.0f, 2.5f);
+	float buttonWidth = Gutil::GetUIParamScaled(56.0f, 2.5f);
 
 	ImGui::SameLine();
 	tPicture* picture = CurrImage ? CurrImage->GetCurrentPic() : nullptr;
@@ -290,7 +294,7 @@ void Viewer::DoResizeImageModal(bool resizeImagePressed)
 		return;
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = Viewer::GetUIParamScaled(78.0f, 2.5f);
+	float buttonWidth = Gutil::GetUIParamScaled(78.0f, 2.5f);
 
 	tAssert(CurrImage);		tPicture* picture = CurrImage->GetCurrentPic();		tAssert(picture);
 	int srcW				= picture->GetWidth();
@@ -306,27 +310,27 @@ void Viewer::DoResizeImageModal(bool resizeImagePressed)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		dstW = srcW;
 		dstH = srcH;
 	}
 
 	ImGui::SameLine();
-	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("Resize", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Resize", tVector2(buttonWidth, 0.0f)))
 	{
 		if ((dstW != srcW) || (dstH != srcH))
 		{
 			CurrImage->Unbind();
 			CurrImage->Resample(dstW, dstH, tImage::tResampleFilter(profile.ResampleFilter), tImage::tResampleEdgeMode(profile.ResampleEdgeMode));
 			CurrImage->Bind();
-			Viewer::SetWindowTitle();
+			Gutil::SetWindowTitle();
 			Viewer::ZoomDownscaleOnly();
 		}
 		ImGui::CloseCurrentPopup();
@@ -418,9 +422,9 @@ void Viewer::DoResizeCanvasAnchorTab(bool firstOpen)
 	ImGui::NewLine();
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = Viewer::GetUIParamScaled(78.0f, 2.5f);
+	float buttonWidth = Gutil::GetUIParamScaled(78.0f, 2.5f);
 
-	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		profile.CropAnchor		= 4;
 		profile.FillColour		= tColouri::black;
@@ -429,13 +433,13 @@ void Viewer::DoResizeCanvasAnchorTab(bool firstOpen)
 	}
 
 	ImGui::SameLine();
-	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("Resize", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Resize", tVector2(buttonWidth, 0.0f)))
 	{
 		DoResizeCrop(srcW, srcH, dstW, dstH);
 		ImGui::CloseCurrentPopup();
@@ -474,9 +478,9 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool firstOpen)
 	ImGui::NewLine();
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = Viewer::GetUIParamScaled(78.0f, 2.5f);
+	float buttonWidth = Gutil::GetUIParamScaled(78.0f, 2.5f);
 
-	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		profile.FillColour.Set(Viewer::PixelColour);
 		channelR = true;
@@ -486,13 +490,13 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool firstOpen)
 	}
 
 	ImGui::SameLine();
-	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("Remove", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Remove", tVector2(buttonWidth, 0.0f)))
 	{
 		uint32 channels =
 			(channelR ? tCompBit_R : 0) |
@@ -503,7 +507,7 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool firstOpen)
 		CurrImage->Unbind();
 		CurrImage->Deborder(profile.FillColour, channels);
 		CurrImage->Bind();
-		Viewer::SetWindowTitle();
+		Gutil::SetWindowTitle();
 		Viewer::ZoomDownscaleOnly();
 		ImGui::CloseCurrentPopup();
 	}
@@ -518,8 +522,8 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 	int srcW = picture->GetWidth();
 	int srcH = picture->GetHeight();
 	Config::ProfileData& profile = Config::GetProfileData();
-	float comboWidth = Viewer::GetUIParamScaled(108.0f, 2.5f);
-	float inputWidth = Viewer::GetUIParamScaled(26.0f, 2.5f);
+	float comboWidth = Gutil::GetUIParamScaled(108.0f, 2.5f);
+	float inputWidth = Gutil::GetUIParamScaled(26.0f, 2.5f);
 
 	ImGui::NewLine();
 	ImGui::PushItemWidth(comboWidth);
@@ -565,9 +569,9 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	float buttonWidth = Viewer::GetUIParamScaled(78.0f, 2.5f);
+	float buttonWidth = Gutil::GetUIParamScaled(78.0f, 2.5f);
 
-	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		profile.CropAnchor				= 4;
 		profile.FillColour				= tColouri::black;
@@ -578,13 +582,13 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 	}
 
 	ImGui::SameLine();
-	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("Resize", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Resize", tVector2(buttonWidth, 0.0f)))
 	{
 		int dstH = srcH;
 		int dstW = srcW;

@@ -19,6 +19,7 @@
 #include "Config.h"
 #include "FileDialog.h"
 namespace Viewer { class Image; }
+struct GLFWwindow;
 
 
 namespace Viewer
@@ -104,12 +105,10 @@ namespace Viewer
 	extern const tMath::tVector4 ColourClear;
 
 	extern Viewer::Config::ProfileData::UISizeEnum CurrentUISize;
+	extern GLFWwindow* Window;
 
 	const double DisappearDuration	= 4.0;
 
-	// Helper to display a little (?) mark which shows a tooltip when hovered.
-	void ShowHelpMark(const char* desc, bool autoWrap = true);
-	void ShowToolTip(const char* desc, bool autoWrap = true);
 	void PopulateImages();
 	void PopulateImagesSubDirs();
 	Image* FindImage(const tString& filename);
@@ -118,7 +117,6 @@ namespace Viewer
 	bool ChangeScreenMode(bool fullscreeen, bool force = false);
 	void SortImages(Config::ProfileData::SortKeyEnum, bool ascending);
 	bool DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin);
-	void SetWindowTitle();
 
 	Config::ProfileData::ZoomModeEnum GetZoomMode();		// Reads the ZoomModePerImage setting to see where to get the zoom mode.
 	void SetZoomMode(Config::ProfileData::ZoomModeEnum);	// Reads the ZoomModePerImage setting to see where to set the zoom mode.
@@ -131,36 +129,11 @@ namespace Viewer
 	int GetPanX();
 	int GetPanY();
 
-	// This is a wrapper for ImGui::Button that also returns true if enter pressed.
-	bool Button(const char* label, const tMath::tVector2& size = tMath::tVector2::zero);
-
 	// This reads the UI size from the current profile. If the profile is set to auto it queries the OS scale settings.
 	// The performance profile of the OS query is unknown so it is assumed to be an expensive call. This function should
 	// not be called every frame. After it determines the desired UISize it sets the DesiredUISzie variable. It is
 	// always set to a valid (non-auto) UI size after this call.
 	void UpdateDesiredUISize();
-
-	// Returns the UI parameter based on the current UI size. You enter the base param value. For the first function,
-	// GetUIParamScaled, you also enter the full-sized scale. For the second variant, GetUIParamExtent, you also enter
-	// the full-sized extent. This latter function allows non-uniform scaling of multi-dimensional types.
-	template<typename T> T GetUIParamScaled(const T& param, float fullScale);
-	template<typename T> T GetUIParamExtent(const T& param, const T& fullParam);
-
-	enum class DialogID
-	{
-		ThumbnailView,
-		Properties,
-		PixelEditor,
-		Preferences,
-		Bindings,
-		MetaData,
-		CheatSheet,
-		About,
-		ChannelFilter,
-		LogOutput,
-		NumIDs
-	};
-	tMath::tVector2 GetDialogOrigin(DialogID);
 
 	void Undo();
 	void Redo();
@@ -180,31 +153,3 @@ namespace Viewer
 
 
 // Implementation below this line.
-
-
-template<typename T> T Viewer::GetUIParamScaled(const T& param, float fullScale)
-{
-	tAssert(CurrentUISize != Config::ProfileData::UISizeEnum::Auto);
-	tAssert(CurrentUISize != Config::ProfileData::UISizeEnum::Invalid);
-	T scaled = tMath::tLinearLookup
-	(
-		float(CurrentUISize), float(Config::ProfileData::UISizeEnum::Smallest), float(Config::ProfileData::UISizeEnum::Largest),
-		param, T(param*fullScale)
-	);
-
-	return scaled;
-}
-
-
-template<typename T> T Viewer::GetUIParamExtent(const T& param, const T& fullParam)
-{
-	tAssert(CurrentUISize != Config::ProfileData::UISizeEnum::Auto);
-	tAssert(CurrentUISize != Config::ProfileData::UISizeEnum::Invalid);
-	T scaled = tMath::tLinearLookup
-	(
-		float(CurrentUISize), float(Config::ProfileData::UISizeEnum::Smallest), float(Config::ProfileData::UISizeEnum::Largest),
-		param, fullParam
-	);
-
-	return scaled;
-}

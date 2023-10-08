@@ -16,10 +16,12 @@
 #include "Quantize.h"
 #include "Image.h"
 #include "TacentView.h"
+#include "GuiUtil.h"
 using namespace tStd;
 using namespace tSystem;
 using namespace tMath;
 using namespace tImage;
+using namespace Gutil;
 
 
 namespace Viewer
@@ -123,14 +125,14 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 	if (quantizeImagePressed)
 		ImGui::OpenPopup("Quantize");
 
-	float modalWidth = Viewer::GetUIParamScaled(308.0f, 2.5f);
+	float modalWidth = Gutil::GetUIParamScaled(308.0f, 2.5f);
 	bool isOpenQuantizeImage = true;
 	ImGui::SetNextWindowSize(tVector2(modalWidth, 0.0f));
 	if (!ImGui::BeginPopupModal("Quantize", &isOpenQuantizeImage, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 		return;
 
-	float buttonWidth	= Viewer::GetUIParamScaled(76.0f, 2.5f);
-	float itemWidth		= Viewer::GetUIParamScaled(160.0f, 2.5f);
+	float buttonWidth	= Gutil::GetUIParamScaled(76.0f, 2.5f);
+	float itemWidth		= Gutil::GetUIParamScaled(160.0f, 2.5f);
 
 	tAssert(CurrImage);
 	static int method = int(tImage::tQuantize::Method::Wu);
@@ -182,7 +184,7 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		method = int(tImage::tQuantize::Method::Wu);
 		spatialFilterSize = 1;
@@ -193,7 +195,7 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 	}
 
 	ImGui::SameLine();
-	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
@@ -202,7 +204,7 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - buttonWidth);
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("Quantize##Button", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Quantize##Button", tVector2(buttonWidth, 0.0f)))
 	{
 		CurrImage->Unbind();
 		switch (tImage::tQuantize::Method(method))
@@ -227,7 +229,7 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 				break;
 		}
 		CurrImage->Bind();
-		Viewer::SetWindowTitle();
+		Gutil::SetWindowTitle();
 
 		ImGui::CloseCurrentPopup();
 	}

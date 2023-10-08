@@ -19,19 +19,16 @@
 #include "Dialogs.h"
 #include "Image.h"
 #include "TacentView.h"
+#include "GuiUtil.h"
 #include "Version.cmake.h"
 using namespace tMath;
-
-namespace Viewer
-{
-	extern OutputLog OutLog;
-}
+namespace Viewer { extern OutputLog OutLog; }
 
 
 void Viewer::ShowAboutPopup(bool* popen)
 {
-	tVector2 windowPos = GetDialogOrigin(DialogID::About);
-	tVector2 windowSize = Viewer::GetUIParamScaled(tVector2(260.0f, 400.0f), 2.5f);
+	tVector2 windowPos = Gutil::GetDialogOrigin(Gutil::DialogID::About);
+	tVector2 windowSize = Gutil::GetUIParamScaled(tVector2(260.0f, 400.0f), 2.5f);
 
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
@@ -116,7 +113,7 @@ void Viewer::DoDeleteFileModal(bool deleteFilePressed)
 	if (!ImGui::BeginPopupModal("Delete File", &isOpenDeleteFile, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 		return;
 
-	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth = Gutil::GetUIParamScaled(76.0f, 2.5f);
 	tString fullname = CurrImage->Filename;
 	tString file = tSystem::tGetFileName(fullname);
 	tString dir = tSystem::tGetDir(fullname);
@@ -131,7 +128,7 @@ void Viewer::DoDeleteFileModal(bool deleteFilePressed)
 	// and required, will be at the end. If keepStart is false, the end of src will always be kept, and the
 	// ellipsis, if requested and required, will be at the start of src. Could also support middle ellipsis.
 	//
-	// float maxPathWidth = Viewer::GetUIParamScaled(327.0f, 2.5f);
+	// float maxPathWidth = Gutil::GetUIParamScaled(327.0f, 2.5f);
 	// float fileWidth = ImGui::CalcTextSize(file.Chr()).x;
 	// if (fileWidth > maxPathWidth)
 
@@ -153,16 +150,16 @@ void Viewer::DoDeleteFileModal(bool deleteFilePressed)
 	ImGui::Checkbox("Confirm file deletions in the future?", &profile.ConfirmDeletes);
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 
-	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
-	float okOffset = Viewer::GetUIParamScaled(300.0f, 2.5f);
+	float okOffset = Gutil::GetUIParamScaled(300.0f, 2.5f);
 	ImGui::SetCursorPosX(okOffset);
 
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("OK", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("OK", tVector2(buttonWidth, 0.0f)))
 	{
 		DeleteImageFile(fullname, true);
 		ImGui::CloseCurrentPopup();
@@ -182,7 +179,7 @@ void Viewer::DoDeleteFileNoRecycleModal(bool deleteFileNoRecycPressed)
 	if (!ImGui::BeginPopupModal("Delete File Permanently", &isOpenPerm, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 		return;
 
-	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth = Gutil::GetUIParamScaled(76.0f, 2.5f);
 
 	tString fullname = CurrImage->Filename;
 	tString file = tSystem::tGetFileName(fullname);
@@ -205,18 +202,18 @@ void Viewer::DoDeleteFileNoRecycleModal(bool deleteFileNoRecycPressed)
 	ImGui::Text("This cannot be undone. File deletion will be permanent.");
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f*style.ItemSpacing.y);
 
-	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SetItemDefaultFocus();
 	ImGui::SameLine();
 
-	float okOffset = Viewer::GetUIParamScaled(300.0f, 2.5f);
+	float okOffset = Gutil::GetUIParamScaled(300.0f, 2.5f);
 	ImGui::SetCursorPosX(okOffset);
 
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("OK", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("OK", tVector2(buttonWidth, 0.0f)))
 	{
 		DeleteImageFile(fullname, false);
 		ImGui::CloseCurrentPopup();
@@ -245,7 +242,7 @@ void Viewer::DoSnapMessageNoFileBrowseModal(bool justPressed)
 		return;
 	}
 
-	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth = Gutil::GetUIParamScaled(76.0f, 2.5f);
 	ImGui::Text
 	(
 		"The Snap version of Tacent View does not\n"
@@ -255,7 +252,7 @@ void Viewer::DoSnapMessageNoFileBrowseModal(bool justPressed)
 	);
 	ImGui::NewLine();
 
-	float okOffset = Viewer::GetUIParamScaled(170.0f, 2.5f);
+	float okOffset = Gutil::GetUIParamScaled(170.0f, 2.5f);
 	ImGui::SetCursorPosX(okOffset);
 
 	if (ImGui::Button("OK", tVector2(buttonWidth, 0.0f)))
@@ -284,7 +281,7 @@ void Viewer::DoSnapMessageNoFrameTransModal(bool justPressed)
 		return;
 	}
 
-	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth = Gutil::GetUIParamScaled(76.0f, 2.5f);
 	ImGui::Text
 	(
 		"The Snap version of Tacent View does not\n"
@@ -294,7 +291,7 @@ void Viewer::DoSnapMessageNoFrameTransModal(bool justPressed)
 	);
 	ImGui::NewLine();
 
-	float okOffset = Viewer::GetUIParamScaled(170.0f, 2.5f);
+	float okOffset = Gutil::GetUIParamScaled(170.0f, 2.5f);
 	ImGui::SetCursorPosX(okOffset);
 	if (ImGui::Button("OK", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
@@ -313,7 +310,7 @@ void Viewer::DoRenameModal(bool renamePressed)
 	if (!ImGui::BeginPopupModal("Rename File", &isOpenRen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 		return;
 
-	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth = Gutil::GetUIParamScaled(76.0f, 2.5f);
 	tString fullname = CurrImage->Filename;
 	tString origname = tSystem::tGetFileName(fullname);
 
@@ -326,17 +323,17 @@ void Viewer::DoRenameModal(bool renamePressed)
 		nameChanged = true;
 	ImGui::NewLine();
 
-	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
 
-	float okOffset = Viewer::GetUIParamScaled(165.0f, 2.5f);
+	float okOffset = Gutil::GetUIParamScaled(165.0f, 2.5f);
 	ImGui::SetCursorPosX(okOffset);
 
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("OK", tVector2(buttonWidth, 0.0f)) || nameChanged)
+	if (Gutil::Button("OK", tVector2(buttonWidth, 0.0f)) || nameChanged)
 	{
 		if (origname != newname)
 		{
@@ -398,7 +395,7 @@ void Viewer::OutputLog::DrawLog()
 	float fltWidth = ImGui::GetWindowWidth() - clrWidth - cpyWidth - fltTextWidth;
 	LogFilter.Draw("Filter", fltWidth);
 	ImGui::SameLine();
-	Viewer::ShowHelpMark("Place a negative sign in front to exclude (-excluded).");
+	Gutil::ShowHelpMark("Place a negative sign in front to exclude (-excluded).");
 
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f*ImGui::GetStyle().ItemSpacing.y);
 	ImGui::Separator();
@@ -459,8 +456,8 @@ void Viewer::OutputLog::DrawLog()
 
 void Viewer::ShowOutputLogPopup(bool* popen)
 {
-	tVector2 windowPos = GetDialogOrigin(DialogID::LogOutput);
-	tVector2 windowSize = Viewer::GetUIParamScaled(tVector2(410.0f, 220.0f), 2.65f);
+	tVector2 windowPos = Gutil::GetDialogOrigin(Gutil::DialogID::LogOutput);
+	tVector2 windowSize = Gutil::GetUIParamScaled(tVector2(410.0f, 220.0f), 2.65f);
 
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	// @wip ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);

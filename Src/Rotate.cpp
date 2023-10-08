@@ -16,11 +16,13 @@
 #include "Rotate.h"
 #include "Image.h"
 #include "TacentView.h"
+#include "GuiUtil.h"
 #include "Config.h"
 using namespace tStd;
 using namespace tSystem;
 using namespace tMath;
 using namespace tImage;
+using namespace Gutil;
 namespace Viewer { extern void DoFillColourInterface(const char* = nullptr, bool = false); }
 
 
@@ -37,7 +39,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 	}
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth = Gutil::GetUIParamScaled(76.0f, 2.5f);
 
 	if (rotateImagePressed)
 		Viewer::ResetPan();
@@ -87,13 +89,13 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		RotateAnglePreview = 0.0f;
 		profile.SetRotateMode(Config::ProfileData::RotateModeEnum::Fill);
 	}
 
-	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 	{
 		RotateAnglePreview = 0.0f;
 		ImGui::CloseCurrentPopup();
@@ -101,12 +103,12 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 
 	ImGui::SameLine();
 
-	float rotOffset = Viewer::GetUIParamScaled(254.0f, 2.5f);
+	float rotOffset = Gutil::GetUIParamScaled(254.0f, 2.5f);
 	ImGui::SetCursorPosX(rotOffset);
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
 
-	if (Viewer::Button("Rotate", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Rotate", tVector2(buttonWidth, 0.0f)))
 	{
 		tPicture* picture = CurrImage->GetCurrentPic();
 		if (!picture)
@@ -166,7 +168,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 
 		CurrImage->Bind();
 		RotateAnglePreview = 0.0f;
-		Viewer::SetWindowTitle();
+		Gutil::SetWindowTitle();
 		ImGui::CloseCurrentPopup();
 	}
 	ImGui::EndPopup();
@@ -179,7 +181,7 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 	static LosslessTransformMode currMode = LosslessTransformMode::None;
 	static bool isPerfect = false;
 
-	float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth = Gutil::GetUIParamScaled(76.0f, 2.5f);
 
 	if (mode != LosslessTransformMode::None)
 	{
@@ -249,14 +251,14 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 		);
 	}
 
-	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
 
-	float normLossOffset = Viewer::GetUIParamScaled(180.0f, 2.5f);
+	float normLossOffset = Gutil::GetUIParamScaled(180.0f, 2.5f);
 	ImGui::SetCursorPosX(normLossOffset);
-	if (Viewer::Button("Normal", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Normal", tVector2(buttonWidth, 0.0f)))
 	{
 		CurrImage->Unbind();
 		switch (currMode)
@@ -274,7 +276,7 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 	ImGui::SameLine();
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("Lossless", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Lossless", tVector2(buttonWidth, 0.0f)))
 	{
 		bool fileSaved = false;
 		switch (CurrImage->Filetype)

@@ -81,6 +81,8 @@ add_executable(
 	Src/Dialogs.h
 	Src/FileDialog.cpp
 	Src/FileDialog.h
+	Src/GuiUtil.cpp
+	Src/GuiUtil.h
 	Src/Image.cpp
 	Src/Image.h
 	Src/InputBindings.cpp

@@ -19,9 +19,11 @@
 #include "Config.h"
 #include "Image.h"
 #include "TacentView.h"
+#include "GuiUtil.h"
 #include "ThumbnailView.h"
 #include "Version.cmake.h"
 using namespace tMath;
+using namespace Gutil;
 
 
 void Viewer::ShowPreferencesWindow(bool* popen)
@@ -42,8 +44,8 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	}
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth	= Viewer::GetUIParamScaled(100.0f, 2.5f);
-	float rightButtons	= Viewer::GetUIParamScaled(159.0f, 2.5f);
+	float buttonWidth	= Gutil::GetUIParamScaled(100.0f, 2.5f);
+	float rightButtons	= Gutil::GetUIParamScaled(159.0f, 2.5f);
 
 	bool tab = false;
 	uint32 category = Config::Category_None;
@@ -53,8 +55,8 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		if (tab)
 		{
 			category = Config::Category_Display;
-			float itemWidth					= Viewer::GetUIParamScaled(110.0f, 2.5f);
-			float presetColourComboWidth	= Viewer::GetUIParamScaled(100.0f, 2.5f);
+			float itemWidth					= Gutil::GetUIParamScaled(110.0f, 2.5f);
+			float presetColourComboWidth	= Gutil::GetUIParamScaled(100.0f, 2.5f);
 			ImGui::NewLine();
 
 			ImGui::Checkbox("Always Show Filename", &profile.ShowNavFilenameAlways);
@@ -172,7 +174,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		if (tab)
 		{
 			category = Config::Category_Slideshow;
-			float inputWidth	= Viewer::GetUIParamScaled(110.0f, 2.5f);
+			float inputWidth	= Gutil::GetUIParamScaled(110.0f, 2.5f);
 
 			ImGui::NewLine();
 			ImGui::SetNextItemWidth(inputWidth);
@@ -245,9 +247,9 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		if (tab)
 		{
 			category = Config::Category_System;
-			float itemWidth			= Viewer::GetUIParamScaled(100.0f, 2.5f);
-			float mipFiltWidth		= Viewer::GetUIParamScaled(144.0f, 2.5f);
-			float sysButtonWidth	= Viewer::GetUIParamScaled(126.0f, 2.5f);
+			float itemWidth			= Gutil::GetUIParamScaled(100.0f, 2.5f);
+			float mipFiltWidth		= Gutil::GetUIParamScaled(144.0f, 2.5f);
+			float sysButtonWidth	= Gutil::GetUIParamScaled(126.0f, 2.5f);
 			ImGui::NewLine();
 
 			ImGui::SetNextItemWidth(itemWidth);
@@ -356,7 +358,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		if (tab)
 		{
 			category = Config::Category_Interface;
-			float comboWidth = Viewer::GetUIParamScaled(120.0f, 2.5f);
+			float comboWidth = Gutil::GetUIParamScaled(120.0f, 2.5f);
 			ImGui::NewLine();
 			ImGui::Checkbox("Confirm Deletes",			&profile.ConfirmDeletes);
 			ImGui::Checkbox("Confirm File Overwrites",	&profile.ConfirmFileOverwrites);

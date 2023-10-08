@@ -43,8 +43,9 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl2.h"
-#include "imgui_internal.h"			// For ProgressArc.
+#include "imgui_internal.h"			// For ImGuiWindow.
 #include "TacentView.h"
+#include "GuiUtil.h"
 #include "Image.h"
 #include "ColourDialogs.h"
 #include "Dialogs.h"
@@ -67,6 +68,7 @@
 using namespace tStd;
 using namespace tSystem;
 using namespace tMath;
+using namespace Gutil;
 
 
 namespace Viewer
@@ -291,7 +293,6 @@ namespace Viewer
 	void DrawBackground(float l, float r, float b, float t, float drawW, float drawH);
 	void PrintRedirectCallback(const char* text, int numChars);
 	void GlfwErrorCallback(int error, const char* description)															{ tPrintf("Glfw Error %d: %s\n", error, description); }
-	void SetWindowIcon(const tString& icoFile);
 	bool Compare_AlphabeticalAscending		(const tSystem::tFileInfo& a, const tSystem::tFileInfo& b)					{ return tStricmp(a.FileName.Chars(), b.FileName.Chars()) < 0; }
 	bool Compare_FileCreationTimeAscending	(const tSystem::tFileInfo& a, const tSystem::tFileInfo& b)					{ return a.CreationTime < b.CreationTime; }
 	bool Compare_ImageLoadTimeAscending		(const Image& a, const Image& b)											{ return a.GetLoadedTime() < b.GetLoadedTime(); }
@@ -339,7 +340,6 @@ namespace Viewer
 	void FileDropCallback(GLFWwindow*, int count, const char** paths);
 	void FocusCallback(GLFWwindow*, int gotFocus);
 	void IconifyCallback(GLFWwindow*, int iconified);
-	void ProgressArc(float radius, float percent, const ImVec4& colour, const ImVec4& colourbg, float thickness = 4.0f, int segments = 32);
 	void ChangProfile(Viewer::Profile);
 	bool CopyImage();
 	bool PasteImage();
@@ -570,12 +570,6 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 }
 
 
-bool Viewer::Button(const char* label, const tMath::tVector2& size)
-{
-	return ImGui::Button(label, size) || (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter));
-}
-
-
 Viewer::Config::ProfileData::ZoomModeEnum Viewer::GetZoomMode()
 {
 	Config::ProfileData& profile = Config::GetProfileData();
@@ -624,22 +618,6 @@ void Viewer::PrintRedirectCallback(const char* text, int numChars)
 	// We have a terminal in Linux so use it.
 	printf("%s", text);
 	#endif
-}
-
-
-tVector2 Viewer::GetDialogOrigin(DialogID dialogID)
-{
-	int hindex = int(dialogID) % 4;
-	int vindex = int(dialogID) / 4;
-
-	float topOffset		= Viewer::GetUIParamExtent(82.0f, 160.0f);
-	float leftOffset	= Viewer::GetUIParamScaled(30.0f, 2.5f);
-	float heightDelta	= Viewer::GetUIParamScaled(22.0f, 2.5f);
-
-	float widthDelta = 200.0f;
-	float x = leftOffset + widthDelta*float(hindex);
-	float y = topOffset + heightDelta*float(vindex);
-	return tVector2(x, y);
 }
 
 
@@ -944,86 +922,6 @@ bool Viewer::OnSkipEnd()
 }
 
 
-void Viewer::ShowHelpMark(const char* desc, bool autoWrap)
-{
-	ImGui::TextDisabled("[?]");
-	if (!ImGui::IsItemHovered() || !desc)
-		return;
-
-	ImGui::BeginTooltip();
-	if (autoWrap)
-		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-	ImGui::TextUnformatted(desc);
-	if (autoWrap)
-		ImGui::PopTextWrapPos();
-	ImGui::EndTooltip();
-}
-
-
-void Viewer::ShowToolTip(const char* desc, bool autoWrap)
-{
-	if (!ImGui::IsItemHovered() || !desc)
-		return;
-
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(3.0f, 3.0f));		// Push B
-	ImGui::BeginTooltip();
-	if (autoWrap)
-		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-	ImGui::TextUnformatted(desc);
-	if (autoWrap)
-		ImGui::PopTextWrapPos();
-	ImGui::EndTooltip();
-
-	ImGui::PopStyleVar();														// Pop B
-}
-
-
-void Viewer::SetWindowTitle()
-{
-	if (!Window)
-		return;
-
-	tString title = "Tacent View";
-	if (CurrImage && !CurrImage->Filename.IsEmpty())
-	{
-		title = title + " - " + tGetFileName(CurrImage->Filename);
-		if (CurrImage->IsDirty())
-			title += "*";
-	}
-
-	glfwSetWindowTitle(Window, title.Chr());
-}
-
-
-void Viewer::SetWindowIcon(const tString& icoFile)
-{
-	// Some window manager in Linux show an app icon (like KDE) while some don't by default (Gnome).
-	// For windows, the icon is set as an exe resource, so no need to call this for that platform.
-	#ifdef PLATFORM_LINUX
-	tImage::tImageICO icon(icoFile);
-	if (!icon.IsValid())
-		return;
-
-	const int maxImages = 16;
-	GLFWimage* imageTable[maxImages];
-	GLFWimage images[maxImages];
-	int numImages = tMath::tMin(icon.GetNumFrames(), maxImages);
-	for (int i = 0; i < numImages; i++)
-	{
-		imageTable[i] = &images[i];
-		tImage::tFrame* frame = icon.GetFrame(i);
-		frame->ReverseRows();
-		images[i].width = frame->Width;
-		images[i].height = frame->Height;
-		images[i].pixels = (uint8*)frame->Pixels;
-	}
-
-	// This copies the pixel data out so we can let the tImageICO clean itself up afterwards afterwards.
-	glfwSetWindowIcon(Viewer::Window, numImages, *imageTable);
-	#endif
-}
-
-
 void Viewer::ResetPan(bool resetX, bool resetY)
 {
 	if (resetX)
@@ -1255,25 +1153,6 @@ void Viewer::ConvertImagePosToScreenPos
 }
 
 
-void Viewer::ProgressArc(float radius, float percent, const ImVec4& colour, const ImVec4& colourbg, float thickness, int segments)
-{
-	ImGuiWindow* window = ImGui::GetCurrentWindow();
-	if (window->SkipItems)
-		return;
-
-	tiSaturate(percent);
-	if (percent <= 0.0f)
-		return;
-
-	const ImVec2 pos = window->DC.CursorPos;
-	window->DrawList->PathArcTo(pos, radius, IM_PI/2.0f-0.10f, IM_PI/2.0f + percent*IM_PI*2.0f +0.10f, segments-1);
-	window->DrawList->PathStroke(ImGui::GetColorU32(colourbg), false, thickness+1.5f);
-
-	window->DrawList->PathArcTo(pos, radius, IM_PI/2.0f, IM_PI/2.0f + percent*IM_PI*2.0f, segments-1);
-	window->DrawList->PathStroke(ImGui::GetColorU32(colour), false, thickness);
-}
-
-
 int Viewer::DoMainMenuBar()
 {
 	const ImGuiStyle& style = ImGui::GetStyle();
@@ -1309,9 +1188,9 @@ int Viewer::DoMainMenuBar()
 		ImGui::SetNextWindowPos(tVector2(0.0f, 0.0f));
 		ImGui::BeginMainMenuBar();
 
-		tVector2 colourButtonSize	= Viewer::GetUIParamExtent(tVector2(26.0f, 26.0f), tVector2(64.0f, 64.0f));
-		tVector2 toolImageSize		= Viewer::GetUIParamExtent(tVector2(24.0f, 24.0f), tVector2(62.0f, 62.0f));
-		float zoomComboWidth		= Viewer::GetUIParamScaled(70.0f, 2.5f);
+		tVector2 colourButtonSize	= Gutil::GetUIParamExtent(tVector2(26.0f, 26.0f), tVector2(64.0f, 64.0f));
+		tVector2 toolImageSize		= Gutil::GetUIParamExtent(tVector2(24.0f, 24.0f), tVector2(62.0f, 62.0f));
+		float zoomComboWidth		= Gutil::GetUIParamScaled(70.0f, 2.5f);
 
 		ImGuiWindow* window = ImGui::GetCurrentWindow();
 		if (window)
@@ -1942,7 +1821,7 @@ int Viewer::GetNavBarHeight()
 	if (!profile.ShowNavBar)
 		return 0;
 
-	int barHeight = Viewer::GetUIParamExtent(30, 72);
+	int barHeight = Gutil::GetUIParamExtent(30, 72);
 	return barHeight;
 }
 
@@ -1959,8 +1838,8 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 
 	ImGui::SetNextWindowSize(tVector2(w, h), ImGuiCond_Always);
 	ImGui::SetNextWindowPos(tVector2(x, y), ImGuiCond_Always);
-	float navVPad = Viewer::GetUIParamExtent(2.0f, 5.0f);
-	float navHPad = Viewer::GetUIParamExtent(8.0f, 14.0f);
+	float navVPad = Gutil::GetUIParamExtent(2.0f, 5.0f);
+	float navHPad = Gutil::GetUIParamExtent(8.0f, 14.0f);
 
 	// Push A
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
@@ -1972,7 +1851,7 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 		ImGuiWindowFlags_NoTitleBar	| ImGuiWindowFlags_NoScrollbar	;
 
 	ImGui::Begin("NavBar", nullptr, flags);
-	tVector2 upDirButtonSize = Viewer::GetUIParamScaled(tVector2(25.0f, 25.0f), 2.5f);
+	tVector2 upDirButtonSize = Gutil::GetUIParamScaled(tVector2(25.0f, 25.0f), 2.5f);
 	if
 	(
 		ImGui::ImageButton
@@ -2000,7 +1879,7 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 		}
 	}
 
-	float textYOffset = Viewer::GetUIParamExtent(6.0f, 15.0f);
+	float textYOffset = Gutil::GetUIParamExtent(6.0f, 15.0f);
 	ImGui::SameLine();
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + textYOffset);
 	float textYPos = ImGui::GetCursorPosY();
@@ -2010,7 +1889,7 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 
 	if (ImagesSubDirs.NumItems() > 0)
 	{
-		float comboSize = Viewer::GetUIParamExtent(27.0f, 64.0f);
+		float comboSize = Gutil::GetUIParamExtent(27.0f, 64.0f);
 		if (ImGui::BeginCombo("##navcombo", nullptr, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightLargest | ImGuiComboFlags_NoPreview, comboSize))
 		{
 			for (tStringItem* subDir = ImagesSubDirs.First(); subDir; subDir = subDir->Next())
@@ -2033,7 +1912,7 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 			ImGui::EndCombo();
 		}
 		ImGui::SameLine();
-		textYPos = navVPad + Viewer::GetUIParamExtent(3.4f, 8.0f);
+		textYPos = navVPad + Gutil::GetUIParamExtent(3.4f, 8.0f);
 		navRight = ImGui::GetCursorPosX();
 	}
 
@@ -2605,7 +2484,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		DisappearCountdown -= dt;
 	tVector2 mousePos(mouseX, mouseY);
 
-	tVector2 prevNextArrowSize = Viewer::GetUIParamExtent(tVector2(18.0f, 72.0f), tVector2(32.0f, 128.0f));
+	tVector2 prevNextArrowSize = Gutil::GetUIParamExtent(tVector2(18.0f, 72.0f), tVector2(32.0f, 128.0f));
 	float prevNextArrowMargin = 10.0f;
 
 	// Previous arrow.
@@ -2665,7 +2544,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		profile.ShowFrameScrubber && CurrImage && (CurrImage->GetNumFrames() > 1) && !CurrImage->IsAltPictureEnabled()
 	)
 	{
-		float scrubOffset = Viewer::GetUIParamScaled(34.0f, 2.5f);
+		float scrubOffset = Gutil::GetUIParamScaled(34.0f, 2.5f);
 		ImGui::SetNextWindowPos(tVector2(0.0f, float(topUIHeight) + float(workAreaH) - scrubOffset));
 		ImGui::SetNextWindowSize(tVector2(float(workAreaW), 0.0f), ImGuiCond_Always);
 		ImGui::Begin("Scrubber", nullptr, flagsImgButton);
@@ -2685,10 +2564,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::End();
 	}
 
-	float mainButtonImgDim	= Viewer::GetUIParamScaled(26.0f, 2.5f);
-	float mainButtonHSpace	= Viewer::GetUIParamScaled(8.0f, 2.5f);
+	float mainButtonImgDim	= Gutil::GetUIParamScaled(26.0f, 2.5f);
+	float mainButtonHSpace	= Gutil::GetUIParamScaled(8.0f, 2.5f);
 	float mainButtonHDelta	= mainButtonImgDim + mainButtonHSpace;
-	float hitAreaHeight		= Viewer::GetUIParamScaled(100.0f, 2.5f);
+	float hitAreaHeight		= Gutil::GetUIParamScaled(100.0f, 2.5f);
 
 	float minHitRectX = (workAreaW>>1) - mainButtonHDelta*5.0f;
 	float maxHitRectX = (workAreaW>>1) + mainButtonHDelta*5.0f;
@@ -2696,7 +2575,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	tVector2 rectMaxControlButtons(maxHitRectX, hitAreaHeight);
 	tARect2 hitAreaControlButtons(rectMinControlButtons, rectMaxControlButtons);
 
-	float buttonHeightOffset = Viewer::GetUIParamScaled(62.0f, 2.5f);
+	float buttonHeightOffset = Gutil::GetUIParamScaled(62.0f, 2.5f);
 	if
 	(
 		!CropMode &&
@@ -2828,7 +2707,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			ImGui::SetNextWindowPos(tVector2((workAreaW>>1) - mainButtonImgDim/2.0f + mainButtonHDelta*4.0f, float(topUIHeight) + float(workAreaH) - buttonHeightOffset));
 			ImGui::SetNextWindowSize(tVector2(0.0f, mainButtonImgDim), ImGuiCond_Always);
 			ImGui::Begin("ToMainProfile", nullptr, flagsImgButton);
-			float escButtonWidth = Viewer::GetUIParamScaled(50.0f, 2.5f);
+			float escButtonWidth = Gutil::GetUIParamScaled(50.0f, 2.5f);
 			if (ImGui::Button("ESC", tVector2(escButtonWidth, mainButtonImgDim)))
 				ChangProfile(Profile::Main);
 			ImGui::End();
@@ -2840,8 +2719,8 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	// Slideshow progress arc.
 	if (SlideshowPlaying && (profile.SlideshowPeriod >= 1.0f) && profile.SlideshowProgressArc)
 	{
-		float arcRadius = Viewer::GetUIParamScaled(8.0f, 2.5f);
-		float arcHOffset = Viewer::GetUIParamScaled(97.0f, 2.5f);
+		float arcRadius = Gutil::GetUIParamScaled(8.0f, 2.5f);
+		float arcHOffset = Gutil::GetUIParamScaled(97.0f, 2.5f);
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(0.0f, 0.0f));
 
@@ -4093,8 +3972,8 @@ int main(int argc, char** argv)
 	if (!Viewer::Window)
 		return 1;
 
-	Viewer::SetWindowIcon(dataDir + "TacentView.ico");
-	Viewer::SetWindowTitle();
+	Gutil::SetWindowIcon(dataDir + "TacentView.ico");
+	Gutil::SetWindowTitle();
 	glfwSetWindowPos(Viewer::Window, Viewer::Config::Global.WindowX, Viewer::Config::Global.WindowY);
 
 	#ifdef PLATFORM_WINDOWS

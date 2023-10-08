@@ -19,12 +19,15 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "imgui.h"
+#include "GuiUtil.h"
 #include "ColourDialogs.h"
 #include "Config.h"
 #include "Image.h"
 #include "TacentView.h"
+#include "GuiUtil.h"
 #include "Version.cmake.h"
 using namespace tMath;
+using namespace Gutil;
 
 
 namespace Viewer
@@ -60,7 +63,7 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 	static tColourf floatColReset = tColourf::black;
 	if (ImGui::Begin("Edit Pixel", popen, flags))
 	{
-		float buttonWidth = Viewer::GetUIParamScaled(76.0f, 2.5f);
+		float buttonWidth = Gutil::GetUIParamScaled(76.0f, 2.5f);
 
 		static int lastCursorX = -1;
 		static int lastCursorY = -1;
@@ -86,7 +89,7 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 				// Don't push undo steps if we're dragging around the cursor.
 				CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col, false, true);
 				CurrImage->Bind();
-				Viewer::SetWindowTitle();
+				Gutil::SetWindowTitle();
 			}
 		}
 
@@ -103,7 +106,7 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 				tColouri col; col.Set(floatColReset);
 				CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col, true, true);
 				CurrImage->Bind();
-				Viewer::SetWindowTitle();
+				Gutil::SetWindowTitle();
 			}
 			else
 			{
@@ -119,7 +122,7 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 			tColouri col; col.Set(floatCol);
 			CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col, true);
 			CurrImage->Bind();
-			Viewer::SetWindowTitle();
+			Gutil::SetWindowTitle();
 		}
 	}
 
@@ -133,7 +136,7 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 		col.Set(floatCol);
 		CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col, true);
 		CurrImage->Bind();
-		Viewer::SetWindowTitle();
+		Gutil::SetWindowTitle();
 	}
 	ImGui::End();
 }
@@ -211,8 +214,8 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			);
 		}
 
-		float comboWidth	= Viewer::GetUIParamScaled(80.0f, 2.5f);
-		float buttonWidth	= Viewer::GetUIParamScaled(120.0f, 2.5f);
+		float comboWidth	= Gutil::GetUIParamScaled(80.0f, 2.5f);
+		float buttonWidth	= Gutil::GetUIParamScaled(120.0f, 2.5f);
 
 		Config::ProfileData& profile = Config::GetProfileData();
 		tColourf floatCol(profile.BackgroundColour);
@@ -239,7 +242,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			CurrImage->Unbind();
 			CurrImage->AlphaBlendColour(profile.BackgroundColour, true);
 			CurrImage->Bind();
-			Viewer::SetWindowTitle();
+			Gutil::SetWindowTitle();
 		}
 		ImGui::SameLine();
 		ShowHelpMark("Blend background colour into RGB of image based on alpha. Sets alphas to full when done.");
@@ -251,7 +254,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			tColouri full(255, 255, 255, 255);
 			CurrImage->SetAllPixels(full, channels);
 			CurrImage->Bind();
-			Viewer::SetWindowTitle();
+			Gutil::SetWindowTitle();
 		}
 		ImGui::SameLine();
 		ShowHelpMark("Sets selected channel(s) to their maximum value (255).");
@@ -262,7 +265,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			tColouri zero(0, 0, 0, 0);
 			CurrImage->SetAllPixels(zero, channels);
 			CurrImage->Bind();
-			Viewer::SetWindowTitle();
+			Gutil::SetWindowTitle();
 		}
 		ImGui::SameLine();
 		ShowHelpMark("Sets selected channel(s) to zero.");
@@ -354,8 +357,8 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	//
 	// UI size parameters.
 	//
-	float buttonWidth	= Viewer::GetUIParamScaled(76.0f, 2.5f);
-	float itemWidth		= Viewer::GetUIParamScaled(258.0f, 2.5f);
+	float buttonWidth	= Gutil::GetUIParamScaled(76.0f, 2.5f);
+	float itemWidth		= Gutil::GetUIParamScaled(258.0f, 2.5f);
 
 	const char* channelItems[] = { "RGB", "Red", "Green", "Blue", "Alpha" };
 	if (ImGui::BeginTabBar("LevelsTabBar", ImGuiTabBarFlags_None))
@@ -438,7 +441,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			}
 			tString histName;  tsPrintf(histName,  "%s Intensity", channelItems[channels]);
 			tString histLabel; tsPrintf(histLabel, "Max %d\n\nHistogram", int(max));
-			tVector2 histSize = Viewer::GetUIParamScaled(tVector2(256.0f, 80.0f), 2.5f);
+			tVector2 histSize = Gutil::GetUIParamScaled(tVector2(256.0f, 80.0f), 2.5f);
 			HistogramCallback histoCB(Image::AdjChan(channels), logarithmicHisto, pic, int(histSize.x));
 			if (logarithmicHisto)
 				max = tMath::tLog(max);
@@ -616,7 +619,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	ImGui::Separator();
 	ImGui::NewLine();
 
-	if (Viewer::Button("Reset", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		CurrImage->AdjustGetDefaults(brightness, contrast, levelsBlack, levelsMid, levelsWhite, levelsOutBlack, levelsOutWhite);
 		powerMidGamma = true;
@@ -629,21 +632,21 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 		CurrImage->Bind();
 	}
 
-	if (Viewer::Button("Cancel", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 	{
-		Viewer::SetWindowTitle();
+		Gutil::SetWindowTitle();
 		ImGui::CloseCurrentPopup();
 	}
 	ImGui::SameLine();
 
-	float okOffset = Viewer::GetUIParamScaled(264.0f, 2.5f);
+	float okOffset = Gutil::GetUIParamScaled(264.0f, 2.5f);
 	ImGui::SetCursorPosX(okOffset);
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (Viewer::Button("OK", tVector2(buttonWidth, 0.0f)))
+	if (Gutil::Button("OK", tVector2(buttonWidth, 0.0f)))
 	{
 		okPressed = true;
-		Viewer::SetWindowTitle();
+		Gutil::SetWindowTitle();
 		ImGui::CloseCurrentPopup();
 	}
 	ImGui::EndPopup();
