@@ -1354,8 +1354,8 @@ FileDialog::DialogState FileDialog::DoPopup()
 		if (ImGui::BeginMenu("View##FileDialog"))
 		{
 			ImGui::MenuItem("Show Hidden", "", &ConfigShowHidden);
-			// @wip ImGui::MenuItem("List View");
-			// @wip ImGui::MenuItem("Details View");
+			// @todo ImGui::MenuItem("List View");
+			// @todo ImGui::MenuItem("Details View");
 			ImGui::EndMenu();
 		}
 

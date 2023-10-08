@@ -14,6 +14,7 @@
 
 #include "imgui.h"
 #include "imgui_internal.h"			// For ProgressArc.
+#include <Foundation/tStandard.h>
 #include <Image/tImageICO.h>
 #include "GuiUtil.h"
 #include "TacentView.h"
@@ -145,4 +146,54 @@ tVector2 Gutil::GetDialogOrigin(DialogID dialogID)
 	float x = leftOffset + widthDelta*float(hindex);
 	float y = topOffset + heightDelta*float(vindex);
 	return tVector2(x, y);
+}
+
+
+tString Gutil::CropStringToWidth(const tString& toCrop, float cropWidth, bool ellipsis)
+{
+	if (toCrop.IsEmpty())
+		return toCrop;
+
+	if (cropWidth <= 0)
+		return tString();
+
+    ImGuiContext& g = *GImGui;
+    ImFont* font = g.Font;
+	if (!font || !font->FontSize)
+		return tString();
+
+	float scale = g.FontSize/font->FontSize;
+	float currWidth = 0.0f;
+	const char8_t* currCodeUnit = toCrop.Chars();
+	int currIndex = 0;
+	tString result;
+	int toCropLength = toCrop.Length();
+	result.SetLength(toCropLength);
+	char8_t* destUnit = result.Text();
+	while (currIndex < toCropLength)
+	{
+		// Get the width of the glyph for the current codeunit.
+		char32_t glyph32;
+		int srcInc = tStd::tUTF32c(&glyph32, currCodeUnit);
+
+		// Get its rendered width.
+		float unitWidth = (glyph32 < font->IndexAdvanceX.Size ? font->IndexAdvanceX.Data[glyph32] : font->FallbackAdvanceX) * scale;
+
+		// Test what the new width will be to see if we've gone too far.
+		if (currWidth+unitWidth > cropWidth)
+			break;
+
+		// Write the codeunit into the dest string.
+		tStd::tMemcpy(destUnit, currCodeUnit, srcInc);
+
+		// Update width and advance.
+		currWidth += unitWidth;
+		currIndex += srcInc;
+		currCodeUnit += srcInc;
+		destUnit += srcInc;
+	}
+
+	// @todo Deal with ellipsis.
+	result.ShrinkNullTerminated();
+	return result;
 }

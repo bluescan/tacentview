@@ -57,6 +57,12 @@ namespace Gutil
 	// the full-sized extent. This latter function allows non-uniform scaling of multi-dimensional types.
 	template<typename T> T GetUIParamScaled(const T& param, float fullScale);
 	template<typename T> T GetUIParamExtent(const T& param, const T& fullParam);
+
+	// This function crops an ASCII or UTF-8 string to a particular length based on the current ImGui font/size and a
+	// supplied (max) width. The return value is the cropped string. If ellipsis is true, "..." will be placed at the 
+	// end if the string needs cropping. The resultant string, including the ellipsis if requested, will always be <=
+	// width when it is rendered.
+	tString CropStringToWidth(const tString& toCrop, float cropWidth, bool ellipsis = true);
 }
 
 

@@ -131,6 +131,14 @@ void Viewer::DoDeleteFileModal(bool deleteFilePressed)
 	// float maxPathWidth = Gutil::GetUIParamScaled(327.0f, 2.5f);
 	// float fileWidth = ImGui::CalcTextSize(file.Chr()).x;
 	// if (fileWidth > maxPathWidth)
+//	tString longName = u8"The[Ellipsis:…]QuickBrownFoxJumpedOverTheLazyDog.";
+//	tString cropName = Gutil::CropStringToWidth(longName, 200.0f);
+//	ImGui::Text("CroppedTo200: %s", cropName.Chr());
+//	float actualWidth = ImGui::CalcTextSize(cropName.Chr()).x;
+//	ImGui::Text("CroppedWidth: %f", actualWidth);
+//	ImGui::Text("CroppedLength: %d", cropName.Length());
+
+
 
 	ImGui::Text("Delete File");
 	ImGui::Indent();

@@ -2001,6 +2001,12 @@ void Viewer::SetUISize(Viewer::Config::ProfileData::UISizeEnum uiSize)
 	int uiSizeInt = int(uiSize);
 	ImGuiIO& io = ImGui::GetIO();
 
+	ImVector<ImWchar> ranges;
+	ImFontGlyphRangesBuilder builder;
+	builder.AddChar(0x2026);                               // Adds ellipsis.
+	builder.AddRanges(io.Fonts->GetGlyphRangesCyrillic()); // Default plus Cyrillic.
+	builder.BuildRanges(&ranges);
+
 	// The first step is to make sure ImGui has the font added. FontUISizeAdded stores either Invalid
 	// meaning no fonts have been added, ALL meaning all font sizes (for all UISizes) have been added,
 	// or a particular IU size meaning ONLY that size has been added. If it's invalid, we start by ONLY
@@ -2010,7 +2016,7 @@ void Viewer::SetUISize(Viewer::Config::ProfileData::UISizeEnum uiSize)
 	{
 		// Calling destroy is safe if no texture is currently bound.
 		ImGui_ImplOpenGL2_DestroyFontsTexture();
-		io.Fonts->AddFontFromMemoryCompressedBase85TTF(RobotoFont_compressed_data_base85, MinFontPointSize + float(uiSizeInt)*FontStepPointSize);
+		io.Fonts->AddFontFromMemoryCompressedBase85TTF(RobotoFont_compressed_data_base85, MinFontPointSize + float(uiSizeInt)*FontStepPointSize, 0, ranges.Data);
 
 		// This will call build on the font atlas for us.
 		ImGui_ImplOpenGL2_CreateFontsTexture();
@@ -2021,7 +2027,7 @@ void Viewer::SetUISize(Viewer::Config::ProfileData::UISizeEnum uiSize)
 		ImGui_ImplOpenGL2_DestroyFontsTexture();
 		io.Fonts->Clear();
 		for (int uisize = 0; uisize < int(Viewer::Config::ProfileData::UISizeEnum::NumSizes); uisize++)
-			io.Fonts->AddFontFromMemoryCompressedBase85TTF(RobotoFont_compressed_data_base85, Viewer::MinFontPointSize + float(uisize)*Viewer::FontStepPointSize);
+			io.Fonts->AddFontFromMemoryCompressedBase85TTF(RobotoFont_compressed_data_base85, Viewer::MinFontPointSize + float(uisize)*Viewer::FontStepPointSize, 0, ranges.Data);
 		ImGui_ImplOpenGL2_CreateFontsTexture();
 		FontUISizeAdded = Config::ProfileData::UISizeEnum::All;
 	}
