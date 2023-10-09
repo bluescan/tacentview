@@ -105,7 +105,7 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 	tVector2 windowPos = GetDialogOrigin(DialogID::ThumbnailView);
 
 	Config::ProfileData& profile = Config::GetProfileData();
-	tVector2 initialSize = Gutil::GetUIParamScaled(tVector2(586.0f, 480.0f), 2.5f);
+	tVector2 initialSize = Gutil::GetUIParamExtent(tVector2(800.0f, 610.0f), tVector2(1200.0f, 800.0f));
 
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(initialSize, ImGuiCond_FirstUseEver);
@@ -177,15 +177,17 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 			}
 			ImGui::PopStyleColor();
 
-			tString filename = tSystem::tGetFileName(i->Filename);
-			ImGui::Text(filename.Chr());
+			tString fileName = tSystem::tGetFileName(i->Filename);
+			tString dispName = Gutil::CropStringToWidth(fileName, thumbButtonSize.x, true);
+			ImGui::Text(dispName.Chr());
 			
-			tString ttStr = Viewer::MakeImageTooltipString(i, filename);
+			tString ttStr = Viewer::MakeImageTooltipString(i, fileName);
 			ShowToolTip(ttStr.Chr());
 
 			// We use a separator to indicate the current item.
+			float sepThickness = Gutil::GetUIParamScaled(2.0f, 2.5f);
 			if (isCurr)
-				ImGui::Separator(2.0f);
+				ImGui::Separator(sepThickness);
 		}
 
 		// Not visible. If we're not doing much, request non-visible thumbnail generation. For the
