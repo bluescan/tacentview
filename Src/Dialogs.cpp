@@ -118,37 +118,29 @@ void Viewer::DoDeleteFileModal(bool deleteFilePressed)
 	tString file = tSystem::tGetFileName(fullname);
 	tString dir = tSystem::tGetDir(fullname);
 
-	// @wip
-	// Create a function based on the stuff in CalcTextSize that crops a string
-	// to a particular size based on the current font/scale. Something like
-	// tString CropStringToWidth(const tString& src, int width, bool ellipsis = true, bool keepStart = true)
-	// If ellipsis is true the returned string may strt or end with "...". The total width of the
-	// returned string (including the ellipsis) fits in width. If ellipsis is false it may fit a few more
-	// characters. If keepStart is true, the start of src will always be kept and the ellipsis, if requested
-	// and required, will be at the end. If keepStart is false, the end of src will always be kept, and the
-	// ellipsis, if requested and required, will be at the start of src. Could also support middle ellipsis.
-	//
-	// float maxPathWidth = Gutil::GetUIParamScaled(327.0f, 2.5f);
-	// float fileWidth = ImGui::CalcTextSize(file.Chr()).x;
-	// if (fileWidth > maxPathWidth)
-//	tString longName = u8"The[Ellipsis:…]QuickBrownFoxJumpedOverTheLazyDog.";
-//	tString cropName = Gutil::CropStringToWidth(longName, 200.0f);
-//	ImGui::Text("CroppedTo200: %s", cropName.Chr());
-//	float actualWidth = ImGui::CalcTextSize(cropName.Chr()).x;
-//	ImGui::Text("CroppedWidth: %f", actualWidth);
-//	ImGui::Text("CroppedLength: %d", cropName.Length());
-
-
+	// The overall width is based on the larger of the filename and directory. We clamp
+	// the width of these two by calling CropStringToWidth.
+	float maxPathWidth = Gutil::GetUIParamScaled(380.0f, 2.5f);
+	float minPathWidth = Gutil::GetUIParamScaled(296.0f, 2.5f);
+	float fileWidth = 0.0f;
+	tString croppedFile = Gutil::CropStringToWidth(file, maxPathWidth, true, &fileWidth);
+	float dirWidth = 0.0f;
+	tString croppedDir  = Gutil::CropStringToWidth(dir,  maxPathWidth, true, &dirWidth);
+	float pathWidth = tMax(fileWidth, dirWidth, minPathWidth);
 
 	ImGui::Text("Delete File");
 	ImGui::Indent();
-		ImGui::Text("%s", file.Chr());
+		ImGui::Text("%s", croppedFile.Chr());
 	ImGui::Unindent();
+	if (croppedFile != file)
+		Gutil::ShowToolTip(file.Chr());
 
 	ImGui::Text("In Folder");
 	ImGui::Indent();
-		ImGui::Text("%s", dir.Chr());
+		ImGui::Text("%s", croppedDir.Chr());
 	ImGui::Unindent();
+	if (croppedDir != dir)
+		Gutil::ShowToolTip(dir.Chr());
 
 	ImGuiStyle& style = ImGui::GetStyle();
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
@@ -162,9 +154,10 @@ void Viewer::DoDeleteFileModal(bool deleteFilePressed)
 		ImGui::CloseCurrentPopup();
 
 	ImGui::SameLine();
-	float okOffset = Gutil::GetUIParamScaled(300.0f, 2.5f);
+	float okOffset = ImGui::GetStyle().IndentSpacing + pathWidth - buttonWidth + ImGui::GetStyle().ItemSpacing.x;
 	ImGui::SetCursorPosX(okOffset);
 
+	ImGui::SetItemDefaultFocus();
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
 	if (Gutil::Button("OK", tVector2(buttonWidth, 0.0f)))
@@ -192,33 +185,47 @@ void Viewer::DoDeleteFileNoRecycleModal(bool deleteFileNoRecycPressed)
 	tString fullname = CurrImage->Filename;
 	tString file = tSystem::tGetFileName(fullname);
 	tString dir = tSystem::tGetDir(fullname);
+
+	// The overall width is based on the larger of the filename and directory. We clamp
+	// the width of these two by calling CropStringToWidth.
+	float maxPathWidth = Gutil::GetUIParamScaled(380.0f, 2.5f);
+	float minPathWidth = Gutil::GetUIParamScaled(296.0f, 2.5f);
+	float fileWidth = 0.0f;
+	tString croppedFile = Gutil::CropStringToWidth(file, maxPathWidth, true, &fileWidth);
+	float dirWidth = 0.0f;
+	tString croppedDir  = Gutil::CropStringToWidth(dir,  maxPathWidth, true, &dirWidth);
+	float pathWidth = tMax(fileWidth, dirWidth, minPathWidth);
+
 	ImGui::Text("Delete File");
 	ImGui::Indent();
-		ImGui::Text("%s", file.Chr());
+		ImGui::Text("%s", croppedFile.Chr());
 	ImGui::Unindent();
+	if (croppedFile != file)
+		Gutil::ShowToolTip(file.Chr());
 	
 	ImGui::Text("In Folder");
 	ImGui::Indent();
-		ImGui::Text("%s", dir.Chr());
+		ImGui::Text("%s", croppedDir.Chr());
 	ImGui::Unindent();
+	if (croppedDir != dir)
+		Gutil::ShowToolTip(dir.Chr());
 
 	ImGuiStyle& style = ImGui::GetStyle();
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 	ImGui::Separator();
-	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 	ImGui::Text("This cannot be undone. File deletion will be permanent.");
-	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f*style.ItemSpacing.y);
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 
 	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
-	ImGui::SetItemDefaultFocus();
 	ImGui::SameLine();
-
-	float okOffset = Gutil::GetUIParamScaled(300.0f, 2.5f);
+	float okOffset = ImGui::GetStyle().IndentSpacing + pathWidth - buttonWidth + ImGui::GetStyle().ItemSpacing.x;
 	ImGui::SetCursorPosX(okOffset);
 
+	ImGui::SetItemDefaultFocus();
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
 	if (Gutil::Button("OK", tVector2(buttonWidth, 0.0f)))

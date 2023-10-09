@@ -59,10 +59,11 @@ namespace Gutil
 	template<typename T> T GetUIParamExtent(const T& param, const T& fullParam);
 
 	// This function crops an ASCII or UTF-8 string to a particular length based on the current ImGui font/size and a
-	// supplied (max) width. The return value is the cropped string. If ellipsis is true, "..." will be placed at the 
+	// supplied (max) width. The return value is the cropped string. If ellipsis is true, '…' will be placed at the 
 	// end if the string needs cropping. The resultant string, including the ellipsis if requested, will always be <=
-	// width when it is rendered.
-	tString CropStringToWidth(const tString& toCrop, float cropWidth, bool ellipsis = true);
+	// cropWidth when it is rendered. If resultWidth is supplied the final render width is returned. If you want to
+	// determine if the string was cropped, compare the result to the toCrop input.
+	tString CropStringToWidth(const tString& toCrop, float cropWidth, bool ellipsis, float* resultWidth = nullptr);
 }
 
 

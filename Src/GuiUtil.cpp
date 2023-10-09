@@ -149,25 +149,33 @@ tVector2 Gutil::GetDialogOrigin(DialogID dialogID)
 }
 
 
-tString Gutil::CropStringToWidth(const tString& toCrop, float cropWidth, bool ellipsis)
+tString Gutil::CropStringToWidth(const tString& toCropStr, float cropWidth, bool ellipsis, float* resultWidth)
 {
-	if (toCrop.IsEmpty())
-		return toCrop;
-
-	if (cropWidth <= 0)
+	if (resultWidth)
+		*resultWidth = 0.0f;
+	if (toCropStr.IsEmpty())
 		return tString();
 
+	tString toCrop(toCropStr);
     ImGuiContext& g = *GImGui;
     ImFont* font = g.Font;
 	if (!font || !font->FontSize)
 		return tString();
 
 	float scale = g.FontSize/font->FontSize;
+	float ellipsisWidth = (tStd::cCodepoint_Ellipsis < font->IndexAdvanceX.Size ? font->IndexAdvanceX.Data[tStd::cCodepoint_Ellipsis] : font->FallbackAdvanceX) * scale;
+	if (ellipsis && (ellipsisWidth > cropWidth))
+		return tString();
+	if (ellipsis)
+		cropWidth -= ellipsisWidth;
+	if (cropWidth <= 0)
+		return tString();
+
 	float currWidth = 0.0f;
 	const char8_t* currCodeUnit = toCrop.Chars();
 	int currIndex = 0;
 	tString result;
-	int toCropLength = toCrop.Length();
+	int toCropLength = toCrop.LengthNullTerminated();
 	result.SetLength(toCropLength);
 	char8_t* destUnit = result.Text();
 	while (currIndex < toCropLength)
@@ -193,7 +201,16 @@ tString Gutil::CropStringToWidth(const tString& toCrop, float cropWidth, bool el
 		destUnit += srcInc;
 	}
 
-	// @todo Deal with ellipsis.
+	// Deal with ellipsis. We have reserved enough room to safely append one and stay under the
+	// desired width.
 	result.ShrinkNullTerminated();
+	if (toCropLength > result.LengthNullTerminated())
+	{
+		result += u8"…";
+		currWidth += ellipsisWidth;
+	}
+
+	if (resultWidth)
+		*resultWidth = currWidth;
 	return result;
 }
