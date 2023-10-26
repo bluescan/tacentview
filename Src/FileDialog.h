@@ -13,6 +13,7 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #pragma once
+#include <string>
 #include <Foundation/tString.h>
 #include <System/tFile.h>
 #include <System/tScript.h>

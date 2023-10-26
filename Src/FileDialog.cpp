@@ -12,7 +12,6 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
-#include <string>
 #include <Foundation/tList.h>
 #include <Math/tVector2.h>
 #include <System/tTime.h>
