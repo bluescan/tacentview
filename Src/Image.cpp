@@ -13,7 +13,6 @@
 // PERFORMANCE OF THIS SOFTWARE.
 
 #include <mutex>
-#include <chrono>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>				// Include glfw3.h after our OpenGL definitions.
 #include <Foundation/tHash.h>
