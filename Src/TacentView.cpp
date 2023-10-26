@@ -2244,7 +2244,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if ((profile.BackgroundExtend || profile.Tile) && !CropMode)
 			DrawBackground(0.0f, draww, 0.0f, drawh, draww, drawh);
 
-		// There is no point drawing the background at all if the image is completely opaque.
+		// There is no point drawing the background if the image is completely opaque.
 		else if (!CurrImage->IsOpaque())
 			DrawBackground(left, right, bottom, top, draww, drawh);
 
