@@ -105,7 +105,7 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 				}
 
 				const char* colourProfileName = tGetColourProfileShortName(info.SrcColourProfile);
-				if (!colourProfileName) colourProfileName = "None";
+				tAssert(colourProfileName);
 				ImGui::Text("Colour Profile: %s", colourProfileName);
 
 				ImGui::Text("Bits Per Pixel: %s", bppStr.Chr());
