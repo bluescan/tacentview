@@ -1820,23 +1820,23 @@ void Image::GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFormat,
 			dstFormat = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB;	compressed = true;
 			break;
 
-		case tPixelFormat::B5G6R5:
-			// SrcType modifies the format R5G6B5 to the desired src format of B5G6R5. Usually the OpenGL driver gives
+		case tPixelFormat::G3B5R5G3:
+			// srcType modifies the format to the desired src format of G3B5R5G3. Usually the OpenGL driver gives
 			// you a 565 format for dst. Don't know why a the exact internal format doesn't exist.
 			srcFormat = GL_RGB;										srcType = GL_UNSIGNED_SHORT_5_6_5;
 			dstFormat = GL_RGB5;
 			break;
 
-		case tPixelFormat::B5G5R5A1:
-			// The type reverses this order to ARGB, just like the PixelFormat. Cuz GL_UNSIGNED_SHORT is to be
-			// interpreted as little endian, the type swaps the bytes yielding the proper B5G5R5A1. It is a special
+		case tPixelFormat::G3B5A1R5G2:
+			// srcType reverses this order to ARGB, just like the PixelFormat. Cuz GL_UNSIGNED_SHORT is to be
+			// interpreted as little endian, the type swaps the bytes yielding the proper G3B5A1R5G2. It is a special
 			// case and applies to the entire BGRA group (unlike GL_UNSIGNED_BYTE).
 			srcFormat = GL_BGRA;									srcType = GL_UNSIGNED_SHORT_1_5_5_5_REV;
 			dstFormat = GL_RGB5_A1;
 			break;
 
-		case tPixelFormat::B4G4R4A4:
-			// Same comment as above but yields the proper B4G4R4A4 format.
+		case tPixelFormat::G4B4A4R4:
+			// Same comment as above but yields the proper G4B4A4R4 format.
 			srcFormat = GL_BGRA;									srcType = GL_UNSIGNED_SHORT_4_4_4_4_REV;
 			dstFormat = GL_RGBA4;
 			break;
