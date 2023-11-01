@@ -677,7 +677,7 @@ void Viewer::PopulateImagesSubDirs()
 		tString relPath = tGetRelativePath(ImagesDir, *dir);
 		relPath = tGetSimplifiedPath(relPath);
 		if (relPath[relPath.Length()-1] == '/')
-			relPath.ExtractRight(1);
+			relPath.ExtractRightN(1);
 
 		ImagesSubDirs.Append(new tStringItem(relPath));
 	}

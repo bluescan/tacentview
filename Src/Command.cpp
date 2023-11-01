@@ -327,7 +327,7 @@ void Command::GetItemsFromManifest(tList<tStringItem>& manifestItems, const tStr
 {
 	// The manifest file still has the @ symbol in it.
 	tString manFile = manifestFile;
-	manFile.ExtractLeft(1);
+	manFile.ExtractLeftN(1);
 	if (!tSystem::tFileExists(manFile))
 		return;
 
@@ -817,9 +817,15 @@ void Command::PopulateOperations()
 	for (tStringItem* opstr = opstrings.First(); opstr; opstr = opstr->Next())
 	{
 		// Now we need to parse something of the form: resize[640,*] or rotate[45]
+		// It should also handle rotate[] and rotate by itself.
 		tString str = *opstr;
-		tString op = str.ExtractLeft('[');
-		tString args = str.ExtractLeft(']');
+		tString op = str.ExtractLeftC('[');
+
+		// If op is empty it means the '[' wasn't present. In this case the op needs to be set to str.
+		if (op.IsEmpty())
+			op = str;
+
+		tString args = str.ExtractLeftC(']');
 
 		switch (tHash::tHashString(op))
 		{
@@ -853,9 +859,15 @@ void Command::PopulatePostOperations()
 	for (tStringItem* postr = postrings.First(); postr; postr = postr->Next())
 	{
 		// Now we need to parse something of the form: combine[2,*] or contact[7]
+		// It should also handle contact[] and contact by itself.
 		tString str = *postr;
-		tString po = str.ExtractLeft('[');
-		tString args = str.ExtractLeft(']');
+		tString po = str.ExtractLeftC('[');
+
+		// If po is empty it means the '[' wasn't present. In this case po needs to be set to str.
+		if (po.IsEmpty())
+			po = str;
+
+		tString args = str.ExtractLeftC(']');
 
 		switch (tHash::tHashString(po))
 		{
