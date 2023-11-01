@@ -1827,7 +1827,7 @@ void FileDialog::DirToPath(tList<tStringItem>& destPath, const tString& srcdir)
 	dir.Replace("\\", "/");
 
 	if (dir[0] == '/')
-		dir.ExtractLeftC('/');
+		dir.ExtractLeft('/');
 
 	tExplode(destPath, dir, '/');
 }
