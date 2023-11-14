@@ -5,10 +5,10 @@ base: core20
 adopt-info: tacentview
 summary: An immediate mode GUI image viewer.
 description: |
-  An image and texture viewer for tga, png, apng, exr, dds, ktx, ktx2, astc, pkm, qoi, gif, hdr, jpg, tif,
-  ico, webp, and bmp files. Uses Dear ImGui and the Tacent library. It displays alpha channels correctly
-  and can inspect the colour of individual pixels. There is basic editing functionality, batch resizing,
-  and the ability to generate contact sheets for FX etc.
+  An image and texture viewer for tga, png, apng, exr, dds, pvr, ktx, ktx2, astc, pkm, qoi, gif, hdr,
+  jpg, tif, ico, webp, and bmp files. Uses Dear ImGui and the Tacent library. It displays alpha channels
+  correctly and can inspect the colour of individual pixels. There is basic editing functionality, batch
+  resizing, and the ability to generate contact sheets for FX etc.
 grade: stable       # Use either devel or stable.
 confinement: strict # Use either devmode or strict.
 architectures:

@@ -91,6 +91,7 @@ namespace Viewer
 		tFileType::WEBP,
 		tFileType::QOI,
 		tFileType::DDS,
+		tFileType::PVR,
 		tFileType::KTX,
 		tFileType::KTX2,
 		tFileType::ASTC,

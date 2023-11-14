@@ -22,16 +22,6 @@
 #include <System/tMachine.h>
 #include <System/tChunk.h>
 #include <Math/tRandom.h>
-#include <Image/tImageAPNG.h>
-#include <Image/tImageBMP.h>
-#include <Image/tImageGIF.h>
-#include <Image/tImageICO.h>
-#include <Image/tImageJPG.h>
-#include <Image/tImagePNG.h>
-#include <Image/tImageTGA.h>
-#include <Image/tImageTIFF.h>
-#include <Image/tImageQOI.h>
-#include <Image/tImageWEBP.h>
 #include "Image.h"
 #include "Config.h"
 using namespace tStd;
@@ -124,6 +114,9 @@ void Image::ResetLoadParams()
 
 	LoadParams_DDS.Reset();
 	LoadParams_DDS.Gamma = profile.MonitorGamma;
+
+	LoadParams_PVR.Reset();
+	LoadParams_PVR.Gamma = profile.MonitorGamma;
 
 	LoadParams_EXR.Reset();
 	LoadParams_EXR.Gamma = profile.MonitorGamma;
@@ -478,6 +471,34 @@ bool Image::Load(bool loadParamsFromConfig)
 
 			Info.SrcPixelFormat = dds.GetPixelFormatSrc();
 			Info.SrcColourProfile = dds.GetColourProfileSrc();
+			success = true;
+			break;
+		}
+
+		case tSystem::tFileType::PVR:
+		{
+			tImagePVR::LoadParams params(LoadParams_PVR);
+			if (loadParamsFromConfig)
+			{
+				if (profile.StrictLoading && !(params.Flags & tImagePVR::LoadFlag_StrictLoading))
+					params.Flags |= tImagePVR::LoadFlag_StrictLoading;
+				else if (!profile.StrictLoading && (params.Flags & tImagePVR::LoadFlag_StrictLoading))
+					params.Flags &= ~tImagePVR::LoadFlag_StrictLoading;
+			}
+
+			tImagePVR pvr;
+			bool ok = pvr.Load(Filename, params);
+			if (!ok || !pvr.IsValid())
+				break;
+
+			// Appends to the Pictures list.
+			PopulatePicturesPVR(pvr);
+
+			// Creates any alt images for cubemap or mipmapped pvr files.
+			// CreateAltPicturesPVR(pvr);
+
+			Info.SrcPixelFormat = pvr.GetPixelFormatSrc();
+			Info.SrcColourProfile = pvr.GetColourProfileSrc();
 			success = true;
 			break;
 		}
@@ -1033,6 +1054,22 @@ void Image::CreateAltPicturesDDS(const tImageDDS& dds)
 		}
 		AltPictureTyp = AltPictureType::MipmapSideBySide;
 	}
+}
+
+
+void Image::PopulatePicturesPVR(const tImagePVR& pvr)
+{
+	int w = pvr.GetWidth();
+	int h = pvr.GetHeight();
+
+	tList<tLayer> layers;
+	pvr.GetLayers(layers);
+
+	int numMipmaps = layers.GetNumItems();
+	for (tLayer* layer = layers.First(); layer; layer = layer->Next())
+		Pictures.Append(new tPicture(layer->Width, layer->Height, (tPixel*)layer->Data, true));
+
+	layers.Reset();
 }
 
 

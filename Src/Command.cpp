@@ -132,6 +132,7 @@ namespace Command
 
 	tImage::tImageASTC::LoadParams	LoadParamsASTC;
 	tImage::tImageDDS::LoadParams	LoadParamsDDS;
+	tImage::tImagePVR::LoadParams	LoadParamsPVR;
 	tImage::tImageEXR::LoadParams	LoadParamsEXR;
 	tImage::tImageHDR::LoadParams	LoadParamsHDR;
 	tImage::tImageJPG::LoadParams	LoadParamsJPG;
@@ -791,6 +792,7 @@ void Command::PopulateImagesList()
 		{
 			case tSystem::tFileType::ASTC:	newImage->LoadParams_ASTC = LoadParamsASTC;		break;
 			case tSystem::tFileType::DDS:	newImage->LoadParams_DDS  = LoadParamsDDS;		break;
+			case tSystem::tFileType::PVR:	newImage->LoadParams_PVR  = LoadParamsPVR;		break;
 			case tSystem::tFileType::EXR:	newImage->LoadParams_EXR  = LoadParamsEXR;		break;
 			case tSystem::tFileType::HDR:	newImage->LoadParams_HDR  = LoadParamsHDR;		break;
 			case tSystem::tFileType::JPG:	newImage->LoadParams_JPG  = LoadParamsJPG;		break;

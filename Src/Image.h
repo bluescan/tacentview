@@ -28,6 +28,7 @@
 #include <Image/tImageAPNG.h>
 #include <Image/tImageBMP.h>
 #include <Image/tImageGIF.h>
+#include <Image/tImageICO.h>
 #include <Image/tImageJPG.h>
 #include <Image/tImagePNG.h>
 #include <Image/tImageQOI.h>
@@ -37,6 +38,7 @@
 #include <Image/tImageASTC.h>
 #include <Image/tImagePKM.h>
 #include <Image/tImageDDS.h>
+#include <Image/tImagePVR.h>
 #include <Image/tImageEXR.h>
 #include <Image/tImageHDR.h>
 #include <Image/tImageKTX.h>
@@ -59,6 +61,7 @@ public:
 	void ResetLoadParams();
 	tImage::tImageASTC::LoadParams LoadParams_ASTC;
 	tImage::tImageDDS::LoadParams  LoadParams_DDS;
+	tImage::tImagePVR::LoadParams  LoadParams_PVR;
 	tImage::tImageEXR::LoadParams  LoadParams_EXR;
 	tImage::tImageHDR::LoadParams  LoadParams_HDR;
 	tImage::tImageJPG::LoadParams  LoadParams_JPG;
@@ -327,6 +330,7 @@ private:
 	// @todo Combine the KTX and DDS calls.
 	void PopulatePicturesDDS(const tImage::tImageDDS&);
 	void CreateAltPicturesDDS(const tImage::tImageDDS&);
+	void PopulatePicturesPVR(const tImage::tImagePVR&);
 	void PopulatePicturesKTX(const tImage::tImageKTX&);
 	void CreateAltPicturesKTX(const tImage::tImageKTX&);
 

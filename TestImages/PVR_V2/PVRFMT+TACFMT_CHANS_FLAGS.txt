@@ -1,0 +1,13 @@
+PVR V1 and PVR V2 files do not explicitly the data type (UNORM etc) or the colour-space (sRGB or Linear).
+If PVRFMT == TACFMT the filename will be just FMT_CHANS_FLAGS.pvr
+
+Flags:
+T = Regular 2D texture.
+V = Volume 3D texture.
+C = Cubemap. Has up to 6 2D textures.
+
+A = Texture array. Has an arbitrary number of textures.
+M = Has Mipmaps.
+P = Premultiplied Alpha
+
+Note that for PVRFMT we go with what is shown in PVRTexTool, not what the spec shows as it can be incorrect. For example, R8 G8 B8 A8 in the UI is encoded as pixel format 0x12 which is, according to Imagination's own PVR12 spec, ARGB 8888. In fact it IS R8G8B8A8 just like the UI shows.
