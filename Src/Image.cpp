@@ -494,6 +494,7 @@ bool Image::Load(bool loadParamsFromConfig)
 			// Appends to the Pictures list.
 			PopulatePicturesPVR(pvr);
 
+			// WIP.
 			// Creates any alt images for cubemap or mipmapped pvr files.
 			// CreateAltPicturesPVR(pvr);
 
