@@ -645,6 +645,7 @@ tuint256 Viewer::ComputeImagesHash(const tList<tSystem::tFileInfo>& files)
 	{
 		hash = tHash::tHashString256(item->FileName.Chr(), hash);
 		hash = tHash::tHashData256((uint8*)&item->FileSize, sizeof(item->FileSize), hash);
+		hash = tHash::tHashData256((uint8*)&item->ModificationTime, sizeof(item->ModificationTime), hash);
 	}
 
 	return hash;
