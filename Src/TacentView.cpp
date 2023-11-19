@@ -369,7 +369,7 @@ namespace Viewer
 	inline void OnProfileKiosk();
 	inline void OnPreferences();
 	inline void OnKeyBindings();
-	inline void OnFullscreen();
+	inline void OnChangeScreenMode();
 	inline void OnEscape();
 	inline void OnEscapeWithQuit();
 	inline void OnQuit();
@@ -1028,12 +1028,13 @@ void Viewer::OnRotate90(bool cw)
 }
 
 
-void Viewer::OnRotate()				{ if (CurrImage && CurrImage->IsLoaded()) Request_RotateImageModal = true; }
+void Viewer::OnRotate()				{ if (CurrImage && CurrImage->IsLoaded() && !CurrImage->IsAltPictureEnabled()) Request_RotateImageModal = true; }
 
 
 void Viewer::OnCrop()
 {
-	if ((!CurrImage || !CurrImage->IsLoaded()) && !CropMode)
+	bool cropAvail = CropMode || (CurrImage && CurrImage->IsLoaded() && !CurrImage->IsAltPictureEnabled());
+	if (!cropAvail)
 		return;
 
 	Config::ProfileData& profile = Config::GetProfileData();
@@ -1312,7 +1313,7 @@ void Viewer::OnProfileBasic()		{ if (!CropMode && (Config::GetProfile() != Profi
 void Viewer::OnProfileKiosk()		{ if (!CropMode && (Config::GetProfile() != Profile::Kiosk)) ChangProfile(Profile::Kiosk); }
 void Viewer::OnPreferences()		{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowPreferences = !profile.ShowPreferences; }
 void Viewer::OnKeyBindings()		{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowBindingsWindow = !profile.ShowBindingsWindow; if (profile.ShowBindingsWindow) BindingsWindowJustOpened = true; }
-void Viewer::OnFullscreen()			{ Config::ProfileData& profile = Config::GetProfileData(); ChangeScreenMode(!profile.FullscreenMode); }
+void Viewer::OnChangeScreenMode()	{ Config::ProfileData& profile = Config::GetProfileData(); ChangeScreenMode(!profile.FullscreenMode); }
 
 
 void Viewer::OnEscape()
@@ -1741,35 +1742,11 @@ int Viewer::DoMainMenuBar()
 			bool imgAvail = CurrImage && CurrImage->IsLoaded() && !CurrImage->IsAltPictureEnabled();
 			tString flipVKey = profile.InputBindings.FindModKeyText(Bindings::Operation::FlipVertically);
 			if (ImGui::MenuItem("Flip Vertically", flipVKey.Chz(), false, imgAvail ))
-			{
-				if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
-				{
-					Request_LosslessTrnsModal = LosslessTransformMode::FlipV;
-				}
-				else
-				{
-					CurrImage->Unbind();
-					CurrImage->Flip(false);
-					CurrImage->Bind();
-					SetWindowTitle();
-				}
-			}
+				OnFlipVert(true);
 
 			tString flipHKey = profile.InputBindings.FindModKeyText(Bindings::Operation::FlipHorizontally);
 			if (ImGui::MenuItem("Flip Horizontally", flipHKey.Chz(), false, imgAvail))
-			{
-				if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
-				{
-					Request_LosslessTrnsModal = LosslessTransformMode::FlipH;
-				}
-				else
-				{
-					CurrImage->Unbind();
-					CurrImage->Flip(true);
-					CurrImage->Bind();
-					SetWindowTitle();
-				}
-			}
+				OnFlipVert(false);
 
 			tString rotACWKey = profile.InputBindings.FindModKeyText(Bindings::Operation::Rotate90Anticlockwise);
 			if (ImGui::MenuItem("Rotate Anti-Clockwise", rotACWKey.Chz(), false, imgAvail))
@@ -2016,20 +1993,7 @@ int Viewer::DoMainMenuBar()
 		(
 			ImTextureID(Image_FlipV.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
 			imgAvail ? ColourEnabledTint : ColourDisabledTint) && imgAvail
-		)
-		{
-			if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
-			{
-				Request_LosslessTrnsModal = LosslessTransformMode::FlipV;
-			}
-			else
-			{
-				CurrImage->Unbind();
-				CurrImage->Flip(false);
-				CurrImage->Bind();
-				SetWindowTitle();
-			}
-		}
+		)	OnFlipVert(true);
 		ShowToolTip("Flip Vertically");
 
 		// Horizontal Flip.
@@ -2038,20 +2002,7 @@ int Viewer::DoMainMenuBar()
 		(
 			ImTextureID(Image_FlipH.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
 			imgAvail ? ColourEnabledTint : ColourDisabledTint) && imgAvail
-		)
-		{
-			if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
-			{
-				Request_LosslessTrnsModal = LosslessTransformMode::FlipH;
-			}
-			else
-			{
-				CurrImage->Unbind();
-				CurrImage->Flip(true);
-				CurrImage->Bind();
-				SetWindowTitle();
-			}
-		}
+		)	OnFlipVert(false);
 		ShowToolTip("Flip Horizontally");
 
 		// Rotate Anticlockwise.
@@ -2061,20 +2012,7 @@ int Viewer::DoMainMenuBar()
 		(
 			ImTextureID(Image_RotCW_RotACW.Bind()), toolImageSize, tVector2(1.0f, 1.0f), tVector2(0.0f, 0.0f), 1, ColourBG,
 			imgAvail ? ColourEnabledTint : ColourDisabledTint) && imgAvail
-		)
-		{
-			if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
-			{
-				Request_LosslessTrnsModal = LosslessTransformMode::Rot90ACW;
-			}
-			else
-			{
-				CurrImage->Unbind();
-				CurrImage->Rotate90(true);
-				CurrImage->Bind();
-				SetWindowTitle();
-			}
-		}
+		)	OnRotate90(false);
 		ImGui::PopID();
 		ShowToolTip("Rotate 90 Anticlockwise");
 
@@ -2085,20 +2023,7 @@ int Viewer::DoMainMenuBar()
 		(
 			ImTextureID(Image_RotCW_RotACW.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
 			imgAvail ? ColourEnabledTint : ColourDisabledTint) && imgAvail
-		)
-		{
-			if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
-			{
-				Request_LosslessTrnsModal = LosslessTransformMode::Rot90CW;
-			}
-			else
-			{
-				CurrImage->Unbind();
-				CurrImage->Rotate90(false);
-				CurrImage->Bind();
-				SetWindowTitle();
-			}
-		}
+		)	OnRotate90(true);
 		ImGui::PopID();
 		ShowToolTip("Rotate 90 Clockwise");
 
@@ -2108,25 +2033,17 @@ int Viewer::DoMainMenuBar()
 		(
 			ImTextureID(Image_RotateTheta.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
 			imgAvail ? ColourEnabledTint : ColourDisabledTint) && imgAvail
-		)
-		{
-			Request_RotateImageModal = true;
-		}
+		)	OnRotate();
 		ShowToolTip("Rotate Theta");
 
 		// Crop.
-		bool cropAvail = CurrImage && imgAvail && !profile.Tile;
+		bool cropAvail = CropMode || (CurrImage && CurrImage->IsLoaded() && !CurrImage->IsAltPictureEnabled());
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::ImageButton
 		(
 			ImTextureID(Image_Crop.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			CropMode ? ColourPressedBG : ColourBG, cropAvail ? ColourEnabledTint : ColourDisabledTint) && cropAvail
-		)
-		{
-			CropMode = !CropMode;
-			if (CropMode)
-				profile.Tile = false;
-		}
+		)	OnCrop();
 		ShowToolTip("Crop");
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical, 3.0f);
@@ -2137,7 +2054,7 @@ int Viewer::DoMainMenuBar()
 		(
 			ImTextureID(Image_PropEdit.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			profile.ShowPropsWindow ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	profile.ShowPropsWindow = !profile.ShowPropsWindow;
+		)	OnPropertyEdit();
 		ShowToolTip("Image Properties");
 
 		// Details.
@@ -2146,7 +2063,7 @@ int Viewer::DoMainMenuBar()
 		(
 			ImTextureID(Image_InfoOverlay.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			profile.ShowImageDetails ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	profile.ShowImageDetails = !profile.ShowImageDetails;
+		)	OnDetails();
 		ShowToolTip("Image Details Overlay");
 
 		// Meta Data.
@@ -2155,7 +2072,7 @@ int Viewer::DoMainMenuBar()
 		(
 			ImTextureID(Image_MetaData.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			profile.ShowImageMetaData ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	profile.ShowImageMetaData = !profile.ShowImageMetaData;
+		)	OnMetaData();
 		ShowToolTip("Image Meta-Data Overlay");
 
 		// Refresh File.
@@ -2165,14 +2082,7 @@ int Viewer::DoMainMenuBar()
 		(
 			ImTextureID(Image_Refresh.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			ColourBG, refreshAvail ? ColourEnabledTint : ColourDisabledTint) && refreshAvail
-		)
-		{
-			CurrImage->Unbind();
-			CurrImage->Unload(true);
-			CurrImage->Load();
-			CurrImage->Bind();
-			SetWindowTitle();
-		}
+		)	OnRefresh();
 		ShowToolTip("Refresh/Reload Current File");
 
 		// Delete File.
@@ -2182,7 +2092,7 @@ int Viewer::DoMainMenuBar()
 		(
 			ImTextureID(Image_Recycle.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			ColourBG, recycleAvail ? ColourEnabledTint : ColourDisabledTint) && recycleAvail
-		)	Request_DeleteFileModal = true;
+		)	OnDelete();
 		ShowToolTip("Delete Current File");
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical, 3.0f);
@@ -2193,7 +2103,7 @@ int Viewer::DoMainMenuBar()
 		(
 			ImTextureID(Image_Help.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			profile.ShowCheatSheet ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	profile.ShowCheatSheet = !profile.ShowCheatSheet;
+		)	OnCheatSheet();
 		ShowToolTip("Help");
 
 		// Preferences.
@@ -2202,7 +2112,7 @@ int Viewer::DoMainMenuBar()
 		(
 			ImTextureID(Image_Prefs.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			profile.ShowPreferences ? ColourPressedBG : ColourBG, ColourEnabledTint)
-		)	profile.ShowPreferences = !profile.ShowPreferences;
+		)	OnPreferences();
 		ShowToolTip("Preferences");
 
 		menuBarHeight = int(ImGui::GetWindowSize().y);
@@ -3041,7 +2951,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			(
 				ImTextureID(Image_AnchorMM.Bind()), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 0,
 				tVector4::zero, tVector4::one)
-			)	ResetPan();
+			)	OnResetPan();
 			ImGui::End();
 		}
 
@@ -3142,7 +3052,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		(
 			ImTextureID(fsImageID), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 0,
 			tVector4::zero, tVector4::one)
-		)	ChangeScreenMode(!profile.FullscreenMode);
+		)	OnChangeScreenMode();
 		ImGui::End();
 
 		// Exit basic or kiosk profile.
@@ -3509,7 +3419,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case Bindings::Operation::ProfileKiosk:			OnProfileKiosk();				break;
 		case Bindings::Operation::Preferences:			OnPreferences();				break;
 		case Bindings::Operation::KeyBindings:			OnKeyBindings();				break;
-		case Bindings::Operation::Fullscreen:			OnFullscreen();					break;
+		case Bindings::Operation::Fullscreen:			OnChangeScreenMode();			break;
 		case Bindings::Operation::Escape:				OnEscape();						break;
 		case Bindings::Operation::EscapeSupportingQuit:	OnEscapeWithQuit();				break;
 		case Bindings::Operation::Quit:					OnQuit();						break;
