@@ -347,6 +347,7 @@ namespace Viewer
 	bool		OnCopyImageToClipboard();
 	bool		OnPasteImageFromClipboard();
 	inline void OnRefresh();
+	inline void OnRefreshDir();
 	inline void OnRename();
 	inline void OnDelete();
 	inline void OnDeletePermanent();
@@ -1274,6 +1275,21 @@ void Viewer::OnRefresh()
 	CurrImage->Load();
 	CurrImage->Bind();
 	SetWindowTitle();
+}
+
+
+void Viewer::OnRefreshDir()
+{
+	tList<tSystem::tFileInfo> files;
+	ImagesDir = FindImagesInImageToLoadDir(files);
+	PopulateImagesSubDirs();
+
+	PopulateImages();
+
+	// This deals with ImageToLoad being empty.
+	SetCurrentImage(ImageToLoad);
+
+	tPrintf("Refreshed directory %s\n", ImagesDir.Chr());
 }
 
 
@@ -3397,6 +3413,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case Bindings::Operation::Copy:					OnCopyImageToClipboard();		break;
 		case Bindings::Operation::Paste:				OnPasteImageFromClipboard();	break;
 		case Bindings::Operation::Refresh:				OnRefresh();					break;
+		case Bindings::Operation::RefreshDir:			OnRefreshDir();					break;
 		case Bindings::Operation::Rename:				OnRename();						break;
 		case Bindings::Operation::Delete:				OnDelete();						break;
 		case Bindings::Operation::DeletePermanent:		OnDeletePermanent();			break;
@@ -3535,6 +3552,8 @@ void Viewer::FocusCallback(GLFWwindow* window, int gotFocus)
 	tList<tSystem::tFileInfo> files;
 	ImagesDir = FindImagesInImageToLoadDir(files);
 	PopulateImagesSubDirs();
+
+	// In case the OS scale was modified.
 	UpdateDesiredUISize();
 
 	// We sort here so ComputeImagesHash always returns consistent values.

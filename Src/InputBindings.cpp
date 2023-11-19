@@ -203,8 +203,8 @@ const char* Bindings::OperationDescriptions[] =
 	"Slideshow Auto-Reshuffle",
 	"Main Profile",
 	"Basic Profile",
-	"Kiosk Profile"
-
+	"Kiosk Profile",
+	"Refresh Directory"
 	// Add new entries here.
 };
 tStaticAssert(sizeof(Bindings::OperationDescriptions)/sizeof(*Bindings::OperationDescriptions) == int(Bindings::Operation::NumOperations));
@@ -380,6 +380,8 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 	AssignKey(GLFW_KEY_V,			Modifier_Ctrl,					Operation::Paste,					onlyIfUnassigned);
 
 	AssignKey(GLFW_KEY_F5,			Modifier_None,					Operation::Refresh,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_F5,			Modifier_Ctrl,					Operation::RefreshDir,				onlyIfUnassigned);
+	AssignKey(GLFW_KEY_F5,			Modifier_Shift,					Operation::RefreshDir,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_F2,			Modifier_None,					Operation::Rename,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_DELETE,		Modifier_None,					Operation::Delete,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_DELETE,		Modifier_Shift,					Operation::DeletePermanent,			onlyIfUnassigned);

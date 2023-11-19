@@ -118,6 +118,7 @@ namespace Bindings
 		ProfileMain,			// Activate the main profile.
 		ProfileBasic,			// Activate the basic profile.
 		ProfileKiosk,			// Activate the kiosk profile.
+		RefreshDir,				// Manually refresh the current directory.
 		//
 		// Add new operations here. Adding above will invalidate save file keybindings.
 		//
