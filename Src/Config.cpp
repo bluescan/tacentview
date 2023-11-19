@@ -390,12 +390,13 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		ResizeAspectMode			= 0;
 	}
 
-	if (categories & Category_Display)
+	if (categories & Category_Interface)
 	{
 		BackgroundStyle				= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? int(BackgroundStyleEnum::None) : int(BackgroundStyleEnum::Checkerboard);
 		BackgroundCheckerboxSize	= 16;
 		BackgroundColour			= tColouri::black;
 		BackgroundExtend			= false;
+		HideOnScreenControls		= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? true : false;
 		ShowNavFilenameAlways		= false;
 		switch (profile)
 		{
@@ -439,7 +440,7 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		MonitorGamma				= tMath::DefaultGamma;
 	}
 
-	if (categories & Category_Interface)
+	if (categories & Category_Behaviour)
 	{
 		ConfirmDeletes				= true;
 		ConfirmFileOverwrites		= true;
@@ -488,6 +489,7 @@ void Config::ProfileData::Load(tExpression expr)
 			ReadItem(BackgroundCheckerboxSize);
 			ReadItem(BackgroundColour);
 			ReadItem(BackgroundExtend);
+			ReadItem(HideOnScreenControls);
 			ReadItem(ReticleMode);
 			ReadItem(UISize);
 			ReadItem(ResampleFilter);
@@ -665,6 +667,7 @@ bool Config::ProfileData::Save(tExprWriter& writer) const
 	WriteItem(BackgroundCheckerboxSize);
 	WriteItem(BackgroundColour);
 	WriteItem(BackgroundExtend);
+	WriteItem(HideOnScreenControls);
 	WriteItem(ReticleMode);
 	WriteItem(UISize);
 	WriteItem(ResampleFilter);

@@ -2862,7 +2862,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	tARect2 hitAreaPrevArrow(rectCenterPrevArrow, prevNextArrowSize.y*2.0f);
 	if
 	(
-		!CropMode &&
+		!CropMode && !profile.HideOnScreenControls &&
 		((DisappearCountdown > 0.0) || hitAreaPrevArrow.IsPointInside(mousePos)) &&
 		((CurrImage != Images.First()) || (SlideshowPlaying && profile.SlideshowLooping))
 	)
@@ -2887,7 +2887,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	tARect2 hitAreaNextArrow(rectCenterNextArrow, prevNextArrowSize.y*2.0f);
 	if
 	(
-		!CropMode &&
+		!CropMode && !profile.HideOnScreenControls &&
 		((DisappearCountdown > 0.0) || hitAreaNextArrow.IsPointInside(mousePos)) &&
 		((CurrImage != Images.Last()) || (SlideshowPlaying && profile.SlideshowLooping))
 	)
@@ -2948,7 +2948,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	float buttonHeightOffset = Gutil::GetUIParamScaled(62.0f, 2.5f);
 	if
 	(
-		!CropMode &&
+		!CropMode && !profile.HideOnScreenControls &&
 		((DisappearCountdown > 0.0) ||
 		hitAreaControlButtons.IsPointInside(mousePos))
 	)

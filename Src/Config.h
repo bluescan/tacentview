@@ -32,10 +32,10 @@ enum Category
 	Category_None,
 
 	Category_Unspecified			= 1 << 0,			// Everything that's not in a category below.
-	Category_Display				= 1 << 1,			// Includes background and aspect settings.
+	Category_Interface				= 1 << 1,			// Includes background and aspect settings.
 	Category_Slideshow				= 1 << 2,
 	Category_System					= 1 << 3,
-	Category_Interface				= 1 << 4,
+	Category_Behaviour				= 1 << 4,
 	Category_Bindings				= 1 << 5,			// Key bindings.
 
 	Category_All					= 0xFFFFFFFF,
@@ -125,7 +125,7 @@ struct ProfileData
 	int BackgroundCheckerboxSize;
 	tColouri BackgroundColour;							// Only used if BackgroundStyle is SolidColour.
 	bool BackgroundExtend;								// Extend background past image bounds.
-
+	bool HideOnScreenControls;							// Hide prev, next, play, etc on-screen buttons.
 	enum class ReticleModeEnum
 	{
 		AlwaysHidden,

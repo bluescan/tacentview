@@ -45,16 +45,16 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 	Config::ProfileData& profile = Config::GetProfileData();
 	float buttonWidth	= Gutil::GetUIParamScaled(100.0f, 2.5f);
-	float rightButtons	= Gutil::GetUIParamScaled(159.0f, 2.5f);
+	float rightButtons	= Gutil::GetUIParamExtent(169.0f, 437.0f);
 
 	bool tab = false;
 	uint32 category = Config::Category_None;
 	if (ImGui::BeginTabBar("PreferencesTabBar", ImGuiTabBarFlags_None))
 	{
-		tab = ImGui::BeginTabItem("Display", nullptr, ImGuiTabItemFlags_NoTooltip);
+		tab = ImGui::BeginTabItem("Interface", nullptr, ImGuiTabItemFlags_NoTooltip);
 		if (tab)
 		{
-			category = Config::Category_Display;
+			category = Config::Category_Interface;
 			float itemWidth					= Gutil::GetUIParamScaled(110.0f, 2.5f);
 			float presetColourComboWidth	= Gutil::GetUIParamScaled(100.0f, 2.5f);
 			ImGui::NewLine();
@@ -84,6 +84,8 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			#endif
 
 			ImGui::Checkbox("Background Extend", &profile.BackgroundExtend);
+			ImGui::Checkbox("Hide On-Screen Controls", &profile.HideOnScreenControls);
+			
 			if (!Config::Global.TransparentWorkArea)
 			{
 				const char* backgroundItems[] = { "None", "Checker", "Solid" };
@@ -354,10 +356,10 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::EndTabItem();
 		}
 
-		tab = ImGui::BeginTabItem("Interface", nullptr, ImGuiTabItemFlags_NoTooltip);
+		tab = ImGui::BeginTabItem("Behaviour", nullptr, ImGuiTabItemFlags_NoTooltip);
 		if (tab)
 		{
-			category = Config::Category_Interface;
+			category = Config::Category_Behaviour;
 			float comboWidth = Gutil::GetUIParamScaled(120.0f, 2.5f);
 			ImGui::NewLine();
 			ImGui::Checkbox("Confirm Deletes",			&profile.ConfirmDeletes);
@@ -430,7 +432,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 	if (ImGui::Button("Reset Tab", tVector2(buttonWidth, 0.0f)))
 	{
 		Config::ResetProfile(category);
-		if (category == Config::Category_Display)
+		if (category == Config::Category_Interface)
 			Viewer::UpdateDesiredUISize();
 		SlideshowCountdown = profile.SlideshowPeriod;
 	}
