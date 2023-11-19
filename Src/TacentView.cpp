@@ -313,12 +313,70 @@ namespace Viewer
 		bool operator() (const Image& a, const Image& b) const;
 	};
 
-	bool OnPrevious();
-	bool OnNext();
-	void OnPrevImageFrame();
-	void OnNextImageFrame();
-	bool OnSkipBegin();
-	bool OnSkipEnd();
+	inline bool OnNextImage(bool next);
+	inline bool OnLastImage(bool last);
+	inline void OnNextImageFrame(bool next);
+	enum class MoveDir { Right, Left, Up, Down };
+	inline void OnPixelMove(MoveDir);
+	inline void OnUISizeInc(bool inc);
+	inline void OnZoomIn();
+	inline void OnZoomOut();
+	inline void OnZoomFit();
+	inline void OnZoomDownscaleOnly();
+	inline void OnZoomOneToOne();
+	inline void OnZoomPerImageToggle();
+	inline void OnResetPan();
+	inline void OnFlipVert(bool vert);
+	inline void OnRotate90(bool cw);
+	inline void OnRotate();
+	inline void OnCrop();
+	inline void OnResizeImage();
+	inline void OnResizeCanvas();
+	inline void OnPixelEdit();
+	inline void OnPropertyEdit();
+	inline void OnChannelFilter();
+	inline void OnLevels();
+	inline void OnQuantize();
+	inline void OnRedChannel();
+	inline void OnGreenChannel();
+	inline void OnBlueChannel();
+	inline void OnAlphaChannel();
+	inline void OnChannelIntensity();
+	inline void OnDetails();
+	inline void OnTile();
+	bool		OnCopyImageToClipboard();
+	bool		OnPasteImageFromClipboard();
+	inline void OnRefresh();
+	inline void OnRename();
+	inline void OnDelete();
+	inline void OnDeletePermanent();
+	inline void OnSave();
+	inline void OnSaveAs();
+	inline void OnSaveAll();
+	inline void OnSaveContactSheet();
+	inline void OnSaveMultiFrameImage();
+	inline void OnSaveExtractFrames();
+	inline void OnMenuBar();
+	inline void OnNavBar();
+	inline void OnThumbnails();
+	inline void OnFileBrowser();
+	inline void OnSlideshowTimer();
+	inline void OnSlideshowReshuffle();
+	inline void OnCheatSheet();
+	inline void OnDebugLog();
+	inline void OnProfileMain();
+	inline void OnProfileBasic();
+	inline void OnProfileKiosk();
+	inline void OnPreferences();
+	inline void OnKeyBindings();
+	inline void OnFullscreen();
+	inline void OnEscape();
+	inline void OnEscapeWithQuit();
+	inline void OnQuit();
+	inline void OnOpenFile();
+	inline void OnOpenDir();
+	inline void OnMetaData();
+
 	void ApplyZoomDelta(float zoomDelta);
 	void AutoPropertyWindow();
 
@@ -342,8 +400,6 @@ namespace Viewer
 	void FocusCallback(GLFWwindow*, int gotFocus);
 	void IconifyCallback(GLFWwindow*, int iconified);
 	void ChangProfile(Viewer::Profile);
-	bool CopyImage();
-	bool PasteImage();
 }
 
 
@@ -848,80 +904,443 @@ void Viewer::LoadCurrImage()
 }
 
 
-bool Viewer::OnPrevious()
+bool Viewer::OnNextImage(bool next)
 {
 	Config::ProfileData& profile = Config::GetProfileData();
 	bool circ = SlideshowPlaying && profile.SlideshowLooping;
-	if (!CurrImage || (!circ && !CurrImage->Prev()))
+	bool avail = next ? CurrImage->Next() : CurrImage->Prev();
+	if (!CurrImage || (!circ && !avail))
 		return false;
 
 	if (SlideshowPlaying)
 		SlideshowCountdown = profile.SlideshowPeriod;
 
-	CurrImage = circ ? Images.PrevCirc(CurrImage) : CurrImage->Prev();
+	if (next)
+		{ CurrImage = circ ? Images.NextCirc(CurrImage) : CurrImage->Next(); }
+	else
+		{ CurrImage = circ ? Images.PrevCirc(CurrImage) : CurrImage->Prev(); }
+	
 	LoadCurrImage();
 	return true;
 }
 
 
-bool Viewer::OnNext()
+bool Viewer::OnLastImage(bool last)
+{
+	if (!CurrImage)
+		return false;
+	if ((last && !Images.Last()) || (!last && !Images.First()))
+		return false;
+
+	CurrImage = last ? Images.Last() : Images.First();
+	LoadCurrImage();
+	return true;
+}
+
+
+void Viewer::OnNextImageFrame(bool next)
+{
+	if (!CurrImage || !CurrImage->IsLoaded() || (CurrImage->GetNumFrames() <= 1))
+		return;
+
+	CurrImage->Stop();
+	CurrImage->FrameNum = next ? tClampMax(CurrImage->FrameNum+1, CurrImage->GetNumFrames()-1) : tClampMin(CurrImage->FrameNum-1, 0);
+}
+
+
+void Viewer::OnPixelMove(MoveDir dir)
+{
+	if (!CurrImage || !CurrImage->IsLoaded())
+		return;
+
+	switch (dir)
+	{
+		case MoveDir::Right:	RequestCursorMove = CursorMove_Right;	break;
+		case MoveDir::Left:		RequestCursorMove = CursorMove_Left;	break;
+		case MoveDir::Up:		RequestCursorMove = CursorMove_Up;		break;
+		case MoveDir::Down:		RequestCursorMove = CursorMove_Down;	break;
+	}		
+}
+
+
+void Viewer::OnUISizeInc(bool inc)
 {
 	Config::ProfileData& profile = Config::GetProfileData();
-	bool circ = SlideshowPlaying && profile.SlideshowLooping;
-	if (!CurrImage || (!circ && !CurrImage->Next()))
-		return false;
-
-	if (SlideshowPlaying)
-		SlideshowCountdown = profile.SlideshowPeriod;
-
-	CurrImage = circ ? Images.NextCirc(CurrImage) : CurrImage->Next();
-	LoadCurrImage();
-	return true;
+	int sizeInt = profile.UISize;
+	if (sizeInt == int(Config::ProfileData::UISizeEnum::Auto))
+		sizeInt = int(Viewer::CurrentUISize);
+	if (inc &&  (sizeInt >= int(Config::ProfileData::UISizeEnum::Smallest)) && (sizeInt <= int(Config::ProfileData::UISizeEnum::Largest)-1))
+		sizeInt++;
+	if (!inc && (sizeInt >= int(Config::ProfileData::UISizeEnum::Smallest)+1) && (sizeInt <= int(Config::ProfileData::UISizeEnum::Largest)))
+		sizeInt--;
+	if (profile.UISize != sizeInt)
+	{
+		profile.UISize = sizeInt;
+		UpdateDesiredUISize();
+	}
 }
 
 
-void Viewer::OnPrevImageFrame()
+void Viewer::OnZoomIn()				{ if (CurrImage && CurrImage->IsLoaded()) ApplyZoomDelta(tMath::tRound(GetZoomPercent()*0.1f)); }
+void Viewer::OnZoomOut()			{ if (CurrImage && CurrImage->IsLoaded()) ApplyZoomDelta(tMath::tRound(GetZoomPercent()*(0.909090909f - 1.0f))); }
+void Viewer::OnZoomFit()			{ ResetPan(); SetZoomMode(Config::ProfileData::ZoomModeEnum::Fit); }
+void Viewer::OnZoomDownscaleOnly()	{ ResetPan(); SetZoomMode(Config::ProfileData::ZoomModeEnum::DownscaleOnly); }
+void Viewer::OnZoomOneToOne()		{ SetZoomPercent(100.0f); ResetPan(); SetZoomMode(Config::ProfileData::ZoomModeEnum::OneToOne); }
+void Viewer::OnZoomPerImageToggle()	{ Config::ProfileData& profile = Config::GetProfileData(); profile.ZoomPerImage = !profile.ZoomPerImage; }
+void Viewer::OnResetPan()			{ ResetPan(true, true); }
+
+
+void Viewer::OnFlipVert(bool vert)
 {
-	tAssert(CurrImage);
-	if (CurrImage->GetNumFrames() <= 1)
+	if (!CurrImage || !CurrImage->IsLoaded() || CurrImage->IsAltPictureEnabled())
 		return;
 
-	CurrImage->Stop();
-	CurrImage->FrameNum = tClampMin(CurrImage->FrameNum-1, 0);
+	if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
+	{
+		Request_LosslessTrnsModal = vert ? LosslessTransformMode::FlipV : LosslessTransformMode::FlipH;
+	}
+	else
+	{
+		CurrImage->Unbind();
+		CurrImage->Flip(!vert);
+		CurrImage->Bind();
+		SetWindowTitle();
+	}
 }
 
 
-void Viewer::OnNextImageFrame()
+void Viewer::OnRotate90(bool cw)
 {
-	tAssert(CurrImage);
-	if (CurrImage->GetNumFrames() <= 1)
+	if (!CurrImage || !CurrImage->IsLoaded() || CurrImage->IsAltPictureEnabled())
 		return;
 
-	CurrImage->Stop();
-	CurrImage->FrameNum = tClampMax(CurrImage->FrameNum+1, CurrImage->GetNumFrames()-1);
+	if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
+	{
+		Request_LosslessTrnsModal = cw ? LosslessTransformMode::Rot90CW : LosslessTransformMode::Rot90ACW;
+	}
+	else
+	{
+		CurrImage->Unbind();
+		CurrImage->Rotate90(!cw);
+		CurrImage->Bind();
+		SetWindowTitle();
+	}
 }
 
 
-bool Viewer::OnSkipBegin()
+void Viewer::OnRotate()				{ if (CurrImage && CurrImage->IsLoaded()) Request_RotateImageModal = true; }
+
+
+void Viewer::OnCrop()
 {
-	if (!CurrImage || !Images.First())
+	if ((!CurrImage || !CurrImage->IsLoaded()) && !CropMode)
+		return;
+
+	Config::ProfileData& profile = Config::GetProfileData();
+	CropMode = !CropMode;
+	if (CropMode)
+		profile.Tile = false;
+}
+
+
+void Viewer::OnResizeImage()		{ if (CurrImage && CurrImage->IsLoaded()) Request_ResizeImageModal = true; }
+void Viewer::OnResizeCanvas()		{ if (CurrImage && CurrImage->IsLoaded()) Request_ResizeCanvasModal = true; }
+void Viewer::OnPixelEdit()			{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowPixelEditor = !profile.ShowPixelEditor; }
+void Viewer::OnPropertyEdit()		{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowPropsWindow = !profile.ShowPropsWindow; }
+void Viewer::OnChannelFilter()		{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowChannelFilter = !profile.ShowChannelFilter; }
+void Viewer::OnLevels()				{ if (CurrImage && CurrImage->IsLoaded() && !CurrImage->IsAltPictureEnabled()) Request_LevelsModal = true; }
+void Viewer::OnQuantize()			{ if (CurrImage && CurrImage->IsLoaded() && !CurrImage->IsAltPictureEnabled()) Request_QuantizeModal = true; }
+void Viewer::OnRedChannel()			{ Config::ProfileData& profile = Config::GetProfileData(); if (DrawChannel_AsIntensity) { DrawChannel_R = true; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = false; } else DrawChannel_R = !DrawChannel_R; profile.ShowChannelFilter = true; }
+void Viewer::OnGreenChannel()		{ Config::ProfileData& profile = Config::GetProfileData(); if (DrawChannel_AsIntensity) { DrawChannel_R = false; DrawChannel_G = true; DrawChannel_B = false; DrawChannel_A = false; } else DrawChannel_G = !DrawChannel_G; profile.ShowChannelFilter = true; }
+void Viewer::OnBlueChannel()		{ Config::ProfileData& profile = Config::GetProfileData(); if (DrawChannel_AsIntensity) { DrawChannel_R = false; DrawChannel_G = false; DrawChannel_B = true; DrawChannel_A = false; } else DrawChannel_B = !DrawChannel_B; profile.ShowChannelFilter = true; }
+void Viewer::OnAlphaChannel()		{ Config::ProfileData& profile = Config::GetProfileData(); if (DrawChannel_AsIntensity) { DrawChannel_R = false; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = true; } else DrawChannel_A = !DrawChannel_A; profile.ShowChannelFilter = true; }
+void Viewer::OnChannelIntensity()	{ Config::ProfileData& profile = Config::GetProfileData(); DrawChannel_AsIntensity = !DrawChannel_AsIntensity; if (DrawChannel_AsIntensity) { DrawChannel_R = true; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = false; } else { DrawChannel_R = true; DrawChannel_G = true; DrawChannel_B = true; DrawChannel_A = true; } profile.ShowChannelFilter = true; }
+void Viewer::OnDetails()			{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowImageDetails = !profile.ShowImageDetails; }
+void Viewer::OnTile()				{ Config::ProfileData& profile = Config::GetProfileData(); if (CropMode) return; profile.Tile = !profile.Tile; if (!profile.Tile) ResetPan(); }
+
+
+void Viewer::OnUndo()
+{
+	if (!CurrImage || !CurrImage->IsUndoAvailable())
+		return;
+
+	CurrImage->Unbind();
+	CurrImage->Undo();
+	CurrImage->Bind();
+	SetWindowTitle();
+}
+
+
+void Viewer::OnRedo()
+{
+	tAssert(CurrImage && CurrImage->IsRedoAvailable());
+	CurrImage->Unbind();
+	CurrImage->Redo();
+	CurrImage->Bind();
+	SetWindowTitle();
+}
+
+
+bool Viewer::OnCopyImageToClipboard()
+{
+	if (!CurrImage || !CurrImage->IsLoaded())
+		return false;
+	tImage::tPicture* pic = CurrImage->GetCurrentPic();
+	if (!pic)
+		pic = CurrImage->GetPrimaryPic();
+	if (!pic || !pic->IsValid())
 		return false;
 
-	CurrImage = Images.First();
-	LoadCurrImage();
+	// We need to give the data to the clip system with first row at top.
+	tImage::tPicture pict(*pic);
+	pict.Flip(false);
+
+	clip::image_spec spec;
+	spec.width			= pict.GetWidth();
+	spec.height			= pict.GetHeight();
+	spec.bits_per_pixel	= 32;
+	spec.bytes_per_row	= spec.width*4;
+	spec.red_mask		= 0x000000FF;
+	spec.green_mask		= 0x0000FF00;
+	spec.blue_mask		= 0x00FF0000;
+	spec.alpha_mask		= 0xFF000000;
+	spec.red_shift		= 0;
+	spec.green_shift	= 8;
+	spec.blue_shift		= 16;
+	spec.alpha_shift	= 24;
+	clip::image img(pict.GetPixels(), spec);
+	bool success = clip::set_image(img);
+
+	tPrintf("Copy Frame to Clipboard Result: %B\n", success);
+	ShutterFXCountdown	= 0.12f;
+
+	return success;
+}
+
+
+bool Viewer::OnPasteImageFromClipboard()
+{
+	using namespace tImage;
+
+	// The viewer currently requires an image file when you paste (so the filetype is known etc). Essentially what we
+	// do is create a new image file (in a lossless/saveable image format as specified by the user config), and then
+	// add a new Image based on it to the list, and finally set the current image to it. The filename needs to be unique
+	// for the current directory.
+	bool ok = false;
+	ok = clip::has(clip::image_format());
+	if (!ok)
+		return false;
+
+	clip::image img;
+	ok = clip::get_image(img);
+	if (!ok)
+		return false;
+
+	//
+	// Step 1. Get the data in the necessary tPixel RGBA format with rows starting at bottom.
+	//
+	const clip::image_spec& spec = img.spec();
+	int width = spec.width;
+	int height = spec.height;
+	uint32* srcData = (uint32*)img.data();
+	tPixel* dstData = new tPixel[width*height];
+
+	int bytesPerRow = width*sizeof(tPixel);
+	for (int y = height-1; y >= 0; y--)
+		tStd::tMemcpy((uint8*)dstData + ((height-1)-y)*bytesPerRow, (uint8*)srcData + y*bytesPerRow, bytesPerRow);
+
+	for (int p = 0; p < width*height; p++)
+	{
+		uint32 orig = dstData[p].BP;
+		uint32 newc =
+			(( orig & spec.red_mask  ) >> spec.red_shift  )        |
+			(((orig & spec.green_mask) >> spec.green_shift) << 8)  |
+			(((orig & spec.blue_mask ) >> spec.blue_shift ) << 16) |
+			(((orig & spec.alpha_mask) >> spec.alpha_shift) << 24);
+		dstData[p].BP = newc;
+	}
+
+	// We are done with the img. We might as well clean it up now instead of waiting for scope to end.
+	img.reset();
+	Config::ProfileData& profile = Config::GetProfileData();
+
+	//
+	// Step 2. Determine filename.
+	//
+	tFileType pasteType = tGetFileTypeFromName(profile.ClipboardPasteFileType);
+	tString filename;
+	tsPrintf
+	(
+		filename, "%sClipboardImage_%s.%s",
+		Viewer::ImagesDir.Chr(),
+		tConvertTimeToString(tGetTimeLocal(), tTimeFormat::Filename).Chr(),
+		tGetExtension(pasteType).Chr()
+	);
+
+	//
+	// Step 3. Save the file in the correct format losslessly. The dstData is given to the tImage. It will delete it.
+	//
+	bool saved = false;
+	switch (pasteType)
+	{
+		case tFileType::TGA:
+		{
+			tImageTGA tga;
+			tga.Set(dstData, width, height, true);
+			tImageTGA::tFormat fmt = tga.Save(filename, tImageTGA::tFormat::Auto, tImageTGA::tCompression::None);
+			saved = (fmt != tImageTGA::tFormat::Invalid);
+			break;
+		}
+
+		case tFileType::PNG:
+		{
+			tImage::tImagePNG png;
+			png.Set(dstData, width, height, true);
+			tImagePNG::tFormat fmt = png.Save(filename, tImagePNG::tFormat::Auto);
+			saved = (fmt != tImagePNG::tFormat::Invalid);
+			break;
+		}
+
+		case tFileType::WEBP:
+		{
+			tImage::tImageWEBP webp;
+			webp.Set(dstData, width, height, true);
+			saved = webp.Save(filename, false);
+			break;
+		}
+
+		case tFileType::QOI:
+		{
+			tImage::tImageQOI qoi;
+			qoi.Set(dstData, width, height, true);
+			tImageQOI::tFormat fmt = qoi.Save(filename, tImageQOI::tFormat::Auto);
+			saved = (fmt != tImageQOI::tFormat::Invalid);
+			break;
+		}
+
+		case tFileType::BMP:
+		{
+			tImage::tImageBMP bmp;
+			bmp.Set(dstData, width, height, true);
+			tImageBMP::tFormat fmt = bmp.Save(filename, tImageBMP::tFormat::Auto);
+			saved = (fmt != tImageBMP::tFormat::Invalid);
+			break;
+		}
+
+		case tFileType::TIFF:
+		{
+			tImage::tImageTIFF tiff;
+			tiff.Set(dstData, width, height, true);
+			tImageTIFF::SaveParams params;
+			params.UseZLibCompression = true;
+			saved = tiff.Save(filename, params);
+			break;
+		}
+
+		default:
+		{
+			delete[] dstData;
+			return false;
+		}
+	}
+
+	if (!saved)
+		return false;
+
+	tPrintf("Pasted Filename: %s\n", filename.Chr());
+
+	//
+	// Step 4. Make image current. Add to images list, sort, and make current.
+	//
+	Image* newImg = new Image(filename);
+	Images.Append(newImg);
+	ImagesLoadTimeSorted.Append(newImg);
+	SortImages(profile.GetSortKey(), profile.SortAscending);
+	SetCurrentImage(filename);
+
+	// In the clip sample code the clipboard is clear()-ed. I don't think we'd want to do that.
 	return true;
 }
 
 
-bool Viewer::OnSkipEnd()
+void Viewer::OnRefresh()
 {
-	if (!CurrImage || !Images.Last())
-		return false;
+	if (!CurrImage)
+		return;
 
-	CurrImage = Images.Last();
-	LoadCurrImage();
-	return true;
+	CurrImage->Unbind();
+	CurrImage->Unload(true);
+	CurrImage->Load();
+	CurrImage->Bind();
+	SetWindowTitle();
 }
+
+
+void Viewer::OnRename()				{ if (CurrImage) Request_RenameModal = true; }
+void Viewer::OnDelete()				{ if (CurrImage) Request_DeleteFileModal = true; }
+void Viewer::OnDeletePermanent()	{ if (CurrImage) Request_DeleteFileNoRecycleModal = true; }
+void Viewer::OnSave()				{ if (CurrImage && CurrImage->IsLoaded()) Request_SaveCurrentModal = true; }
+void Viewer::OnSaveAs()				{ if (CurrImage && CurrImage->IsLoaded()) Request_SaveAsModal = true; }
+void Viewer::OnSaveAll()			{ if (CurrImage) Request_SaveAllModal = true; }
+void Viewer::OnSaveContactSheet()	{ if (Images.GetNumItems() > 1) Request_ContactSheetModal = true; }
+void Viewer::OnSaveMultiFrameImage(){ if (Images.GetNumItems() > 1) Request_MultiFrameModal = true; }
+void Viewer::OnSaveExtractFrames()	{ if (CurrImage && (CurrImage->GetNumFrames() > 1)) Request_ExtractFramesModal = true; }
+void Viewer::OnMenuBar()			{ Config::ProfileData& profile = Config::GetProfileData(); if (!CropMode) profile.ShowMenuBar = !profile.ShowMenuBar; }
+void Viewer::OnNavBar()				{ Config::ProfileData& profile = Config::GetProfileData(); if (!CropMode) profile.ShowNavBar = !profile.ShowNavBar; }
+void Viewer::OnThumbnails()			{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowThumbnailView = !profile.ShowThumbnailView; }
+
+
+void Viewer::OnFileBrowser()
+{
+	#ifdef PACKAGE_SNAP
+	static int messageCount = 2;
+	if (messageCount-- > 0)
+		Request_SnapMessage_NoFileBrowse = true;
+	#else
+	if (CurrImage)
+		tSystem::tOpenSystemFileExplorer(CurrImage->Filename);
+	#endif
+}
+
+
+void Viewer::OnSlideshowTimer()		{ Config::ProfileData& profile = Config::GetProfileData(); profile.SlideshowProgressArc = !profile.SlideshowProgressArc; }
+void Viewer::OnSlideshowReshuffle()	{ Config::ProfileData& profile = Config::GetProfileData(); profile.SlideshowAutoReshuffle = !profile.SlideshowAutoReshuffle; }
+void Viewer::OnCheatSheet()			{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowCheatSheet = !profile.ShowCheatSheet; }
+void Viewer::OnDebugLog()			{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowOutputLog = !profile.ShowOutputLog; }
+void Viewer::OnProfileMain()		{ if (!CropMode && (Config::GetProfile() != Profile::Main)) ChangProfile(Profile::Main); }
+void Viewer::OnProfileBasic()		{ if (!CropMode && (Config::GetProfile() != Profile::Basic)) ChangProfile(Profile::Basic); }
+void Viewer::OnProfileKiosk()		{ if (!CropMode && (Config::GetProfile() != Profile::Kiosk)) ChangProfile(Profile::Kiosk); }
+void Viewer::OnPreferences()		{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowPreferences = !profile.ShowPreferences; }
+void Viewer::OnKeyBindings()		{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowBindingsWindow = !profile.ShowBindingsWindow; if (profile.ShowBindingsWindow) BindingsWindowJustOpened = true; }
+void Viewer::OnFullscreen()			{ Config::ProfileData& profile = Config::GetProfileData(); ChangeScreenMode(!profile.FullscreenMode); }
+
+
+void Viewer::OnEscape()
+{
+	Config::ProfileData& profile = Config::GetProfileData();
+	if (profile.FullscreenMode)
+		ChangeScreenMode(false);
+	else if ((Config::GetProfile() == Profile::Basic) || (Config::GetProfile() == Profile::Kiosk))
+		ChangProfile(Profile::Main);
+}
+
+
+void Viewer::OnEscapeWithQuit()
+{
+	Config::ProfileData& profile = Config::GetProfileData();
+	if (profile.FullscreenMode)
+		ChangeScreenMode(false);
+	else if ((Config::GetProfile() == Profile::Basic) || (Config::GetProfile() == Profile::Kiosk))
+		ChangProfile(Profile::Main);
+	else
+		Viewer::Request_Quit = true;
+}
+
+
+void Viewer::OnQuit()				{ Request_Quit = true; }
+void Viewer::OnOpenFile()			{ Request_OpenFileModal = true; }
+void Viewer::OnOpenDir()			{ Request_OpenDirModal = true; }
+void Viewer::OnMetaData()			{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowImageMetaData = !profile.ShowImageMetaData; }
 
 
 void Viewer::ResetPan(bool resetX, bool resetY)
@@ -1253,11 +1672,11 @@ int Viewer::DoMainMenuBar()
 
 			tString copyKey = profile.InputBindings.FindModKeyText(Bindings::Operation::Copy);
 			if (ImGui::MenuItem("Copy Image", copyKey.Chz(), false, imgAvail))
-				Viewer::CopyImage();
+				Viewer::OnCopyImageToClipboard();
 
 			tString pasteKey = profile.InputBindings.FindModKeyText(Bindings::Operation::Paste);
 			if (ImGui::MenuItem("Paste Image", pasteKey.Chz()))
-				Viewer::PasteImage();
+				Viewer::OnPasteImageFromClipboard();
 
 			ImGui::Separator();
 
@@ -1303,23 +1722,23 @@ int Viewer::DoMainMenuBar()
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(4.0f, 3.0f));		// Push G
 
-			bool imgAvail = CurrImage && CurrImage->IsLoaded() && !CurrImage->IsAltPictureEnabled();
 			bool undoEnabled = CurrImage && CurrImage->IsUndoAvailable();
 			tString undoDesc = undoEnabled ? CurrImage->GetUndoDesc() : tString();
 			tString undoStr; tsPrintf(undoStr, "Undo %s", undoDesc.Chr());
 			tString undoKey = profile.InputBindings.FindModKeyText(Bindings::Operation::Undo);
 			if (ImGui::MenuItem(undoStr.Chr(), undoKey.Chz(), false, undoEnabled))
-				Undo();
+				OnUndo();
 
 			bool redoEnabled = CurrImage && CurrImage->IsRedoAvailable();
 			tString redoDesc = redoEnabled ? CurrImage->GetRedoDesc() : tString();
 			tString redoStr; tsPrintf(redoStr, "Redo %s", redoDesc.Chr());
 			tString redoKey = profile.InputBindings.FindModKeyText(Bindings::Operation::Redo);
 			if (ImGui::MenuItem(redoStr.Chr(), redoKey.Chz(), false, redoEnabled))
-				Redo();
+				OnRedo();
 
 			ImGui::Separator();
 
+			bool imgAvail = CurrImage && CurrImage->IsLoaded() && !CurrImage->IsAltPictureEnabled();
 			tString flipVKey = profile.InputBindings.FindModKeyText(Bindings::Operation::FlipVertically);
 			if (ImGui::MenuItem("Flip Vertically", flipVKey.Chz(), false, imgAvail ))
 			{
@@ -1532,18 +1951,19 @@ int Viewer::DoMainMenuBar()
 		//
 		// Toolbar.
 		//
-		bool imgAvail = (CurrImage && CurrImage->IsLoaded()) ? !CurrImage->IsAltPictureEnabled() : false;
+		bool imgAvail = CurrImage && CurrImage->IsLoaded() && !CurrImage->IsAltPictureEnabled();
 
+		// Colour Swatch.
 		tColourf floatCol(PixelColour);
 		tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6.0f);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::ColorButton("Colour##2f", colV4, ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel, colourButtonSize))
 			ImGui::OpenPopup("CopyColourAs");
-
 		if (ImGui::BeginPopup("CopyColourAs"))
 			ColourCopyAs();
 
+		// Colour Channel Filter.
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::ImageButton
 		(
@@ -1552,6 +1972,7 @@ int Viewer::DoMainMenuBar()
 		)	profile.ShowChannelFilter = !profile.ShowChannelFilter;
 		ShowToolTip("Colour Channel Filter");
 
+		// Image Levels.
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::ImageButton
 		(
@@ -1563,6 +1984,7 @@ int Viewer::DoMainMenuBar()
 		}
 		ShowToolTip("Image Levels");
 
+		// Thumbnails View.
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::ImageButton
 		(
@@ -1571,6 +1993,7 @@ int Viewer::DoMainMenuBar()
 		)	profile.ShowThumbnailView = !profile.ShowThumbnailView;
 		ShowToolTip("Content Thumbnail View");
 
+		// Tiled.
 		bool tileAvail = (CurrImage && CurrImage->IsLoaded()) ? !CropMode : false;
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::ImageButton
@@ -1587,6 +2010,7 @@ int Viewer::DoMainMenuBar()
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical, 3.0f);
 
+		// Vertical Flip.
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::ImageButton
 		(
@@ -1608,6 +2032,7 @@ int Viewer::DoMainMenuBar()
 		}
 		ShowToolTip("Flip Vertically");
 
+		// Horizontal Flip.
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::ImageButton
 		(
@@ -1629,6 +2054,7 @@ int Viewer::DoMainMenuBar()
 		}
 		ShowToolTip("Flip Horizontally");
 
+		// Rotate Anticlockwise.
 		ImGui::PushID("ToolRotACW");
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::ImageButton
@@ -1652,6 +2078,7 @@ int Viewer::DoMainMenuBar()
 		ImGui::PopID();
 		ShowToolTip("Rotate 90 Anticlockwise");
 
+		// Rotate clockwise.
 		ImGui::PushID("ToolRotCW");
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::ImageButton
@@ -1675,6 +2102,7 @@ int Viewer::DoMainMenuBar()
 		ImGui::PopID();
 		ShowToolTip("Rotate 90 Clockwise");
 
+		// Rotate.
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::ImageButton
 		(
@@ -1686,6 +2114,7 @@ int Viewer::DoMainMenuBar()
 		}
 		ShowToolTip("Rotate Theta");
 
+		// Crop.
 		bool cropAvail = CurrImage && imgAvail && !profile.Tile;
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::ImageButton
@@ -1702,6 +2131,7 @@ int Viewer::DoMainMenuBar()
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical, 3.0f);
 
+		// Properties.
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::ImageButton
 		(
@@ -1710,6 +2140,7 @@ int Viewer::DoMainMenuBar()
 		)	profile.ShowPropsWindow = !profile.ShowPropsWindow;
 		ShowToolTip("Image Properties");
 
+		// Details.
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::ImageButton
 		(
@@ -1718,6 +2149,7 @@ int Viewer::DoMainMenuBar()
 		)	profile.ShowImageDetails = !profile.ShowImageDetails;
 		ShowToolTip("Image Details Overlay");
 
+		// Meta Data.
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::ImageButton
 		(
@@ -1726,6 +2158,7 @@ int Viewer::DoMainMenuBar()
 		)	profile.ShowImageMetaData = !profile.ShowImageMetaData;
 		ShowToolTip("Image Meta-Data Overlay");
 
+		// Refresh File.
 		bool refreshAvail = CurrImage ? true : false;
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::ImageButton
@@ -1742,6 +2175,7 @@ int Viewer::DoMainMenuBar()
 		}
 		ShowToolTip("Refresh/Reload Current File");
 
+		// Delete File.
 		bool recycleAvail = CurrImage ? true : false;
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::ImageButton
@@ -1753,6 +2187,7 @@ int Viewer::DoMainMenuBar()
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical, 3.0f);
 
+		// Help.
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::ImageButton
 		(
@@ -1761,6 +2196,7 @@ int Viewer::DoMainMenuBar()
 		)	profile.ShowCheatSheet = !profile.ShowCheatSheet;
 		ShowToolTip("Help");
 
+		// Preferences.
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
 		if (ImGui::ImageButton
 		(
@@ -2514,7 +2950,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		(
 			ImTextureID(Image_NextSide_PrevSide.Bind()), prevNextArrowSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 0,
 			tVector4::zero, tVector4::one)
-		)	OnPrevious();
+		)	OnNextImage(false);
 		ImGui::PopID();
 		ImGui::End();
 		ImGui::PopStyleVar();
@@ -2539,7 +2975,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		(
 			ImTextureID(Image_NextSide_PrevSide.Bind()), prevNextArrowSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 0,
 			tVector4::zero, tVector4::one)
-		)	OnNext();
+		)	OnNextImage(true);
 		ImGui::PopID();
 		ImGui::End();
 		ImGui::PopStyleVar();
@@ -2631,7 +3067,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		(
 			ImTextureID(Image_SkipEnd_SkipBegin.Bind()), mainButtonImgSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 0,
 			ColourBG, prevAvail ? ColourEnabledTint : ColourDisabledTint) && prevAvail
-		)	OnSkipBegin();
+		)	OnLastImage(false);
 		ImGui::PopID();
 		ImGui::End();
 
@@ -2644,7 +3080,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		(
 			ImTextureID(Image_Next_Prev.Bind()), mainButtonImgSize, tVector2(1.0f, 0.0f), tVector2(0.0f, 1.0f), 0,
 			ColourBG, prevAvail ? ColourEnabledTint : ColourDisabledTint) && prevAvail
-		)	OnPrevious();
+		)	OnNextImage(false);
 		ImGui::PopID();
 		ImGui::End();
 
@@ -2665,7 +3101,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			// If play pressed and we're on the last image and not looping, start at the beginning again.
 			if (SlideshowPlaying && !profile.SlideshowLooping && (CurrImage == Images.Last()))
-				OnSkipBegin();
+				OnLastImage(false);
 		}
 		ImGui::PopID();
 		ImGui::End();
@@ -2680,7 +3116,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		(
 			ImTextureID(Image_Next_Prev.Bind()), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 0,
 			ColourBG, nextAvail ? ColourEnabledTint : ColourDisabledTint) && nextAvail
-		)	OnNext();
+		)	OnNextImage(true);
 		ImGui::PopID();
 		ImGui::End();
 
@@ -2693,7 +3129,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		(
 			ImTextureID(Image_SkipEnd_SkipBegin.Bind()), mainButtonImgSize, tVector2(0.0f, 0.0f), tVector2(1.0f, 1.0f), 0,
 			ColourBG, nextAvail ? ColourEnabledTint : ColourDisabledTint) && nextAvail
-		)	OnSkipEnd();
+		)	OnLastImage(true);
 		ImGui::PopID();
 		ImGui::End();
 
@@ -2829,7 +3265,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 			// We only support auto-playing 'forward' because you can always change the ascending flag in the thumbnail view
 			// to go backwards. This keeps it simple.
-			bool ok = OnNext();
+			bool ok = OnNextImage(true);
 			if (!ok)
 				SlideshowPlaying = false;
 			else
@@ -2969,207 +3405,6 @@ void Viewer::ZoomDownscaleOnly()
 }
 
 
-void Viewer::Undo()
-{
-	tAssert(CurrImage && CurrImage->IsUndoAvailable());
-	CurrImage->Unbind();
-	CurrImage->Undo();
-	CurrImage->Bind();
-	SetWindowTitle();
-}
-
-
-void Viewer::Redo()
-{
-	tAssert(CurrImage && CurrImage->IsRedoAvailable());
-	CurrImage->Unbind();
-	CurrImage->Redo();
-	CurrImage->Bind();
-	SetWindowTitle();
-}
-
-
-bool Viewer::CopyImage()
-{
-	tAssert(CurrImage);
-	tImage::tPicture* pic = CurrImage->GetCurrentPic();
-	if (!pic)
-		pic = CurrImage->GetPrimaryPic();
-	if (!pic || !pic->IsValid())
-		return false;
-
-	// We need to give the data to the clip system with first row at top.
-	tImage::tPicture pict(*pic);
-	pict.Flip(false);
-
-	clip::image_spec spec;
-	spec.width			= pict.GetWidth();
-	spec.height			= pict.GetHeight();
-	spec.bits_per_pixel	= 32;
-	spec.bytes_per_row	= spec.width*4;
-	spec.red_mask		= 0x000000FF;
-	spec.green_mask		= 0x0000FF00;
-	spec.blue_mask		= 0x00FF0000;
-	spec.alpha_mask		= 0xFF000000;
-	spec.red_shift		= 0;
-	spec.green_shift	= 8;
-	spec.blue_shift		= 16;
-	spec.alpha_shift	= 24;
-	clip::image img(pict.GetPixels(), spec);
-	bool success = clip::set_image(img);
-
-	tPrintf("Copy Frame to Clipboard Result: %B\n", success);
-	ShutterFXCountdown	= 0.12f;
-
-	return success;
-}
-
-
-bool Viewer::PasteImage()
-{
-	using namespace tImage;
-
-	// The viewer currently requires an image file when you paste (so the filetype is known etc). Essentially what we
-	// do is create a new image file (in a lossless/saveable image format as specified by the user config), and then
-	// add a new Image based on it to the list, and finally set the current image to it. The filename needs to be unique
-	// for the current directory.
-	bool ok = false;
-	ok = clip::has(clip::image_format());
-	if (!ok)
-		return false;
-
-	clip::image img;
-	ok = clip::get_image(img);
-	if (!ok)
-		return false;
-
-	//
-	// Step 1. Get the data in the necessary tPixel RGBA format with rows starting at bottom.
-	//
-	const clip::image_spec& spec = img.spec();
-	int width = spec.width;
-	int height = spec.height;
-	uint32* srcData = (uint32*)img.data();
-	tPixel* dstData = new tPixel[width*height];
-
-	int bytesPerRow = width*sizeof(tPixel);
-	for (int y = height-1; y >= 0; y--)
-		tStd::tMemcpy((uint8*)dstData + ((height-1)-y)*bytesPerRow, (uint8*)srcData + y*bytesPerRow, bytesPerRow);
-
-	for (int p = 0; p < width*height; p++)
-	{
-		uint32 orig = dstData[p].BP;
-		uint32 newc =
-			(( orig & spec.red_mask  ) >> spec.red_shift  )        |
-			(((orig & spec.green_mask) >> spec.green_shift) << 8)  |
-			(((orig & spec.blue_mask ) >> spec.blue_shift ) << 16) |
-			(((orig & spec.alpha_mask) >> spec.alpha_shift) << 24);
-		dstData[p].BP = newc;
-	}
-
-	// We are done with the img. We might as well clean it up now instead of waiting for scope to end.
-	img.reset();
-	Config::ProfileData& profile = Config::GetProfileData();
-
-	//
-	// Step 2. Determine filename.
-	//
-	tFileType pasteType = tGetFileTypeFromName(profile.ClipboardPasteFileType);
-	tString filename;
-	tsPrintf
-	(
-		filename, "%sClipboardImage_%s.%s",
-		Viewer::ImagesDir.Chr(),
-		tConvertTimeToString(tGetTimeLocal(), tTimeFormat::Filename).Chr(),
-		tGetExtension(pasteType).Chr()
-	);
-
-	//
-	// Step 3. Save the file in the correct format losslessly. The dstData is given to the tImage. It will delete it.
-	//
-	bool saved = false;
-	switch (pasteType)
-	{
-		case tFileType::TGA:
-		{
-			tImageTGA tga;
-			tga.Set(dstData, width, height, true);
-			tImageTGA::tFormat fmt = tga.Save(filename, tImageTGA::tFormat::Auto, tImageTGA::tCompression::None);
-			saved = (fmt != tImageTGA::tFormat::Invalid);
-			break;
-		}
-
-		case tFileType::PNG:
-		{
-			tImage::tImagePNG png;
-			png.Set(dstData, width, height, true);
-			tImagePNG::tFormat fmt = png.Save(filename, tImagePNG::tFormat::Auto);
-			saved = (fmt != tImagePNG::tFormat::Invalid);
-			break;
-		}
-
-		case tFileType::WEBP:
-		{
-			tImage::tImageWEBP webp;
-			webp.Set(dstData, width, height, true);
-			saved = webp.Save(filename, false);
-			break;
-		}
-
-		case tFileType::QOI:
-		{
-			tImage::tImageQOI qoi;
-			qoi.Set(dstData, width, height, true);
-			tImageQOI::tFormat fmt = qoi.Save(filename, tImageQOI::tFormat::Auto);
-			saved = (fmt != tImageQOI::tFormat::Invalid);
-			break;
-		}
-
-		case tFileType::BMP:
-		{
-			tImage::tImageBMP bmp;
-			bmp.Set(dstData, width, height, true);
-			tImageBMP::tFormat fmt = bmp.Save(filename, tImageBMP::tFormat::Auto);
-			saved = (fmt != tImageBMP::tFormat::Invalid);
-			break;
-		}
-
-		case tFileType::TIFF:
-		{
-			tImage::tImageTIFF tiff;
-			tiff.Set(dstData, width, height, true);
-			tImageTIFF::SaveParams params;
-			params.UseZLibCompression = true;
-			saved = tiff.Save(filename, params);
-			break;
-		}
-
-		default:
-		{
-			delete[] dstData;
-			return false;
-		}
-	}
-
-	if (!saved)
-		return false;
-
-	tPrintf("Pasted Filename: %s\n", filename.Chr());
-
-	//
-	// Step 4. Make image current. Add to images list, sort, and make current.
-	//
-	Image* newImg = new Image(filename);
-	Images.Append(newImg);
-	ImagesLoadTimeSorted.Append(newImg);
-	SortImages(profile.GetSortKey(), profile.SortAscending);
-	SetCurrentImage(filename);
-
-	// In the clip sample code the clipboard is clear()-ed. I don't think we'd want to do that.
-	return true;
-}
-
-
 void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int modifiers)
 {
 	if ((action != GLFW_PRESS) && (action != GLFW_REPEAT))
@@ -3208,403 +3443,79 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 	bool imgAvail = CurrImage && CurrImage->IsLoaded();
 	switch (operation)
 	{
-		case Bindings::Operation::NextImage:
-			OnNext();
-			break;
-
-		case Bindings::Operation::PrevImage:
-			OnPrevious();
-			break;
-
-		case Bindings::Operation::SkipToLastImage:
-			OnSkipEnd();
-			break;
-
-		case Bindings::Operation::SkipToFirstImage:
-			OnSkipBegin();
-			break;
-
-		case Bindings::Operation::NextImageFrame:
-			if (imgAvail) OnNextImageFrame();
-			break;
-
-		case Bindings::Operation::PrevImageFrame:
-			if (imgAvail) OnPrevImageFrame();
-			break;
-
-		case Bindings::Operation::PixelRight:
-			if (imgAvail) RequestCursorMove = CursorMove_Right;
-			break;
-
-		case Bindings::Operation::PixelLeft:
-			if (imgAvail) RequestCursorMove = CursorMove_Left;
-			break;
-
-		case Bindings::Operation::PixelDown:
-			if (imgAvail) RequestCursorMove = CursorMove_Down;
-			break;
-
-		case Bindings::Operation::PixelUp:
-			if (imgAvail) RequestCursorMove = CursorMove_Up;
-			break;
-
-		case Bindings::Operation::UISizeInc:
-		{
-			int sizeInt = profile.UISize;
-			if (sizeInt == int(Config::ProfileData::UISizeEnum::Auto))
-				sizeInt = int(Viewer::CurrentUISize);
-			if ((sizeInt >= int(Config::ProfileData::UISizeEnum::Smallest)) && (sizeInt <= int(Config::ProfileData::UISizeEnum::Largest)-1))
-				sizeInt++;
-			if (profile.UISize != sizeInt)
-			{
-				profile.UISize = sizeInt;
-				UpdateDesiredUISize();
-			}
-			break;
-		}
-
-		case Bindings::Operation::UISizeDec:
-		{
-			int sizeInt = profile.UISize;
-			if (sizeInt == int(Config::ProfileData::UISizeEnum::Auto))
-				sizeInt = int(Viewer::CurrentUISize);
-			if ((sizeInt >= int(Config::ProfileData::UISizeEnum::Smallest)+1) && (sizeInt <= int(Config::ProfileData::UISizeEnum::Largest)))
-				sizeInt--;
-			if (profile.UISize != sizeInt)
-			{
-				profile.UISize = sizeInt;
-				UpdateDesiredUISize();
-			}
-			break;
-		}
-
-		case Bindings::Operation::ZoomIn:
-			if (imgAvail) ApplyZoomDelta(tMath::tRound(GetZoomPercent()*0.1f));
-			break;
-
-		case Bindings::Operation::ZoomOut:
-			if (imgAvail) ApplyZoomDelta(tMath::tRound(GetZoomPercent()*(0.909090909f - 1.0f)));
-			break;
-
-		case Bindings::Operation::ZoomFit:
-			ResetPan();
-			SetZoomMode(Config::ProfileData::ZoomModeEnum::Fit);
-			break;
-
-		case Bindings::Operation::ZoomDownscaleOnly:
-			ResetPan();
-			SetZoomMode(Config::ProfileData::ZoomModeEnum::DownscaleOnly);
-			break;
-
-		case Bindings::Operation::ZoomOneToOne:
-			SetZoomPercent(100.0f);
-			ResetPan();
-			SetZoomMode(Config::ProfileData::ZoomModeEnum::OneToOne);
-			break;
-
-		case Bindings::Operation::ZoomPerImage:
-			profile.ZoomPerImage = !profile.ZoomPerImage;
-			break;
-
-		case Bindings::Operation::ResetPan:
-			ResetPan();
-			break;
-
-		case Bindings::Operation::FlipVertically:
-		case Bindings::Operation::FlipHorizontally:
-			if (imgAvail && !CurrImage->IsAltPictureEnabled())
-			{
-				if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
-				{
-					Request_LosslessTrnsModal =
-						(operation == Bindings::Operation::FlipVertically) ?
-						LosslessTransformMode::FlipV :
-						LosslessTransformMode::FlipH;
-				}
-				else
-				{
-					CurrImage->Unbind();
-					CurrImage->Flip(operation == Bindings::Operation::FlipHorizontally);
-					CurrImage->Bind();
-					SetWindowTitle();
-				}
-			}
-			break;
-
-		case Bindings::Operation::Rotate90Anticlockwise:
-		case Bindings::Operation::Rotate90Clockwise:
-			if (imgAvail && !CurrImage->IsAltPictureEnabled())
-			{
-				if (FileTypes_LosslessTransform.Contains(CurrImage->Filetype))
-				{
-					Request_LosslessTrnsModal =
-						(operation == Bindings::Operation::Rotate90Anticlockwise) ?
-						LosslessTransformMode::Rot90ACW :
-						LosslessTransformMode::Rot90CW;
-				}
-				else
-				{
-					CurrImage->Unbind();
-					CurrImage->Rotate90(operation == Bindings::Operation::Rotate90Anticlockwise);
-					CurrImage->Bind();
-					SetWindowTitle();
-				}
-			}
-			break;
-
-		case Bindings::Operation::RotateImage:
-			if (imgAvail) Request_RotateImageModal = true;
-			break;
-
-		case Bindings::Operation::Crop:
-			if (!CropMode && !imgAvail)
-				break;
-			CropMode = !CropMode;
-			if (CropMode)
-				profile.Tile = false;
-			break;
-
-		case Bindings::Operation::ResizeImage:
-			if (imgAvail) Request_ResizeImageModal = true;
-			break;
-
-		case Bindings::Operation::ResizeCanvas:
-			if (imgAvail) Request_ResizeCanvasModal = true;
-			break;
-
-		case Bindings::Operation::PixelEdit:
-			profile.ShowPixelEditor = !profile.ShowPixelEditor;
-			break;
-
-		case Bindings::Operation::PropertyEdit:
-			profile.ShowPropsWindow = !profile.ShowPropsWindow;
-			break;
-
-		case Bindings::Operation::ChannelFilter:
-			profile.ShowChannelFilter = !profile.ShowChannelFilter;
-			break;
-
-		case Bindings::Operation::Levels:
-			// @todo Should these be checking that no alt image like imgAvail?
-			if (imgAvail) Request_LevelsModal = true;
-			break;
-
-		case Bindings::Operation::Quantize:
-			if (imgAvail) Request_QuantizeModal = true;
-			break;
-
-		case Bindings::Operation::RedChannel:
-			if (DrawChannel_AsIntensity)
-				{ DrawChannel_R = true; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = false; }
-			else
-				DrawChannel_R = !DrawChannel_R;
-			profile.ShowChannelFilter = true;	
-			break;
-
-		case Bindings::Operation::GreenChannel:
-			if (DrawChannel_AsIntensity)
-				{ DrawChannel_R = false; DrawChannel_G = true; DrawChannel_B = false; DrawChannel_A = false; }
-			else
-				DrawChannel_G = !DrawChannel_G;
-			profile.ShowChannelFilter = true;	
-			break;
-
-		case Bindings::Operation::BlueChannel:
-			if (DrawChannel_AsIntensity)
-				{ DrawChannel_R = false; DrawChannel_G = false; DrawChannel_B = true; DrawChannel_A = false; }
-			else
-				DrawChannel_B = !DrawChannel_B;
-			profile.ShowChannelFilter = true;	
-			break;
-
-		case Bindings::Operation::AlphaChannel:
-			if (DrawChannel_AsIntensity)
-				{ DrawChannel_R = false; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = true; }
-			else
-				DrawChannel_A = !DrawChannel_A;
-			profile.ShowChannelFilter = true;	
-			break;
-
-		case Bindings::Operation::ChannelAsIntensity:
-			DrawChannel_AsIntensity = !DrawChannel_AsIntensity;
-			if (DrawChannel_AsIntensity)
-				{ DrawChannel_R = true; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = false; }
-			else
-				{ DrawChannel_R = true; DrawChannel_G = true; DrawChannel_B = true; DrawChannel_A = true; }
-			profile.ShowChannelFilter = true;	
-			break;
-
-		case Bindings::Operation::Details:
-			profile.ShowImageDetails = !profile.ShowImageDetails;
-			break;
-
-		case Bindings::Operation::Tile:
-			if (CropMode)
-				break;
-			profile.Tile = !profile.Tile;
-			if (!profile.Tile)
-				ResetPan();
-			break;
-
-		case Bindings::Operation::Undo:
-			if (imgAvail && CurrImage->IsUndoAvailable()) Undo();
-			break;
-
-		case Bindings::Operation::Redo:
-			if (imgAvail && CurrImage->IsRedoAvailable()) Redo();
-			break;
-
-		case Bindings::Operation::Copy:
-			if (imgAvail) CopyImage();
-			break;
-
-		case Bindings::Operation::Paste:
-			PasteImage();
-			break;
-
-		case Bindings::Operation::Refresh:
-			if (CurrImage)
-			{
-				CurrImage->Unbind();
-				CurrImage->Unload(true);
-				CurrImage->Load();
-				CurrImage->Bind();
-				SetWindowTitle();
-			}
-			break;
-
-		case Bindings::Operation::Rename:
-			if (CurrImage) Request_RenameModal = true;
-			break;
-
-		case Bindings::Operation::Delete:
-			if (CurrImage) Request_DeleteFileModal = true;
-			break;
-
-		case Bindings::Operation::DeletePermanent:
-			if (CurrImage) Request_DeleteFileNoRecycleModal = true;
-			break;
-
-		case Bindings::Operation::Save:
-			if (imgAvail) Request_SaveCurrentModal = true;
-			break;
-
-		case Bindings::Operation::SaveAs:
-			if (imgAvail) Request_SaveAsModal = true;
-			break;
-
-		case Bindings::Operation::SaveAll:
-			if (CurrImage) Request_SaveAllModal = true;
-			break;
-
-		case Bindings::Operation::SaveContactSheet:
-			if (Images.GetNumItems() > 1) Request_ContactSheetModal = true;
-			break;
-
-		case Bindings::Operation::SaveMultiFrameImage:
-			if (Images.GetNumItems() > 1) Request_MultiFrameModal = true;
-			break;
-
-		case Bindings::Operation::SaveExtractFrames:
-			if (CurrImage && (CurrImage->GetNumFrames() > 1)) Request_ExtractFramesModal = true;
-			break;
-
-		case Bindings::Operation::MenuBar:
-			if (!CropMode) profile.ShowMenuBar = !profile.ShowMenuBar;
-			break;
-
-		case Bindings::Operation::NavBar:
-			if (!CropMode) profile.ShowNavBar = !profile.ShowNavBar;
-			break;
-
-		case Bindings::Operation::Thumbnails:
-			profile.ShowThumbnailView = !profile.ShowThumbnailView;
-			break;
-
-		case Bindings::Operation::FileBrowser:
-		{
-			#ifdef PACKAGE_SNAP
-			static int messageCount = 2;
-			if (messageCount-- > 0)
-				Request_SnapMessage_NoFileBrowse = true;
-			#else
-			if (CurrImage) tSystem::tOpenSystemFileExplorer(CurrImage->Filename);
-			#endif
-			break;
-		}
-
-		case Bindings::Operation::SlideshowTimer:
-			profile.SlideshowProgressArc = !profile.SlideshowProgressArc;
-			break;
-
-		case Bindings::Operation::SlideshowReshuffle:
-			profile.SlideshowAutoReshuffle = !profile.SlideshowAutoReshuffle;
-			break;
-
-		case Bindings::Operation::CheatSheet:
-			profile.ShowCheatSheet = !profile.ShowCheatSheet;
-			break;
-
-		case Bindings::Operation::DebugLog:
-			profile.ShowOutputLog = !profile.ShowOutputLog;
-			break;
-
-		case Bindings::Operation::ProfileMain:
-			if (!CropMode && (Config::GetProfile() != Profile::Main)) ChangProfile(Profile::Main);
-			break;
-
-		case Bindings::Operation::ProfileBasic:
-			if (!CropMode && (Config::GetProfile() != Profile::Basic)) ChangProfile(Profile::Basic);
-			break;
-
-		case Bindings::Operation::ProfileKiosk:
-			if (!CropMode && (Config::GetProfile() != Profile::Kiosk)) ChangProfile(Profile::Kiosk);
-			break;
-
-		case Bindings::Operation::Preferences:
-			profile.ShowPreferences = !profile.ShowPreferences;
-			break;
-
-		case Bindings::Operation::KeyBindings:
-			profile.ShowBindingsWindow = !profile.ShowBindingsWindow;
-			if (profile.ShowBindingsWindow) BindingsWindowJustOpened = true;
-			break;
-
-		case Bindings::Operation::Fullscreen:
-			ChangeScreenMode(!profile.FullscreenMode);
-			break;
-
-		case Bindings::Operation::Escape:
-			if (profile.FullscreenMode)
-				ChangeScreenMode(false);
-			else if ((Config::GetProfile() == Profile::Basic) || (Config::GetProfile() == Profile::Kiosk))
-				ChangProfile(Profile::Main);
-			break;
-
-		case Bindings::Operation::EscapeSupportingQuit:
-			if (profile.FullscreenMode)
-				ChangeScreenMode(false);
-			else if ((Config::GetProfile() == Profile::Basic) || (Config::GetProfile() == Profile::Kiosk))
-				ChangProfile(Profile::Main);
-			else
-				Viewer::Request_Quit = true;				
-			break;
-
-		case Bindings::Operation::Quit:
-			Viewer::Request_Quit = true;				
-			break;
-
-		case Bindings::Operation::OpenFile:
-			Request_OpenFileModal = true;
-			break;
-
-		case Bindings::Operation::OpenDir:
-			Request_OpenDirModal = true;
-			break;
-
-		case Bindings::Operation::MetaData:
-			profile.ShowImageMetaData = !profile.ShowImageMetaData;
-			break;
+		case Bindings::Operation::NextImage:			OnNextImage(true);				break;
+		case Bindings::Operation::PrevImage:			OnNextImage(false);				break;
+		case Bindings::Operation::SkipToLastImage:		OnLastImage(true);				break;
+		case Bindings::Operation::SkipToFirstImage:		OnLastImage(false);				break;
+		case Bindings::Operation::NextImageFrame:		OnNextImageFrame(true);			break;
+		case Bindings::Operation::PrevImageFrame:		OnNextImageFrame(false);		break;
+		case Bindings::Operation::PixelRight:			OnPixelMove(MoveDir::Right);	break;
+		case Bindings::Operation::PixelLeft:			OnPixelMove(MoveDir::Left);		break;
+		case Bindings::Operation::PixelDown:			OnPixelMove(MoveDir::Down);		break;
+		case Bindings::Operation::PixelUp:				OnPixelMove(MoveDir::Up);		break;
+		case Bindings::Operation::UISizeInc:			OnUISizeInc(true);				break;
+		case Bindings::Operation::UISizeDec:			OnUISizeInc(false);				break;
+		case Bindings::Operation::ZoomIn:				OnZoomIn();						break;
+		case Bindings::Operation::ZoomOut:				OnZoomOut();					break;
+		case Bindings::Operation::ZoomFit:				OnZoomFit();					break;
+		case Bindings::Operation::ZoomDownscaleOnly:	OnZoomDownscaleOnly();			break;
+		case Bindings::Operation::ZoomOneToOne:			OnZoomOneToOne();				break;
+		case Bindings::Operation::ZoomPerImage:			OnZoomPerImageToggle();			break;
+		case Bindings::Operation::ResetPan:				OnResetPan();					break;
+		case Bindings::Operation::FlipVertically:		OnFlipVert(true);				break;
+		case Bindings::Operation::FlipHorizontally:		OnFlipVert(false);				break;
+		case Bindings::Operation::Rotate90Clockwise:	OnRotate90(true);				break;
+		case Bindings::Operation::Rotate90Anticlockwise:OnRotate90(false);				break;
+		case Bindings::Operation::RotateImage:			OnRotate();						break;
+		case Bindings::Operation::Crop:					OnCrop();						break;
+		case Bindings::Operation::ResizeImage:			OnResizeImage();				break;
+		case Bindings::Operation::ResizeCanvas:			OnResizeCanvas();				break;
+		case Bindings::Operation::PixelEdit:			OnPixelEdit();					break;
+		case Bindings::Operation::PropertyEdit:			OnPropertyEdit();				break;
+		case Bindings::Operation::ChannelFilter:		OnChannelFilter();				break;
+		case Bindings::Operation::Levels:				OnLevels();						break;
+		case Bindings::Operation::Quantize:				OnQuantize();					break;
+		case Bindings::Operation::RedChannel:			OnRedChannel();					break;
+		case Bindings::Operation::GreenChannel:			OnGreenChannel();				break;
+		case Bindings::Operation::BlueChannel:			OnBlueChannel();				break;
+		case Bindings::Operation::AlphaChannel:			OnAlphaChannel();				break;
+		case Bindings::Operation::ChannelAsIntensity:	OnChannelIntensity();			break;
+		case Bindings::Operation::Details:				OnDetails();					break;
+		case Bindings::Operation::Tile:					OnTile();						break;
+		case Bindings::Operation::Undo:					OnUndo();						break;
+		case Bindings::Operation::Redo:					OnRedo();						break;
+		case Bindings::Operation::Copy:					OnCopyImageToClipboard();		break;
+		case Bindings::Operation::Paste:				OnPasteImageFromClipboard();	break;
+		case Bindings::Operation::Refresh:				OnRefresh();					break;
+		case Bindings::Operation::Rename:				OnRename();						break;
+		case Bindings::Operation::Delete:				OnDelete();						break;
+		case Bindings::Operation::DeletePermanent:		OnDeletePermanent();			break;
+		case Bindings::Operation::Save:					OnSave();						break;
+		case Bindings::Operation::SaveAs:				OnSaveAs();						break;
+		case Bindings::Operation::SaveAll:				OnSaveAll();					break;
+		case Bindings::Operation::SaveContactSheet:		OnSaveContactSheet();			break;
+		case Bindings::Operation::SaveMultiFrameImage:	OnSaveMultiFrameImage();		break;
+		case Bindings::Operation::SaveExtractFrames:	OnSaveExtractFrames();			break;
+		case Bindings::Operation::MenuBar:				OnMenuBar();					break;
+		case Bindings::Operation::NavBar:				OnNavBar();						break;
+		case Bindings::Operation::Thumbnails:			OnThumbnails();					break;
+		case Bindings::Operation::FileBrowser:			OnFileBrowser();				break;
+		case Bindings::Operation::SlideshowTimer:		OnSlideshowTimer();				break;
+		case Bindings::Operation::SlideshowReshuffle:	OnSlideshowReshuffle();			break;
+		case Bindings::Operation::CheatSheet:			OnCheatSheet();					break;
+		case Bindings::Operation::DebugLog:				OnDebugLog();					break;
+		case Bindings::Operation::ProfileMain:			OnProfileMain();				break;
+		case Bindings::Operation::ProfileBasic:			OnProfileBasic();				break;
+		case Bindings::Operation::ProfileKiosk:			OnProfileKiosk();				break;
+		case Bindings::Operation::Preferences:			OnPreferences();				break;
+		case Bindings::Operation::KeyBindings:			OnKeyBindings();				break;
+		case Bindings::Operation::Fullscreen:			OnFullscreen();					break;
+		case Bindings::Operation::Escape:				OnEscape();						break;
+		case Bindings::Operation::EscapeSupportingQuit:	OnEscapeWithQuit();				break;
+		case Bindings::Operation::Quit:					OnQuit();						break;
+		case Bindings::Operation::OpenFile:				OnOpenFile();					break;
+		case Bindings::Operation::OpenDir:				OnOpenDir();					break;
+		case Bindings::Operation::MetaData:				OnMetaData();					break;
 	}
 }
 

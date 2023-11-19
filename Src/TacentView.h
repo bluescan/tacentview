@@ -135,8 +135,8 @@ namespace Viewer
 	// always set to a valid (non-auto) UI size after this call.
 	void UpdateDesiredUISize();
 
-	void Undo();
-	void Redo();
+	void OnUndo();
+	void OnRedo();
 
 	// Returns true if clamping was necessary.
 	bool ConvertScreenPosToImagePos
