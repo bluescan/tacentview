@@ -895,31 +895,30 @@ void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFi
 {
 	tAssert(!overwriteFiles.IsEmpty());
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = Gutil::GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth		= Gutil::GetUIParamScaled(76.0f, 2.5f);
+	float textWidth			= Gutil::GetUIParamScaled(366.0f, 2.5f);
+	float overwriteOffset	= Gutil::GetUIParamScaled(310.0f, 2.5f);
 
-	// @wip For both filename and folder we need to restrict the string width using that function I haven't written
-	// yet to crop a string to a specific width and optionally add an ellisis.
-	tString dir = tSystem::tGetDir(*overwriteFiles.First());
 	ImGui::Text("The Following Files");
 	ImGui::Indent();
 	int fnum = 0;
 	const int maxToShow = 6;
 	for (tStringItem* filename = overwriteFiles.First(); filename && (fnum < maxToShow); filename = filename->Next(), fnum++)
 	{
-		tString file = tSystem::tGetFileName(*filename);
-		ImGui::Text("%s", file.Chr());
+		tString file		= tSystem::tGetFileName(*filename);
+		tString fileCropped	= Gutil::CropStringToWidth(file, textWidth, true);
+		ImGui::Text("%s", fileCropped.Chr());
 	}
 	int remaining = overwriteFiles.GetNumItems() - fnum;
 	if (remaining > 0)
 		ImGui::Text("And %d more.", remaining);
 	ImGui::Unindent();
 	ImGui::Text("Already Exist In Folder");
-	ImGui::Indent(); ImGui::Text("%s", dir.Chr()); ImGui::Unindent();
-	ImGui::NewLine();
+	tString dir				= tSystem::tGetDir(*overwriteFiles.First());
+	tString dirCropped		= Gutil::CropStringToWidth(dir, textWidth, true);
+	ImGui::Indent(); ImGui::Text("%s", dirCropped.Chr()); ImGui::Unindent();
 	ImGui::Text("Overwrite Files?");
-	ImGui::NewLine();
 	ImGui::Separator();
-	ImGui::NewLine();
 	ImGui::Checkbox("Confirm file overwrites in the future?", &profile.ConfirmFileOverwrites);
 	ImGui::NewLine();
 
@@ -933,7 +932,6 @@ void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFi
 
 	ImGui::SameLine();
 
-	float overwriteOffset = Gutil::GetUIParamScaled(280.0f, 2.5f);
 	ImGui::SetCursorPosX(overwriteOffset);
 	if (Gutil::Button("Overwrite", tVector2(buttonWidth, 0.0f)))
 	{
@@ -1001,23 +999,23 @@ void Viewer::AddSavedImageIfNecessary(const tString& savedFile)
 void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool& pressedCancel)
 {
 	Config::ProfileData& profile = Config::GetProfileData();
-	float buttonWidth = Gutil::GetUIParamScaled(76.0f, 2.5f);
+	float buttonWidth		= Gutil::GetUIParamScaled(76.0f, 2.5f);
+	float textWidth			= Gutil::GetUIParamScaled(366.0f, 2.5f);
+	float okOffset			= Gutil::GetUIParamScaled(310.0f, 2.5f);
 
-	// @wip For both filename and folder we need to restrict the string width using that function I haven't written
-	// yet to crop a string to a specific width and optionally add an ellisis.
-	tString file = tSystem::tGetFileName(outFile);
-	tString dir = tSystem::tGetDir(outFile);
+	tString file			= tSystem::tGetFileName(outFile);
+	tString fileCropped		= Gutil::CropStringToWidth(file, textWidth, true);
+	tString dir				= tSystem::tGetDir(outFile);
+	tString dirCropped		= Gutil::CropStringToWidth(dir, textWidth, true);
+
 	ImGui::Text("Overwrite file");
-		ImGui::Indent(); ImGui::Text("%s", file.Chr()); ImGui::Unindent();
+		ImGui::Indent(); ImGui::Text("%s", fileCropped.Chr()); ImGui::Unindent();
 	ImGui::Text("In Folder");
-		ImGui::Indent(); ImGui::Text("%s", dir.Chr()); ImGui::Unindent();
-	ImGui::NewLine();
+		ImGui::Indent(); ImGui::Text("%s", dirCropped.Chr()); ImGui::Unindent();
 	ImGui::Separator();
 
-	ImGui::NewLine();
 	ImGui::Checkbox("Confirm file overwrites in the future?", &profile.ConfirmFileOverwrites);
 	ImGui::NewLine();
-
 	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 	{
 		pressedCancel = true;
@@ -1025,8 +1023,6 @@ void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool&
 	}
 
 	ImGui::SameLine();
-
-	float okOffset = Gutil::GetUIParamScaled(280.0f, 2.5f);
 	ImGui::SetCursorPosX(okOffset);
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
