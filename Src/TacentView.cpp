@@ -2862,9 +2862,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	tARect2 hitAreaPrevArrow(rectCenterPrevArrow, prevNextArrowSize.y*2.0f);
 	if
 	(
-		!CropMode && !profile.HideOnScreenControls &&
-		((DisappearCountdown > 0.0) || hitAreaPrevArrow.IsPointInside(mousePos)) &&
-		((CurrImage != Images.First()) || (SlideshowPlaying && profile.SlideshowLooping))
+		(profile.GetOnScreenControls() == Config::ProfileData::OnScreenEnum::Always) ||
+		(
+			(profile.GetOnScreenControls() == Config::ProfileData::OnScreenEnum::Auto) && !CropMode &&
+			((DisappearCountdown > 0.0) || hitAreaPrevArrow.IsPointInside(mousePos)) &&
+			((CurrImage != Images.First()) || (SlideshowPlaying && profile.SlideshowLooping))
+		)
 	)
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(0.0f, 0.0f));
@@ -2887,9 +2890,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	tARect2 hitAreaNextArrow(rectCenterNextArrow, prevNextArrowSize.y*2.0f);
 	if
 	(
-		!CropMode && !profile.HideOnScreenControls &&
-		((DisappearCountdown > 0.0) || hitAreaNextArrow.IsPointInside(mousePos)) &&
-		((CurrImage != Images.Last()) || (SlideshowPlaying && profile.SlideshowLooping))
+		(profile.GetOnScreenControls() == Config::ProfileData::OnScreenEnum::Always) ||
+		(
+			(profile.GetOnScreenControls() == Config::ProfileData::OnScreenEnum::Auto) && !CropMode &&
+			((DisappearCountdown > 0.0) || hitAreaNextArrow.IsPointInside(mousePos)) &&
+			((CurrImage != Images.Last()) || (SlideshowPlaying && profile.SlideshowLooping))
+		)
 	)
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(0.0f, 0.0f));
@@ -2948,9 +2954,12 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	float buttonHeightOffset = Gutil::GetUIParamScaled(62.0f, 2.5f);
 	if
 	(
-		!CropMode && !profile.HideOnScreenControls &&
-		((DisappearCountdown > 0.0) ||
-		hitAreaControlButtons.IsPointInside(mousePos))
+		(profile.GetOnScreenControls() == Config::ProfileData::OnScreenEnum::Always) ||
+		(
+			(profile.GetOnScreenControls() == Config::ProfileData::OnScreenEnum::Auto) && !CropMode &&
+			((DisappearCountdown > 0.0) ||
+			hitAreaControlButtons.IsPointInside(mousePos))
+		)
 	)
 	{
 		tVector2 mainButtonImgSize(mainButtonImgDim, mainButtonImgDim);

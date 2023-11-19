@@ -84,7 +84,17 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			#endif
 
 			ImGui::Checkbox("Background Extend", &profile.BackgroundExtend);
-			ImGui::Checkbox("Hide On-Screen Controls", &profile.HideOnScreenControls);
+
+			const char* onScreenControlsItems[] = { "Auto", "Always", "Never" };
+			ImGui::SetNextItemWidth(itemWidth);
+			ImGui::Combo("On-Screen Controls", &profile.OnScreenControls, onScreenControlsItems, tNumElements(onScreenControlsItems));
+			ImGui::SameLine();
+			ShowHelpMark
+			(
+				"In auto mode the on-screen controls will appear when the mouse is\n"
+				"moved and remain if the mouse is near or over a control. If the\n"
+				"mouse is not moved for a period of time, the controls will auto-hide."
+			);
 			
 			if (!Config::Global.TransparentWorkArea)
 			{

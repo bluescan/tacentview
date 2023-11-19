@@ -125,7 +125,16 @@ struct ProfileData
 	int BackgroundCheckerboxSize;
 	tColouri BackgroundColour;							// Only used if BackgroundStyle is SolidColour.
 	bool BackgroundExtend;								// Extend background past image bounds.
-	bool HideOnScreenControls;							// Hide prev, next, play, etc on-screen buttons.
+
+	enum class OnScreenEnum
+	{
+		Auto,
+		Always,
+		Never											// Hide prev, next, play, etc on-screen buttons.
+	};
+	int OnScreenControls;
+	OnScreenEnum GetOnScreenControls() const			{ return OnScreenEnum(OnScreenControls); }
+
 	enum class ReticleModeEnum
 	{
 		AlwaysHidden,

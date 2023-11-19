@@ -396,7 +396,7 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		BackgroundCheckerboxSize	= 16;
 		BackgroundColour			= tColouri::black;
 		BackgroundExtend			= false;
-		HideOnScreenControls		= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? true : false;
+		OnScreenControls			= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? int(OnScreenEnum::Never) : int(OnScreenEnum::Auto);
 		ShowNavFilenameAlways		= false;
 		switch (profile)
 		{
@@ -489,7 +489,7 @@ void Config::ProfileData::Load(tExpression expr)
 			ReadItem(BackgroundCheckerboxSize);
 			ReadItem(BackgroundColour);
 			ReadItem(BackgroundExtend);
-			ReadItem(HideOnScreenControls);
+			ReadItem(OnScreenControls);
 			ReadItem(ReticleMode);
 			ReadItem(UISize);
 			ReadItem(ResampleFilter);
@@ -667,7 +667,7 @@ bool Config::ProfileData::Save(tExprWriter& writer) const
 	WriteItem(BackgroundCheckerboxSize);
 	WriteItem(BackgroundColour);
 	WriteItem(BackgroundExtend);
-	WriteItem(HideOnScreenControls);
+	WriteItem(OnScreenControls);
 	WriteItem(ReticleMode);
 	WriteItem(UISize);
 	WriteItem(ResampleFilter);
