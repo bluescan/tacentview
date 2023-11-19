@@ -380,6 +380,9 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		SaveAllSizeMode				= 0;
 		FillColour					= tColouri::black;
 		FillColourContact			= tColouri::transparent;
+		LevelsPowerMidGamma			= true;
+		LevelsAutoMidPoint			= false;
+		LevelsLogarithmicHisto		= true;
 		CropAnchor					= 4;
 		CropAspectRatio				= int(tImage::tAspectRatio::Free);
 		CropAspectUserNum			= 16;
@@ -552,6 +555,9 @@ void Config::ProfileData::Load(tExpression expr)
 
 			ReadItem(FillColour);
 			ReadItem(FillColourContact);
+			ReadItem(LevelsPowerMidGamma);
+			ReadItem(LevelsAutoMidPoint);
+			ReadItem(LevelsLogarithmicHisto);
 			ReadItem(CropAnchor);
 			ReadItem(CropAspectRatio);
 			ReadItem(CropAspectUserNum);
@@ -728,6 +734,9 @@ bool Config::ProfileData::Save(tExprWriter& writer) const
 
 	WriteItem(FillColour);
 	WriteItem(FillColourContact);
+	WriteItem(LevelsPowerMidGamma);
+	WriteItem(LevelsAutoMidPoint);
+	WriteItem(LevelsLogarithmicHisto);
 	WriteItem(CropAnchor);
 	WriteItem(CropAspectRatio);
 	WriteItem(CropAspectUserNum);

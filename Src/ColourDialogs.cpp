@@ -320,9 +320,6 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	static float levelsOutBlack = 0.0f;
 	static float levelsOutWhite = 1.0f;
 	static bool allFrames = true;
-	static bool powerMidGamma = true;
-	static bool autoMidPoint = false;
-	static bool logarithmicHisto = true;
 	static int channels = int(Image::AdjChan::RGB);
 
 	if (levelsPressed)
@@ -357,6 +354,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	//
 	// UI size parameters.
 	//
+	Config::ProfileData& profile = Config::GetProfileData();
 	float buttonWidth	= Gutil::GetUIParamScaled(76.0f, 2.5f);
 	float itemWidth		= Gutil::GetUIParamScaled(258.0f, 2.5f);
 
@@ -396,7 +394,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			//
 			// Mid-tones algorithm.
 			//
-			modified = ImGui::Checkbox("Continuous Mid Gamma", &powerMidGamma)			|| modified;
+			modified = ImGui::Checkbox("Continuous Mid Gamma", &profile.LevelsPowerMidGamma) || modified;
 			ImGui::SameLine();
 			ShowHelpMark
 			(
@@ -412,13 +410,13 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			//
 			// Auto-set mid-point between black/white point?
 			//
-			modified = ImGui::Checkbox("Auto Mid Point", &autoMidPoint)					|| modified;
+			modified = ImGui::Checkbox("Auto Mid Point", &profile.LevelsAutoMidPoint) || modified;
 			ImGui::SameLine(); ShowHelpMark("If true forces the midpoint to be half way between the black and white points.");
 
 			//
 			// Logarithmic histogram?
 			//
-			ImGui::Checkbox("Logarithmic Histogram", &logarithmicHisto);
+			ImGui::Checkbox("Logarithmic Histogram", &profile.LevelsLogarithmicHisto);
 			ImGui::SameLine(); ShowHelpMark("Logarithmic scale is useful when you have a 'clumpy' intensity distribution.\nTurning this on uses the natural logarithm to scale the histogram counts.");
 			ImGui::NewLine();
 
@@ -442,8 +440,8 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			tString histName;  tsPrintf(histName,  "%s Intensity", channelItems[channels]);
 			tString histLabel; tsPrintf(histLabel, "Max %d\n\nHistogram", int(max));
 			tVector2 histSize = Gutil::GetUIParamScaled(tVector2(256.0f, 80.0f), 2.5f);
-			HistogramCallback histoCB(Image::AdjChan(channels), logarithmicHisto, pic, int(histSize.x));
-			if (logarithmicHisto)
+			HistogramCallback histoCB(Image::AdjChan(channels), profile.LevelsLogarithmicHisto, pic, int(histSize.x));
+			if (profile.LevelsLogarithmicHisto)
 				max = tMath::tLog(max);
 
 			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, colour);
@@ -460,8 +458,8 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(6.0f, 1.0f));
 			ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, 8.0);
 			modified = ImGui::SliderFloat("Black Point", &levelsBlack, 0.0f, 1.0f)		|| modified;
-			if (!autoMidPoint)
-				modified = ImGui::SliderFloat("Mid Point", &levelsMid, 0.0f, 1.0f)		|| modified;
+			bool manualMidAdj = ImGui::SliderFloat("Mid Point", &levelsMid, 0.0f, 1.0f);
+			modified = manualMidAdj														|| modified;
 			modified = ImGui::SliderFloat("White Point", &levelsWhite, 0.0f, 1.0f)		|| modified;
 			modified = ImGui::SliderFloat("Black Out", &levelsOutBlack, 0.0f, 1.0f)		|| modified;
 			modified = ImGui::SliderFloat("White Out", &levelsOutWhite, 0.0f, 1.0f)		|| modified;
@@ -481,20 +479,24 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			if (modified)
 			{
 				// Constrain.
-				if (autoMidPoint)
-				{
-					tiClampMin(levelsWhite, levelsBlack);
+				tiClampMin(levelsWhite, levelsBlack);
+				if (profile.LevelsAutoMidPoint && !manualMidAdj)
 					levelsMid = (levelsWhite+levelsBlack)/2.0f;
+
+				// In auto midpoint mode we allow the midpoint to 'push' the white and black points.
+				if (profile.LevelsAutoMidPoint)
+				{
+					tiClampMax(levelsBlack, levelsMid);
+					tiClampMin(levelsWhite, levelsMid);
 				}
 				else
 				{
-					tiClampMin(levelsMid, levelsBlack);
-					tiClampMin(levelsWhite, levelsMid);
+					tiClamp(levelsMid, levelsBlack, levelsWhite);
 				}
 				tiClampMin(levelsOutWhite, levelsOutBlack);
 
 				CurrImage->Unbind();
-				CurrImage->AdjustLevels(levelsBlack, levelsMid, levelsWhite, levelsOutBlack, levelsOutWhite, powerMidGamma, Image::AdjChan(channels), allFrames);
+				CurrImage->AdjustLevels(levelsBlack, levelsMid, levelsWhite, levelsOutBlack, levelsOutWhite, profile.LevelsPowerMidGamma, Image::AdjChan(channels), allFrames);
 				CurrImage->Bind();
 			}
 
@@ -622,10 +624,10 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 	if (Gutil::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		CurrImage->AdjustGetDefaults(brightness, contrast, levelsBlack, levelsMid, levelsWhite, levelsOutBlack, levelsOutWhite);
-		powerMidGamma = true;
-		autoMidPoint = false;
-		logarithmicHisto = true;
-		channels = int(Image::AdjChan::RGB);
+		profile.LevelsPowerMidGamma		= true;
+		profile.LevelsAutoMidPoint		= false;
+		profile.LevelsLogarithmicHisto	= true;
+		channels						= int(Image::AdjChan::RGB);
 
 		CurrImage->Unbind();
 		CurrImage->AdjustRestoreOriginal();

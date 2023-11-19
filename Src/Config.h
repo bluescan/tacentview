@@ -254,8 +254,12 @@ struct ProfileData
 
 	tColouri FillColour;
 	tColouri FillColourContact;
-	int CropAnchor;										// E [-1, 9] with 4 being the default (middle), 0 being top-left, and -1 being 'cursor position'.
 
+	bool LevelsPowerMidGamma;
+	bool LevelsAutoMidPoint;
+	bool LevelsLogarithmicHisto;
+
+	int CropAnchor;										// E [-1, 9] with 4 being the default (middle), 0 being top-left, and -1 being 'cursor position'.
 	int CropAspectRatio;								// Matches tImage::tAspectRatio.
 	tImage::tAspectRatio GetCropAspectRatio() const		{ return tImage::tAspectRatio(CropAspectRatio); }
 	int CropAspectUserNum;								// Only used if aspect ratio is 'User'.
@@ -267,8 +271,8 @@ struct ProfileData
 	int ResizeAspectUserNum;							// Only used if aspect ratio is 'User'.
 	int ResizeAspectUserDen;							// Only used if aspect ratio is 'User'.
 	float GetResizeAspectRatioFloat() const				{ tImage::tAspectRatio aspect = GetResizeAspectRatio(); return (aspect == tImage::tAspectRatio::User) ? float(ResizeAspectUserNum) / float(ResizeAspectUserDen) : tImage::tGetAspectRatioFloat(aspect); }
-
 	int ResizeAspectMode;								// 0 = Crop Mode. 1 = Letterbox Mode.
+
 	int MaxImageMemMB;									// Max image mem before unloading images.
 	int MaxCacheFiles;									// Max number of cache files before removing oldest.
 	int MaxUndoSteps;
