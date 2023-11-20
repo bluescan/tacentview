@@ -1,5 +1,5 @@
 
-Tacent View 1.0.41 by Tristan Grimmer
+Tacent View 1.0.42 by Tristan Grimmer
 Win x64 Release UTF-16 API
 CLI Mode
 
@@ -32,6 +32,7 @@ Options:
 --outTGA arg1        : Save parameters for TGA  files
 --outTIFF arg1       : Save parameters for TIFF files
 --outWEBP arg1       : Save parameters for WEBP files
+--outname -n arg1    : Output file name modifications
 --overwrite -w       : Overwrite existing output files
 --po arg1            : Post operation
 --profile -p arg1    : Launch GUI with the specified profile active.
@@ -108,10 +109,10 @@ specify multiple types with a comma-separated list. For example, '-i jpg,png'
 is the same as '-i jpg -i png'. If you specify only unsupported or invalid
 types a warning is printed and tga images will be processed.
 
-Supported input file types: tga png jpg gif webp qoi dds ktx ktx2 astc pkm exr 
-hdr apng bmp ico tif 
-These cover file extensions: tga png jpg jpeg gif webp qoi dds ktx ktx2 astc 
-atc pkm exr hdr rgbe apng bmp ico tif tiff 
+Supported input file types: tga png jpg gif webp qoi dds pvr ktx ktx2 astc pkm 
+exr hdr apng bmp ico tif 
+These cover file extensions: tga png jpg jpeg gif webp qoi dds pvr ktx ktx2 
+astc atc pkm exr hdr rgbe apng bmp ico tif tiff 
 
 LOAD PARAMETERS
 ---------------
@@ -659,11 +660,20 @@ The output filename matches the input filename except that the extension/type
 may be different. Eg. Seascape.jpg would save as Seascape.tga if the out type
 was tga only.
 
+The output names may be modified by adding a prefix, suffix, or replacing part
+of the name with a different string. This is done using --outname or -n.
+
+--outname prefix=string,suffix=string,replace=old:new
+
+for example, if suffix=_Blockout,replace=Full|Thumb and the input file was
+Tree_Full_012.tga then the output file will be Tree_Thumb_012_Blockout.tga. If
+replace does not specify a new replacement string, the old string is removed.
+
 If an output file already exists, it is not overwritten. To allow overwrite use
 the --overwrite (-w) flag. To have the tool try a different filename if it
 aready exists, use the --autoname (-a) flag. It will append the string _NNN to
 the name where NNN is a number that keeps incrementing until no existing file
-is found.
+is found. This is applied after any outname prefix, suffix, or replacements.
 
 By default if no modifications are made to an input file, the file is still
 saved. This is so easy batch conversions from one type to another may be
@@ -676,7 +686,7 @@ SAVE PARAMETERS
 Different output image types have different features and may support different
 parameters when saving. Specifying save parameters takes the form:
 
- --outTTT param1=value1,param2=value2,etc
+--outTTT param1=value1,param2=value2,etc
 
 where TTT represents the image type, the lack of spaces is important, and both
 param names and values are case sensitive. All save parameters have reasonable

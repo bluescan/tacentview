@@ -81,6 +81,17 @@ case a single input type (pkm) and a single output type (png) are specified.
 },
 
 {
+u8"Convert PKM Files to PNG with Prefix and Suffix",
+u8"tacentview -c -i pkm -o png --outname prefix=T_,suffix=Saved",
+u8R"EXAMPLE(
+As above the types of the input and output files are specified explicitly. The
+`--outname` option specifies a prefix of `T_` to be prepended to all output
+filenames. At the end of the filename, before the extension, the suffix `Saved`
+will be added.
+)EXAMPLE"
+},
+
+{
 u8"Convert PKM and JPG Files to PNG and BMP",
 u8"tacentview -c --in pkm,jpg --out png,bmp\n"
 u8"tacentview -c --in pkm -i jpg -o png --out bmp",
@@ -172,6 +183,18 @@ so that the original aspect ratio is preserved. The `-w` or `--overwrite` means
 overwrite existing files that may be present. Use with caution. There are more
 arguments to resize that allow setting resample filters and edge modes that are
 not shown here.
+)EXAMPLE"
+},
+
+{
+u8"Resize Images for Thumnails",
+u8"tacentview -c --op resize[128,128] -n prefix=T_,replace=Full:Thumb",
+u8R"EXAMPLE(
+Resizes all images in the current directory to 128x128 and saves them as TGA
+files starting with the string `T_`. The `-n` or `--outname` option also
+specifies that any filename with the string `Full` in it will have it replaced
+with the string `Thumb`. An input file like `Car_Full_08.png` would be resized
+and saved as `T_Car_Thumb_08.tga`.
 )EXAMPLE"
 },
 
@@ -1429,11 +1452,20 @@ The output filename matches the input filename except that the extension/type
 may be different. Eg. Seascape.jpg would save as Seascape.tga if the out type
 was tga only.
 
+The output names may be modified by adding a prefix, suffix, or replacing part
+of the name with a different string. This is done using --outname or -n.
+
+--outname prefix=string,suffix=string,replace=old:new
+
+for example, if suffix=_Blockout,replace=Full|Thumb and the input file was
+Tree_Full_012.tga then the output file will be Tree_Thumb_012_Blockout.tga. If
+replace does not specify a new replacement string, the old string is removed.
+
 If an output file already exists, it is not overwritten. To allow overwrite use
 the --overwrite (-w) flag. To have the tool try a different filename if it
 aready exists, use the --autoname (-a) flag. It will append the string _NNN to
 the name where NNN is a number that keeps incrementing until no existing file
-is found.
+is found. This is applied after any outname prefix, suffix, or replacements.
 
 By default if no modifications are made to an input file, the file is still
 saved. This is so easy batch conversions from one type to another may be
@@ -1450,7 +1482,7 @@ SAVE PARAMETERS
 Different output image types have different features and may support different
 parameters when saving. Specifying save parameters takes the form:
 
- --outTTT param1=value1,param2=value2,etc
+--outTTT param1=value1,param2=value2,etc
 
 where TTT represents the image type, the lack of spaces is important, and both
 param names and values are case sensitive. All save parameters have reasonable

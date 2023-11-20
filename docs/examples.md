@@ -19,6 +19,13 @@ tacentview -c --in pkm --out png
 Here the types of the input and output files are specified explicitly. In this case a single input type (pkm) and a single output type (png) are specified.\
 \
 \
+**Example {% increment egnum %} - Convert PKM Files to PNG with Prefix and Suffix**
+```
+tacentview -c -i pkm -o png --outname prefix=T_,suffix=Saved
+```
+As above the types of the input and output files are specified explicitly. The `--outname` option specifies a prefix of `T_` to be prepended to all output filenames. At the end of the filename, before the extension, the suffix `Saved` will be added.\
+\
+\
 **Example {% increment egnum %} - Convert PKM and JPG Files to PNG and BMP**
 ```
 tacentview -c --in pkm,jpg --out png,bmp
@@ -69,6 +76,13 @@ This example shows loading two DDS files (`A.dds` and `B.dds`) setting all the s
 tacentview -cw . --op resize[1920,-1] -o jpg
 ```
 Resizes all images in the current directory and saves them as JPG files. The JPG images will be 1920 pixels wide. The -1 for height means compute the height so that the original aspect ratio is preserved. The `-w` or `--overwrite` means overwrite existing files that may be present. Use with caution. There are more arguments to resize that allow setting resample filters and edge modes that are not shown here.\
+\
+\
+**Example {% increment egnum %} - Resize Images for Thumnails**
+```
+tacentview -c --op resize[128,128] -n prefix=T_,replace=Full:Thumb
+```
+Resizes all images in the current directory to 128x128 and saves them as TGA files starting with the string `T_`. The `-n` or `--outname` option also specifies that any filename with the string `Full` in it will have it replaced with the string `Thumb`. An input file like `Car_Full_08.png` would be resized and saved as `T_Car_Thumb_08.tga`.\
 \
 \
 **Example {% increment egnum %} - Resize Followed by Rotation**

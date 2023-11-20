@@ -53,6 +53,7 @@ namespace Command
 	tCmdLine::tOption OptionPostOperation	("Post operation",					"po",					1	);
 
 	tCmdLine::tOption OptionOutTypes		("Output file type(s)",				"out",			'o',	1	);
+	tCmdLine::tOption OptionOutName			("Output file name modifications",	"outname",		'n',	1	);
 	tCmdLine::tOption OptionOutAPNG			("Save parameters for APNG files",	"outAPNG",				1	);
 	tCmdLine::tOption OptionOutBMP			("Save parameters for BMP  files",	"outBMP",				1	);
 	tCmdLine::tOption OptionOutGIF			("Save parameters for GIF  files",	"outGIF",				1	);
@@ -106,8 +107,9 @@ namespace Command
 	void PopulateImagesList();																	// Step 3.
 	bool ProcessOperationsOnImage(Viewer::Image&);												// Applies all the operations (in order) to the supplied image.
 
-	void DetermineOutputTypes();																	// Step 4.
-	void DetermineOutputSaveParameters();										// Step 5.
+	void DetermineOutputTypes();																// Step 4.
+	void DetermineOutputNameParameters();														// Step 5.
+	void DetermineOutputSaveParameters();														// Step 6.
 	void ParseSaveParametersAPNG();
 	void ParseSaveParametersBMP();
 	void ParseSaveParametersGIF();
@@ -147,6 +149,11 @@ namespace Command
 	tList<Operation> Operations;
 	tList<PostOperation> PostOperations;
 	tSystem::tFileTypes OutTypes;
+
+	tString OutNamePrefix;
+	tString OutNameSuffix;
+	tString OutNameSearch;
+	tString OutNameReplace;
 }
 
 
@@ -928,6 +935,43 @@ void Command::DetermineOutputTypes()
 }
 
 
+void Command::DetermineOutputNameParameters()
+{
+	tList<ParamValuePair> pairs;
+	ParseParamValuePairs(pairs, OptionOutName.Arg1());
+	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
+	{
+		tString& param = p->Param;
+		tString& value = p->Value;
+		switch (tHash::tHashString(param.Chr()))
+		{
+			case tHash::tHashCT("prefix"):
+				OutNamePrefix = value;
+				break;
+
+			case tHash::tHashCT("suffix"):
+				OutNameSuffix = value;
+				break;
+
+			case tHash::tHashCT("replace"):
+			{
+				if (value.FindChar(':') == -1)
+				{
+					OutNameSearch = value;
+					OutNameReplace.Clear();
+				}
+				else
+				{
+					OutNameSearch = value.Left(':');
+					OutNameReplace = value.Right(':');
+				}
+				break;
+			}
+		}
+	}
+}
+
+
 void Command::DetermineOutputSaveParameters()
 {
 	// We only bother reading save parameters for the types of files we will be saving.
@@ -1260,25 +1304,35 @@ void Command::ParseSaveParametersWEBP()
 
 tString Command::DetermineOutputFilename(const tString& inName, tSystem::tFileType outType)
 {
+	tString baseName = tSystem::tGetFileBaseName(inName);
+
+	if (OutNameSearch.IsValid())
+		baseName.Replace(OutNameSearch.Chr(), OutNameReplace.Chr());
+	if (OutNamePrefix.IsValid())
+		baseName = OutNamePrefix + baseName;
+	if (OutNameSuffix.IsValid())
+		baseName = baseName + OutNameSuffix;
+
 	tString outExt = tSystem::tGetExtension(outType);
-	tString nonAutoName = tSystem::tGetDir(inName) + tSystem::tGetFileBaseName(inName) + "." + outExt;
+	tString outName = tSystem::tGetDir(inName) + baseName + "." + outExt;
+
 	if (!OptionAutoName)
-		return nonAutoName;
+		return outName;
 
 	// Autoname is true. Test up to 100 consecutive filenames.
 	for (int nameIter = 0; nameIter < 100; nameIter++)
 	{
 		tString contender;
 		if (nameIter == 0)
-			contender = nonAutoName;
+			contender = outName;
 		else
-			tsPrintf(contender, "%s%s_%03d.%s", tSystem::tGetDir(inName).Chr(), tSystem::tGetFileBaseName(inName).Chr(), nameIter, outExt.Chr());
+			tsPrintf(contender, "%s%s_%03d.%s", tSystem::tGetDir(inName).Chr(), baseName.Chr(), nameIter, outExt.Chr());
 
 		if (!tSystem::tFileExists(contender))
 			return contender;
 	}
 
-	return nonAutoName;
+	return outName;
 }
 
 
@@ -1368,6 +1422,7 @@ int Command::Process()
 	PopulatePostOperations();
 
 	DetermineOutputTypes();
+	DetermineOutputNameParameters();
 	DetermineOutputSaveParameters();
 
 	// Process standard operations.
