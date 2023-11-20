@@ -665,7 +665,7 @@ of the name with a different string. This is done using --outname or -n.
 
 --outname prefix=string,suffix=string,replace=old:new
 
-for example, if suffix=_Blockout,replace=Full|Thumb and the input file was
+For example, if suffix=_Blockout,replace=Full:Thumb and the input file was
 Tree_Full_012.tga then the output file will be Tree_Thumb_012_Blockout.tga. If
 replace does not specify a new replacement string, the old string is removed.
 
