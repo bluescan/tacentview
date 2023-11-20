@@ -908,6 +908,8 @@ void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFi
 		tString file		= tSystem::tGetFileName(*filename);
 		tString fileCropped	= Gutil::CropStringToWidth(file, textWidth, true);
 		ImGui::Text("%s", fileCropped.Chr());
+		if (fileCropped != file)
+			Gutil::ShowToolTip(file.Chr());
 	}
 	int remaining = overwriteFiles.GetNumItems() - fnum;
 	if (remaining > 0)
@@ -916,7 +918,11 @@ void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFi
 	ImGui::Text("Already Exist In Folder");
 	tString dir				= tSystem::tGetDir(*overwriteFiles.First());
 	tString dirCropped		= Gutil::CropStringToWidth(dir, textWidth, true);
-	ImGui::Indent(); ImGui::Text("%s", dirCropped.Chr()); ImGui::Unindent();
+	ImGui::Indent();
+		ImGui::Text("%s", dirCropped.Chr());
+		if (dirCropped != dir)
+			Gutil::ShowToolTip(dir.Chr());
+	ImGui::Unindent();
 	ImGui::Text("Overwrite Files?");
 	ImGui::Separator();
 	ImGui::Checkbox("Confirm file overwrites in the future?", &profile.ConfirmFileOverwrites);
@@ -1009,9 +1015,18 @@ void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool&
 	tString dirCropped		= Gutil::CropStringToWidth(dir, textWidth, true);
 
 	ImGui::Text("Overwrite file");
-		ImGui::Indent(); ImGui::Text("%s", fileCropped.Chr()); ImGui::Unindent();
+	ImGui::Indent();
+		ImGui::Text("%s", fileCropped.Chr());
+		if (fileCropped != file)
+			Gutil::ShowToolTip(file.Chr());
+	ImGui::Unindent();
+
 	ImGui::Text("In Folder");
-		ImGui::Indent(); ImGui::Text("%s", dirCropped.Chr()); ImGui::Unindent();
+	ImGui::Indent();
+		ImGui::Text("%s", dirCropped.Chr());
+		if (dirCropped != dir)
+			Gutil::ShowToolTip(dir.Chr());
+	ImGui::Unindent();
 	ImGui::Separator();
 
 	ImGui::Checkbox("Confirm file overwrites in the future?", &profile.ConfirmFileOverwrites);
