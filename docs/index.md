@@ -116,8 +116,9 @@ Some image formats are often used to store texture data that is easily decompres
 | R8              | R8G8            | R8G8B8          | R8G8B8A8        |
 | B8G8R8          | B8G8R8A8        | G3B5R5G3*       | G4B4A4R4*       |
 | G3B5A1R5G2*     | A8L8            | A8              | L8              |
-| R16F            | R16G16F         | R16G16B16A16F   | B4A4R4G4        |
-| R32F            | R32G32F         | R32G32B32A32F   |                 |
+| R16f            | R16G16f         | R16G16B16A16f   | B4A4R4G4        |
+| R32f            | R32G32f         | R32G32B32A32f   | B10G11R11uf     |
+| E5B9G9R9uf      |                 |                 |                 |
 |                 |                 |                 |                 |
 | **Block (BC)**  |                 |                 |                 |
 |-----------------|-----------------|-----------------|-----------------|
