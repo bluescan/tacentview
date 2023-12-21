@@ -33,8 +33,8 @@ ViewerVersion::Parser::Parser(const char* verStr)
 	tList<tStringItem> components;
 	tStd::tExplode(components, tString(verStr), '.');
 
-	tStringItem* comp = components.First();	Major = comp->GetAsInt(10);
-	comp = comp->Next();					Minor = comp->GetAsInt(10);
-	comp = comp->Next();					Revision = comp->GetAsInt(10);
+	tStringItem* comp = components.First();		Major = comp->GetAsInt(10);
+	comp = comp->Next();						Minor = comp->GetAsInt(10);
+	comp = comp->Next();						Revision = comp->GetAsInt(10);
 	Parsed = true;
 }
