@@ -295,7 +295,7 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
-			Info.SrcPixelFormat = ico.GetBestSrcPixelFormat();
+			Info.SrcPixelFormat = ico.GetPixelFormatSrc();
 			Info.SrcColourProfile = tColourProfile::sRGB;
 			int numFrames = ico.GetNumFrames();
 			for (int p = 0; p < numFrames; p++)
@@ -432,6 +432,8 @@ bool Image::Load(bool loadParamsFromConfig)
 				break;
 
 			Info.SrcPixelFormat = webp.GetPixelFormatSrc();
+			BackgroundColourOverride = webp.BackgroundColour;
+
 			int numFrames = webp.GetNumFrames();
 			for (int f = 0; f < numFrames; f++)
 			{
@@ -441,7 +443,6 @@ bool Image::Load(bool loadParamsFromConfig)
 				tPicture* picture = new tPicture(frame, true);
 				Pictures.Append(picture);
 			}
-			BackgroundColourOverride = webp.BackgroundColour;
 			success = true;
 			break;
 		}
