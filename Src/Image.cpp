@@ -194,6 +194,7 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
+			Info.SrcPixelFormat = apng.GetPixelFormatSrc();
 			int numFrames = apng.GetNumFrames();
 			for (int f = 0; f < numFrames; f++)
 			{
@@ -203,7 +204,6 @@ bool Image::Load(bool loadParamsFromConfig)
 				tPicture* picture = new tPicture(frame, true);
 				Pictures.Append(picture);
 			}
-			Info.SrcPixelFormat = apng.PixelFormatSrc;
 			success = true;
 			break;
 		}
@@ -215,11 +215,11 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
+			Info.SrcPixelFormat = bmp.GetPixelFormatSrc();
 			int width = bmp.GetWidth();
 			int height = bmp.GetHeight();
 			tPixel* pixels = bmp.StealPixels();
 
-			Info.SrcPixelFormat = bmp.PixelFormatSrc;
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
 			success = true;
@@ -233,6 +233,7 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
+			Info.SrcPixelFormat = exr.GetPixelFormatSrc();
 			int numFrames = exr.GetNumFrames();
 			for (int f = 0; f < numFrames; f++)
 			{
@@ -242,7 +243,6 @@ bool Image::Load(bool loadParamsFromConfig)
 				tPicture* picture = new tPicture(frame, true);
 				Pictures.Append(picture);
 			}
-			Info.SrcPixelFormat = exr.PixelFormatSrc;
 			success = true;
 			break;
 		}
@@ -254,6 +254,7 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
+			Info.SrcPixelFormat = gif.GetPixelFormatSrc();
 			int numFrames = gif.GetNumFrames();
 			for (int f = 0; f < numFrames; f++)
 			{
@@ -264,7 +265,6 @@ bool Image::Load(bool loadParamsFromConfig)
 				tPicture* picture = new tPicture(frame, true);
 				Pictures.Append(picture);
 			}
-			Info.SrcPixelFormat = gif.PixelFormatSrc;
 			success = true;
 			break;
 		}
@@ -276,12 +276,12 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
+			Info.SrcPixelFormat = hdr.GetPixelFormatSrc();
+			Info.SrcColourProfile = tColourProfile::lRGB;
 			int width = hdr.GetWidth();
 			int height = hdr.GetHeight();
 			tPixel* pixels = hdr.StealPixels();
 
-			Info.SrcPixelFormat = hdr.PixelFormatSrc;
-			Info.SrcColourProfile = tColourProfile::lRGB;
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
 			success = true;
@@ -327,12 +327,12 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
+			Info.SrcPixelFormat = jpg.GetPixelFormatSrc();
+			Info.SrcColourProfile = tColourProfile::sRGB;
 			int width = jpg.GetWidth();
 			int height = jpg.GetHeight();
 			tPixel* pixels = jpg.StealPixels();
 
-			Info.SrcPixelFormat = jpg.PixelFormatSrc;
-			Info.SrcColourProfile = tColourProfile::sRGB;
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
 
@@ -356,11 +356,11 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
+			Info.SrcPixelFormat = png.GetPixelFormatSrc();
 			int width = png.GetWidth();
 			int height = png.GetHeight();
 			tPixel* pixels = png.StealPixels();
 
-			Info.SrcPixelFormat = png.PixelFormatSrc;
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
 			success = true;
@@ -374,11 +374,10 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
+			Info.SrcPixelFormat = tga.GetPixelFormatSrc();
 			int width = tga.GetWidth();
 			int height = tga.GetHeight();
 			tPixel* pixels = tga.StealPixels();
-
-			Info.SrcPixelFormat = tga.PixelFormatSrc;
 
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
@@ -393,9 +392,9 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
+			Info.SrcPixelFormat = qoi.GetPixelFormatSrc();
 			int width = qoi.GetWidth();
 			int height = qoi.GetHeight();
-			Info.SrcPixelFormat = qoi.PixelFormatSrc;
 			tPixel* pixels = qoi.StealPixels();
 
 			tPicture* picture = new tPicture(width, height, pixels, false);
@@ -411,6 +410,7 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
+			Info.SrcPixelFormat = tiff.GetPixelFormatSrc();
 			int numFrames = tiff.GetNumFrames();
 			for (int f = 0; f < numFrames; f++)
 			{
@@ -420,7 +420,6 @@ bool Image::Load(bool loadParamsFromConfig)
 				tPicture* picture = new tPicture(frame, true);
 				Pictures.Append(picture);
 			}
-			Info.SrcPixelFormat = tiff.PixelFormatSrc;
 			success = true;
 			break;
 		}
@@ -432,6 +431,7 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
+			Info.SrcPixelFormat = webp.GetPixelFormatSrc();
 			int numFrames = webp.GetNumFrames();
 			for (int f = 0; f < numFrames; f++)
 			{
@@ -441,7 +441,6 @@ bool Image::Load(bool loadParamsFromConfig)
 				tPicture* picture = new tPicture(frame, true);
 				Pictures.Append(picture);
 			}
-			Info.SrcPixelFormat = webp.PixelFormatSrc;
 			BackgroundColourOverride = webp.BackgroundColour;
 			success = true;
 			break;
@@ -463,14 +462,15 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok || !dds.IsValid())
 				break;
 
+			Info.SrcPixelFormat = dds.GetPixelFormatSrc();
+			Info.SrcColourProfile = dds.GetColourProfileSrc();
+
 			// Appends to the Pictures list.
 			PopulatePicturesDDS(dds);
 
 			// Creates any alt images for cubemap or mipmapped dds files.
 			CreateAltPicturesDDS(dds);
 
-			Info.SrcPixelFormat = dds.GetPixelFormatSrc();
-			Info.SrcColourProfile = dds.GetColourProfileSrc();
 			success = true;
 			break;
 		}
@@ -491,15 +491,15 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok || !pvr.IsValid())
 				break;
 
+			Info.SrcPixelFormat = pvr.GetPixelFormatSrc();
+			Info.SrcColourProfile = pvr.GetColourProfileSrc();
+
 			// Appends to the Pictures list.
 			PopulatePicturesPVR(pvr);
 
 			// WIP.
 			// Creates any alt images for cubemap or mipmapped pvr files.
 			// CreateAltPicturesPVR(pvr);
-
-			Info.SrcPixelFormat = pvr.GetPixelFormatSrc();
-			Info.SrcColourProfile = pvr.GetColourProfileSrc();
 			success = true;
 			break;
 		}
@@ -512,14 +512,15 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok || !ktx.IsValid())
 				break;
 
+			Info.SrcPixelFormat = ktx.GetPixelFormatSrc();
+			Info.SrcColourProfile = ktx.GetColourProfileSrc();
+
 			// Appends to the Pictures list.
 			PopulatePicturesKTX(ktx);
 
 			// Creates any alt images for cubemap or mipmapped ktx files.
 			CreateAltPicturesKTX(ktx);
 
-			Info.SrcPixelFormat = ktx.GetPixelFormatSrc();
-			Info.SrcColourProfile = ktx.GetColourProfileSrc();
 			success = true;
 			break;
 		}
@@ -531,9 +532,9 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
+			Info.SrcPixelFormat = astc.GetPixelFormatSrc();
 			int width = astc.GetWidth();
 			int height = astc.GetHeight();
-			Info.SrcPixelFormat = astc.GetPixelFormatSrc();
 
 			tLayer* layer = astc.StealLayer();
 			tAssert(layer && (layer->PixelFormat == tPixelFormat::R8G8B8A8));
@@ -556,10 +557,10 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
-			int width = pkm.GetWidth();
-			int height = pkm.GetHeight();
 			Info.SrcPixelFormat = pkm.GetPixelFormatSrc();
 			Info.SrcColourProfile = pkm.GetColourProfileSrc();
+			int width = pkm.GetWidth();
+			int height = pkm.GetHeight();
 
 			tLayer* layer = pkm.StealLayer();
 			tAssert(layer && (layer->PixelFormat == tPixelFormat::R8G8B8A8));
