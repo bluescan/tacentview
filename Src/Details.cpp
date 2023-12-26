@@ -57,15 +57,7 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 
 		ShowToolTip
 		(
-			"Right-Click to Change Anchor\n"
-			"\n"
-			"The Colour Profile is a best guess at the type of pixel data present.\n"
-			"LDR means low dynamic range (0.0 to 1.0). HDR means values above 1.0\n\n"
-			"sRGB : LDR RGB in the sRGB colour space. LDR alpha in linear space.\n"
-			"gRGB : LDR RGB in gamma colour space. LDR alpha in linear space.\n"
-			"lRGB : LDR RGBA all in linear space.\n"
-			"HDRa : HDR RGB in linear space. LDR alpha in linear space.\n"
-			"HDRA : HDR RGBA all in linear space.\n"
+			"Right-Click to Change Anchor"
 		);
 		ImGui::Separator();
 
@@ -107,6 +99,54 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 				const char* colourProfileName = tGetColourProfileShortName(info.SrcColourProfile);
 				tAssert(colourProfileName);
 				ImGui::Text("Colour Profile: %s", colourProfileName);
+				ShowToolTip
+				(
+					"The Colour Profile is a best guess at the type of pixel data present.\n"
+					"LDR means low dynamic range (0.0 to 1.0). HDR means values above 1.0\n\n"
+					"sRGB : LDR RGB in the sRGB colour space. LDR alpha in linear space.\n"
+					"gRGB : LDR RGB in gamma colour space. LDR alpha in linear space.\n"
+					"lRGB : LDR RGBA all in linear space.\n"
+					"HDRa : HDR RGB in linear space. LDR alpha in linear space.\n"
+					"HDRA : HDR RGBA all in linear space."
+				);
+
+				// Only display AlphaMode and ChannelType if they are specified. Most image formats will not
+				// be able to provide these values so we don't want to waste screen real-estate.
+				if (info.AlphaMode != tAlphaMode::Unspecified)
+				{
+					const char* alphaModeName = tGetAlphaModeShortName(info.AlphaMode);
+					tAssert(alphaModeName);
+					ImGui::Text("Alpha Mode: %s", alphaModeName);
+					ShowToolTip
+					(
+						"The Alpha Mode specifies whether the alpha has been premultiplied into\n"
+						"the colour channels. Mult means is has. Norm means is hasn't.\n"
+						"\n"
+						"Not all images supply this information, so it may not be displayed."
+					);
+				}
+
+				if (info.ChannelType != tChannelType::Unspecified)
+				{
+					const char* channelTypeName = tGetChannelTypeShortName(info.ChannelType);
+					tAssert(channelTypeName);
+					ImGui::Text("Channel Type: %s", channelTypeName);
+					ShowToolTip
+					(
+						"The Channel Type specifies how the data was intended to be interpreted\n"
+						"by a graphics API. UINT8N means unsigned 8-bit integer data should be\n"
+						"sampled as normalized data in the 0.0 to 1.0 range. UINT8N, UINT16N,\n"
+						"and UINT32N all correspond to the Vulkan and DirectX UNORM specifier.\n"
+						"\n"
+						"If there is no N, like SINT8, it should be interpreted as an integer. In this\n"
+						"case a signed integer in the range [-128, 127]. Channel types also include\n"
+						"UFLOAT, SFLOAT, UHALF, SHALF. Half-precision floats are supported\n"
+						"natively in some variants of HLSL and GLSL while other variants use full-\n"
+						"precision under the hood.\n"
+						"\n"
+						"Not all images supply this information, so it may not be displayed."
+					);
+				}
 
 				ImGui::Text("Bits Per Pixel: %s", bppStr.Chr());
 				switch (info.Opacity)

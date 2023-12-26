@@ -181,8 +181,10 @@ bool Image::Load(bool loadParamsFromConfig)
 	if ((Filetype == tSystem::tFileType::PNG) && detectAPNGInsidePNG && tImageAPNG::IsAnimatedPNG(Filename))
 		loadingFiletype = tSystem::tFileType::APNG;
 
-	Info.SrcPixelFormat = tPixelFormat::Invalid;
-	Info.SrcColourProfile = tColourProfile::Unspecified;
+	Info.SrcPixelFormat		= tPixelFormat::Invalid;
+	Info.SrcColourProfile	= tColourProfile::Unspecified;
+	Info.AlphaMode			= tAlphaMode::Unspecified;
+	Info.ChannelType		= tChannelType::Unspecified;
 	bool success = false;
 
 	switch (loadingFiletype)
@@ -276,8 +278,8 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
-			Info.SrcPixelFormat = hdr.GetPixelFormatSrc();
-			Info.SrcColourProfile = tColourProfile::lRGB;
+			Info.SrcPixelFormat		= hdr.GetPixelFormatSrc();
+			Info.SrcColourProfile	= hdr.GetColourProfileSrc();
 			int width = hdr.GetWidth();
 			int height = hdr.GetHeight();
 			tPixel* pixels = hdr.StealPixels();
@@ -295,8 +297,8 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
-			Info.SrcPixelFormat = ico.GetPixelFormatSrc();
-			Info.SrcColourProfile = tColourProfile::sRGB;
+			Info.SrcPixelFormat		= ico.GetPixelFormatSrc();
+			Info.SrcColourProfile	= ico.GetColourProfileSrc();
 			int numFrames = ico.GetNumFrames();
 			for (int p = 0; p < numFrames; p++)
 			{
@@ -327,8 +329,8 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
-			Info.SrcPixelFormat = jpg.GetPixelFormatSrc();
-			Info.SrcColourProfile = tColourProfile::sRGB;
+			Info.SrcPixelFormat		= jpg.GetPixelFormatSrc();
+			Info.SrcColourProfile	= jpg.GetColourProfileSrc();
 			int width = jpg.GetWidth();
 			int height = jpg.GetHeight();
 			tPixel* pixels = jpg.StealPixels();
@@ -463,8 +465,10 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok || !dds.IsValid())
 				break;
 
-			Info.SrcPixelFormat = dds.GetPixelFormatSrc();
-			Info.SrcColourProfile = dds.GetColourProfileSrc();
+			Info.SrcPixelFormat		= dds.GetPixelFormatSrc();
+			Info.SrcColourProfile	= dds.GetColourProfileSrc();
+			Info.AlphaMode			= dds.GetAlphaMode();
+			Info.ChannelType		= dds.GetChannelType();
 
 			// Appends to the Pictures list.
 			PopulatePicturesDDS(dds);
@@ -492,8 +496,10 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok || !pvr.IsValid())
 				break;
 
-			Info.SrcPixelFormat = pvr.GetPixelFormatSrc();
-			Info.SrcColourProfile = pvr.GetColourProfileSrc();
+			Info.SrcPixelFormat		= pvr.GetPixelFormatSrc();
+			Info.SrcColourProfile	= pvr.GetColourProfileSrc();
+			Info.AlphaMode			= pvr.GetAlphaMode();
+			Info.ChannelType		= pvr.GetChannelType();
 
 			// Appends to the Pictures list.
 			PopulatePicturesPVR(pvr);
@@ -513,8 +519,10 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok || !ktx.IsValid())
 				break;
 
-			Info.SrcPixelFormat = ktx.GetPixelFormatSrc();
-			Info.SrcColourProfile = ktx.GetColourProfileSrc();
+			Info.SrcPixelFormat		= ktx.GetPixelFormatSrc();
+			Info.SrcColourProfile	= ktx.GetColourProfileSrc();
+			Info.AlphaMode			= ktx.GetAlphaMode();
+			Info.ChannelType		= ktx.GetChannelType();
 
 			// Appends to the Pictures list.
 			PopulatePicturesKTX(ktx);
@@ -558,8 +566,8 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
-			Info.SrcPixelFormat = pkm.GetPixelFormatSrc();
-			Info.SrcColourProfile = pkm.GetColourProfileSrc();
+			Info.SrcPixelFormat		= pkm.GetPixelFormatSrc();
+			Info.SrcColourProfile	= pkm.GetColourProfileSrc();
 			int width = pkm.GetWidth();
 			int height = pkm.GetHeight();
 
