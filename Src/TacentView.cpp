@@ -139,6 +139,20 @@ namespace Viewer
 		tFileType::EOL
 	);
 
+	tFileTypes FileTypes_SupportsProperties
+	{
+		tFileType::HDR,
+		tFileType::EXR,
+		tFileType::DDS,
+		tFileType::PVR,
+		tFileType::KTX,
+		tFileType::KTX2,
+		tFileType::ASTC,
+		tFileType::PKM,
+		tFileType::WEBP,
+		tFileType::EOL
+	};
+
 	// When a paste happens the file that gets created must not be lossy. These formats either
 	// only support lossless or have it as an option like webp.
 	tFileTypes FileTypes_ClipboardPaste
@@ -830,7 +844,7 @@ void Viewer::AutoPropertyWindow()
 {
 	Config::ProfileData& profile = Config::GetProfileData();
 	if (profile.AutoPropertyWindow && CurrImage)
-		profile.ShowPropsWindow = (CurrImage->TypeSupportsProperties() || (CurrImage->GetNumFrames() > 1));
+		profile.ShowPropsWindow = FileTypes_SupportsProperties.Contains(CurrImage->Filetype) || (CurrImage->GetNumFrames() > 1);
 
 	if (SlideshowPlaying)
 		profile.ShowPropsWindow = false;

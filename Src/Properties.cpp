@@ -273,6 +273,130 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			return;
 		}
 
+		case tSystem::tFileType::PVR:
+		{
+			bool anyUIDisplayed = false;
+			int numTextures = CurrImage->GetNumFrames();
+			bool reloadChanges = false;
+
+			tString texTypeName = "Texture";
+			// anyUIDisplayed |= DoAltMipmapsDisplay(texTypeName);
+			// anyUIDisplayed |= DoAltCubemapDisplay(texTypeName);
+			anyUIDisplayed |= DoChooseDisplayImage(texTypeName, itemWidth);
+
+			// If we're here show options when have 1 or more frames.
+			bool altEnabled = CurrImage->IsAltPictureEnabled();
+
+			// Gamma correction. First read current setting and put it in an int.
+			int gammaMode = 0;
+			if (CurrImage->LoadParams_PVR.Flags & tImagePVR::LoadFlag_GammaCompression)
+				gammaMode = 1;
+			if (CurrImage->LoadParams_PVR.Flags & tImagePVR::LoadFlag_SRGBCompression)
+				gammaMode = 2;
+			if (CurrImage->LoadParams_PVR.Flags & tImagePVR::LoadFlag_AutoGamma)
+				gammaMode = 3;
+			const char* gammaCorrectItems[] = { "None", "Gamma", "sRGB", "Auto" };
+			ImGui::SetNextItemWidth(itemWidth);
+			if (ImGui::Combo("Gamma Corr", &gammaMode, gammaCorrectItems, tNumElements(gammaCorrectItems)))
+			{
+				CurrImage->LoadParams_PVR.Flags &= ~(tImagePVR::LoadFlag_GammaCompression | tImagePVR::LoadFlag_SRGBCompression | tImagePVR::LoadFlag_AutoGamma);
+				if (gammaMode == 1) CurrImage->LoadParams_PVR.Flags |= tImagePVR::LoadFlag_GammaCompression;
+				if (gammaMode == 2) CurrImage->LoadParams_PVR.Flags |= tImagePVR::LoadFlag_SRGBCompression;
+				if (gammaMode == 3) CurrImage->LoadParams_PVR.Flags |= tImagePVR::LoadFlag_AutoGamma;
+				reloadChanges = true;
+			}
+			ImGui::SameLine();
+			ShowHelpMark
+			(
+				"Gamma Correction\n"
+				"Pixel values may be in linear space. Before being displayed on a screen with non-linear response\n"
+				"they should be 'corrected' to gamma or sRGB-space (brightened).\n"
+				"\n"
+				"None : If you know the source image data is already in either gamma or sRGB-space.\n"
+				"Gamma : If you want control over the gamma exponent being used to do the correction. 2.2 is standard.\n"
+				"sRGB : If you want to convert to sRGB-space. This more accurately represents a display's response and\n"
+				"   is close to a 2.2 gamma but with an extra linear region and a non-unity amplitude.\n"
+				"Auto : Let the viewer decide whether to apply sRGB compression based on the detected colour profile.\n",
+				false
+			);
+			if (gammaMode == 1)
+			{
+				ImGui::SetNextItemWidth(itemWidth);
+				if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_PVR.Gamma, 0.01f, 0.1f, "%.3f"))
+					reloadChanges = true;
+				ImGui::SameLine();
+				ShowHelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
+				tMath::tiClamp(CurrImage->LoadParams_PVR.Gamma, 0.5f, 4.0f);
+			}
+			anyUIDisplayed = true;
+
+			if (tIsHDRFormat(CurrImage->Info.SrcPixelFormat) || tIsASTCFormat(CurrImage->Info.SrcPixelFormat))
+			{
+				bool expEnabled = (CurrImage->LoadParams_PVR.Flags & tImagePVR::LoadFlag_ToneMapExposure);
+				ImGui::SetNextItemWidth(itemWidth);
+				if (ImGui::InputFloat("Exposure", &CurrImage->LoadParams_PVR.Exposure, 0.001f, 0.05f, "%.4f", expEnabled ? 0 : ImGuiInputTextFlags_ReadOnly))
+					reloadChanges = true;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+				ImGui::SameLine();
+				if (ImGui::CheckboxFlags("##ExposureEnabled", &CurrImage->LoadParams_PVR.Flags, tImagePVR::LoadFlag_ToneMapExposure))
+					reloadChanges = true;
+				ImGui::SameLine();
+				ShowHelpMark("Exposure adjustment [0.0, 4]. Hold Ctrl to speedup.");
+				tMath::tiClamp(CurrImage->LoadParams_PVR.Exposure, 0.0f, 4.0f);
+
+				anyUIDisplayed = true;
+			}
+
+			if (tIsLuminanceFormat(CurrImage->Info.SrcPixelFormat))
+			{
+				if (ImGui::CheckboxFlags("Spread Luminance", &CurrImage->LoadParams_PVR.Flags, tImagePVR::LoadFlag_SpreadLuminance))
+					reloadChanges = true;
+				ImGui::SameLine();
+				ShowHelpMark("Luminance-only pvr files are represented in this viewer as having a red channel only,\nIf spread is true, the channel is spread to all RGB channels to create a grey-scale image.");
+			}
+
+			bool scrubberDisplayed = false;
+			if ((numTextures >= 2) && !altEnabled)
+			{
+				ImGui::Checkbox("Scrubber", &profile.ShowFrameScrubber);
+				anyUIDisplayed = true;
+				scrubberDisplayed = true;
+			}
+
+			if (anyUIDisplayed)
+			{
+				if (scrubberDisplayed)
+					ImGui::SameLine();
+
+				// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
+				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - itemWidth);
+				if (ImGui::Button("Reset", tVector2(itemWidth, 0.0f)))
+				{
+					CurrImage->ResetLoadParams();
+					CurrImage->FrameNum = 0;
+					reloadChanges = true;
+				}
+			}
+
+			if (reloadChanges)
+			{
+				CurrImage->Unload();
+				CurrImage->Load();
+				if (altEnabled)
+				{
+					CurrImage->EnableAltPicture(true);
+					CurrImage->Bind();
+				}
+			}
+
+			// Some PVR files have no available properties. No textures, no properties.
+			// Only one texture and not HDR and no alt images (no mipmaps or cubemap) -> no properties.
+			if (!anyUIDisplayed)
+				ImGui::Text("No PVR Properties Available");
+
+			ImGui::End();
+			return;
+		}
+
 		case tSystem::tFileType::KTX:
 		case tSystem::tFileType::KTX2:
 		{

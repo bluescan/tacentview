@@ -48,7 +48,7 @@ There are two main modes in which _Tacent View_ may be used: **GUI** and **CLI**
 ---
 ## Image Formats
 
-Loads: _TGA PNG/APNG JPG GIF WEBP QOI DDS KTX/KTX2 ASTC/ASC PKM EXR HDR/RGB BMP ICO TIF/TIFF_
+Loads: _TGA PNG/APNG JPG GIF WEBP QOI DDS PVR KTX/KTX2 ASTC/ASC PKM EXR HDR/RGB BMP ICO TIF/TIFF_
 
 Saves: _TGA PNG/APNG JPG GIF WEBP QOI BMP TIF/TIFF_
 

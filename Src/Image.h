@@ -278,8 +278,6 @@ public:
 	const static int ThumbMinDispWidth;					// = 64;
 	static tString ThumbCacheDir;
 
-	bool TypeSupportsProperties() const;
-
 	// Zoom can be stored per-image so we can flip between images without losing the setting.
 	Config::ProfileData::ZoomModeEnum ZoomMode = Config::ProfileData::ZoomModeEnum::DownscaleOnly;
 	float ZoomPercent = 100.0f;
@@ -348,22 +346,6 @@ private:
 
 
 // Implementation below.
-
-
-inline bool Image::TypeSupportsProperties() const
-{
-	return
-	(
-		(Filetype == tSystem::tFileType::HDR) ||
-		(Filetype == tSystem::tFileType::EXR) ||
-		(Filetype == tSystem::tFileType::DDS) ||
-		(Filetype == tSystem::tFileType::KTX) ||
-		(Filetype == tSystem::tFileType::KTX2) ||
-		(Filetype == tSystem::tFileType::ASTC) ||
-		(Filetype == tSystem::tFileType::PKM) ||
-		(Filetype == tSystem::tFileType::WEBP)
-	);
-}
 
 
 inline comp_t Image::ComponentBits(AdjChan channels)

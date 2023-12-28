@@ -1,7 +1,7 @@
 ![Build](https://github.com/bluescan/tacentview/workflows/Build/badge.svg) [![latest](https://img.shields.io/github/v/release/bluescan/tacentview.svg)](https://github.com/bluescan/tacentview/releases) [![tacentview](https://snapcraft.io//tacentview/badge.svg)](https://snapcraft.io/tacentview)
 
 # tacent view
-An image and texture viewer for tga, png, apng, exr, dds, ktx, ktx2, astc, pkm, qoi, gif, hdr, jpg, tiff, ico, webp, and bmp files. Built on DearImGui and the Tacent library, the viewer has robust support for pixel-formats used during game/mobile development including BC1-7, ASTC and ETC. Editing functionality includes batch-resizing, rotations/flips, contact-sheet/flipbook generation, cropping, levels adjustments, etc. Tacent View can save tga, png, bmp, qoi, jpg, (animated) webp, (animated) gif, (animated) apng, and (animated) tiff files.
+An image and texture viewer for tga, png, apng, exr, dds, pvr, ktx, ktx2, astc, pkm, qoi, gif, hdr, jpg, tiff, ico, webp, and bmp files. Built on DearImGui and the Tacent library, the viewer has robust support for pixel-formats used during game/mobile development including BC1-7, ASTC and ETC. Editing functionality includes batch-resizing, rotations/flips, contact-sheet/flipbook generation, cropping, levels adjustments, etc. Tacent View can save tga, png, bmp, qoi, jpg, (animated) webp, (animated) gif, (animated) apng, and (animated) tiff files.
 
 As a photo viewer it can handle large collections and generate/retrieve thumbnails very quickly. The slideshow mode can display photos in any order, including fields stored in the EXIF meta-data of jpeg files (like latitude, or aperture, etc).
 

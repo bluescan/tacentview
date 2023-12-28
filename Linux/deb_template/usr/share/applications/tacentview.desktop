@@ -8,6 +8,6 @@ Icon=tacentview.png
 Terminal=false
 Type=Application
 Categories=Development;Graphics;
-MimeType=image/x-dds;image/ktx;image/ktx2;image/qoi;image/astc;image/pkm;image/x-exr;image/gif;image/jpeg;text/x-mpsub;image/png;image/x-tga;image/tiff;image/webp;image/bmp;image/vnd.microsoft.icon;
+MimeType=image/x-dds;image/x-pvr;image/ktx;image/ktx2;image/qoi;image/astc;image/pkm;image/x-exr;image/gif;image/jpeg;text/x-mpsub;image/png;image/x-tga;image/tiff;image/webp;image/bmp;image/vnd.microsoft.icon;
 StartupNotify=false
 Keywords=hdr;exr;webp;development;programming;image;viewer;
