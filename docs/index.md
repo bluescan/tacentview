@@ -123,8 +123,8 @@ Some image formats are often used to store texture data that is easily decompres
 | **Block (BC)**  |                 |                 |                 |
 |-----------------|-----------------|-----------------|-----------------|
 | BC1DXT1         | BC1DXT1A        | BC2DXT2DXT3     | BC3DXT4DXT5     |
-| BC4ATI1         | BC5ATI2         | BC6U            | BC6S            |
-| BC7             |                 |                 |                 |
+| BC4ATI1U        | BC4ATI1S        | BC5ATI2U        | BC5ATI2S        |
+| BC6U            | BC6S            | BC7             |                 |
 |                 |                 |                 |                 |
 | **Block (ETC)** |                 |                 |                 |
 |-----------------|-----------------|-----------------|-----------------|
