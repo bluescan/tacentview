@@ -324,9 +324,9 @@ bool Image::Load(bool loadParamsFromConfig)
 				else if (!profile.StrictLoading && (params.Flags & tImageJPG::LoadFlag_Strict))
 					params.Flags &= ~tImageJPG::LoadFlag_Strict;
 
-				if (profile.ExifOrientLoading && !(params.Flags & tImageJPG::LoadFlag_ExifOrient))
+				if (profile.MetaDataOrientLoading && !(params.Flags & tImageJPG::LoadFlag_ExifOrient))
 					params.Flags |= tImageJPG::LoadFlag_ExifOrient;
-				else if (!profile.ExifOrientLoading && (params.Flags & tImageJPG::LoadFlag_ExifOrient))
+				else if (!profile.MetaDataOrientLoading && (params.Flags & tImageJPG::LoadFlag_ExifOrient))
 					params.Flags &= ~tImageJPG::LoadFlag_ExifOrient;
 			}
 
@@ -496,9 +496,9 @@ bool Image::Load(bool loadParamsFromConfig)
 				else if (!profile.StrictLoading && (params.Flags & tImagePVR::LoadFlag_StrictLoading))
 					params.Flags &= ~tImagePVR::LoadFlag_StrictLoading;
 
-				if (profile.PVR3OrientLoading && !(params.Flags & tImagePVR::LoadFlag_MetaDataOrient))
+				if (profile.MetaDataOrientLoading && !(params.Flags & tImagePVR::LoadFlag_MetaDataOrient))
 					params.Flags |= tImagePVR::LoadFlag_MetaDataOrient;
-				else if (!profile.PVR3OrientLoading && (params.Flags & tImagePVR::LoadFlag_MetaDataOrient))
+				else if (!profile.MetaDataOrientLoading && (params.Flags & tImagePVR::LoadFlag_MetaDataOrient))
 					params.Flags &= ~tImagePVR::LoadFlag_MetaDataOrient;
 			}
 
