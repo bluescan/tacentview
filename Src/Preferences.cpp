@@ -350,7 +350,17 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				CurrImage->Load();
 			}
 			ImGui::SameLine();
-			ShowHelpMark("If Exif meta-data contains camera orientation information this will take it into account\nwhen loading and display the image the correctly oriented/flipped. Mostly affects jpg files.");
+			ShowHelpMark("If Exif meta-data contains camera orientation information this will take it into account\nwhen loading and displaying the image correctly oriented/flipped. Mostly affects jpg files.");
+
+			if (ImGui::Checkbox("PVR3 Orient Loading", &profile.PVR3OrientLoading))
+			{
+				// This is not efficient but forces changes to the orient loading to be displayed correctly live.
+				for (Image* i = Images.First(); i; i = i->Next())
+					i->Unload(true);
+				CurrImage->Load();
+			}
+			ImGui::SameLine();
+			ShowHelpMark("If PVR3 meta-data contains orientation information this will take it into account\nwhen loading and displaying the image correctly flipped. Affects pvr files.");
 
 			ImGui::Checkbox("Detect APNG Inside PNG", &profile.DetectAPNGInsidePNG); ImGui::SameLine();
 			ShowHelpMark("Some png image files are really apng files. If detecton is true these png files will be displayed animated.");

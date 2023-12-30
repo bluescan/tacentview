@@ -319,10 +319,15 @@ bool Image::Load(bool loadParamsFromConfig)
 			tImageJPG::LoadParams params = LoadParams_JPG;
 			if (loadParamsFromConfig)
 			{
-				params.Reset();
-				params.Flags =
-					(profile.StrictLoading		? tImageJPG::LoadFlag_Strict		: 0) |
-					(profile.ExifOrientLoading	? tImageJPG::LoadFlag_ExifOrient	: 0);
+				if (profile.StrictLoading && !(params.Flags & tImageJPG::LoadFlag_Strict))
+					params.Flags |= tImageJPG::LoadFlag_Strict;
+				else if (!profile.StrictLoading && (params.Flags & tImageJPG::LoadFlag_Strict))
+					params.Flags &= ~tImageJPG::LoadFlag_Strict;
+
+				if (profile.ExifOrientLoading && !(params.Flags & tImageJPG::LoadFlag_ExifOrient))
+					params.Flags |= tImageJPG::LoadFlag_ExifOrient;
+				else if (!profile.ExifOrientLoading && (params.Flags & tImageJPG::LoadFlag_ExifOrient))
+					params.Flags &= ~tImageJPG::LoadFlag_ExifOrient;
 			}
 
 			bool ok = jpg.Load(Filename, params);
@@ -349,9 +354,10 @@ bool Image::Load(bool loadParamsFromConfig)
 			tImagePNG::LoadParams params = LoadParams_PNG;
 			if (loadParamsFromConfig)
 			{
-				params.Reset();
-				params.Flags =
-					(!profile.StrictLoading	? tImagePNG::LoadFlag_AllowJPG		: 0);
+				if (profile.StrictLoading && !(params.Flags & tImagePNG::LoadFlag_AllowJPG))
+					params.Flags |= tImagePNG::LoadFlag_AllowJPG;
+				else if (!profile.StrictLoading && (params.Flags & tImagePNG::LoadFlag_AllowJPG))
+					params.Flags &= ~tImagePNG::LoadFlag_AllowJPG;
 			}
 
 			bool ok = png.Load(Filename, params);
@@ -489,6 +495,11 @@ bool Image::Load(bool loadParamsFromConfig)
 					params.Flags |= tImagePVR::LoadFlag_StrictLoading;
 				else if (!profile.StrictLoading && (params.Flags & tImagePVR::LoadFlag_StrictLoading))
 					params.Flags &= ~tImagePVR::LoadFlag_StrictLoading;
+
+				if (profile.PVR3OrientLoading && !(params.Flags & tImagePVR::LoadFlag_MetaDataOrient))
+					params.Flags |= tImagePVR::LoadFlag_MetaDataOrient;
+				else if (!profile.PVR3OrientLoading && (params.Flags & tImagePVR::LoadFlag_MetaDataOrient))
+					params.Flags &= ~tImagePVR::LoadFlag_MetaDataOrient;
 			}
 
 			tImagePVR pvr;

@@ -436,6 +436,7 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		MaxUndoSteps				= 16;
 		StrictLoading				= false;
 		ExifOrientLoading			= true;
+		PVR3OrientLoading			= true;
 		DetectAPNGInsidePNG			= true;
 		MipmapFilter				= int(tImage::tResampleFilter::Bilinear);
 		MipmapChaining				= true;
@@ -571,6 +572,7 @@ void Config::ProfileData::Load(tExpression expr)
 			ReadItem(MaxUndoSteps);
 			ReadItem(StrictLoading);
 			ReadItem(ExifOrientLoading);
+			ReadItem(PVR3OrientLoading);
 			ReadItem(DetectAPNGInsidePNG);
 			ReadItem(MipmapFilter);
 			ReadItem(MipmapChaining);
@@ -750,6 +752,7 @@ bool Config::ProfileData::Save(tExprWriter& writer) const
 	WriteItem(MaxUndoSteps);
 	WriteItem(StrictLoading);
 	WriteItem(ExifOrientLoading);
+	WriteItem(PVR3OrientLoading);
 	WriteItem(DetectAPNGInsidePNG);
 	WriteItem(MipmapFilter);
 	WriteItem(MipmapChaining);
