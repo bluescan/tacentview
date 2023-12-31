@@ -120,7 +120,7 @@ Some image formats are often used to store texture data that is easily decompres
 | R32f            | R32G32f         | R32G32B32A32f   | B10G11R11uf     |
 | E5B9G9R9uf      | R16             | R16G16          | R16G16B16       |
 | R16G16B16A16    | R32             | R32G32          | R32G32B32       |
-| R32G32B32A32    |                 |                 |                 |
+| R32G32B32A32    | R8G8B8M8        | R8G8B8D8        |                 |
 |                 |                 |                 |                 |
 | **Block (BC)**  |                 |                 |                 |
 |-----------------|-----------------|-----------------|-----------------|

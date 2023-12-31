@@ -346,6 +346,16 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				anyUIDisplayed = true;
 			}
 
+			if ((CurrImage->Info.SrcPixelFormat == tPixelFormat::R8G8B8M8) || (CurrImage->Info.SrcPixelFormat == tPixelFormat::R8G8B8D8))
+			{
+				ImGui::SetNextItemWidth(itemWidth);
+				if (ImGui::InputFloat("MaxRange", &CurrImage->LoadParams_PVR.MaxRange, 0.01f, 1.0f, "%.3f"))
+					reloadChanges = true;
+				ImGui::SameLine();
+				ShowHelpMark("Max range to use [0.01, 128.0] for decoding RGBM and RGBD images. Hold Ctrl to speedup.");
+				tMath::tiClamp(CurrImage->LoadParams_PVR.MaxRange, 0.01f, 128.0f);
+			}
+
 			if (tIsLuminanceFormat(CurrImage->Info.SrcPixelFormat))
 			{
 				if (ImGui::CheckboxFlags("Spread Luminance", &CurrImage->LoadParams_PVR.Flags, tImagePVR::LoadFlag_SpreadLuminance))
