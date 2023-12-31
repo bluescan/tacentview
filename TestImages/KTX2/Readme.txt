@@ -10,7 +10,7 @@ HDR Test Images
 BC6s_RGB.ktx2 and all of the signed-floating-point ktx2 files were generated from a proper floating-point source image (Desk.exr from a directory up). They are all in linear-space as NVTT automatically converts sRGB source data to linear for all HRD/floating-point formats. The way NVTT works is it looks at the input file-type and assumes that non-floating-point files are in sRGB. When
 saving NVTT puts any floating-point output in linear-space.
 
-NVTT does not support unsigned floating-point exports (including BC6u).
+NVTT does not support unsigned floating-point exports (including BC6U).
 
 If you run the unit-tests there will be a bunch of tga's written to the KTX2 folder. They all take the form
 Written_Format_Channels_Flags.tga
