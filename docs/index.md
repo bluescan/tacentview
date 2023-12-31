@@ -109,7 +109,7 @@ Animates: _GIF WEBP APNG TIF/TIFF_
 ---
 ## Texture Pixel Formats
 
-Some image formats are often used to store texture data that is easily decompressable by a GPU -- DDS, KTX, KTX2, ASTC, and PKM files are examples. Tacent View supports the following texture formats for these types of files:
+Some image formats are often used to store texture data that is easily decompressable by a GPU -- DDS, PVR, KTX, KTX2, ASTC, and PKM files are examples. Tacent View supports the following texture formats for these types of files:
 
 | **Packed**      |                 |                 |                 |
 |-----------------|-----------------|-----------------|-----------------|
