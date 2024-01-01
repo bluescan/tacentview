@@ -1,4 +1,5 @@
-If PVRFMT == TACFMT the filename will be just FMT_TYPE_SPC_CHANS_FLAGS.pvr
+If PVRFMT == TACFMT the filename will be just FMT_TYPE_COLPRF_CHANS_FLAGS.pvr
+The COLPRF is the colour profile which gives a bit more information than just the colour space.
 
 Flags:
 T = Regular 2D texture.
