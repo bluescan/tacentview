@@ -921,10 +921,13 @@ void Viewer::LoadCurrImage()
 
 bool Viewer::OnNextImage(bool next)
 {
+	if (!CurrImage)
+		return false;
+
 	Config::ProfileData& profile = Config::GetProfileData();
 	bool circ = SlideshowPlaying && profile.SlideshowLooping;
 	bool avail = next ? CurrImage->Next() : CurrImage->Prev();
-	if (!CurrImage || (!circ && !avail))
+	if (!circ && !avail)
 		return false;
 
 	if (SlideshowPlaying)

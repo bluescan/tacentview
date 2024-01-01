@@ -114,7 +114,7 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 				// be able to provide these values so we don't want to waste screen real-estate.
 				if (info.AlphaMode != tAlphaMode::Unspecified)
 				{
-					const char* alphaModeName = tGetAlphaModeShortName(info.AlphaMode);
+					const char* alphaModeName = tGetAlphaModeName(info.AlphaMode);
 					tAssert(alphaModeName);
 					ImGui::Text("Alpha Mode: %s", alphaModeName);
 					ShowToolTip
