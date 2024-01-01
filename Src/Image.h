@@ -327,10 +327,11 @@ private:
 	// Returns the approx main mem size of this image. Considers the Pictures list and the AltPicture.
 	int GetMemSizeBytes() const;
 
-	// @todo Combine the KTX and DDS calls.
+	// @todo Combine the DDS, PVR, and KTX calls.
 	void PopulatePicturesDDS(const tImage::tImageDDS&);
 	void CreateAltPicturesDDS(const tImage::tImageDDS&);
 	void PopulatePicturesPVR(const tImage::tImagePVR&);
+	void CreateAltPicturesPVR(const tImage::tImagePVR&);
 	void PopulatePicturesKTX(const tImage::tImageKTX&);
 	void CreateAltPicturesKTX(const tImage::tImageKTX&);
 

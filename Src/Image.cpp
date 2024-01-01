@@ -515,9 +515,8 @@ bool Image::Load(bool loadParamsFromConfig)
 			// Appends to the Pictures list.
 			PopulatePicturesPVR(pvr);
 
-			// WIP.
 			// Creates any alt images for cubemap or mipmapped pvr files.
-			// CreateAltPicturesPVR(pvr);
+			CreateAltPicturesPVR(pvr);
 			success = true;
 			break;
 		}
@@ -956,29 +955,29 @@ void Image::PopulatePicturesDDS(const tImageDDS& dds)
 		int h = dds.GetHeight();
 
 		// We want the front (+Z) to be the first image.
-		const int numSides = tImageDDS::tSurfIndex_NumSurfaces;
-		int sideOrder[numSides] =
+		const int numFaces = tFaceIndex_NumFaces;
+		int faceOrder[numFaces] =
 		{
-			tImageDDS::tSurfIndex_PosZ,
-			tImageDDS::tSurfIndex_NegZ,
-			tImageDDS::tSurfIndex_PosX,
-			tImageDDS::tSurfIndex_NegX,
-			tImageDDS::tSurfIndex_PosY,
-			tImageDDS::tSurfIndex_NegY
+			tFaceIndex_PosZ,
+			tFaceIndex_NegZ,
+			tFaceIndex_PosX,
+			tFaceIndex_NegX,
+			tFaceIndex_PosY,
+			tFaceIndex_NegY
 		};
 
-		tList<tLayer> layers[numSides];
-		dds.GetCubemapLayers(layers);		
-		for (int s = 0; s < int(tImageDDS::tSurfIndex_NumSurfaces); s++)
+		tList<tLayer> layers[numFaces];
+		dds.GetCubemapLayers(layers);
+		for (int f = 0; f < int(tFaceIndex_NumFaces); f++)
 		{
-			int side = sideOrder[s];
+			int face = faceOrder[f];
 
-			tLayer* topMip = layers[side].First();
+			tLayer* topMip = layers[face].First();
 			tAssert(topMip->PixelFormat == tPixelFormat::R8G8B8A8);
 			Pictures.Append(new tPicture(w, h, (tPixel*)topMip->Data, true));
 
 			// Lets reset the list so it doesn't do anything bad when destructed.
-			layers[side].Reset();
+			layers[face].Reset();
 		}
 	}
 	else
@@ -1081,17 +1080,132 @@ void Image::CreateAltPicturesDDS(const tImageDDS& dds)
 
 void Image::PopulatePicturesPVR(const tImagePVR& pvr)
 {
-	int w = pvr.GetWidth();
-	int h = pvr.GetHeight();
+	if (pvr.IsCubemap())
+	{
+		int w = pvr.GetWidth();
+		int h = pvr.GetHeight();
 
-	tList<tLayer> layers;
-	pvr.GetLayers(layers);
+		// We want the front (+Z) to be the first image.
+		const int numFaces = tFaceIndex_NumFaces;
+		int faceOrder[numFaces] =
+		{
+			tFaceIndex_PosZ,
+			tFaceIndex_NegZ,
+			tFaceIndex_PosX,
+			tFaceIndex_NegX,
+			tFaceIndex_PosY,
+			tFaceIndex_NegY
+		};
 
-	int numMipmaps = layers.GetNumItems();
-	for (tLayer* layer = layers.First(); layer; layer = layer->Next())
-		Pictures.Append(new tPicture(layer->Width, layer->Height, (tPixel*)layer->Data, true));
+		tList<tLayer> layers[numFaces];
+		pvr.GetCubemapLayers(layers);
+		for (int f = 0; f < int(tFaceIndex_NumFaces); f++)
+		{
+			int face = faceOrder[f];
 
-	layers.Reset();
+			tLayer* topMip = layers[face].First();
+			tAssert(topMip->PixelFormat == tPixelFormat::R8G8B8A8);
+			Pictures.Append(new tPicture(w, h, (tPixel*)topMip->Data, true));
+
+			// Lets reset the list so it doesn't do anything bad when destructed.
+			layers[face].Reset();
+		}
+	}
+	else
+	{
+		int w = pvr.GetWidth();
+		int h = pvr.GetHeight();
+
+		tList<tLayer> layers;
+		pvr.GetLayers(layers);
+
+		int numMipmaps = layers.GetNumItems();
+		for (tLayer* layer = layers.First(); layer; layer = layer->Next())
+			Pictures.Append(new tPicture(layer->Width, layer->Height, (tPixel*)layer->Data, true));
+
+		layers.Reset();
+	}
+}
+
+
+void Image::CreateAltPicturesPVR(const tImagePVR& pvr)
+{
+	if (pvr.IsCubemap())
+	{
+		int width = Pictures.First()->GetWidth();
+		int height = Pictures.First()->GetHeight();
+
+		AltPicture.Set(width*4, height*3, tPixel::transparent);
+		int originX, originY;
+		
+		// PosZ
+		tPicture* pic = Pictures.First();
+		originX = width; originY = height;
+		for (int y = 0; y < pic->GetHeight(); y++)
+			for (int x = 0; x < pic->GetWidth(); x++)
+				AltPicture.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+
+		// NegZ
+		pic = pic->Next();
+		originX = 3*width; originY = height;
+		for (int y = 0; y < pic->GetHeight(); y++)
+			for (int x = 0; x < pic->GetWidth(); x++)
+				AltPicture.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+
+		// PosX
+		pic = pic->Next();
+		originX = 2*width; originY = height;
+		for (int y = 0; y < pic->GetHeight(); y++)
+			for (int x = 0; x < pic->GetWidth(); x++)
+				AltPicture.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+
+		// NegX
+		pic = pic->Next();
+		originX = 0; originY = height;
+		for (int y = 0; y < pic->GetHeight(); y++)
+			for (int x = 0; x < pic->GetWidth(); x++)
+				AltPicture.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+
+		// PosY
+		pic = pic->Next();
+		originX = width; originY = 2*height;
+		for (int y = 0; y < pic->GetHeight(); y++)
+			for (int x = 0; x < pic->GetWidth(); x++)
+				AltPicture.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+
+		// NegY
+		pic = pic->Next();
+		originX = width; originY = 0;
+		for (int y = 0; y < pic->GetHeight(); y++)
+			for (int x = 0; x < pic->GetWidth(); x++)
+				AltPicture.SetPixel(originX + x, originY + y, pic->GetPixel(x, y));
+
+		AltPictureTyp = AltPictureType::CubemapTLayout;
+	}
+	else if (pvr.IsMipmapped())
+	{
+		int width = 0;
+		for (tPicture* layer = Pictures.First(); layer; layer = layer->Next())
+			width += layer->GetWidth();
+		int height = GetHeight();
+
+		AltPicture.Set(width, height, tPixel::transparent);
+		int originY = 0;
+		int originX = 0;
+		for (tPicture* layer = Pictures.First(); layer; layer = layer->Next())
+		{
+			for (int y = 0; y < layer->GetHeight(); y++)
+			{
+				for (int x = 0; x < layer->GetWidth(); x++)
+				{
+					tPixel pixel = layer->GetPixel(x, y);
+					AltPicture.SetPixel(originX + x, y, pixel);
+				}
+			}
+			originX += layer->GetWidth();
+		}
+		AltPictureTyp = AltPictureType::MipmapSideBySide;
+	}
 }
 
 
@@ -1103,29 +1217,29 @@ void Image::PopulatePicturesKTX(const tImageKTX& ktx)
 		int h = ktx.GetHeight();
 
 		// We want the front (+Z) to be the first image.
-		const int numSides = tImageKTX::tSurfIndex_NumSurfaces;
-		int sideOrder[numSides] =
+		const int numFaces = tFaceIndex_NumFaces;
+		int faceOrder[numFaces] =
 		{
-			tImageKTX::tSurfIndex_PosZ,
-			tImageKTX::tSurfIndex_NegZ,
-			tImageKTX::tSurfIndex_PosX,
-			tImageKTX::tSurfIndex_NegX,
-			tImageKTX::tSurfIndex_PosY,
-			tImageKTX::tSurfIndex_NegY
+			tFaceIndex_PosZ,
+			tFaceIndex_NegZ,
+			tFaceIndex_PosX,
+			tFaceIndex_NegX,
+			tFaceIndex_PosY,
+			tFaceIndex_NegY
 		};
 
-		tList<tLayer> layers[numSides];
+		tList<tLayer> layers[numFaces];
 		ktx.GetCubemapLayers(layers);
-		for (int s = 0; s < int(tImageKTX::tSurfIndex_NumSurfaces); s++)
+		for (int f = 0; f < int(tFaceIndex_NumFaces); f++)
 		{
-			int side = sideOrder[s];
+			int face = faceOrder[f];
 
-			tLayer* topMip = layers[side].First();
+			tLayer* topMip = layers[face].First();
 			tAssert(topMip->PixelFormat == tPixelFormat::R8G8B8A8);
 			Pictures.Append(new tPicture(w, h, (tPixel*)topMip->Data, true));
 
 			// Lets reset the list so it doesn't do anything bad when destructed.
-			layers[side].Reset();
+			layers[face].Reset();
 		}
 	}
 	else

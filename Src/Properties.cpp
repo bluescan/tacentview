@@ -216,7 +216,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (ImGui::CheckboxFlags("##ExposureEnabled", &CurrImage->LoadParams_DDS.Flags, tImageDDS::LoadFlag_ToneMapExposure))
 					reloadChanges = true;
 				ImGui::SameLine();
-				ShowHelpMark("Exposure adjustment [0.0, 4]. Hold Ctrl to speedup.");
+				ShowHelpMark("Exposure adjustment [0.0, 4.0]. Hold Ctrl to speedup.");
 				tMath::tiClamp(CurrImage->LoadParams_DDS.Exposure, 0.0f, 4.0f);
 
 				anyUIDisplayed = true;
@@ -280,8 +280,8 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			bool reloadChanges = false;
 
 			tString texTypeName = "Texture";
-			// anyUIDisplayed |= DoAltMipmapsDisplay(texTypeName);
-			// anyUIDisplayed |= DoAltCubemapDisplay(texTypeName);
+			anyUIDisplayed |= DoAltMipmapsDisplay(texTypeName);
+			anyUIDisplayed |= DoAltCubemapDisplay(texTypeName);
 			anyUIDisplayed |= DoChooseDisplayImage(texTypeName, itemWidth);
 
 			// If we're here show options when have 1 or more frames.
@@ -340,7 +340,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (ImGui::CheckboxFlags("##ExposureEnabled", &CurrImage->LoadParams_PVR.Flags, tImagePVR::LoadFlag_ToneMapExposure))
 					reloadChanges = true;
 				ImGui::SameLine();
-				ShowHelpMark("Exposure adjustment [0.0, 4]. Hold Ctrl to speedup.");
+				ShowHelpMark("Exposure adjustment [0.0, 4.0]. Hold Ctrl to speedup.");
 				tMath::tiClamp(CurrImage->LoadParams_PVR.Exposure, 0.0f, 4.0f);
 
 				anyUIDisplayed = true;
@@ -487,7 +487,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (ImGui::CheckboxFlags("##ExposureEnabled", &CurrImage->LoadParams_KTX.Flags, tImageKTX::LoadFlag_ToneMapExposure))
 					reloadChanges = true;
 				ImGui::SameLine();
-				ShowHelpMark("Exposure adjustment [0.0, 4]. Hold Ctrl to speedup.");
+				ShowHelpMark("Exposure adjustment [0.0, 4.0]. Hold Ctrl to speedup.");
 				tMath::tiClamp(CurrImage->LoadParams_KTX.Exposure, 0.0f, 4.0f);
 
 				anyUIDisplayed = true;
@@ -629,7 +629,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (ImGui::CheckboxFlags("##ExposureEnabled", &CurrImage->LoadParams_ASTC.Flags, tImageASTC::LoadFlag_ToneMapExposure))
 					reloadChanges = true;
 				ImGui::SameLine();
-				ShowHelpMark("Exposure adjustment [0.0, 4]. Hold Ctrl to speedup.");
+				ShowHelpMark("Exposure adjustment [0.0, 4.0]. Hold Ctrl to speedup.");
 				tMath::tiClamp(CurrImage->LoadParams_ASTC.Exposure, 0.0f, 4.0f);
 			}
 
