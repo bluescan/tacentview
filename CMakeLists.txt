@@ -29,6 +29,7 @@ include("Src/Version.cmake.h")
 project(tacentview VERSION "${VIEWER_VERSION}" LANGUAGES C CXX)
 message(STATUS "Viewer -- Name ${PROJECT_NAME} Version ${PROJECT_VERSION}")
 message(STATUS "Viewer -- Major:${PROJECT_VERSION_MAJOR} Minor:${PROJECT_VERSION_MINOR} Revision:${PROJECT_VERSION_PATCH}")
+message(STATUS "Viewer -- CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 
 # Find Git module.
 find_package(Git)
@@ -39,15 +40,15 @@ endif()
 include(FetchContent)
 
 # Grab the Tacent library from github at configure time. Set desired options here first.
-if (WIN32)
+if (CMAKE_SYSTEM_NAME MATCHES Windows)
 	option(TACENT_UTF16_API_CALLS "Build Tacent With UTF16 API Calls" On)
 endif()
 
 FetchContent_Declare(
 	tacent
 	GIT_REPOSITORY https://github.com/bluescan/tacent.git
-	GIT_TAG v0.8.17
-	# GIT_TAG 6b9f70c2d66902fdf35b337a527b6fad74d520c5
+	# GIT_TAG v0.8.17
+	GIT_TAG 35460ad98b83075217a6aa9259c88b6831ed5660
 )
 FetchContent_MakeAvailable(tacent)
 
@@ -60,7 +61,6 @@ message(STATUS "Viewer -- tacent_SOURCE_DIR: ${tacent_SOURCE_DIR}")
 # Files needed to create executable.
 add_executable(
 	${PROJECT_NAME}
-	WIN32
 	Src/ColourDialogs.cpp
 	Src/ColourDialogs.h
 	Src/Command.cpp
@@ -193,13 +193,16 @@ target_compile_options(
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 # This is how you set things like CMAKE_DEBUG_POSTFIX for a target.
-set_target_properties(
-	${PROJECT_NAME}
-	PROPERTIES
-	# DEBUG_POSTFIX "d"												# Add a 'd' before the extension for debug builds.
-	MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"	# Use multithreaded or multithreaded-debug runtime on windows.
-	# More prop-value pairs here.
-)
+if (MSVC)
+	set_target_properties(
+		${PROJECT_NAME}
+		PROPERTIES
+		# DEBUG_POSTFIX "d"												# Add a 'd' before the extension for debug builds.
+		MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"	# Use multithreaded or multithreaded-debug runtime on windows.
+		WIN32_EXECUTABLE TRUE
+		# More prop-value pairs here.
+	)
+endif()
 
 # Dependencies.
 target_link_libraries(
@@ -237,9 +240,9 @@ if (MSVC)
 	target_link_options(
 		${PROJECT_NAME}
 		PRIVATE
-			"/ENTRY:mainCRTStartup"
-			#"/SUBSYSTEM:CONSOLE"
-			#"/SUBSYSTEM:WINDOWS"
+		$<IF:$<BOOL:${TACENT_UTF16_API_CALLS}>,/ENTRY:wmainCRTStartup,/ENTRY:mainCRTStartup>
+		#"/SUBSYSTEM:CONSOLE"
+		#"/SUBSYSTEM:WINDOWS"
 	)
 	if (CMAKE_BUILD_TYPE MATCHES Debug)
 		target_link_options(
@@ -264,7 +267,7 @@ install(
 install(DIRECTORY Data/ DESTINATION "${VIEWER_INSTALL_DIR}/Data")
 
 # Packaging.
-if (UNIX)
+if (CMAKE_SYSTEM_NAME MATCHES Linux)
 	if (PACKAGE_DEB)
 		install(DIRECTORY Linux/ DESTINATION "${VIEWER_PACKAGE_DIR}")
 		configure_file("Linux/create_deb.sh.in" "${VIEWER_PACKAGE_DIR}/create_deb.sh" @ONLY)
@@ -286,8 +289,7 @@ if (UNIX)
 
 endif()
 
-# A misnomer. Nothing to do with 32 bit. Should just be WINDOWS.
-if (WIN32)
+if (CMAKE_SYSTEM_NAME MATCHES Windows)
 	install(DIRECTORY Windows/ DESTINATION "${VIEWER_PACKAGE_DIR}")
 	configure_file("Windows/create_zip.ps1.in" "${VIEWER_PACKAGE_DIR}/create_zip.ps1" @ONLY)
 	install(CODE

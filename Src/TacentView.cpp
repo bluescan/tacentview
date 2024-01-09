@@ -3719,12 +3719,16 @@ void Viewer::UnloadAppImages()
 }
 
 
+#ifdef TACENT_UTF16_API_CALLS
+int wmain(int argc, wchar_t** argv)
+#else
 int main(int argc, char** argv)
+#endif
 {
 	#ifdef PLATFORM_WINDOWS
 	setlocale(LC_ALL, ".UTF8");
 	#endif
-	
+
 	tCmdLine::tParse(argc, argv);
 
 	// To run in CLI mode you must set the cli option from the command line.
