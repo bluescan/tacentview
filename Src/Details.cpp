@@ -79,7 +79,7 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 			if (info.IsValid())
 			{
 				ImGui::Text("Size: %dx%d", CurrImage->GetWidth(), CurrImage->GetHeight());
-				ImGui::Text("Format: %s", tImage::tGetPixelFormatName(info.SrcPixelFormat));
+				ImGui::Text("Frmt: %s", tImage::tGetPixelFormatName(info.SrcPixelFormat));
 				tString bppStr("--");
 				int bpp = tImage::tGetBitsPerPixel(info.SrcPixelFormat);
 				if (bpp > 0)
