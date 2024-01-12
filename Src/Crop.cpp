@@ -30,10 +30,10 @@ namespace Viewer
 {
 	CropWidget CropGizmo;
 
-	tColour CropHovCol		(0.25f, 0.48f, 1.00f, 1.00f);
-	tColour CropCol			(0.24f, 0.24f, 0.24f, 1.00f);
-	tColour CropSelCol		(0.98f, 0.98f, 0.98f, 1.00f);
-	const int CropMin		= 4;
+	tColour4f CropHovCol		(0.25f, 0.48f, 1.00f, 1.00f);
+	tColour4f CropCol			(0.24f, 0.24f, 0.24f, 1.00f);
+	tColour4f CropSelCol		(0.98f, 0.98f, 0.98f, 1.00f);
+	const int CropMin			= 4;
 }
 
 
@@ -695,7 +695,7 @@ void Viewer::CropWidget::DrawMatt(const tVector4& imext, const tVector2& uvoffse
 
 void Viewer::CropWidget::DrawLines()
 {
-	glColor4fv(tColourf::white.E);
+	glColor4fv(tColour4f::white.E);
 	float l = (LineL.GetScreenVal());
 	float r = (LineR.GetScreenVal()) - 1.0f;
 	float b = (LineB.GetScreenVal());
@@ -729,7 +729,7 @@ void Viewer::CropWidget::DrawLines()
 	glVertex2f(l,	h);
 	glVertex2f(r,	h);
 
-	glColor4fv(tColourf::white.E);
+	glColor4fv(tColour4f::white.E);
 	glEnd();
 }
 
@@ -743,7 +743,7 @@ void Viewer::CropWidget::DrawHandles()
 	float h = (l+r)/2.0f;
 	float v = (b+t)/2.0f;
 	bool anyPressed = LineL.Pressed || LineR.Pressed || LineB.Pressed || LineT.Pressed;
-	tColour col;
+	tColour4f col;
 	glBegin(GL_QUADS);
 
 	// TL
@@ -836,7 +836,7 @@ void Viewer::CropWidget::DrawHandles()
 	glVertex2f(h+4,		v+4);
 	glVertex2f(h-4,		v+4);
 
-	glColor4fv(tColourf::white.E);
+	glColor4fv(tColour4f::white.E);
 	glEnd();
 }
 
@@ -1087,7 +1087,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 			newH = tClampMin(newH, CropMin);
 
 			CurrImage->Unbind();
-			CurrImage->Crop(newW, newH, minX, minY, tColouri::transparent);
+			CurrImage->Crop(newW, newH, minX, minY, tColour4b::transparent);
 			CurrImage->Bind();
 			Gutil::SetWindowTitle();
 			CropMode = false;

@@ -239,14 +239,14 @@ void Viewer::DoResizeCrop(int srcW, int srcH, int dstW, int dstH)
 void Viewer::DoFillColourInterface(const char* toolTipText, bool contactSheetFillColour)
 {
 	Config::ProfileData& profile = Config::GetProfileData();
-	tColourf floatCol(contactSheetFillColour ? profile.FillColourContact : profile.FillColour);
+	tColour4f floatCol(contactSheetFillColour ? profile.FillColourContact : profile.FillColour);
 	ImGui::ColorEdit4
 	(
 		"Fill##Colour", floatCol.E,
 		ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf | ImGuiColorEditFlags_NoInputs
 	);
 
-	tColour4i* fillColour = contactSheetFillColour ? &profile.FillColourContact : &profile.FillColour;
+	tColour4b* fillColour = contactSheetFillColour ? &profile.FillColourContact : &profile.FillColour;
 	fillColour->Set(floatCol);
 	if (toolTipText)
 		ShowToolTip(toolTipText);
@@ -268,9 +268,9 @@ void Viewer::DoFillColourInterface(const char* toolTipText, bool contactSheetFil
 	if (ImGui::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		if (contactSheetFillColour)
-			fillColour->Set(tColour4i::transparent);
+			fillColour->Set(tColour4b::transparent);
 		else
-			fillColour->Set(tColour4i::black);
+			fillColour->Set(tColour4b::black);
 	}
 	if (contactSheetFillColour)
 		ShowToolTip("Reset the fill colour to transparent black.");
@@ -427,7 +427,7 @@ void Viewer::DoResizeCanvasAnchorTab(bool firstOpen)
 	if (Gutil::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		profile.CropAnchor		= 4;
-		profile.FillColour		= tColouri::black;
+		profile.FillColour		= tColour4b::black;
 		dstW					= srcW;
 		dstH					= srcH;
 	}
@@ -574,7 +574,7 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 	if (Gutil::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
 		profile.CropAnchor				= 4;
-		profile.FillColour				= tColouri::black;
+		profile.FillColour				= tColour4b::black;
 		profile.ResizeAspectRatio		= int(tAspectRatio::Screen_16_9) - 1;
 		profile.ResizeAspectUserNum		= 16;
 		profile.ResizeAspectUserDen		= 9;

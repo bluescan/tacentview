@@ -378,8 +378,8 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		SaveFileApngDurMultiFrame	= 33;
 		SaveFileTiffDurMultiFrame	= 33;
 		SaveAllSizeMode				= 0;
-		FillColour					= tColouri::black;
-		FillColourContact			= tColouri::transparent;
+		FillColour					= tColour4b::black;
+		FillColourContact			= tColour4b::transparent;
 		LevelsPowerMidGamma			= true;
 		LevelsAutoMidPoint			= false;
 		LevelsLogarithmicHisto		= true;
@@ -397,7 +397,7 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 	{
 		BackgroundStyle				= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? int(BackgroundStyleEnum::None) : int(BackgroundStyleEnum::Checkerboard);
 		BackgroundCheckerboxSize	= 16;
-		BackgroundColour			= tColouri::black;
+		BackgroundColour			= tColour4b::black;
 		BackgroundExtend			= false;
 		OnScreenControls			= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? int(OnScreenEnum::Never) : int(OnScreenEnum::Auto);
 		ShowNavFilenameAlways		= false;

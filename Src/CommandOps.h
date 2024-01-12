@@ -39,7 +39,7 @@ struct OperationPixel : public Operation
 	OperationPixel(const tString& args);
 	int X												= 0;
 	int Y												= 0;
-	tColour4i PixelColour								= tColour4i::black;							// Optional.
+	tColour4b PixelColour								= tColour4b::black;							// Optional.
 	comp_t Channels										= tCompBit_RGBA;							// Optional.
 
 	bool Apply(Viewer::Image&) override;
@@ -64,7 +64,7 @@ struct OperationCanvas : public Operation
 	int Width											= 0;
 	int Height											= 0;
 	tImage::tPicture::Anchor Anchor						= tImage::tPicture::Anchor::MiddleMiddle;	// Optional.
-	tColour4i FillColour								= tColour4i::black;							// Optional.
+	tColour4b FillColour								= tColour4b::black;							// Optional.
 	int AnchorX											= -1;										// Optional.
 	int AnchorY											= -1;										// Optional.
 
@@ -80,7 +80,7 @@ struct OperationAspect : public Operation
 	enum class AspectMode { Crop, Letterbox };
 	AspectMode Mode										= AspectMode::Crop;
 	tImage::tPicture::Anchor Anchor						= tImage::tPicture::Anchor::MiddleMiddle;	// Optional.
-	tColour4i FillColour								= tColour4i::black;							// Optional.
+	tColour4b FillColour								= tColour4b::black;							// Optional.
 	int AnchorX											= -1;										// Optional.
 	int AnchorY											= -1;										// Optional.
 
@@ -92,7 +92,7 @@ struct OperationDeborder : public Operation
 {
 	OperationDeborder(const tString& args);
 	bool UseTestColour									= false;
-	tColour4i TestColour								= tColour4i::black;							// Optional.
+	tColour4b TestColour								= tColour4b::black;							// Optional.
 	comp_t Channels										= tCompBit_RGBA;								// Optional.
 
 	bool Apply(Viewer::Image&) override;
@@ -108,7 +108,7 @@ struct OperationCrop : public Operation
 	int OriginY											= 0;
 	int WidthOrMaxX										= 4;
 	int HeightOrMaxY									= 4;
-	tColour4i FillColour								= tColour4i::transparent;					// Optional.
+	tColour4b FillColour								= tColour4b::transparent;					// Optional.
 
 	bool Apply(Viewer::Image&) override;
 };
@@ -141,7 +141,7 @@ struct OperationRotate : public Operation
 	// Valid		None			Up/down scaling. Use alternate (sharper) downscaling scheme (possibe pad + 2X ScaleHalf).
 	tImage::tResampleFilter FilterUp					= tImage::tResampleFilter::Bilinear;		// Optional.
 	tImage::tResampleFilter FilterDown					= tImage::tResampleFilter::None;			// Optional.
-	tColour4i FillColour								= tColour4i::black;							// Optional.
+	tColour4b FillColour								= tColour4b::black;							// Optional.
 
 	bool Apply(Viewer::Image&) override;
 };
@@ -219,7 +219,7 @@ struct OperationChannel : public Operation
 	};
 	ChanMode Mode										= ChanMode::Blend;				// Optional.
 	comp_t Channels										= tCompBit_RGBA;				// Optional.
-	tColour4i Colour									= tColour4i::black;				// Optional.
+	tColour4b Colour									= tColour4b::black;				// Optional.
 
 	bool Apply(Viewer::Image&) override;
 };
@@ -288,7 +288,7 @@ struct PostOperationContact : public PostOperation
 
 	int Columns											= 0;
 	int Rows											= 0;
-	tColour4i FillColour								= tColour4i::transparent;
+	tColour4b FillColour								= tColour4b::transparent;
 	tString SubFolder;									// Relative to the current dir.
 	tString BaseName;
 

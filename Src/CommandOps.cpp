@@ -34,7 +34,7 @@ namespace Command
 	// to RGBA, or a predefined name: black, white, grey, red, green, blue, yellow, cyan, magenta, or trans
 	// (transparent black). If the string is not of this form, colour is left unmodified. You may set colour as your
 	// default colour before calling this. Returns true if colour was modified.
-	bool ParseColour(tColour4i& colour, const tString& strCol);
+	bool ParseColour(tColour4b& colour, const tString& strCol);
 
 	// Parses chanStr as a set of channels. The string may contain the characters RGBA in any order and in upper or
 	// lower case. If none of these characters are set, channels is left unmodified and false is returned.
@@ -42,7 +42,7 @@ namespace Command
 }
 
 
-bool Command::ParseColour(tColour4i& colour, const tString& colStr)
+bool Command::ParseColour(tColour4b& colour, const tString& colStr)
 {
 	if (colStr[0] == '#')
 	{
@@ -62,16 +62,16 @@ bool Command::ParseColour(tColour4i& colour, const tString& colStr)
 
 	switch (tHash::tHashString(colStr.Chr()))
 	{
-		case tHash::tHashCT("black"):	colour = tColour4i::black;			return true;
-		case tHash::tHashCT("white"):	colour = tColour4i::white;			return true;
-		case tHash::tHashCT("grey"):	colour = tColour4i::grey;			return true;
-		case tHash::tHashCT("red"):		colour = tColour4i::red;			return true;
-		case tHash::tHashCT("green"):	colour = tColour4i::green;			return true;
-		case tHash::tHashCT("blue"):	colour = tColour4i::blue;			return true;
-		case tHash::tHashCT("yellow"):	colour = tColour4i::yellow;			return true;
-		case tHash::tHashCT("cyan"):	colour = tColour4i::cyan;			return true;
-		case tHash::tHashCT("magenta"):	colour = tColour4i::magenta;		return true;
-		case tHash::tHashCT("trans"):	colour = tColour4i::transparent;	return true;
+		case tHash::tHashCT("black"):	colour = tColour4b::black;			return true;
+		case tHash::tHashCT("white"):	colour = tColour4b::white;			return true;
+		case tHash::tHashCT("grey"):	colour = tColour4b::grey;			return true;
+		case tHash::tHashCT("red"):		colour = tColour4b::red;			return true;
+		case tHash::tHashCT("green"):	colour = tColour4b::green;			return true;
+		case tHash::tHashCT("blue"):	colour = tColour4b::blue;			return true;
+		case tHash::tHashCT("yellow"):	colour = tColour4b::yellow;			return true;
+		case tHash::tHashCT("cyan"):	colour = tColour4b::cyan;			return true;
+		case tHash::tHashCT("magenta"):	colour = tColour4b::magenta;		return true;
+		case tHash::tHashCT("trans"):	colour = tColour4b::transparent;	return true;
 	}
 
 	return false;
@@ -141,8 +141,8 @@ bool Command::OperationPixel::Apply(Viewer::Image& image)
 	int x = tMath::tMod(X, w);
 	int y = tMath::tMod(Y, h);
 
-	tColour4i setCol = PixelColour;
-	tColour4i pixCol = image.GetPixel(x, y);
+	tColour4b setCol = PixelColour;
+	tColour4b pixCol = image.GetPixel(x, y);
 	if (Channels & tCompBit_R) pixCol.R = setCol.R;
 	if (Channels & tCompBit_G) pixCol.G = setCol.G;
 	if (Channels & tCompBit_B) pixCol.B = setCol.B;
@@ -529,7 +529,7 @@ Command::OperationDeborder::OperationDeborder(const tString& argsStr)
 bool Command::OperationDeborder::Apply(Viewer::Image& image)
 {
 	tAssert(Valid);
-	tColour4i testCol = TestColour;
+	tColour4b testCol = TestColour;
 
 	// Do we need to retrieve test colour from the origin (bottom-left 0,0) of the image?
 	if (!UseTestColour)

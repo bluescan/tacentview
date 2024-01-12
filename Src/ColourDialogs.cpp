@@ -59,8 +59,8 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 		ImGuiWindowFlags_NoNav				|	ImGuiWindowFlags_NoScrollbar;
 
 	static bool live = true;
-	static tColourf floatCol = tColourf::black;
-	static tColourf floatColReset = tColourf::black;
+	static tColour4f floatCol = tColour4f::black;
+	static tColour4f floatColReset = tColour4f::black;
 	if (ImGui::Begin("Edit Pixel", popen, flags))
 	{
 		float buttonWidth = Gutil::GetUIParamScaled(76.0f, 2.5f);
@@ -78,13 +78,13 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 			floatColReset.Set(Viewer::PixelColour);
 		}
 
-		tColourf origCol = floatCol;
+		tColour4f origCol = floatCol;
 		if ((ImGui::ColorPicker4("Colour", floatCol.E, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_AlphaPreviewHalf), floatColReset.E) && (floatCol != origCol))
 		{
 			if (live)
 			{
 				CurrImage->Unbind();
-				tColouri col; col.Set(floatCol);
+				tColour4b col; col.Set(floatCol);
 
 				// Don't push undo steps if we're dragging around the cursor.
 				CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col, false, true);
@@ -103,7 +103,7 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 			if (live)
 			{
 				CurrImage->Unbind();
-				tColouri col; col.Set(floatColReset);
+				tColour4b col; col.Set(floatColReset);
 				CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col, true, true);
 				CurrImage->Bind();
 				Gutil::SetWindowTitle();
@@ -119,7 +119,7 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 		if (!live && ImGui::Button("Apply", tVector2(buttonWidth, 0.0f)))
 		{
 			CurrImage->Unbind();
-			tColouri col; col.Set(floatCol);
+			tColour4b col; col.Set(floatCol);
 			CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col, true);
 			CurrImage->Bind();
 			Gutil::SetWindowTitle();
@@ -130,7 +130,7 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 	if (popen && (*popen == false) && live)
 	{
 		CurrImage->Unbind();
-		tColouri col;
+		tColour4b col;
 		col.Set(floatColReset);
 		CurrImage->SetPixelColour(Viewer::CursorX, Viewer::CursorY, col, false, true);
 		col.Set(floatCol);
@@ -218,7 +218,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 		float buttonWidth	= Gutil::GetUIParamScaled(120.0f, 2.5f);
 
 		Config::ProfileData& profile = Config::GetProfileData();
-		tColourf floatCol(profile.BackgroundColour);
+		tColour4f floatCol(profile.BackgroundColour);
 		if (ImGui::ColorEdit3("##Background", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))
 		{
 			profile.BackgroundColour.Set(floatCol);
@@ -251,7 +251,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 		if (ImGui::Button("Max Selected", tVector2(buttonWidth, 0.0f)))
 		{
 			CurrImage->Unbind();
-			tColouri full(255, 255, 255, 255);
+			tColour4b full(255, 255, 255, 255);
 			CurrImage->SetAllPixels(full, channels);
 			CurrImage->Bind();
 			Gutil::SetWindowTitle();
@@ -262,7 +262,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 		if (ImGui::Button("Zero Selected", tVector2(buttonWidth, 0.0f)))
 		{
 			CurrImage->Unbind();
-			tColouri zero(0, 0, 0, 0);
+			tColour4b zero(0, 0, 0, 0);
 			CurrImage->SetAllPixels(zero, channels);
 			CurrImage->Bind();
 			Gutil::SetWindowTitle();

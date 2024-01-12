@@ -282,7 +282,7 @@ namespace Viewer
 	int PanOffsetY									= 0;
 	int PanDragDownOffsetX							= 0;
 	int PanDragDownOffsetY							= 0;
-	tColouri PixelColour							= tColouri::black;
+	tColour4b PixelColour							= tColour4b::black;
 
 	const tVector4 ColourEnabledTint				= tVector4(1.00f, 1.00f, 1.00f, 1.00f);
 	const tVector4 ColourDisabledTint				= tVector4(0.54f, 0.54f, 0.54f, 1.00f);
@@ -1162,9 +1162,9 @@ bool Viewer::OnPasteImageFromClipboard()
 	int width = spec.width;
 	int height = spec.height;
 	uint32* srcData = (uint32*)img.data();
-	tPixel* dstData = new tPixel[width*height];
+	tPixel4* dstData = new tPixel4[width*height];
 
-	int bytesPerRow = width*sizeof(tPixel);
+	int bytesPerRow = width*sizeof(tPixel4);
 	for (int y = height-1; y >= 0; y--)
 		tStd::tMemcpy((uint8*)dstData + ((height-1)-y)*bytesPerRow, (uint8*)srcData + y*bytesPerRow, bytesPerRow);
 
@@ -1503,7 +1503,7 @@ void Viewer::DrawBackground(float l, float r, float b, float t, float drawW, flo
 
 		case Config::ProfileData::BackgroundStyleEnum::SolidColour:
 		{
-			tColour4i bgCol = profile.BackgroundColour;
+			tColour4b bgCol = profile.BackgroundColour;
 			if (overrideBG)
 				bgCol = CurrImage->BackgroundColourOverride;
 			glColor4ubv(bgCol.E);
@@ -1964,7 +1964,7 @@ int Viewer::DoMainMenuBar()
 		bool imgAvail = CurrImage && CurrImage->IsLoaded() && !CurrImage->IsAltPictureEnabled();
 
 		// Colour Swatch.
-		tColourf floatCol(PixelColour);
+		tColour4f floatCol(PixelColour);
 		tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 6.0f);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
@@ -2752,7 +2752,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		PixelColour = CurrImage->GetPixel(CursorX, CursorY);
 
 		glDisable(GL_TEXTURE_2D);
-		glColor4fv(tColour::white.E);
+		glColor4fv(tColour4f::white.E);
 
 		// Show the cursor either as a square ouline or a reticle.
 		bool reticleVisible = false;
@@ -2782,9 +2782,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			int intensity = (PixelColour.R + PixelColour.G + PixelColour.B) / 3;
 			if ((intensity < 128) || (PixelColour.A < 128))
-				glColor4ubv(tColouri::white.E);
+				glColor4ubv(tColour4b::white.E);
 			else
-				glColor4ubv(tColouri::black.E);
+				glColor4ubv(tColour4b::black.E);
 
 			tVector4 lrtb(left, right, top, bottom);
 			tVector2 uvoffset(uoff, voff);
@@ -2834,7 +2834,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 
 		glDisable(GL_TEXTURE_2D);
-		glColor4fv(tColour::white.E);
+		glColor4fv(tColour4f::white.E);
 		static bool lastCropMode = false;
 		if (CropMode)
 		{
@@ -3843,6 +3843,10 @@ int main(int argc, char** argv)
 	glfwWindowHintString(GLFW_X11_CLASS_NAME, "tacentview");
 	#endif
 
+// @wip Try GLFW_RED_BITS GLFW_GREEN_BITS GLFW_BLUE_BITS hints to set 10 or 12 bits per component for HDR monitors.
+// @wip If transparent work area also try GLFW_ALPHA_BITS to 10 or 12.
+// @wip Try on monitor in office.
+//
 	// The title here seems to override the Linux hint above. When we create with the title string "tacentview",
 	// glfw makes it the X11 WM_CLASS. This is needed so that the Ubuntu can map the same name in the .desktop file
 	// to find things like the correct dock icon to display. The SetWindowTitle afterwards does not mod the WM_CLASS.

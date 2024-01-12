@@ -122,7 +122,7 @@ public:
 	int GetWidth() const;
 	int GetHeight() const;
 	int GetArea() const;
-	tColouri GetPixel(int x, int y) const;
+	tColour4b GetPixel(int x, int y) const;
 
 	// Some images can store multiple complete images inside a single file (multiple frames).
 	// The primary one is the first one.
@@ -134,7 +134,7 @@ public:
 	// Functions that edit and cause dirty flag to be set. Functions that return a bool will return false if the image
 	// is unmodified and the dirty flag is untouched. Functions that are void should be assumed to modify the image.
 	void Rotate90(bool antiClockWise);
-	bool Rotate(float angle, const tColouri& fill, tImage::tResampleFilter upFilter, tImage::tResampleFilter downFilter);
+	bool Rotate(float angle, const tColour4b& fill, tImage::tResampleFilter upFilter, tImage::tResampleFilter downFilter);
 
 	// Quantize image colours based on a fixed palette. numColours must be 256 or less. checkExact means no change to
 	// the image will be made if it already contains fewer colours than numColours already. This may or may not be
@@ -174,12 +174,12 @@ public:
 	bool AdjustmentEnd();
 
 	void Flip(bool horizontal);
-	bool Crop(int newWidth, int newHeight, int originX, int originY, const tColouri& fillColour = tColour::black);
-	bool Crop(int newWidth, int newHeight, tImage::tPicture::Anchor, const tColouri& fillColour = tColour::black);
-	bool Deborder(const tColouri& borderColour, comp_t channels = tCompBit_RGBA);
+	bool Crop(int newWidth, int newHeight, int originX, int originY, const tColour4b& fillColour = tColour4b::black);
+	bool Crop(int newWidth, int newHeight, tImage::tPicture::Anchor, const tColour4b& fillColour = tColour4b::black);
+	bool Deborder(const tColour4b& borderColour, comp_t channels = tCompBit_RGBA);
 	bool Resample(int newWidth, int newHeight, tImage::tResampleFilter filter, tImage::tResampleEdgeMode edgeMode);
-	void SetPixelColour(int x, int y, const tColouri&, bool pushUndo, bool supressDirty = false);
-	void SetAllPixels(const tColouri& colour, comp_t channels = tCompBit_RGBA);
+	void SetPixelColour(int x, int y, const tColour4b&, bool pushUndo, bool supressDirty = false);
+	void SetAllPixels(const tColour4b& colour, comp_t channels = tCompBit_RGBA);
 
 	// Spreads the specified single channel to all RGB channels.
 	void Spread(tComp channel = tComp::R);
@@ -205,7 +205,7 @@ public:
 	// means the operation essentially creates a premultiplied-alpha opaque image.
 	// Note that the alpha of the supplied colour is ignored (since we use finalAlpha).
 	// Note that unspecified RGB channels are keft unmodified.
-	void AlphaBlendColour(const tColouri& blendColour, comp_t = tCompBit_RGB, int finalAlpha = 255);
+	void AlphaBlendColour(const tColour4b& blendColour, comp_t = tCompBit_RGB, int finalAlpha = 255);
 	void SetFrameDuration(float duration, bool allFrames = false);
 
 	// Undo and redo functions.
@@ -284,7 +284,7 @@ public:
 	void SetUndoEnabled(bool enabled)																					{ UndoEnabled = enabled; }
 
 	bool OverrideBackgroundColour = false;
-	tColour4i BackgroundColourOverride = tColour4i::black;
+	tColour4b BackgroundColourOverride = tColour4b::black;
 
 private:
 	bool UndoEnabled = true;

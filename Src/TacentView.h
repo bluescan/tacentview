@@ -63,7 +63,7 @@ namespace Viewer
 	extern tList<tStringItem> ImagesSubDirs;
 	extern tList<Viewer::Image> Images;
 	extern tItList<Viewer::Image> ImagesLoadTimeSorted;
-	extern tColouri PixelColour;
+	extern tColour4b PixelColour;
 	extern Viewer::Image Image_DefaultThumbnail;
 	extern Viewer::Image Image_File;
 	extern Viewer::Image Image_Folder;

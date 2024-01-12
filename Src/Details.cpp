@@ -63,7 +63,7 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 
 		if (CurrImage)
 		{
-			tColourf floatCol(PixelColour);
+			tColour4f floatCol(PixelColour);
 			tVector4 colV4(floatCol.R, floatCol.G, floatCol.B, floatCol.A);
 
 			float colourButtonSize = Gutil::GetUIParamScaled(15.0f, 2.5f);
@@ -188,7 +188,7 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 
 void Viewer::ColourCopyAs()
 {
-	tColourf floatCol(PixelColour);
+	tColour4f floatCol(PixelColour);
 	ImGui::Text("Copy As...");
 	int ri = PixelColour.R; int gi = PixelColour.G; int bi = PixelColour.B; int ai = PixelColour.A;
 	float rf = floatCol.R; float gf = floatCol.G; float bf = floatCol.B; float af = floatCol.A;

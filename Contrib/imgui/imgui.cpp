@@ -4534,7 +4534,7 @@ void ImGui::NewFrame()
     g.DragDropWithinTarget = false;
     g.DragDropHoldJustPressedId = 0;
 
-    // Close popups on focus lost (currently @wip/opt-in)
+    // Close popups on focus lost (currently wip/opt-in)
     //if (g.IO.AppFocusLost)
     //    ClosePopupsExceptModals();
 

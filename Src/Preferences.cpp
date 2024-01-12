@@ -104,7 +104,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 				if (profile.GetBackgroundStyle() == Config::ProfileData::BackgroundStyleEnum::SolidColour)
 				{
-					tColourf floatCol(profile.BackgroundColour);
+					tColour4f floatCol(profile.BackgroundColour);
 					if (ImGui::ColorEdit3("Solid Colour", floatCol.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar))
 					{
 						profile.BackgroundColour.Set(floatCol);
@@ -112,11 +112,11 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 					}
 
 					int preset = 0;
-					if (profile.BackgroundColour == tColouri::black)
+					if (profile.BackgroundColour == tColour4b::black)
 						preset = 1;
-					else if (profile.BackgroundColour == tColouri::lightgrey)
+					else if (profile.BackgroundColour == tColour4b::lightgrey)
 						preset = 2;
-					else if (profile.BackgroundColour == tColouri::white)
+					else if (profile.BackgroundColour == tColour4b::white)
 						preset = 3;
 
 					ImGui::SameLine();
@@ -126,9 +126,9 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 					{
 						switch (preset)
 						{
-							case 1:		profile.BackgroundColour = tColouri::black;		break;
-							case 2:		profile.BackgroundColour = tColouri::lightgrey;	break;
-							case 3:		profile.BackgroundColour = tColouri::white;		break;
+							case 1:		profile.BackgroundColour = tColour4b::black;		break;
+							case 2:		profile.BackgroundColour = tColour4b::lightgrey;	break;
+							case 3:		profile.BackgroundColour = tColour4b::white;		break;
 						}
 					}
 				}

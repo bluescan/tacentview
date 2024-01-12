@@ -220,7 +220,7 @@ bool Image::Load(bool loadParamsFromConfig)
 			Info.SrcPixelFormat = bmp.GetPixelFormatSrc();
 			int width = bmp.GetWidth();
 			int height = bmp.GetHeight();
-			tPixel* pixels = bmp.StealPixels();
+			tPixel4* pixels = bmp.StealPixels();
 
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
@@ -282,7 +282,7 @@ bool Image::Load(bool loadParamsFromConfig)
 			Info.SrcColourProfile	= hdr.GetColourProfileSrc();
 			int width = hdr.GetWidth();
 			int height = hdr.GetHeight();
-			tPixel* pixels = hdr.StealPixels();
+			tPixel4* pixels = hdr.StealPixels();
 
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
@@ -338,7 +338,7 @@ bool Image::Load(bool loadParamsFromConfig)
 			Info.SrcColourProfile	= jpg.GetColourProfileSrc();
 			int width = jpg.GetWidth();
 			int height = jpg.GetHeight();
-			tPixel* pixels = jpg.StealPixels();
+			tPixel4* pixels = jpg.StealPixels();
 
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
@@ -367,7 +367,7 @@ bool Image::Load(bool loadParamsFromConfig)
 			Info.SrcPixelFormat = png.GetPixelFormatSrc();
 			int width = png.GetWidth();
 			int height = png.GetHeight();
-			tPixel* pixels = png.StealPixels();
+			tPixel4* pixels = png.StealPixels();
 
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
@@ -385,7 +385,7 @@ bool Image::Load(bool loadParamsFromConfig)
 			Info.SrcPixelFormat = tga.GetPixelFormatSrc();
 			int width = tga.GetWidth();
 			int height = tga.GetHeight();
-			tPixel* pixels = tga.StealPixels();
+			tPixel4* pixels = tga.StealPixels();
 
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
@@ -403,7 +403,7 @@ bool Image::Load(bool loadParamsFromConfig)
 			Info.SrcPixelFormat = qoi.GetPixelFormatSrc();
 			int width = qoi.GetWidth();
 			int height = qoi.GetHeight();
-			tPixel* pixels = qoi.StealPixels();
+			tPixel4* pixels = qoi.StealPixels();
 
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
@@ -557,7 +557,7 @@ bool Image::Load(bool loadParamsFromConfig)
 
 			tLayer* layer = astc.StealLayer();
 			tAssert(layer && (layer->PixelFormat == tPixelFormat::R8G8B8A8));
-			tPixel* pixels = (tPixel*)layer->StealData();
+			tPixel4* pixels = (tPixel4*)layer->StealData();
 
 			// Give the pixels to the tPicture.
 			tPicture* picture = new tPicture(width, height, pixels, false);
@@ -583,7 +583,7 @@ bool Image::Load(bool loadParamsFromConfig)
 
 			tLayer* layer = pkm.StealLayer();
 			tAssert(layer && (layer->PixelFormat == tPixelFormat::R8G8B8A8));
-			tPixel* pixels = (tPixel*)layer->StealData();
+			tPixel4* pixels = (tPixel4*)layer->StealData();
 
 			// Give the pixels to the tPicture.
 			tPicture* picture = new tPicture(width, height, pixels, false);
@@ -940,9 +940,9 @@ int Image::GetMemSizeBytes() const
 {
 	int numBytes = 0;
 	for (tPicture* pic = Pictures.First(); pic; pic = pic->Next())
-		numBytes += pic->GetNumPixels() * sizeof(tPixel);
+		numBytes += pic->GetNumPixels() * sizeof(tPixel4);
 
-	numBytes += AltPicture.IsValid() ? AltPicture.GetNumPixels()*sizeof(tPixel) : 0;
+	numBytes += AltPicture.IsValid() ? AltPicture.GetNumPixels()*sizeof(tPixel4) : 0;
 	return numBytes;
 }
 
@@ -974,7 +974,7 @@ void Image::PopulatePicturesDDS(const tImageDDS& dds)
 
 			tLayer* topMip = layers[face].First();
 			tAssert(topMip->PixelFormat == tPixelFormat::R8G8B8A8);
-			Pictures.Append(new tPicture(w, h, (tPixel*)topMip->Data, true));
+			Pictures.Append(new tPicture(w, h, (tPixel4*)topMip->Data, true));
 
 			// Lets reset the list so it doesn't do anything bad when destructed.
 			layers[face].Reset();
@@ -990,7 +990,7 @@ void Image::PopulatePicturesDDS(const tImageDDS& dds)
 
 		int numMipmaps = layers.GetNumItems();
 		for (tLayer* layer = layers.First(); layer; layer = layer->Next())
-			Pictures.Append(new tPicture(layer->Width, layer->Height, (tPixel*)layer->Data, true));
+			Pictures.Append(new tPicture(layer->Width, layer->Height, (tPixel4*)layer->Data, true));
 
 		layers.Reset();
 	}
@@ -1004,7 +1004,7 @@ void Image::CreateAltPicturesDDS(const tImageDDS& dds)
 		int width = Pictures.First()->GetWidth();
 		int height = Pictures.First()->GetHeight();
 
-		AltPicture.Set(width*4, height*3, tPixel::transparent);
+		AltPicture.Set(width*4, height*3, tPixel4::transparent);
 		int originX, originY;
 		
 		// PosZ
@@ -1058,7 +1058,7 @@ void Image::CreateAltPicturesDDS(const tImageDDS& dds)
 			width += layer->GetWidth();
 		int height = GetHeight();
 
-		AltPicture.Set(width, height, tPixel::transparent);
+		AltPicture.Set(width, height, tPixel4::transparent);
 		int originY = 0;
 		int originX = 0;
 		for (tPicture* layer = Pictures.First(); layer; layer = layer->Next())
@@ -1067,7 +1067,7 @@ void Image::CreateAltPicturesDDS(const tImageDDS& dds)
 			{
 				for (int x = 0; x < layer->GetWidth(); x++)
 				{
-					tPixel pixel = layer->GetPixel(x, y);
+					tPixel4 pixel = layer->GetPixel(x, y);
 					AltPicture.SetPixel(originX + x, y, pixel);
 				}
 			}
@@ -1105,7 +1105,7 @@ void Image::PopulatePicturesPVR(const tImagePVR& pvr)
 
 			tLayer* topMip = layers[face].First();
 			tAssert(topMip->PixelFormat == tPixelFormat::R8G8B8A8);
-			Pictures.Append(new tPicture(w, h, (tPixel*)topMip->Data, true));
+			Pictures.Append(new tPicture(w, h, (tPixel4*)topMip->Data, true));
 
 			// Lets reset the list so it doesn't do anything bad when destructed.
 			layers[face].Reset();
@@ -1121,7 +1121,7 @@ void Image::PopulatePicturesPVR(const tImagePVR& pvr)
 
 		int numMipmaps = layers.GetNumItems();
 		for (tLayer* layer = layers.First(); layer; layer = layer->Next())
-			Pictures.Append(new tPicture(layer->Width, layer->Height, (tPixel*)layer->Data, true));
+			Pictures.Append(new tPicture(layer->Width, layer->Height, (tPixel4*)layer->Data, true));
 
 		layers.Reset();
 	}
@@ -1135,7 +1135,7 @@ void Image::CreateAltPicturesPVR(const tImagePVR& pvr)
 		int width = Pictures.First()->GetWidth();
 		int height = Pictures.First()->GetHeight();
 
-		AltPicture.Set(width*4, height*3, tPixel::transparent);
+		AltPicture.Set(width*4, height*3, tPixel4::transparent);
 		int originX, originY;
 		
 		// PosZ
@@ -1189,7 +1189,7 @@ void Image::CreateAltPicturesPVR(const tImagePVR& pvr)
 			width += layer->GetWidth();
 		int height = GetHeight();
 
-		AltPicture.Set(width, height, tPixel::transparent);
+		AltPicture.Set(width, height, tPixel4::transparent);
 		int originY = 0;
 		int originX = 0;
 		for (tPicture* layer = Pictures.First(); layer; layer = layer->Next())
@@ -1198,7 +1198,7 @@ void Image::CreateAltPicturesPVR(const tImagePVR& pvr)
 			{
 				for (int x = 0; x < layer->GetWidth(); x++)
 				{
-					tPixel pixel = layer->GetPixel(x, y);
+					tPixel4 pixel = layer->GetPixel(x, y);
 					AltPicture.SetPixel(originX + x, y, pixel);
 				}
 			}
@@ -1236,7 +1236,7 @@ void Image::PopulatePicturesKTX(const tImageKTX& ktx)
 
 			tLayer* topMip = layers[face].First();
 			tAssert(topMip->PixelFormat == tPixelFormat::R8G8B8A8);
-			Pictures.Append(new tPicture(w, h, (tPixel*)topMip->Data, true));
+			Pictures.Append(new tPicture(w, h, (tPixel4*)topMip->Data, true));
 
 			// Lets reset the list so it doesn't do anything bad when destructed.
 			layers[face].Reset();
@@ -1252,7 +1252,7 @@ void Image::PopulatePicturesKTX(const tImageKTX& ktx)
 
 		int numMipmaps = layers.GetNumItems();
 		for (tLayer* layer = layers.First(); layer; layer = layer->Next())
-			Pictures.Append(new tPicture(layer->Width, layer->Height, (tPixel*)layer->Data, true));
+			Pictures.Append(new tPicture(layer->Width, layer->Height, (tPixel4*)layer->Data, true));
 
 		layers.Reset();
 	}
@@ -1266,7 +1266,7 @@ void Image::CreateAltPicturesKTX(const tImageKTX& ktx)
 		int width = Pictures.First()->GetWidth();
 		int height = Pictures.First()->GetHeight();
 
-		AltPicture.Set(width*4, height*3, tPixel::transparent);
+		AltPicture.Set(width*4, height*3, tPixel4::transparent);
 		int originX, originY;
 		
 		// PosZ
@@ -1320,7 +1320,7 @@ void Image::CreateAltPicturesKTX(const tImageKTX& ktx)
 			width += layer->GetWidth();
 		int height = GetHeight();
 
-		AltPicture.Set(width, height, tPixel::transparent);
+		AltPicture.Set(width, height, tPixel4::transparent);
 		int originY = 0;
 		int originX = 0;
 		for (tPicture* layer = Pictures.First(); layer; layer = layer->Next())
@@ -1329,7 +1329,7 @@ void Image::CreateAltPicturesKTX(const tImageKTX& ktx)
 			{
 				for (int x = 0; x < layer->GetWidth(); x++)
 				{
-					tPixel pixel = layer->GetPixel(x, y);
+					tPixel4 pixel = layer->GetPixel(x, y);
 					AltPicture.SetPixel(originX + x, y, pixel);
 				}
 			}
@@ -1413,7 +1413,7 @@ int Image::GetArea() const
 }
 
 
-tColouri Image::GetPixel(int x, int y) const
+tColour4b Image::GetPixel(int x, int y) const
 {
 	if (AltPicture.IsValid() && AltPictureEnabled)
 		return AltPicture.GetPixel(x, y);
@@ -1424,7 +1424,7 @@ tColouri Image::GetPixel(int x, int y) const
 
 	// Generally the PictureImage should always be valid. When dds files (tTextures) are loaded, they get
 	// uncompressed into valid PictureImage files so the pixel info can be read.
-	return tColouri::black;
+	return tColour4b::black;
 }
 
 
@@ -1439,7 +1439,7 @@ void Image::Rotate90(bool antiClockWise)
 }
 
 
-bool Image::Rotate(float angle, const tColouri& fill, tResampleFilter upFilter, tResampleFilter downFilter)
+bool Image::Rotate(float angle, const tColour4b& fill, tResampleFilter upFilter, tResampleFilter downFilter)
 {
 	if (angle == 0.0f)
 		return false;
@@ -1605,7 +1605,7 @@ void Image::Flip(bool horizontal)
 }
 
 
-bool Image::Crop(int newWidth, int newHeight, int originX, int originY, const tColouri& fillColour)
+bool Image::Crop(int newWidth, int newHeight, int originX, int originY, const tColour4b& fillColour)
 {
 	bool atLeastOneDifferentSize = false;
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
@@ -1629,7 +1629,7 @@ bool Image::Crop(int newWidth, int newHeight, int originX, int originY, const tC
 }
 
 
-bool Image::Crop(int newWidth, int newHeight, tPicture::Anchor anchor, const tColouri& fillColour)
+bool Image::Crop(int newWidth, int newHeight, tPicture::Anchor anchor, const tColour4b& fillColour)
 {
 	bool atLeastOneDifferentSize = false;
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
@@ -1653,7 +1653,7 @@ bool Image::Crop(int newWidth, int newHeight, tPicture::Anchor anchor, const tCo
 }
 
 
-bool Image::Deborder(const tColouri& borderColour, comp_t channels)
+bool Image::Deborder(const tColour4b& borderColour, comp_t channels)
 {
 	bool atLeastOneHasBorders = false;
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
@@ -1700,7 +1700,7 @@ bool Image::Resample(int newWidth, int newHeight, tImage::tResampleFilter filter
 }
 
 
-void Image::SetPixelColour(int x, int y, const tColouri& colour, bool pushUndo, bool surpressDirty)
+void Image::SetPixelColour(int x, int y, const tColour4b& colour, bool pushUndo, bool surpressDirty)
 {
 	if (pushUndo)
 	{
@@ -1719,7 +1719,7 @@ void Image::SetPixelColour(int x, int y, const tColouri& colour, bool pushUndo, 
 }
 
 
-void Image::SetAllPixels(const tColouri& colour, comp_t channels)
+void Image::SetAllPixels(const tColour4b& colour, comp_t channels)
 {
 	tString desc; tsPrintf(desc, "Set Pixels (%d,%d,%d,%d)", colour.R, colour.G, colour.B, colour.A);
 	PushUndo(desc);
@@ -1786,7 +1786,7 @@ void Image::Intensity(comp_t channels)
 }
 
 
-void Image::AlphaBlendColour(const tColouri& colour, comp_t channels, int finalAlpha)
+void Image::AlphaBlendColour(const tColour4b& colour, comp_t channels, int finalAlpha)
 {
 	tString desc; tsPrintf(desc, "Blend (%d,%d,%d,%d)", colour.R, colour.G, colour.B, colour.A);
 	PushUndo(desc);

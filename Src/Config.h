@@ -123,7 +123,7 @@ struct ProfileData
 	int BackgroundStyle;
 	BackgroundStyleEnum GetBackgroundStyle() const		{ return BackgroundStyleEnum(BackgroundStyle); }
 	int BackgroundCheckerboxSize;
-	tColouri BackgroundColour;							// Only used if BackgroundStyle is SolidColour.
+	tColour4b BackgroundColour;							// Only used if BackgroundStyle is SolidColour.
 	bool BackgroundExtend;								// Extend background past image bounds.
 
 	enum class OnScreenEnum
@@ -252,8 +252,8 @@ struct ProfileData
 	int		SaveAllSizeMode;
 	SizeModeEnum GetSaveAllSizeMode() const				{ return SizeModeEnum(SaveAllSizeMode); }
 
-	tColouri FillColour;
-	tColouri FillColourContact;
+	tColour4b FillColour;
+	tColour4b FillColourContact;
 
 	bool LevelsPowerMidGamma;
 	bool LevelsAutoMidPoint;
