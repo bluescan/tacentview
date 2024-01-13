@@ -1162,9 +1162,9 @@ bool Viewer::OnPasteImageFromClipboard()
 	int width = spec.width;
 	int height = spec.height;
 	uint32* srcData = (uint32*)img.data();
-	tPixel4* dstData = new tPixel4[width*height];
+	tPixel4b* dstData = new tPixel4b[width*height];
 
-	int bytesPerRow = width*sizeof(tPixel4);
+	int bytesPerRow = width*sizeof(tPixel4b);
 	for (int y = height-1; y >= 0; y--)
 		tStd::tMemcpy((uint8*)dstData + ((height-1)-y)*bytesPerRow, (uint8*)srcData + y*bytesPerRow, bytesPerRow);
 
