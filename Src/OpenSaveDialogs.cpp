@@ -1080,8 +1080,8 @@ bool Viewer::SavePictureAs(tImage::tPicture& picture, const tString& outFile, tF
 			tImagePNG::tFormat saveFormat = tImagePNG::tFormat::Auto;
 			switch (profile.SaveFilePngDepthMode)
 			{
-				case 1: saveFormat = tImagePNG::tFormat::BPP24;		break;
-				case 2: saveFormat = tImagePNG::tFormat::BPP32;		break;
+				case 1: saveFormat = tImagePNG::tFormat::BPP24_RGB_BPC8;	break;
+				case 2: saveFormat = tImagePNG::tFormat::BPP32_RGBA_BPC8;	break;
 			}
 			tImagePNG::tFormat savedFmt = png.Save(outFile, saveFormat);
 			success = (savedFmt != tImagePNG::tFormat::Invalid);

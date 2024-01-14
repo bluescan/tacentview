@@ -666,8 +666,8 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 				params.Format = tImagePNG::tFormat::Auto;
 				switch (profile.SaveFilePngDepthMode)
 				{
-					case 1: params.Format = tImagePNG::tFormat::BPP24;		break;
-					case 2: params.Format = tImagePNG::tFormat::BPP32;		break;
+					case 1: params.Format = tImagePNG::tFormat::BPP24_RGB_BPC8;		break;
+					case 2: params.Format = tImagePNG::tFormat::BPP32_RGBA_BPC8;	break;
 				}
 			}
 			tImagePNG::tFormat savedFmt = png.Save(outFile, params);

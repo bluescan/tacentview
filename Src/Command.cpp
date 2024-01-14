@@ -1165,10 +1165,10 @@ void Command::ParseSaveParametersPNG()
 			case tHash::tHashCT("bpp"):
 				switch (tHash::tHashString(value.Chr()))
 				{
-					case tHash::tHashCT("24"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::BPP24;		break;
-					case tHash::tHashCT("32"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::BPP32;		break;
+					case tHash::tHashCT("24"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::BPP24_RGB_BPC8;	break;
+					case tHash::tHashCT("32"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::BPP32_RGBA_BPC8;	break;
 					case tHash::tHashCT("auto"):
-					case tHash::tHashCT("*"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::Auto;		break;
+					case tHash::tHashCT("*"):		SaveParamsPNG.Format = tImage::tImagePNG::tFormat::Auto;			break;
 				}
 				break;
 		}
