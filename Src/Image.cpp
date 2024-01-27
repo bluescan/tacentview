@@ -360,6 +360,7 @@ bool Image::Load(bool loadParamsFromConfig)
 					params.Flags &= ~tImagePNG::LoadFlag_AllowJPG;
 			}
 
+			tAssert(params.Flags & tImagePNG::LoadFlag_ForceToBpc8);
 			bool ok = png.Load(Filename, params);
 			if (!ok)
 				break;
@@ -367,7 +368,7 @@ bool Image::Load(bool loadParamsFromConfig)
 			Info.SrcPixelFormat = png.GetPixelFormatSrc();
 			int width = png.GetWidth();
 			int height = png.GetHeight();
-			tPixel4b* pixels = png.StealPixels();
+			tPixel4b* pixels = png.StealPixels8();
 
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
