@@ -354,9 +354,9 @@ bool Image::Load(bool loadParamsFromConfig)
 			tImagePNG::LoadParams params = LoadParams_PNG;
 			if (loadParamsFromConfig)
 			{
-				if (profile.StrictLoading && !(params.Flags & tImagePNG::LoadFlag_AllowJPG))
+				if (!profile.StrictLoading && !(params.Flags & tImagePNG::LoadFlag_AllowJPG))
 					params.Flags |= tImagePNG::LoadFlag_AllowJPG;
-				else if (!profile.StrictLoading && (params.Flags & tImagePNG::LoadFlag_AllowJPG))
+				else if (profile.StrictLoading && (params.Flags & tImagePNG::LoadFlag_AllowJPG))
 					params.Flags &= ~tImagePNG::LoadFlag_AllowJPG;
 			}
 
