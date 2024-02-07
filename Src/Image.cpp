@@ -669,6 +669,8 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 				{
 					case 1: params.Format = tImagePNG::tFormat::BPP24_RGB_BPC8;		break;
 					case 2: params.Format = tImagePNG::tFormat::BPP32_RGBA_BPC8;	break;
+					case 3: params.Format = tImagePNG::tFormat::BPP48_RGB_BPC16;	break;
+					case 4: params.Format = tImagePNG::tFormat::BPP64_RGBA_BPC16;	break;
 				}
 			}
 			tImagePNG::tFormat savedFmt = png.Save(outFile, params);

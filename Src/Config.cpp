@@ -614,7 +614,7 @@ void Config::ProfileData::Load(tExpression expr)
 
 	tiClamp		(SaveAllSizeMode, 0, int(SizeModeEnum::NumModes)-1);
 	tiClamp		(SaveFileTgaDepthMode, 0, 2);
-	tiClamp		(SaveFilePngDepthMode, 0, 2);
+	tiClamp		(SaveFilePngDepthMode, 0, 4);
 	tiClamp		(SaveFileQoiDepthMode, 0, 2);
 	tiClamp		(SaveFileQoiColourSpace, 0, 2);
 	tiClamp		(SaveFileBmpDepthMode, 0, 2);

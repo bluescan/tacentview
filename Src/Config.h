@@ -216,7 +216,7 @@ struct ProfileData
 	tString	SaveFileTypeMultiFrame;
 	int		SaveFileTgaDepthMode;						// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
 	bool	SaveFileTgaRLE;
-	int		SaveFilePngDepthMode;						// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
+	int		SaveFilePngDepthMode;						// E [0, 4]. 0 = Auto. 1 = 24BPP. 2 = 32BPP. 3 = 48BPP. 4 = 64BPP.
 	int		SaveFileQoiDepthMode;						// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.
 	int		SaveFileQoiColourSpace;						// E [0, 2]. 0 = Auto. 1 = sRGB.  2 = Linear.
 	int		SaveFileBmpDepthMode;						// E [0, 2]. 0 = Auto. 1 = 24BPP. 2 = 32BPP.

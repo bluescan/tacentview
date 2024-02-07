@@ -83,10 +83,11 @@ void Viewer::ShowAboutPopup(bool* popen)
 		ImGui::Text("GIF Load");
 		ImGui::Text("GIF Save");
 		ImGui::Text("LibWEBP V %d.%d", tImage::Version_WEBP_Major, tImage::Version_WEBP_Minor);
+		ImGui::Text("LibSPNG V %d.%d.%d", tImage::Version_LibSPNG_Major, tImage::Version_LibSPNG_Minor, tImage::Version_LibSPNG_Patch);
 		ImGui::Text("LibPNG V %s", tImage::Version_LibPNG);
-		ImGui::Text("LibKTX V %s", tImage::Version_LibKTX);
 		ImGui::Text("APNGDis V %s", tImage::Version_ApngDis);
 		ImGui::Text("APNGAsm V %s", tImage::Version_ApngAsm);
+		ImGui::Text("LibKTX V %s", tImage::Version_LibKTX);
 		ImGui::Text("TinyXML2 V %d.%d.%d", tImage::Version_TinyXML2_Major, tImage::Version_TinyXML2_Minor, tImage::Version_TinyXML2_Patch);
 		ImGui::Text("TinyEXIF V %d.%d.%d", tImage::Version_TinyEXIF_Major, tImage::Version_TinyEXIF_Minor, tImage::Version_TinyEXIF_Patch);
 		ImGui::Text("QOI");

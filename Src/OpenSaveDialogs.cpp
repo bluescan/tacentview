@@ -470,10 +470,10 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 
 		case tFileType::PNG:
 		{
-			const char* pngModeItems[] = { "Auto", "24 BPP", "32 BPP" };
+			const char* pngModeItems[] = { "Auto", "24 BPP", "32 BPP", "48 BPP", "64 BPP" };
 			ImGui::Combo("Bits Per Pixel", &profile.SaveFilePngDepthMode , pngModeItems, tNumElements(pngModeItems));
 			ImGui::SameLine();
-			ShowHelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.");
+			ShowHelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.\n48 BPP: Force 38 bits per pixel.\n64 BPP: Force 64 bits per pixel.");
 			break;
 		}
 
@@ -1082,6 +1082,8 @@ bool Viewer::SavePictureAs(tImage::tPicture& picture, const tString& outFile, tF
 			{
 				case 1: saveFormat = tImagePNG::tFormat::BPP24_RGB_BPC8;	break;
 				case 2: saveFormat = tImagePNG::tFormat::BPP32_RGBA_BPC8;	break;
+				case 3: saveFormat = tImagePNG::tFormat::BPP48_RGB_BPC16;	break;
+				case 4: saveFormat = tImagePNG::tFormat::BPP64_RGBA_BPC16;	break;
 			}
 			tImagePNG::tFormat savedFmt = png.Save(outFile, saveFormat);
 			success = (savedFmt != tImagePNG::tFormat::Invalid);
