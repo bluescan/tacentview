@@ -96,6 +96,7 @@ namespace Viewer
 	extern double SlideshowCountdown;
 	extern int CursorX;
 	extern int CursorY;
+	extern int PendingFrameBufferBPC;
 	extern float RotateAnglePreview;
 
 	extern const tMath::tVector4 ColourEnabledTint;

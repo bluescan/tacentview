@@ -266,6 +266,7 @@ namespace Viewer
 	bool DrawChannel_B								= true;
 	bool DrawChannel_A								= true;
 	float ShutterFXCountdown						= 0.0f;				// Used when copying image to clipboard.
+	int PendingFrameBufferBPC						= int(Config::GlobalData::FrameBufferBPCEnum::BPC_Default);
 	int DragAnchorX									= 0;
 	int DragAnchorY									= 0;
 
@@ -3843,10 +3844,25 @@ int main(int argc, char** argv)
 	glfwWindowHintString(GLFW_X11_CLASS_NAME, "tacentview");
 	#endif
 
-// @wip Try GLFW_RED_BITS GLFW_GREEN_BITS GLFW_BLUE_BITS hints to set 10 or 12 bits per component for HDR monitors.
-// @wip If transparent work area also try GLFW_ALPHA_BITS to 10 or 12.
-// @wip Try on monitor in office.
-//
+	Viewer::PendingFrameBufferBPC = Viewer::Config::Global.FrameBufferBPC;
+	int windowHintFramebufferBitsPerComponent = 0;
+	switch (Viewer::Config::Global.FrameBufferBPC)
+	{
+		case int(Viewer::Config::GlobalData::FrameBufferBPCEnum::BPC_8):	windowHintFramebufferBitsPerComponent = 8;	break;
+		case int(Viewer::Config::GlobalData::FrameBufferBPCEnum::BPC_10):	windowHintFramebufferBitsPerComponent = 10;	break;
+		case int(Viewer::Config::GlobalData::FrameBufferBPCEnum::BPC_12):	windowHintFramebufferBitsPerComponent = 12;	break;
+		case int(Viewer::Config::GlobalData::FrameBufferBPCEnum::BPC_16):	windowHintFramebufferBitsPerComponent = 16;	break;
+	}
+	if (windowHintFramebufferBitsPerComponent != 0)
+	{
+		glfwWindowHint(GLFW_RED_BITS, windowHintFramebufferBitsPerComponent);
+		glfwWindowHint(GLFW_GREEN_BITS, windowHintFramebufferBitsPerComponent);
+		glfwWindowHint(GLFW_BLUE_BITS, windowHintFramebufferBitsPerComponent);
+		if (Viewer::Config::Global.TransparentWorkArea)
+			glfwWindowHint(GLFW_ALPHA_BITS, windowHintFramebufferBitsPerComponent);
+	}
+	// @wip Try on monitor in office.
+
 	// The title here seems to override the Linux hint above. When we create with the title string "tacentview",
 	// glfw makes it the X11 WM_CLASS. This is needed so that the Ubuntu can map the same name in the .desktop file
 	// to find things like the correct dock icon to display. The SetWindowTitle afterwards does not mod the WM_CLASS.
@@ -3985,6 +4001,15 @@ int main(int argc, char** argv)
 		Viewer::DisappearCountdown = 0.0;
 	}
 
+	int redBits		= 0;	glGetIntegerv(GL_RED_BITS,	&redBits);
+	int greenBits	= 0;	glGetIntegerv(GL_GREEN_BITS,&greenBits);
+	int blueBits	= 0;	glGetIntegerv(GL_BLUE_BITS,	&blueBits);
+	int alphaBits	= 0;	glGetIntegerv(GL_ALPHA_BITS,&alphaBits);
+	if (Viewer::Config::Global.TransparentWorkArea)
+		tPrintf("Framebuffer BPC (RGBA): (%d,%d,%d,%d)\n", redBits, blueBits, greenBits, alphaBits);
+	else
+		tPrintf("Framebuffer BPC (RGB): (%d,%d,%d)\n", redBits, blueBits, greenBits);
+
 	// Main loop.
 	static double lastUpdateTime = glfwGetTime();
 	while (!glfwWindowShouldClose(Viewer::Window) && !Viewer::Request_Quit)
@@ -4033,6 +4058,7 @@ int main(int argc, char** argv)
 		Viewer::Config::SetProfile(originalProfile);
 
 	Viewer::Config::Global.TransparentWorkArea = Viewer::PendingTransparentWorkArea;
+	Viewer::Config::Global.FrameBufferBPC = Viewer::PendingFrameBufferBPC;
 	Viewer::Config::Save(cfgFile);
 
 	// Cleanup.

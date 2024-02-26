@@ -236,6 +236,7 @@ void Config::GlobalData::Save(tExprWriter& writer)
 	WriteItem(WindowW);
 	WriteItem(WindowH);
 	WriteItem(TransparentWorkArea);
+	WriteItem(FrameBufferBPC);
 	WriteLast(LastOpenPath);
 
 	writer.Dedent();
@@ -266,6 +267,7 @@ void Config::GlobalData::Load(tExpression expr)
 			ReadItem(WindowW);
 			ReadItem(WindowH);
 			ReadItem(TransparentWorkArea);
+			ReadItem(FrameBufferBPC);
 			ReadItem(LastOpenPath);
 		}
 	}
@@ -284,6 +286,8 @@ void Config::GlobalData::Load(tExpression expr)
 	tiClamp		(WindowX, 0, screenW - WindowW);
 	tiClamp		(WindowY, 0, screenH - WindowH);
 	#endif
+
+	tiClamp		(FrameBufferBPC, 0, int(FrameBufferBPCEnum::NumBPCs)-1);
 }
 
 
@@ -312,6 +316,7 @@ void Config::GlobalData::Reset()
 	tiClamp						(WindowY, 0, screenH - WindowH);
 
 	TransparentWorkArea			= false;
+	SetFrameBufferBPC			(FrameBufferBPCEnum::BPC_Default);
 	LastOpenPath				.Clear();
 }
 

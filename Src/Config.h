@@ -310,6 +310,20 @@ struct GlobalData
 	int WindowW;
 	int WindowH;
 	bool TransparentWorkArea;
+
+	enum class FrameBufferBPCEnum
+	{
+		BPC_8,			// AKA Truecolor. 24 bits total for RGB.
+		BPC_10,			// 10 bits per component. AKA 30-bit colour.
+		BPC_12,			// 12 bits per component.
+		BPC_16,			// No existing monitor supports 16-BPC at this time.
+		NumBPCs,
+		BPC_Default		= BPC_10
+	};
+	int FrameBufferBPC;
+	FrameBufferBPCEnum GetFrameBufferBPC() const		{ return FrameBufferBPCEnum(FrameBufferBPC); }
+	void SetFrameBufferBPC(FrameBufferBPCEnum bpc)		{ FrameBufferBPC = int(bpc); }
+
 	tString LastOpenPath;
 
 private:

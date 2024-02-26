@@ -73,7 +73,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			if (PendingTransparentWorkArea != Config::Global.TransparentWorkArea)
 			{
 				ImGui::SameLine();
-				ImGui::Text("(Needs Restart)");
+				ImGui::Text("(Restart)");
 			}
 			#else
 			if (PendingTransparentWorkArea)
@@ -84,6 +84,37 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			#endif
 
 			ImGui::Checkbox("Background Extend", &profile.BackgroundExtend);
+
+			const char* frameBufferBPCItems[] = { "8 BPC", "10 BPC", "12 BPC", "16 BPC" };
+			ImGui::SetNextItemWidth(itemWidth);
+			ImGui::Combo("Frame Buffer", &PendingFrameBufferBPC, frameBufferBPCItems, tNumElements(frameBufferBPCItems));
+			if (PendingFrameBufferBPC != Config::Global.FrameBufferBPC)
+			{
+				ImGui::SameLine();
+				ImGui::Text("(Restart)");
+			}
+
+			ImGui::SameLine();
+			ShowHelpMark
+			(
+				"Frame buffer bits per component. Requires restart to take effect.\n"
+				"Generally to display HDR 10-bits or more is required. This value affects\n"
+				"the number of available colours, not the gamut. The setting may also be\n"
+				"used with SDR images. Requires restart to take effect.\n"
+				"\n"
+				"8 BPC : Also known as truecolor or 24 bit colour. 16.77 million colours.\n"
+				"\n"
+				"10 BPC : Also known as 30 bit colour. Good HDR monitors support this\n"
+				"without frame-rate-control. FRC is a method of flashing different colours\n"
+				"on an 8-BPC monitor to emulate additional shades. 1.07 billion colours.\n"
+				"\n"
+				"12 BPC : Also known as 36 bit colour. Only high-end monitors.\n"
+				"\n"
+				"16 BPC : Not supported directly by any display at this time.\n"
+				"\n"
+				"Check the output log to determine the achieved framebuffer bit-depth. The\n"
+				"result will depend on whether your GPU supports the requested BPC.\n"
+			);
 
 			const char* onScreenControlsItems[] = { "Auto", "Always", "Never" };
 			ImGui::SetNextItemWidth(itemWidth);
@@ -467,9 +498,15 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		Config::SetProfile(Profile::Main);
 		Viewer::UpdateDesiredUISize();
 
-		// If the global reset turns transparent work area off we can always safely clear the pending.
+		// @todo These two are global. Reset tab does not work properly with them.
+		// If the global reset turns transparent work area off (the default) we can always safely clear the pending.
 		if (!Config::Global.TransparentWorkArea)
 			PendingTransparentWorkArea = false;
+
+		// Similarly for framebuffer BPC.
+		if (Config::Global.GetFrameBufferBPC() == Config::GlobalData::FrameBufferBPCEnum::BPC_Default)
+			PendingFrameBufferBPC = int(Config::GlobalData::FrameBufferBPCEnum::BPC_Default);
+
 		SlideshowCountdown = profile.SlideshowPeriod;
 		ChangeScreenMode(profile.FullscreenMode, true);
 	}
