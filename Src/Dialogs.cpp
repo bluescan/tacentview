@@ -335,6 +335,8 @@ void Viewer::DoRenameModal(bool renamePressed)
 		tStd::tStrcpy(newname, origname.Chr());
 
 	bool nameChanged = false;
+	if (ImGui::IsWindowAppearing())
+		ImGui::SetKeyboardFocusHere();
 	if (ImGui::InputText("##NewNameText", newname, tNumElements(newname), ImGuiInputTextFlags_EnterReturnsTrue))
 		nameChanged = true;
 	ImGui::NewLine();
@@ -347,8 +349,6 @@ void Viewer::DoRenameModal(bool renamePressed)
 	float okOffset = Gutil::GetUIParamScaled(165.0f, 2.5f);
 	ImGui::SetCursorPosX(okOffset);
 
-	if (ImGui::IsWindowAppearing())
-		ImGui::SetKeyboardFocusHere();
 	if (Gutil::Button("OK", tVector2(buttonWidth, 0.0f)) || nameChanged)
 	{
 		if (origname != newname)
