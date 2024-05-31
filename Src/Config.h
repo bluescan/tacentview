@@ -209,7 +209,9 @@ struct ProfileData
 	bool SlideshowProgressArc;
 	bool SlideshowAutoReshuffle;
 	double SlideshowPeriod;
-	tString ClipboardPasteFileType;
+	tColour4b ClipboardCopyFillColour;					// Used if channel not selected for copy operation.
+	bool ClipboardPasteNewImage;						// Pasting from clipboard creates a new image.
+	tString ClipboardPasteFileType;						// If ClipboardPasteNewImage if true, this is the filetype of the new image.
 
 	tString	SaveSubFolder;
 	tString	SaveFileType;

@@ -444,7 +444,9 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		DetectAPNGInsidePNG			= true;
 		MipmapFilter				= int(tImage::tResampleFilter::Bilinear);
 		MipmapChaining				= true;
+		ClipboardPasteNewImage		= true;
 		ClipboardPasteFileType		.Set(tSystem::tGetFileTypeName(tSystem::tFileType::PNG));
+		ClipboardCopyFillColour		= tColour4b::black;
 		MonitorGamma				= tMath::DefaultGamma;
 	}
 
@@ -519,8 +521,9 @@ void Config::ProfileData::Load(tExpression expr)
 			ReadItem(SlideshowProgressArc);
 			ReadItem(SlideshowAutoReshuffle);
 			ReadItem(SlideshowPeriod);
+			ReadItem(ClipboardCopyFillColour);
+			ReadItem(ClipboardPasteNewImage);
 			ReadItem(ClipboardPasteFileType);
-
 			ReadItem(SaveSubFolder);
 			ReadItem(SaveFileType);
 			ReadItem(SaveFileTypeMultiFrame);
@@ -700,8 +703,9 @@ bool Config::ProfileData::Save(tExprWriter& writer) const
 	WriteItem(SlideshowProgressArc);
 	WriteItem(SlideshowAutoReshuffle);
 	WriteItem(SlideshowPeriod);
+	WriteItem(ClipboardCopyFillColour);
+	WriteItem(ClipboardPasteNewImage);
 	WriteItem(ClipboardPasteFileType);
-
 	WriteItem(SaveSubFolder);
 	WriteItem(SaveFileType);
 	WriteItem(SaveFileTypeMultiFrame);
