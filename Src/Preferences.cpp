@@ -31,7 +31,7 @@ void Viewer::DoCopyPastePreferences(bool reducedWidth)
 	Config::ProfileData& profile	= Config::GetProfileData();
 	float comboWidth				= reducedWidth ? Gutil::GetUIParamScaled(64.0f, 2.5f) : Gutil::GetUIParamScaled(100.0f, 2.5f);
 
-	const char* fillColourPresetItems[] = { "Custom", "Black", "White", "Trans" };
+	const char* fillColourPresetItems[] = { "User", "Black", "White", "Trans" };
 	ImGui::SetNextItemWidth(comboWidth);
 	int presetIndex = 0;
 	if (profile.ClipboardCopyFillColour == tColour4b::black)

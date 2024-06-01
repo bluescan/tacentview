@@ -2,7 +2,7 @@
 //
 // A texture viewer for various formats.
 //
-// Copyright (c) 2018-2023 Tristan Grimmer.
+// Copyright (c) 2018-2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -1110,10 +1110,38 @@ bool Viewer::OnCopyImageToClipboard()
 		pic = CurrImage->GetPrimaryPic();
 	if (!pic || !pic->IsValid())
 		return false;
+	Config::ProfileData& profile = Config::GetProfileData();
 
 	// We need to give the data to the clip system with first row at top.
 	tImage::tPicture pict(*pic);
 	pict.Flip(false);
+
+	// Depending on the channel filters we may need to either fill some channels with the fill-colour
+	// or with a specific channel's values. Specifically, if the intensity filter is chosen we copy
+	// the R G B or A to the clipboard where R=G=B, A=1). In non-intensity mode individual channels
+	// are copied to RGBA on the clipboard (R->R, G->G, etc) and unselected channels get the fill colour.
+	// Default is RGBA all checked and non-intensity mode.
+	if (Viewer::DrawChannel_AsIntensity)
+	{
+		if (Viewer::DrawChannel_R)
+			pict.Spread(tComp::R);
+		else if (Viewer::DrawChannel_G)
+			pict.Spread(tComp::G);
+		else if (Viewer::DrawChannel_B)
+			pict.Spread(tComp::B);
+		else if (Viewer::DrawChannel_A)
+			pict.Spread(tComp::A);
+
+		// Set alpha to full. We just want the intensity of the selected R, G, B, or A.
+		pict.SetAll(tColour4b::black, tCompBit_A);
+	}
+	else
+	{
+		// This clipboard image has all the channels currently. We simply need to fill the
+		// unselected channels with the corresponding copy-fill-colour channel value.
+		comp_t fillChannels = (!Viewer::DrawChannel_R ? tCompBit_R : 0) | (!Viewer::DrawChannel_G ? tCompBit_G : 0) | (!Viewer::DrawChannel_B ? tCompBit_B : 0) | (!Viewer::DrawChannel_A ? tCompBit_A : 0);
+		pict.SetAll(profile.ClipboardCopyFillColour, fillChannels);
+	}
 
 	clip::image_spec spec;
 	spec.width			= pict.GetWidth();

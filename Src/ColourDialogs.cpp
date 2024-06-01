@@ -210,7 +210,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			ImGui::Checkbox("Alpha", &Viewer::DrawChannel_A);
 			ImGui::SameLine(); ShowHelpMark
 			(
-				"Alpha is interprested as blending opacity. When this channel is set to false full alpha is used and"
+				"Alpha is interpreted as blending opacity. When this channel is set to false full alpha is used and"
 				"image is drawn opaque. When true it blends whatever colour channels are selected with the current background."
 			);
 		}
