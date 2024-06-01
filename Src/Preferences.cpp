@@ -318,9 +318,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::SameLine();
 			ShowHelpMark("Should slideshow loop after completion.");
 
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-			ImGui::Separator();
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+			Gutil::Separator();
 
 			Viewer::DoSortParameters(false);
 			ImGui::Checkbox("Auto Reshuffle", &profile.SlideshowAutoReshuffle);
@@ -370,9 +368,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				tFileDialog::Reset();
 			ImGui::SameLine(); ShowHelpMark("Reset File Dialog Bookmarks.");
 
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-			ImGui::Separator();
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+			Gutil::Separator();
 
 			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::InputFloat("Gamma##Monitor", &profile.MonitorGamma, 0.01f, 0.1f, "%.3f");
@@ -439,9 +435,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::Checkbox("Auto Play Anims",			&profile.AutoPlayAnimatedImages);
 			ImGui::Checkbox("Zoom Per Image",			&profile.ZoomPerImage);
 
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-			ImGui::Separator();
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+			Gutil::Separator();
 
 			DoCopyPastePreferences();
 
@@ -474,9 +468,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 			if (!profile.ZoomPerImage)
 			{
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-				ImGui::Separator();
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+				Gutil::Separator();
 				const char* zoomModes[] = { "User", "Fit", "Downscale", "OneToOne" };
 				ImGui::PushItemWidth(comboWidth);
 				int zoomMode = int(GetZoomMode());
@@ -518,9 +510,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		ImGui::EndTabBar();
 	}
 
-	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-	ImGui::Separator();
-	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+	Gutil::Separator();
 
 	if (ImGui::Button("Reset Profile", tVector2(buttonWidth, 0.0f)))
 	{

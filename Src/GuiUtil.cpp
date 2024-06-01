@@ -2,7 +2,7 @@
 //
 // Various GUI utility functions used by many of the dialogs.
 //
-// Copyright (c) 2023 Tristan Grimmer.
+// Copyright (c) 2023, 2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -130,6 +130,14 @@ void Gutil::ProgressArc(float radius, float percent, const tVector4& colour, con
 
 	window->DrawList->PathArcTo(pos, radius, IM_PI/2.0f, IM_PI/2.0f + percent*IM_PI*2.0f, segments-1);
 	window->DrawList->PathStroke(ImGui::GetColorU32(colour), false, thickness);
+}
+
+
+void Gutil::Separator()
+{
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+	ImGui::Separator();
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 }
 
 

@@ -2,7 +2,7 @@
 //
 // Various GUI utility functions used by many of the dialogs.
 //
-// Copyright (c) 2023 Tristan Grimmer.
+// Copyright (c) 2023, 2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -35,6 +35,9 @@ namespace Gutil
 	// This is a wrapper for ImGui::Button that also returns true if enter pressed.
 	bool Button(const char* label, const tMath::tVector2& size = tMath::tVector2::zero);
 	void ProgressArc(float radius, float percent, const tMath::tVector4& colour, const tMath::tVector4& colourbg, float thickness = 4.0f, int segments = 32);
+
+	// This is a separator with some space above and below, but not a full line of space.
+	void Separator();
 
 	enum class DialogID
 	{

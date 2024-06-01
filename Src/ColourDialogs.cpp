@@ -233,9 +233,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 		ImGui::SameLine();
 		ShowHelpMark("Background colour and style.\nThe blend-background button uses the colour regardless of style.");
 
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-		ImGui::Separator();
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+		Gutil::Separator();
 
 		ImGui::Text("Modify");
 		if (ImGui::Button("Blend Background", tVector2(buttonWidth, 0.0f)))
@@ -271,9 +269,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 		ImGui::SameLine();
 		ShowHelpMark("Sets selected channel(s) to zero.");
 
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-		ImGui::Separator();
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+		Gutil::Separator();
 
 		ImGui::Text("Copy/Paste");
 		Viewer::DoCopyPastePreferences(true);

@@ -2,7 +2,7 @@
 //
 // Image properties display and editor window.
 //
-// Copyright (c) 2019-2023 Tristan Grimmer.
+// Copyright (c) 2019-2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -915,9 +915,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 		ImGui::SameLine(); ShowHelpMark("If enabled this number of seconds is used for all frame periods while playing.");
 		ImGui::Checkbox("Scrubber", &profile.ShowFrameScrubber);
 
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
-		ImGui::Separator();
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+		Gutil::Separator();
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
 
 		float itemHSpacing = Gutil::GetUIParamExtent(8.0f, 32.0f);
