@@ -444,9 +444,6 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		DetectAPNGInsidePNG			= true;
 		MipmapFilter				= int(tImage::tResampleFilter::Bilinear);
 		MipmapChaining				= true;
-		ClipboardPasteNewImage		= true;
-		ClipboardPasteFileType		.Set(tSystem::tGetFileTypeName(tSystem::tFileType::PNG));
-		ClipboardCopyFillColour		= tColour4b::black;
 		MonitorGamma				= tMath::DefaultGamma;
 	}
 
@@ -459,6 +456,9 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		ZoomMode					= (profile == Profile::Kiosk) ? int(ZoomModeEnum::Fit) : int(ZoomModeEnum::DownscaleOnly);
 		ZoomPercent					= 100.0f;
 		ZoomPerImage				= (profile == Profile::Kiosk) ? false : true;
+		ClipboardCopyFillColour		= tColour4b::black;
+		ClipboardPasteCreatesImage	= true;
+		ClipboardPasteFileType		.Set(tSystem::tGetFileTypeName(tSystem::tFileType::PNG));
 	}
 
 	if (categories & Category_Bindings)
@@ -522,7 +522,7 @@ void Config::ProfileData::Load(tExpression expr)
 			ReadItem(SlideshowAutoReshuffle);
 			ReadItem(SlideshowPeriod);
 			ReadItem(ClipboardCopyFillColour);
-			ReadItem(ClipboardPasteNewImage);
+			ReadItem(ClipboardPasteCreatesImage);
 			ReadItem(ClipboardPasteFileType);
 			ReadItem(SaveSubFolder);
 			ReadItem(SaveFileType);
@@ -704,7 +704,7 @@ bool Config::ProfileData::Save(tExprWriter& writer) const
 	WriteItem(SlideshowAutoReshuffle);
 	WriteItem(SlideshowPeriod);
 	WriteItem(ClipboardCopyFillColour);
-	WriteItem(ClipboardPasteNewImage);
+	WriteItem(ClipboardPasteCreatesImage);
 	WriteItem(ClipboardPasteFileType);
 	WriteItem(SaveSubFolder);
 	WriteItem(SaveFileType);

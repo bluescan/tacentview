@@ -335,33 +335,6 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::SameLine();
 			ShowHelpMark("Some image property windows allow gamma correction and the gamma to be specified (eg. HDR DDS files).\nThis setting allows you to set a custom value for what the gamma will be reset to in those dialogs.\nResetting this tab always chooses the industry-standard gamm of 2.2");
 
-			tString pasteTypeName = profile.ClipboardPasteFileType;
-			tSystem::tFileType pasteType = tSystem::tGetFileTypeFromName(pasteTypeName);
-			ImGui::SetNextItemWidth(itemWidth);
-			if (ImGui::BeginCombo("Paste Type", pasteTypeName.Chr()))
-			{
-				for (tSystem::tFileTypes::tFileTypeItem* item = FileTypes_ClipboardPaste.First(); item; item = item->Next())
-				{
-					tSystem::tFileType ft = item->FileType;
-					bool selected = (ft == pasteType);
-
-					tString ftName = tGetFileTypeName(ft);
-					if (ImGui::Selectable(ftName.Chr(), &selected))
-						profile.ClipboardPasteFileType = ftName;
-
-					if (selected)
-						ImGui::SetItemDefaultFocus();
-				}				
-				ImGui::EndCombo();
-			}
-			ImGui::SameLine();
-			ShowHelpMark
-			(
-				"When an image is pasted from the clipboard it creates a new image of this type.\n"
-				"Valid types are ones that are lossless or support lossless encoding like webp.\n"
-				"Pasted images support alpha channel. If no alpha it saves the image without it." 
-			);
-
 			ImGui::Checkbox("Strict Loading", &profile.StrictLoading); ImGui::SameLine();
 			ShowHelpMark
 			(
@@ -413,17 +386,73 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		if (tab)
 		{
 			category = Config::Category_Behaviour;
-			float comboWidth = Gutil::GetUIParamScaled(120.0f, 2.5f);
+			float itemWidth			= Gutil::GetUIParamScaled(100.0f, 2.5f);
+			float comboWidth		= Gutil::GetUIParamScaled(120.0f, 2.5f);
 			ImGui::NewLine();
 			ImGui::Checkbox("Confirm Deletes",			&profile.ConfirmDeletes);
 			ImGui::Checkbox("Confirm File Overwrites",	&profile.ConfirmFileOverwrites);
 			ImGui::Checkbox("Auto Property Window",		&profile.AutoPropertyWindow);
 			ImGui::Checkbox("Auto Play Anims",			&profile.AutoPlayAnimatedImages);
 			ImGui::Checkbox("Zoom Per Image",			&profile.ZoomPerImage);
-			ImGui::EndTabItem();
+
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+			ImGui::Separator();
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+
+// @wip
+			tColour4f copyColour(profile.ClipboardCopyFillColour);
+			if (ImGui::ColorEdit4("Copy Fill##CopyFillColour", copyColour.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview))
+			{
+				profile.ClipboardCopyFillColour.Set(copyColour);
+			}
+
+//			ImGui::SameLine();
+//			const char* backgroundItems[] = { "None", "Checker", "Solid" };
+//			ImGui::SetNextItemWidth(comboWidth);
+//			ImGui::Combo("##Background Style", &profile.BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
+			ImGui::SameLine();
+			ShowHelpMark("The copy fill colour is used when copying to the clipboard.\nUnselected channels will be filled with this RGBA colour.");
+
+			ImGui::Checkbox("Paste Creates Image",		&profile.ClipboardPasteCreatesImage);
+			ImGui::SameLine();
+			ShowHelpMark
+			(
+				"If true a new image will be created when pasting from the clipboard.\n"
+				"If false the clipboard contents will be pasted into the current image,"
+			);
+
+			tString pasteTypeName = profile.ClipboardPasteFileType;
+			tSystem::tFileType pasteType = tSystem::tGetFileTypeFromName(pasteTypeName);
+			ImGui::SetNextItemWidth(itemWidth);
+			if (ImGui::BeginCombo("Paste Type", pasteTypeName.Chr()))
+			{
+				for (tSystem::tFileTypes::tFileTypeItem* item = FileTypes_ClipboardPaste.First(); item; item = item->Next())
+				{
+					tSystem::tFileType ft = item->FileType;
+					bool selected = (ft == pasteType);
+
+					tString ftName = tGetFileTypeName(ft);
+					if (ImGui::Selectable(ftName.Chr(), &selected))
+						profile.ClipboardPasteFileType = ftName;
+
+					if (selected)
+						ImGui::SetItemDefaultFocus();
+				}				
+				ImGui::EndCombo();
+			}
+			ImGui::SameLine();
+			ShowHelpMark
+			(
+				"When an image is pasted from the clipboard it creates a new image of this type.\n"
+				"Valid types are ones that are lossless or support lossless encoding like webp.\n"
+				"Pasted images support alpha channel. If no alpha it saves the image without it." 
+			);
 
 			if (!profile.ZoomPerImage)
 			{
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+				ImGui::Separator();
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 				const char* zoomModes[] = { "User", "Fit", "Downscale", "OneToOne" };
 				ImGui::PushItemWidth(comboWidth);
 				int zoomMode = int(GetZoomMode());
@@ -460,6 +489,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 					Viewer::SetZoomPercent(zoom);
 				ImGui::PopItemWidth();
 			}
+			ImGui::EndTabItem();
 		}
 		ImGui::EndTabBar();
 	}
