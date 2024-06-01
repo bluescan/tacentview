@@ -2,7 +2,7 @@
 //
 // Dialogs related to adjusting colours including pixel-editing, channels, contrast, brightness, and level adjustments.
 //
-// Copyright (c) 2019-2023 Tristan Grimmer.
+// Copyright (c) 2019-2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -25,6 +25,7 @@
 #include "Image.h"
 #include "TacentView.h"
 #include "GuiUtil.h"
+#include "Preferences.h"
 #include "Version.cmake.h"
 using namespace tMath;
 using namespace Gutil;
@@ -269,6 +270,13 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 		}
 		ImGui::SameLine();
 		ShowHelpMark("Sets selected channel(s) to zero.");
+
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+		ImGui::Separator();
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
+
+		ImGui::Text("Copy/Paste");
+		Viewer::DoCopyPastePreferences(true);
 	}
 
 	ImGui::End();

@@ -2,7 +2,7 @@
 //
 // Preferences window.
 //
-// Copyright (c) 2019-2023 Tristan Grimmer.
+// Copyright (c) 2019-2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -24,6 +24,50 @@
 #include "Version.cmake.h"
 using namespace tMath;
 using namespace Gutil;
+
+
+void Viewer::DoCopyPastePreferences(bool reducedWidth)
+{
+	Config::ProfileData& profile	= Config::GetProfileData();
+	float comboWidth				= reducedWidth ? Gutil::GetUIParamScaled(64.0f, 2.5f) : Gutil::GetUIParamScaled(100.0f, 2.5f);
+
+	const char* fillColourPresetItems[] = { "Custom", "Black", "White", "Trans" };
+	ImGui::SetNextItemWidth(comboWidth);
+	int presetIndex = 0;
+	if (profile.ClipboardCopyFillColour == tColour4b::black)
+		presetIndex = 1;
+	else if (profile.ClipboardCopyFillColour == tColour4b::white)
+		presetIndex = 2;
+	else if (profile.ClipboardCopyFillColour == tColour4b::transparent)
+		presetIndex = 3;
+	if (ImGui::Combo("Copy Fill##FillColourPreset", &presetIndex, fillColourPresetItems, tNumElements(fillColourPresetItems)))
+	{
+		switch (presetIndex)
+		{
+			case 1:		profile.ClipboardCopyFillColour = tColour4b::black;			break;
+			case 2:		profile.ClipboardCopyFillColour = tColour4b::white;			break;
+			case 3:		profile.ClipboardCopyFillColour = tColour4b::transparent;	break;
+		}
+	}
+
+	ImGui::SameLine();
+	tColour4f copyColour(profile.ClipboardCopyFillColour);
+	if (ImGui::ColorEdit4("##CopyFillColour", copyColour.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview))
+	{
+		profile.ClipboardCopyFillColour.Set(copyColour);
+	}
+
+	ImGui::SameLine();
+	ShowHelpMark("The copy fill colour is used when copying to the clipboard.\nUnselected channels will be filled with this RGBA colour.");
+
+	ImGui::Checkbox("Paste Creates Image",		&profile.ClipboardPasteCreatesImage);
+	ImGui::SameLine();
+	ShowHelpMark
+	(
+		"If true a new image will be created when pasting from the clipboard.\n"
+		"If false the clipboard contents will be pasted into the current image,"
+	);
+}
 
 
 void Viewer::ShowPreferencesWindow(bool* popen)
@@ -399,43 +443,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::Separator();
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 
-// @wip
-			const char* fillColourPresetItems[] = { "Custom", "Black", "White", "Trans" };
-			ImGui::SetNextItemWidth(itemWidth);
-			int presetIndex = 0;
-			if (profile.ClipboardCopyFillColour == tColour4b::black)
-				presetIndex = 1;
-			else if (profile.ClipboardCopyFillColour == tColour4b::white)
-				presetIndex = 2;
-			else if (profile.ClipboardCopyFillColour == tColour4b::transparent)
-				presetIndex = 3;
-			if (ImGui::Combo("Copy Fill##FillColourPreset", &presetIndex, fillColourPresetItems, tNumElements(fillColourPresetItems)))
-			{
-				switch (presetIndex)
-				{
-					case 1:		profile.ClipboardCopyFillColour = tColour4b::black;			break;
-					case 2:		profile.ClipboardCopyFillColour = tColour4b::white;			break;
-					case 3:		profile.ClipboardCopyFillColour = tColour4b::transparent;	break;
-				}
-			}
-
-			ImGui::SameLine();
-			tColour4f copyColour(profile.ClipboardCopyFillColour);
-			if (ImGui::ColorEdit4("##CopyFillColour", copyColour.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview))
-			{
-				profile.ClipboardCopyFillColour.Set(copyColour);
-			}
-
-			ImGui::SameLine();
-			ShowHelpMark("The copy fill colour is used when copying to the clipboard.\nUnselected channels will be filled with this RGBA colour.");
-
-			ImGui::Checkbox("Paste Creates Image",		&profile.ClipboardPasteCreatesImage);
-			ImGui::SameLine();
-			ShowHelpMark
-			(
-				"If true a new image will be created when pasting from the clipboard.\n"
-				"If false the clipboard contents will be pasted into the current image,"
-			);
+			DoCopyPastePreferences();
 
 			tString pasteTypeName = profile.ClipboardPasteFileType;
 			tSystem::tFileType pasteType = tSystem::tGetFileTypeFromName(pasteTypeName);
