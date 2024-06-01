@@ -400,16 +400,32 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8);
 
 // @wip
+			const char* fillColourPresetItems[] = { "Custom", "Black", "White", "Trans" };
+			ImGui::SetNextItemWidth(itemWidth);
+			int presetIndex = 0;
+			if (profile.ClipboardCopyFillColour == tColour4b::black)
+				presetIndex = 1;
+			else if (profile.ClipboardCopyFillColour == tColour4b::white)
+				presetIndex = 2;
+			else if (profile.ClipboardCopyFillColour == tColour4b::transparent)
+				presetIndex = 3;
+			if (ImGui::Combo("Copy Fill##FillColourPreset", &presetIndex, fillColourPresetItems, tNumElements(fillColourPresetItems)))
+			{
+				switch (presetIndex)
+				{
+					case 1:		profile.ClipboardCopyFillColour = tColour4b::black;			break;
+					case 2:		profile.ClipboardCopyFillColour = tColour4b::white;			break;
+					case 3:		profile.ClipboardCopyFillColour = tColour4b::transparent;	break;
+				}
+			}
+
+			ImGui::SameLine();
 			tColour4f copyColour(profile.ClipboardCopyFillColour);
-			if (ImGui::ColorEdit4("Copy Fill##CopyFillColour", copyColour.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview))
+			if (ImGui::ColorEdit4("##CopyFillColour", copyColour.E, ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueBar | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview))
 			{
 				profile.ClipboardCopyFillColour.Set(copyColour);
 			}
 
-//			ImGui::SameLine();
-//			const char* backgroundItems[] = { "None", "Checker", "Solid" };
-//			ImGui::SetNextItemWidth(comboWidth);
-//			ImGui::Combo("##Background Style", &profile.BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
 			ImGui::SameLine();
 			ShowHelpMark("The copy fill colour is used when copying to the clipboard.\nUnselected channels will be filled with this RGBA colour.");
 
