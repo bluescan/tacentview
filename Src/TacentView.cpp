@@ -1170,10 +1170,6 @@ bool Viewer::OnPasteImageFromClipboard()
 {
 	using namespace tImage;
 
-	// The viewer currently requires an image file when you paste (so the filetype is known etc). Essentially what we
-	// do is create a new image file (in a lossless/saveable image format as specified by the user config), and then
-	// add a new Image based on it to the list, and finally set the current image to it. The filename needs to be unique
-	// for the current directory.
 	bool ok = false;
 	ok = clip::has(clip::image_format());
 	if (!ok)
@@ -1185,7 +1181,7 @@ bool Viewer::OnPasteImageFromClipboard()
 		return false;
 
 	//
-	// Step 1. Get the data in the necessary tPixel RGBA format with rows starting at bottom.
+	// Get the data in the necessary tPixel RGBA format with rows starting at bottom.
 	//
 	const clip::image_spec& spec = img.spec();
 	int width = spec.width;
@@ -1212,101 +1208,140 @@ bool Viewer::OnPasteImageFromClipboard()
 	img.reset();
 	Config::ProfileData& profile = Config::GetProfileData();
 
-	//
-	// Step 2. Determine filename.
-	//
-	tFileType pasteType = tGetFileTypeFromName(profile.ClipboardPasteFileType);
-	tString filename;
-	tsPrintf
-	(
-		filename, "%sClipboardImage_%s.%s",
-		Viewer::ImagesDir.Chr(),
-		tConvertTimeToString(tGetTimeLocal(), tTimeFormat::Filename).Chr(),
-		tGetExtension(pasteType).Chr()
-	);
-
-	//
-	// Step 3. Save the file in the correct format losslessly. The dstData is given to the tImage. It will delete it.
-	//
-	bool saved = false;
-	switch (pasteType)
-	{
-		case tFileType::TGA:
-		{
-			tImageTGA tga;
-			tga.Set(dstData, width, height, true);
-			tImageTGA::tFormat fmt = tga.Save(filename, tImageTGA::tFormat::Auto, tImageTGA::tCompression::None);
-			saved = (fmt != tImageTGA::tFormat::Invalid);
-			break;
-		}
-
-		case tFileType::PNG:
-		{
-			tImage::tImagePNG png;
-			png.Set(dstData, width, height, true);
-			tImagePNG::tFormat fmt = png.Save(filename, tImagePNG::tFormat::Auto);
-			saved = (fmt != tImagePNG::tFormat::Invalid);
-			break;
-		}
-
-		case tFileType::WEBP:
-		{
-			tImage::tImageWEBP webp;
-			webp.Set(dstData, width, height, true);
-			saved = webp.Save(filename, false);
-			break;
-		}
-
-		case tFileType::QOI:
-		{
-			tImage::tImageQOI qoi;
-			qoi.Set(dstData, width, height, true);
-			tImageQOI::tFormat fmt = qoi.Save(filename, tImageQOI::tFormat::Auto);
-			saved = (fmt != tImageQOI::tFormat::Invalid);
-			break;
-		}
-
-		case tFileType::BMP:
-		{
-			tImage::tImageBMP bmp;
-			bmp.Set(dstData, width, height, true);
-			tImageBMP::tFormat fmt = bmp.Save(filename, tImageBMP::tFormat::Auto);
-			saved = (fmt != tImageBMP::tFormat::Invalid);
-			break;
-		}
-
-		case tFileType::TIFF:
-		{
-			tImage::tImageTIFF tiff;
-			tiff.Set(dstData, width, height, true);
-			tImageTIFF::SaveParams params;
-			params.UseZLibCompression = true;
-			saved = tiff.Save(filename, params);
-			break;
-		}
-
-		default:
-		{
-			delete[] dstData;
-			return false;
-		}
-	}
-
-	if (!saved)
+	// At this point we have width, height, and dstData all valid. Just to be safe we will do nothing
+	// if anything is out of whack like non-positive dimensions.
+	if ((width <= 0) || (height <= 0) || !dstData)
 		return false;
 
-	tPrintf("Pasted Filename: %s\n", filename.Chr());
+	// There are two paste-modes in tacent view: create a new image or paste into the current image.
+	if (profile.ClipboardPasteCreatesImage)
+	{
+		// Essentially what we do is create a new image file (in a lossless/saveable image format as specified
+		// by the user config), and then add a new Image based on it to the list, and finally set the current
+		// image to it. The filename needs to be unique for the current directory.
 
-	//
-	// Step 4. Make image current. Add to images list, sort, and make current.
-	//
-	Image* newImg = new Image(filename);
-	Images.Append(newImg);
-	ImagesLoadTimeSorted.Append(newImg);
-	SortImages(profile.GetSortKey(), profile.SortAscending);
-	SetCurrentImage(filename);
+		//
+		// Step 1. Determine filename.
+		//
+		tFileType pasteType = tGetFileTypeFromName(profile.ClipboardPasteFileType);
+		tString filename;
+		tsPrintf
+		(
+			filename, "%sClipboardImage_%s.%s",
+			Viewer::ImagesDir.Chr(),
+			tConvertTimeToString(tGetTimeLocal(), tTimeFormat::Filename).Chr(),
+			tGetExtension(pasteType).Chr()
+		);
 
-	// In the clip sample code the clipboard is clear()-ed. I don't think we'd want to do that.
+		//
+		// Step 2. Save the file in the correct format losslessly. The dstData is given to the tImage. It will delete it.
+		//
+		bool saved = false;
+		switch (pasteType)
+		{
+			case tFileType::TGA:
+			{
+				tImageTGA tga;
+				tga.Set(dstData, width, height, true);
+				tImageTGA::tFormat fmt = tga.Save(filename, tImageTGA::tFormat::Auto, tImageTGA::tCompression::None);
+				saved = (fmt != tImageTGA::tFormat::Invalid);
+				break;
+			}
+
+			case tFileType::PNG:
+			{
+				tImage::tImagePNG png;
+				png.Set(dstData, width, height, true);
+				tImagePNG::tFormat fmt = png.Save(filename, tImagePNG::tFormat::Auto);
+				saved = (fmt != tImagePNG::tFormat::Invalid);
+				break;
+			}
+
+			case tFileType::WEBP:
+			{
+				tImage::tImageWEBP webp;
+				webp.Set(dstData, width, height, true);
+				saved = webp.Save(filename, false);
+				break;
+			}
+
+			case tFileType::QOI:
+			{
+				tImage::tImageQOI qoi;
+				qoi.Set(dstData, width, height, true);
+				tImageQOI::tFormat fmt = qoi.Save(filename, tImageQOI::tFormat::Auto);
+				saved = (fmt != tImageQOI::tFormat::Invalid);
+				break;
+			}
+
+			case tFileType::BMP:
+			{
+				tImage::tImageBMP bmp;
+				bmp.Set(dstData, width, height, true);
+				tImageBMP::tFormat fmt = bmp.Save(filename, tImageBMP::tFormat::Auto);
+				saved = (fmt != tImageBMP::tFormat::Invalid);
+				break;
+			}
+
+			case tFileType::TIFF:
+			{
+				tImage::tImageTIFF tiff;
+				tiff.Set(dstData, width, height, true);
+				tImageTIFF::SaveParams params;
+				params.UseZLibCompression = true;
+				saved = tiff.Save(filename, params);
+				break;
+			}
+
+			default:
+			{
+				delete[] dstData;
+				return false;
+			}
+		}
+
+		if (!saved)
+			return false;
+
+		tPrintf("Pasted Filename: %s\n", filename.Chr());
+
+		//
+		// Step 3. Make image current. Add to images list, sort, and make current.
+		//
+		Image* newImg = new Image(filename);
+		Images.Append(newImg);
+		ImagesLoadTimeSorted.Append(newImg);
+		SortImages(profile.GetSortKey(), profile.SortAscending);
+		SetCurrentImage(filename);
+
+		// In the clip sample code the clipboard is clear()-ed. I don't think we'd want to do that.
+	}
+
+	// The else is for the mode where we paste into the current image. At this point we have width, height, and dstData all valid.
+	else
+	{
+		if (!CurrImage)
+			return false;
+
+		comp_t channels = (Viewer::DrawChannel_R ? tCompBit_R : 0) | (Viewer::DrawChannel_G ? tCompBit_G : 0) | (Viewer::DrawChannel_B ? tCompBit_B : 0) | (Viewer::DrawChannel_A ? tCompBit_A : 0);
+		if (Viewer::DrawChannel_AsIntensity)
+		{
+			// If intensity channel view-mode is chosen we compute the clipboard RGB intensity and paste
+			// to the specific selected single channel (which may be alpha). Here we modify dstData to
+			// have intensity values only.
+			for (int p = 0; p < width*height; p++)
+			{
+				int intensity = dstData[p].Intensity();
+				dstData[p].Set(intensity, intensity, intensity, intensity);
+			}
+		}
+
+		CurrImage->Unbind();
+		CurrImage->Paste(width, height, dstData, tPicture::Anchor::LeftTop, channels);
+		CurrImage->Bind();
+		Gutil::SetWindowTitle();
+	}
+
 	return true;
 }
 

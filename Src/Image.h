@@ -176,6 +176,8 @@ public:
 	void Flip(bool horizontal);
 	bool Crop(int newWidth, int newHeight, int originX, int originY, const tColour4b& fillColour = tColour4b::black);
 	bool Crop(int newWidth, int newHeight, tImage::tPicture::Anchor, const tColour4b& fillColour = tColour4b::black);
+	bool Paste(int regionW, int regionH, const tColour4b* regionPixels, int originX, int originY, comp_t channels = tCompBit_RGBA);
+	bool Paste(int regionW, int regionH, const tColour4b* regionPixels, tImage::tPicture::Anchor, comp_t channels = tCompBit_RGBA);
 	bool Deborder(const tColour4b& borderColour, comp_t channels = tCompBit_RGBA);
 	bool Resample(int newWidth, int newHeight, tImage::tResampleFilter filter, tImage::tResampleEdgeMode edgeMode);
 	void SetPixelColour(int x, int y, const tColour4b&, bool pushUndo, bool supressDirty = false);

@@ -58,14 +58,21 @@ void Viewer::DoCopyPastePreferences(bool reducedWidth)
 	}
 
 	ImGui::SameLine();
-	ShowHelpMark("The copy fill colour is used when copying to the clipboard.\nUnselected channels will be filled with this RGBA colour.");
+	ShowHelpMark
+	(
+		"The copy fill colour is used when copying to the clipboard. Unselected\n"
+		"channels will be filled with the corresponding component of this RGBA colour."
+	);
 
 	ImGui::Checkbox("Paste Creates Image",		&profile.ClipboardPasteCreatesImage);
 	ImGui::SameLine();
 	ShowHelpMark
 	(
 		"If true a new image will be created when pasting from the clipboard.\n"
-		"If false the clipboard contents will be pasted into the current image,"
+		"If false the clipboard contents will be pasted into the current image.\n"
+		"When this is false only the selected channel filters are pasted. If\n"
+		"intensity is selected, the intensity of the pasted image is copied into\n"
+		"the single selected intensity channel which may be one of R, G, B, or A."
 	);
 }
 

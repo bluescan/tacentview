@@ -1656,6 +1656,30 @@ bool Image::Crop(int newWidth, int newHeight, tPicture::Anchor anchor, const tCo
 }
 
 
+bool Image::Paste(int regionW, int regionH, const tColour4b* regionPixels, int originX, int originY, comp_t channels)
+{
+	tString desc; tsPrintf(desc, "Paste %d %d", regionW, regionH);
+	PushUndo(desc);
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->CopyRegion(regionW, regionH, regionPixels, originX, originY, channels);
+
+	Dirty = true;
+	return true;
+}
+
+
+bool Image::Paste(int regionW, int regionH, const tColour4b* regionPixels, tImage::tPicture::Anchor anchor, comp_t channels)
+{
+	tString desc; tsPrintf(desc, "Paste %d %d", regionW, regionH);
+	PushUndo(desc);
+	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
+		picture->CopyRegion(regionW, regionH, regionPixels, anchor, channels);
+
+	Dirty = true;
+	return true;
+}
+
+
 bool Image::Deborder(const tColour4b& borderColour, comp_t channels)
 {
 	bool atLeastOneHasBorders = false;
