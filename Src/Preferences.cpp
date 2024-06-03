@@ -61,7 +61,10 @@ void Viewer::DoCopyPastePreferences(bool reducedWidth)
 	ShowHelpMark
 	(
 		"The copy fill colour is used when copying to the clipboard. Unselected\n"
-		"channels will be filled with the corresponding component of this RGBA colour."
+		"channels will be filled with the corresponding component of this RGBA colour.\n"
+		"If channel-intensity is selected in the intensity filter dialog, this fill colour\n"
+		"is not used since the chosen intensity channel is spread into the RGB of\n"
+		"the opaque clipboard image. The intensity channel may be one of R,G,B, or A."
 	);
 
 	ImGui::Checkbox("Paste Creates Image",		&profile.ClipboardPasteCreatesImage);
