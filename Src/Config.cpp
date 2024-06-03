@@ -2,7 +2,7 @@
 //
 // Viewer settings stored as human-readable symbolic expressions.
 //
-// Copyright (c) 2019-2023 Tristan Grimmer.
+// Copyright (c) 2019-2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -458,6 +458,7 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		ZoomPerImage				= (profile == Profile::Kiosk) ? false : true;
 		ClipboardCopyFillColour		= tColour4b::black;
 		ClipboardPasteCreatesImage	= true;
+		ClipboardPasteAnchor		= int(tImage::tPicture::Anchor::LeftTop);
 		ClipboardPasteFileType		.Set(tSystem::tGetFileTypeName(tSystem::tFileType::PNG));
 	}
 
@@ -523,6 +524,7 @@ void Config::ProfileData::Load(tExpression expr)
 			ReadItem(SlideshowPeriod);
 			ReadItem(ClipboardCopyFillColour);
 			ReadItem(ClipboardPasteCreatesImage);
+			ReadItem(ClipboardPasteAnchor);
 			ReadItem(ClipboardPasteFileType);
 			ReadItem(SaveSubFolder);
 			ReadItem(SaveFileType);
@@ -705,6 +707,7 @@ bool Config::ProfileData::Save(tExprWriter& writer) const
 	WriteItem(SlideshowPeriod);
 	WriteItem(ClipboardCopyFillColour);
 	WriteItem(ClipboardPasteCreatesImage);
+	WriteItem(ClipboardPasteAnchor);
 	WriteItem(ClipboardPasteFileType);
 	WriteItem(SaveSubFolder);
 	WriteItem(SaveFileType);

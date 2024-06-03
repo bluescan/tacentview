@@ -2,7 +2,7 @@
 //
 // Viewer settings stored as human-readable symbolic expressions.
 //
-// Copyright (c) 2019-2023 Tristan Grimmer.
+// Copyright (c) 2019-2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -17,6 +17,7 @@
 #include <Math/tColour.h>
 #include <System/tScript.h>
 #include <Image/tPixelFormat.h>
+#include <Image/tPicture.h>
 #include "InputBindings.h"
 
 
@@ -211,6 +212,9 @@ struct ProfileData
 	double SlideshowPeriod;
 	tColour4b ClipboardCopyFillColour;					// Used if channel not selected for copy operation.
 	bool ClipboardPasteCreatesImage;					// Pasting from clipboard creates a new image.
+	int ClipboardPasteAnchor;							// Where a pasted image gets pasted if dimensions don't match.
+	tImage::tPicture::Anchor GetPasteAnchor() const		{ return tImage::tPicture::Anchor(ClipboardPasteAnchor); }
+	void SetPasteAnchor(tImage::tPicture::Anchor anch)	{ ClipboardPasteAnchor = int(anch); }
 	tString ClipboardPasteFileType;						// If ClipboardPasteNewImage if true, this is the filetype of the new image.
 
 	tString	SaveSubFolder;

@@ -40,7 +40,7 @@ void Viewer::DoCopyPastePreferences(bool reducedWidth)
 		presetIndex = 2;
 	else if (profile.ClipboardCopyFillColour == tColour4b::transparent)
 		presetIndex = 3;
-	if (ImGui::Combo("Copy Fill##FillColourPreset", &presetIndex, fillColourPresetItems, tNumElements(fillColourPresetItems)))
+	if (ImGui::Combo("Copy Fill", &presetIndex, fillColourPresetItems, tNumElements(fillColourPresetItems)))
 	{
 		switch (presetIndex)
 		{
@@ -77,6 +77,26 @@ void Viewer::DoCopyPastePreferences(bool reducedWidth)
 		"intensity is selected, the intensity of the pasted image is copied into\n"
 		"the single selected intensity channel which may be one of R, G, B, or A."
 	);
+
+	if (!profile.ClipboardPasteCreatesImage)
+	{
+		const char* pasteAnchorItems[] =
+		{
+			"TopL", "TopM", "TopR",
+			"MidL", "MidM", "MidR",
+			"BotL", "BotM", "BotR"
+		};
+		ImGui::SetNextItemWidth(comboWidth);
+		ImGui::Combo("Paste Anchor", &profile.ClipboardPasteAnchor, pasteAnchorItems, tNumElements(pasteAnchorItems), tNumElements(pasteAnchorItems));
+		ImGui::SameLine();
+		ShowHelpMark
+		(
+			"This specifies where a pasted clipboard image will be pasted into the.\n"
+			"current image in cases where the image dimensions don't match. You may\n"
+			"choose one of 9 possible anchor positions. The most common choices are\n"
+			"top-left (TopL), middle (MidM), and bottom-left (BotL)."
+		);
+	}
 }
 
 
@@ -449,32 +469,35 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 			DoCopyPastePreferences();
 
-			tString pasteTypeName = profile.ClipboardPasteFileType;
-			tSystem::tFileType pasteType = tSystem::tGetFileTypeFromName(pasteTypeName);
-			ImGui::SetNextItemWidth(itemWidth);
-			if (ImGui::BeginCombo("Paste Type", pasteTypeName.Chr()))
+			if (profile.ClipboardPasteCreatesImage)
 			{
-				for (tSystem::tFileTypes::tFileTypeItem* item = FileTypes_ClipboardPaste.First(); item; item = item->Next())
+				tString pasteTypeName = profile.ClipboardPasteFileType;
+				tSystem::tFileType pasteType = tSystem::tGetFileTypeFromName(pasteTypeName);
+				ImGui::SetNextItemWidth(itemWidth);
+				if (ImGui::BeginCombo("Paste Type", pasteTypeName.Chr()))
 				{
-					tSystem::tFileType ft = item->FileType;
-					bool selected = (ft == pasteType);
+					for (tSystem::tFileTypes::tFileTypeItem* item = FileTypes_ClipboardPaste.First(); item; item = item->Next())
+					{
+						tSystem::tFileType ft = item->FileType;
+						bool selected = (ft == pasteType);
 
-					tString ftName = tGetFileTypeName(ft);
-					if (ImGui::Selectable(ftName.Chr(), &selected))
-						profile.ClipboardPasteFileType = ftName;
+						tString ftName = tGetFileTypeName(ft);
+						if (ImGui::Selectable(ftName.Chr(), &selected))
+							profile.ClipboardPasteFileType = ftName;
 
-					if (selected)
-						ImGui::SetItemDefaultFocus();
-				}				
-				ImGui::EndCombo();
+						if (selected)
+							ImGui::SetItemDefaultFocus();
+					}				
+					ImGui::EndCombo();
+				}
+				ImGui::SameLine();
+				ShowHelpMark
+				(
+					"When an image is pasted from the clipboard it creates a new image of this type.\n"
+					"Valid types are ones that are lossless or support lossless encoding like webp.\n"
+					"Pasted images support alpha channel. If no alpha it saves the image without it." 
+				);
 			}
-			ImGui::SameLine();
-			ShowHelpMark
-			(
-				"When an image is pasted from the clipboard it creates a new image of this type.\n"
-				"Valid types are ones that are lossless or support lossless encoding like webp.\n"
-				"Pasted images support alpha channel. If no alpha it saves the image without it." 
-			);
 
 			if (!profile.ZoomPerImage)
 			{

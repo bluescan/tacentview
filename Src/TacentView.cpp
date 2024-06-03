@@ -1337,7 +1337,7 @@ bool Viewer::OnPasteImageFromClipboard()
 		}
 
 		CurrImage->Unbind();
-		CurrImage->Paste(width, height, dstData, tPicture::Anchor::LeftTop, channels);
+		CurrImage->Paste(width, height, dstData, profile.GetPasteAnchor(), channels);
 		CurrImage->Bind();
 		Gutil::SetWindowTitle();
 	}
