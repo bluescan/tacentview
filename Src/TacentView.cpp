@@ -1166,6 +1166,99 @@ bool Viewer::OnCopyImageToClipboard()
 }
 
 
+tColour4b GetClipboard16BPPColour
+(
+	uint16 data,
+	uint32 rmask, int rshift,
+	uint32 gmask, int gshift,
+	uint32 bmask, int bshift,
+	uint32 amask, int ashift
+)
+{
+	// There is a subtle bug here for the endpoints if we don't divide by the proper range.
+	// See comment "Normalize to range" in tPixelutil.cpp.
+	float rrange = float( (rmask >> rshift) );	// e.g. 5 bits set would yield 31.0f.
+	float rf = float((data & rmask) >> rshift) / rrange;
+	float grange = float( (gmask >> gshift) );
+	float gf = float((data & gmask) >> gshift) / grange;
+	float brange = float( (bmask >> bshift) );
+	float bf = float((data & bmask) >> bshift) / brange;
+	float af = 255;
+	if (amask)
+	{
+		float arange = float( (amask >> ashift) );
+		af = float((data & amask) >> ashift) / arange;
+	}
+	
+	tColour4b col(rf, gf, bf, af);
+	return col;
+}
+
+
+tColour4b GetClipboard24BPPColour
+(
+	uint32 data,
+	uint32 rmask, int rshift,
+	uint32 gmask, int gshift,
+	uint32 bmask, int bshift,
+	uint32 amask, int ashift
+)
+{
+	// We only support 8 bit RGB masks for 24bpp. This avoids float arithmetic at the
+	// cost of possibly not supporting endpoints of some rare edge case pixel formats.
+	uint8 r = ((data & rmask) >> rshift);
+	uint8 g = ((data & gmask) >> gshift);
+	uint8 b = ((data & bmask) >> bshift);
+	uint8 a = 255;
+	tColour4b col(r, g, b, a);
+	return col;
+}
+
+
+tColour4b GetClipboard32BPPColour
+(
+	uint32 data,
+	uint32 rmask, int rshift,
+	uint32 gmask, int gshift,
+	uint32 bmask, int bshift,
+	uint32 amask, int ashift
+)
+{
+	// We only support 8 bit RGBA masks for 32bpp. This avoids float arithmetic at the
+	// cost of possibly not supporting endpoints of some rare edge case pixel formats.
+	uint8 r = ((data & rmask) >> rshift);
+	uint8 g = ((data & gmask) >> gshift);
+	uint8 b = ((data & bmask) >> bshift);
+	uint8 a = 255;
+	if (amask)
+		a = ((data & amask) >> ashift);
+	tColour4b col(r, g, b, a);
+	return col;
+}
+
+
+tColour4b GetClipboard64BPPColour
+(
+	uint64 data,
+	uint32 rmask, int rshift,
+	uint32 gmask, int gshift,
+	uint32 bmask, int bshift,
+	uint32 amask, int ashift
+)
+{
+	// We only support 16 bit RGBA masks for 64bpp. This avoids float arithmetic at the
+	// cost of possibly not supporting endpoints of some rare edge case pixel formats.
+	uint8 r = ((data & rmask) >> rshift) >> 8;
+	uint8 g = ((data & gmask) >> gshift) >> 8;
+	uint8 b = ((data & bmask) >> bshift) >> 8;
+	uint8 a = 255;
+	if (amask)
+		a = ((data & amask) >> ashift) >> 8;
+	tColour4b col(r, g, b, a);
+	return col;
+}
+
+
 bool Viewer::OnPasteImageFromClipboard()
 {
 	using namespace tImage;
@@ -1177,11 +1270,10 @@ bool Viewer::OnPasteImageFromClipboard()
 
 	clip::image img;
 	ok = clip::get_image(img);
+
+	// It is OK to just return as img goes out of scope and its destructor calls reset.
 	if (!ok || !img.is_valid())
-	{
-		img.reset();
 		return false;
-	}
 
 	//
 	// Get the data in the necessary tPixel RGBA format with rows starting at bottom.
@@ -1190,28 +1282,70 @@ bool Viewer::OnPasteImageFromClipboard()
 	int width = spec.width;
 	int height = spec.height;
 	if ((width <= 0) || (height <= 0))
-	{
-		img.reset();
 		return false;
+
+	int bpp			= spec.bits_per_pixel;
+	uint32 rmask	= spec.red_mask;		int rshift = spec.red_shift;
+	uint32 gmask	= spec.green_mask;		int gshift = spec.green_shift;
+	uint32 bmask	= spec.blue_mask;		int bshift = spec.blue_shift;
+	uint32 amask	= spec.alpha_mask;		int ashift = spec.alpha_shift;
+
+	// We support 16, 24, 32, and 64 bpp.
+	if ((bpp != 16) && (bpp != 24) && (bpp != 32) && (bpp != 64))
+		return false;
+
+	// We require masks for RGB always.
+	if (!rmask || !gmask || !bmask)
+		return false;
+
+	// For 24bpp we only support component masks that have 8 bits set and require a zero alpha mask.
+	if (bpp == 24)
+	{
+		if ((rmask >> rshift) != 0xFF)				return false;
+		if ((gmask >> gshift) != 0xFF)				return false;
+		if ((bmask >> bshift) != 0xFF)				return false;
+		if (spec.alpha_mask) 						return false;
 	}
 
-	uint32* srcData = (uint32*)img.data();
+	// For 32bpp we only support component masks that have 8 bits set.
+	if (bpp == 32)
+	{
+		if ((rmask >> rshift) != 0xFF)				return false;
+		if ((gmask >> gshift) != 0xFF)				return false;
+		if ((bmask >> bshift) != 0xFF)				return false;
+		if (amask && ((amask >> ashift) != 0xFF))	return false;
+	}
+
+	// For 64bpp we only support component masks that have 16 bits set.
+	if (bpp == 64)
+	{
+		if ((rmask >> rshift) != 0xFFFF)			return false;
+		if ((gmask >> gshift) != 0xFFFF)			return false;
+		if ((bmask >> bshift) != 0xFFFF)			return false;
+		if (amask && ((amask >> ashift) != 0xFFFF))	return false;
+	}
+
+	int bytesPerRow = spec.bytes_per_row;
+	int bytesPerPixel = bpp / 8;
+	uint8* srcData = (uint8*)img.data();
 	tPixel4b* dstData = new tPixel4b[width*height];
 
-	int bytesPerRow = width*sizeof(tPixel4b);
-	for (int y = height-1; y >= 0; y--)
-		tStd::tMemcpy((uint8*)dstData + ((height-1)-y)*bytesPerRow, (uint8*)srcData + y*bytesPerRow, bytesPerRow);
-
-	for (int p = 0; p < width*height; p++)
+	for (int y = 0; y < height; y++)
 	{
-		uint32 orig = dstData[p].BP;
-		uint32 newc =
-			(( orig & spec.red_mask  ) >> spec.red_shift  )        |
-			(((orig & spec.green_mask) >> spec.green_shift) << 8)  |
-			(((orig & spec.blue_mask ) >> spec.blue_shift ) << 16) |
-			(((orig & spec.alpha_mask) >> spec.alpha_shift) << 24);
-		dstData[p].BP = newc;
-	}
+		uint8* p = (srcData+bytesPerRow*y);
+		for (int x = 0; x < width; x++, p += bytesPerPixel)
+		{
+			tColour4b col;
+			switch (bpp)
+			{
+				case 16: col = GetClipboard16BPPColour( *((uint16*)p), rmask, rshift, gmask, gshift, bmask, bshift, amask, ashift);		break;
+				case 24: col = GetClipboard24BPPColour( *((uint32*)p), rmask, rshift, gmask, gshift, bmask, bshift, amask, ashift);		break;
+				case 32: col = GetClipboard32BPPColour( *((uint32*)p), rmask, rshift, gmask, gshift, bmask, bshift, amask, ashift);		break;
+				case 64: col = GetClipboard64BPPColour( *((uint64*)p), rmask, rshift, gmask, gshift, bmask, bshift, amask, ashift);		break;
+			}
+			dstData[width*(height-1-y) + x] = col;
+		}
+    }
 
 	// We are done with the img. We might as well clean it up now instead of waiting for scope to end.
 	img.reset();
