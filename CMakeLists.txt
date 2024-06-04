@@ -126,6 +126,8 @@ add_executable(
 
 	Contrib/clip/clip.cpp
 	$<$<PLATFORM_ID:Windows>:Contrib/clip/clip_win.cpp>
+	$<$<PLATFORM_ID:Windows>:Contrib/clip/clip_win_bmp.cpp>
+	$<$<PLATFORM_ID:Windows>:Contrib/clip/clip_win_wic.cpp>
 	$<$<PLATFORM_ID:Linux>:Contrib/clip/clip_x11.cpp>
 	Contrib/clip/image.cpp
 )
@@ -148,6 +150,7 @@ target_compile_definitions(
 	PRIVATE
 		ARCHITECTURE_X64
 		GLFW_INCLUDE_NONE
+		CLIP_ENABLE_IMAGE
 		$<$<CONFIG:Debug>:CONFIG_DEBUG>
 		$<$<CONFIG:Release>:CONFIG_RELEASE>
 		$<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_DEPRECATE>

@@ -1177,8 +1177,11 @@ bool Viewer::OnPasteImageFromClipboard()
 
 	clip::image img;
 	ok = clip::get_image(img);
-	if (!ok)
+	if (!ok || !img.is_valid())
+	{
+		img.reset();
 		return false;
+	}
 
 	//
 	// Get the data in the necessary tPixel RGBA format with rows starting at bottom.
@@ -1186,6 +1189,12 @@ bool Viewer::OnPasteImageFromClipboard()
 	const clip::image_spec& spec = img.spec();
 	int width = spec.width;
 	int height = spec.height;
+	if ((width <= 0) || (height <= 0))
+	{
+		img.reset();
+		return false;
+	}
+
 	uint32* srcData = (uint32*)img.data();
 	tPixel4b* dstData = new tPixel4b[width*height];
 
@@ -1208,10 +1217,7 @@ bool Viewer::OnPasteImageFromClipboard()
 	img.reset();
 	Config::ProfileData& profile = Config::GetProfileData();
 
-	// At this point we have width, height, and dstData all valid. Just to be safe we will do nothing
-	// if anything is out of whack like non-positive dimensions.
-	if ((width <= 0) || (height <= 0) || !dstData)
-		return false;
+	// At this point we have width, height, and dstData all valid.
 
 	// There are two paste-modes in tacent view: create a new image or paste into the current image.
 	if (profile.ClipboardPasteCreatesImage)

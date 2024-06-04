@@ -2,7 +2,7 @@
 //
 // Various dialogs and helpers including a log window, info overlay, and about window.
 //
-// Copyright (c) 2019-2023 Tristan Grimmer.
+// Copyright (c) 2019-2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -15,6 +15,7 @@
 #include <Foundation/tVersion.cmake.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <clip.h>
 #include "imgui.h"
 #include "Dialogs.h"
 #include "Image.h"
@@ -80,6 +81,7 @@ void Viewer::ShowAboutPopup(bool* popen)
 		ImGui::Text("LibTIFF V %s", tImage::Version_LibTIFF);
 		ImGui::Text("OpenEXR V %s", tImage::Version_OpenEXR);
 		ImGui::Text("ZLib V %s", tImage::Version_ZLIB);
+		ImGui::Text("Clip Library V %s", CLIP_LIBRARY_VERSION);
 		ImGui::Text("GIF Load");
 		ImGui::Text("GIF Save");
 		ImGui::Text("LibWEBP V %d.%d", tImage::Version_WEBP_Major, tImage::Version_WEBP_Minor);

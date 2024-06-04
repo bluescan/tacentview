@@ -1,5 +1,5 @@
 // Clip Library
-// Copyright (c) 2015-2022 David Capello
+// Copyright (c) 2015-2024 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,6 +11,8 @@
 #include <cassert>
 #include <memory>
 #include <string>
+#include <vector>
+#define CLIP_LIBRARY_VERSION "1.9"
 
 namespace clip {
 
@@ -21,8 +23,22 @@ namespace clip {
   // Clipboard format identifier.
   typedef size_t format;
 
+#if CLIP_ENABLE_IMAGE
   class image;
   struct image_spec;
+#endif // CLIP_ENABLE_IMAGE
+
+#if CLIP_ENABLE_LIST_FORMATS
+  struct format_info {
+    format id = 0;
+    std::string name;
+    format_info(const format id,
+                const std::string& name)
+      : id(id),
+        name(name) {
+    }
+  };
+#endif // CLIP_ENABLE_LIST_FORMATS
 
   class lock {
   public:
@@ -51,10 +67,18 @@ namespace clip {
     bool get_data(format f, char* buf, size_t len) const;
     size_t get_data_length(format f) const;
 
+#if CLIP_ENABLE_IMAGE
     // For images
     bool set_image(const image& image);
     bool get_image(image& image) const;
     bool get_image_spec(image_spec& spec) const;
+#endif // CLIP_ENABLE_IMAGE
+
+#if CLIP_ENABLE_LIST_FORMATS
+    // Returns the list of available formats (by name) in the
+    // clipboard.
+    std::vector<format_info> list_formats() const;
+#endif // CLIP_ENABLE_LIST_FORMATS
 
   private:
     class impl;
@@ -69,8 +93,10 @@ namespace clip {
   // When the clipboard has UTF8 text.
   format text_format();
 
+#if CLIP_ENABLE_IMAGE
   // When the clipboard has an image.
   format image_format();
+#endif
 
   // Returns true if the clipboard has content of the given type.
   bool has(format f);
@@ -84,7 +110,9 @@ namespace clip {
 
   enum class ErrorCode {
     CannotLock,
+#if CLIP_ENABLE_IMAGE
     ImageNotSupported,
+#endif
   };
 
   typedef void (*error_handler)(ErrorCode code);
@@ -104,6 +132,8 @@ namespace clip {
   // ======================================================================
   // Image
   // ======================================================================
+
+#if CLIP_ENABLE_IMAGE
 
   struct image_spec {
     unsigned long width = 0;
@@ -164,6 +194,8 @@ namespace clip {
   bool set_image(const image& img);
   bool get_image(image& img);
   bool get_image_spec(image_spec& spec);
+
+#endif // CLIP_ENABLE_IMAGE
 
   // ======================================================================
   // Platform-specific
