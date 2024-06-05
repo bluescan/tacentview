@@ -215,6 +215,8 @@ struct ProfileData
 	int ClipboardPasteAnchor;							// Where a pasted image gets pasted if dimensions don't match.
 	tImage::tPicture::Anchor GetPasteAnchor() const		{ return tImage::tPicture::Anchor(ClipboardPasteAnchor); }
 	void SetPasteAnchor(tImage::tPicture::Anchor anch)	{ ClipboardPasteAnchor = int(anch); }
+	int ClipboardPasteRollH;
+	int ClipboardPasteRollV;
 	tString ClipboardPasteFileType;						// If ClipboardPasteNewImage if true, this is the filetype of the new image.
 
 	tString	SaveSubFolder;

@@ -1351,6 +1351,44 @@ bool Viewer::OnPasteImageFromClipboard()
 	img.reset();
 	Config::ProfileData& profile = Config::GetProfileData();
 
+	// This is a workaround for systems that have content in the clipboard that is rolled a few
+	// pixels either horizontally or vertically. It's slow but not needed by most users.
+	if (profile.ClipboardPasteRollH)
+	{
+		tPixel4b* rolledData = new tPixel4b[width*height];
+		int startCol = tMod(-profile.ClipboardPasteRollH, width);
+		for (int x = 0; x < width; x++)
+		{
+			for (int y = 0; y < height; y++)
+			{
+				rolledData[width*y + x] = dstData[width*y + startCol];
+			}
+			startCol++;
+			startCol = tMod(startCol, width);
+		}
+
+		delete[] dstData;
+		dstData = rolledData;
+	}
+
+	if (profile.ClipboardPasteRollV)
+	{
+		tPixel4b* rolledData = new tPixel4b[width*height];
+		int startRow = tMod(-profile.ClipboardPasteRollV, height);
+		for (int y = 0; y < height; y++)
+		{
+			for (int x = 0; x < width; x++)
+			{
+				rolledData[width*y + x] = dstData[width*startRow + x];
+			}
+			startRow++;
+			startRow = tMod(startRow, height);
+		}
+
+		delete[] dstData;
+		dstData = rolledData;
+	}
+
 	// At this point we have width, height, and dstData all valid.
 
 	// There are two paste-modes in tacent view: create a new image or paste into the current image.

@@ -499,6 +499,23 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				);
 			}
 
+			ImGui::SetNextItemWidth(itemWidth);
+			int roll[2] = { profile.ClipboardPasteRollH, profile.ClipboardPasteRollV };
+			if (ImGui::InputInt2("Paste Roll", roll))
+			{
+				tiClamp(roll[0], -16383, 16384);
+				tiClamp(roll[1], -16383, 16384);
+				profile.ClipboardPasteRollH = roll[0];
+				profile.ClipboardPasteRollV = roll[1];
+			}
+			ImGui::SameLine();
+			ShowHelpMark
+			(
+				"This may be used if when pasting an image the pixels are not\n"
+				"aligned properly. The first integer rolls the image horizontally\n"
+				"when pasting, the second rolls vertically. Negatives are allowed."
+			);
+
 			if (!profile.ZoomPerImage)
 			{
 				Gutil::Separator();

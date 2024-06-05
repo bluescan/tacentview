@@ -459,6 +459,8 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		ClipboardCopyFillColour		= tColour4b::black;
 		ClipboardPasteCreatesImage	= true;
 		ClipboardPasteAnchor		= int(tImage::tPicture::Anchor::LeftTop);
+		ClipboardPasteRollH			= 0;
+		ClipboardPasteRollV			= 0;
 		ClipboardPasteFileType		.Set(tSystem::tGetFileTypeName(tSystem::tFileType::PNG));
 	}
 
@@ -525,6 +527,8 @@ void Config::ProfileData::Load(tExpression expr)
 			ReadItem(ClipboardCopyFillColour);
 			ReadItem(ClipboardPasteCreatesImage);
 			ReadItem(ClipboardPasteAnchor);
+			ReadItem(ClipboardPasteRollH);
+			ReadItem(ClipboardPasteRollV);
 			ReadItem(ClipboardPasteFileType);
 			ReadItem(SaveSubFolder);
 			ReadItem(SaveFileType);
@@ -708,6 +712,8 @@ bool Config::ProfileData::Save(tExprWriter& writer) const
 	WriteItem(ClipboardCopyFillColour);
 	WriteItem(ClipboardPasteCreatesImage);
 	WriteItem(ClipboardPasteAnchor);
+	WriteItem(ClipboardPasteRollH);
+	WriteItem(ClipboardPasteRollV);
 	WriteItem(ClipboardPasteFileType);
 	WriteItem(SaveSubFolder);
 	WriteItem(SaveFileType);
