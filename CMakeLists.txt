@@ -37,6 +37,15 @@ if (Git_FOUND)
 	message(STATUS "Viewer -- Git found: ${GIT_EXECUTABLE}")
 endif()
 
+# We want a better default for install prefix. It is bad form to be modifying
+# system files from a cmake build of anything. Really quite surprised someone
+# thinks the cmake defaults are good.
+# message(STATUS "init=${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT}")
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+	set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE PATH "..." FORCE)
+endif()
+message(STATUS "Viewer -- InstallPrefix ${CMAKE_INSTALL_PREFIX}")
+
 include(FetchContent)
 
 # Grab the Tacent library from github at configure time. Set desired options here first.
