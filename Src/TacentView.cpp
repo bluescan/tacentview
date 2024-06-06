@@ -1309,7 +1309,7 @@ bool Viewer::OnPasteImageFromClipboard()
 	}
 
 	// For 32bpp we only support component masks that have 8 bits set.
-	if (bpp == 32)
+	else if (bpp == 32)
 	{
 		if ((rmask >> rshift) != 0xFF)				return false;
 		if ((gmask >> gshift) != 0xFF)				return false;
@@ -1318,13 +1318,14 @@ bool Viewer::OnPasteImageFromClipboard()
 	}
 
 	// For 64bpp we only support component masks that have 16 bits set.
-	if (bpp == 64)
+	else if (bpp == 64)
 	{
 		if ((rmask >> rshift) != 0xFFFF)			return false;
 		if ((gmask >> gshift) != 0xFFFF)			return false;
 		if ((bmask >> bshift) != 0xFFFF)			return false;
 		if (amask && ((amask >> ashift) != 0xFFFF))	return false;
 	}
+	// We fall through here so that the 16bpp version of GetClipboard16BPPColour will be called.
 
 	int bytesPerRow = spec.bytes_per_row;
 	int bytesPerPixel = bpp / 8;
