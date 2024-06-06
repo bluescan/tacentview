@@ -2,7 +2,7 @@
 //
 // Allows you to set key bindings for all TacentView operations.
 //
-// Copyright (c) 2022-2023 Tristan Grimmer.
+// Copyright (c) 2022-2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -204,7 +204,8 @@ const char* Bindings::OperationDescriptions[] =
 	"Main Profile",
 	"Basic Profile",
 	"Kiosk Profile",
-	"Refresh Directory"
+	"Refresh Directory",
+	"Alt Profile"
 	// Add new entries here.
 };
 tStaticAssert(sizeof(Bindings::OperationDescriptions)/sizeof(*Bindings::OperationDescriptions) == int(Bindings::Operation::NumOperations));
@@ -407,6 +408,7 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 	AssignKey(GLFW_KEY_1,			Modifier_Alt,					Operation::ProfileMain,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_2,			Modifier_Alt,					Operation::ProfileBasic,			onlyIfUnassigned);
 	AssignKey(GLFW_KEY_3,			Modifier_Alt,					Operation::ProfileKiosk,			onlyIfUnassigned);
+	AssignKey(GLFW_KEY_4,			Modifier_Alt,					Operation::ProfileAlt,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_P,			Modifier_None,					Operation::Preferences,				onlyIfUnassigned);
 
 	// This one is special and can't be reassigned or removed. This is because the user _could_ turn off the menu,
@@ -526,6 +528,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 			case int(Profile::Main):	prof = &Config::MainProfile;	break;
 			case int(Profile::Basic):	prof = &Config::BasicProfile;	break;
 			case int(Profile::Kiosk):	prof = &Config::KioskProfile;	break;
+			case int(Profile::Alt):		prof = &Config::AltProfile;		break;
 		}
 		tAssert(prof);
 
@@ -540,6 +543,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 			Config::MainProfile.InputBindings.Reset(Profile::Main);
 			Config::BasicProfile.InputBindings.Reset(Profile::Basic);
 			Config::KioskProfile.InputBindings.Reset(Profile::Kiosk);
+			Config::AltProfile.InputBindings.Reset(Profile::Alt);
 		}
 		ShowToolTip("Resets the key bindings to default for all profiles.");
 
@@ -550,6 +554,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 			Config::MainProfile.InputBindings = prof->InputBindings;
 			Config::BasicProfile.InputBindings = prof->InputBindings;
 			Config::KioskProfile.InputBindings = prof->InputBindings;
+			Config::AltProfile.InputBindings = prof->InputBindings;
 		}
 		ShowToolTip("Copies the keybindings to all profiles. Useful if you want them all the same.");
 

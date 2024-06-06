@@ -383,6 +383,7 @@ namespace Viewer
 	inline void OnProfileMain();
 	inline void OnProfileBasic();
 	inline void OnProfileKiosk();
+	inline void OnProfileAlt();
 	inline void OnPreferences();
 	inline void OnKeyBindings();
 	inline void OnChangeScreenMode();
@@ -1586,6 +1587,7 @@ void Viewer::OnDebugLog()			{ Config::ProfileData& profile = Config::GetProfileD
 void Viewer::OnProfileMain()		{ if (!CropMode && (Config::GetProfile() != Profile::Main)) ChangProfile(Profile::Main); }
 void Viewer::OnProfileBasic()		{ if (!CropMode && (Config::GetProfile() != Profile::Basic)) ChangProfile(Profile::Basic); }
 void Viewer::OnProfileKiosk()		{ if (!CropMode && (Config::GetProfile() != Profile::Kiosk)) ChangProfile(Profile::Kiosk); }
+void Viewer::OnProfileAlt()			{ if (!CropMode && (Config::GetProfile() != Profile::Alt)) ChangProfile(Profile::Alt); }
 void Viewer::OnPreferences()		{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowPreferences = !profile.ShowPreferences; }
 void Viewer::OnKeyBindings()		{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowBindingsWindow = !profile.ShowBindingsWindow; if (profile.ShowBindingsWindow) BindingsWindowJustOpened = true; }
 void Viewer::OnChangeScreenMode()	{ Config::ProfileData& profile = Config::GetProfileData(); ChangeScreenMode(!profile.FullscreenMode); }
@@ -1972,6 +1974,11 @@ int Viewer::DoMainMenuBar()
 			tString kioskProfKey = profile.InputBindings.FindModKeyText(Bindings::Operation::ProfileKiosk);
 			if (ImGui::MenuItem("Kiosk Profile", kioskProfKey.Chz(), &kioskProfile))
 				ChangProfile(Profile::Kiosk);
+
+			bool altProfile = Config::GetProfile() == Profile::Alt;
+			tString altProfKey = profile.InputBindings.FindModKeyText(Bindings::Operation::ProfileAlt);
+			if (ImGui::MenuItem("Alt Profile", altProfKey.Chz(), &altProfile))
+				ChangProfile(Profile::Alt);
 
 			ImGui::Separator();
 
@@ -3702,6 +3709,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case Bindings::Operation::ProfileMain:			OnProfileMain();				break;
 		case Bindings::Operation::ProfileBasic:			OnProfileBasic();				break;
 		case Bindings::Operation::ProfileKiosk:			OnProfileKiosk();				break;
+		case Bindings::Operation::ProfileAlt:			OnProfileAlt();					break;
 		case Bindings::Operation::Preferences:			OnPreferences();				break;
 		case Bindings::Operation::KeyBindings:			OnKeyBindings();				break;
 		case Bindings::Operation::Fullscreen:			OnChangeScreenMode();			break;
@@ -4058,6 +4066,7 @@ int main(int argc, char** argv)
 			case tHash::tHashCT("main"):	overridProfile = Viewer::Profile::Main;		break;
 			case tHash::tHashCT("basic"):	overridProfile = Viewer::Profile::Basic;	break;
 			case tHash::tHashCT("kiosk"):	overridProfile = Viewer::Profile::Kiosk;	break;
+			case tHash::tHashCT("alt"):		overridProfile = Viewer::Profile::Alt;		break;
 		}
 	}
 	if (overridProfile != Viewer::Profile::Invalid)

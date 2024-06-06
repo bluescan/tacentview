@@ -22,6 +22,7 @@ namespace Viewer
 		Main,
 		Basic,
 		Kiosk,
+		Alt,
 		NumProfiles,
 		Invalid = NumProfiles
 	};

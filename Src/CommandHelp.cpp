@@ -2,7 +2,7 @@
 //
 // Command line help text.
 //
-// Copyright (c) 2023 Tristan Grimmer.
+// Copyright (c) 2023, 2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -830,7 +830,7 @@ To launch in GUI mode run without any arguments or with the file or directory
 you want to open as the argument. Directories should be specified with a
 trailing slash. You may optionally specify the profile to use with the
 --profile (-p) command followed by the profile name. Current profile names
-are 'main', 'basic', and 'kiosk'.
+are 'main', 'basic', 'kiosk', and 'alt'.
 
 When launched with --profile the active profile is not remembered on exit.
 Changes made to the profile are, however, persistent. Changes can include

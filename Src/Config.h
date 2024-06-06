@@ -364,6 +364,7 @@ extern GlobalData Global;
 extern ProfileData MainProfile;
 extern ProfileData BasicProfile;
 extern ProfileData KioskProfile;
+extern ProfileData AltProfile;
 extern ProfileData* Current;
 
 

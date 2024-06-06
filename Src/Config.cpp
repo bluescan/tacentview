@@ -44,6 +44,7 @@ namespace Config
 	ProfileData MainProfile(Profile::Main);
 	ProfileData BasicProfile(Profile::Basic);
 	ProfileData KioskProfile(Profile::Kiosk);
+	ProfileData AltProfile(Profile::Alt);
 	ProfileData* Current = &MainProfile;
 }
 
@@ -58,6 +59,7 @@ void Config::SetProfile(Profile profile)
 		case Profile::Main:		Current = &MainProfile;		break;
 		case Profile::Basic:	Current = &BasicProfile;	break;
 		case Profile::Kiosk:	Current = &KioskProfile;	break;
+		case Profile::Alt:		Current = &AltProfile;		break;
 	}
 	Global.CurrentProfile = int(profile);
 }
@@ -86,6 +88,7 @@ void Config::ResetAllProfiles(uint32 categories)
 	MainProfile.Reset(Profile::Main, categories);
 	BasicProfile.Reset(Profile::Basic, categories);
 	KioskProfile.Reset(Profile::Kiosk, categories);
+	AltProfile.Reset(Profile::Alt, categories);
 }
 
 
@@ -120,6 +123,11 @@ void Config::Save(const tString& filename)
 	KioskProfile.Name = "KioskProfile";
 	KioskProfile.Save(writer);
 	writer.CR();
+	writer.CR();
+
+	AltProfile.Name = "AltProfile";
+	AltProfile.Save(writer);
+	writer.CR();
 
 	// Save the file dialog settings.
 	tFileDialog::Save(writer, "FileDialog");
@@ -141,6 +149,7 @@ void Config::Load(const tString& filename)
 	bool loadedMainProfile	= false;
 	bool loadedBasicProfile	= false;
 	bool loadedKioskProfile	= false;
+	bool loadedAltProfile	= false;
 	bool loadedFileDialog	= false;
 	tExprReader reader(filename);
 	for (tExpr e = reader.First(); e.IsValid(); e = e.Next())
@@ -167,6 +176,11 @@ void Config::Load(const tString& filename)
 				loadedKioskProfile = true;
 				break;
 
+			case tHash::tHashCT("AltProfile"):
+				AltProfile.Load(e);
+				loadedAltProfile = true;
+				break;
+
 			case tHash::tHashCT("FileDialog"):
 				tFileDialog::Load(e, "FileDialog");
 				loadedFileDialog = true;
@@ -189,6 +203,9 @@ void Config::Load(const tString& filename)
 	if (!loadedKioskProfile)
 		KioskProfile.Reset(Viewer::Profile::Kiosk, Category_All);
 
+	if (!loadedAltProfile)
+		AltProfile.Reset(Viewer::Profile::Alt, Category_All);
+
 	if (!loadedFileDialog)
 		tFileDialog::Reset();
 
@@ -201,6 +218,7 @@ void Config::Load(const tString& filename)
 	MainProfile.InputBindings.Reset(Viewer::Profile::Main, onlyIfUnassigned);
 	BasicProfile.InputBindings.Reset(Viewer::Profile::Basic, onlyIfUnassigned);
 	KioskProfile.InputBindings.Reset(Viewer::Profile::Kiosk, onlyIfUnassigned);
+	AltProfile.InputBindings.Reset(Viewer::Profile::Alt, onlyIfUnassigned);
 
 	// Add stuff here if you care about what version you loaded from.
 	if (Global.ConfigVersion <= 2)
@@ -216,6 +234,7 @@ void Config::Load(const tString& filename)
 		case Profile::Main:		Current = &MainProfile;		break;
 		case Profile::Basic:	Current = &BasicProfile;	break;
 		case Profile::Kiosk:	Current = &KioskProfile;	break;
+		case Profile::Alt:		Current = &AltProfile;		break;
 		default:				Current = &MainProfile;		break;
 	}
 }
@@ -412,6 +431,7 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 			case Profile::Main:		ReticleMode = int(ReticleModeEnum::OnSelect);		break;
 			case Profile::Basic:	ReticleMode = int(ReticleModeEnum::AutoHide);		break;
 			case Profile::Kiosk:	ReticleMode = int(ReticleModeEnum::AlwaysHidden);	break;
+			case Profile::Alt:		ReticleMode = int(ReticleModeEnum::OnSelect);		break;
 		}
 		UISize						= int(UISizeEnum::Auto);
 	}
@@ -423,10 +443,11 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		SlideshowProgressArc		= true;
 		switch (profile)
 		{
-			default:				
+			default:
 			case Profile::Main:		SlideshowPeriod = 4.0f;		break;
 			case Profile::Basic:	SlideshowPeriod = 8.0f;		break;
 			case Profile::Kiosk:	SlideshowPeriod = 16.0f;	break;
+			case Profile::Alt:		SlideshowPeriod = 4.0f;		break;
 		}
 
 		SortKey						= (profile == Profile::Kiosk) ? int(SortKeyEnum::Shuffle) : int(SortKeyEnum::FileName);
