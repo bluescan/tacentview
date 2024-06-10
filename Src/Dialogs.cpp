@@ -29,7 +29,7 @@ namespace Viewer { extern OutputLog OutLog; }
 void Viewer::ShowAboutPopup(bool* popen)
 {
 	tVector2 windowPos = Gutil::GetDialogOrigin(Gutil::DialogID::About);
-	tVector2 windowSize = Gutil::GetUIParamScaled(tVector2(260.0f, 400.0f), 2.5f);
+	tVector2 windowSize = Gutil::GetUIParamScaled(tVector2(280.0f, 400.0f), 2.5f);
 
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
@@ -89,7 +89,7 @@ void Viewer::ShowAboutPopup(bool* popen)
 		ImGui::Text("LibPNG V %s", tImage::Version_LibPNG);
 		ImGui::Text("APNGDis V %s", tImage::Version_ApngDis);
 		ImGui::Text("APNGAsm V %s", tImage::Version_ApngAsm);
-		ImGui::Text("LibKTX V %s", tImage::Version_LibKTX);
+		ImGui::Text("LibKTX %s", tImage::Version_LibKTX);
 		ImGui::Text("TinyXML2 V %d.%d.%d", tImage::Version_TinyXML2_Major, tImage::Version_TinyXML2_Minor, tImage::Version_TinyXML2_Patch);
 		ImGui::Text("TinyEXIF V %d.%d.%d", tImage::Version_TinyEXIF_Major, tImage::Version_TinyEXIF_Minor, tImage::Version_TinyEXIF_Patch);
 		ImGui::Text("QOI");
