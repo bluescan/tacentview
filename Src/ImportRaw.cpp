@@ -12,34 +12,26 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
-//#include <Foundation/tVersion.cmake.h>
 #include <Math/tVector2.h>
-//#include <Math/tColour.h>
-//#include <Image/tImageJPG.h>
+#include <Math/tColour.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "imgui.h"
 #include "GuiUtil.h"
 #include "ImportRaw.h"
-//#include "Config.h"
-//#include "Image.h"
-//#include "TacentView.h"
-//#include "Preferences.h"
-//#include "Version.cmake.h"
+#include "Config.h"
 using namespace tMath;
 using namespace Gutil;
 
 
 namespace Viewer
 {
-//
+	// @wip
 }
 
 
 void Viewer::ShowImportRawOverlay(bool* popen)
 {
-	#if 0
-	// @wip
 	tVector2 windowPos = GetDialogOrigin(DialogID::ImportRaw);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGuiWindowFlags flags =
@@ -48,15 +40,25 @@ void Viewer::ShowImportRawOverlay(bool* popen)
 
 	if (ImGui::Begin("Import Raw", popen, flags))
 	{
-		ImGui::Text("Select File");
-		static bool testBool = false;
-		if (ImGui::Checkbox("Channel Intensity", &testBool))
-		{
-		}
+		Config::ProfileData& profile = Config::GetProfileData();
+
+		// @wip Select File
+
+		if (ImGui::InputInt("Width##ImportRaw", &profile.ImportRawWidth))
+			tiClamp(profile.ImportRawWidth, 1, 65536);
+
+		if (ImGui::InputInt("Height##ImportRaw", &profile.ImportRawHeight))
+			tiClamp(profile.ImportRawHeight, 1, 65536);
+
+		ImGui::Checkbox("Mipmaps##ImportRaw", &profile.ImportRawMipmaps);
 
 		Gutil::Separator();
+		if (ImGui::InputInt("Data Offset##ImportRaw", &profile.ImportRawDataOffset))
+			tiClamp(profile.ImportRawDataOffset, 0, 65535);
+
+		// @wip ImportRawPixelFormat
+		// @wip ImportRawColourProfile
 	}
 
 	ImGui::End();
-	#endif
 }

@@ -26,6 +26,7 @@
 #include <System/tScript.h>
 #include <Image/tResample.h>
 #include <Image/tQuantize.h>
+#include <Image/tPixelFormat.h>
 #include "Config.h"
 #include "Image.h"
 #include "FileDialog.h"
@@ -405,6 +406,12 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		SaveAllSizeMode				= 0;
 		FillColour					= tColour4b::black;
 		FillColourContact			= tColour4b::transparent;
+		ImportRawWidth				= 256;
+		ImportRawHeight				= 128;
+		ImportRawMipmaps			= false;
+		ImportRawDataOffset			= 0;
+		ImportRawPixelFormat		= 0;
+		ImportRawColourProfile		= 0;
 		LevelsPowerMidGamma			= true;
 		LevelsAutoMidPoint			= false;
 		LevelsLogarithmicHisto		= true;
@@ -592,6 +599,12 @@ void Config::ProfileData::Load(tExpression expr)
 
 			ReadItem(FillColour);
 			ReadItem(FillColourContact);
+			ReadItem(ImportRawWidth);
+			ReadItem(ImportRawHeight);
+			ReadItem(ImportRawMipmaps);
+			ReadItem(ImportRawDataOffset);
+			ReadItem(ImportRawPixelFormat);
+			ReadItem(ImportRawColourProfile);
 			ReadItem(LevelsPowerMidGamma);
 			ReadItem(LevelsAutoMidPoint);
 			ReadItem(LevelsLogarithmicHisto);
@@ -636,6 +649,11 @@ void Config::ProfileData::Load(tExpression expr)
 	tiClamp		(OverlayCorner, 0, 3);
 	tiClamp		(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
 	tiClamp		(SortKey, 0, int(SortKeyEnum::NumKeys)-1);
+	tiClamp		(ImportRawWidth, 1, 65536);
+	tiClamp		(ImportRawHeight, 1, 65536);
+	tiClamp		(ImportRawDataOffset, 0, 65535);
+	tiClamp		(ImportRawPixelFormat, int(tImage::tPixelFormat::FirstContiguous), int(tImage::tPixelFormat::LastContiguous));
+	tiClamp		(ImportRawColourProfile, 0, int(tColourProfile::NumProfiles) - 1);
 	tiClamp		(CropAnchor, -1, 9);
 	tiClamp		(CropAspectRatio, int(tImage::tAspectRatio::Free), int(tImage::tAspectRatio::User));
 	tiClamp		(CropAspectUserNum, 1, 99);
@@ -776,6 +794,12 @@ bool Config::ProfileData::Save(tExprWriter& writer) const
 
 	WriteItem(FillColour);
 	WriteItem(FillColourContact);
+	WriteItem(ImportRawWidth);
+	WriteItem(ImportRawHeight);
+	WriteItem(ImportRawMipmaps);
+	WriteItem(ImportRawDataOffset);
+	WriteItem(ImportRawPixelFormat);
+	WriteItem(ImportRawColourProfile);
 	WriteItem(LevelsPowerMidGamma);
 	WriteItem(LevelsAutoMidPoint);
 	WriteItem(LevelsLogarithmicHisto);
