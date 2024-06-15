@@ -60,6 +60,7 @@ struct ProfileData
 	bool ShowPixelEditor;
 	bool ShowPreferences;
 	bool ShowChannelFilter;
+	bool ShowImportRaw;
 	bool ShowFrameScrubber;
 	bool ShowThumbnailView;
 	bool ShowPropsWindow;

@@ -1,8 +1,8 @@
-// Profile.cpp
+// ImportRaw.h
 //
-// The viewer profile enum.
+// Import contiguous raw pixel data from any file.
 //
-// Copyright (c) 2022-2024 Tristan Grimmer.
+// Copyright (c) 2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -12,30 +12,11 @@
 // AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
-#include <Foundation/tFundamentals.h>
-#include "Profile.h"
+#pragma once
+
+
 namespace Viewer
 {
-
-
-const char* ProfileNames[] =
-{
-	"Main",
-	"Basic",
-	"Kiosk",
-	"Alt"
-};
-tStaticAssert(tNumElements(ProfileNames) == int(Profile::NumProfiles));
-
-
-const char* ProfileNamesLong[] =
-{
-	"Main Profile",
-	"Basic Profile",
-	"Kiosk Profile",
-	"Alt Profile"
-};
-tStaticAssert(tNumElements(ProfileNamesLong) == int(Profile::NumProfiles));
-
-
+	//void ShowChannelFilterOverlay(bool* popen);
+	void ShowImportRawOverlay(bool* popen);
 }

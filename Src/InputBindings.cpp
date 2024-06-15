@@ -205,7 +205,8 @@ const char* Bindings::OperationDescriptions[] =
 	"Basic Profile",
 	"Kiosk Profile",
 	"Refresh Directory",
-	"Alt Profile"
+	"Alt Profile",
+	"Import Raw"
 	// Add new entries here.
 };
 tStaticAssert(sizeof(Bindings::OperationDescriptions)/sizeof(*Bindings::OperationDescriptions) == int(Bindings::Operation::NumOperations));
@@ -373,6 +374,7 @@ void Bindings::InputMap::Reset(Viewer::Profile profile, bool onlyIfUnassigned)
 	AssignKey(GLFW_KEY_Q,			Modifier_None,					Operation::Quantize,				onlyIfUnassigned);
 
 	AssignKey(GLFW_KEY_I,			Modifier_None,					Operation::Details,					onlyIfUnassigned);
+	AssignKey(GLFW_KEY_I,			Modifier_Ctrl,					Operation::ImportRaw,				onlyIfUnassigned);
 	AssignKey(GLFW_KEY_X,			Modifier_None,					Operation::MetaData,				onlyIfUnassigned);	// Update enum pending.
 	AssignKey(GLFW_KEY_T,			Modifier_Ctrl,					Operation::Tile,					onlyIfUnassigned);
 	AssignKey(GLFW_KEY_Z,			Modifier_Ctrl,					Operation::Undo,					onlyIfUnassigned);

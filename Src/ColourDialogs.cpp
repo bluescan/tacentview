@@ -24,7 +24,6 @@
 #include "Config.h"
 #include "Image.h"
 #include "TacentView.h"
-#include "GuiUtil.h"
 #include "Preferences.h"
 #include "Version.cmake.h"
 using namespace tMath;

@@ -48,6 +48,7 @@
 #include "GuiUtil.h"
 #include "Image.h"
 #include "ColourDialogs.h"
+#include "ImportRaw.h"
 #include "Dialogs.h"
 #include "Details.h"
 #include "Preferences.h"
@@ -350,6 +351,7 @@ namespace Viewer
 	inline void OnPixelEdit();
 	inline void OnPropertyEdit();
 	inline void OnChannelFilter();
+	inline void OnImportRaw();
 	inline void OnLevels();
 	inline void OnQuantize();
 	inline void OnRedChannel();
@@ -1069,6 +1071,7 @@ void Viewer::OnResizeCanvas()		{ if (CurrImage && CurrImage->IsLoaded()) Request
 void Viewer::OnPixelEdit()			{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowPixelEditor = !profile.ShowPixelEditor; }
 void Viewer::OnPropertyEdit()		{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowPropsWindow = !profile.ShowPropsWindow; }
 void Viewer::OnChannelFilter()		{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowChannelFilter = !profile.ShowChannelFilter; }
+void Viewer::OnImportRaw()			{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowImportRaw = !profile.ShowImportRaw; }
 void Viewer::OnLevels()				{ if (CurrImage && CurrImage->IsLoaded() && !CurrImage->IsAltPictureEnabled()) Request_LevelsModal = true; }
 void Viewer::OnQuantize()			{ if (CurrImage && CurrImage->IsLoaded() && !CurrImage->IsAltPictureEnabled()) Request_QuantizeModal = true; }
 void Viewer::OnRedChannel()			{ Config::ProfileData& profile = Config::GetProfileData(); if (DrawChannel_AsIntensity) { DrawChannel_R = true; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = false; } else DrawChannel_R = !DrawChannel_R; profile.ShowChannelFilter = true; }
@@ -1956,6 +1959,9 @@ int Viewer::DoMainMenuBar()
 			tString pasteKey = profile.InputBindings.FindModKeyText(Bindings::Operation::Paste);
 			if (ImGui::MenuItem("Paste Image", pasteKey.Chz()))
 				Viewer::OnPasteImageFromClipboard();
+
+			tString importRawKey = profile.InputBindings.FindModKeyText(Bindings::Operation::ImportRaw);
+			ImGui::MenuItem("Import Raw...", importRawKey.Chz(), &profile.ShowImportRaw);
 
 			ImGui::Separator();
 
@@ -3421,6 +3427,9 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (profile.ShowChannelFilter)
 		ShowChannelFilterOverlay(&profile.ShowChannelFilter);
 
+	if (profile.ShowImportRaw)
+		ShowImportRawOverlay(&profile.ShowImportRaw);
+
 	if (profile.ShowImageDetails)
 	{
 		float zoomPercent = GetZoomPercent();
@@ -3688,6 +3697,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case Bindings::Operation::Redo:					OnRedo();						break;
 		case Bindings::Operation::Copy:					OnCopyImageToClipboard();		break;
 		case Bindings::Operation::Paste:				OnPasteImageFromClipboard();	break;
+		case Bindings::Operation::ImportRaw:			OnImportRaw();					break;
 		case Bindings::Operation::Refresh:				OnRefresh();					break;
 		case Bindings::Operation::RefreshDir:			OnRefreshDir();					break;
 		case Bindings::Operation::Rename:				OnRename();						break;

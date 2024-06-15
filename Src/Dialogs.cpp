@@ -478,7 +478,6 @@ void Viewer::ShowOutputLogPopup(bool* popen)
 	tVector2 windowSize = Gutil::GetUIParamScaled(tVector2(410.0f, 220.0f), 2.65f);
 
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
-	// @wip ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
 	tVector2 minConstraint = windowSize * 0.53f;
 	ImGui::SetNextWindowSizeConstraints(minConstraint, tVector2(4096.0f, 4096.0f));

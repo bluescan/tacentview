@@ -352,6 +352,7 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		ShowPixelEditor				= false;
 		ShowPreferences				= false;
 		ShowChannelFilter			= false;
+		ShowImportRaw				= false;
 		ShowFrameScrubber			= (profile == Profile::Basic) || (profile == Profile::Kiosk) ? false : true;
 		ShowThumbnailView			= false;
 		ShowPropsWindow				= false;
@@ -507,6 +508,7 @@ void Config::ProfileData::Load(tExpression expr)
 			ReadItem(ShowPixelEditor);
 			ReadItem(ShowPreferences);
 			ReadItem(ShowChannelFilter);
+			ReadItem(ShowImportRaw);
 			ReadItem(ShowFrameScrubber);
 			ReadItem(ShowThumbnailView);
 			ReadItem(ShowPropsWindow);
@@ -692,6 +694,7 @@ bool Config::ProfileData::Save(tExprWriter& writer) const
 	WriteItem(ShowPixelEditor);
 	WriteItem(ShowPreferences);
 	WriteItem(ShowChannelFilter);
+	WriteItem(ShowImportRaw);
 	WriteItem(ShowFrameScrubber);
 	WriteItem(ShowThumbnailView);
 	WriteItem(ShowPropsWindow);

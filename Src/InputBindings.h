@@ -120,6 +120,7 @@ namespace Bindings
 		ProfileKiosk,			// Activate the kiosk profile.
 		RefreshDir,				// Manually refresh the current directory.
 		ProfileAlt,				// Activate the alt profile.
+		ImportRaw,				// Toggle import-raw overlay.
 		//
 		// Add new operations here. Adding above will invalidate save file keybindings.
 		//

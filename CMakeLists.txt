@@ -94,6 +94,8 @@ add_executable(
 	Src/GuiUtil.h
 	Src/Image.cpp
 	Src/Image.h
+	Src/ImportRaw.cpp
+	Src/ImportRaw.h
 	Src/InputBindings.cpp
 	Src/InputBindings.h
 	Src/MultiFrame.cpp

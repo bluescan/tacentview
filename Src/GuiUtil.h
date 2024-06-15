@@ -50,6 +50,7 @@ namespace Gutil
 		CheatSheet,
 		About,
 		ChannelFilter,
+		ImportRaw,
 		LogOutput,
 		NumIDs
 	};
