@@ -20,13 +20,15 @@
 #include "GuiUtil.h"
 #include "ImportRaw.h"
 #include "Config.h"
+#include "FileDialog.h"
 using namespace tMath;
 using namespace Gutil;
+using namespace tFileDialog;
 
 
-namespace Viewer
+namespace ImportRaw
 {
-	// @wip
+	FileDialog SelectFileDialog(DialogMode::OpenFile);
 }
 
 
@@ -42,7 +44,10 @@ void Viewer::ShowImportRawOverlay(bool* popen)
 	{
 		Config::ProfileData& profile = Config::GetProfileData();
 
-		// @wip Select File
+		if (ImGui::Button("Select File"))
+			ImportRaw::SelectFileDialog.OpenPopup();
+
+		FileDialog::DialogState state = ImportRaw::SelectFileDialog.DoPopup();
 
 		if (ImGui::InputInt("Width##ImportRaw", &profile.ImportRawWidth))
 			tiClamp(profile.ImportRawWidth, 1, 65536);
