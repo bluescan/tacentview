@@ -1,6 +1,6 @@
 ![Build](https://github.com/bluescan/tacentview/workflows/Build/badge.svg) [![latest](https://img.shields.io/github/v/release/bluescan/tacentview.svg)](https://github.com/bluescan/tacentview/releases) [![tacentview](https://snapcraft.io//tacentview/badge.svg)](https://snapcraft.io/tacentview)
 
-# tacent view
+# Tacent View
 An image and texture viewer for tga, png, apng, exr, dds, pvr, ktx, ktx2, astc, pkm, qoi, gif, hdr, jpg, tiff, ico, webp, and bmp files. Built on DearImGui and the Tacent library, the viewer has robust support for pixel-formats used during game/mobile development including BC1-7, ASTC and ETC. Editing functionality includes batch-resizing, rotations/flips, contact-sheet/flipbook generation, cropping, levels adjustments, etc. Tacent View can save tga, png, bmp, qoi, jpg, (animated) webp, (animated) gif, (animated) apng, and (animated) tiff files.
 
 As a photo viewer it can handle large collections and generate/retrieve thumbnails very quickly. The slideshow mode can display photos in any order, including fields stored in the EXIF meta-data of jpeg files (like latitude, or aperture, etc).
@@ -69,53 +69,11 @@ Alt-Enter toggles fullscreen mode. In this mode the bottom navigation bar and to
 The 'transparent work area' option in the preferences allows you to see right through to your desktop -- interpreting the alpha channel in the image, if present, as opacity. If you set the viewer to basic-mode (B-key, no UI widgets), and enter fullscreen mode (Alt-Enter), you can do things like play animated semitransparent webp file right over your desktop. The screenshot below shows transparent-work-area turned on while in windowed (non-fullscreen) mode. This works in both Linux and Windows. For Linux, the snap system disables this feature so you will need to install the deb file or build from source.
 ![Tacent View](https://raw.githubusercontent.com/bluescan/tacentview/master/Screenshots/Screenshot_TransparentWorkArea.png)
 
-# building from source
 
-For convenience pre-built binaries are available for Windows and Ubuntu/Debian in the Releases section. Other Linuxes can use the [Snap Store Release](https://snapcraft.io/tacentview). Follow the instructions below to build from source.
+## Download
 
-## windows
+For convenience pre-built binaries are available for Windows and Ubuntu/Debian in the [Releases Page](https://github.com/bluescan/tacentview/releases). Other Linuxes (Lini?) can use the [Snap Store Release](https://snapcraft.io/tacentview). If you want to build from source after cloning, the [Build Instructions](https://github.com/bluescan/tacentview/wiki/Building) are in the Wiki. It uses CMAKE with modern configuration scripts.
 
-Building on Windows is tested with the Visual Studio 2022 MSVC compiler (choose the C++ workflow when installing). You will need to install git. Optionally you may want to use VSCode with the CMake Tools extension to build. To build from the Visual Studio x64 Command Prompt:
-
-```
-mkdir build
-cd build
-cmake .. -G"Visual Studio 17 2022" -Ax64
-cmake --build . --config Release --target install
-```
-
-The install target will also package a zip file with all required content. This is done by an install step using a powershell script.
-
-## ubuntu
-
-Building for Ubuntu is tested with Clang 13 and GCC 11.2 (and is known to work with more recent releases). CMake and Git are required. Ninja is suggested but optional. The 'Software and Updates' app allows you to manage (add and remove) repositories or use the command line:
-```
-sudo apt-get install gdebi               # Installs gdebi to allow command-line deb file installation. Optional.
-sudo apt-get install git                 # Install git or download the source as a zip.
-sudo gdebi Downloads/smartgit-19_1_7.deb # Install smartgit or some other git frontend. Optional.
-sudo apt-get install llvm                # The compiler. Optional if not using GCC.
-sudo apt-get install clang               # The compiler. Optional if not using GCC.
-sudo apt-get install lldb                # The debugger. Optional if not using GCC.
-sudo apt-get install cmake               # CMake.
-sudo apt-get install ninja-build         # Ninja build system.
-sudo update-alternatives --config c++    # Choose clang. Optional if not using GCC.
-sudo update-alternatives --config cc     # Choose clang. Optional if not using GCC.
-```
-
-I usually use VSCode with the CMake Tools to build. Alternatively from the command line:
-```
-mkdir ninjabuild
-cd ninjabuild
-cmake .. -GNinja
-ninja install
-```
-You can pass -DCMAKE_BUILD_TYPE=Debug (or Release) to cmake if so desired. The install target places the viewer into a ViewerInstall directory along with any data resources it needs. Install is also leveraged to build packages. If you configure and build with:
-```
-cmake .. -GNinja -DPACKAGE_DEB=True
-ninja install
-```
-
-Then a deb file with all required content will be generated.
 
 ## Credit and Thanks
 
@@ -141,13 +99,14 @@ This project relies on myriad 3rd-party libraries. In the Data folder you will f
 * BCDec from iOrange
 * QOI from phoboslab
 * ASTCDec from ARM
+* DaCap Clip Library
 * This software is based in part on the work of the Independent JPEG Group.
 * This software includes [Radiance software](http://radsite.lbl.gov/) developed by the [Lawrence Berkeley National Laboratory](http://www.lbl.gov/).
 
 Various development tools available for open source projects bear mentioning:
 * CMake
 * Kubuntu
-* VS Code Editor
+* VSCode
 * Visual Studio Community
 * GCC, Clang, and the MSVC Compiler
 * Github
