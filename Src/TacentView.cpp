@@ -4035,7 +4035,7 @@ int main(int argc, char** argv)
 	tPrintf("Tacent Library V %d.%d.%d\n", tVersion::Major, tVersion::Minor, tVersion::Revision);
 	tPrintf("Dear ImGui V %s\n", IMGUI_VERSION);
 	tPrintf("GLFW V %d.%d.%d\n", glfwMajor, glfwMinor, glfwRev);
-	tPrintf("For CLI Mode: tacentview.exe --cli --help\n");
+	tPrintf("For CLI Mode: tacentview --cli --help\n");
 
 	#ifdef PLATFORM_WINDOWS
 	tString dataDir = tSystem::tGetProgramDir() + "Data/";
