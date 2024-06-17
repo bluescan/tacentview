@@ -14,6 +14,7 @@
 
 #include <Math/tVector2.h>
 #include <Math/tColour.h>
+#include <System/tFile.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "imgui.h"
@@ -29,6 +30,7 @@ using namespace tFileDialog;
 namespace ImportRaw
 {
 	FileDialog SelectFileDialog(DialogMode::OpenFile);
+	tString ImportFile;
 }
 
 
@@ -44,10 +46,30 @@ void Viewer::ShowImportRawOverlay(bool* popen)
 	{
 		Config::ProfileData& profile = Config::GetProfileData();
 
-		if (ImGui::Button("Select File"))
+		if (Gutil::Button("Select File"))
 			ImportRaw::SelectFileDialog.OpenPopup();
 
 		FileDialog::DialogState state = ImportRaw::SelectFileDialog.DoPopup();
+
+		// You will get an OK dialog state once after the DoPopup when OK is pressed.
+		switch (state)
+		{
+			case FileDialog::DialogState::Cancel: break;
+			case FileDialog::DialogState::Closed: break;
+			case FileDialog::DialogState::OK:
+				ImportRaw::ImportFile = ImportRaw::SelectFileDialog.GetResult();
+				break;
+			case FileDialog::DialogState::Open: break;
+		}
+
+		if (ImportRaw::ImportFile.IsValid())
+		{
+			tString importName = tSystem::tGetFileName(ImportRaw::ImportFile);
+			ImGui::SameLine();
+			ImGui::Text(importName.Chr());
+
+			Gutil::Button("Import");
+		}
 
 		if (ImGui::InputInt("Width##ImportRaw", &profile.ImportRawWidth))
 			tiClamp(profile.ImportRawWidth, 1, 65536);
