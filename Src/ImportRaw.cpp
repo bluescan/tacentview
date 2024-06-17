@@ -15,6 +15,7 @@
 #include <Math/tVector2.h>
 #include <Math/tColour.h>
 #include <System/tFile.h>
+#include <Image/tPixelFormat.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "imgui.h"
@@ -79,9 +80,34 @@ void Viewer::ShowImportRawOverlay(bool* popen)
 
 		ImGui::Checkbox("Mipmaps##ImportRaw", &profile.ImportRawMipmaps);
 
-		Gutil::Separator();
 		if (ImGui::InputInt("Data Offset##ImportRaw", &profile.ImportRawDataOffset))
 			tiClamp(profile.ImportRawDataOffset, 0, 65535);
+
+		Gutil::Separator();
+		static int currPacked = int(tImage::tPixelFormat::R8G8B8A8);
+		static int currBlock = -1;
+		static int currPVR = -1;
+		static int currASTC = -1;
+
+		if (ImGui::Combo("Packed", &currPacked, tImage::PixelFormatNames_Packed, int(tImage::tPixelFormat::NumPackedFormats)))
+		{
+			currBlock = -1; currPVR = -1; currASTC = -1;
+		}
+
+		if (ImGui::Combo("Block", &currBlock, tImage::PixelFormatNames_Block, int(tImage::tPixelFormat::NumBCFormats)))
+		{
+			currPacked = -1; currPVR = -1; currASTC = -1;
+		}
+
+		if (ImGui::Combo("PVR", &currPVR, tImage::PixelFormatNames_PVR, int(tImage::tPixelFormat::NumPVRFormats)))
+		{
+			currPacked = -1; currBlock = -1; currASTC = -1;
+		}
+
+		if (ImGui::Combo("ASTC", &currASTC, tImage::PixelFormatNames_ASTC, int(tImage::tPixelFormat::NumASTCFormats)))
+		{
+			currPacked = -1; currBlock = -1; currPVR = -1;
+		}
 
 		// @wip ImportRawPixelFormat
 		// @wip ImportRawColourProfile
