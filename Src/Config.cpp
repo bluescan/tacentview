@@ -410,7 +410,7 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		ImportRawHeight				= 128;
 		ImportRawMipmaps			= false;
 		ImportRawDataOffset			= 0;
-		ImportRawPixelFormat		= 0;
+		ImportRawPixelFormat		= int(tImage::tPixelFormat::R8G8B8A8);
 		ImportRawColourProfile		= 0;
 		LevelsPowerMidGamma			= true;
 		LevelsAutoMidPoint			= false;

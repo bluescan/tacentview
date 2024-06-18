@@ -115,12 +115,14 @@ Some image formats are often used to store texture data that is easily decompres
 |-----------------|-----------------|-----------------|-----------------|
 | R8              | R8G8            | R8G8B8          | R8G8B8A8        |
 | B8G8R8          | B8G8R8A8        | G3B5R5G3*       | G4B4A4R4*       |
-| G3B5A1R5G2*     | A8L8            | A8              | L8              |
-| R16f            | R16G16f         | R16G16B16A16f   | B4A4R4G4        |
-| R32f            | R32G32f         | R32G32B32A32f   | B10G11R11uf     |
-| E5B9G9R9uf      | R16             | R16G16          | R16G16B16       |
-| R16G16B16A16    | R32             | R32G32          | R32G32B32       |
-| R32G32B32A32    | R8G8B8M8        | R8G8B8D8        |                 |
+| B4A4R4G4        | G3B5A1R5G2*     | G2B5A1R5G3*     | A8L8            |
+| A8              | L8              |                 |                 |
+| R16             | R16G16          | R16G16B16       | R16G16B16A16    |
+| R32             | R32G32          | R32G32B32       | R32G32B32A32    |
+| R16f            | R16G16f         | R16G16B16f      | R16G16B16A16f   |
+| R32f            | R32G32f         | R32G32B32f      | R32G32B32A32f   |
+| R11G11B10uf     | B10G11R11uf     | R9G9B9E5uf      | E5B9G9R9uf      |
+| R8G8B8M8        | R8G8B8D8        |                 |                 |
 |                 |                 |                 |                 |
 | **Block (BC)**  |                 |                 |                 |
 |-----------------|-----------------|-----------------|-----------------|
@@ -133,15 +135,15 @@ Some image formats are often used to store texture data that is easily decompres
 | ETC1            | ETC2RGB         | ETC2RGBA        | ETC2RGBA1       |
 | EACR11U         | EACR11S         | EACRG11U        | EACRG11S        |
 |                 |                 |                 |                 |
+| **PVR**         |                 |                 |                 |
+|-----------------|-----------------|-----------------|-----------------|
+| PVRBPP4         | PVRBPP2         |                 |                 |
+|                 |                 |                 |                 |
 | **ASTC**        |                 |                 |                 |
 |-----------------|-----------------|-----------------|-----------------|
 | ASTC4X4         | ASTC5X4         | ASTC5X5         | ASTC6X5         |
 | ASTC6X6         | ASTC8X5         | ASTC8X6         | ASTC8X8         |
 | ASTC10X5        | ASTC10X6        | ASTC10X8        | ASTC10X10       |
 | ASTC12X10       | ASTC12X12       |                 |                 |
-|                 |                 |                 |                 |
-| **PVR**         |                 |                 |                 |
-|-----------------|-----------------|-----------------|-----------------|
-| PVRBPP4         | PVRBPP2         |                 |                 |
 
 \* These formats are named like every other format in the table -- based on how the bits appear on disk and in memory. Some APIs call these B5G6R5 (BGR565), B4G4R4A4 (BGRA4444), and B5G5R5A1 (BGRA5551) but this is inconsistent with their other format names like B8G8R8 which are correct. Even taking little-endianness into account the adjusted names would be G3R5B5G3, R4A4B4G4, and G2R5A1B5G3 which does not match the in-memory representation. On the bright side, the LE-adjusted names for the PVR spec do make sense: G3B5R5G3 -> RGB565, G4B4A4R4 -> ARGB4444, and G3B5A1R5G2 -> ARGB1555.

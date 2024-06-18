@@ -84,30 +84,23 @@ void Viewer::ShowImportRawOverlay(bool* popen)
 			tiClamp(profile.ImportRawDataOffset, 0, 65535);
 
 		Gutil::Separator();
-		static int currPacked = int(tImage::tPixelFormat::R8G8B8A8);
-		static int currBlock = -1;
-		static int currPVR = -1;
-		static int currASTC = -1;
+		tImage::tPixelFormat fmt = profile.GetImportRawPixelFormat();
+		int currPacked = tImage::tIsPackedFormat(fmt) ? int(fmt) - int(tImage::tPixelFormat::FirstPacked) : -1;
+		int currBlock  = tImage::tIsBCFormat(fmt)     ? int(fmt) - int(tImage::tPixelFormat::FirstBC)     : -1;
+		int currPVR    = tImage::tIsPVRFormat(fmt)    ? int(fmt) - int(tImage::tPixelFormat::FirstPVR)    : -1;
+		int currASTC   = tImage::tIsASTCFormat(fmt)   ? int(fmt) - int(tImage::tPixelFormat::FirstASTC)   : -1;
+		const int maxDropdownFormats = 14;
+		if (ImGui::Combo("Packed", &currPacked, tImage::PixelFormatNames_Packed, int(tImage::tPixelFormat::NumPackedFormats), tMin(int(tImage::tPixelFormat::NumPackedFormats), maxDropdownFormats)))
+			profile.ImportRawPixelFormat = int(tImage::tPixelFormat::FirstPacked) + currPacked;
 
-		if (ImGui::Combo("Packed", &currPacked, tImage::PixelFormatNames_Packed, int(tImage::tPixelFormat::NumPackedFormats)))
-		{
-			currBlock = -1; currPVR = -1; currASTC = -1;
-		}
+		if (ImGui::Combo("Block", &currBlock, tImage::PixelFormatNames_Block, int(tImage::tPixelFormat::NumBCFormats), tMin(int(tImage::tPixelFormat::NumBCFormats), maxDropdownFormats)))
+			profile.ImportRawPixelFormat = int(tImage::tPixelFormat::FirstBC) + currBlock;
 
-		if (ImGui::Combo("Block", &currBlock, tImage::PixelFormatNames_Block, int(tImage::tPixelFormat::NumBCFormats)))
-		{
-			currPacked = -1; currPVR = -1; currASTC = -1;
-		}
+		if (ImGui::Combo("PVR", &currPVR, tImage::PixelFormatNames_PVR, int(tImage::tPixelFormat::NumPVRFormats), tMin(int(tImage::tPixelFormat::NumPVRFormats), maxDropdownFormats)))
+			profile.ImportRawPixelFormat = int(tImage::tPixelFormat::FirstPVR) + currPVR;
 
-		if (ImGui::Combo("PVR", &currPVR, tImage::PixelFormatNames_PVR, int(tImage::tPixelFormat::NumPVRFormats)))
-		{
-			currPacked = -1; currBlock = -1; currASTC = -1;
-		}
-
-		if (ImGui::Combo("ASTC", &currASTC, tImage::PixelFormatNames_ASTC, int(tImage::tPixelFormat::NumASTCFormats)))
-		{
-			currPacked = -1; currBlock = -1; currPVR = -1;
-		}
+		if (ImGui::Combo("ASTC", &currASTC, tImage::PixelFormatNames_ASTC, int(tImage::tPixelFormat::NumASTCFormats), tMin(int(tImage::tPixelFormat::NumASTCFormats), maxDropdownFormats)))
+			profile.ImportRawPixelFormat = int(tImage::tPixelFormat::FirstASTC) + currASTC;
 
 		// @wip ImportRawPixelFormat
 		// @wip ImportRawColourProfile
