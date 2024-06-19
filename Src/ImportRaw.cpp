@@ -93,15 +93,23 @@ void Viewer::ShowImportRawOverlay(bool* popen)
 
 		if (Gutil::Combo("Packed", &currPacked, tImage::PixelFormatNames_Packed, tImage::PixelFormatDescs_Packed, int(tImage::tPixelFormat::NumPackedFormats), tMin(int(tImage::tPixelFormat::NumPackedFormats), maxDropdownFormats)))
 			profile.ImportRawPixelFormat = int(tImage::tPixelFormat::FirstPacked) + currPacked;
+		if (currPacked != -1)
+			Gutil::ShowToolTip(tImage::PixelFormatDescs_Packed[currPacked]);
 
 		if (Gutil::Combo("Block", &currBlock, tImage::PixelFormatNames_Block, tImage::PixelFormatDescs_Block, int(tImage::tPixelFormat::NumBCFormats), tMin(int(tImage::tPixelFormat::NumBCFormats), maxDropdownFormats)))
 			profile.ImportRawPixelFormat = int(tImage::tPixelFormat::FirstBC) + currBlock;
+		if (currBlock != -1)
+			Gutil::ShowToolTip(tImage::PixelFormatDescs_Block[currBlock]);
 
 		if (Gutil::Combo("PVR", &currPVR, tImage::PixelFormatNames_PVR, tImage::PixelFormatDescs_PVR, int(tImage::tPixelFormat::NumPVRFormats), tMin(int(tImage::tPixelFormat::NumPVRFormats), maxDropdownFormats)))
 			profile.ImportRawPixelFormat = int(tImage::tPixelFormat::FirstPVR) + currPVR;
+		if (currPVR != -1)
+			Gutil::ShowToolTip(tImage::PixelFormatDescs_PVR[currPVR]);
 
 		if (Gutil::Combo("ASTC", &currASTC, tImage::PixelFormatNames_ASTC, tImage::PixelFormatDescs_ASTC, int(tImage::tPixelFormat::NumASTCFormats), tMin(int(tImage::tPixelFormat::NumASTCFormats), maxDropdownFormats)))
 			profile.ImportRawPixelFormat = int(tImage::tPixelFormat::FirstASTC) + currASTC;
+		if (currASTC != -1)
+			Gutil::ShowToolTip(tImage::PixelFormatDescs_ASTC[currASTC]);
 
 		// @wip ImportRawPixelFormat
 		// @wip ImportRawColourProfile
