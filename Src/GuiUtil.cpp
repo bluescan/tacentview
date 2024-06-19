@@ -29,6 +29,14 @@ using namespace tMath;
 using namespace tSystem;
 
 
+namespace Gutil
+{
+	bool Combo(const char* label, int* currentItem, bool(*itemsGetter)(void* data, int idx, const char** outText), void* data, void* desc, int itemsCount, int popupMaxHeightInItems);
+	float CalcMaxPopupHeightFromItemCount(int itemsCount);
+	bool Text_ArrayGetter(void* data, int idx, const char** outText);
+}
+
+
 void Gutil::SetWindowTitle()
 {
 	if (!Viewer::Window)
@@ -141,6 +149,83 @@ void Gutil::Separator()
 }
 
 
+float Gutil::CalcMaxPopupHeightFromItemCount(int itemsCount)
+{
+	ImGuiContext& g = *GImGui;
+	if (itemsCount <= 0)
+		return FLT_MAX;
+	return (g.FontSize + g.Style.ItemSpacing.y) * itemsCount - g.Style.ItemSpacing.y + (g.Style.WindowPadding.y * 2);
+}
+
+
+bool Gutil::Combo(const char* label, int* currentItem, bool (*itemsGetter)(void*, int, const char**), void* data, void* desc, int itemsCount, int popupMaxHeightInItems)
+{
+	ImGuiContext& g = *GImGui;
+
+	// Call the getter to obtain the preview string which is a parameter to BeginCombo()
+	const char* previewValue = nullptr;
+	if ((*currentItem >= 0) && (*currentItem < itemsCount))
+		itemsGetter(data, *currentItem, &previewValue);
+
+	// The old Combo() API exposed "popup_max_height_in_items". The new more general BeginCombo() API doesn't have/need it, but we emulate it here.
+	if (popupMaxHeightInItems != -1 && !(g.NextWindowData.Flags & ImGuiNextWindowDataFlags_HasSizeConstraint))
+		ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(FLT_MAX, Gutil::CalcMaxPopupHeightFromItemCount(popupMaxHeightInItems)));
+
+	if (!ImGui::BeginCombo(label, previewValue, ImGuiComboFlags_None))
+		return false;
+
+	// Display items
+	// FIXME-OPT: Use clipper (but we need to disable it on the appearing frame to make sure our call to SetItemDefaultFocus() is processed)
+	bool valueChanged = false;
+	for (int i = 0; i < itemsCount; i++)
+	{
+		ImGui::PushID(i);
+		const bool itemSelected = (i == *currentItem);
+		const char* itemText = nullptr;
+		if (!itemsGetter(data, i, &itemText))
+			itemText = "*unknown item*";
+		if (ImGui::Selectable(itemText, itemSelected))
+		{
+			valueChanged = true;
+			*currentItem = i;
+		}
+		ImGui::SameLine();
+
+		const char* descText = nullptr;
+		if (!itemsGetter(desc, i, &descText))
+			descText = "*no description*";
+
+		ShowHelpMark(descText);
+		if (itemSelected)
+			ImGui::SetItemDefaultFocus();
+		ImGui::PopID();
+	}
+
+	ImGui::EndCombo();
+
+	if (valueChanged)
+		ImGui::MarkItemEdited(g.LastItemData.ID);
+
+	return valueChanged;
+}
+
+
+bool Gutil::Text_ArrayGetter(void* data, int idx, const char** outText)
+{
+	const char* const* texts = (const char* const*)data;
+	if (outText)
+		*outText = texts[idx];
+	return true;
+}
+
+
+bool Gutil::Combo(const char* label, int* currentItem, const char* const items[], const char* const descs[], int itemsCount, int heightInItems)
+{
+	const bool valueChanged = Gutil::Combo(label, currentItem, Gutil::Text_ArrayGetter, (void*)items, (void*)descs, itemsCount, heightInItems);
+	return valueChanged;
+}
+
+
 tVector2 Gutil::GetDialogOrigin(DialogID dialogID)
 {
 	int hindex = int(dialogID) % 4;
@@ -165,8 +250,8 @@ tString Gutil::CropStringToWidth(const tString& toCropStr, float cropWidth, bool
 		return tString();
 
 	tString toCrop(toCropStr);
-    ImGuiContext& g = *GImGui;
-    ImFont* font = g.Font;
+	ImGuiContext& g = *GImGui;
+	ImFont* font = g.Font;
 	if (!font || !font->FontSize)
 		return tString();
 

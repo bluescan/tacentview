@@ -90,7 +90,8 @@ void Viewer::ShowImportRawOverlay(bool* popen)
 		int currPVR    = tImage::tIsPVRFormat(fmt)    ? int(fmt) - int(tImage::tPixelFormat::FirstPVR)    : -1;
 		int currASTC   = tImage::tIsASTCFormat(fmt)   ? int(fmt) - int(tImage::tPixelFormat::FirstASTC)   : -1;
 		const int maxDropdownFormats = 14;
-		if (ImGui::Combo("Packed", &currPacked, tImage::PixelFormatNames_Packed, int(tImage::tPixelFormat::NumPackedFormats), tMin(int(tImage::tPixelFormat::NumPackedFormats), maxDropdownFormats)))
+
+		if (Gutil::Combo("Packed", &currPacked, tImage::PixelFormatNames_Packed, tImage::PixelFormatNames_Packed, int(tImage::tPixelFormat::NumPackedFormats), tMin(int(tImage::tPixelFormat::NumPackedFormats), maxDropdownFormats)))
 			profile.ImportRawPixelFormat = int(tImage::tPixelFormat::FirstPacked) + currPacked;
 
 		if (ImGui::Combo("Block", &currBlock, tImage::PixelFormatNames_Block, int(tImage::tPixelFormat::NumBCFormats), tMin(int(tImage::tPixelFormat::NumBCFormats), maxDropdownFormats)))

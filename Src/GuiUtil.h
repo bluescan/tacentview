@@ -39,6 +39,9 @@ namespace Gutil
 	// This is a separator with some space above and below, but not a full line of space.
 	void Separator();
 
+	// An alternate combo supporting item descriptions using help markers.
+	bool Combo(const char* label, int* currentItem, const char* const items[], const char* const descriptions[], int itemsCount, int popupMaxHeightInItems = -1);
+
 	enum class DialogID
 	{
 		ThumbnailView,
