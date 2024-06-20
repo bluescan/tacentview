@@ -21,7 +21,6 @@
 #include "GuiUtil.h"
 using namespace tMath;
 using namespace tImage;
-using namespace Gutil;
 
 
 namespace Viewer
@@ -46,7 +45,7 @@ bool Viewer::DoAltMipmapsDisplay(tString& texTypeName)
 			CurrImage->EnableAltPicture(altMipmapsPicEnabl);
 			CurrImage->Bind();
 		}
-		ShowToolTip("Display all mipmaps in a single image.");
+		Gutil::ToolTip("Display all mipmaps in a single image.");
 		texTypeName = "Mipmap";
 		anyDraw = true;
 	}
@@ -68,7 +67,7 @@ bool Viewer::DoAltCubemapDisplay(tString& texTypeName)
 			CurrImage->EnableAltPicture(altCubemapPicEnabl);
 			CurrImage->Bind();
 		}
-		ShowToolTip("Display all cubemap sides in a T-layout.");
+		Gutil::ToolTip("Display all cubemap sides in a T-layout.");
 		texTypeName = "Cube Side";
 		anyDraw = true;
 	}
@@ -95,7 +94,7 @@ bool Viewer::DoChooseDisplayImage(tString& texTypeName, float itemWidth)
 				CurrImage->FrameNum = oneBasedTextureNum - 1;
 				tMath::tiClamp(CurrImage->FrameNum, 0, numTextures-1);
 			}
-			ImGui::SameLine(); ShowHelpMark("Which mipmap or cubemap side to display.\nCubemap sides left-handed +X,-X,+Y,-Y,+Z,-Z");
+			ImGui::SameLine(); Gutil::HelpMark("Which mipmap or cubemap side to display.\nCubemap sides left-handed +X,-X,+Y,-Y,+Z,-Z");
 
 		}
 	}
@@ -109,7 +108,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 
 	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
 	// do it to make the Demo applications a little more welcoming.
-	tVector2 windowPos = GetDialogOrigin(DialogID::Properties);
+	tVector2 windowPos = Gutil::GetDialogOrigin(Gutil::DialogID::Properties);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	Config::ProfileData& profile = Config::GetProfileData();
@@ -182,7 +181,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				reloadChanges = true;
 			}
 			ImGui::SameLine();
-			ShowHelpMark
+			Gutil::HelpMark
 			(
 				"Gamma Correction\n"
 				"Pixel values may be in linear space. Before being displayed on a screen with non-linear response\n"
@@ -201,7 +200,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_DDS.Gamma, 0.01f, 0.1f, "%.3f"))
 					reloadChanges = true;
 				ImGui::SameLine();
-				ShowHelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
+				Gutil::HelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
 				tMath::tiClamp(CurrImage->LoadParams_DDS.Gamma, 0.5f, 4.0f);
 			}
 			anyUIDisplayed = true;
@@ -216,7 +215,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (ImGui::CheckboxFlags("##ExposureEnabled", &CurrImage->LoadParams_DDS.Flags, tImageDDS::LoadFlag_ToneMapExposure))
 					reloadChanges = true;
 				ImGui::SameLine();
-				ShowHelpMark("Exposure adjustment [0.0, 4.0]. Hold Ctrl to speedup.");
+				Gutil::HelpMark("Exposure adjustment [0.0, 4.0]. Hold Ctrl to speedup.");
 				tMath::tiClamp(CurrImage->LoadParams_DDS.Exposure, 0.0f, 4.0f);
 
 				anyUIDisplayed = true;
@@ -227,7 +226,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (ImGui::CheckboxFlags("Spread Luminance", &CurrImage->LoadParams_DDS.Flags, tImageDDS::LoadFlag_SpreadLuminance))
 					reloadChanges = true;
 				ImGui::SameLine();
-				ShowHelpMark("Luminance-only dds files are represented in this viewer as having a red channel only,\nIf spread is true, the channel is spread to all RGB channels to create a grey-scale image.");
+				Gutil::HelpMark("Luminance-only dds files are represented in this viewer as having a red channel only,\nIf spread is true, the channel is spread to all RGB channels to create a grey-scale image.");
 			}
 
 			bool scrubberDisplayed = false;
@@ -306,7 +305,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				reloadChanges = true;
 			}
 			ImGui::SameLine();
-			ShowHelpMark
+			Gutil::HelpMark
 			(
 				"Gamma Correction\n"
 				"Pixel values may be in linear space. Before being displayed on a screen with non-linear response\n"
@@ -325,7 +324,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_PVR.Gamma, 0.01f, 0.1f, "%.3f"))
 					reloadChanges = true;
 				ImGui::SameLine();
-				ShowHelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
+				Gutil::HelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
 				tMath::tiClamp(CurrImage->LoadParams_PVR.Gamma, 0.5f, 4.0f);
 			}
 			anyUIDisplayed = true;
@@ -340,7 +339,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (ImGui::CheckboxFlags("##ExposureEnabled", &CurrImage->LoadParams_PVR.Flags, tImagePVR::LoadFlag_ToneMapExposure))
 					reloadChanges = true;
 				ImGui::SameLine();
-				ShowHelpMark("Exposure adjustment [0.0, 4.0]. Hold Ctrl to speedup.");
+				Gutil::HelpMark("Exposure adjustment [0.0, 4.0]. Hold Ctrl to speedup.");
 				tMath::tiClamp(CurrImage->LoadParams_PVR.Exposure, 0.0f, 4.0f);
 
 				anyUIDisplayed = true;
@@ -352,7 +351,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (ImGui::InputFloat("MaxRange", &CurrImage->LoadParams_PVR.MaxRange, 0.01f, 1.0f, "%.3f"))
 					reloadChanges = true;
 				ImGui::SameLine();
-				ShowHelpMark("Max range to use [0.01, 128.0] for decoding RGBM and RGBD images. Hold Ctrl to speedup.");
+				Gutil::HelpMark("Max range to use [0.01, 128.0] for decoding RGBM and RGBD images. Hold Ctrl to speedup.");
 				tMath::tiClamp(CurrImage->LoadParams_PVR.MaxRange, 0.01f, 128.0f);
 			}
 
@@ -361,7 +360,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (ImGui::CheckboxFlags("Spread Luminance", &CurrImage->LoadParams_PVR.Flags, tImagePVR::LoadFlag_SpreadLuminance))
 					reloadChanges = true;
 				ImGui::SameLine();
-				ShowHelpMark("Luminance-only pvr files are represented in this viewer as having a red channel only,\nIf spread is true, the channel is spread to all RGB channels to create a grey-scale image.");
+				Gutil::HelpMark("Luminance-only pvr files are represented in this viewer as having a red channel only,\nIf spread is true, the channel is spread to all RGB channels to create a grey-scale image.");
 			}
 
 			bool scrubberDisplayed = false;
@@ -448,7 +447,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				reloadChanges = true;
 			}
 			ImGui::SameLine();
-			ShowHelpMark
+			Gutil::HelpMark
 			(
 				"Gamma Correction\n"
 				"Pixel values may be in linear space. Before being displayed on a screen with non-linear response\n"
@@ -467,7 +466,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_KTX.Gamma, 0.01f, 0.1f, "%.3f"))
 					reloadChanges = true;
 				ImGui::SameLine();
-				ShowHelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
+				Gutil::HelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
 				tMath::tiClamp(CurrImage->LoadParams_KTX.Gamma, 0.5f, 4.0f);
 			}
 			anyUIDisplayed = true;
@@ -487,7 +486,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (ImGui::CheckboxFlags("##ExposureEnabled", &CurrImage->LoadParams_KTX.Flags, tImageKTX::LoadFlag_ToneMapExposure))
 					reloadChanges = true;
 				ImGui::SameLine();
-				ShowHelpMark("Exposure adjustment [0.0, 4.0]. Hold Ctrl to speedup.");
+				Gutil::HelpMark("Exposure adjustment [0.0, 4.0]. Hold Ctrl to speedup.");
 				tMath::tiClamp(CurrImage->LoadParams_KTX.Exposure, 0.0f, 4.0f);
 
 				anyUIDisplayed = true;
@@ -498,7 +497,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (ImGui::CheckboxFlags("Spread Luminance", &CurrImage->LoadParams_KTX.Flags, tImageKTX::LoadFlag_SpreadLuminance))
 					reloadChanges = true;
 				ImGui::SameLine();
-				ShowHelpMark("Luminance-only ktx/ktx2 files are represented in this viewer as having a red channel only,\nIf spread is true, the channel is spread to all RGB channels to create a grey-scale image.");
+				Gutil::HelpMark("Luminance-only ktx/ktx2 files are represented in this viewer as having a red channel only,\nIf spread is true, the channel is spread to all RGB channels to create a grey-scale image.");
 			}
 
 			bool scrubberDisplayed = false;
@@ -556,7 +555,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				reloadChanges = true;
 			}
 			ImGui::SameLine();
-			ShowHelpMark
+			Gutil::HelpMark
 			(
 				"Colour Profile\n"
 				"ASTC files do not contain information about the colour profile so we supply it here.\n"
@@ -594,7 +593,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				reloadChanges = true;
 			}
 			ImGui::SameLine();
-			ShowHelpMark
+			Gutil::HelpMark
 			(
 				"Gamma Correction\n"
 				"Pixel values may be in linear space. Before being displayed on a screen with non-linear response\n"
@@ -613,7 +612,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_ASTC.Gamma, 0.01f, 0.1f, "%.3f"))
 					reloadChanges = true;
 				ImGui::SameLine();
-				ShowHelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
+				Gutil::HelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
 				tMath::tiClamp(CurrImage->LoadParams_ASTC.Gamma, 0.5f, 4.0f);
 			}
 
@@ -629,7 +628,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (ImGui::CheckboxFlags("##ExposureEnabled", &CurrImage->LoadParams_ASTC.Flags, tImageASTC::LoadFlag_ToneMapExposure))
 					reloadChanges = true;
 				ImGui::SameLine();
-				ShowHelpMark("Exposure adjustment [0.0, 4.0]. Hold Ctrl to speedup.");
+				Gutil::HelpMark("Exposure adjustment [0.0, 4.0]. Hold Ctrl to speedup.");
 				tMath::tiClamp(CurrImage->LoadParams_ASTC.Exposure, 0.0f, 4.0f);
 			}
 
@@ -676,7 +675,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				reloadChanges = true;
 			}
 			ImGui::SameLine();
-			ShowHelpMark
+			Gutil::HelpMark
 			(
 				"Gamma Correction\n"
 				"Pixel values may be in linear space. Before being displayed on a screen with non-linear response\n"
@@ -695,7 +694,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_PKM.Gamma, 0.01f, 0.1f, "%.3f"))
 					reloadChanges = true;
 				ImGui::SameLine();
-				ShowHelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
+				Gutil::HelpMark("Gamma to use [0.5, 4.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
 				tMath::tiClamp(CurrImage->LoadParams_PKM.Gamma, 0.5f, 4.0f);
 			}
 
@@ -704,7 +703,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 				if (ImGui::CheckboxFlags("Spread Luminance", &CurrImage->LoadParams_PKM.Flags, tImagePKM::LoadFlag_SpreadLuminance))
 					reloadChanges = true;
 				ImGui::SameLine();
-				ShowHelpMark("Luminance-only pkm files are represented in this viewer as having a red channel only,\nIf spread is true, the channel is spread to all RGB channels to create a grey-scale image.");
+				Gutil::HelpMark("Luminance-only pkm files are represented in this viewer as having a red channel only,\nIf spread is true, the channel is spread to all RGB channels to create a grey-scale image.");
 			}
 
 			// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
@@ -734,14 +733,14 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_HDR.Gamma, 0.01f, 0.1f, "%.3f"))
 				reloadChanges = true;
 			ImGui::SameLine();
-			ShowHelpMark("Gamma to use [0.6, 3.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
+			Gutil::HelpMark("Gamma to use [0.6, 3.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
 			tMath::tiClamp(CurrImage->LoadParams_HDR.Gamma, 0.6f, 3.0f);
 
 			ImGui::SetNextItemWidth(itemWidth);
 			if (ImGui::InputInt("Exposure", &CurrImage->LoadParams_HDR.Exposure))
 				reloadChanges = true;
 			ImGui::SameLine();
-			ShowHelpMark("Exposure adjustment [-10, 10]. Hold Ctrl to speedup.");
+			Gutil::HelpMark("Exposure adjustment [-10, 10]. Hold Ctrl to speedup.");
 			tMath::tiClamp(CurrImage->LoadParams_HDR.Exposure, -10, 10);
 
 			// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
@@ -771,35 +770,35 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			if (ImGui::InputFloat("Gamma", &CurrImage->LoadParams_EXR.Gamma, 0.01f, 0.1f, "%.3f"))
 				reloadChanges = true;
 			ImGui::SameLine();
-			ShowHelpMark("Gamma to use [0.6, 3.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
+			Gutil::HelpMark("Gamma to use [0.6, 3.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
 			tMath::tiClamp(CurrImage->LoadParams_EXR.Gamma, 0.6f, 3.0f);
 
 			ImGui::SetNextItemWidth(itemWidth);
 			if (ImGui::InputFloat("Exposure", &CurrImage->LoadParams_EXR.Exposure, 0.01f, 0.1f, "%.3f"))
 				reloadChanges = true;
 			ImGui::SameLine();
-			ShowHelpMark("Exposure adjustment [-10.0, 10.0]. Hold Ctrl to speedup.");
+			Gutil::HelpMark("Exposure adjustment [-10.0, 10.0]. Hold Ctrl to speedup.");
 			tMath::tiClamp(CurrImage->LoadParams_EXR.Exposure, -10.0f, 10.0f);
 
 			ImGui::SetNextItemWidth(itemWidth);
 			if (ImGui::InputFloat("Defog", &CurrImage->LoadParams_EXR.Defog, 0.001f, 0.01f, "%.3f"))
 				reloadChanges = true;
 			ImGui::SameLine();
-			ShowHelpMark("Remove fog strength [0.0, 0.1]. Hold Ctrl to speedup. Try to keep under 0.01");
+			Gutil::HelpMark("Remove fog strength [0.0, 0.1]. Hold Ctrl to speedup. Try to keep under 0.01");
 			tMath::tiClamp(CurrImage->LoadParams_EXR.Defog, 0.0f, 0.1f);
 
 			ImGui::SetNextItemWidth(itemWidth);
 			if (ImGui::InputFloat("Knee Low", &CurrImage->LoadParams_EXR.KneeLow, 0.01f, 0.1f, "%.3f"))
 				reloadChanges = true;
 			ImGui::SameLine();
-			ShowHelpMark("Lower bound knee taper [-3.0, 3.0]. Hold Ctrl to speedup.");
+			Gutil::HelpMark("Lower bound knee taper [-3.0, 3.0]. Hold Ctrl to speedup.");
 			tMath::tiClamp(CurrImage->LoadParams_EXR.KneeLow, -3.0f, 3.0f);
 
 			ImGui::SetNextItemWidth(itemWidth);
 			if (ImGui::InputFloat("Knee High", &CurrImage->LoadParams_EXR.KneeHigh, 0.01f, 0.1f, "%.3f"))
 				reloadChanges = true;
 			ImGui::SameLine();
-			ShowHelpMark("Upper bound knee taper [3.5, 7.5]. Hold Ctrl to speedup.");
+			Gutil::HelpMark("Upper bound knee taper [3.5, 7.5]. Hold Ctrl to speedup.");
 			tMath::tiClamp(CurrImage->LoadParams_EXR.KneeHigh, 3.5f, 7.5f);
 
 			// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
@@ -826,7 +825,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			{
 				ImGui::Checkbox("Override Background", &CurrImage->OverrideBackgroundColour);
 				ImGui::SameLine();
-				ShowHelpMark
+				Gutil::HelpMark
 				(
 					"WebP files store a background canvas colour. This canvas colour is present\n"
 					"in animated WebP files and defaults to white for single image WebP files.\n"
@@ -859,7 +858,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			CurrImage->FrameNum = oneBasedFrameNum - 1;
 			tMath::tiClamp(CurrImage->FrameNum, 0, CurrImage->GetNumFrames()-1);
 		}
-		ImGui::SameLine(); ShowHelpMark("Which image in a multiframe file to display.");
+		ImGui::SameLine(); Gutil::HelpMark("Which image in a multiframe file to display.");
 
 		float durButtonSpacing = Gutil::GetUIParamExtent(4.0f, 10.0f);
 		const ImGuiStyle& style = ImGui::GetStyle();
@@ -874,10 +873,10 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			if (ImGui::Button("Set All"))
 			{
 				CurrImage->SetFrameDuration(CurrImage->FrameDurationPreview, true);
-				SetWindowTitle();
+				Gutil::SetWindowTitle();
 				CurrImage->FrameDurationPreviewEnabled = false;
 			}
-			ImGui::SameLine(); ShowHelpMark("Sets every frame period to the preview period in seconds.");
+			ImGui::SameLine(); Gutil::HelpMark("Sets every frame period to the preview period in seconds.");
 
 			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2(durButtonSpacing, style.ItemSpacing.y));
 			if (ImGui::Button("1.0s"))	CurrImage->FrameDurationPreview = 1.0f;			ImGui::SameLine();
@@ -885,7 +884,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			if (ImGui::Button("0.1s"))	CurrImage->FrameDurationPreview = 0.1f;			ImGui::SameLine();
 			if (ImGui::Button("30Hz"))	CurrImage->FrameDurationPreview = 1.0f/30.0f;	ImGui::SameLine();
 			if (ImGui::Button("60Hz"))	CurrImage->FrameDurationPreview = 1.0f/60.0f;	ImGui::SameLine();
-			ShowHelpMark("Predefined frame period buttons.");
+			Gutil::HelpMark("Predefined frame period buttons.");
 			ImGui::PopStyleVar();
 		}
 		else
@@ -898,21 +897,21 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			{
 				tMath::tiClamp(duration, 0.0f, 60.0f);
 				CurrImage->SetFrameDuration(duration);
-				SetWindowTitle();
+				Gutil::SetWindowTitle();
 			}
-			ImGui::SameLine(); ShowHelpMark("This frame's period in seconds.");
+			ImGui::SameLine(); Gutil::HelpMark("This frame's period in seconds.");
 
 			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2(durButtonSpacing, style.ItemSpacing.y));
-			if (ImGui::Button("1.0s"))	{ CurrImage->SetFrameDuration(1.0f); SetWindowTitle(); }		ImGui::SameLine();
-			if (ImGui::Button("0.5s"))	{ CurrImage->SetFrameDuration(0.5f); SetWindowTitle(); }		ImGui::SameLine();
-			if (ImGui::Button("0.1s"))	{ CurrImage->SetFrameDuration(0.1f); SetWindowTitle(); }		ImGui::SameLine();
-			if (ImGui::Button("30Hz"))	{ CurrImage->SetFrameDuration(1.0f/30.0f); SetWindowTitle(); }	ImGui::SameLine();
-			if (ImGui::Button("60Hz"))	{ CurrImage->SetFrameDuration(1.0f/60.0f); SetWindowTitle(); }	ImGui::SameLine();
-			ShowHelpMark("Predefined frame period buttons.");
+			if (ImGui::Button("1.0s"))	{ CurrImage->SetFrameDuration(1.0f); Gutil::SetWindowTitle(); }			ImGui::SameLine();
+			if (ImGui::Button("0.5s"))	{ CurrImage->SetFrameDuration(0.5f); Gutil::SetWindowTitle(); }			ImGui::SameLine();
+			if (ImGui::Button("0.1s"))	{ CurrImage->SetFrameDuration(0.1f); Gutil::SetWindowTitle(); }			ImGui::SameLine();
+			if (ImGui::Button("30Hz"))	{ CurrImage->SetFrameDuration(1.0f/30.0f); Gutil::SetWindowTitle(); }	ImGui::SameLine();
+			if (ImGui::Button("60Hz"))	{ CurrImage->SetFrameDuration(1.0f/60.0f); Gutil::SetWindowTitle(); }	ImGui::SameLine();
+			Gutil::HelpMark("Predefined frame period buttons.");
 			ImGui::PopStyleVar();
 		}
 		ImGui::Checkbox("Preview Period", &CurrImage->FrameDurationPreviewEnabled);
-		ImGui::SameLine(); ShowHelpMark("If enabled this number of seconds is used for all frame periods while playing.");
+		ImGui::SameLine(); Gutil::HelpMark("If enabled this number of seconds is used for all frame periods while playing.");
 		ImGui::Checkbox("Scrubber", &profile.ShowFrameScrubber);
 
 		Gutil::Separator();

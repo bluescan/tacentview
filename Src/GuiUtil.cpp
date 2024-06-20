@@ -81,7 +81,7 @@ void Gutil::SetWindowIcon(const tString& icoFile)
 }
 
 
-void Gutil::ShowHelpMark(const char* desc, bool autoWrap)
+void Gutil::HelpMark(const char* desc, bool autoWrap)
 {
 	ImGui::TextDisabled("[?]");
 	if (!ImGui::IsItemHovered() || !desc)
@@ -97,7 +97,7 @@ void Gutil::ShowHelpMark(const char* desc, bool autoWrap)
 }
 
 
-void Gutil::ShowToolTip(const char* desc, bool autoWrap)
+void Gutil::ToolTip(const char* desc, bool autoWrap)
 {
 	if (!ImGui::IsItemHovered() || !desc)
 		return;
@@ -195,7 +195,7 @@ bool Gutil::Combo(const char* label, int* currentItem, bool (*itemsGetter)(void*
 		if (!itemsGetter(desc, i, &descText))
 			descText = "*no description*";
 
-		ShowHelpMark(descText);
+		HelpMark(descText);
 		if (itemSelected)
 			ImGui::SetItemDefaultFocus();
 		ImGui::PopID();

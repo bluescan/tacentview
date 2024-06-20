@@ -23,7 +23,6 @@
 #include "ThumbnailView.h"
 #include "Version.cmake.h"
 using namespace tMath;
-using namespace Gutil;
 
 
 void Viewer::DoCopyPastePreferences(bool reducedWidth)
@@ -58,7 +57,7 @@ void Viewer::DoCopyPastePreferences(bool reducedWidth)
 	}
 
 	ImGui::SameLine();
-	ShowHelpMark
+	Gutil::HelpMark
 	(
 		"The copy fill colour is used when copying to the clipboard. Unselected\n"
 		"channels will be filled with the corresponding component of this RGBA colour.\n"
@@ -69,7 +68,7 @@ void Viewer::DoCopyPastePreferences(bool reducedWidth)
 
 	ImGui::Checkbox("Paste Creates Image",		&profile.ClipboardPasteCreatesImage);
 	ImGui::SameLine();
-	ShowHelpMark
+	Gutil::HelpMark
 	(
 		"If true a new image will be created when pasting from the clipboard.\n"
 		"If false the clipboard contents will be pasted into the current image.\n"
@@ -89,7 +88,7 @@ void Viewer::DoCopyPastePreferences(bool reducedWidth)
 		ImGui::SetNextItemWidth(comboWidth);
 		ImGui::Combo("Paste Anchor", &profile.ClipboardPasteAnchor, pasteAnchorItems, tNumElements(pasteAnchorItems), tNumElements(pasteAnchorItems));
 		ImGui::SameLine();
-		ShowHelpMark
+		Gutil::HelpMark
 		(
 			"This specifies where a pasted clipboard image will be pasted into the.\n"
 			"current image in cases where the image dimensions don't match. You may\n"
@@ -106,7 +105,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 	// We specify a default position/size in case there's no data in the .ini file. Typically this isn't required! We only
 	// do it to make the Demo applications a little more welcoming.
-	tVector2 windowPos = GetDialogOrigin(DialogID::Preferences);
+	tVector2 windowPos = Gutil::GetDialogOrigin(Gutil::DialogID::Preferences);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	tString title;
@@ -135,7 +134,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 			ImGui::Checkbox("Always Show Filename", &profile.ShowNavFilenameAlways);
 			ImGui::SameLine();
-			ShowHelpMark
+			Gutil::HelpMark
 			(
 				"When false the filename is only shown at the right of the nav-bar in\n"
 				"fullscreen mode because the window title-bar is not visible. When set\n"
@@ -169,7 +168,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			}
 
 			ImGui::SameLine();
-			ShowHelpMark
+			Gutil::HelpMark
 			(
 				"Frame buffer bits per component. Requires restart to take effect.\n"
 				"Generally to display HDR 10-bits or more is required. This value affects\n"
@@ -194,7 +193,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::Combo("On-Screen Controls", &profile.OnScreenControls, onScreenControlsItems, tNumElements(onScreenControlsItems));
 			ImGui::SameLine();
-			ShowHelpMark
+			Gutil::HelpMark
 			(
 				"In auto mode the on-screen controls will appear when the mouse is\n"
 				"moved and remain if the mouse is near or over a control. If the\n"
@@ -252,7 +251,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::Combo("Reticle Mode", &profile.ReticleMode, reticleModeItems, tNumElements(reticleModeItems));
 			ImGui::SameLine();
-			ShowHelpMark
+			Gutil::HelpMark
 			(
 				"Controls when the cursor reticle is visible.\n"
 				"Always Hidden: Never display reticle. Driving blind.\n"
@@ -282,7 +281,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			}
 
 			ImGui::SameLine();
-			ShowHelpMark("Overall size of UI widgets and font.\nIf set to 'auto' uses the OS scale setting.");
+			Gutil::HelpMark("Overall size of UI widgets and font.\nIf set to 'auto' uses the OS scale setting.");
 
 			ImGui::EndTabItem();
 		}
@@ -338,22 +337,22 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 			ImGui::Checkbox("Countdown Indicator", &profile.SlideshowProgressArc);
 			ImGui::SameLine();
-			ShowHelpMark("Display a time remaining indicator when slideshow active.");
+			Gutil::HelpMark("Display a time remaining indicator when slideshow active.");
 
 			ImGui::Checkbox("Auto Start", &profile.SlideshowAutoStart);
 			ImGui::SameLine();
-			ShowHelpMark("Should slideshow start automatically on launch.");
+			Gutil::HelpMark("Should slideshow start automatically on launch.");
 
 			ImGui::Checkbox("Looping", &profile.SlideshowLooping);
 			ImGui::SameLine();
-			ShowHelpMark("Should slideshow loop after completion.");
+			Gutil::HelpMark("Should slideshow loop after completion.");
 
 			Gutil::Separator();
 
 			Viewer::DoSortParameters(false);
 			ImGui::Checkbox("Auto Reshuffle", &profile.SlideshowAutoReshuffle);
 			ImGui::SameLine();
-			ShowHelpMark("If sort set to shuffle, reshuffle automatically after every loop.");
+			Gutil::HelpMark("If sort set to shuffle, reshuffle automatically after every loop.");
 
 			ImGui::EndTabItem();
 		}
@@ -369,44 +368,44 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 
 			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::InputInt("Max Undo Steps", &profile.MaxUndoSteps); ImGui::SameLine();
-			ShowHelpMark("Maximum number of undo steps.");
+			Gutil::HelpMark("Maximum number of undo steps.");
 			tMath::tiClamp(profile.MaxUndoSteps, 1, 32);
 
 			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::InputInt("Max Mem (MB)", &profile.MaxImageMemMB); ImGui::SameLine();
-			ShowHelpMark("Approx memory use limit of this app. Minimum 256 MB.");
+			Gutil::HelpMark("Approx memory use limit of this app. Minimum 256 MB.");
 			tMath::tiClampMin(profile.MaxImageMemMB, 256);
 
 			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::InputInt("Max Cache Files", &profile.MaxCacheFiles); ImGui::SameLine();
-			ShowHelpMark("Maximum number of cache files that may be created. Minimum 200.");
+			Gutil::HelpMark("Maximum number of cache files that may be created. Minimum 200.");
 			tMath::tiClampMin(profile.MaxCacheFiles, 200);
 			if (!DeleteAllCacheFilesOnExit)
 			{
 				if (ImGui::Button("Clear Cache On Exit", tVector2(sysButtonWidth, 0.0f)))
 					DeleteAllCacheFilesOnExit = true;
-				ImGui::SameLine(); ShowHelpMark("Cache will be cleared on exit.");
+				ImGui::SameLine(); Gutil::HelpMark("Cache will be cleared on exit.");
 			}
 			else
 			{
 				if (ImGui::Button("Cancel Clear Cache", tVector2(sysButtonWidth, 0.0f)))
 					DeleteAllCacheFilesOnExit = false;
-				ImGui::SameLine(); ShowHelpMark("Cache will no longer be cleared on exit.");
+				ImGui::SameLine(); Gutil::HelpMark("Cache will no longer be cleared on exit.");
 			}
 
 			if (ImGui::Button("Reset Bookmarks", tVector2(sysButtonWidth, 0.0f)))
 				tFileDialog::Reset();
-			ImGui::SameLine(); ShowHelpMark("Reset File Dialog Bookmarks.");
+			ImGui::SameLine(); Gutil::HelpMark("Reset File Dialog Bookmarks.");
 
 			Gutil::Separator();
 
 			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::InputFloat("Gamma##Monitor", &profile.MonitorGamma, 0.01f, 0.1f, "%.3f");
 			ImGui::SameLine();
-			ShowHelpMark("Some image property windows allow gamma correction and the gamma to be specified (eg. HDR DDS files).\nThis setting allows you to set a custom value for what the gamma will be reset to in those dialogs.\nResetting this tab always chooses the industry-standard gamm of 2.2");
+			Gutil::HelpMark("Some image property windows allow gamma correction and the gamma to be specified (eg. HDR DDS files).\nThis setting allows you to set a custom value for what the gamma will be reset to in those dialogs.\nResetting this tab always chooses the industry-standard gamm of 2.2");
 
 			ImGui::Checkbox("Strict Loading", &profile.StrictLoading); ImGui::SameLine();
-			ShowHelpMark
+			Gutil::HelpMark
 			(
 				"Some image files are ill-formed. If strict is true these files are not loaded.\n"
 				"Ill-formed jpg and dds files have been found in the wild that are ill-formed\n"
@@ -436,18 +435,18 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				CurrImage->Load();
 			}
 			ImGui::SameLine();
-			ShowHelpMark("If Exif or other meta-data contains orientation information this will take it into account\nwhen loading and displays the image correctly oriented/flipped. Affects jpg/pvr files.");
+			Gutil::HelpMark("If Exif or other meta-data contains orientation information this will take it into account\nwhen loading and displays the image correctly oriented/flipped. Affects jpg/pvr files.");
 
 			ImGui::Checkbox("Detect APNG Inside PNG", &profile.DetectAPNGInsidePNG); ImGui::SameLine();
-			ShowHelpMark("Some png image files are really apng files. If detecton is true these png files will be displayed animated.");
+			Gutil::HelpMark("Some png image files are really apng files. If detecton is true these png files will be displayed animated.");
 
 			ImGui::Checkbox("Mipmap Chaining", &profile.MipmapChaining); ImGui::SameLine();
-			ShowHelpMark("Chaining generates mipmaps faster. No chaining gives slightly\nbetter results at cost of large generation time.");
+			Gutil::HelpMark("Chaining generates mipmaps faster. No chaining gives slightly\nbetter results at cost of large generation time.");
 
 			ImGui::SetNextItemWidth(mipFiltWidth);
 			ImGui::Combo("Mip Filter", &profile.MipmapFilter, tImage::tResampleFilterNames, 1+int(tImage::tResampleFilter::NumFilters), 1+int(tImage::tResampleFilter::NumFilters));
 			ImGui::SameLine();
-			ShowHelpMark("Filtering method to use when generating minification mipmaps.\nUse None for no mipmapping.");
+			Gutil::HelpMark("Filtering method to use when generating minification mipmaps.\nUse None for no mipmapping.");
 	
 			ImGui::EndTabItem();
 		}
@@ -491,7 +490,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 					ImGui::EndCombo();
 				}
 				ImGui::SameLine();
-				ShowHelpMark
+				Gutil::HelpMark
 				(
 					"When an image is pasted from the clipboard it creates a new image of this type.\n"
 					"Valid types are ones that are lossless or support lossless encoding like webp.\n"
@@ -509,7 +508,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				profile.ClipboardPasteRollV = roll[1];
 			}
 			ImGui::SameLine();
-			ShowHelpMark
+			Gutil::HelpMark
 			(
 				"This may be used if when pasting an image the pixels are not\n"
 				"aligned properly. The first integer rolls the image horizontally\n"
@@ -539,7 +538,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 				}
 				ImGui::PopItemWidth();
 				ImGui::SameLine();
-				ShowHelpMark
+				Gutil::HelpMark
 				(
 					"Controls what zoom to use when displaying images.\n"
 					"User: User-specified. This mode is automatically turned on when zooming in/out.\n"
@@ -568,7 +567,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		Viewer::UpdateDesiredUISize();
 		SlideshowCountdown = profile.SlideshowPeriod;
 	}
-	ShowToolTip
+	Gutil::ToolTip
 	(
 		"Resets the current profile (excluding key-bindings) to defaults.\n"
 		"Key-bindings may be reset from the Key Bindings window."
@@ -583,7 +582,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 			Viewer::UpdateDesiredUISize();
 		SlideshowCountdown = profile.SlideshowPeriod;
 	}
-	ShowToolTip("Resets the current tab/category for the current profile (what you see above).");
+	Gutil::ToolTip("Resets the current tab/category for the current profile (what you see above).");
 
 	if (ImGui::Button("Reset All", tVector2(buttonWidth, 0.0f)))
 	{
@@ -604,7 +603,7 @@ void Viewer::ShowPreferencesWindow(bool* popen)
 		SlideshowCountdown = profile.SlideshowPeriod;
 		ChangeScreenMode(profile.FullscreenMode, true);
 	}
-	ShowToolTip
+	Gutil::ToolTip
 	(
 		"Resets all profiles (excluding key bindings) to their default settings and switches\n"
 		"to the main profile. Keybindings may be reset from the Key Bindings window."

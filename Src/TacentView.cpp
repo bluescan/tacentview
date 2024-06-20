@@ -69,7 +69,6 @@
 using namespace tStd;
 using namespace tSystem;
 using namespace tMath;
-using namespace Gutil;
 
 
 namespace Viewer
@@ -863,7 +862,7 @@ void Viewer::LoadCurrImage()
 		imgJustLoaded = CurrImage->Load();
 
 	AutoPropertyWindow();
-	SetWindowTitle();
+	Gutil::SetWindowTitle();
 	if (!CurrImage->IsLoaded())
 	{
 		tPrintf("Warning: Failed to load [%s]\n", tGetFileName(CurrImage->Filename).Chr());
@@ -1026,7 +1025,7 @@ void Viewer::OnFlipVert(bool vert)
 		CurrImage->Unbind();
 		CurrImage->Flip(!vert);
 		CurrImage->Bind();
-		SetWindowTitle();
+		Gutil::SetWindowTitle();
 	}
 }
 
@@ -1045,7 +1044,7 @@ void Viewer::OnRotate90(bool cw)
 		CurrImage->Unbind();
 		CurrImage->Rotate90(!cw);
 		CurrImage->Bind();
-		SetWindowTitle();
+		Gutil::SetWindowTitle();
 	}
 }
 
@@ -1091,7 +1090,7 @@ void Viewer::OnUndo()
 	CurrImage->Unbind();
 	CurrImage->Undo();
 	CurrImage->Bind();
-	SetWindowTitle();
+	Gutil::SetWindowTitle();
 }
 
 
@@ -1101,7 +1100,7 @@ void Viewer::OnRedo()
 	CurrImage->Unbind();
 	CurrImage->Redo();
 	CurrImage->Bind();
-	SetWindowTitle();
+	Gutil::SetWindowTitle();
 }
 
 
@@ -1538,7 +1537,7 @@ void Viewer::OnRefresh()
 	CurrImage->Unload(true);
 	CurrImage->Load();
 	CurrImage->Bind();
-	SetWindowTitle();
+	Gutil::SetWindowTitle();
 }
 
 
@@ -2049,7 +2048,7 @@ int Viewer::DoMainMenuBar()
 					CurrImage->Unbind();
 					CurrImage->Rotate90(true);
 					CurrImage->Bind();
-					SetWindowTitle();
+					Gutil::SetWindowTitle();
 				}
 			}
 
@@ -2065,7 +2064,7 @@ int Viewer::DoMainMenuBar()
 					CurrImage->Unbind();
 					CurrImage->Rotate90(false);
 					CurrImage->Bind();
-					SetWindowTitle();
+					Gutil::SetWindowTitle();
 				}
 			}
 
@@ -2236,7 +2235,7 @@ int Viewer::DoMainMenuBar()
 			ImTextureID(Image_ChannelFilter.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			profile.ShowChannelFilter ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	profile.ShowChannelFilter = !profile.ShowChannelFilter;
-		ShowToolTip("Colour Channel Filter");
+		Gutil::ToolTip("Colour Channel Filter");
 
 		// Image Levels.
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
@@ -2248,7 +2247,7 @@ int Viewer::DoMainMenuBar()
 		{
 			Request_LevelsModal = true;
 		}
-		ShowToolTip("Image Levels");
+		Gutil::ToolTip("Image Levels");
 
 		// Thumbnails View.
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
@@ -2257,7 +2256,7 @@ int Viewer::DoMainMenuBar()
 			ImTextureID(Image_ContentView.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			profile.ShowThumbnailView ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	profile.ShowThumbnailView = !profile.ShowThumbnailView;
-		ShowToolTip("Content Thumbnail View");
+		Gutil::ToolTip("Content Thumbnail View");
 
 		// Tiled.
 		bool tileAvail = (CurrImage && CurrImage->IsLoaded()) ? !CropMode : false;
@@ -2272,7 +2271,7 @@ int Viewer::DoMainMenuBar()
 			if (!profile.Tile)
 				ResetPan();
 		}
-		ShowToolTip("Show Images Tiled");
+		Gutil::ToolTip("Show Images Tiled");
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical, 3.0f);
 
@@ -2283,7 +2282,7 @@ int Viewer::DoMainMenuBar()
 			ImTextureID(Image_FlipV.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
 			imgAvail ? ColourEnabledTint : ColourDisabledTint) && imgAvail
 		)	OnFlipVert(true);
-		ShowToolTip("Flip Vertically");
+		Gutil::ToolTip("Flip Vertically");
 
 		// Horizontal Flip.
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
@@ -2292,7 +2291,7 @@ int Viewer::DoMainMenuBar()
 			ImTextureID(Image_FlipH.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
 			imgAvail ? ColourEnabledTint : ColourDisabledTint) && imgAvail
 		)	OnFlipVert(false);
-		ShowToolTip("Flip Horizontally");
+		Gutil::ToolTip("Flip Horizontally");
 
 		// Rotate Anticlockwise.
 		ImGui::PushID("ToolRotACW");
@@ -2303,7 +2302,7 @@ int Viewer::DoMainMenuBar()
 			imgAvail ? ColourEnabledTint : ColourDisabledTint) && imgAvail
 		)	OnRotate90(false);
 		ImGui::PopID();
-		ShowToolTip("Rotate 90 Anticlockwise");
+		Gutil::ToolTip("Rotate 90 Anticlockwise");
 
 		// Rotate clockwise.
 		ImGui::PushID("ToolRotCW");
@@ -2314,7 +2313,7 @@ int Viewer::DoMainMenuBar()
 			imgAvail ? ColourEnabledTint : ColourDisabledTint) && imgAvail
 		)	OnRotate90(true);
 		ImGui::PopID();
-		ShowToolTip("Rotate 90 Clockwise");
+		Gutil::ToolTip("Rotate 90 Clockwise");
 
 		// Rotate.
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
@@ -2323,7 +2322,7 @@ int Viewer::DoMainMenuBar()
 			ImTextureID(Image_RotateTheta.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1, ColourBG,
 			imgAvail ? ColourEnabledTint : ColourDisabledTint) && imgAvail
 		)	OnRotate();
-		ShowToolTip("Rotate Theta");
+		Gutil::ToolTip("Rotate Theta");
 
 		// Crop.
 		bool cropAvail = CropMode || (CurrImage && CurrImage->IsLoaded() && !CurrImage->IsAltPictureEnabled());
@@ -2333,7 +2332,7 @@ int Viewer::DoMainMenuBar()
 			ImTextureID(Image_Crop.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			CropMode ? ColourPressedBG : ColourBG, cropAvail ? ColourEnabledTint : ColourDisabledTint) && cropAvail
 		)	OnCrop();
-		ShowToolTip("Crop");
+		Gutil::ToolTip("Crop");
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical, 3.0f);
 
@@ -2344,7 +2343,7 @@ int Viewer::DoMainMenuBar()
 			ImTextureID(Image_PropEdit.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			profile.ShowPropsWindow ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	OnPropertyEdit();
-		ShowToolTip("Image Properties");
+		Gutil::ToolTip("Image Properties");
 
 		// Details.
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
@@ -2353,7 +2352,7 @@ int Viewer::DoMainMenuBar()
 			ImTextureID(Image_InfoOverlay.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			profile.ShowImageDetails ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	OnDetails();
-		ShowToolTip("Image Details Overlay");
+		Gutil::ToolTip("Image Details Overlay");
 
 		// Meta Data.
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
@@ -2362,7 +2361,7 @@ int Viewer::DoMainMenuBar()
 			ImTextureID(Image_MetaData.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			profile.ShowImageMetaData ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	OnMetaData();
-		ShowToolTip("Image Meta-Data Overlay");
+		Gutil::ToolTip("Image Meta-Data Overlay");
 
 		// Refresh File.
 		bool refreshAvail = CurrImage ? true : false;
@@ -2372,7 +2371,7 @@ int Viewer::DoMainMenuBar()
 			ImTextureID(Image_Refresh.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			ColourBG, refreshAvail ? ColourEnabledTint : ColourDisabledTint) && refreshAvail
 		)	OnRefresh();
-		ShowToolTip("Refresh/Reload Current File");
+		Gutil::ToolTip("Refresh/Reload Current File");
 
 		// Delete File.
 		bool recycleAvail = CurrImage ? true : false;
@@ -2382,7 +2381,7 @@ int Viewer::DoMainMenuBar()
 			ImTextureID(Image_Recycle.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			ColourBG, recycleAvail ? ColourEnabledTint : ColourDisabledTint) && recycleAvail
 		)	OnDelete();
-		ShowToolTip("Delete Current File");
+		Gutil::ToolTip("Delete Current File");
 
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical, 3.0f);
 
@@ -2393,7 +2392,7 @@ int Viewer::DoMainMenuBar()
 			ImTextureID(Image_Help.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			profile.ShowCheatSheet ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	OnCheatSheet();
-		ShowToolTip("Help");
+		Gutil::ToolTip("Help");
 
 		// Preferences.
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
@@ -2402,7 +2401,7 @@ int Viewer::DoMainMenuBar()
 			ImTextureID(Image_Prefs.Bind()), toolImageSize, tVector2(0.0f, 1.0f), tVector2(1.0f, 0.0f), 1,
 			profile.ShowPreferences ? ColourPressedBG : ColourBG, ColourEnabledTint)
 		)	OnPreferences();
-		ShowToolTip("Preferences");
+		Gutil::ToolTip("Preferences");
 
 		menuBarHeight = int(ImGui::GetWindowSize().y);
 		ImGui::EndMainMenuBar();
@@ -2512,7 +2511,7 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 			ImageToLoad = upDir + "dummyfile.txt";
 			PopulateImages();
 			SetCurrentImage();
-			SetWindowTitle();
+			Gutil::SetWindowTitle();
 		}
 	}
 
@@ -2542,7 +2541,7 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 					ImageToLoad = ImagesDir + *subDir + "/" + "dummyfile.txt";
 					PopulateImages();
 					SetCurrentImage();
-					SetWindowTitle();
+					Gutil::SetWindowTitle();
 					break;
 				}
 			}
@@ -3382,7 +3381,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ImGui::SetCursorPos(tVector2(arcRadius*2.0f, arcRadius*2.0f - 1.0f));
 
 		float percent = float(SlideshowCountdown / profile.SlideshowPeriod);
-		ProgressArc(arcRadius, percent, ImVec4(1.0f, 1.0f, 1.0f, 1.0f), Viewer::ColourClear, arcRadius/2.0f);
+		Gutil::ProgressArc(arcRadius, percent, ImVec4(1.0f, 1.0f, 1.0f, 1.0f), Viewer::ColourClear, arcRadius/2.0f);
 		ImGui::End();
 
 		ImGui::PopStyleVar();

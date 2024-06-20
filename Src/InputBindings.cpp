@@ -21,7 +21,6 @@
 #include "GuiUtil.h"
 using namespace tStd;
 using namespace tMath;
-using namespace Gutil;
 namespace Viewer
 {
 
@@ -504,7 +503,7 @@ void Bindings::InputMap::Write(tExprWriter& writer) const
 
 void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 {
-	tVector2 windowPos = GetDialogOrigin(DialogID::Bindings);
+	tVector2 windowPos = Gutil::GetDialogOrigin(Gutil::DialogID::Bindings);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar;
@@ -537,7 +536,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 		ImGui::SameLine();
 		if (ImGui::Button("Reset", tVector2(buttonWidth, 0.0f)))
 			prof->InputBindings.Reset(Viewer::Profile(profileIdx));
-		ShowToolTip("Resets the key bindings to default for the chosen profile.");
+		Gutil::ToolTip("Resets the key bindings to default for the chosen profile.");
 
 		ImGui::SameLine();
 		if (ImGui::Button("Reset All", tVector2(buttonWidth, 0.0f)))
@@ -547,7 +546,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 			Config::KioskProfile.InputBindings.Reset(Profile::Kiosk);
 			Config::AltProfile.InputBindings.Reset(Profile::Alt);
 		}
-		ShowToolTip("Resets the key bindings to default for all profiles.");
+		Gutil::ToolTip("Resets the key bindings to default for all profiles.");
 
 		ImGui::SameLine();
 		if (ImGui::Button("Set All", tVector2(buttonWidth, 0.0f)))
@@ -558,7 +557,7 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 			Config::KioskProfile.InputBindings = prof->InputBindings;
 			Config::AltProfile.InputBindings = prof->InputBindings;
 		}
-		ShowToolTip("Copies the keybindings to all profiles. Useful if you want them all the same.");
+		Gutil::ToolTip("Copies the keybindings to all profiles. Useful if you want them all the same.");
 
 		ImGui::SameLine();
 		if (ImGui::Button("Close", tVector2(buttonWidth, 0.0f)))
@@ -798,7 +797,7 @@ void Bindings::ShowAddBindingSection(Config::ProfileData& settings, float keyWid
 					settings.InputBindings.AssignKey(addKey, addMods, Operation(addOp));
 			}
 		}
-		ShowToolTip("Adds the new keybinding. Warns if already assigned to something else.");
+		Gutil::ToolTip("Adds the new keybinding. Warns if already assigned to something else.");
 
 		bool isOpen = true;
 		if (ImGui::BeginPopupModal("Key Assignment Warning", &isOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
@@ -853,7 +852,7 @@ void Bindings::ShowAddBindingSection(Config::ProfileData& settings, float keyWid
 
 void Bindings::ShowCheatSheetWindow(bool* popen)
 {
-	tVector2 windowPos = GetDialogOrigin(DialogID::CheatSheet);
+	tVector2 windowPos = Gutil::GetDialogOrigin(Gutil::DialogID::CheatSheet);
 	ImGui::SetNextWindowBgAlpha(0.80f);
 
 	float actionWidth = Gutil::GetUIParamScaled(106.0f, 2.5f);

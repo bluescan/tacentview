@@ -2,7 +2,7 @@
 //
 // Modals for rotating an image.
 //
-// Copyright (c) 2020-2023 Tristan Grimmer.
+// Copyright (c) 2020-2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -22,7 +22,6 @@ using namespace tStd;
 using namespace tSystem;
 using namespace tMath;
 using namespace tImage;
-using namespace Gutil;
 namespace Viewer { extern void DoFillColourInterface(const char* = nullptr, bool = false); }
 
 
@@ -51,7 +50,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 
 	ImGui::Combo("Up Filter", &profile.ResampleFilterRotateUp, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
 	ImGui::SameLine();
-	ShowHelpMark
+	Gutil::HelpMark
 	(
 		"Filtering method used during up-sampling.\n"
 		"If set to None no resampling, preserves colours,\n"
@@ -62,7 +61,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 	{
 		ImGui::Combo("Down Filter", &profile.ResampleFilterRotateDown, tResampleFilterNames, tNumElements(tResampleFilterNames), tNumElements(tResampleFilterNames));
 		ImGui::SameLine();
-		ShowHelpMark
+		Gutil::HelpMark
 		(
 			"Filtering method used during down-sampling.\n"
 			"Box works well. If set to None uses an an alternate\n"
@@ -73,7 +72,7 @@ void Viewer::DoRotateImageModal(bool rotateImagePressed)
 	static const char* modeNames[] = { "Fill", "Crop", "Crop Resize" };
 	ImGui::Combo("Mode", &profile.RotateMode, modeNames, tNumElements(modeNames), tNumElements(modeNames));
 	ImGui::SameLine();
-	ShowHelpMark
+	Gutil::HelpMark
 	(
 		"Fill will result in a slightly larger image that uses the fill colour where necessary.\n"
 		"Crop will result in a slightly smaller image after rotation but it will be full.\n"
@@ -269,7 +268,7 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 			case LosslessTransformMode::FlipV:		CurrImage->Flip(false);		break;
 		}
 		CurrImage->Bind();
-		SetWindowTitle();
+		Gutil::SetWindowTitle();
 		ImGui::CloseCurrentPopup();
 	}
 
@@ -306,7 +305,7 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 			CurrImage->Unload(true);
 			CurrImage->Load();
 			CurrImage->Bind();
-			SetWindowTitle();
+			Gutil::SetWindowTitle();
 		}
 		ImGui::CloseCurrentPopup();
 	}

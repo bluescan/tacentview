@@ -28,9 +28,11 @@ namespace Gutil
 	// For windows, the icon is set as an exe resource, so this function does nothing on Windows.
 	void SetWindowIcon(const tString& icoFile);
 
-	// Helper to display a little (?) mark which shows a tooltip when hovered.
-	void ShowHelpMark(const char* desc, bool autoWrap = true);
-	void ShowToolTip(const char* desc, bool autoWrap = true);
+	// Display a little question mark [?] and show a tooltip when hovered.
+	void HelpMark(const char* desc, bool autoWrap = true);
+
+	// Show a tooltip when hovering over the current widget.
+	void ToolTip(const char* desc, bool autoWrap = true);
 
 	// This is a wrapper for ImGui::Button that also returns true if enter pressed.
 	bool Button(const char* label, const tMath::tVector2& size = tMath::tVector2::zero);

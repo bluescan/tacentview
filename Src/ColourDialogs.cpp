@@ -27,7 +27,6 @@
 #include "Preferences.h"
 #include "Version.cmake.h"
 using namespace tMath;
-using namespace Gutil;
 
 
 namespace Viewer
@@ -47,7 +46,7 @@ namespace Viewer
 
 void Viewer::ShowPixelEditorOverlay(bool* popen)
 {
-	tVector2 windowPos = GetDialogOrigin(DialogID::PixelEditor);
+	tVector2 windowPos = Gutil::GetDialogOrigin(Gutil::DialogID::PixelEditor);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 
 	// I imagine NoResize is implied by AlwaysAutoResize. However I have seen cases where
@@ -144,7 +143,7 @@ void Viewer::ShowPixelEditorOverlay(bool* popen)
 
 void Viewer::ShowChannelFilterOverlay(bool* popen)
 {
-	tVector2 windowPos = GetDialogOrigin(DialogID::ChannelFilter);
+	tVector2 windowPos = Gutil::GetDialogOrigin(Gutil::DialogID::ChannelFilter);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
@@ -207,7 +206,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			ImGui::Checkbox("Green", &Viewer::DrawChannel_G);
 			ImGui::Checkbox("Blue", &Viewer::DrawChannel_B);
 			ImGui::Checkbox("Alpha", &Viewer::DrawChannel_A);
-			ImGui::SameLine(); ShowHelpMark
+			ImGui::SameLine(); Gutil::HelpMark
 			(
 				"Alpha is interpreted as blending opacity. When this channel is set to false full alpha is used and"
 				"image is drawn opaque. When true it blends whatever colour channels are selected with the current background."
@@ -230,7 +229,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 		ImGui::SetNextItemWidth(comboWidth);
 		ImGui::Combo("##Background Style", &profile.BackgroundStyle, backgroundItems, tNumElements(backgroundItems));
 		ImGui::SameLine();
-		ShowHelpMark("Background colour and style.\nThe blend-background button uses the colour regardless of style.");
+		Gutil::HelpMark("Background colour and style.\nThe blend-background button uses the colour regardless of style.");
 
 		Gutil::Separator();
 
@@ -243,7 +242,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			Gutil::SetWindowTitle();
 		}
 		ImGui::SameLine();
-		ShowHelpMark("Blend background colour into RGB of image based on alpha. Sets alphas to full when done.");
+		Gutil::HelpMark("Blend background colour into RGB of image based on alpha. Sets alphas to full when done.");
 
 		comp_t channels = (Viewer::DrawChannel_R ? tCompBit_R : 0) | (Viewer::DrawChannel_G ? tCompBit_G : 0) | (Viewer::DrawChannel_B ? tCompBit_B : 0) | (Viewer::DrawChannel_A ? tCompBit_A : 0);
 		if (ImGui::Button("Max Selected", tVector2(buttonWidth, 0.0f)))
@@ -255,7 +254,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			Gutil::SetWindowTitle();
 		}
 		ImGui::SameLine();
-		ShowHelpMark("Sets selected channel(s) to their maximum value (255).");
+		Gutil::HelpMark("Sets selected channel(s) to their maximum value (255).");
 
 		if (ImGui::Button("Zero Selected", tVector2(buttonWidth, 0.0f)))
 		{
@@ -266,7 +265,7 @@ void Viewer::ShowChannelFilterOverlay(bool* popen)
 			Gutil::SetWindowTitle();
 		}
 		ImGui::SameLine();
-		ShowHelpMark("Sets selected channel(s) to zero.");
+		Gutil::HelpMark("Sets selected channel(s) to zero.");
 
 		Gutil::Separator();
 
@@ -391,7 +390,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 					CurrImage->AdjustRestoreOriginal();
 					modified = true;
 				}
-				ImGui::SameLine(); ShowHelpMark("If image is animated or otherwise has more than one frame\nsetting this to false allows only the single current frames to be adjusted.\nMake sure the image is stopped on the frame you want before opening the levels dialog.");
+				ImGui::SameLine(); Gutil::HelpMark("If image is animated or otherwise has more than one frame\nsetting this to false allows only the single current frames to be adjusted.\nMake sure the image is stopped on the frame you want before opening the levels dialog.");
 			}
 
 			//
@@ -399,7 +398,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			//
 			modified = ImGui::Checkbox("Continuous Mid Gamma", &profile.LevelsPowerMidGamma) || modified;
 			ImGui::SameLine();
-			ShowHelpMark
+			Gutil::HelpMark
 			(
 				"Continuous-midpoint-gamma lets you decide between 2 algorithms to determine the curve on the mid-tone gamma.\n"
 				"\n"
@@ -414,13 +413,13 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			// Auto-set mid-point between black/white point?
 			//
 			modified = ImGui::Checkbox("Auto Mid Point", &profile.LevelsAutoMidPoint) || modified;
-			ImGui::SameLine(); ShowHelpMark("If true forces the midpoint to be half way between the black and white points.");
+			ImGui::SameLine(); Gutil::HelpMark("If true forces the midpoint to be half way between the black and white points.");
 
 			//
 			// Logarithmic histogram?
 			//
 			ImGui::Checkbox("Logarithmic Histogram", &profile.LevelsLogarithmicHisto);
-			ImGui::SameLine(); ShowHelpMark("Logarithmic scale is useful when you have a 'clumpy' intensity distribution.\nTurning this on uses the natural logarithm to scale the histogram counts.");
+			ImGui::SameLine(); Gutil::HelpMark("Logarithmic scale is useful when you have a 'clumpy' intensity distribution.\nTurning this on uses the natural logarithm to scale the histogram counts.");
 			ImGui::NewLine();
 
 			//
@@ -473,7 +472,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			// Channels combo.
 			//
 			modified = ImGui::Combo("Channel##Levels", &channels, channelItems, tNumElements(channelItems)) || modified;
-			ImGui::SameLine(); ShowHelpMark("Which channel(s) to apply adjustments to.");
+			ImGui::SameLine(); Gutil::HelpMark("Which channel(s) to apply adjustments to.");
 			ImGui::PopItemWidth();
 
 			//
@@ -533,7 +532,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 					CurrImage->AdjustRestoreOriginal();
 					modified = true;
 				}
-				ImGui::SameLine(); ShowHelpMark("If image is animated or otherwise has more than one frame\nsetting this to false allows only the single current frames to be adjusted.\nMake sure the image is stopped on the frame you want before opening the levels dialog.");
+				ImGui::SameLine(); Gutil::HelpMark("If image is animated or otherwise has more than one frame\nsetting this to false allows only the single current frames to be adjusted.\nMake sure the image is stopped on the frame you want before opening the levels dialog.");
 			}
 
 			//
@@ -546,7 +545,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			// Channels combo.
 			//
 			modified = ImGui::Combo("Channel##Contrast", &channels, channelItems, tNumElements(channelItems)) || modified;
-			ImGui::SameLine(); ShowHelpMark("Which channel(s) to apply adjustments to.");
+			ImGui::SameLine(); Gutil::HelpMark("Which channel(s) to apply adjustments to.");
 			ImGui::PopItemWidth();
 
 			//
@@ -589,7 +588,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 					CurrImage->AdjustRestoreOriginal();
 					modified = true;
 				}
-				ImGui::SameLine(); ShowHelpMark("If image is animated or otherwise has more than one frame\nsetting this to false allows only the single current frames to be adjusted.\nMake sure the image is stopped on the frame you want before opening the levels dialog.");
+				ImGui::SameLine(); Gutil::HelpMark("If image is animated or otherwise has more than one frame\nsetting this to false allows only the single current frames to be adjusted.\nMake sure the image is stopped on the frame you want before opening the levels dialog.");
 			}
 
 			//
@@ -602,7 +601,7 @@ void Viewer::DoLevelsModal(bool levelsPressed)
 			// Channels combo.
 			//
 			modified = ImGui::Combo("Channel##Brightness", &channels, channelItems, tNumElements(channelItems)) || modified;
-			ImGui::SameLine(); ShowHelpMark("Which channel(s) to apply adjustments to.");
+			ImGui::SameLine(); Gutil::HelpMark("Which channel(s) to apply adjustments to.");
 			ImGui::PopItemWidth();
 
 			//

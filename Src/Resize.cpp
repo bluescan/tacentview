@@ -2,7 +2,7 @@
 //
 // Dialog for resizing an image.
 //
-// Copyright (c) 2020-2023 Tristan Grimmer.
+// Copyright (c) 2020-2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -21,7 +21,6 @@ using namespace tStd;
 using namespace tSystem;
 using namespace tMath;
 using namespace tImage;
-using namespace Gutil;
 
 
 namespace Viewer
@@ -65,7 +64,7 @@ void Viewer::DoResizeWidthHeightInterface(int srcW, int srcH, int& dstW, int& ds
 	ImGui::SameLine();
 	if (ImGui::Button(hi, tVector2(powButtonWidth, 0.0f)))			{ dstW = hiP2W; if (lockAspect) dstH = int( float(dstW) / aspect ); }
 	ImGui::SameLine();
-	ShowHelpMark("Final output width in pixels.\nIf dimensions match current no scaling.");
+	Gutil::HelpMark("Final output width in pixels.\nIf dimensions match current no scaling.");
 
 	if (ImGui::Checkbox("Lock Aspect", &lockAspect) && lockAspect)
 	{
@@ -87,7 +86,7 @@ void Viewer::DoResizeWidthHeightInterface(int srcW, int srcH, int& dstW, int& ds
 	if (ImGui::Button(hi, tVector2(powButtonWidth, 0.0f)))			{ dstH = hiP2H; if (lockAspect) dstW = int( float(dstH) * aspect ); }
 
 	ImGui::SameLine();
-	ShowHelpMark("Final output height in pixels.\nIf dimensions match current no scaling.");
+	Gutil::HelpMark("Final output height in pixels.\nIf dimensions match current no scaling.");
 }
 
 
@@ -102,12 +101,12 @@ void Viewer::DoResizeFilterInterface(int srcW, int srcH, int dstW, int dstH)
 	ImGui::SetNextItemWidth(comboWidth);
 	ImGui::Combo("Filter", &profile.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 	ImGui::SameLine();
-	ShowHelpMark("Filtering method to use when resizing images.");
+	Gutil::HelpMark("Filtering method to use when resizing images.");
 
 	ImGui::SetNextItemWidth(comboWidth);
 	ImGui::Combo("Edges", &profile.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
 	ImGui::SameLine();
-	ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");	
+	Gutil::HelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");	
 }
 
 
@@ -121,7 +120,7 @@ void Viewer::DoResizeAnchorInterface()
 	ImGui::SetCursorPosX(ancTextPos);
 	ImGui::Text("Anchor: %s", (profile.CropAnchor == -1) ? "Cursor Position" : longNames[profile.CropAnchor]);
 	ImGui::SameLine();
-	ShowHelpMark("Choose an anchor below. To use the cursor position, deselect the current anchor.");
+	Gutil::HelpMark("Choose an anchor below. To use the cursor position, deselect the current anchor.");
 
 	// Anchors.
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, tVector2::zero);
@@ -249,7 +248,7 @@ void Viewer::DoFillColourInterface(const char* toolTipText, bool contactSheetFil
 	tColour4b* fillColour = contactSheetFillColour ? &profile.FillColourContact : &profile.FillColour;
 	fillColour->Set(floatCol);
 	if (toolTipText)
-		ShowToolTip(toolTipText);
+		Gutil::ToolTip(toolTipText);
 
 	float buttonWidth = Gutil::GetUIParamScaled(56.0f, 2.5f);
 
@@ -257,12 +256,12 @@ void Viewer::DoFillColourInterface(const char* toolTipText, bool contactSheetFil
 	tPicture* picture = CurrImage ? CurrImage->GetCurrentPic() : nullptr;
 	if (ImGui::Button("Origin", tVector2(buttonWidth, 0.0f)) && picture)
 		fillColour->Set(picture->GetPixel(0, 0));
-	ShowToolTip("Pick the colour from pixel (0,0) in the current image.");
+	Gutil::ToolTip("Pick the colour from pixel (0,0) in the current image.");
 
 	ImGui::SameLine();
 	if (ImGui::Button("Cursor", tVector2(buttonWidth, 0.0f)))
 		fillColour->Set(Viewer::PixelColour);
-	ShowToolTip("Pick the colour from the cursor pixel in the current image.");
+	Gutil::ToolTip("Pick the colour from the cursor pixel in the current image.");
 
 	ImGui::SameLine();
 	if (ImGui::Button("Reset", tVector2(buttonWidth, 0.0f)))
@@ -273,9 +272,9 @@ void Viewer::DoFillColourInterface(const char* toolTipText, bool contactSheetFil
 			fillColour->Set(tColour4b::black);
 	}
 	if (contactSheetFillColour)
-		ShowToolTip("Reset the fill colour to transparent black.");
+		Gutil::ToolTip("Reset the fill colour to transparent black.");
 	else
-		ShowToolTip("Reset the fill colour to black.");
+		Gutil::ToolTip("Reset the fill colour to black.");
 }
 
 
@@ -362,7 +361,7 @@ void Viewer::DoResizeCanvasModal(bool resizeCanvasPressed)
 	if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_None))
 	{
 		tab = ImGui::BeginTabItem("Anchor");
-		ShowToolTip("Choose an anchor and new dimensions.");
+		Gutil::ToolTip("Choose an anchor and new dimensions.");
 		if (tab)
 		{
 			DoResizeCanvasAnchorTab(firstOpenAnchor);
@@ -371,7 +370,7 @@ void Viewer::DoResizeCanvasModal(bool resizeCanvasPressed)
 		}
 
 		tab = ImGui::BeginTabItem("Remove Borders");
-		ShowToolTip("Remove same-coloured border from image.");
+		Gutil::ToolTip("Remove same-coloured border from image.");
 		if (tab)
 		{
 			DoResizeCanvasRemoveBordersTab(firstOpenBorder);
@@ -380,7 +379,7 @@ void Viewer::DoResizeCanvasModal(bool resizeCanvasPressed)
 		}
 
 		tab = ImGui::BeginTabItem("Aspect");
-		ShowToolTip("Choose the new aspect ratio.");
+		Gutil::ToolTip("Choose the new aspect ratio.");
 		if (tab)
 		{
 			DoResizeCanvasAspectTab(firstOpenAspect);
@@ -469,7 +468,7 @@ void Viewer::DoResizeCanvasRemoveBordersTab(bool firstOpen)
 		channelA = true;
 	ImGui::SameLine();
 	ImGui::Text("Channels");
-	ShowToolTip("These channels are checked for border colour match.\nAt least one must be selected.");
+	Gutil::ToolTip("These channels are checked for border colour match.\nAt least one must be selected.");
 
 	DoFillColourInterface("If border matches this colour it will be cropped.");
 
@@ -550,7 +549,7 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 	else
 	{
 		ImGui::SameLine();
-		ShowHelpMark("Aspect ratio for resizing.\nUser means enter the aspect ratio manually.\nFor the print presets the L means Landscape.");
+		Gutil::HelpMark("Aspect ratio for resizing.\nUser means enter the aspect ratio manually.\nFor the print presets the L means Landscape.");
 	}
 
 	const char* resizeAspectModes[] = { "Crop", "Letterbox" };
@@ -558,7 +557,7 @@ void Viewer::DoResizeCanvasAspectTab(bool firstOpen)
 	ImGui::Combo("Mode", &profile.ResizeAspectMode, resizeAspectModes, tNumElements(resizeAspectModes), tNumElements(resizeAspectModes));
 
 	ImGui::SameLine();
-	ShowHelpMark("Crop mode cuts off sides resulting in a filled image.\nLetterbox mode adds coloured borders resulting in whole image being visible.");
+	Gutil::HelpMark("Crop mode cuts off sides resulting in a filled image.\nLetterbox mode adds coloured borders resulting in whole image being visible.");
 
 	if (profile.ResizeAspectMode == 1)
 		DoFillColourInterface();

@@ -2,7 +2,7 @@
 //
 // Dialog that generates multiframe images from all image files in the directory.
 //
-// Copyright (c) 2021-2023 Tristan Grimmer.
+// Copyright (c) 2021-2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -29,7 +29,6 @@ using namespace tStd;
 using namespace tMath;
 using namespace tSystem;
 using namespace tImage;
-using namespace Gutil;
 
 
 namespace Viewer
@@ -127,7 +126,7 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 	if (ImGui::Button(hi, powSize))
 		outWidth = hiP2W;
 	ImGui::SameLine();
-	ShowHelpMark("Output width in pixels.");
+	Gutil::HelpMark("Output width in pixels.");
 
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Height", &outHeight);
@@ -145,7 +144,7 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 	if (ImGui::Button(hi, powSize))
 		outHeight = hiP2H;
 	ImGui::SameLine();
-	ShowHelpMark("Output height in pixels.");
+	Gutil::HelpMark("Output height in pixels.");
 
 	if (ImGui::Button("Reset From Images") && CurrImage)
 		ComputeMaxWidthHeight(outWidth, outHeight);
@@ -158,12 +157,12 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 		ImGui::SetNextItemWidth(comboWidth);
 		ImGui::Combo("Filter", &profile.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 		ImGui::SameLine();
-		ShowHelpMark("Filtering method to use when resizing images.");
+		Gutil::HelpMark("Filtering method to use when resizing images.");
 
 		ImGui::SetNextItemWidth(comboWidth);
 		ImGui::Combo("Filter Edge Mode", &profile.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
 		ImGui::SameLine();
-		ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");
+		Gutil::HelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");
 	}
 
 	ImGui::Separator();
@@ -177,7 +176,7 @@ void Viewer::DoSaveMultiFrameModal(bool saveMultiFramePressed)
 	static char filename[128] = "MultiFrame";
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputText("Filename", filename, tNumElements(filename));
-	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
+	ImGui::SameLine(); Gutil::HelpMark("The output filename without extension.");
 
 	int numImg = Images.Count();
 	tString genMsg;
@@ -409,7 +408,7 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 	tString baseHelp;
 	tString extension = tGetExtension(fileType);
 	tsPrintf(baseHelp, "The output base filename without extension.\nSaved files will be:\n%s_001.%s,\n%s_002.%s,\netc.", outBaseName, extension.Chr(), outBaseName, extension.Chr());
-	ImGui::SameLine(); ShowHelpMark(baseHelp.Chr());
+	ImGui::SameLine(); Gutil::HelpMark(baseHelp.Chr());
 
 	ImGui::SetNextItemWidth(inputWidth);
 	if (ImGui::InputText("Frames", framesToExtract, tNumElements(framesToExtract)))
@@ -436,7 +435,7 @@ void Viewer::DoSaveExtractFramesModal(bool saveExtractFramesPressed)
 		framesToExtract[127] = '\0';
 	}
 	ImGui::SameLine();
-	ShowHelpMark
+	Gutil::HelpMark
 	(
 		"Frames to extract. Frame numbers start at 0.\n"
 		"Specify frames in interval-set notation:\n"

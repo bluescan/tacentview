@@ -2,7 +2,7 @@
 //
 // Dialog that displays folder contents as thumbnails.
 //
-// Copyright (c) 2020-2023 Tristan Grimmer.
+// Copyright (c) 2020-2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -20,7 +20,6 @@
 #include "GuiUtil.h"
 #include "Image.h"
 using namespace tMath;
-using namespace Gutil;
 
 
 namespace Viewer
@@ -79,7 +78,7 @@ void Viewer::DoSortParameters(bool singleLine)
 	ImGui::SetNextItemWidth(sortComboWidth);
 	if (ImGui::Combo(label.Chr(), &profile.SortKey, sortItems, tNumElements(sortItems), tNumElements(sortItems)/2))
 		SortImages(profile.GetSortKey(), profile.SortAscending);
-	ShowToolTip("Specifies what property to sort by. An asterisk (*) means\nthe property is stored in image meta-data and may not be\npresent in all images. Shuffle means random order.");
+	Gutil::ToolTip("Specifies what property to sort by. An asterisk (*) means\nthe property is stored in image meta-data and may not be\npresent in all images. Shuffle means random order.");
 
 	if (profile.GetSortKey() == Config::ProfileData::SortKeyEnum::Shuffle)
 	{
@@ -102,7 +101,7 @@ void Viewer::DoSortParameters(bool singleLine)
 void Viewer::ShowThumbnailViewDialog(bool* popen)
 {
 	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar;
-	tVector2 windowPos = GetDialogOrigin(DialogID::ThumbnailView);
+	tVector2 windowPos = Gutil::GetDialogOrigin(Gutil::DialogID::ThumbnailView);
 
 	Config::ProfileData& profile = Config::GetProfileData();
 	tVector2 initialSize = Gutil::GetUIParamExtent(tVector2(800.0f, 610.0f), tVector2(1200.0f, 800.0f));
@@ -182,7 +181,7 @@ void Viewer::ShowThumbnailViewDialog(bool* popen)
 			ImGui::Text(dispName.Chr());
 			
 			tString ttStr = Viewer::MakeImageTooltipString(i, fileName);
-			ShowToolTip(ttStr.Chr());
+			Gutil::ToolTip(ttStr.Chr());
 
 			// We use a separator to indicate the current item.
 			float sepThickness = Gutil::GetUIParamScaled(2.0f, 2.5f);

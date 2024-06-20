@@ -136,14 +136,14 @@ void Viewer::DoDeleteFileModal(bool deleteFilePressed)
 		ImGui::Text("%s", croppedFile.Chr());
 	ImGui::Unindent();
 	if (croppedFile != file)
-		Gutil::ShowToolTip(file.Chr());
+		Gutil::ToolTip(file.Chr());
 
 	ImGui::Text("In Folder");
 	ImGui::Indent();
 		ImGui::Text("%s", croppedDir.Chr());
 	ImGui::Unindent();
 	if (croppedDir != dir)
-		Gutil::ShowToolTip(dir.Chr());
+		Gutil::ToolTip(dir.Chr());
 
 	ImGuiStyle& style = ImGui::GetStyle();
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
@@ -204,14 +204,14 @@ void Viewer::DoDeleteFileNoRecycleModal(bool deleteFileNoRecycPressed)
 		ImGui::Text("%s", croppedFile.Chr());
 	ImGui::Unindent();
 	if (croppedFile != file)
-		Gutil::ShowToolTip(file.Chr());
+		Gutil::ToolTip(file.Chr());
 	
 	ImGui::Text("In Folder");
 	ImGui::Indent();
 		ImGui::Text("%s", croppedDir.Chr());
 	ImGui::Unindent();
 	if (croppedDir != dir)
-		Gutil::ShowToolTip(dir.Chr());
+		Gutil::ToolTip(dir.Chr());
 
 	ImGuiStyle& style = ImGui::GetStyle();
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemSpacing.y);
@@ -413,7 +413,7 @@ void Viewer::OutputLog::DrawLog()
 	float fltWidth = ImGui::GetWindowWidth() - clrWidth - cpyWidth - fltTextWidth;
 	LogFilter.Draw("Filter", fltWidth);
 	ImGui::SameLine();
-	Gutil::ShowHelpMark("Place a negative sign in front to exclude (-excluded).");
+	Gutil::HelpMark("Place a negative sign in front to exclude (-excluded).");
 
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f*ImGui::GetStyle().ItemSpacing.y);
 	ImGui::Separator();

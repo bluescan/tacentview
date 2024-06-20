@@ -2,7 +2,7 @@
 //
 // Modal dialogs open-file, open-dir, save-as and save-all.
 //
-// Copyright (c) 2019-2023 Tristan Grimmer.
+// Copyright (c) 2019-2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -33,7 +33,6 @@ using namespace tSystem;
 using namespace tMath;
 using namespace tImage;
 using namespace tFileDialog;
-using namespace Gutil;
 
 
 namespace Viewer
@@ -66,7 +65,7 @@ void Viewer::DoOpenFileModal(bool openFilePressed)
 		ImageToLoad = chosenFile;
 		PopulateImages();
 		SetCurrentImage(chosenFile);
-		SetWindowTitle();
+		Gutil::SetWindowTitle();
 	}
 }
 
@@ -83,7 +82,7 @@ void Viewer::DoOpenDirModal(bool openDirPressed)
 		ImageToLoad = chosenDir + "dummyfile.txt";
 		PopulateImages();
 		SetCurrentImage();
-		SetWindowTitle();
+		Gutil::SetWindowTitle();
 	}
 }
 
@@ -297,7 +296,7 @@ tString Viewer::DoSubFolder()
 		destDir += profile.SaveSubFolder + "/";
 	tString toolTipText;
 	tsPrintf(toolTipText, "Save to %s", destDir.Chr());
-	ShowToolTip(toolTipText.Chr());
+	Gutil::ToolTip(toolTipText.Chr());
 
 	if (ImGui::Button("Default", tVector2(buttonWidth, 0.0f)))
 		profile.SaveSubFolder.Set("Saved");
@@ -335,7 +334,7 @@ tSystem::tFileType Viewer::DoSaveChooseFiletype()
 		ImGui::EndCombo();
 	}
 	ImGui::SameLine();
-	ShowHelpMark("Output image format.\nFull (non-binary) alpha supported by tga, png, apng, bmp, tiff, qoi, and webp.\nAnimation supported by webp, gif, tiff, and apng.");
+	Gutil::HelpMark("Output image format.\nFull (non-binary) alpha supported by tga, png, apng, bmp, tiff, qoi, and webp.\nAnimation supported by webp, gif, tiff, and apng.");
 
 	return tGetFileTypeFromName(profile.SaveFileType);
 }
@@ -349,7 +348,7 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::SliderInt("Bits per Pixel", &profile.SaveFileGifBPP, 1, 8, "%d");
 	ImGui::SameLine();
-	ShowHelpMark
+	Gutil::HelpMark
 	(
 		"Determines how many colours the gif uses. From 2 to 256.\n"
 		"Note that using transparency takes one colour away."
@@ -367,7 +366,7 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Alpha Threshold", &profile.SaveFileGifAlphaThreshold);
 	tiClamp(profile.SaveFileGifAlphaThreshold, -1, 255);
-	ImGui::SameLine(); ShowHelpMark
+	ImGui::SameLine(); Gutil::HelpMark
 	(
 		"Gif only supports binary alpha. Set threshold -1 to auto-determine if the GIF\n"
 		"should have alpha -- if the image is fully opaque the GIF will not have alpha and\n"
@@ -383,7 +382,7 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 	{
 		ImGui::InputInt("Duration Override", &profile.SaveFileGifDurOverride);
 		tiClamp(profile.SaveFileGifDurOverride, -1, 1000);
-		ImGui::SameLine(); ShowHelpMark("In 1/100 seconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
+		ImGui::SameLine(); Gutil::HelpMark("In 1/100 seconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
 		if (Gutil::Button("1.0s"))  profile.SaveFileGifDurOverride = 100; ImGui::SameLine();
 		if (Gutil::Button("0.5s"))  profile.SaveFileGifDurOverride = 50;  ImGui::SameLine();
 		if (Gutil::Button("15fps")) profile.SaveFileGifDurOverride = 6;   ImGui::SameLine();
@@ -393,7 +392,7 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 	{
 		ImGui::InputInt("Frame Duration", &profile.SaveFileGifDurMultiFrame);
 		tiClamp(profile.SaveFileGifDurMultiFrame, 0, 1000);
-		ImGui::SameLine(); ShowHelpMark("In 1/100 seconds.");
+		ImGui::SameLine(); Gutil::HelpMark("In 1/100 seconds.");
 		if (Gutil::Button("1.0s"))  profile.SaveFileGifDurMultiFrame = 100; ImGui::SameLine();
 		if (Gutil::Button("0.5s"))  profile.SaveFileGifDurMultiFrame = 50;  ImGui::SameLine();
 		if (Gutil::Button("15fps")) profile.SaveFileGifDurMultiFrame = 6;   ImGui::SameLine();
@@ -405,7 +404,7 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 	ImGui::InputInt("Loop", &profile.SaveFileGifLoop);
 	tiClampMin(profile.SaveFileGifLoop, 0);
 	ImGui::SameLine();
-	ShowHelpMark("How many times an animated gif will loop. 0 means forever.\nThis only applies to animated (multi-frame) images.");
+	Gutil::HelpMark("How many times an animated gif will loop. 0 means forever.\nThis only applies to animated (multi-frame) images.");
 
 	tString loopDesc = "forever";
 	if (profile.SaveFileGifLoop != 0)
@@ -460,11 +459,11 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			const char* tgaModeItems[] = { "Auto", "24 BPP", "32 BPP" };
 			ImGui::Combo("Bits Per Pixel", &profile.SaveFileTgaDepthMode , tgaModeItems, tNumElements(tgaModeItems));
 			ImGui::SameLine();
-			ShowHelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.");
+			Gutil::HelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.");
 
 			ImGui::Checkbox("RLE Compression", &profile.SaveFileTgaRLE);
 			ImGui::SameLine();
-			ShowHelpMark("Perform simple run-length compression.");
+			Gutil::HelpMark("Perform simple run-length compression.");
 			break;
 		}
 
@@ -473,7 +472,7 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			const char* pngModeItems[] = { "Auto", "24 BPP", "32 BPP", "48 BPP", "64 BPP" };
 			ImGui::Combo("Bits Per Pixel", &profile.SaveFilePngDepthMode , pngModeItems, tNumElements(pngModeItems));
 			ImGui::SameLine();
-			ShowHelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.\n48 BPP: Force 38 bits per pixel.\n64 BPP: Force 64 bits per pixel.");
+			Gutil::HelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.\n48 BPP: Force 38 bits per pixel.\n64 BPP: Force 64 bits per pixel.");
 			break;
 		}
 
@@ -490,15 +489,15 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			if (profile.SaveFileWebpLossy)
 			{
 				ImGui::SliderFloat("Quality", &profile.SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
-				ImGui::SameLine(); ShowHelpMark("Lossy selected. This is the image quality percent.");
+				ImGui::SameLine(); Gutil::HelpMark("Lossy selected. This is the image quality percent.");
 			}
 			else
 			{
 				ImGui::SliderFloat("Compression", &profile.SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
-				ImGui::SameLine(); ShowHelpMark("Non-lossy selected. This is the image compression strength.\nBigger is slower and yields smaller files.");
+				ImGui::SameLine(); Gutil::HelpMark("Non-lossy selected. This is the image compression strength.\nBigger is slower and yields smaller files.");
 			}
 			ImGui::SliderInt("Duration Override", &profile.SaveFileWebpDurOverride, -1, 10000, "%d");
-			ImGui::SameLine(); ShowHelpMark("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
+			ImGui::SameLine(); Gutil::HelpMark("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
 			if (Gutil::Button("1.0s"))  profile.SaveFileWebpDurOverride = 1000; ImGui::SameLine();
 			if (Gutil::Button("0.5s"))  profile.SaveFileWebpDurOverride = 500;  ImGui::SameLine();
 			if (Gutil::Button("30fps")) profile.SaveFileWebpDurOverride = 33;   ImGui::SameLine();
@@ -510,18 +509,18 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			const char* qoiModeItems[] = { "Auto", "24 BPP", "32 BPP" };
 			ImGui::Combo("Bits Per Pixel", &profile.SaveFileQoiDepthMode , qoiModeItems, tNumElements(qoiModeItems));
 			ImGui::SameLine();
-			ShowHelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.");
+			Gutil::HelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.");
 
 			const char* qoiSpaceItems[] = { "Auto", "sRGB", "Linear" };
 			ImGui::Combo("Colour Space", &profile.SaveFileQoiColourSpace , qoiSpaceItems, tNumElements(qoiSpaceItems));
 			ImGui::SameLine();
-			ShowHelpMark("Colour space to store in the saved file.\nAuto: Use current colour space as it was loaded.\nsRGB: The default for most images.\nLinear: For images used in lighting calculations.");
+			Gutil::HelpMark("Colour space to store in the saved file.\nAuto: Use current colour space as it was loaded.\nsRGB: The default for most images.\nLinear: For images used in lighting calculations.");
 			break;
 		}
 
 		case tFileType::APNG:
 			ImGui::SliderInt("Duration Override", &profile.SaveFileApngDurOverride, -1, 10000, "%d");
-			ImGui::SameLine(); ShowHelpMark("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
+			ImGui::SameLine(); Gutil::HelpMark("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
 			if (Gutil::Button("1.0s"))  profile.SaveFileApngDurOverride = 1000; ImGui::SameLine();
 			if (Gutil::Button("0.5s"))  profile.SaveFileApngDurOverride = 500;  ImGui::SameLine();
 			if (Gutil::Button("30fps")) profile.SaveFileApngDurOverride = 33;   ImGui::SameLine();
@@ -533,13 +532,13 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			const char* bmpModeItems[] = { "Auto", "24 BPP", "32 BPP" };
 			ImGui::Combo("Bits Per Pixel", &profile.SaveFileBmpDepthMode , bmpModeItems, tNumElements(bmpModeItems));
 			ImGui::SameLine();
-			ShowHelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.");
+			Gutil::HelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.");
 			break;
 		}
 
 		case tFileType::TIFF:
 			ImGui::SliderInt("Duration Override", &profile.SaveFileTiffDurOverride, -1, 10000, "%d");
-			ImGui::SameLine(); ShowHelpMark("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
+			ImGui::SameLine(); Gutil::HelpMark("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
 			if (Gutil::Button("1.0s"))  profile.SaveFileTiffDurOverride = 1000; ImGui::SameLine();
 			if (Gutil::Button("0.5s"))  profile.SaveFileTiffDurOverride = 500;  ImGui::SameLine();
 			if (Gutil::Button("30fps")) profile.SaveFileTiffDurOverride = 33;   ImGui::SameLine();
@@ -578,7 +577,7 @@ tString Viewer::DoSaveFiletypeMultiFrame()
 		ImGui::EndCombo();
 	}
 	ImGui::SameLine();
-	ShowHelpMark("Multi-frame output image format.");
+	Gutil::HelpMark("Multi-frame output image format.");
 
 	// There are different options depending on what type you are saving as.
 	fileType = tGetFileTypeFromName(profile.SaveFileTypeMultiFrame);
@@ -594,10 +593,10 @@ tString Viewer::DoSaveFiletypeMultiFrame()
 			ImGui::Checkbox("Lossy", &profile.SaveFileWebpLossy);
 			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::SliderFloat("Quality / Compression", &profile.SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
-			ImGui::SameLine(); ShowToolTip("Image quality percent if lossy. Image compression strength if not lossy"); ImGui::NewLine();
+			ImGui::SameLine(); Gutil::ToolTip("Image quality percent if lossy. Image compression strength if not lossy"); ImGui::NewLine();
 			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::SliderInt("Frame Duration", &profile.SaveFileWebpDurMultiFrame, 0, 10000, "%d");
-			ImGui::SameLine(); ShowToolTip("In milliseconds."); ImGui::NewLine();
+			ImGui::SameLine(); Gutil::ToolTip("In milliseconds."); ImGui::NewLine();
 			if (ImGui::Button("1.0s"))  profile.SaveFileWebpDurMultiFrame = 1000; ImGui::SameLine();
 			if (ImGui::Button("0.5s"))  profile.SaveFileWebpDurMultiFrame = 500;  ImGui::SameLine();
 			if (ImGui::Button("30fps")) profile.SaveFileWebpDurMultiFrame = 33;   ImGui::SameLine();
@@ -608,7 +607,7 @@ tString Viewer::DoSaveFiletypeMultiFrame()
 			// @todo This should be using a standard options call like the GIF type.
 			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::SliderInt("Frame Duration", &profile.SaveFileApngDurMultiFrame, 0, 10000, "%d");
-			ImGui::SameLine(); ShowToolTip("In milliseconds."); ImGui::NewLine();
+			ImGui::SameLine(); Gutil::ToolTip("In milliseconds."); ImGui::NewLine();
 			if (ImGui::Button("1.0s"))  profile.SaveFileApngDurMultiFrame = 1000; ImGui::SameLine();
 			if (ImGui::Button("0.5s"))  profile.SaveFileApngDurMultiFrame = 500;  ImGui::SameLine();
 			if (ImGui::Button("30fps")) profile.SaveFileApngDurMultiFrame = 33;   ImGui::SameLine();
@@ -619,7 +618,7 @@ tString Viewer::DoSaveFiletypeMultiFrame()
 			// @todo This should be using a standard options call like the GIF type.
 			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::SliderInt("Frame Duration", &profile.SaveFileTiffDurMultiFrame, 0, 10000, "%d");
-			ImGui::SameLine(); ShowToolTip("In milliseconds."); ImGui::NewLine();
+			ImGui::SameLine(); Gutil::ToolTip("In milliseconds."); ImGui::NewLine();
 			if (ImGui::Button("1.0s"))  profile.SaveFileTiffDurMultiFrame = 1000; ImGui::SameLine();
 			if (ImGui::Button("0.5s"))  profile.SaveFileTiffDurMultiFrame = 500;  ImGui::SameLine();
 			if (ImGui::Button("30fps")) profile.SaveFileTiffDurMultiFrame = 33;   ImGui::SameLine();
@@ -752,7 +751,7 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 	Config::ProfileData& profile = Config::GetProfileData();
 	ImGui::Combo("Size Mode", &profile.SaveAllSizeMode, sizeModeNames, tNumElements(sizeModeNames));
 	ImGui::SameLine();
-	ShowHelpMark
+	Gutil::HelpMark
 	(
 		"Images may be resized based on the Size Mode:\n"
 		"\n"
@@ -775,20 +774,20 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 	switch (profile.GetSaveAllSizeMode())
 	{
 		case Config::ProfileData::SizeModeEnum::Percent:
-			ImGui::InputFloat("Percent", &percent, 1.0f, 10.0f, "%.1f");	ImGui::SameLine();	ShowHelpMark("Percent of original size.");
+			ImGui::InputFloat("Percent", &percent, 1.0f, 10.0f, "%.1f");	ImGui::SameLine();	Gutil::HelpMark("Percent of original size.");
 			break;
 
 		case Config::ProfileData::SizeModeEnum::SetWidthAndHeight:
-			ImGui::InputInt("Width", &width);	ImGui::SameLine();	ShowHelpMark("Output width in pixels for all images.");
-			ImGui::InputInt("Height", &height);	ImGui::SameLine();	ShowHelpMark("Output height in pixels for all images.");
+			ImGui::InputInt("Width", &width);	ImGui::SameLine();	Gutil::HelpMark("Output width in pixels for all images.");
+			ImGui::InputInt("Height", &height);	ImGui::SameLine();	Gutil::HelpMark("Output height in pixels for all images.");
 			break;
 
 		case Config::ProfileData::SizeModeEnum::SetWidthRetainAspect:
-			ImGui::InputInt("Width", &width);	ImGui::SameLine();	ShowHelpMark("Output width in pixels for all images.");
+			ImGui::InputInt("Width", &width);	ImGui::SameLine();	Gutil::HelpMark("Output width in pixels for all images.");
 			break;
 
 		case Config::ProfileData::SizeModeEnum::SetHeightRetainAspect:
-			ImGui::InputInt("Height", &height);	ImGui::SameLine();	ShowHelpMark("Output height in pixels for all images.");
+			ImGui::InputInt("Height", &height);	ImGui::SameLine();	Gutil::HelpMark("Output height in pixels for all images.");
 			break;
 	};
 
@@ -797,11 +796,11 @@ void Viewer::DoSaveAllModal(bool saveAllPressed)
 	{
 		ImGui::Combo("Filter", &profile.ResampleFilter, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 		ImGui::SameLine();
-		ShowHelpMark("Filtering method to use when resizing images.");
+		Gutil::HelpMark("Filtering method to use when resizing images.");
 
 		ImGui::Combo("Filter Edge Mode", &profile.ResampleEdgeMode, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
 		ImGui::SameLine();
-		ShowHelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");
+		Gutil::HelpMark("How filter chooses pixels along image edges. Use wrap for tiled textures.");
 	}
 	tMath::tiClampMin(width, 4);
 	tMath::tiClampMin(height, 4);
@@ -909,7 +908,7 @@ void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFi
 		tString fileCropped	= Gutil::CropStringToWidth(file, textWidth, true);
 		ImGui::Text("%s", fileCropped.Chr());
 		if (fileCropped != file)
-			Gutil::ShowToolTip(file.Chr());
+			Gutil::ToolTip(file.Chr());
 	}
 	int remaining = overwriteFiles.GetNumItems() - fnum;
 	if (remaining > 0)
@@ -921,7 +920,7 @@ void Viewer::DoOverwriteMultipleFilesModal(const tList<tStringItem>& overwriteFi
 	ImGui::Indent();
 		ImGui::Text("%s", dirCropped.Chr());
 		if (dirCropped != dir)
-			Gutil::ShowToolTip(dir.Chr());
+			Gutil::ToolTip(dir.Chr());
 	ImGui::Unindent();
 	ImGui::Text("Overwrite Files?");
 	ImGui::Separator();
@@ -1018,14 +1017,14 @@ void Viewer::DoOverwriteFileModal(const tString& outFile, bool& pressedOK, bool&
 	ImGui::Indent();
 		ImGui::Text("%s", fileCropped.Chr());
 		if (fileCropped != file)
-			Gutil::ShowToolTip(file.Chr());
+			Gutil::ToolTip(file.Chr());
 	ImGui::Unindent();
 
 	ImGui::Text("In Folder");
 	ImGui::Indent();
 		ImGui::Text("%s", dirCropped.Chr());
 		if (dirCropped != dir)
-			Gutil::ShowToolTip(dir.Chr());
+			Gutil::ToolTip(dir.Chr());
 	ImGui::Unindent();
 	ImGui::Separator();
 

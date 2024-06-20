@@ -2,7 +2,7 @@
 //
 // Dialog that generates contact sheets and processes alpha channel properly.
 //
-// Copyright (c) 2019-2023 Tristan Grimmer.
+// Copyright (c) 2019-2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -24,7 +24,6 @@ using namespace tStd;
 using namespace tMath;
 using namespace tSystem;
 using namespace tImage;
-using namespace Gutil;
 
 
 namespace Viewer
@@ -128,7 +127,7 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	if (ImGui::Button(hi, powSize))
 		frameWidth = hiP2W;
 	ImGui::SameLine();
-	ShowHelpMark("Single frame width in pixels.");
+	Gutil::HelpMark("Single frame width in pixels.");
 
 	ImGui::SetNextItemWidth(itemWidth);
 	if (ImGui::InputInt("Frame Height", &frameHeight))
@@ -147,17 +146,17 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	if (ImGui::Button(hi, powSize))
 		frameHeight = hiP2H;
 	ImGui::SameLine();
-	ShowHelpMark("Single frame height in pixels.");
+	Gutil::HelpMark("Single frame height in pixels.");
 
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Columns", &numCols);
 	ImGui::SameLine();
-	ShowHelpMark("Number of columns.");
+	Gutil::HelpMark("Number of columns.");
  
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Rows", &numRows);
 	ImGui::SameLine();
-	ShowHelpMark("Number of rows.");
+	Gutil::HelpMark("Number of rows.");
 
 	int numImg = Images.Count();
 	if ((numImg >= 2) && (numCols*numRows >= 2) && (numCols*numRows > numImg))
@@ -188,7 +187,7 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	if (ImGui::Button(hi, powSize))
 		finalWidth = hiP2W;
 	ImGui::SameLine();
-	ShowHelpMark("Final scaled output sheet width in pixels.");
+	Gutil::HelpMark("Final scaled output sheet width in pixels.");
 
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Final Height", &finalHeight);
@@ -206,7 +205,7 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	if (ImGui::Button(hi, powSize))
 		finalHeight = hiP2H;
 	ImGui::SameLine();
-	ShowHelpMark("Final scaled output sheet height in pixels.");
+	Gutil::HelpMark("Final scaled output sheet height in pixels.");
 
 	if (ImGui::Button("Reset", tVector2(buttonWidth, 0.0f)))
 	{
@@ -225,24 +224,24 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::Combo("Frame Filter", &profile.ResampleFilterContactFrame, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 			ImGui::SameLine();
-			ShowHelpMark("Filtering method to use when resizing input frame images.");
+			Gutil::HelpMark("Filtering method to use when resizing input frame images.");
 
 			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::Combo("Frame Filter Edge Mode", &profile.ResampleEdgeModeContactFrame, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
 			ImGui::SameLine();
-			ShowHelpMark("How frame filter chooses pixels along image edges. Use wrap for tiled textures.");
+			Gutil::HelpMark("How frame filter chooses pixels along image edges. Use wrap for tiled textures.");
 		}
 		if (needFinalResize)
 		{
 			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::Combo("Final Filter", &profile.ResampleFilterContactFinal, tResampleFilterNames, int(tResampleFilter::NumFilters), int(tResampleFilter::NumFilters));
 			ImGui::SameLine();
-			ShowHelpMark("Filtering method to use when resizing output image.");
+			Gutil::HelpMark("Filtering method to use when resizing output image.");
 
 			ImGui::SetNextItemWidth(itemWidth);
 			ImGui::Combo("Final Filter Edge Mode", &profile.ResampleEdgeModeContactFinal, tResampleEdgeModeNames, tNumElements(tResampleEdgeModeNames), tNumElements(tResampleEdgeModeNames));
 			ImGui::SameLine();
-			ShowHelpMark("How output filter chooses pixels along image edges. Use wrap for tiled textures.");
+			Gutil::HelpMark("How output filter chooses pixels along image edges. Use wrap for tiled textures.");
 		}
 
 		ImGui::Separator();
@@ -257,7 +256,7 @@ void Viewer::DoSaveContactSheetModal(bool saveContactSheetPressed)
 	static char filename[128] = "ContactSheet";
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputText("Filename", filename, tNumElements(filename));
-	ImGui::SameLine(); ShowHelpMark("The output filename without extension.");
+	ImGui::SameLine(); Gutil::HelpMark("The output filename without extension.");
 
 	tString genMsg;
 	if (numImg >= 2)

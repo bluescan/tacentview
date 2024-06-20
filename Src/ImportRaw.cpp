@@ -24,7 +24,6 @@
 #include "Config.h"
 #include "FileDialog.h"
 using namespace tMath;
-using namespace Gutil;
 using namespace tFileDialog;
 
 
@@ -37,7 +36,7 @@ namespace ImportRaw
 
 void Viewer::ShowImportRawOverlay(bool* popen)
 {
-	tVector2 windowPos = GetDialogOrigin(DialogID::ImportRaw);
+	tVector2 windowPos = Gutil::GetDialogOrigin(Gutil::DialogID::ImportRaw);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
@@ -94,22 +93,22 @@ void Viewer::ShowImportRawOverlay(bool* popen)
 		if (Gutil::Combo("Packed", &currPacked, tImage::PixelFormatNames_Packed, tImage::PixelFormatDescs_Packed, int(tImage::tPixelFormat::NumPackedFormats), tMin(int(tImage::tPixelFormat::NumPackedFormats), maxDropdownFormats)))
 			profile.ImportRawPixelFormat = int(tImage::tPixelFormat::FirstPacked) + currPacked;
 		if (currPacked != -1)
-			Gutil::ShowToolTip(tImage::PixelFormatDescs_Packed[currPacked]);
+			Gutil::ToolTip(tImage::PixelFormatDescs_Packed[currPacked]);
 
 		if (Gutil::Combo("Block", &currBlock, tImage::PixelFormatNames_Block, tImage::PixelFormatDescs_Block, int(tImage::tPixelFormat::NumBCFormats), tMin(int(tImage::tPixelFormat::NumBCFormats), maxDropdownFormats)))
 			profile.ImportRawPixelFormat = int(tImage::tPixelFormat::FirstBC) + currBlock;
 		if (currBlock != -1)
-			Gutil::ShowToolTip(tImage::PixelFormatDescs_Block[currBlock]);
+			Gutil::ToolTip(tImage::PixelFormatDescs_Block[currBlock]);
 
 		if (Gutil::Combo("PVR", &currPVR, tImage::PixelFormatNames_PVR, tImage::PixelFormatDescs_PVR, int(tImage::tPixelFormat::NumPVRFormats), tMin(int(tImage::tPixelFormat::NumPVRFormats), maxDropdownFormats)))
 			profile.ImportRawPixelFormat = int(tImage::tPixelFormat::FirstPVR) + currPVR;
 		if (currPVR != -1)
-			Gutil::ShowToolTip(tImage::PixelFormatDescs_PVR[currPVR]);
+			Gutil::ToolTip(tImage::PixelFormatDescs_PVR[currPVR]);
 
 		if (Gutil::Combo("ASTC", &currASTC, tImage::PixelFormatNames_ASTC, tImage::PixelFormatDescs_ASTC, int(tImage::tPixelFormat::NumASTCFormats), tMin(int(tImage::tPixelFormat::NumASTCFormats), maxDropdownFormats)))
 			profile.ImportRawPixelFormat = int(tImage::tPixelFormat::FirstASTC) + currASTC;
 		if (currASTC != -1)
-			Gutil::ShowToolTip(tImage::PixelFormatDescs_ASTC[currASTC]);
+			Gutil::ToolTip(tImage::PixelFormatDescs_ASTC[currASTC]);
 
 		// @wip ImportRawPixelFormat
 		// @wip ImportRawColourProfile

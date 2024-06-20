@@ -166,7 +166,6 @@ namespace tFileDialog
 	void UnselectAllBookmarks();
 	bool AddUniqueBookmark(const tList<tStringItem>&);
 	void ClearBookmarksSelected();
-	void ShowToolTip(const char* desc);
 
 	// Splitter functions. @todo These should go somewhere more public as they are not particularly tied to
 	// the file dialog.
@@ -523,21 +522,6 @@ bool tFileDialog::Load(tExpr expr, const tString& exprName)
 	// Now that bookmarks are loaded and exist, we make sure both a home and root bookmark exist.
 	EnsureDefaultBookmarksExist();
 	return true;
-}
-
-
-void tFileDialog::ShowToolTip(const char* desc)
-{
-	if (!ImGui::IsItemHovered())
-		return;
-
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(3.0f, 3.0f));
-	ImGui::BeginTooltip();
-	ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-	ImGui::TextUnformatted(desc);
-	ImGui::PopTextWrapPos();
-	ImGui::EndTooltip();
-	ImGui::PopStyleVar();
 }
 
 
@@ -1128,13 +1112,7 @@ tStringItem* FileDialog::BookmarksLoop()
 			if (hovered)
 			{
 				tString toolText = bookmark->GetPath();
-				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, tVector2(3.0f, 3.0f));
-				ImGui::BeginTooltip();
-				ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-				ImGui::TextUnformatted(toolText.Chr());
-				ImGui::PopTextWrapPos();
-				ImGui::EndTooltip();
-				ImGui::PopStyleVar();
+				Gutil::ToolTip(toolText.Chr());
 			}
 
 			// If selected we need a button for removing bookmarks.
@@ -1305,7 +1283,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 			if (selectPathItemName)
 				setYScrollToSel = true;
 		}
-		ShowToolTip("Up Directory");
+		Gutil::ToolTip("Up Directory");
 
 		// Show hidden.
 		uint64 showHiddenImgID = Viewer::Image_ShowHidden.Bind();
@@ -1318,7 +1296,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 		{
 			ConfigShowHidden = !ConfigShowHidden;
 		}
-		ShowToolTip("Show Hidden");
+		Gutil::ToolTip("Show Hidden");
 
 		// Refresh.
 		uint64 refreshImgID = Viewer::Image_RotateTheta.Bind();
@@ -1349,7 +1327,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 			if (selectPathItemName)
 				setYScrollToSel = true;
 		}
-		ShowToolTip("Refresh");
+		Gutil::ToolTip("Refresh");
 
 		if (ImGui::BeginMenu("View##FileDialog"))
 		{

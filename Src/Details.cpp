@@ -2,7 +2,7 @@
 //
 // Image details overlay and a meta-data inspector.
 //
-// Copyright (c) 2022, 2023 Tristan Grimmer.
+// Copyright (c) 2022-2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -21,7 +21,6 @@
 #include "GuiUtil.h"
 using namespace tMath;
 using namespace tImage;
-using namespace Gutil;
 
 
 void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, float h, int cursorX, int cursorY, float zoom)
@@ -55,7 +54,7 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + winWidth*0.18f);
 		ImGui::Text("Image   Details");
 
-		ShowToolTip
+		Gutil::ToolTip
 		(
 			"Right-Click to Change Anchor"
 		);
@@ -99,7 +98,7 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 				const char* colourProfileName = tGetColourProfileShortName(info.SrcColourProfile);
 				tAssert(colourProfileName);
 				ImGui::Text("Colour Profile: %s", colourProfileName);
-				ShowToolTip
+				Gutil::ToolTip
 				(
 					"The Colour Profile is a best guess at the type of pixel data present.\n"
 					"LDR means low dynamic range (0.0 to 1.0). HDR means values above 1.0\n\n"
@@ -117,7 +116,7 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 					const char* alphaModeName = tGetAlphaModeName(info.AlphaMode);
 					tAssert(alphaModeName);
 					ImGui::Text("Alpha Mode: %s", alphaModeName);
-					ShowToolTip
+					Gutil::ToolTip
 					(
 						"The Alpha Mode specifies whether the alpha has been premultiplied into\n"
 						"the colour channels. Mult means is has. Norm means is hasn't.\n"
@@ -131,7 +130,7 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 					const char* channelTypeName = tGetChannelTypeShortName(info.ChannelType);
 					tAssert(channelTypeName);
 					ImGui::Text("Channel Type: %s", channelTypeName);
-					ShowToolTip
+					Gutil::ToolTip
 					(
 						"The Channel Type specifies how the data was intended to be interpreted by a\n"
 						"graphics API.\n"
@@ -158,9 +157,9 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 				ImGui::Text("Bits Per Pixel: %s", bppStr.Chr());
 				switch (info.Opacity)
 				{
-					case Image::ImgInfo::OpacityType::False:	ImGui::Text("Opaque: False");	ShowToolTip("False means at least one pixel is not opaque.");	break;
-					case Image::ImgInfo::OpacityType::True:		ImGui::Text("Opaque: True");	ShowToolTip("True means all pixels are opaque.");				break;
-					case Image::ImgInfo::OpacityType::Varies:	ImGui::Text("Opaque: Varies");	ShowToolTip("Varies means there is more than one frame/mipmap/page/side\nand they don't all match. This is likely not what you want\nbut is reasonable for, say, pages in a tiff.");	break;
+					case Image::ImgInfo::OpacityType::False:	ImGui::Text("Opaque: False");	Gutil::ToolTip("False means at least one pixel is not opaque.");	break;
+					case Image::ImgInfo::OpacityType::True:		ImGui::Text("Opaque: True");	Gutil::ToolTip("True means all pixels are opaque.");				break;
+					case Image::ImgInfo::OpacityType::Varies:	ImGui::Text("Opaque: Varies");	Gutil::ToolTip("Varies means there is more than one frame/mipmap/page/side\nand they don't all match. This is likely not what you want\nbut is reasonable for, say, pages in a tiff.");	break;
 				}
 				ImGui::Text("Frames: %d", CurrImage->GetNumFrames());
 				tString sizeStr; tsPrintf(sizeStr, "File Size: %'d", info.FileSizeBytes);
@@ -245,7 +244,7 @@ namespace ViewerMetaData
 
 void Viewer::ShowImageMetaDataOverlay(bool* popen)
 {
-	tVector2 windowPos = GetDialogOrigin(DialogID::MetaData);
+	tVector2 windowPos = Gutil::GetDialogOrigin(Gutil::DialogID::MetaData);
 	ImGui::SetNextWindowBgAlpha(0.90f);
 
 	float rowHeight			= Gutil::GetUIParamScaled(18.0f, 2.5f) + 4.0f;
@@ -314,7 +313,7 @@ void Viewer::ShowImageMetaDataOverlay(bool* popen)
 
 					ImGui::TableSetColumnIndex(0);
 					ImGui::Text(tagName.Chr());
-					ShowToolTip(tagDesc.Chr());
+					Gutil::ToolTip(tagDesc.Chr());
 
 					ImGui::TableSetColumnIndex(1);	
 					ImGui::Text(value.Chr());
@@ -322,7 +321,7 @@ void Viewer::ShowImageMetaDataOverlay(bool* popen)
 					tVector2 rect = ImGui::GetItemRectSize();
 					// If the value was truncated, show it all in a tooltip.
 					if (rect.x > (valWidth-16.0f))
-						ShowToolTip(value.Chr());
+						Gutil::ToolTip(value.Chr());
 
 					if (ImGui::IsMouseReleased(1) && colHovered  && (ImGui::GetMousePos().y >= ImGui::GetItemRectMin().y) && (ImGui::GetMousePos().y <= ImGui::GetItemRectMax().y))
 					{

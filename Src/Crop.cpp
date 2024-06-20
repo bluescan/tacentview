@@ -2,7 +2,7 @@
 //
 // GL and ImGui code that implements cropping images.
 //
-// Copyright (c) 2020-2023 Tristan Grimmer.
+// Copyright (c) 2020-2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -23,7 +23,6 @@
 #include "TacentView.h"
 #include "Image.h"
 using namespace tMath;
-using namespace Gutil;
 
 
 namespace Viewer
@@ -944,7 +943,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 		else
 		{
 			ImGui::SameLine();
-			ShowHelpMark("Aspect ratio for crop area.\nFree means aspect is unlocked.\nUser means enter the aspect ratio manually.\nFor the print presets the L means Landscape.");
+			Gutil::HelpMark("Aspect ratio for crop area.\nFree means aspect is unlocked.\nUser means enter the aspect ratio manually.\nFor the print presets the L means Landscape.");
 		}
 
 		//
@@ -979,7 +978,7 @@ void Viewer::ShowCropPopup(const tVector4& lrtb, const tVector2& uvoffset)
 			upDsc.Chr(), upKey.Chr(),
 			downDsc.Chr(), downKey.Chr()
 		);
-		ShowHelpMark(toolTipText.Chr());
+		Gutil::HelpMark(toolTipText.Chr());
 
 		tVector2 shortcutImageSize(anchorSize, anchorSize);
 

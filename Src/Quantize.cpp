@@ -2,7 +2,7 @@
 //
 // Dialog for quantizing (reducing) the colours used by an image.
 //
-// Copyright (c) 2023 Tristan Grimmer.
+// Copyright (c) 2023, 2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -21,7 +21,6 @@ using namespace tStd;
 using namespace tSystem;
 using namespace tMath;
 using namespace tImage;
-using namespace Gutil;
 
 
 namespace Viewer
@@ -59,7 +58,7 @@ void Viewer::DoQuantizeInterface(int& method, int& spatialFilterSize, float& spa
 	const char* methodItems[] = { "Fixed Palette", "Spatial Scolorq", "Neu Quant", "Wu Bipartition" };
 	ImGui::Combo("Quantize Method", &method , methodItems, tNumElements(methodItems));
 	ImGui::SameLine();
-	ShowHelpMark
+	Gutil::HelpMark
 	(
 		"The colour quantization method is used to create a high-quality palette.\n\n"
 
@@ -86,13 +85,13 @@ void Viewer::DoQuantizeInterface(int& method, int& spatialFilterSize, float& spa
 		const char* filterSizeItems[] = { "Low", "Med", "High" };
 		ImGui::Combo("Quantize Filter Size", &spatialFilterSize , filterSizeItems, tNumElements(filterSizeItems));
 		ImGui::SameLine();
-		ShowHelpMark("Filter size for the scolorq/spatial quantizer. Low -> 1, Med -> 3, High -> 5");
+		Gutil::HelpMark("Filter size for the scolorq/spatial quantizer. Low -> 1, Med -> 3, High -> 5");
 
 		if (itemWidth > 0.0f)
 			ImGui::SetNextItemWidth(itemWidth);
  		ImGui::SliderFloat("Quantize Dither", &spatialDitherLevel, 0.0f, 2.0f, "%.1f");
 		ImGui::SameLine();
-		ShowHelpMark
+		Gutil::HelpMark
 		(
 			"Dither level for the scolorq/spatial quantizer. 0 means auto-determine a good value for\n"
 			"the current image based on its dimensions. Greater than zero means manually set the\n"
@@ -106,7 +105,7 @@ void Viewer::DoQuantizeInterface(int& method, int& spatialFilterSize, float& spa
 			ImGui::SetNextItemWidth(itemWidth);
 		ImGui::SliderInt("Quantize Factor", &neuSampleFactor, 1, 10, "%d");
 		ImGui::SameLine();
-		ShowHelpMark
+		Gutil::HelpMark
 		(
 			"Sample factor for the Neu quantizer. 1 is highest quality and slowest. All pixels are visited\n"
 			"during the learning step. 10 means only 1/10th of the image is considered during learning."
@@ -146,7 +145,7 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Num Colours", &numColours);
 	ImGui::SameLine();
-	ShowHelpMark
+	Gutil::HelpMark
 	(
 		"The number of colours you are quantizing to. Must be between 2 and 256."
 	);
@@ -155,7 +154,7 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 	static bool checkExact = true;
 	ImGui::Checkbox("Check Exact", &checkExact);
 	ImGui::SameLine();
-	ShowHelpMark
+	Gutil::HelpMark
 	(
 		"If Check-Exact is true pressing Quantize will inspect all image pixels in case there are\n"
 		"fewer (or equal) colours than the number of colours requested. If this is true then the\n"
