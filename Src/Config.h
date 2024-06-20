@@ -274,6 +274,7 @@ struct ProfileData
 	int ImportRawColourProfile;
 	tColourProfile GetImportRawColourProfile() const		{ return tColourProfile(ImportRawColourProfile); }
 	void SetImportRawColourProfile(tColourProfile prof)		{ ImportRawColourProfile = int(prof); }
+	tString ImportRawFileType;								// This is the destination filetype of the new image after import.
 
 	bool LevelsPowerMidGamma;
 	bool LevelsAutoMidPoint;

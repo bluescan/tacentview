@@ -23,6 +23,7 @@
 #include "ImportRaw.h"
 #include "Config.h"
 #include "FileDialog.h"
+#include "TacentView.h"
 using namespace tMath;
 using namespace tFileDialog;
 
@@ -71,13 +72,49 @@ void Viewer::ShowImportRawOverlay(bool* popen)
 			Gutil::Button("Import");
 		}
 
+		// FileType of destination image.
+		tString createTypeName = profile.ImportRawFileType;
+		tSystem::tFileType createType = tSystem::tGetFileTypeFromName(createTypeName);
+		// ImGui::SetNextItemWidth(itemWidth);
+		if (ImGui::BeginCombo("Create Type", createTypeName.Chr()))
+		{
+			for (tSystem::tFileTypes::tFileTypeItem* item = FileTypes_ImportRaw.First(); item; item = item->Next())
+			{
+				tSystem::tFileType ft = item->FileType;
+				bool selected = (ft == createType);
+
+				tString ftName = tGetFileTypeName(ft);
+				if (ImGui::Selectable(ftName.Chr(), &selected))
+				{
+					profile.ImportRawFileType = ftName;
+					createType = tSystem::tGetFileTypeFromName(ftName);
+				}
+
+				if (selected)
+					ImGui::SetItemDefaultFocus();
+			}				
+			ImGui::EndCombo();
+		}
+		ImGui::SameLine();
+		Gutil::HelpMark
+		(
+			"When an image is imported from raw data it creates a new image of this type.\n"
+			"Valid types are ones that are lossless or support lossless encoding like webp.\n"
+			"Created images support alpha channel. If no alpha it saves the image without it.\n"
+			"If the creation type supports multiple frames, the option to import mipmaps will\n"
+			"be available. Not all formats support this but WEBP, APNG, and TIF do."
+		);
+
 		if (ImGui::InputInt("Width##ImportRaw", &profile.ImportRawWidth))
 			tiClamp(profile.ImportRawWidth, 1, 65536);
 
 		if (ImGui::InputInt("Height##ImportRaw", &profile.ImportRawHeight))
 			tiClamp(profile.ImportRawHeight, 1, 65536);
 
-		ImGui::Checkbox("Mipmaps##ImportRaw", &profile.ImportRawMipmaps);
+		bool fileTypeSupportsMipmaps = (createType == tSystem::tFileType::APNG) || (createType == tSystem::tFileType::TIFF) || (createType == tSystem::tFileType::WEBP);
+		if (fileTypeSupportsMipmaps)
+			ImGui::Checkbox("Mipmaps##ImportRaw", &profile.ImportRawMipmaps);
+		bool importMipmaps = fileTypeSupportsMipmaps ? profile.ImportRawMipmaps : false;
 
 		if (ImGui::InputInt("Data Offset##ImportRaw", &profile.ImportRawDataOffset))
 			tiClamp(profile.ImportRawDataOffset, 0, 65535);

@@ -166,6 +166,22 @@ namespace Viewer
 		tFileType::EOL
 	);
 
+	// File types that may be created when importing raw data. All of these must
+	// be lossless and support saving. WEBP is the default as it supports multiple
+	// lossless surfaces (mipmaps). Additionally APNG and TIFF support multiple.
+	// The remainder only support single lossless images and mipmap import is disabled.
+	tFileTypes FileTypes_ImportRaw
+	(
+		tFileType::WEBP,
+		tFileType::APNG,
+		tFileType::TIFF,
+		tFileType::TGA,
+		tFileType::PNG,
+		tFileType::QOI,
+		tFileType::BMP,
+		tFileType::EOL
+	);
+
 	// This is the list of lossy formats where the viewer supports lossless transformations.
 	tFileTypes FileTypes_LosslessTransform
 	(
