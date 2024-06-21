@@ -54,7 +54,7 @@ void Viewer::DoResizeWidthHeightInterface(int srcW, int srcH, int& dstW, int& ds
 	ImGui::SetNextItemWidth(dimWidth);
 	if (ImGui::InputInt("Width", &dstW) && lockAspect)
 		dstH = int( float(dstW) / aspect );
-	tiClamp(dstW, 4, 65536); tiClamp(dstH, 4, 65536);
+	tiClamp(dstW, 4, Viewer::Image::MaxDim); tiClamp(dstH, 4, Viewer::Image::MaxDim);
 	int loP2W = tNextLowerPower2(dstW);		tiClampMin(loP2W, 4);	tsPrintf(lo, "%d##Wlo", loP2W);
 	int hiP2W = tNextHigherPower2(dstW);							tsPrintf(hi, "%d##Whi", hiP2W);
 	ImGui::SetCursorPosX(dimOffset);
@@ -75,7 +75,7 @@ void Viewer::DoResizeWidthHeightInterface(int srcW, int srcH, int& dstW, int& ds
 	ImGui::SetNextItemWidth(dimWidth);
 	if (ImGui::InputInt("Height", &dstH) && lockAspect)
 		dstW = int( float(dstH) * aspect );
-	tiClamp(dstW, 4, 65536); tiClamp(dstH, 4, 65536);
+	tiClamp(dstW, 4, Viewer::Image::MaxDim); tiClamp(dstH, 4, Viewer::Image::MaxDim);
 	ImGui::SetCursorPosX(dimOffset);
 	int loP2H = tNextLowerPower2(dstH);		tiClampMin(loP2H, 4);	tsPrintf(lo, "%d##Hlo", loP2H);
 	int hiP2H = tNextHigherPower2(dstH);							tsPrintf(hi, "%d##Hhi", hiP2H);

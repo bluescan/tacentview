@@ -24,6 +24,7 @@
 #include "Config.h"
 #include "FileDialog.h"
 #include "TacentView.h"
+#include "Image.h"
 using namespace tMath;
 using namespace tFileDialog;
 
@@ -106,10 +107,10 @@ void Viewer::ShowImportRawOverlay(bool* popen)
 		);
 
 		if (ImGui::InputInt("Width##ImportRaw", &profile.ImportRawWidth))
-			tiClamp(profile.ImportRawWidth, 1, 65536);
+			tiClamp(profile.ImportRawWidth, 1, Viewer::Image::MaxDim);
 
 		if (ImGui::InputInt("Height##ImportRaw", &profile.ImportRawHeight))
-			tiClamp(profile.ImportRawHeight, 1, 65536);
+			tiClamp(profile.ImportRawHeight, 1, Viewer::Image::MaxDim);
 
 		bool fileTypeSupportsMipmaps = (createType == tSystem::tFileType::APNG) || (createType == tSystem::tFileType::TIFF) || (createType == tSystem::tFileType::WEBP);
 		if (fileTypeSupportsMipmaps)
@@ -117,7 +118,7 @@ void Viewer::ShowImportRawOverlay(bool* popen)
 		bool importMipmaps = fileTypeSupportsMipmaps ? profile.ImportRawMipmaps : false;
 
 		if (ImGui::InputInt("Data Offset##ImportRaw", &profile.ImportRawDataOffset))
-			tiClamp(profile.ImportRawDataOffset, 0, 65535);
+			tiClamp(profile.ImportRawDataOffset, 0, Viewer::Image::MaxDim-1);
 
 		Gutil::Separator();
 		tImage::tPixelFormat fmt = profile.GetImportRawPixelFormat();

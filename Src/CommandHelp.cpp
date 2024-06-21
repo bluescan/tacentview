@@ -20,6 +20,7 @@
 #include <Image/tResample.h>
 #include "CommandHelp.h"
 #include "TacentView.h"
+#include "Image.h"
 
 
 namespace Command
@@ -1045,9 +1046,9 @@ or leave it out. Eg. zap[a*,b*] may be called with --op zap[] or just --op zap.
 
 --op resize[w,h,filt*,edge*]
   Resizes image by resampling. Allows non-uniform scale.
-  w:    Width. An int in range [4, 65536], 0*, or -1. If set to 0 or -1 it
+  w:    Width. An int in range [4, %d], 0*, or -1. If set to 0 or -1 it
         preserves the aspect ratio by using the height and original aspect.
-  h:    Height. An int in range [4, 65536], 0*, or -1. If set to 0 or -1 it
+  h:    Height. An int in range [4, %d], 0*, or -1. If set to 0 or -1 it
         preserves the aspect ratio by using the width and original aspect.
   filt: Resample filter. Default is bilinear*. Only used if dimensions changed
         for the image being processed. See below for valid filter names.
@@ -1058,9 +1059,9 @@ or leave it out. Eg. zap[a*,b*] may be called with --op zap[] or just --op zap.
   Resizes image by modifying the canvas area of the image. You specify the new
   width and height. Vertical or horizontal letterboxes may be needed. This
   operation does not perform resampling.
-  w:    Width. An int in range [4, 65536], 0*, or -1. If set to 0 or -1 it
+  w:    Width. An int in range [4, %d], 0*, or -1. If set to 0 or -1 it
         preserves the aspect ratio by using the height and original aspect.
-  h:    Height. An int in range [4, 65536], 0*, or -1. If set to 0 or -1 it
+  h:    Height. An int in range [4, %d], 0*, or -1. If set to 0 or -1 it
         preserves the aspect ratio by using the width and original aspect.
   anc:  Anchor. One of tl, tm, tr, ml, mm*, mr, bl, bm. br. These are
         abbreviations for top-left, top-middle, top-right, etc.
@@ -1068,9 +1069,9 @@ or leave it out. Eg. zap[a*,b*] may be called with --op zap[] or just --op zap.
         colour using a hexadecimal in the form #RRGGBBAA, a single integer
         spread to RGBA, or a predefined name: black*, white, grey, red, green,
         blue, yellow, cyan, magenta, or trans (transparent black).
-  ancx: Explicit anchor X position. An int in range [-1*, 65536]. If -1 used
+  ancx: Explicit anchor X position. An int in range [-1*, %d]. If -1 used
         the anc argument above takes priority.
-  ancy: Explicit anchor Y position. An int in range [-1*, 65536]. If -1 used
+  ancy: Explicit anchor Y position. An int in range [-1*, %d]. If -1 used
         the anc argument above takes priority.
 
 --op aspect[asp,mode,anc*,fill*,ancx*,ancy*]
@@ -1090,9 +1091,9 @@ or leave it out. Eg. zap[a*,b*] may be called with --op zap[] or just --op zap.
         colour using a hexadecimal in the form #RRGGBBAA, a single integer
         spread to RGBA, or a predefined name: black*, white, grey, red, green,
         blue, yellow, cyan, magenta, or trans (transparent black).
-  ancx: Explicit anchor X position. An int in range [-1*, 65536]. If -1 used
+  ancx: Explicit anchor X position. An int in range [-1*, %d]. If -1 used
         the anc argument above takes priority.
-  ancy: Explicit anchor Y position. An int in range [-1*, 65536]. If -1 used
+  ancy: Explicit anchor Y position. An int in range [-1*, %d]. If -1 used
         the anc argument above takes priority.
 
 --op deborder[col*,chan*]
@@ -1179,7 +1180,7 @@ or leave it out. Eg. zap[a*,b*] may be called with --op zap[] or just --op zap.
         hexadecimal in the form #RRGGBBAA, a single integer spread to RGBA, or
         a predefined name: black*, white, grey, red, green, blue, yellow, cyan,
         magenta, or trans (transparent black).
-)OPERATIONS010"
+)OPERATIONS010", Viewer::Image::MaxDim, Viewer::Image::MaxDim, Viewer::Image::MaxDim, Viewer::Image::MaxDim, Viewer::Image::MaxDim, Viewer::Image::MaxDim, Viewer::Image::MaxDim, Viewer::Image::MaxDim
 	);
 	tPrintf
 	(

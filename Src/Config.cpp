@@ -651,9 +651,9 @@ void Config::ProfileData::Load(tExpression expr)
 	tiClamp		(OverlayCorner, 0, 3);
 	tiClamp		(ThumbnailWidth, float(Image::ThumbMinDispWidth), float(Image::ThumbWidth));
 	tiClamp		(SortKey, 0, int(SortKeyEnum::NumKeys)-1);
-	tiClamp		(ImportRawWidth, 1, 65536);
-	tiClamp		(ImportRawHeight, 1, 65536);
-	tiClamp		(ImportRawDataOffset, 0, 65535);
+	tiClamp		(ImportRawWidth, 1, Viewer::Image::MaxDim);
+	tiClamp		(ImportRawHeight, 1, Viewer::Image::MaxDim);
+	tiClamp		(ImportRawDataOffset, 0, Viewer::Image::MaxDim-1);
 	tiClamp		(ImportRawPixelFormat, int(tImage::tPixelFormat::FirstContiguous), int(tImage::tPixelFormat::LastContiguous));
 	tiClamp		(ImportRawColourProfile, 0, int(tColourProfile::NumProfiles) - 1);
 	tiClamp		(CropAnchor, -1, 9);

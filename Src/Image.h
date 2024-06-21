@@ -122,6 +122,7 @@ public:
 	int GetWidth() const;
 	int GetHeight() const;
 	int GetArea() const;
+	static const int MaxDim					/* Max width or height. */													= 65536;
 	tColour4b GetPixel(int x, int y) const;
 
 	// Some images can store multiple complete images inside a single file (multiple frames).
