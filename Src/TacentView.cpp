@@ -271,6 +271,7 @@ namespace Viewer
 	Anchor Request_PanSnap							= Anchor::Invalid;
 	LosslessTransformMode Request_LosslessTrnsModal	= LosslessTransformMode::None;
 	bool BindingsWindowJustOpened					= false;
+	bool ImportRawWindowJustOpened					= false;
 	bool CropMode									= false;
 	bool LMBDown									= false;
 	bool RMBDown									= false;
@@ -344,6 +345,11 @@ namespace Viewer
 		bool operator() (const Image& a, const Image& b) const;
 	};
 
+	tColour4b GetClipboard16BPPColour(uint16 data, uint32 rmask, int rshift, uint32 gmask, int gshift, uint32 bmask, int bshift, uint32 amask, int ashift);
+	tColour4b GetClipboard24BPPColour(uint32 data, uint32 rmask, int rshift, uint32 gmask, int gshift, uint32 bmask, int bshift, uint32 amask, int ashift);
+	tColour4b GetClipboard32BPPColour(uint32 data, uint32 rmask, int rshift, uint32 gmask, int gshift, uint32 bmask, int bshift, uint32 amask, int ashift);
+	tColour4b GetClipboard64BPPColour(uint64 data, uint32 rmask, int rshift, uint32 gmask, int gshift, uint32 bmask, int bshift, uint32 amask, int ashift);
+
 	inline bool OnNextImage(bool next);
 	inline bool OnLastImage(bool last);
 	inline void OnNextImageFrame(bool next);
@@ -366,7 +372,6 @@ namespace Viewer
 	inline void OnPixelEdit();
 	inline void OnPropertyEdit();
 	inline void OnChannelFilter();
-	inline void OnImportRaw();
 	inline void OnLevels();
 	inline void OnQuantize();
 	inline void OnRedChannel();
@@ -378,6 +383,7 @@ namespace Viewer
 	inline void OnTile();
 	bool		OnCopyImageToClipboard();
 	bool		OnPasteImageFromClipboard();
+	inline void OnImportRaw();
 	inline void OnRefresh();
 	inline void OnRefreshDir();
 	inline void OnRename();
@@ -1086,7 +1092,6 @@ void Viewer::OnResizeCanvas()		{ if (CurrImage && CurrImage->IsLoaded()) Request
 void Viewer::OnPixelEdit()			{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowPixelEditor = !profile.ShowPixelEditor; }
 void Viewer::OnPropertyEdit()		{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowPropsWindow = !profile.ShowPropsWindow; }
 void Viewer::OnChannelFilter()		{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowChannelFilter = !profile.ShowChannelFilter; }
-void Viewer::OnImportRaw()			{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowImportRaw = !profile.ShowImportRaw; }
 void Viewer::OnLevels()				{ if (CurrImage && CurrImage->IsLoaded() && !CurrImage->IsAltPictureEnabled()) Request_LevelsModal = true; }
 void Viewer::OnQuantize()			{ if (CurrImage && CurrImage->IsLoaded() && !CurrImage->IsAltPictureEnabled()) Request_QuantizeModal = true; }
 void Viewer::OnRedChannel()			{ Config::ProfileData& profile = Config::GetProfileData(); if (DrawChannel_AsIntensity) { DrawChannel_R = true; DrawChannel_G = false; DrawChannel_B = false; DrawChannel_A = false; } else DrawChannel_R = !DrawChannel_R; profile.ShowChannelFilter = true; }
@@ -1185,7 +1190,7 @@ bool Viewer::OnCopyImageToClipboard()
 }
 
 
-tColour4b GetClipboard16BPPColour
+tColour4b Viewer::GetClipboard16BPPColour
 (
 	uint16 data,
 	uint32 rmask, int rshift,
@@ -1214,7 +1219,7 @@ tColour4b GetClipboard16BPPColour
 }
 
 
-tColour4b GetClipboard24BPPColour
+tColour4b Viewer::GetClipboard24BPPColour
 (
 	uint32 data,
 	uint32 rmask, int rshift,
@@ -1234,7 +1239,7 @@ tColour4b GetClipboard24BPPColour
 }
 
 
-tColour4b GetClipboard32BPPColour
+tColour4b Viewer::GetClipboard32BPPColour
 (
 	uint32 data,
 	uint32 rmask, int rshift,
@@ -1256,7 +1261,7 @@ tColour4b GetClipboard32BPPColour
 }
 
 
-tColour4b GetClipboard64BPPColour
+tColour4b Viewer::GetClipboard64BPPColour
 (
 	uint64 data,
 	uint32 rmask, int rshift,
@@ -1542,6 +1547,9 @@ bool Viewer::OnPasteImageFromClipboard()
 
 	return true;
 }
+
+
+void Viewer::OnImportRaw()			{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowImportRaw = !profile.ShowImportRaw; if (profile.ShowImportRaw) ImportRawWindowJustOpened = true; }
 
 
 void Viewer::OnRefresh()
@@ -1976,7 +1984,9 @@ int Viewer::DoMainMenuBar()
 				Viewer::OnPasteImageFromClipboard();
 
 			tString importRawKey = profile.InputBindings.FindModKeyText(Bindings::Operation::ImportRaw);
-			ImGui::MenuItem("Import Raw...", importRawKey.Chz(), &profile.ShowImportRaw);
+			if (ImGui::MenuItem("Import Raw...", importRawKey.Chz(), &profile.ShowImportRaw))
+				if (profile.ShowImportRaw)
+					ImportRawWindowJustOpened = true;
 
 			ImGui::Separator();
 
@@ -3443,7 +3453,10 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		ShowChannelFilterOverlay(&profile.ShowChannelFilter);
 
 	if (profile.ShowImportRaw)
-		ShowImportRawOverlay(&profile.ShowImportRaw);
+	{
+		ShowImportRawOverlay(&profile.ShowImportRaw, ImportRawWindowJustOpened);
+		ImportRawWindowJustOpened = false;
+	}
 
 	if (profile.ShowImageDetails)
 	{

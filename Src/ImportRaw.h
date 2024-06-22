@@ -17,6 +17,5 @@
 
 namespace Viewer
 {
-	//void ShowChannelFilterOverlay(bool* popen);
-	void ShowImportRawOverlay(bool* popen);
+	void ShowImportRawOverlay(bool* popen, bool justOpened);
 }
