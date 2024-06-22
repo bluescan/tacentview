@@ -143,7 +143,7 @@ namespace tFileDialog
 		bool Set(const Bookmark& src);
 		bool Set(const tString& fullPath);
 		bool Set(const tList<tStringItem>&);	// A user bookmark from item list.
- 		bool Set(Type type);					// Accepts Home or Root.
+		bool Set(Type type);					// Accepts Home or Root.
 
 		void Clear()							/* Makes bookmark invalid. */											{ Items.Empty(); }
 
@@ -417,7 +417,7 @@ bool tFileDialog::Save(tExprWriter& writer, const tString& exprName)
 	// We save a different last-used path for each mode.
 	if (!ConfigOpenFilePath.IsEmpty())
 	{
- 		writer.Begin();
+		writer.Begin();
 		writer.Atom("OpenFilePath");
 		for (tStringItem* n = ConfigOpenFilePath.First(); n; n = n->Next())
 			writer.Atom(*n);
@@ -647,28 +647,30 @@ bool ContentItem::CompareFunctionObject::operator() (const ContentItem& a, const
 		{
 			const ImGuiTableColumnSortSpecs& colSortSpec = SortSpecs->Specs[s];
 			FieldID field = FieldID(colSortSpec.ColumnUserID);
-			int64 delta = 0;
+			int cmp = 0;
 			switch (field)
 			{
 				case FieldID::Name:
-					delta = tStd::tStricmp(a.Name.Chars(), b.Name.Chars());
+					// Even on Linux (case sensitive) I think it makes more sense to do a case-insensitive compare
+					// here so that tHis sorts next to thiS.
+					cmp = tStd::tStricmp(a.Name.Chars(), b.Name.Chars());
 					break;
 
 				case FieldID::ModTime:
-					delta = a.ModTime - b.ModTime;
+					cmp = a.ModTime - b.ModTime;
 					break;
 
 				case FieldID::FileType:
-					delta = tStd::tStricmp(a.FileTypeString.Chars(), b.FileTypeString.Chars());
+					cmp = tStd::tStricmp(a.FileTypeString.Chars(), b.FileTypeString.Chars());
 					break;
 
 				case FieldID::FileSize:
-					delta = a.FileSize - b.FileSize;
+					cmp = a.FileSize - b.FileSize;
 					break;
 			}
-			if ((delta < 0) && (colSortSpec.SortDirection == ImGuiSortDirection_Ascending))
+			if ((cmp == -1) && (colSortSpec.SortDirection == ImGuiSortDirection_Ascending))
 				return true;
-			else if ((delta > 0) && (colSortSpec.SortDirection == ImGuiSortDirection_Descending))
+			else if ((cmp == 1) && (colSortSpec.SortDirection == ImGuiSortDirection_Descending))
 				return true;
 		}
 	}

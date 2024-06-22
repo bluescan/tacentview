@@ -94,7 +94,7 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			for (tSystem::tFileTypes::tFileTypeItem* item = FileTypes_ImportRaw.First(); item; item = item->Next())
 			{
 				tSystem::tFileType ft = item->FileType;
-				bool selected = (ft == createType);
+				bool selected = (ft == dstType);
 
 				tString ftName = tGetFileTypeName(ft);
 				if (ImGui::Selectable(ftName.Chr(), &selected))
@@ -132,7 +132,7 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 		if (ImGui::InputInt("Height##ImportRaw", &profile.ImportRawHeight))
 			tiClamp(profile.ImportRawHeight, 1, Viewer::Image::MaxDim);
 
-		bool fileTypeSupportsMipmaps = (dstType == tSystem::tFileType::APNG) || (createType == tSystem::tFileType::TIFF) || (createType == tSystem::tFileType::WEBP);
+		bool fileTypeSupportsMipmaps = (dstType == tSystem::tFileType::APNG) || (dstType == tSystem::tFileType::TIFF) || (dstType == tSystem::tFileType::WEBP);
 		if (fileTypeSupportsMipmaps)
 			ImGui::Checkbox("Mipmaps##ImportRaw", &profile.ImportRawMipmaps);
 		bool importMipmaps = fileTypeSupportsMipmaps ? profile.ImportRawMipmaps : false;

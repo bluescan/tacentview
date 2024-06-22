@@ -42,7 +42,7 @@ void Viewer::ShowAboutPopup(bool* popen)
 
 		tString platform	= tGetPlatformName( tGetPlatform() );
 		tString architec	= tGetArchitectureNameLong( tGetArchitecture() );
-		tString config 		= tGetConfigurationName( tGetConfiguration() );
+		tString config		= tGetConfigurationName( tGetConfiguration() );
 		tString package		= "Native";
 		#if defined(PACKAGE_SNAP)
 			package = "Snap";

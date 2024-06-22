@@ -452,7 +452,7 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 		{
 			const char8_t* A = a.Filename.Chars();
 			const char8_t* B = b.Filename.Chars();
-			return Ascending ? (tStricmp(A, B) < 0) : (tStricmp(A, B) > 0);
+			return Ascending ? (tPstrcmp(A, B) < 0) : (tPstrcmp(A, B) > 0);
 		}
 
 		case Config::ProfileData::SortKeyEnum::FileModTime:
@@ -841,11 +841,7 @@ bool Viewer::SetCurrentImage(const tString& currFilename)
 		tString imgName = tSystem::tGetFileName(currFilename);
 
 		// We want a case-sensitive compare on Linux.
-		#ifdef PLATFORM_LINUX
-		if (tStrcmp(siName.Chars(), imgName.Chars()) == 0)
-		#else
-		if (tStricmp(siName.Chars(), imgName.Chars()) == 0)
-		#endif
+		if (tPstrcmp(siName.Chars(), imgName.Chars()) == 0)
 		{
 			CurrImage = si;
 			found = true;
@@ -954,6 +950,9 @@ bool Viewer::OnNextImage(bool next)
 		return false;
 
 	Config::ProfileData& profile = Config::GetProfileData();
+	if (profile.ShowImportRaw)
+		return false;
+
 	bool circ = SlideshowPlaying && profile.SlideshowLooping;
 	bool avail = next ? CurrImage->Next() : CurrImage->Prev();
 	if (!circ && !avail)
@@ -977,6 +976,10 @@ bool Viewer::OnLastImage(bool last)
 	if (!CurrImage)
 		return false;
 	if ((last && !Images.Last()) || (!last && !Images.First()))
+		return false;
+
+	Config::ProfileData& profile = Config::GetProfileData();
+	if (profile.ShowImportRaw)
 		return false;
 
 	CurrImage = last ? Images.Last() : Images.First();
@@ -1332,7 +1335,7 @@ bool Viewer::OnPasteImageFromClipboard()
 		if ((rmask >> rshift) != 0xFF)				return false;
 		if ((gmask >> gshift) != 0xFF)				return false;
 		if ((bmask >> bshift) != 0xFF)				return false;
-		if (spec.alpha_mask) 						return false;
+		if (spec.alpha_mask)						return false;
 	}
 
 	// For 32bpp we only support component masks that have 8 bits set.
@@ -1553,7 +1556,13 @@ bool Viewer::OnPasteImageFromClipboard()
 }
 
 
-void Viewer::OnImportRaw()			{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowImportRaw = !profile.ShowImportRaw; if (profile.ShowImportRaw) ImportRawWindowJustOpened = true; }
+void Viewer::OnImportRaw()
+{
+	Config::ProfileData& profile = Config::GetProfileData();
+	profile.ShowImportRaw = !profile.ShowImportRaw;
+	if (profile.ShowImportRaw)
+		ImportRawWindowJustOpened = true;
+}
 
 
 void Viewer::OnRefresh()
@@ -1584,15 +1593,122 @@ void Viewer::OnRefreshDir()
 }
 
 
-void Viewer::OnRename()				{ if (CurrImage) Request_RenameModal = true; }
-void Viewer::OnDelete()				{ if (CurrImage) Request_DeleteFileModal = true; }
-void Viewer::OnDeletePermanent()	{ if (CurrImage) Request_DeleteFileNoRecycleModal = true; }
-void Viewer::OnSave()				{ if (CurrImage && CurrImage->IsLoaded()) Request_SaveCurrentModal = true; }
-void Viewer::OnSaveAs()				{ if (CurrImage && CurrImage->IsLoaded()) Request_SaveAsModal = true; }
-void Viewer::OnSaveAll()			{ if (CurrImage) Request_SaveAllModal = true; }
-void Viewer::OnSaveContactSheet()	{ if (Images.GetNumItems() > 1) Request_ContactSheetModal = true; }
-void Viewer::OnSaveMultiFrameImage(){ if (Images.GetNumItems() > 1) Request_MultiFrameModal = true; }
-void Viewer::OnSaveExtractFrames()	{ if (CurrImage && (CurrImage->GetNumFrames() > 1)) Request_ExtractFramesModal = true; }
+void Viewer::OnRename()
+{
+	if (!CurrImage)
+		return;
+
+	Config::ProfileData& profile = Config::GetProfileData();
+	if (profile.ShowImportRaw)
+		return;
+
+	Request_RenameModal = true;
+}
+
+
+void Viewer::OnDelete()
+{
+	if (!CurrImage)
+		return;
+
+	Config::ProfileData& profile = Config::GetProfileData();
+	if (profile.ShowImportRaw)
+		return;
+
+	Request_DeleteFileModal = true;
+}
+
+
+void Viewer::OnDeletePermanent()
+{
+	if (!CurrImage)
+		return;
+
+	Config::ProfileData& profile = Config::GetProfileData();
+	if (profile.ShowImportRaw)
+		return;
+
+	Request_DeleteFileNoRecycleModal = true;
+}
+
+
+void Viewer::OnSave()
+{
+	if (!CurrImage)
+		return;
+
+	Config::ProfileData& profile = Config::GetProfileData();
+	if (profile.ShowImportRaw)
+		return;
+
+	if (CurrImage->IsLoaded())
+		Request_SaveCurrentModal = true;
+}
+
+
+void Viewer::OnSaveAs()
+{
+	if (!CurrImage)
+		return;
+
+	Config::ProfileData& profile = Config::GetProfileData();
+	if (profile.ShowImportRaw)
+		return;
+
+	if (CurrImage->IsLoaded())
+		Request_SaveAsModal = true;
+}
+
+
+void Viewer::OnSaveAll()
+{
+	if (!CurrImage)
+		return;
+
+	Config::ProfileData& profile = Config::GetProfileData();
+	if (profile.ShowImportRaw)
+		return;
+
+	Request_SaveAllModal = true;
+}
+
+
+void Viewer::OnSaveContactSheet()
+{
+	Config::ProfileData& profile = Config::GetProfileData();
+	if (profile.ShowImportRaw)
+		return;
+
+	if (Images.GetNumItems() > 1)
+		Request_ContactSheetModal = true;
+}
+
+
+void Viewer::OnSaveMultiFrameImage()
+{
+	Config::ProfileData& profile = Config::GetProfileData();
+	if (profile.ShowImportRaw)
+		return;
+
+	if (Images.GetNumItems() > 1)
+		Request_MultiFrameModal = true;
+}
+
+
+void Viewer::OnSaveExtractFrames()
+{
+	if (!CurrImage)
+		return;
+
+	Config::ProfileData& profile = Config::GetProfileData();
+	if (profile.ShowImportRaw)
+		return;
+
+	if (CurrImage->GetNumFrames() > 1)
+		Request_ExtractFramesModal = true;
+}
+
+
 void Viewer::OnMenuBar()			{ Config::ProfileData& profile = Config::GetProfileData(); if (!CropMode) profile.ShowMenuBar = !profile.ShowMenuBar; }
 void Viewer::OnNavBar()				{ Config::ProfileData& profile = Config::GetProfileData(); if (!CropMode) profile.ShowNavBar = !profile.ShowNavBar; }
 void Viewer::OnThumbnails()			{ Config::ProfileData& profile = Config::GetProfileData(); profile.ShowThumbnailView = !profile.ShowThumbnailView; }
@@ -1895,7 +2011,7 @@ int Viewer::DoMainMenuBar()
 	bool saveAllPressed				= Request_SaveAllModal;				Request_SaveAllModal				= false;
 	bool saveContactSheetPressed	= Request_ContactSheetModal;		Request_ContactSheetModal			= false;
 	bool saveMultiFramePressed		= Request_MultiFrameModal;			Request_MultiFrameModal				= false;
-	bool saveExtractFramesPressed 	= Request_ExtractFramesModal;		Request_ExtractFramesModal			= false;
+	bool saveExtractFramesPressed	= Request_ExtractFramesModal;		Request_ExtractFramesModal			= false;
 	bool snapMessageNoFileBrowse	= Request_SnapMessage_NoFileBrowse;	Request_SnapMessage_NoFileBrowse	= false;
 	bool snapMessageNoFrameTrans	= Request_SnapMessage_NoFrameTrans;	Request_SnapMessage_NoFrameTrans	= false;
 	bool deleteFilePressed			= Request_DeleteFileModal;			Request_DeleteFileModal				= false;
@@ -2788,7 +2904,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	glOrtho(0, workAreaW, 0, workAreaH, -1, 1);
 	glMatrixMode(GL_MODELVIEW);
 	float draww		= 1.0f;		float drawh		= 1.0f;
-	float iw 		= 1.0f;		float ih		= 1.0f;
+	float iw		= 1.0f;		float ih		= 1.0f;
 	float left		= 0.0f;
 	float right		= 0.0f;
 	float top		= 0.0f;
@@ -2998,7 +3114,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		}
 
 		if (RotateAnglePreview != 0.0f)
-	 		glPopMatrix();
+			glPopMatrix();
 
 		// If mouse was cllcked to adjust cursor pos, CursorMouseX/Y will be >= 0.0f;
 		if ((CursorMouseX >= 0.0f) && (CursorMouseX >= 0.0f))
@@ -3426,7 +3542,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (profile.ShowThumbnailView)
 		ShowThumbnailViewDialog(&profile.ShowThumbnailView);
 
-	if (profile.ShowPropsWindow)
+	if (profile.ShowPropsWindow && !profile.ShowImportRaw)
 		ShowPropertiesWindow(&profile.ShowPropsWindow);
 
 	if (profile.ShowPixelEditor)

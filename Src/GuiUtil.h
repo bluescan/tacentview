@@ -54,8 +54,8 @@ namespace Gutil
 		MetaData,
 		CheatSheet,
 		About,
-		ChannelFilter,
 		ImportRaw,
+		ChannelFilter,
 		LogOutput,
 		NumIDs
 	};

@@ -4,7 +4,7 @@
 // operations such as quantization, rescaling/filtering, cropping, rotation, extracting frames, creating contact-sheets,
 // amalgamating images into animated formats, and levels adjustments.
 //
-// Copyright (c) 2023 Tristan Grimmer.
+// Copyright (c) 2023, 2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -190,8 +190,8 @@ void Command::BeginConsoleOutput()
 		// want a standalone console window appearing.
 		if (AttachConsole(ATTACH_PARENT_PROCESS))
 			AttachedToConsole = true;
-		// else if (AllocConsole())
-		//  	attachedToConsole = true;
+		//	else if (AllocConsole())
+		//		attachedToConsole = true;
 
 		if (AttachedToConsole)
 		{
@@ -402,14 +402,14 @@ void Command::DetermineInputLoadParameters()
 		switch (fileType)
 		{
 			case tSystem::tFileType::ASTC:	ParseLoadParametersASTC();	break;
-			case tSystem::tFileType::DDS: 	ParseLoadParametersDDS();	break;
-			case tSystem::tFileType::EXR: 	ParseLoadParametersEXR();	break;
-			case tSystem::tFileType::HDR: 	ParseLoadParametersHDR();	break;
-			case tSystem::tFileType::JPG: 	ParseLoadParametersJPG();	break;
+			case tSystem::tFileType::DDS:	ParseLoadParametersDDS();	break;
+			case tSystem::tFileType::EXR:	ParseLoadParametersEXR();	break;
+			case tSystem::tFileType::HDR:	ParseLoadParametersHDR();	break;
+			case tSystem::tFileType::JPG:	ParseLoadParametersJPG();	break;
 			case tSystem::tFileType::KTX:
-			case tSystem::tFileType::KTX2: 	ParseLoadParametersKTX();	break;
-			case tSystem::tFileType::PKM: 	ParseLoadParametersPKM();	break;
-			case tSystem::tFileType::PNG: 	ParseLoadParametersPNG();	break;
+			case tSystem::tFileType::KTX2:	ParseLoadParametersKTX();	break;
+			case tSystem::tFileType::PKM:	ParseLoadParametersPKM();	break;
+			case tSystem::tFileType::PNG:	ParseLoadParametersPNG();	break;
 		}
 	}
 }
@@ -633,7 +633,7 @@ void Command::ParseLoadParametersKTX()
 		tString& value = p->Value;
 		switch (tHash::tHashString(param.Chr()))
 		{
- 			case tHash::tHashCT("corr"):
+			case tHash::tHashCT("corr"):
 			{
 				uint32 gamaF = tImage::tImageKTX::LoadFlag_GammaCompression;
 				uint32 autoF = tImage::tImageKTX::LoadFlag_AutoGamma;
@@ -686,7 +686,7 @@ void Command::ParseLoadParametersPKM()
 		tString& value = p->Value;
 		switch (tHash::tHashString(param.Chr()))
 		{
- 			case tHash::tHashCT("corr"):
+			case tHash::tHashCT("corr"):
 			{
 				uint32 gamaF = tImage::tImagePKM::LoadFlag_GammaCompression;
 				uint32 autoF = tImage::tImagePKM::LoadFlag_AutoGamma;
@@ -1371,11 +1371,11 @@ int Command::Process()
 		tPrintfNorm("Tacent View %d.%d.%d by Tristan Grimmer\n", ViewerVersion::Major, ViewerVersion::Minor, ViewerVersion::Revision);
 		tString platform	= tGetPlatformNameShort( tGetPlatform() );
 		tString architec	= tGetArchitectureName( tGetArchitecture() );
-		tString config 		= tGetConfigurationName( tGetConfiguration() );
+		tString config		= tGetConfigurationName( tGetConfiguration() );
 		#ifdef TACENT_UTF16_API_CALLS
-		tString api 		= "UTF-16";
+		tString api			= "UTF-16";
 		#else
-		tString api 		= "UTF-8";
+		tString api			= "UTF-8";
 		#endif
 		tPrintfNorm("%s %s %s %s API\n", platform.Chr(), architec.Chr(), config.Chr(), api.Chr());
 

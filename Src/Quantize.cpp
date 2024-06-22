@@ -89,7 +89,7 @@ void Viewer::DoQuantizeInterface(int& method, int& spatialFilterSize, float& spa
 
 		if (itemWidth > 0.0f)
 			ImGui::SetNextItemWidth(itemWidth);
- 		ImGui::SliderFloat("Quantize Dither", &spatialDitherLevel, 0.0f, 2.0f, "%.1f");
+		ImGui::SliderFloat("Quantize Dither", &spatialDitherLevel, 0.0f, 2.0f, "%.1f");
 		ImGui::SameLine();
 		Gutil::HelpMark
 		(

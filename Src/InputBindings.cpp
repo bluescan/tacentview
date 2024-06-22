@@ -596,10 +596,10 @@ void Bindings::ShowBindingsWindow(bool* popen, bool justOpened)
 			// This loop displays the currently bound keys (and modifiers) and what operation they are bound to.
 			//
 			// Key				Operation
-			// Ctrl-Shift-R 	Next Image[combo]		[-]
-			// Space		 	Rotate Image[combo]		[-]
+			// Ctrl-Shift-R		Next Image[combo]		[-]
+			// Space			Rotate Image[combo]		[-]
 			// --------------------------------------------
-			// Key[combo] Mods	Operation[combo]	 	[+] (brings up replace popup if necessary)
+			// Key[combo] Mods	Operation[combo]		[+] (brings up replace popup if necessary)
 			for (int k = 0; k <= GLFW_KEY_LAST; k++)
 			{
 				KeyOps& keyops = prof->InputBindings.GetKeyOps(k);
