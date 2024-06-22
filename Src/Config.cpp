@@ -413,6 +413,7 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		ImportRawPixelFormat		= int(tImage::tPixelFormat::R8G8B8A8);
 		ImportRawColourProfile		= 0;
 		ImportRawFileType			.Set(tSystem::tGetFileTypeName(tSystem::tFileType::WEBP));
+		ImportRawFilename			.Clear();
 		LevelsPowerMidGamma			= true;
 		LevelsAutoMidPoint			= false;
 		LevelsLogarithmicHisto		= true;
@@ -607,6 +608,7 @@ void Config::ProfileData::Load(tExpression expr)
 			ReadItem(ImportRawPixelFormat);
 			ReadItem(ImportRawColourProfile);
 			ReadItem(ImportRawFileType);
+			ReadItem(ImportRawFilename);
 			ReadItem(LevelsPowerMidGamma);
 			ReadItem(LevelsAutoMidPoint);
 			ReadItem(LevelsLogarithmicHisto);
@@ -803,6 +805,7 @@ bool Config::ProfileData::Save(tExprWriter& writer) const
 	WriteItem(ImportRawPixelFormat);
 	WriteItem(ImportRawColourProfile);
 	WriteItem(ImportRawFileType);
+	WriteItem(ImportRawFilename);
 	WriteItem(LevelsPowerMidGamma);
 	WriteItem(LevelsAutoMidPoint);
 	WriteItem(LevelsLogarithmicHisto);

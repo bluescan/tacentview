@@ -832,8 +832,9 @@ Viewer::Image* Viewer::FindImage(const tString& filename)
 }
 
 
-void Viewer::SetCurrentImage(const tString& currFilename)
+bool Viewer::SetCurrentImage(const tString& currFilename)
 {
+	bool found = false;
 	for (Image* si = Images.First(); si; si = si->Next())
 	{
 		tString siName = tSystem::tGetFileName(si->Filename);
@@ -847,6 +848,7 @@ void Viewer::SetCurrentImage(const tString& currFilename)
 		#endif
 		{
 			CurrImage = si;
+			found = true;
 			break;
 		}
 	}
@@ -862,6 +864,8 @@ void Viewer::SetCurrentImage(const tString& currFilename)
 
 	if (CurrImage)
 		LoadCurrImage();
+
+	return found;
 }
 
 

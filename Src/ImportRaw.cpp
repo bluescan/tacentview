@@ -35,7 +35,6 @@ using namespace tImage;
 namespace ImportRaw
 {
 	FileDialog SelectFileDialog(DialogMode::OpenFile);
-	tString ImportFile;
 	tString ImportedFile;
 
 	bool CreateFrames(tList<tFrame>& frames, const tString& rawFile, int width, int height, int offset, bool mipmaps);
@@ -56,7 +55,11 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 	{
 		Config::ProfileData& profile = Config::GetProfileData();
 		if (justOpened)
+		{
 			ImportRaw::ImportedFile.Clear();
+			if (!tSystem::tFileExists(profile.ImportRawFilename))
+				profile.ImportRawFilename.Clear();
+		}
 
 		if (Gutil::Button("Select File"))
 			ImportRaw::SelectFileDialog.OpenPopup();
@@ -69,24 +72,24 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			case FileDialog::DialogState::Cancel: break;
 			case FileDialog::DialogState::Closed: break;
 			case FileDialog::DialogState::OK:
-				ImportRaw::ImportFile = ImportRaw::SelectFileDialog.GetResult();
+				profile.ImportRawFilename = ImportRaw::SelectFileDialog.GetResult();
 				break;
 			case FileDialog::DialogState::Open: break;
 		}
 
-		if (ImportRaw::ImportFile.IsValid())
+		if (profile.ImportRawFilename.IsValid())
 		{
-			tString importName = tSystem::tGetFileName(ImportRaw::ImportFile);
+			tString importName = tSystem::tGetFileName(profile.ImportRawFilename);
 			ImGui::SameLine();
 			ImGui::Text(importName.Chr());
 		}
 
 		// FileType of destination image.
 		tString createTypeName = profile.ImportRawFileType;
-		tSystem::tFileType createType = tSystem::tGetFileTypeFromName(createTypeName);
-		tSystem::tFileType newType = createType;
+		tSystem::tFileType dstType = tSystem::tGetFileTypeFromName(createTypeName);
+		tSystem::tFileType newType = dstType;
 		bool filetypeChanged = false;
-		if (ImGui::BeginCombo("Create Type", createTypeName.Chr()))
+		if (ImGui::BeginCombo("Dest Type", createTypeName.Chr()))
 		{
 			for (tSystem::tFileTypes::tFileTypeItem* item = FileTypes_ImportRaw.First(); item; item = item->Next())
 			{
@@ -105,9 +108,9 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			}				
 			ImGui::EndCombo();
 		}
-		if (createType != newType)
+		if (dstType != newType)
 		{
-			createType = newType;
+			dstType = newType;
 			// @todo If it changed and an existing file exists, delete it and clear the ImportedFile.
 		}
 		ImGui::SameLine();
@@ -129,7 +132,7 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 		if (ImGui::InputInt("Height##ImportRaw", &profile.ImportRawHeight))
 			tiClamp(profile.ImportRawHeight, 1, Viewer::Image::MaxDim);
 
-		bool fileTypeSupportsMipmaps = (createType == tSystem::tFileType::APNG) || (createType == tSystem::tFileType::TIFF) || (createType == tSystem::tFileType::WEBP);
+		bool fileTypeSupportsMipmaps = (dstType == tSystem::tFileType::APNG) || (createType == tSystem::tFileType::TIFF) || (createType == tSystem::tFileType::WEBP);
 		if (fileTypeSupportsMipmaps)
 			ImGui::Checkbox("Mipmaps##ImportRaw", &profile.ImportRawMipmaps);
 		bool importMipmaps = fileTypeSupportsMipmaps ? profile.ImportRawMipmaps : false;
@@ -167,17 +170,17 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 		if (currASTC != -1)
 			Gutil::ToolTip(tImage::PixelFormatDescs_ASTC[currASTC]);
 
-		if (ImportRaw::ImportFile.IsValid())
+		if (profile.ImportRawFilename.IsValid())
 		{
 			if (Gutil::Button("Import"))
 			{
 				tList<tFrame> frames;
-				bool ok = ImportRaw::CreateFrames(frames, ImportRaw::ImportFile, profile.ImportRawWidth, profile.ImportRawHeight, profile.ImportRawDataOffset, profile.ImportRawMipmaps);
+				bool ok = ImportRaw::CreateFrames(frames, profile.ImportRawFilename, profile.ImportRawWidth, profile.ImportRawHeight, profile.ImportRawDataOffset, profile.ImportRawMipmaps);
 				if (ok)
 				{
-					tString importedFilename = ImportRaw::ImportFile;
+					tString importedFilename = ImportRaw::ImportedFile;
 					if (importedFilename.IsEmpty())
-						importedFilename = ImportRaw::MakeImportedFilename(createType, ImportRaw::ImportFile);
+						importedFilename = ImportRaw::MakeImportedFilename(dstType, profile.ImportRawFilename);
 					if (importedFilename.IsEmpty())
 					{
 						// Update message.
@@ -188,13 +191,26 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 						if (exists)
 						{
 							ImportRaw::ImportedFile = importedFilename;
-							
-							// @todo Should not create a new one if not needed.
-							Image* newImg = new Image(importedFilename);
-							Images.Append(newImg);
-							ImagesLoadTimeSorted.Append(newImg);
-							SortImages(profile.GetSortKey(), profile.SortAscending);
-							SetCurrentImage(importedFilename);
+							bool found = SetCurrentImage(ImportRaw::ImportedFile);
+							if (found)
+							{
+								CurrImage->Unbind();
+								CurrImage->Unload(true);
+								CurrImage->Load();
+								CurrImage->Bind();
+							}
+							else
+							{
+								Image* newImg = new Image(ImportRaw::ImportedFile);
+								Images.Append(newImg);
+								ImagesLoadTimeSorted.Append(newImg);
+								SortImages(profile.GetSortKey(), profile.SortAscending);
+								SetCurrentImage(importedFilename);
+							}
+						}
+						else
+						{
+							// Message.
 						}
 					}
 				}
@@ -202,11 +218,6 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 				{
 					// Set Message Text.
 				}
-				// Create the frames from ImportFile.
-				// if no frames (not enough data), print warning. Do nothing.
-				// if frames,
-				// 		string ImportedFileTry = MakeImportedFilename(profile.ImportRawFileType);
-				//		ImportedFile = DoCreateImportedFile(frames, ImportedFileTry); // OverWrite the file if necessary.
 			}
 		}
 
