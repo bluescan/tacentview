@@ -38,7 +38,14 @@ namespace ImportRaw
 	FileDialog SelectFileDialog(DialogMode::OpenFile);
 	tString ImportedFile;
 
-	bool CreateFrames(tList<tFrame>& frames, const tString& rawFile, tImage::tPixelFormat rawFmt, int width, int height, int offset, bool mipmaps);
+	enum class CreateResult
+	{
+		Success,
+		UnsupportedFormat,
+		DataShortage,
+		DecodeError
+	};
+	CreateResult CreateFrames(tList<tFrame>& frames, const tString& rawFile, tImage::tPixelFormat rawFmt, int width, int height, int offset, bool mipmaps);
 	tString MakeImportedFilename(tSystem::tFileType destType, const tString& rawFile);
 	bool CreateImportedFile(tList<tFrame>& frames, const tString& filename);
 }
@@ -176,8 +183,8 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			if (Gutil::Button("Import"))
 			{
 				tList<tFrame> frames;
-				bool ok = ImportRaw::CreateFrames(frames, profile.ImportRawFilename, profile.GetImportRawPixelFormat(), profile.ImportRawWidth, profile.ImportRawHeight, profile.ImportRawDataOffset, profile.ImportRawMipmaps);
-				if (ok)
+				ImportRaw::CreateResult cr = ImportRaw::CreateFrames(frames, profile.ImportRawFilename, profile.GetImportRawPixelFormat(), profile.ImportRawWidth, profile.ImportRawHeight, profile.ImportRawDataOffset, profile.ImportRawMipmaps);
+				if (cr == ImportRaw::CreateResult::Success)
 				{
 					tString importedFilename = ImportRaw::ImportedFile;
 					if (importedFilename.IsEmpty())
@@ -217,12 +224,17 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 				}
 				else
 				{
-					// Set Message Text.
+					// @todo Set Message Text.
+					switch (cr)
+					{
+						case ImportRaw::CreateResult::UnsupportedFormat:	break;
+						case ImportRaw::CreateResult::DataShortage:			break;
+						case ImportRaw::CreateResult::DecodeError:			break;
+					}
 				}
 			}
 		}
 
-		// @wip ImportRawPixelFormat
 		// @wip ImportRawColourProfile
 	}
 
@@ -230,10 +242,13 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 }
 
 
-bool ImportRaw::CreateFrames(tList<tFrame>& frames, const tString& rawFile, tImage::tPixelFormat rawFmt, int width, int height, int offset, bool mipmaps)
+ImportRaw::CreateResult ImportRaw::CreateFrames(tList<tFrame>& frames, const tString& rawFile, tImage::tPixelFormat rawFmt, int width, int height, int offset, bool mipmaps)
 {
-	if (rawFile.IsEmpty() || (width <= 0) || (height <= 0) || (offset < 0) || !tSystem::tFileExists(rawFile))
-		return false;
+	if (rawFile.IsEmpty() || !tSystem::tFileExists(rawFile))
+		return ImportRaw::CreateResult::DataShortage;
+
+	if ((width <= 0) || (height <= 0) || (offset < 0))
+		return ImportRaw::CreateResult::DecodeError;
 
 	// How much data do we have to work with?
 	int fileSize = tSystem::tGetFileSize(rawFile);
@@ -250,7 +265,7 @@ bool ImportRaw::CreateFrames(tList<tFrame>& frames, const tString& rawFile, tIma
 
 	// Do we have enough?
 	if (dataHave < dataNeeded)
-		return false;
+		return ImportRaw::CreateResult::DataShortage;
 
 	// Get the raw data. We only need to read as much as we need.
 	int numReadBytes = dataNeeded+offset;
@@ -258,7 +273,7 @@ bool ImportRaw::CreateFrames(tList<tFrame>& frames, const tString& rawFile, tIma
 	if (numReadBytes != dataNeeded+offset)
 	{
 		delete[] rawDataStart;
-		return false;
+		return ImportRaw::CreateResult::DataShortage;
 	}
 
 	uint8* rawPixelData = rawDataStart + offset;
@@ -271,41 +286,49 @@ bool ImportRaw::CreateFrames(tList<tFrame>& frames, const tString& rawFile, tIma
 		pixelsLDR, pixelsHDR
 	);
 
-	delete[] pixelsHDR;
 	if (result != tImage::DecodeResult::Success)
 	{
 		delete[] rawDataStart;
 		delete[] pixelsLDR;
-		return false;
+		delete[] pixelsHDR;
 	}
 
+	switch (result)
+	{
+		case tImage::DecodeResult::Success:
+			break;
+		case tImage::DecodeResult::BuffersNotClear:
+		case tImage::DecodeResult::InvalidInput:
+			return ImportRaw::CreateResult::DataShortage;
+		case tImage::DecodeResult::UnsupportedFormat:
+			return ImportRaw::CreateResult::UnsupportedFormat;
+		case tImage::DecodeResult::PackedDecodeError:
+		case tImage::DecodeResult::BlockDecodeError:
+		case tImage::DecodeResult::ASTCDecodeError:
+		case tImage::DecodeResult::PVRDecodeError:
+		default:
+			return ImportRaw::CreateResult::DecodeError;
+	}
+
+	// At this point either pixelsHDR or pixelsLDR will be valid (but not both).
+	tAssert((pixelsLDR || pixelsHDR) && (!pixelsLDR || !pixelsHDR));
+
+	// Since the internal representation of data in the viewer is tPixel4b (32-bit) we convert here if necessary.
 	if (!pixelsLDR)
 	{
-		delete[] rawDataStart;
-		return false;
+		pixelsLDR = new tPixel4b[width*height];
+		for (int p = 0; p < width*height; p++)
+			pixelsLDR[p].Set(pixelsHDR[p]);
+		delete[] pixelsHDR;
+		pixelsHDR = nullptr;
 	}
-
-/*
-	static int cycle = 0;
-	tPixel4b colour = tPixel4b::black;
-	switch (cycle)
-	{
-		case 0:		colour = tPixel4b::red;		break;
-		case 1:		colour = tPixel4b::green;	break;
-		case 2:		colour = tPixel4b::blue;	break;
-	}
-	cycle = (cycle+1) % 3;
-	for (int p = 0; p < width*height; p++)
-		pixels[p] = colour;
-*/
 
 	tFrame* frame = new tFrame;
 	frame->StealFrom(pixelsLDR, width, height);
 	frames.Append(frame);
 
 	delete[] rawDataStart;
-
-	return true;
+	return ImportRaw::CreateResult::Success;
 }
 
 
