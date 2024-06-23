@@ -34,6 +34,8 @@ namespace Gutil
 	bool Combo(const char* label, int* currentItem, bool(*itemsGetter)(void* data, int idx, const char** outText), void* data, void* desc, int itemsCount, int popupMaxHeightInItems);
 	float CalcMaxPopupHeightFromItemCount(int itemsCount);
 	bool Text_ArrayGetter(void* data, int idx, const char** outText);
+
+	std::vector<float> DisabledAlphas;
 }
 
 
@@ -306,4 +308,21 @@ tString Gutil::CropStringToWidth(const tString& toCropStr, float cropWidth, bool
 	if (resultWidth)
 		*resultWidth = currWidth;
 	return result;
+}
+
+
+void Gutil::PushDisable()
+{
+	DisabledAlphas.push_back(ImGui::GetStyle().Alpha);
+
+	// disabledAlpha must be < 0.5. See divergence in IsMouseHoveringRect.
+	float disabledAlpha = 0.33f;
+	ImGui::GetStyle().Alpha = disabledAlpha;
+}
+
+
+void Gutil::PopDisable()
+{
+	ImGui::GetStyle().Alpha = DisabledAlphas.back();
+	DisabledAlphas.pop_back();
 }

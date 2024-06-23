@@ -8148,6 +8148,11 @@ bool ImGui::IsMouseHoveringRect(const ImVec2& r_min, const ImVec2& r_max, bool c
     const ImRect rect_for_touch(rect_clipped.Min - g.Style.TouchExtraPadding, rect_clipped.Max + g.Style.TouchExtraPadding);
     if (!rect_for_touch.Contains(g.IO.MousePos))
         return false;
+
+	// @tacent-divergence
+	if (GetStyle().Alpha < 0.5f)
+		return false;
+	
     return true;
 }
 

@@ -166,15 +166,15 @@ namespace Viewer
 		tFileType::EOL
 	);
 
-	// File types that may be created when importing raw data. All of these must
-	// be lossless and support saving. WEBP is the default as it supports multiple
-	// lossless surfaces (mipmaps). Additionally APNG and TIFF support multiple.
-	// The remainder only support single lossless images and mipmap import is disabled.
+	// File types that may be created when importing raw data. All of these must be lossless and support saving. TIFF
+	// is the default as it supports multiple lossless surfaces at different frame sizes (mipmaps). Additionally APNG
+	// and WEBP support multiple lossless frames but require a single canvas size. These 3 can support mipmaps but not
+	// as well as TIFF. The remainder only support single lossless images and mipmap import is disabled.
 	tFileTypes FileTypes_ImportRaw
 	(
-		tFileType::WEBP,
-		tFileType::APNG,
-		tFileType::TIFF,
+		tFileType::TIFF,		// Supports mipmaps. Multiple lossless frames. Saved mipmaps frames have different sizes.
+		tFileType::APNG,		// Supports mipmaps. Multiple lossless frames. Saves mipmaps on frames of same size.
+		tFileType::WEBP,		// Supports mipmaps. Multiple lossless frames. Saves mipmaps on frames of same size.
 		tFileType::TGA,
 		tFileType::PNG,
 		tFileType::QOI,
@@ -894,7 +894,7 @@ void Viewer::LoadCurrImage()
 	Config::ProfileData& profile = Config::GetProfileData();
 	if
 	(
-		profile.AutoPlayAnimatedImages &&
+		profile.AutoPlayAnimatedImages && !profile.ShowImportRaw &&
 		(CurrImage->GetNumFrames() > 1) &&
 		FileTypes_MultiFrame.Contains(CurrImage->Filetype)
 	)
@@ -3542,7 +3542,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (profile.ShowThumbnailView)
 		ShowThumbnailViewDialog(&profile.ShowThumbnailView);
 
-	if (profile.ShowPropsWindow && !profile.ShowImportRaw)
+	if (profile.ShowPropsWindow)
 		ShowPropertiesWindow(&profile.ShowPropsWindow);
 
 	if (profile.ShowPixelEditor)

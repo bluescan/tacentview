@@ -73,6 +73,9 @@ namespace Gutil
 	// cropWidth when it is rendered. If resultWidth is supplied the final render width is returned. If you want to
 	// determine if the string was cropped, compare the result to the toCrop input.
 	tString CropStringToWidth(const tString& toCrop, float cropWidth, bool ellipsis, float* resultWidth = nullptr);
+
+	void PushDisable();
+	void PopDisable();
 }
 
 

@@ -18,8 +18,9 @@
 #include <Image/tPixelFormat.h>
 #include <Image/tPixelUtil.h>
 #include <Image/tFrame.h>
-#include <Image/tImageWEBP.h>
 #include <Image/tImageTIFF.h>
+#include <Image/tImageAPNG.h>
+#include <Image/tImageWEBP.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "imgui.h"
@@ -46,7 +47,7 @@ namespace ImportRaw
 		DataShortage,
 		DecodeError
 	};
-	CreateResult CreateFrames(tList<tFrame>& frames, const tString& rawFile, tImage::tPixelFormat rawFmt, int width, int height, int offset, bool mipmaps);
+	CreateResult CreateFrames(tList<tFrame>& frames, const tString& rawFile, tImage::tPixelFormat rawFmt, int width, int height, int offset, bool mipmaps, bool mipmapForceSameFrameSize);
 	tString MakeImportedFilename(tSystem::tFileType destType, const tString& rawFile);
 	bool CreateImportedFile(tList<tFrame>& frames, const tString& filename);
 }
@@ -129,7 +130,7 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			"Valid types are ones that are lossless or support lossless encoding like webp.\n"
 			"Created images support alpha channel. If no alpha it saves the image without it.\n"
 			"If the creation type supports multiple frames, the option to import mipmaps will\n"
-			"be available. Not all formats support this but WEBP, APNG, and TIF do."
+			"be available. TIFF, APNG, and WEBP support mipmaps."
 		);
 
 		if (ImGui::InputInt("Data Offset##ImportRaw", &profile.ImportRawDataOffset))
@@ -141,9 +142,22 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 		if (ImGui::InputInt("Height##ImportRaw", &profile.ImportRawHeight))
 			tiClamp(profile.ImportRawHeight, 1, Viewer::Image::MaxDim);
 
-		bool fileTypeSupportsMipmaps = (dstType == tSystem::tFileType::TIFF);
-		if (fileTypeSupportsMipmaps)
-			ImGui::Checkbox("Mipmaps##ImportRaw", &profile.ImportRawMipmaps);
+		bool fileTypeSupportsMipmaps = (dstType == tSystem::tFileType::TIFF) || (dstType == tSystem::tFileType::APNG) || (dstType == tSystem::tFileType::WEBP);
+		bool mipmapForceSameFrameSize = (dstType == tSystem::tFileType::APNG) || (dstType == tSystem::tFileType::WEBP);
+		if (!fileTypeSupportsMipmaps)
+			Gutil::PushDisable();
+		ImGui::Checkbox("Mipmaps##ImportRaw", &profile.ImportRawMipmaps);
+		if (!fileTypeSupportsMipmaps)
+			Gutil::PopDisable();
+		ImGui::SameLine();
+		Gutil::HelpMark
+		(
+			"Filetypes TIFF, APNG, and WEBP support mipmaps.\n"
+			"TIFF: Saved mipmap frames have correct sizes.\n"
+			"APNG: Saved mipmap frames of same size. Unused areas will be opaque black.\n"
+			"WEBP: Saved mipmap frames of same size. Unused areas will be opaque black."
+		);
+
 		bool importMipmaps = fileTypeSupportsMipmaps ? profile.ImportRawMipmaps : false;
 
 		static bool liveUpdates = false;
@@ -184,7 +198,7 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			if (Gutil::Button("Import"))
 			{
 				tList<tFrame> frames;
-				ImportRaw::CreateResult cr = ImportRaw::CreateFrames(frames, profile.ImportRawFilename, profile.GetImportRawPixelFormat(), profile.ImportRawWidth, profile.ImportRawHeight, profile.ImportRawDataOffset, importMipmaps);
+				ImportRaw::CreateResult cr = ImportRaw::CreateFrames(frames, profile.ImportRawFilename, profile.GetImportRawPixelFormat(), profile.ImportRawWidth, profile.ImportRawHeight, profile.ImportRawDataOffset, importMipmaps, mipmapForceSameFrameSize);
 				if (cr == ImportRaw::CreateResult::Success)
 				{
 					tString importedFilename = ImportRaw::ImportedFile;
@@ -243,7 +257,7 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 }
 
 
-ImportRaw::CreateResult ImportRaw::CreateFrames(tList<tFrame>& frames, const tString& rawFile, tImage::tPixelFormat rawFmt, int width, int height, int offset, bool mipmaps)
+ImportRaw::CreateResult ImportRaw::CreateFrames(tList<tFrame>& frames, const tString& rawFile, tImage::tPixelFormat rawFmt, int width, int height, int offset, bool mipmaps, bool mipmapForceSameFrameSize)
 {
 	if (rawFile.IsEmpty() || !tSystem::tFileExists(rawFile))
 		return ImportRaw::CreateResult::DataShortage;
@@ -331,15 +345,30 @@ ImportRaw::CreateResult ImportRaw::CreateFrames(tList<tFrame>& frames, const tSt
 		// Since the internal representation of data in the viewer is tPixel4b (32-bit) we convert here if necessary.
 		if (!pixelsLDR)
 		{
-			pixelsLDR = new tPixel4b[width*height];
-			for (int p = 0; p < width*height; p++)
+			pixelsLDR = new tPixel4b[mipW*mipH];
+			for (int p = 0; p < mipW*mipH; p++)
 				pixelsLDR[p].Set(pixelsHDR[p]);
 			delete[] pixelsHDR;
 			pixelsHDR = nullptr;
 		}
 
 		tFrame* frame = new tFrame;
-		frame->StealFrom(pixelsLDR, mipW, mipH);
+		if (mipmaps && mipmapForceSameFrameSize)
+		{
+			tPixel4b* pixels = new tPixel4b[width*height];
+			for (int p = 0; p < width*height; p++)
+				pixels[p] = tPixel4b::black;
+			frame->StealFrom(pixels, width, height);
+
+			for (int y = 0; y < mipH; y++)
+				for (int x = 0; x < mipW; x++)
+					frame->SetPixel(x, y, pixelsLDR[y*mipW + x]);
+			delete[] pixelsLDR;
+		}
+		else
+		{
+			frame->StealFrom(pixelsLDR, mipW, mipH);
+		}
 		frames.Append(frame);
 
 		tImage::tGetNextMipmapLevelDims(mipW, mipH);
@@ -390,11 +419,19 @@ bool ImportRaw::CreateImportedFile(tList<tFrame>& frames, const tString& filenam
 			return saved;
 		}
 
+		case tSystem::tFileType::APNG:
+		{
+			tImage::tImageAPNG apng;
+			apng.Set(frames, true);
+			tImage::tImageAPNG::tFormat savedFmt = apng.Save(filename, tImage::tImageAPNG::tFormat::BPP32, 1000);
+			return (savedFmt != tImage::tImageAPNG::tFormat::Invalid);
+		}
+
 		case tSystem::tFileType::WEBP:
 		{
 			tImage::tImageWEBP webp;
 			webp.Set(frames, true);
-			bool saved = webp.Save(filename, false);
+			bool saved = webp.Save(filename, false, 90.0f, 1000);
 			return saved;
 		}
 	}
