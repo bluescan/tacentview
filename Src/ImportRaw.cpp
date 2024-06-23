@@ -16,6 +16,7 @@
 #include <Math/tColour.h>
 #include <System/tFile.h>
 #include <Image/tPixelFormat.h>
+#include <Image/tPixelUtil.h>
 #include <Image/tFrame.h>
 #include <Image/tImageWEBP.h>
 #include <glad/glad.h>
@@ -37,7 +38,7 @@ namespace ImportRaw
 	FileDialog SelectFileDialog(DialogMode::OpenFile);
 	tString ImportedFile;
 
-	bool CreateFrames(tList<tFrame>& frames, const tString& rawFile, int width, int height, int offset, bool mipmaps);
+	bool CreateFrames(tList<tFrame>& frames, const tString& rawFile, tImage::tPixelFormat rawFmt, int width, int height, int offset, bool mipmaps);
 	tString MakeImportedFilename(tSystem::tFileType destType, const tString& rawFile);
 	bool CreateImportedFile(tList<tFrame>& frames, const tString& filename);
 }
@@ -175,7 +176,7 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			if (Gutil::Button("Import"))
 			{
 				tList<tFrame> frames;
-				bool ok = ImportRaw::CreateFrames(frames, profile.ImportRawFilename, profile.ImportRawWidth, profile.ImportRawHeight, profile.ImportRawDataOffset, profile.ImportRawMipmaps);
+				bool ok = ImportRaw::CreateFrames(frames, profile.ImportRawFilename, profile.GetImportRawPixelFormat(), profile.ImportRawWidth, profile.ImportRawHeight, profile.ImportRawDataOffset, profile.ImportRawMipmaps);
 				if (ok)
 				{
 					tString importedFilename = ImportRaw::ImportedFile;
@@ -229,11 +230,62 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 }
 
 
-bool ImportRaw::CreateFrames(tList<tFrame>& frames, const tString& rawFile, int width, int height, int offset, bool mipmaps)
+bool ImportRaw::CreateFrames(tList<tFrame>& frames, const tString& rawFile, tImage::tPixelFormat rawFmt, int width, int height, int offset, bool mipmaps)
 {
 	if (rawFile.IsEmpty() || (width <= 0) || (height <= 0) || (offset < 0) || !tSystem::tFileExists(rawFile))
 		return false;
 
+	// How much data do we have to work with?
+	int fileSize = tSystem::tGetFileSize(rawFile);
+	int dataHave = fileSize - offset;
+
+	// How much data do we need?
+	int numPixels = width*height;
+	int blockW = tGetBlockWidth(rawFmt);		// These return 1 for packed.
+	int blockH = tGetBlockHeight(rawFmt);
+	int bytesPerBlock = tGetBytesPerBlock(rawFmt);
+	int blocksNeededW = tGetNumBlocks(blockW, width);
+	int blocksNeededH = tGetNumBlocks(blockH, height);
+	int dataNeeded = blocksNeededW * blocksNeededH * bytesPerBlock;
+
+	// Do we have enough?
+	if (dataHave < dataNeeded)
+		return false;
+
+	// Get the raw data. We only need to read as much as we need.
+	int numReadBytes = dataNeeded+offset;
+	uint8* rawDataStart = tSystem::tLoadFileHead(rawFile, numReadBytes);
+	if (numReadBytes != dataNeeded+offset)
+	{
+		delete[] rawDataStart;
+		return false;
+	}
+
+	uint8* rawPixelData = rawDataStart + offset;
+
+	tPixel4b* pixelsLDR = nullptr;
+	tPixel4f* pixelsHDR = nullptr;
+	tImage::DecodeResult result = DecodePixelData
+	(
+		rawFmt, rawPixelData, dataNeeded, width, height,
+		pixelsLDR, pixelsHDR
+	);
+
+	delete[] pixelsHDR;
+	if (result != tImage::DecodeResult::Success)
+	{
+		delete[] rawDataStart;
+		delete[] pixelsLDR;
+		return false;
+	}
+
+	if (!pixelsLDR)
+	{
+		delete[] rawDataStart;
+		return false;
+	}
+
+/*
 	static int cycle = 0;
 	tPixel4b colour = tPixel4b::black;
 	switch (cycle)
@@ -243,13 +295,16 @@ bool ImportRaw::CreateFrames(tList<tFrame>& frames, const tString& rawFile, int 
 		case 2:		colour = tPixel4b::blue;	break;
 	}
 	cycle = (cycle+1) % 3;
-	tPixel4b* pixels = new tPixel4b[width*height];
 	for (int p = 0; p < width*height; p++)
 		pixels[p] = colour;
+*/
 
 	tFrame* frame = new tFrame;
-	frame->StealFrom(pixels, width, height);
+	frame->StealFrom(pixelsLDR, width, height);
 	frames.Append(frame);
+
+	delete[] rawDataStart;
+
 	return true;
 }
 
@@ -262,7 +317,6 @@ tString ImportRaw::MakeImportedFilename(tSystem::tFileType destType, const tStri
 	int attempt = 0;
 	do
 	{
-
 		tsPrintf
 		(
 			filename, "%s%s_Imported_%02d.%s",
