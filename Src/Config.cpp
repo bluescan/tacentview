@@ -412,7 +412,7 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		ImportRawDataOffset			= 0;
 		ImportRawPixelFormat		= int(tImage::tPixelFormat::R8G8B8A8);
 		ImportRawColourProfile		= 0;
-		ImportRawFileType			.Set(tSystem::tGetFileTypeName(tSystem::tFileType::WEBP));
+		ImportRawFileType			.Set(tSystem::tGetFileTypeName(tSystem::tFileType::TIFF));
 		ImportRawFilename			.Clear();
 		LevelsPowerMidGamma			= true;
 		LevelsAutoMidPoint			= false;

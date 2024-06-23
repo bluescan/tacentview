@@ -19,6 +19,7 @@
 #include <Image/tPixelUtil.h>
 #include <Image/tFrame.h>
 #include <Image/tImageWEBP.h>
+#include <Image/tImageTIFF.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "imgui.h"
@@ -140,7 +141,7 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 		if (ImGui::InputInt("Height##ImportRaw", &profile.ImportRawHeight))
 			tiClamp(profile.ImportRawHeight, 1, Viewer::Image::MaxDim);
 
-		bool fileTypeSupportsMipmaps = (dstType == tSystem::tFileType::APNG) || (dstType == tSystem::tFileType::TIFF) || (dstType == tSystem::tFileType::WEBP);
+		bool fileTypeSupportsMipmaps = (dstType == tSystem::tFileType::TIFF);
 		if (fileTypeSupportsMipmaps)
 			ImGui::Checkbox("Mipmaps##ImportRaw", &profile.ImportRawMipmaps);
 		bool importMipmaps = fileTypeSupportsMipmaps ? profile.ImportRawMipmaps : false;
@@ -183,7 +184,7 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			if (Gutil::Button("Import"))
 			{
 				tList<tFrame> frames;
-				ImportRaw::CreateResult cr = ImportRaw::CreateFrames(frames, profile.ImportRawFilename, profile.GetImportRawPixelFormat(), profile.ImportRawWidth, profile.ImportRawHeight, profile.ImportRawDataOffset, profile.ImportRawMipmaps);
+				ImportRaw::CreateResult cr = ImportRaw::CreateFrames(frames, profile.ImportRawFilename, profile.GetImportRawPixelFormat(), profile.ImportRawWidth, profile.ImportRawHeight, profile.ImportRawDataOffset, importMipmaps);
 				if (cr == ImportRaw::CreateResult::Success)
 				{
 					tString importedFilename = ImportRaw::ImportedFile;
@@ -255,13 +256,20 @@ ImportRaw::CreateResult ImportRaw::CreateFrames(tList<tFrame>& frames, const tSt
 	int dataHave = fileSize - offset;
 
 	// How much data do we need?
-	int numPixels = width*height;
 	int blockW = tGetBlockWidth(rawFmt);		// These return 1 for packed.
 	int blockH = tGetBlockHeight(rawFmt);
 	int bytesPerBlock = tGetBytesPerBlock(rawFmt);
-	int blocksNeededW = tGetNumBlocks(blockW, width);
-	int blocksNeededH = tGetNumBlocks(blockH, height);
-	int dataNeeded = blocksNeededW * blocksNeededH * bytesPerBlock;
+
+	int numLevels = mipmaps ? tImage::tGetNumMipmapLevels(width, height) : 1;
+	int dataNeeded = 0;
+	for (int lev = 0; lev < numLevels; lev++)
+	{
+		int levW = tImage::tGetMipmapDim(width, lev);
+		int levH = tImage::tGetMipmapDim(height, lev);
+		int blocksNeededW = tGetNumBlocks(blockW, levW);
+		int blocksNeededH = tGetNumBlocks(blockH, levH);
+		dataNeeded += blocksNeededW * blocksNeededH * bytesPerBlock;
+	}
 
 	// Do we have enough?
 	if (dataHave < dataNeeded)
@@ -278,54 +286,65 @@ ImportRaw::CreateResult ImportRaw::CreateFrames(tList<tFrame>& frames, const tSt
 
 	uint8* rawPixelData = rawDataStart + offset;
 
-	tPixel4b* pixelsLDR = nullptr;
-	tPixel4f* pixelsHDR = nullptr;
-	tImage::DecodeResult result = DecodePixelData
-	(
-		rawFmt, rawPixelData, dataNeeded, width, height,
-		pixelsLDR, pixelsHDR
-	);
-
-	if (result != tImage::DecodeResult::Success)
+	int mipW = width; int mipH = height;
+	for (int lev = 0; lev < numLevels; lev++)
 	{
-		delete[] rawDataStart;
-		delete[] pixelsLDR;
-		delete[] pixelsHDR;
+		int blocksW = tGetNumBlocks(blockW, mipW);
+		int blocksH = tGetNumBlocks(blockH, mipH);
+		int needed = blocksW * blocksH * bytesPerBlock;
+
+		tPixel4b* pixelsLDR = nullptr;
+		tPixel4f* pixelsHDR = nullptr;
+		tImage::DecodeResult result = DecodePixelData
+		(
+			rawFmt, rawPixelData, needed, mipW, mipH,
+			pixelsLDR, pixelsHDR
+		);
+
+		if (result != tImage::DecodeResult::Success)
+		{
+			delete[] rawDataStart;
+			delete[] pixelsLDR;
+			delete[] pixelsHDR;
+		}
+
+		switch (result)
+		{
+			case tImage::DecodeResult::Success:
+				break;
+			case tImage::DecodeResult::BuffersNotClear:
+			case tImage::DecodeResult::InvalidInput:
+				return ImportRaw::CreateResult::DataShortage;
+			case tImage::DecodeResult::UnsupportedFormat:
+				return ImportRaw::CreateResult::UnsupportedFormat;
+			case tImage::DecodeResult::PackedDecodeError:
+			case tImage::DecodeResult::BlockDecodeError:
+			case tImage::DecodeResult::ASTCDecodeError:
+			case tImage::DecodeResult::PVRDecodeError:
+			default:
+				return ImportRaw::CreateResult::DecodeError;
+		}
+
+		// At this point either pixelsHDR or pixelsLDR will be valid (but not both).
+		tAssert((pixelsLDR || pixelsHDR) && (!pixelsLDR || !pixelsHDR));
+
+		// Since the internal representation of data in the viewer is tPixel4b (32-bit) we convert here if necessary.
+		if (!pixelsLDR)
+		{
+			pixelsLDR = new tPixel4b[width*height];
+			for (int p = 0; p < width*height; p++)
+				pixelsLDR[p].Set(pixelsHDR[p]);
+			delete[] pixelsHDR;
+			pixelsHDR = nullptr;
+		}
+
+		tFrame* frame = new tFrame;
+		frame->StealFrom(pixelsLDR, mipW, mipH);
+		frames.Append(frame);
+
+		tImage::tGetNextMipmapLevelDims(mipW, mipH);
+		rawPixelData += needed;
 	}
-
-	switch (result)
-	{
-		case tImage::DecodeResult::Success:
-			break;
-		case tImage::DecodeResult::BuffersNotClear:
-		case tImage::DecodeResult::InvalidInput:
-			return ImportRaw::CreateResult::DataShortage;
-		case tImage::DecodeResult::UnsupportedFormat:
-			return ImportRaw::CreateResult::UnsupportedFormat;
-		case tImage::DecodeResult::PackedDecodeError:
-		case tImage::DecodeResult::BlockDecodeError:
-		case tImage::DecodeResult::ASTCDecodeError:
-		case tImage::DecodeResult::PVRDecodeError:
-		default:
-			return ImportRaw::CreateResult::DecodeError;
-	}
-
-	// At this point either pixelsHDR or pixelsLDR will be valid (but not both).
-	tAssert((pixelsLDR || pixelsHDR) && (!pixelsLDR || !pixelsHDR));
-
-	// Since the internal representation of data in the viewer is tPixel4b (32-bit) we convert here if necessary.
-	if (!pixelsLDR)
-	{
-		pixelsLDR = new tPixel4b[width*height];
-		for (int p = 0; p < width*height; p++)
-			pixelsLDR[p].Set(pixelsHDR[p]);
-		delete[] pixelsHDR;
-		pixelsHDR = nullptr;
-	}
-
-	tFrame* frame = new tFrame;
-	frame->StealFrom(pixelsLDR, width, height);
-	frames.Append(frame);
 
 	delete[] rawDataStart;
 	return ImportRaw::CreateResult::Success;
@@ -362,11 +381,19 @@ bool ImportRaw::CreateImportedFile(tList<tFrame>& frames, const tString& filenam
 
 	switch (type)
 	{
+		case tSystem::tFileType::TIFF:
+		{
+			tImage::tImageTIFF tiff;
+			tiff.Set(frames, true);
+			bool zlibComp = true;
+			bool saved = tiff.Save(filename, tImage::tImageTIFF::tFormat::BPP32, zlibComp, 1000);
+			return saved;
+		}
+
 		case tSystem::tFileType::WEBP:
 		{
 			tImage::tImageWEBP webp;
 			webp.Set(frames, true);
-//			webp.Set(dstData, width, height, true);
 			bool saved = webp.Save(filename, false);
 			return saved;
 		}
