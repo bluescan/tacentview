@@ -38,9 +38,11 @@ enum Category
 	Category_System					= 1 << 3,
 	Category_Behaviour				= 1 << 4,
 	Category_Bindings				= 1 << 5,			// Key bindings.
+	Category_ImportRaw				= 1 << 6,
 
 	Category_All					= 0xFFFFFFFF,
-	Category_AllNoBindings			= Category_All & ~Category_Bindings
+	Category_AllNoBindings			= Category_All & ~Category_Bindings,
+	Category_AllOnlyPrefs			= Category_All & ~(Category_Bindings | Category_ImportRaw)
 };
 
 
@@ -267,6 +269,7 @@ struct ProfileData
 	int ImportRawWidth;
 	int ImportRawHeight;
 	bool ImportRawMipmaps;
+	bool ImportRawPremultAlpha;
 	int ImportRawDataOffset;
 	int ImportRawPixelFormat;
 	tImage::tPixelFormat GetImportRawPixelFormat() const	{ return tImage::tPixelFormat(ImportRawPixelFormat); }

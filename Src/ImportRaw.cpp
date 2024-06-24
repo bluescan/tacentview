@@ -51,7 +51,12 @@ namespace ImportRaw
 		DataShortage,
 		DecodeError
 	};
-	CreateResult CreateFrames(tList<tFrame>& frames, const tString& rawFile, tImage::tPixelFormat rawFmt, int width, int height, int offset, bool mipmaps, bool mipmapForceSameFrameSize);
+	CreateResult CreateFrames
+	(
+		tList<tFrame>& frames, const tString& rawFile, tImage::tPixelFormat rawFmt,
+		int width, int height, int offset, bool mipmaps,
+		bool mipmapForceSameFrameSize, bool undoAlphaPremult
+	);
 	tString MakeImportedFilename(tSystem::tFileType destType, const tString& rawFile);
 	bool CreateImportedFile(tList<tFrame>& frames, const tString& filename);
 }
@@ -168,8 +173,16 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			"APNG: Saved mipmap frames of same size. Unused areas will be opaque black.\n"
 			"WEBP: Saved mipmap frames of same size. Unused areas will be opaque black."
 		);
-
 		bool importMipmaps = fileTypeSupportsMipmaps ? profile.ImportRawMipmaps : false;
+
+		ImGui::Checkbox("Premultiplied Alpha", &profile.ImportRawPremultAlpha);
+		ImGui::SameLine();
+		Gutil::HelpMark
+		(
+			"If the raw data contains premultiplied by alpha colour information\n"
+			"checking this will undo it so it displays properly. Images in the\n"
+			"viewer are displayed not premultiplied."
+		);
 
 		static bool liveUpdates = false;
 		ImGui::Checkbox("Live Updates", &liveUpdates);
@@ -209,7 +222,12 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			if (Gutil::Button("Import"))
 			{
 				tList<tFrame> frames;
-				ImportRaw::CreateResult cr = ImportRaw::CreateFrames(frames, profile.ImportRawFilename, profile.GetImportRawPixelFormat(), profile.ImportRawWidth, profile.ImportRawHeight, profile.ImportRawDataOffset, importMipmaps, mipmapForceSameFrameSize);
+				ImportRaw::CreateResult cr = ImportRaw::CreateFrames
+				(
+					frames, profile.ImportRawFilename, profile.GetImportRawPixelFormat(),
+					profile.ImportRawWidth, profile.ImportRawHeight, profile.ImportRawDataOffset,
+					importMipmaps, mipmapForceSameFrameSize, profile.ImportRawPremultAlpha
+				);
 				if (cr == ImportRaw::CreateResult::Success)
 				{
 					tString importedFilename = ImportRaw::ImportedFile;
@@ -285,7 +303,12 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 }
 
 
-ImportRaw::CreateResult ImportRaw::CreateFrames(tList<tFrame>& frames, const tString& rawFile, tImage::tPixelFormat rawFmt, int width, int height, int offset, bool mipmaps, bool mipmapForceSameFrameSize)
+ImportRaw::CreateResult ImportRaw::CreateFrames
+(
+	tList<tFrame>& frames, const tString& rawFile, tImage::tPixelFormat rawFmt,
+	int width, int height, int offset, bool mipmaps,
+	bool mipmapForceSameFrameSize, bool undoAlphaPremult
+)
 {
 	if (rawFile.IsEmpty() || !tSystem::tFileExists(rawFile))
 		return ImportRaw::CreateResult::DataShortage;
@@ -333,13 +356,13 @@ ImportRaw::CreateResult ImportRaw::CreateFrames(tList<tFrame>& frames, const tSt
 	{
 		int blocksW = tGetNumBlocks(blockW, mipW);
 		int blocksH = tGetNumBlocks(blockH, mipH);
-		int needed = blocksW * blocksH * bytesPerBlock;
+		int numBytes = blocksW * blocksH * bytesPerBlock;
 
 		tPixel4b* pixelsLDR = nullptr;
 		tPixel4f* pixelsHDR = nullptr;
 		tImage::DecodeResult result = DecodePixelData
 		(
-			rawFmt, rawPixelData, needed, mipW, mipH,
+			rawFmt, rawPixelData, numBytes, mipW, mipH,
 			pixelsLDR, pixelsHDR
 		);
 
@@ -397,10 +420,27 @@ ImportRaw::CreateResult ImportRaw::CreateFrames(tList<tFrame>& frames, const tSt
 		{
 			frame->StealFrom(pixelsLDR, mipW, mipH);
 		}
+
+		// Possibly undo alpha premultiplication by multiplying by the colour channels
+		// by the inverse of the alpha.
+		if (undoAlphaPremult)
+		{
+			for (int p = 0; p < frame->Width*frame->Height; p++)
+			{
+				tColour4b col = frame->Pixels[p];
+				tColour4f colf(col);
+				float invAlpha = (colf.A > 0.0f) ? 1.0f/colf.A : 1.0f;
+				colf.R *= invAlpha;
+				colf.G *= invAlpha;
+				colf.B *= invAlpha;
+				col.Set(colf);
+				frame->Pixels[p] = col;
+			}
+		}
 		frames.Append(frame);
 
 		tImage::tGetNextMipmapLevelDims(mipW, mipH);
-		rawPixelData += needed;
+		rawPixelData += numBytes;
 	}
 
 	delete[] rawDataStart;
