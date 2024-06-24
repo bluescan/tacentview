@@ -291,6 +291,14 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			*popen = false;
 		}
 
+		if (ImGui::Button("Reset"))
+		{
+			if (ImportRaw::ImportedFile.IsValid())
+				DeleteImageFile(ImportRaw::ImportedFile, false);
+			ImportRaw::ImportedFile.Clear();
+			Config::ResetProfile(Config::Category_ImportRaw);
+		}
+
 		if (ImGui::Button("OK"))
 		{
 			ImportRaw::ImportedFile.Clear();
