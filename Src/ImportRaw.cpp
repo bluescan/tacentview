@@ -272,6 +272,12 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			}
 			*popen = false;
 		}
+
+		if (ImGui::Button("OK"))
+		{
+			ImportRaw::ImportedFile.Clear();
+			*popen = false;
+		}
 		// @wip ImportRawColourProfile
 	}
 
