@@ -21,6 +21,10 @@
 #include <Image/tImageTIFF.h>
 #include <Image/tImageAPNG.h>
 #include <Image/tImageWEBP.h>
+#include <Image/tImageTGA.h>
+#include <Image/tImagePNG.h>
+#include <Image/tImageQOI.h>
+#include <Image/tImageBMP.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "imgui.h"
@@ -423,7 +427,7 @@ bool ImportRaw::CreateImportedFile(tList<tFrame>& frames, const tString& filenam
 		{
 			tImage::tImageAPNG apng;
 			apng.Set(frames, true);
-			tImage::tImageAPNG::tFormat savedFmt = apng.Save(filename, tImage::tImageAPNG::tFormat::BPP32, 1000);
+			tImage::tImageAPNG::tFormat savedFmt = apng.Save(filename, tImage::tImageAPNG::tFormat::Auto, 1000);
 			return (savedFmt != tImage::tImageAPNG::tFormat::Invalid);
 		}
 
@@ -433,6 +437,38 @@ bool ImportRaw::CreateImportedFile(tList<tFrame>& frames, const tString& filenam
 			webp.Set(frames, true);
 			bool saved = webp.Save(filename, false, 90.0f, 1000);
 			return saved;
+		}
+
+		case tSystem::tFileType::TGA:
+		{
+			tImage::tImageTGA tga;
+			tga.Set(frames.Remove(), true);
+			tImageTGA::tFormat savedFmt = tga.Save(filename, tImageTGA::tFormat::Auto);
+			return (savedFmt != tImage::tImageTGA::tFormat::Invalid);
+		}
+
+		case tSystem::tFileType::PNG:
+		{
+			tImage::tImagePNG png;
+			png.Set(frames.Remove(), true);
+			tImagePNG::tFormat savedFmt = png.Save(filename, tImagePNG::tFormat::Auto);
+			return (savedFmt != tImage::tImagePNG::tFormat::Invalid);
+		}
+
+		case tSystem::tFileType::QOI:
+		{
+			tImage::tImageQOI qoi;
+			qoi.Set(frames.Remove(), true);
+			tImageQOI::tFormat savedFmt = qoi.Save(filename, tImageQOI::tFormat::Auto);
+			return (savedFmt != tImage::tImageQOI::tFormat::Invalid);
+		}
+
+		case tSystem::tFileType::BMP:
+		{
+			tImage::tImageBMP bmp;
+			bmp.Set(frames.Remove(), true);
+			tImageBMP::tFormat savedFmt = bmp.Save(filename, tImageBMP::tFormat::Auto);
+			return (savedFmt != tImage::tImageBMP::tFormat::Invalid);
 		}
 	}
 
