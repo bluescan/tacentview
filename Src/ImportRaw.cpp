@@ -125,7 +125,14 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 		if (dstType != newType)
 		{
 			dstType = newType;
-			// @todo If it changed and an existing file exists, delete it and clear the ImportedFile.
+
+			// If it changed and an existing file exists, delete it and clear the ImportedFile.
+			if (ImportRaw::ImportedFile.IsValid())
+			{
+				bool deleted = DeleteImageFile(ImportRaw::ImportedFile, false);
+				if (deleted)
+					ImportRaw::ImportedFile.Clear();
+			}
 		}
 		ImGui::SameLine();
 		Gutil::HelpMark
@@ -217,6 +224,7 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 						bool exists = ImportRaw::CreateImportedFile(frames, importedFilename);
 						if (exists)
 						{
+							// We only set ImportedFile once we know it exists.
 							ImportRaw::ImportedFile = importedFilename;
 							bool found = SetCurrentImage(ImportRaw::ImportedFile);
 							if (found)
@@ -254,6 +262,16 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			}
 		}
 
+		if (ImGui::Button("Cancel"))
+		{
+			if (ImportRaw::ImportedFile.IsValid())
+			{
+				bool deleted = DeleteImageFile(ImportRaw::ImportedFile, false);
+				if (deleted)
+					ImportRaw::ImportedFile.Clear();
+			}
+			*popen = false;
+		}
 		// @wip ImportRawColourProfile
 	}
 
