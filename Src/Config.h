@@ -274,9 +274,9 @@ struct ProfileData
 	int ImportRawPixelFormat;
 	tImage::tPixelFormat GetImportRawPixelFormat() const	{ return tImage::tPixelFormat(ImportRawPixelFormat); }
 	void SetImportRawPixelFormat(RotateModeEnum fmt)		{ ImportRawPixelFormat = int(fmt); }
-	int ImportRawColourProfile;
-	tColourProfile GetImportRawColourProfile() const		{ return tColourProfile(ImportRawColourProfile); }
-	void SetImportRawColourProfile(tColourProfile prof)		{ ImportRawColourProfile = int(prof); }
+	int ImportRawColourSpace;
+	tColourSpace GetImportRawColourSpace() const			{ return tColourSpace(ImportRawColourSpace); }
+	void SetImportRawColourSpace(tColourSpace prof)			{ ImportRawColourSpace = int(prof); }
 	tString ImportRawFileType;								// This is the destination filetype of the new image after import.
 	tString ImportRawFilename;
 

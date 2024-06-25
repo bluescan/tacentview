@@ -55,7 +55,7 @@ namespace ImportRaw
 	(
 		tList<tFrame>& frames, const tString& rawFile, tImage::tPixelFormat rawFmt,
 		int width, int height, int offset, bool mipmaps,
-		bool mipmapForceSameFrameSize, bool undoAlphaPremult
+		bool mipmapForceSameFrameSize, bool undoAlphaPremult, tColourSpace
 	);
 	tString MakeImportedFilename(tSystem::tFileType destType, const tString& rawFile);
 	bool CreateImportedFile(tList<tFrame>& frames, const tString& filename);
@@ -158,6 +158,20 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 		if (ImGui::InputInt("Height##ImportRaw", &profile.ImportRawHeight))
 			tiClamp(profile.ImportRawHeight, 1, Viewer::Image::MaxDim);
 
+		const char* colourSpaceItems[] = { "sRGB", "lRGB" };
+		int colSpace = (profile.GetImportRawColourSpace() == tColourSpace::lRGB) ? 1 : 0;
+		if (ImGui::Combo("Colour Space", &colSpace , colourSpaceItems, tNumElements(colourSpaceItems)))
+		{
+			profile.SetImportRawColourSpace((colSpace == 0) ? tColourSpace::sRGB : tColourSpace::lRGB);
+ 		}
+		ImGui::SameLine();
+		Gutil::HelpMark
+		(
+			"Specify the colour space of the raw pixels being imported. Colour data in\n"
+			"the viewer is in sRGB-space. If the imported colours are linear then\n"
+			"selecting lRGB will make sure the imported pixels are converted to sRGB."
+		);
+
 		bool fileTypeSupportsMipmaps = (dstType == tSystem::tFileType::TIFF) || (dstType == tSystem::tFileType::APNG) || (dstType == tSystem::tFileType::WEBP);
 		bool mipmapForceSameFrameSize = (dstType == tSystem::tFileType::APNG) || (dstType == tSystem::tFileType::WEBP);
 		if (!fileTypeSupportsMipmaps)
@@ -226,7 +240,7 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 				(
 					frames, profile.ImportRawFilename, profile.GetImportRawPixelFormat(),
 					profile.ImportRawWidth, profile.ImportRawHeight, profile.ImportRawDataOffset,
-					importMipmaps, mipmapForceSameFrameSize, profile.ImportRawPremultAlpha
+					importMipmaps, mipmapForceSameFrameSize, profile.ImportRawPremultAlpha, profile.GetImportRawColourSpace()
 				);
 				if (cr == ImportRaw::CreateResult::Success)
 				{
@@ -304,7 +318,6 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			ImportRaw::ImportedFile.Clear();
 			*popen = false;
 		}
-		// @wip ImportRawColourProfile
 	}
 
 	ImGui::End();
@@ -315,7 +328,7 @@ ImportRaw::CreateResult ImportRaw::CreateFrames
 (
 	tList<tFrame>& frames, const tString& rawFile, tImage::tPixelFormat rawFmt,
 	int width, int height, int offset, bool mipmaps,
-	bool mipmapForceSameFrameSize, bool undoAlphaPremult
+	bool mipmapForceSameFrameSize, bool undoAlphaPremult, tColourSpace space
 )
 {
 	if (rawFile.IsEmpty() || !tSystem::tFileExists(rawFile))
@@ -431,16 +444,23 @@ ImportRaw::CreateResult ImportRaw::CreateFrames
 
 		// Possibly undo alpha premultiplication by multiplying by the colour channels
 		// by the inverse of the alpha.
-		if (undoAlphaPremult)
+		if (undoAlphaPremult || (space == tColourSpace::lRGB))
 		{
 			for (int p = 0; p < frame->Width*frame->Height; p++)
 			{
 				tColour4b col = frame->Pixels[p];
 				tColour4f colf(col);
-				float invAlpha = (colf.A > 0.0f) ? 1.0f/colf.A : 1.0f;
-				colf.R *= invAlpha;
-				colf.G *= invAlpha;
-				colf.B *= invAlpha;
+				if (undoAlphaPremult)
+				{
+					float invAlpha = (colf.A > 0.0f) ? 1.0f/colf.A : 1.0f;
+					colf.R *= invAlpha;
+					colf.G *= invAlpha;
+					colf.B *= invAlpha;
+				}
+				if (space == tColourSpace::lRGB)
+				{
+					colf.LinearToSRGB(tCompBit_RGB);
+				}
 				col.Set(colf);
 				frame->Pixels[p] = col;
 			}

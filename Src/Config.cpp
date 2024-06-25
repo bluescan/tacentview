@@ -501,7 +501,7 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		ImportRawPremultAlpha		= false;
 		ImportRawDataOffset			= 0;
 		ImportRawPixelFormat		= int(tImage::tPixelFormat::R8G8B8A8);
-		ImportRawColourProfile		= 0;
+		ImportRawColourSpace		= int(tColourSpace::sRGB);
 		ImportRawFileType			.Set(tSystem::tGetFileTypeName(tSystem::tFileType::TIFF));
 	}
 }
@@ -612,7 +612,7 @@ void Config::ProfileData::Load(tExpression expr)
 			ReadItem(ImportRawPremultAlpha);
 			ReadItem(ImportRawDataOffset);
 			ReadItem(ImportRawPixelFormat);
-			ReadItem(ImportRawColourProfile);
+			ReadItem(ImportRawColourSpace);
 			ReadItem(ImportRawFileType);
 			ReadItem(ImportRawFilename);
 			ReadItem(LevelsPowerMidGamma);
@@ -663,7 +663,7 @@ void Config::ProfileData::Load(tExpression expr)
 	tiClamp		(ImportRawHeight, 1, Viewer::Image::MaxDim);
 	tiClamp		(ImportRawDataOffset, 0, Viewer::Image::MaxDim-1);
 	tiClamp		(ImportRawPixelFormat, int(tImage::tPixelFormat::FirstContiguous), int(tImage::tPixelFormat::LastContiguous));
-	tiClamp		(ImportRawColourProfile, 0, int(tColourProfile::NumProfiles) - 1);
+	tiClamp		(ImportRawColourSpace, 0, int(tColourSpace::NumSpaces) - 1);
 	tiClamp		(CropAnchor, -1, 9);
 	tiClamp		(CropAspectRatio, int(tImage::tAspectRatio::Free), int(tImage::tAspectRatio::User));
 	tiClamp		(CropAspectUserNum, 1, 99);
@@ -810,7 +810,7 @@ bool Config::ProfileData::Save(tExprWriter& writer) const
 	WriteItem(ImportRawPremultAlpha);
 	WriteItem(ImportRawDataOffset);
 	WriteItem(ImportRawPixelFormat);
-	WriteItem(ImportRawColourProfile);
+	WriteItem(ImportRawColourSpace);
 	WriteItem(ImportRawFileType);
 	WriteItem(ImportRawFilename);
 	WriteItem(LevelsPowerMidGamma);
