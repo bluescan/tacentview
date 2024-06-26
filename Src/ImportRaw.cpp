@@ -54,8 +54,9 @@ namespace ImportRaw
 	CreateResult CreateFrames
 	(
 		tList<tFrame>& frames, const tString& rawFile, tImage::tPixelFormat rawFmt,
-		int width, int height, int offset, bool mipmaps,
-		bool mipmapForceSameFrameSize, bool undoAlphaPremult, tColourSpace
+		int width, int height, int offset,
+		bool mipmaps, bool mipmapForceSameFrameSize, int surfaceOrMipmapCount,
+		bool undoAlphaPremult, tColourSpace
 	);
 	tString MakeImportedFilename(tSystem::tFileType destType, const tString& rawFile);
 	bool CreateImportedFile(tList<tFrame>& frames, const tString& filename);
@@ -158,36 +159,39 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 		if (ImGui::InputInt("Height##ImportRaw", &profile.ImportRawHeight))
 			tiClamp(profile.ImportRawHeight, 1, Viewer::Image::MaxDim);
 
-		const char* colourSpaceItems[] = { "sRGB", "lRGB" };
-		int colSpace = (profile.GetImportRawColourSpace() == tColourSpace::lRGB) ? 1 : 0;
-		if (ImGui::Combo("Colour Space", &colSpace , colourSpaceItems, tNumElements(colourSpaceItems)))
-		{
-			profile.SetImportRawColourSpace((colSpace == 0) ? tColourSpace::sRGB : tColourSpace::lRGB);
- 		}
-		ImGui::SameLine();
-		Gutil::HelpMark
-		(
-			"Specify the colour space of the raw pixels being imported. Colour data in\n"
-			"the viewer is in sRGB-space. If the imported colours are linear then\n"
-			"selecting lRGB will make sure the imported pixels are converted to sRGB."
-		);
+		bool fileTypeSupportsMultipleFrames = (dstType == tSystem::tFileType::TIFF) || (dstType == tSystem::tFileType::APNG) || (dstType == tSystem::tFileType::WEBP);
 
-		bool fileTypeSupportsMipmaps = (dstType == tSystem::tFileType::TIFF) || (dstType == tSystem::tFileType::APNG) || (dstType == tSystem::tFileType::WEBP);
-		bool mipmapForceSameFrameSize = (dstType == tSystem::tFileType::APNG) || (dstType == tSystem::tFileType::WEBP);
-		if (!fileTypeSupportsMipmaps)
+		if (!fileTypeSupportsMultipleFrames)
 			Gutil::PushDisable();
-		ImGui::Checkbox("Mipmaps##ImportRaw", &profile.ImportRawMipmaps);
-		if (!fileTypeSupportsMipmaps)
+
+		static int surfaceOrMipmapCount = 1;
+		if (profile.ImportRawMipmaps)
+		{
+			if (ImGui::InputInt("Mipmap Count", &surfaceOrMipmapCount))
+				tiClamp(surfaceOrMipmapCount, 1, tImage::tGetNumMipmapLevels(profile.ImportRawWidth, profile.ImportRawHeight));
+		}
+		else
+		{
+			if (ImGui::InputInt("Surface Count", &surfaceOrMipmapCount))
+				tiClamp(surfaceOrMipmapCount, 1, 128);
+		}
+
+		bool mipmapForceSameFrameSize = (dstType == tSystem::tFileType::APNG) || (dstType == tSystem::tFileType::WEBP);
+		if (ImGui::Checkbox("Mipmaps##ImportRaw", &profile.ImportRawMipmaps))
+			surfaceOrMipmapCount = profile.ImportRawMipmaps ? tImage::tGetNumMipmapLevels(profile.ImportRawWidth, profile.ImportRawHeight) : 1;
+
+		if (!fileTypeSupportsMultipleFrames)
 			Gutil::PopDisable();
 		ImGui::SameLine();
 		Gutil::HelpMark
 		(
-			"Filetypes TIFF, APNG, and WEBP support mipmaps.\n"
-			"TIFF: Saved mipmap frames have correct sizes.\n"
-			"APNG: Saved mipmap frames of same size. Unused areas will be opaque black.\n"
-			"WEBP: Saved mipmap frames of same size. Unused areas will be opaque black."
+			"Filetypes TIFF, APNG, and WEBP support mipmaps or multiple surfaces.\n"
+			"TIFF: Mipmap frames will have correct sizes.\n"
+			"APNG: Mipmap frames will be same size. Unused areas will be opaque black.\n"
+			"WEBP: Mipmap frames will be same size. Unused areas will be opaque black."
 		);
-		bool importMipmaps = fileTypeSupportsMipmaps ? profile.ImportRawMipmaps : false;
+		bool importMipmaps = fileTypeSupportsMultipleFrames ? profile.ImportRawMipmaps : false;
+		int surfOrMipCount = fileTypeSupportsMultipleFrames ? surfaceOrMipmapCount : 1;
 
 		ImGui::Checkbox("Premultiplied Alpha", &profile.ImportRawPremultAlpha);
 		ImGui::SameLine();
@@ -231,6 +235,20 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 		if (currASTC != -1)
 			Gutil::ToolTip(tImage::PixelFormatDescs_ASTC[currASTC]);
 
+		const char* colourSpaceItems[] = { "sRGB", "lRGB" };
+		int colSpace = (profile.GetImportRawColourSpace() == tColourSpace::lRGB) ? 1 : 0;
+		if (ImGui::Combo("Colour Space", &colSpace , colourSpaceItems, tNumElements(colourSpaceItems)))
+		{
+			profile.SetImportRawColourSpace((colSpace == 0) ? tColourSpace::sRGB : tColourSpace::lRGB);
+ 		}
+		ImGui::SameLine();
+		Gutil::HelpMark
+		(
+			"Specify the colour space of the raw pixels being imported. Colour data in\n"
+			"the viewer is in sRGB-space. If the imported colours are linear then\n"
+			"selecting lRGB will make sure the imported pixels are converted to sRGB."
+		);
+
 		if (profile.ImportRawFilename.IsValid())
 		{
 			if (Gutil::Button("Import"))
@@ -240,7 +258,8 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 				(
 					frames, profile.ImportRawFilename, profile.GetImportRawPixelFormat(),
 					profile.ImportRawWidth, profile.ImportRawHeight, profile.ImportRawDataOffset,
-					importMipmaps, mipmapForceSameFrameSize, profile.ImportRawPremultAlpha, profile.GetImportRawColourSpace()
+					importMipmaps, mipmapForceSameFrameSize, surfOrMipCount,
+					profile.ImportRawPremultAlpha, profile.GetImportRawColourSpace()
 				);
 				if (cr == ImportRaw::CreateResult::Success)
 				{
@@ -311,6 +330,7 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 				DeleteImageFile(ImportRaw::ImportedFile, false);
 			ImportRaw::ImportedFile.Clear();
 			Config::ResetProfile(Config::Category_ImportRaw);
+			surfaceOrMipmapCount = 1;
 		}
 
 		if (ImGui::Button("OK"))
@@ -327,8 +347,9 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 ImportRaw::CreateResult ImportRaw::CreateFrames
 (
 	tList<tFrame>& frames, const tString& rawFile, tImage::tPixelFormat rawFmt,
-	int width, int height, int offset, bool mipmaps,
-	bool mipmapForceSameFrameSize, bool undoAlphaPremult, tColourSpace space
+	int width, int height, int offset,
+	bool mipmaps, bool mipmapForceSameFrameSize, int surfaceOrMipmapCount,
+	bool undoAlphaPremult, tColourSpace space
 )
 {
 	if (rawFile.IsEmpty() || !tSystem::tFileExists(rawFile))
@@ -346,12 +367,14 @@ ImportRaw::CreateResult ImportRaw::CreateFrames
 	int blockH = tGetBlockHeight(rawFmt);
 	int bytesPerBlock = tGetBytesPerBlock(rawFmt);
 
-	int numLevels = mipmaps ? tImage::tGetNumMipmapLevels(width, height) : 1;
+	int numLevels = surfaceOrMipmapCount;
+	int maxLevels = mipmaps ? tImage::tGetNumMipmapLevels(width, height) : 128;
+	tMath::tiClamp(numLevels, 1, maxLevels);
 	int dataNeeded = 0;
 	for (int lev = 0; lev < numLevels; lev++)
 	{
-		int levW = tImage::tGetMipmapDim(width, lev);
-		int levH = tImage::tGetMipmapDim(height, lev);
+		int levW = mipmaps ? tImage::tGetMipmapDim(width, lev) : width;
+		int levH = mipmaps ? tImage::tGetMipmapDim(height, lev) : height;
 		int blocksNeededW = tGetNumBlocks(blockW, levW);
 		int blocksNeededH = tGetNumBlocks(blockH, levH);
 		dataNeeded += blocksNeededW * blocksNeededH * bytesPerBlock;
@@ -372,18 +395,18 @@ ImportRaw::CreateResult ImportRaw::CreateFrames
 
 	uint8* rawPixelData = rawDataStart + offset;
 
-	int mipW = width; int mipH = height;
+	int levW = width; int levH = height;
 	for (int lev = 0; lev < numLevels; lev++)
 	{
-		int blocksW = tGetNumBlocks(blockW, mipW);
-		int blocksH = tGetNumBlocks(blockH, mipH);
+		int blocksW = tGetNumBlocks(blockW, levW);
+		int blocksH = tGetNumBlocks(blockH, levH);
 		int numBytes = blocksW * blocksH * bytesPerBlock;
 
 		tPixel4b* pixelsLDR = nullptr;
 		tPixel4f* pixelsHDR = nullptr;
 		tImage::DecodeResult result = DecodePixelData
 		(
-			rawFmt, rawPixelData, numBytes, mipW, mipH,
+			rawFmt, rawPixelData, numBytes, levW, levH,
 			pixelsLDR, pixelsHDR
 		);
 
@@ -417,8 +440,8 @@ ImportRaw::CreateResult ImportRaw::CreateFrames
 		// Since the internal representation of data in the viewer is tPixel4b (32-bit) we convert here if necessary.
 		if (!pixelsLDR)
 		{
-			pixelsLDR = new tPixel4b[mipW*mipH];
-			for (int p = 0; p < mipW*mipH; p++)
+			pixelsLDR = new tPixel4b[levW*levH];
+			for (int p = 0; p < levW*levH; p++)
 				pixelsLDR[p].Set(pixelsHDR[p]);
 			delete[] pixelsHDR;
 			pixelsHDR = nullptr;
@@ -432,14 +455,14 @@ ImportRaw::CreateResult ImportRaw::CreateFrames
 				pixels[p] = tPixel4b::black;
 			frame->StealFrom(pixels, width, height);
 
-			for (int y = 0; y < mipH; y++)
-				for (int x = 0; x < mipW; x++)
-					frame->SetPixel(x, y, pixelsLDR[y*mipW + x]);
+			for (int y = 0; y < levH; y++)
+				for (int x = 0; x < levW; x++)
+					frame->SetPixel(x, y, pixelsLDR[y*levW + x]);
 			delete[] pixelsLDR;
 		}
 		else
 		{
-			frame->StealFrom(pixelsLDR, mipW, mipH);
+			frame->StealFrom(pixelsLDR, levW, levH);
 		}
 
 		// Possibly undo alpha premultiplication by multiplying by the colour channels
@@ -467,7 +490,8 @@ ImportRaw::CreateResult ImportRaw::CreateFrames
 		}
 		frames.Append(frame);
 
-		tImage::tGetNextMipmapLevelDims(mipW, mipH);
+		if (mipmaps)
+			tImage::tGetNextMipmapLevelDims(levW, levH);
 		rawPixelData += numBytes;
 	}
 
