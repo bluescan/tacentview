@@ -1199,10 +1199,10 @@ void Command::ParseSaveParametersQOI()
 			case tHash::tHashCT("spc"):
 				switch (tHash::tHashString(value.Chr()))
 				{
-					case tHash::tHashCT("srgb"):	SaveParamsQOI.Space = tImage::tImageQOI::tSpace::sRGB;			break;
-					case tHash::tHashCT("lin"):		SaveParamsQOI.Space = tImage::tImageQOI::tSpace::Linear;		break;
+					case tHash::tHashCT("srgb"):	SaveParamsQOI.ColourProfile = tColourProfile::sRGB;				break;
+					case tHash::tHashCT("lin"):		SaveParamsQOI.ColourProfile = tColourProfile::lRGB;				break;
 					case tHash::tHashCT("auto"):
-					case tHash::tHashCT("*"):		SaveParamsQOI.Space = tImage::tImageQOI::tSpace::Auto;			break;
+					case tHash::tHashCT("*"):		SaveParamsQOI.ColourProfile = tColourProfile::Auto;				break;
 				}
 				break;
 		}

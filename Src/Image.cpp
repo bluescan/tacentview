@@ -810,11 +810,11 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 					case 2: params.Format = tImageQOI::tFormat::BPP32;		break;
 				}
 
-				params.Space = tImageQOI::tSpace::Auto;
-				switch (profile.SaveFileQoiColourSpace)
+				params.ColourProfile = tColourProfile::Auto;
+				switch (profile.SaveFileQoiColourProfile)
 				{
-					case 1: params.Space = tImageQOI::tSpace::sRGB;			break;
-					case 2: params.Space = tImageQOI::tSpace::Linear;		break;
+					case int(tColourProfile::sRGB): params.ColourProfile = tColourProfile::sRGB;	break;
+					case int(tColourProfile::lRGB): params.ColourProfile = tColourProfile::lRGB;	break;
 				}
 			}
 

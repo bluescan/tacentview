@@ -382,7 +382,7 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		SaveFileTgaRLE				= false;
 		SaveFilePngDepthMode		= 0;
 		SaveFileQoiDepthMode		= 0;
-		SaveFileQoiColourSpace		= 0;
+		SaveFileQoiColourProfile	= int(tColourSpace::sRGB);
 		SaveFileBmpDepthMode		= 0;
 		SaveFileJpegQuality			= 95;
 		SaveFileWebpLossy			= false;
@@ -574,7 +574,7 @@ void Config::ProfileData::Load(tExpression expr)
 			ReadItem(SaveFileTgaRLE);
 			ReadItem(SaveFilePngDepthMode);
 			ReadItem(SaveFileQoiDepthMode);
-			ReadItem(SaveFileQoiColourSpace);
+			ReadItem(SaveFileQoiColourProfile);
 			ReadItem(SaveFileBmpDepthMode);
 			ReadItem(SaveFileJpegQuality);
 			ReadItem(SaveFileWebpLossy);
@@ -681,7 +681,7 @@ void Config::ProfileData::Load(tExpression expr)
 	tiClamp		(SaveFileTgaDepthMode, 0, 2);
 	tiClamp		(SaveFilePngDepthMode, 0, 4);
 	tiClamp		(SaveFileQoiDepthMode, 0, 2);
-	tiClamp		(SaveFileQoiColourSpace, 0, 2);
+	tiClamp		(SaveFileQoiColourProfile, 0, int(tColourProfile::NumProfiles)-1);
 	tiClamp		(SaveFileBmpDepthMode, 0, 2);
 	tiClamp		(SaveFileJpegQuality, 1, 100);
 	tiClamp		(SaveFileWebpQualComp, 0.0f, 100.0f);
@@ -774,7 +774,7 @@ bool Config::ProfileData::Save(tExprWriter& writer) const
 	WriteItem(SaveFileTgaRLE);
 	WriteItem(SaveFilePngDepthMode);
 	WriteItem(SaveFileQoiDepthMode);
-	WriteItem(SaveFileQoiColourSpace);
+	WriteItem(SaveFileQoiColourProfile);
 	WriteItem(SaveFileBmpDepthMode);
 	WriteItem(SaveFileJpegQuality);
 	WriteItem(SaveFileWebpLossy);

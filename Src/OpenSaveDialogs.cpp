@@ -512,7 +512,18 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			Gutil::HelpMark("Auto: Decide based on opacity.\n24 BPP: Force 24 bits per pixel.\n32 BPP: Force 32 bits per pixel.");
 
 			const char* qoiSpaceItems[] = { "Auto", "sRGB", "Linear" };
-			ImGui::Combo("Colour Space", &profile.SaveFileQoiColourSpace , qoiSpaceItems, tNumElements(qoiSpaceItems));
+			int qoiSpace = 0;
+			if (profile.SaveFileQoiColourProfile == int(tColourSpace::sRGB))
+				qoiSpace = 1;
+			else if (profile.SaveFileQoiColourProfile == int(tColourSpace::lRGB))
+				qoiSpace = 2;
+			ImGui::Combo("Colour Space", &qoiSpace, qoiSpaceItems, tNumElements(qoiSpaceItems));
+			profile.SaveFileQoiColourProfile = int(tColourSpace::Auto);
+			if (qoiSpace = 1)
+				profile.SaveFileQoiColourProfile = int(tColourSpace::sRGB);
+			if (qoiSpace = 2)
+				profile.SaveFileQoiColourProfile = int(tColourSpace::lRGB);
+
 			ImGui::SameLine();
 			Gutil::HelpMark("Colour space to store in the saved file.\nAuto: Use current colour space as it was loaded.\nsRGB: The default for most images.\nLinear: For images used in lighting calculations.");
 			break;
@@ -1129,14 +1140,14 @@ bool Viewer::SavePictureAs(tImage::tPicture& picture, const tString& outFile, tF
 				case 2: saveFormat = tImageQOI::tFormat::BPP32;		break;
 			}
 
-			tImageQOI::tSpace saveSpace = tImageQOI::tSpace::Auto;
-			switch (profile.SaveFileQoiColourSpace)
+			tColourProfile saveProf = tColourProfile::Auto;
+			switch (profile.SaveFileQoiColourProfile)
 			{
-				case 1: saveSpace = tImageQOI::tSpace::sRGB;		break;
-				case 2: saveSpace = tImageQOI::tSpace::Linear;		break;
+				case int(tColourProfile::sRGB): saveProf = tColourProfile::sRGB;	break;
+				case int(tColourProfile::lRGB): saveProf = tColourProfile::lRGB;	break;
 			}
 
-			tImageQOI::tFormat savedFormat = qoi.Save(outFile, saveFormat);
+			tImageQOI::tFormat savedFormat = qoi.Save(outFile, saveFormat, saveProf);
 			success = (savedFormat != tImageQOI::tFormat::Invalid);
 			break;
 		}
