@@ -42,7 +42,7 @@ using namespace tImage;
 namespace ImportRaw
 {
 	FileDialog SelectFileDialog(DialogMode::OpenFile);
-	tString ImportedFile;
+	tString ImportedDstFile;
 
 	enum class CreateResult
 	{
@@ -63,20 +63,29 @@ namespace ImportRaw
 }
 
 
-void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
+bool Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 {
 	tVector2 windowPos = Gutil::GetDialogOrigin(Gutil::DialogID::ImportRaw);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_FirstUseEver);
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoResize			|	ImGuiWindowFlags_AlwaysAutoResize	|
-		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoNav				|	ImGuiWindowFlags_NoScrollbar;
-
+		ImGuiWindowFlags_NoSavedSettings	|	ImGuiWindowFlags_NoNav				|	ImGuiWindowFlags_NoScrollbar	;
+	bool handledClose = false;
 	if (ImGui::Begin("Import Raw", popen, flags))
 	{
+		// Live tune:
+		// Data Offset
+		// Width
+		// Height
+		// Surface Count / Mipmap Count
+		// Mipmaps
+		// Premultiplied Alpha
+		// Pixel Format
+		// Colour Space
 		Config::ProfileData& profile = Config::GetProfileData();
 		if (justOpened)
 		{
-			ImportRaw::ImportedFile.Clear();
+			ImportRaw::ImportedDstFile.Clear();
 			if (!tSystem::tFileExists(profile.ImportRawFilename))
 				profile.ImportRawFilename.Clear();
 		}
@@ -102,6 +111,12 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			tString importName = tSystem::tGetFileName(profile.ImportRawFilename);
 			ImGui::SameLine();
 			ImGui::Text(importName.Chr());
+			if (ImportRaw::ImportedDstFile.IsValid())
+			{
+				ImGui::SameLine();
+				ImGui::Text("*Connected*");
+			}
+
 		}
 
 		// FileType of destination image.
@@ -132,12 +147,12 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 		{
 			dstType = newType;
 
-			// If it changed and an existing file exists, delete it and clear the ImportedFile.
-			if (ImportRaw::ImportedFile.IsValid())
+			// If it changed and an existing file exists, delete it and clear the ImportedDstFile.
+			if (ImportRaw::ImportedDstFile.IsValid())
 			{
-				bool deleted = DeleteImageFile(ImportRaw::ImportedFile, false);
+				bool deleted = DeleteImageFile(ImportRaw::ImportedDstFile, false);
 				if (deleted)
-					ImportRaw::ImportedFile.Clear();
+					ImportRaw::ImportedDstFile.Clear();
 			}
 		}
 		ImGui::SameLine();
@@ -263,21 +278,21 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 				);
 				if (cr == ImportRaw::CreateResult::Success)
 				{
-					tString importedFilename = ImportRaw::ImportedFile;
-					if (importedFilename.IsEmpty())
-						importedFilename = ImportRaw::MakeImportedFilename(dstType, profile.ImportRawFilename);
-					if (importedFilename.IsEmpty())
+					tString dstFilename = ImportRaw::ImportedDstFile;
+					if (dstFilename.IsEmpty())
+						dstFilename = ImportRaw::MakeImportedFilename(dstType, profile.ImportRawFilename);
+					if (dstFilename.IsEmpty())
 					{
 						// Update message.
 					}
 					else
 					{
-						bool exists = ImportRaw::CreateImportedFile(frames, importedFilename);
+						bool exists = ImportRaw::CreateImportedFile(frames, dstFilename);
 						if (exists)
 						{
-							// We only set ImportedFile once we know it exists.
-							ImportRaw::ImportedFile = importedFilename;
-							bool found = SetCurrentImage(ImportRaw::ImportedFile);
+							// We only set ImportedDstFile once we know it exists.
+							ImportRaw::ImportedDstFile = dstFilename;
+							bool found = SetCurrentImage(ImportRaw::ImportedDstFile);
 							if (found)
 							{
 								CurrImage->Unbind();
@@ -287,11 +302,11 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 							}
 							else
 							{
-								Image* newImg = new Image(ImportRaw::ImportedFile);
+								Image* newImg = new Image(ImportRaw::ImportedDstFile);
 								Images.Append(newImg);
 								ImagesLoadTimeSorted.Append(newImg);
 								SortImages(profile.GetSortKey(), profile.SortAscending);
-								SetCurrentImage(importedFilename);
+								SetCurrentImage(dstFilename);
 							}
 						}
 						else
@@ -315,32 +330,46 @@ void Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 
 		if (ImGui::Button("Cancel"))
 		{
-			if (ImportRaw::ImportedFile.IsValid())
+			if (ImportRaw::ImportedDstFile.IsValid())
 			{
-				bool deleted = DeleteImageFile(ImportRaw::ImportedFile, false);
+				bool deleted = DeleteImageFile(ImportRaw::ImportedDstFile, false);
 				if (deleted)
-					ImportRaw::ImportedFile.Clear();
+					ImportRaw::ImportedDstFile.Clear();
 			}
 			*popen = false;
+			handledClose = true;
 		}
 
 		if (ImGui::Button("Reset"))
 		{
-			if (ImportRaw::ImportedFile.IsValid())
-				DeleteImageFile(ImportRaw::ImportedFile, false);
-			ImportRaw::ImportedFile.Clear();
+			if (ImportRaw::ImportedDstFile.IsValid())
+				DeleteImageFile(ImportRaw::ImportedDstFile, false);
+			ImportRaw::ImportedDstFile.Clear();
 			Config::ResetProfile(Config::Category_ImportRaw);
 			surfaceOrMipmapCount = 1;
 		}
 
 		if (ImGui::Button("OK"))
 		{
-			ImportRaw::ImportedFile.Clear();
+			ImportRaw::ImportedDstFile.Clear();
 			*popen = false;
+			handledClose = true;
 		}
 	}
 
 	ImGui::End();
+	return handledClose;
+}
+
+
+void Viewer::CloseCancelImportRawOverlay()
+{
+	if (ImportRaw::ImportedDstFile.IsValid())
+	{
+		bool deleted = DeleteImageFile(ImportRaw::ImportedDstFile, false);
+		if (deleted)
+			ImportRaw::ImportedDstFile.Clear();
+	}
 }
 
 

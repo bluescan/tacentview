@@ -17,5 +17,12 @@
 
 namespace Viewer
 {
-	void ShowImportRawOverlay(bool* popen, bool justOpened);
+	bool ShowImportRawOverlay(bool* popen, bool justOpened);
+	void CloseCancelImportRawOverlay();
+}
+
+
+namespace ImportRaw
+{
+	extern tString ImportedDstFile;
 }

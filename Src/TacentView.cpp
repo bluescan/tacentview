@@ -272,6 +272,7 @@ namespace Viewer
 	LosslessTransformMode Request_LosslessTrnsModal	= LosslessTransformMode::None;
 	bool BindingsWindowJustOpened					= false;
 	bool ImportRawWindowJustOpened					= false;
+	bool ImportRawWindowJustClosed					= false;
 	bool CropMode									= false;
 	bool LMBDown									= false;
 	bool RMBDown									= false;
@@ -1562,6 +1563,8 @@ void Viewer::OnImportRaw()
 	profile.ShowImportRaw = !profile.ShowImportRaw;
 	if (profile.ShowImportRaw)
 		ImportRawWindowJustOpened = true;
+	else
+		ImportRawWindowJustClosed = true;
 }
 
 
@@ -2107,6 +2110,8 @@ int Viewer::DoMainMenuBar()
 			if (ImGui::MenuItem("Import Raw...", importRawKey.Chz(), &profile.ShowImportRaw))
 				if (profile.ShowImportRaw)
 					ImportRawWindowJustOpened = true;
+				else
+					ImportRawWindowJustClosed = true;
 
 			ImGui::Separator();
 
@@ -3572,10 +3577,19 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 	if (profile.ShowChannelFilter)
 		ShowChannelFilterOverlay(&profile.ShowChannelFilter);
 
+	static bool showingImport = false;
+	bool handledClose = false;
 	if (profile.ShowImportRaw)
 	{
-		ShowImportRawOverlay(&profile.ShowImportRaw, ImportRawWindowJustOpened);
+		handledClose = ShowImportRawOverlay(&profile.ShowImportRaw, ImportRawWindowJustOpened);
 		ImportRawWindowJustOpened = false;
+		showingImport = true;
+	}
+	if (!profile.ShowImportRaw && showingImport)
+	{
+		showingImport = false;
+		if (!handledClose)
+			CloseCancelImportRawOverlay();
 	}
 
 	if (profile.ShowImageDetails)
@@ -3994,6 +4008,7 @@ void Viewer::FocusCallback(GLFWwindow* window, int gotFocus)
 	// We sort here so ComputeImagesHash always returns consistent values.
 	files.Sort(Compare_AlphabeticalAscending, tListSortAlgorithm::Merge);
 	tuint256 hash = ComputeImagesHash(files);
+	Config::ProfileData& profile = Config::GetProfileData();
 
 	// @todo There is a subtle bug here. If a file was replaced by the Viewer to exactly match what the file was
 	// when the hash was computed (say from a discard in git), then the hash will not have been updated and it
@@ -4003,12 +4018,17 @@ void Viewer::FocusCallback(GLFWwindow* window, int gotFocus)
 		tPrintf("Hash mismatch. Dir contents changed. Resynching.\n");
 		PopulateImages();
 
-		// This deals with ImageToLoad being empty.
-		SetCurrentImage(ImageToLoad);
+		// It's ok if ImageToLoad is empty.
+		if (profile.ShowImportRaw && ImportRaw::ImportedDstFile.IsValid())
+			SetCurrentImage(ImportRaw::ImportedDstFile);
+		else
+			SetCurrentImage(ImageToLoad);
 	}
 	else
 	{
-		tPrintf("Hash match. Dir contents same. Doing nothing.\n");
+		tPrintf("Hash match. Dir contents same.\n");
+		if (profile.ShowImportRaw && ImportRaw::ImportedDstFile.IsValid())
+			SetCurrentImage(ImportRaw::ImportedDstFile);
 	}
 }
 

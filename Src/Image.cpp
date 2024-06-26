@@ -401,7 +401,8 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
-			Info.SrcPixelFormat = qoi.GetPixelFormatSrc();
+			Info.SrcPixelFormat 	= qoi.GetPixelFormatSrc();
+			Info.SrcColourProfile	= qoi.GetColourProfileSrc();
 			int width = qoi.GetWidth();
 			int height = qoi.GetHeight();
 			tPixel4b* pixels = qoi.StealPixels();
