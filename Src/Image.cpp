@@ -1889,6 +1889,8 @@ uint64 Image::Bind()
 	if (!IsLoaded())
 		return 0;
 
+	tiClamp(FrameNum, 0, GetNumPictures()-1);
+
 	// We do this in reverse order so that the last image we bind is the highest resolution image.
 	// This is more efficient when it comes to drawing the image since the lowest mip is likely not
 	// the one we're going to be viewing right after binding.
@@ -1904,7 +1906,8 @@ uint64 Image::Bind()
 		picture->GenerateLayers(layers, tResampleFilter(profile.MipmapFilter), tResampleEdgeMode::Clamp, profile.MipmapChaining);
 		BindLayers(layers, picture->TextureID);
 	}
-	return GetCurrentPic()->TextureID;
+	currPic = GetCurrentPic();
+	return currPic ? currPic->TextureID : 0;
 }
 
 

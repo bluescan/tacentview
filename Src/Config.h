@@ -270,6 +270,7 @@ struct ProfileData
 	int ImportRawHeight;
 	bool ImportRawMipmaps;
 	bool ImportRawPremultAlpha;
+	bool ImportRawLiveUpdate;
 	int ImportRawDataOffset;
 	int ImportRawPixelFormat;
 	tImage::tPixelFormat GetImportRawPixelFormat() const	{ return tImage::tPixelFormat(ImportRawPixelFormat); }

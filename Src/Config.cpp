@@ -499,6 +499,7 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		ImportRawHeight				= 128;
 		ImportRawMipmaps			= false;
 		ImportRawPremultAlpha		= false;
+		ImportRawLiveUpdate			= false;
 		ImportRawDataOffset			= 0;
 		ImportRawPixelFormat		= int(tImage::tPixelFormat::R8G8B8A8);
 		ImportRawColourSpace		= int(tColourSpace::sRGB);
@@ -610,6 +611,7 @@ void Config::ProfileData::Load(tExpression expr)
 			ReadItem(ImportRawHeight);
 			ReadItem(ImportRawMipmaps);
 			ReadItem(ImportRawPremultAlpha);
+			ReadItem(ImportRawLiveUpdate);
 			ReadItem(ImportRawDataOffset);
 			ReadItem(ImportRawPixelFormat);
 			ReadItem(ImportRawColourSpace);
@@ -808,6 +810,7 @@ bool Config::ProfileData::Save(tExprWriter& writer) const
 	WriteItem(ImportRawHeight);
 	WriteItem(ImportRawMipmaps);
 	WriteItem(ImportRawPremultAlpha);
+	WriteItem(ImportRawLiveUpdate);
 	WriteItem(ImportRawDataOffset);
 	WriteItem(ImportRawPixelFormat);
 	WriteItem(ImportRawColourSpace);
