@@ -196,7 +196,8 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
-			Info.SrcPixelFormat = apng.GetPixelFormatSrc();
+			Info.SrcPixelFormat		= apng.GetPixelFormatSrc();
+			Info.SrcColourProfile	= apng.GetColourProfileSrc();
 			int numFrames = apng.GetNumFrames();
 			for (int f = 0; f < numFrames; f++)
 			{
@@ -217,7 +218,8 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
-			Info.SrcPixelFormat = bmp.GetPixelFormatSrc();
+			Info.SrcPixelFormat		= bmp.GetPixelFormatSrc();
+			Info.SrcColourProfile	= bmp.GetColourProfileSrc();
 			int width = bmp.GetWidth();
 			int height = bmp.GetHeight();
 			tPixel4b* pixels = bmp.StealPixels();
@@ -235,7 +237,8 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
-			Info.SrcPixelFormat = exr.GetPixelFormatSrc();
+			Info.SrcPixelFormat		= exr.GetPixelFormatSrc();
+			Info.SrcColourProfile	= exr.GetColourProfileSrc();
 			int numFrames = exr.GetNumFrames();
 			for (int f = 0; f < numFrames; f++)
 			{
@@ -256,7 +259,8 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
-			Info.SrcPixelFormat = gif.GetPixelFormatSrc();
+			Info.SrcPixelFormat		= gif.GetPixelFormatSrc();
+			Info.SrcColourProfile	= gif.GetColourProfileSrc();
 			int numFrames = gif.GetNumFrames();
 			for (int f = 0; f < numFrames; f++)
 			{
@@ -365,7 +369,8 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
-			Info.SrcPixelFormat = png.GetPixelFormatSrc();
+			Info.SrcPixelFormat		= png.GetPixelFormatSrc();
+			Info.SrcColourProfile	= png.GetColourProfileSrc();
 			int width = png.GetWidth();
 			int height = png.GetHeight();
 			tPixel4b* pixels = png.StealPixels8();
@@ -383,7 +388,8 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
-			Info.SrcPixelFormat = tga.GetPixelFormatSrc();
+			Info.SrcPixelFormat		= tga.GetPixelFormatSrc();
+			Info.SrcColourProfile	= tga.GetColourProfileSrc();
 			int width = tga.GetWidth();
 			int height = tga.GetHeight();
 			tPixel4b* pixels = tga.StealPixels();
@@ -420,7 +426,8 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
-			Info.SrcPixelFormat = tiff.GetPixelFormatSrc();
+			Info.SrcPixelFormat		= tiff.GetPixelFormatSrc();
+			Info.SrcColourProfile	= tiff.GetColourProfileSrc();
 			int numFrames = tiff.GetNumFrames();
 			for (int f = 0; f < numFrames; f++)
 			{
@@ -441,7 +448,8 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
-			Info.SrcPixelFormat = webp.GetPixelFormatSrc();
+			Info.SrcPixelFormat		= webp.GetPixelFormatSrc();
+			Info.SrcColourProfile	= webp.GetColourProfileSrc();
 			BackgroundColourOverride = webp.BackgroundColour;
 
 			int numFrames = webp.GetNumFrames();
@@ -553,7 +561,8 @@ bool Image::Load(bool loadParamsFromConfig)
 			if (!ok)
 				break;
 
-			Info.SrcPixelFormat = astc.GetPixelFormatSrc();
+			Info.SrcPixelFormat		= astc.GetPixelFormatSrc();
+			Info.SrcColourProfile	= astc.GetColourProfileSrc();
 			int width = astc.GetWidth();
 			int height = astc.GetHeight();
 

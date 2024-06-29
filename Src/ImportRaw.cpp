@@ -114,7 +114,7 @@ bool Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			if (ImportRaw::ImportedDstFile.IsValid())
 			{
 				ImGui::SameLine();
-				ImGui::Text("*Connected*");
+				ImGui::Text("*Preview*");
 			}
 
 		}
