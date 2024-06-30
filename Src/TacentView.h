@@ -114,8 +114,8 @@ namespace Viewer
 	void PopulateImages();
 	void PopulateImagesSubDirs();
 	Image* FindImage(const tString& filename);
-	bool SetCurrentImage(const tString& currFilename = tString());	// Returns true if current image was in the list of images.
-	void LoadCurrImage();
+	bool SetCurrentImage(const tString& currFilename = tString(), bool forceReload = false);	// Returns true if current image was in the list of images.
+	void LoadCurrImage(bool forceReload = false);
 	bool ChangeScreenMode(bool fullscreeen, bool force = false);
 	void SortImages(Config::ProfileData::SortKeyEnum, bool ascending);
 	bool DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin);

@@ -232,6 +232,10 @@ tVector2 Gutil::GetDialogOrigin(DialogID dialogID)
 {
 	int hindex = int(dialogID) % 4;
 	int vindex = int(dialogID) / 4;
+	if (dialogID == DialogID::Properties)
+		hindex += 2;
+	if (dialogID == DialogID::ThumbnailView)
+		hindex = 0;
 
 	float topOffset		= Gutil::GetUIParamExtent(82.0f, 160.0f);
 	float leftOffset	= Gutil::GetUIParamScaled(30.0f, 2.5f);

@@ -107,7 +107,6 @@ bool Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 				ImGui::SameLine();
 				ImGui::Text("*Preview*");
 			}
-
 		}
 
 		// FileType of destination image.
@@ -326,15 +325,8 @@ bool Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 						{
 							// We only set ImportedDstFile once we know it exists.
 							ImportRaw::ImportedDstFile = dstFilename;
-							bool found = SetCurrentImage(ImportRaw::ImportedDstFile);
-							if (found)
-							{
-								CurrImage->Unbind();
-								CurrImage->Unload(true);
-								CurrImage->Load();
-								CurrImage->Bind();
-							}
-							else
+							bool found = SetCurrentImage(ImportRaw::ImportedDstFile, true);
+							if (!found)
 							{
 								Image* newImg = new Image(ImportRaw::ImportedDstFile);
 								Images.Append(newImg);

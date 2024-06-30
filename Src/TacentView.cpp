@@ -833,7 +833,7 @@ Viewer::Image* Viewer::FindImage(const tString& filename)
 }
 
 
-bool Viewer::SetCurrentImage(const tString& currFilename)
+bool Viewer::SetCurrentImage(const tString& currFilename, bool forceReload)
 {
 	bool found = false;
 	for (Image* si = Images.First(); si; si = si->Next())
@@ -860,7 +860,7 @@ bool Viewer::SetCurrentImage(const tString& currFilename)
 	}
 
 	if (CurrImage)
-		LoadCurrImage();
+		LoadCurrImage(forceReload);
 
 	return found;
 }
@@ -877,12 +877,22 @@ void Viewer::AutoPropertyWindow()
 }
 
 
-void Viewer::LoadCurrImage()
+void Viewer::LoadCurrImage(bool forceReload)
 {
 	tAssert(CurrImage);
 	bool imgJustLoaded = false;
+
 	if (!CurrImage->IsLoaded())
+	{
 		imgJustLoaded = CurrImage->Load();
+	}
+	else if (forceReload)
+	{
+		CurrImage->Unbind();
+		CurrImage->Unload(true);
+		imgJustLoaded = CurrImage->Load();
+		CurrImage->Bind();
+	}
 
 	AutoPropertyWindow();
 	Gutil::SetWindowTitle();

@@ -46,6 +46,7 @@ namespace Gutil
 
 	enum class DialogID
 	{
+		ImportRaw,
 		ThumbnailView,
 		Properties,
 		PixelEditor,
@@ -54,7 +55,6 @@ namespace Gutil
 		MetaData,
 		CheatSheet,
 		About,
-		ImportRaw,
 		ChannelFilter,
 		LogOutput,
 		NumIDs
