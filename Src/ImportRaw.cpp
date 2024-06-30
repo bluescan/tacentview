@@ -88,12 +88,8 @@ bool Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			ImportRaw::ImportedDstFile.Clear();
 			if (!tSystem::tFileExists(profile.ImportRawFilename))
 				profile.ImportRawFilename.Clear();
-		}
-
-		if (ImportRaw::ImportedDstFile.IsValid())
-			message = profile.ImportRawLiveUpdate ? " Showing Live Preview" : "Showing Preview";
-		else
 			message.Clear();
+		}
 
 		if (Gutil::Button("Raw File", tVector2(buttonWidth, 0.0f)))
 			ImportRaw::SelectFileDialog.OpenPopup();
@@ -118,6 +114,10 @@ bool Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 
 			ImGui::SameLine();
 			ImGui::Text(importName.Chr());
+			if (ImportRaw::ImportedDstFile.IsValid())
+			{
+				ImGui::Text(profile.ImportRawLiveUpdate ? "Live Preview" : "Preview");
+			}
 		}
 
 		bool liveUpdated = false;
