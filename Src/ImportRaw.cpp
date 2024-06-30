@@ -74,14 +74,17 @@ bool Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 	if (ImGui::Begin("Import Raw", popen, flags))
 	{
 		Config::ProfileData& profile = Config::GetProfileData();
+		static tString message;
+
 		if (justOpened)
 		{
 			ImportRaw::ImportedDstFile.Clear();
 			if (!tSystem::tFileExists(profile.ImportRawFilename))
 				profile.ImportRawFilename.Clear();
+			message.Clear();
 		}
 
-		if (Gutil::Button("Select File"))
+		if (Gutil::Button("Select File:"))
 			ImportRaw::SelectFileDialog.OpenPopup();
 
 		FileDialog::DialogState state = ImportRaw::SelectFileDialog.DoPopup();
@@ -249,7 +252,9 @@ bool Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 		int currPVR    = tImage::tIsPVRFormat(fmt)    ? int(fmt) - int(tImage::tPixelFormat::FirstPVR)    : -1;
 		int currASTC   = tImage::tIsASTCFormat(fmt)   ? int(fmt) - int(tImage::tPixelFormat::FirstASTC)   : -1;
 		const int maxDropdownFormats = 14;
-		ImGui::Text("Pixel Format:");
+		tString formatText;
+		tsPrintf(formatText, "Pixel Format: %s", tGetPixelFormatName(fmt));
+		ImGui::Text(formatText.Chr());
 		if (Gutil::Combo("Packed", &currPacked, tImage::PixelFormatNames_Packed, tImage::PixelFormatDescs_Packed, int(tImage::tPixelFormat::NumPackedFormats), tMin(int(tImage::tPixelFormat::NumPackedFormats), maxDropdownFormats)))
 		{
 			profile.ImportRawPixelFormat = int(tImage::tPixelFormat::FirstPacked) + currPacked;
@@ -296,11 +301,20 @@ bool Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			"the viewer is in sRGB-space. If the imported colours are linear then\n"
 			"selecting lRGB will make sure the imported pixels are converted to sRGB."
 		);
+		
+		Gutil::Separator();
+		
+		tString messageText;
+		tsPrintf(messageText, "Message: %s", message.IsEmpty() ? "None" :  message.Chr());
+		ImGui::Text(messageText.Chr());
+
+		Gutil::Separator();
 
 		if (profile.ImportRawFilename.IsValid())
 		{
 			if (Gutil::Button("Import") || liveUpdated)
 			{
+				message.Clear();
 				tList<tFrame> frames;
 				ImportRaw::CreateResult cr = ImportRaw::CreateFrames
 				(
@@ -316,7 +330,7 @@ bool Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 						dstFilename = ImportRaw::MakeImportedFilename(dstType, profile.ImportRawFilename);
 					if (dstFilename.IsEmpty())
 					{
-						// Update message.
+						message = "No destination filename.";
 					}
 					else
 					{
@@ -337,18 +351,17 @@ bool Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 						}
 						else
 						{
-							// Message.
+							message = "No dest file write.";
 						}
 					}
 				}
 				else
 				{
-					// @todo Set Message Text.
 					switch (cr)
 					{
-						case ImportRaw::CreateResult::UnsupportedFormat:	break;
-						case ImportRaw::CreateResult::DataShortage:			break;
-						case ImportRaw::CreateResult::DecodeError:			break;
+						case ImportRaw::CreateResult::UnsupportedFormat:	message = "Unsupported format.";	break;
+						case ImportRaw::CreateResult::DataShortage:			message = "Data shortage.";			break;
+						case ImportRaw::CreateResult::DecodeError:			message = "Decode Error.";			break;
 					}
 				}
 			}
