@@ -4440,6 +4440,9 @@ int main(int argc, char** argv)
 		Viewer::DisappearCountdown = 0.0;
 	}
 
+	if (profile.ShowImportRaw)
+		Viewer::ImportRawWindowJustOpened = true;
+
 	int redBits		= 0;	glGetIntegerv(GL_RED_BITS,	&redBits);
 	int greenBits	= 0;	glGetIntegerv(GL_GREEN_BITS,&greenBits);
 	int blueBits	= 0;	glGetIntegerv(GL_BLUE_BITS,	&blueBits);

@@ -270,6 +270,7 @@ struct ProfileData
 	int ImportRawHeight;
 	bool ImportRawMipmaps;
 	bool ImportRawPremultAlpha;
+	bool ImportRawReverseRows;
 	bool ImportRawLiveUpdate;
 	int ImportRawDataOffset;
 	int ImportRawPixelFormat;
