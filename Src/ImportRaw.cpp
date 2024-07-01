@@ -274,18 +274,17 @@ bool Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			"order set this checkbox to true."
 		);
 
-		if (!ImportRaw::ImportedDstFile.IsValid())
-			Gutil::PushDisable();
 		ImGui::SetNextItemWidth(itemWidth);
-		ImGui::Checkbox("Live Updates", &profile.ImportRawLiveUpdate);
-		if (!ImportRaw::ImportedDstFile.IsValid())
-			Gutil::PopDisable();
+		if (ImGui::Checkbox("Live Updates", &profile.ImportRawLiveUpdate))
+		{
+			// If turned it on need an immediate update.
+			if (profile.ImportRawLiveUpdate) liveUpdated = true;
+		}
 		ImGui::SameLine();
 		Gutil::HelpMark
 		(
 			"Automatically re-import on any change. This can be slow as the entire raw\n"
-			"input file is re-parsed, decoded, saved, and re-bound for display. This\n"
-			"option is only available after you have successfully imported at least once."
+			"input file is read, parsed, decoded, saved, and re-bound for display."
 		);
 
 		Gutil::Separator();
@@ -333,7 +332,11 @@ bool Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 
 		tString resultText;
 		tsPrintf(resultText, "Import Result: %s", importResultMessage.IsEmpty() ? "None" :  importResultMessage.Chr());
+		if (importResultMessage.IsValid() && (importResultMessage != "Success"))
+			ImGui::PushStyleColor(ImGuiCol_Text, tVector4(1.0f, 0.3f, 0.31f, 1.0f) );
 		ImGui::Text(resultText.Chr());
+		if (importResultMessage.IsValid() && (importResultMessage != "Success"))
+			ImGui::PopStyleColor();
 
 		tString previewModeText;
 		if (profile.ImportRawFilename.IsValid() && ImportRaw::ImportedDstFile.IsValid())
