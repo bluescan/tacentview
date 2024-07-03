@@ -2118,10 +2118,12 @@ int Viewer::DoMainMenuBar()
 
 			tString importRawKey = profile.InputBindings.FindModKeyText(Bindings::Operation::ImportRaw);
 			if (ImGui::MenuItem("Import Raw...", importRawKey.Chz(), &profile.ShowImportRaw))
+			{
 				if (profile.ShowImportRaw)
 					ImportRawWindowJustOpened = true;
 				else
 					ImportRawWindowJustClosed = true;
+			}
 
 			ImGui::Separator();
 

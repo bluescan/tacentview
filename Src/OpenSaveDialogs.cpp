@@ -519,9 +519,9 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 				qoiSpace = 2;
 			ImGui::Combo("Colour Space", &qoiSpace, qoiSpaceItems, tNumElements(qoiSpaceItems));
 			profile.SaveFileQoiColourProfile = int(tColourSpace::Auto);
-			if (qoiSpace = 1)
+			if (qoiSpace == 1)
 				profile.SaveFileQoiColourProfile = int(tColourSpace::sRGB);
-			if (qoiSpace = 2)
+			else if (qoiSpace == 2)
 				profile.SaveFileQoiColourProfile = int(tColourSpace::lRGB);
 
 			ImGui::SameLine();
