@@ -443,6 +443,63 @@ namespace Viewer
 	void ChangProfile(Viewer::Profile);
 }
 
+int Viewer::NaturalSort(const char8_t *a, const char8_t *b)
+{
+	enum mode_t
+	{
+		STRING,
+		NUMBER
+	} mode = STRING;
+
+	while (*a && *b)
+	{
+		if (mode == STRING)
+		{
+			char aChar, bChar;
+			while ((aChar = tolower(*a)) && (bChar = tolower(*b))) // We lowercase the chars for proper comparison
+			{
+				// Check if the chars are digits
+				const bool aDigit = isdigit(aChar), bDigit = isdigit(bChar);
+
+				// If both chars are digits, we continue in NUMBER mode
+				if (aDigit && bDigit)
+				{
+					mode = NUMBER;
+					break;
+				} 
+
+				// If only the left char is a digit, we have a result
+				if (aDigit) return -1;
+
+				// If only the right char is a digit, we have a result
+				if (bDigit) return +1;
+
+				// compute the difference of both characters
+				const int diff = aChar - bChar;
+
+				// If they differ we have a result
+				if (diff != 0) return diff;
+
+				// Otherwise process the next characters
+				++a; ++b;
+			}
+		}
+		else // mode == NUMBER
+		{
+			// if the difference is not equal to zero, we have a comparison result
+			const long diff = tAtoi(a) - tAtoi(b);
+			if (diff != 0) return diff;
+
+			// otherwise we process the next substring in STRING mode
+			mode = STRING;
+		}
+	}
+
+	if (*b) return -1;
+	if (*a) return +1;
+
+	return 0;
+}
 
 bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image& b) const
 {
@@ -453,7 +510,9 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 		{
 			const char8_t* A = a.Filename.Chars();
 			const char8_t* B = b.Filename.Chars();
-			return Ascending ? (tPstrcmp(A, B) < 0) : (tPstrcmp(A, B) > 0);
+			int alphanum = NaturalSort(A, B);
+
+			return Ascending ? (alphanum < 0) : (alphanum > 0);
 		}
 
 		case Config::ProfileData::SortKeyEnum::FileModTime:
