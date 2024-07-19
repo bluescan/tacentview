@@ -486,13 +486,22 @@ int Viewer::NaturalSort(const char8_t *a, const char8_t *b)
 		}
 		else // mode == NUMBER
 		{
+			char *end; // Represents the end of the number string
+
+			// Get the left number
+			unsigned long aInt = strtoul((char*) a, &end, 10);
+			a = (char8_t*) end;
+
+			// Get the right number
+			unsigned long bInt = strtoul((char*) b, &end, 10);
+			b = (char8_t*) end;
+
 			// if the difference is not equal to zero, we have a comparison result
-			const long diff = static_cast<long>(*a) - static_cast<long>(*b);
+			const long diff = aInt - bInt;
 			if (diff != 0) return diff;
 
 			// otherwise we process the next substring in STRING mode
 			mode = STRING;
-			++a; ++b;
 		}
 	}
 
