@@ -487,11 +487,12 @@ int Viewer::NaturalSort(const char8_t *a, const char8_t *b)
 		else // mode == NUMBER
 		{
 			// if the difference is not equal to zero, we have a comparison result
-			const long diff = tAtoi(a) - tAtoi(b);
+			const long diff = static_cast<long>(*a) - static_cast<long>(*b);
 			if (diff != 0) return diff;
 
 			// otherwise we process the next substring in STRING mode
 			mode = STRING;
+			++a; ++b;
 		}
 	}
 
