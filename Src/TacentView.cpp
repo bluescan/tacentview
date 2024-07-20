@@ -520,8 +520,11 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 		{
 			const char8_t* A = a.Filename.Chars();
 			const char8_t* B = b.Filename.Chars();
-			int alphanum = NaturalSort(A, B);
 
+			// The old alphnumeric way. For reference.
+			// return Ascending ? (tPstrcmp(A, B) < 0) : (tPstrcmp(A, B) > 0);
+
+			int alphanum = NaturalSort(A, B);
 			return Ascending ? (alphanum < 0) : (alphanum > 0);
 		}
 
