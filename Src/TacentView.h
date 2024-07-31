@@ -120,7 +120,6 @@ namespace Viewer
 	void SortImages(Config::ProfileData::SortKeyEnum, bool ascending);
 	bool DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin);
 
-	int NaturalSort(const char8_t* a, const char8_t* b);			// Implements a natural sorting algorithm so files withs numbers appear in a pleasing format for humans
 	Config::ProfileData::ZoomModeEnum GetZoomMode();				// Reads the ZoomModePerImage setting to see where to get the zoom mode.
 	void SetZoomMode(Config::ProfileData::ZoomModeEnum);			// Reads the ZoomModePerImage setting to see where to set the zoom mode.
 	float GetZoomPercent();											// Reads the ZoomModePerImage setting to see where to get the zoom percent.

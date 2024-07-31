@@ -443,89 +443,24 @@ namespace Viewer
 	void ChangProfile(Viewer::Profile);
 }
 
-int Viewer::NaturalSort(const char8_t *a, const char8_t *b)
-{
-	enum mode_t
-	{
-		STRING,
-		NUMBER
-	} mode = STRING;
-
-	while (*a && *b)
-	{
-		if (mode == STRING)
-		{
-			char aChar, bChar;
-			while ((aChar = tolower(*a)) && (bChar = tolower(*b))) // We lowercase the chars for proper comparison
-			{
-				// Check if the chars are digits
-				const bool aDigit = isdigit(aChar), bDigit = isdigit(bChar);
-
-				// If both chars are digits, we continue in NUMBER mode
-				if (aDigit && bDigit)
-				{
-					mode = NUMBER;
-					break;
-				} 
-
-				// If only the left char is a digit, we have a result
-				if (aDigit) return -1;
-
-				// If only the right char is a digit, we have a result
-				if (bDigit) return +1;
-
-				// compute the difference of both characters
-				const int diff = aChar - bChar;
-
-				// If they differ we have a result
-				if (diff != 0) return diff;
-
-				// Otherwise process the next characters
-				++a; ++b;
-			}
-		}
-		else // mode == NUMBER
-		{
-			char *end; // Represents the end of the number string
-
-			// Get the left number
-			unsigned long aInt = strtoul((char*) a, &end, 10);
-			a = (char8_t*) end;
-
-			// Get the right number
-			unsigned long bInt = strtoul((char*) b, &end, 10);
-			b = (char8_t*) end;
-
-			// if the difference is not equal to zero, we have a comparison result
-			const long diff = aInt - bInt;
-			if (diff != 0) return diff;
-
-			// otherwise we process the next substring in STRING mode
-			mode = STRING;
-		}
-	}
-
-	if (*b) return -1;
-	if (*a) return +1;
-
-	return 0;
-}
 
 bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image& b) const
 {
 	switch (Key)
 	{
 		default:
+		case Config::ProfileData::SortKeyEnum::Natural:
+		{
+			const char8_t* A = a.Filename.Chars();
+			const char8_t* B = b.Filename.Chars();
+			return Ascending ? (tNstrcmp(A, B) < 0) : (tNstrcmp(A, B) > 0);
+		}
+
 		case Config::ProfileData::SortKeyEnum::FileName:
 		{
 			const char8_t* A = a.Filename.Chars();
 			const char8_t* B = b.Filename.Chars();
-
-			// The old alphnumeric way. For reference.
-			// return Ascending ? (tPstrcmp(A, B) < 0) : (tPstrcmp(A, B) > 0);
-
-			int alphanum = NaturalSort(A, B);
-			return Ascending ? (alphanum < 0) : (alphanum > 0);
+			return Ascending ? (tPstrcmp(A, B) < 0) : (tPstrcmp(A, B) > 0);
 		}
 
 		case Config::ProfileData::SortKeyEnum::FileModTime:

@@ -75,7 +75,8 @@ struct ProfileData
 
 	enum class SortKeyEnum
 	{
-		FileName,
+		Natural,				// Based on filename but groups integers so ordering is more 'human friendly'.
+		FileName,				// Alphanumeric based on encoding.
 		FileModTime,
 		FileSize,
 		FileType,

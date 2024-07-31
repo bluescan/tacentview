@@ -66,7 +66,7 @@ void Viewer::DoSortParameters(bool singleLine)
 
 	const char* sortItems[] =
 	{
-		"Name", "ModTime", "Size", "Type", "Area", "Width", "Height", "Latitude*",
+		"Natural", "Name", "ModTime", "Size", "Type", "Area", "Width", "Height", "Latitude*",
 		"Longitude*", "Altitude*", "Roll*", "Pitch*", "Yaw*", "Speed*", "Shutter Speed*",
 		"Exposure Time*", "F-Stop*", "ISO*", "Aperture*", "Orientation*", "Brightness*",
 		"Flash*", "Focal Length*", "Time Taken*", "Time Modified*", "Camera Make*", "Description*",

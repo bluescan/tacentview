@@ -453,7 +453,7 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 			case Profile::Alt:		SlideshowPeriod = 4.0f;		break;
 		}
 
-		SortKey						= (profile == Profile::Kiosk) ? int(SortKeyEnum::Shuffle) : int(SortKeyEnum::FileName);
+		SortKey						= (profile == Profile::Kiosk) ? int(SortKeyEnum::Shuffle) : int(SortKeyEnum::Natural);
 		SortAscending				= true;
 		SlideshowAutoReshuffle		= true;
 	}
