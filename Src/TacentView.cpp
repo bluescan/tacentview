@@ -671,7 +671,7 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 		}
 	}
 
-	return true;
+	return false;
 }
 
 
