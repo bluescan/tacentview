@@ -88,6 +88,7 @@ private:
 	void NodeToPath(tList<tStringItem>& destPath, const TreeNode*);		// Converts to a path list.
 	void DirToPath(tList<tStringItem>& destPath, const tString& dir);	// Converts dir to a path.
 
+	void DoRefresh(tStringItem*& selectPathItemName, bool& setYScrollToSel);
 	void DoSelectable(ContentItem*);
 	void DoFileTypesDropdown(bool supportMultipleTypes);
 

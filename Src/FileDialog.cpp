@@ -118,8 +118,9 @@ namespace tFileDialog
 	tList<tStringItem> ConfigOpenDirPath(tListMode::StaticZero);
 	tList<tStringItem> ConfigSaveFilePath(tListMode::StaticZero);
 
-	// For now these state variables are saved globally for all diaglog types.
+	// For now these state variables are saved globally for all dialog types.
 	bool ConfigShowHidden = false;
+	bool ConfigNaturalSort = true;
 
 	// Stores an individual bookmark comprised of a list of string path items. Bookmarks currently
 	// represent directories, not individual files. @todo This 'bookmark' class could easity become
@@ -414,6 +415,11 @@ bool tFileDialog::Save(tExprWriter& writer, const tString& exprName)
 	writer.End();
 	writer.CR();
 
+	writer.Begin();
+	writer.Atom("NaturalSort");					writer.Atom(ConfigNaturalSort);
+	writer.End();
+	writer.CR();
+
 	// We save a different last-used path for each mode.
 	if (!ConfigOpenFilePath.IsEmpty())
 	{
@@ -483,6 +489,10 @@ bool tFileDialog::Load(tExpr expr, const tString& exprName)
 
 				case tHash::tHashCT("ShowHidden"):
 					ConfigShowHidden = e.Item1();
+					break;
+
+				case tHash::tHashCT("NaturalSort"):
+					ConfigNaturalSort = e.Item1();
 					break;
 
 				case tHash::tHashCT("OpenFilePath"):
@@ -647,31 +657,45 @@ bool ContentItem::CompareFunctionObject::operator() (const ContentItem& a, const
 		{
 			const ImGuiTableColumnSortSpecs& colSortSpec = SortSpecs->Specs[s];
 			FieldID field = FieldID(colSortSpec.ColumnUserID);
-			int cmp = 0;
+			bool ascending = (colSortSpec.SortDirection == ImGuiSortDirection_Ascending) || (colSortSpec.SortDirection == ImGuiSortDirection_None);
 			switch (field)
 			{
 				case FieldID::Name:
-					// Even on Linux (case sensitive) I think it makes more sense to do a case-insensitive compare
-					// here so that tHis sorts next to thiS.
-					cmp = tStd::tStricmp(a.Name.Chars(), b.Name.Chars());
-					break;
+				{
+					const char8_t* A = a.Name.Chars();
+					const char8_t* B = b.Name.Chars();
+					if (ConfigNaturalSort)
+						return ascending ? (tStd::tNstrcmp(A, B) < 0) : (tStd::tNstrcmp(A, B) > 0);
+
+					// For alphanumeric sort on Windows we do a case-insensitive compare. For Linux we do a case-sensitive compare.
+					// We could have done a case-insensitive compare on Linux too but it propably makes more sense to do a straight sensitive
+					// compare since a) we want the option to match 'ls' exactly on a case-sensitive filesystem and b) we now have
+					// natural-sort as the default anyway.
+					else
+						return ascending ? (tStd::tPstrcmp(A, B) < 0) : (tStd::tPstrcmp(A, B) > 0);
+				}
 
 				case FieldID::ModTime:
-					cmp = a.ModTime - b.ModTime;
-					break;
+				{
+					int64 A = a.ModTime;
+					int64 B = b.ModTime;
+					return ascending ? (A < B) : (A > B);
+				}
 
 				case FieldID::FileType:
-					cmp = tStd::tStricmp(a.FileTypeString.Chars(), b.FileTypeString.Chars());
-					break;
+				{
+					const char8_t* A = a.FileTypeString.Chars();
+					const char8_t* B = b.FileTypeString.Chars();
+					return ascending ? (tStricmp(A, B) < 0) : (tStricmp(A, B) > 0);
+				}
 
 				case FieldID::FileSize:
-					cmp = a.FileSize - b.FileSize;
-					break;
+				{
+					int64 A = a.FileSize;
+					int64 B = b.FileSize;
+					return ascending ? (A < B) : (A > B);
+				}
 			}
-			if ((cmp == -1) && (colSortSpec.SortDirection == ImGuiSortDirection_Ascending))
-				return true;
-			else if ((cmp == 1) && (colSortSpec.SortDirection == ImGuiSortDirection_Descending))
-				return true;
 		}
 	}
 
@@ -1194,6 +1218,30 @@ bool tFileDialog::VerticalSplitter(float thickness, float& width1, float& width2
 }
 
 
+void FileDialog::DoRefresh(tStringItem*& selectPathItemName, bool& setYScrollToSel)
+{
+	// Remember where we are.
+	if (Mode == DialogMode::OpenFile)
+		NodeToPath(ConfigOpenFilePath, SelectedNode);
+	else if (Mode == DialogMode::OpenDir)
+		NodeToPath(ConfigOpenDirPath, SelectedNode);
+	if (Mode == DialogMode::SaveFile)
+		NodeToPath(ConfigSaveFilePath, SelectedNode);
+
+	PopulateTrees();
+
+	// Restore where we are.
+	if (Mode == DialogMode::OpenFile)
+		selectPathItemName = ConfigOpenFilePath.Head();
+	else if (Mode == DialogMode::OpenDir)
+		selectPathItemName = ConfigOpenDirPath.Head();
+	if (Mode == DialogMode::SaveFile)
+		selectPathItemName = ConfigSaveFilePath.Head();
+	if (selectPathItemName)
+		setYScrollToSel = true;
+}
+
+
 FileDialog::DialogState FileDialog::DoPopup()
 {
 	// The unused isOpen bool is just so we get a close button in ImGui. 
@@ -1309,31 +1357,16 @@ FileDialog::DialogState FileDialog::DoPopup()
 			ColourBG, ColourEnabledTint)
 		)
 		{
-			// Remember where we are.
-			if (Mode == DialogMode::OpenFile)
-				NodeToPath(ConfigOpenFilePath, SelectedNode);
-			else if (Mode == DialogMode::OpenDir)
-				NodeToPath(ConfigOpenDirPath, SelectedNode);
-			if (Mode == DialogMode::SaveFile)
-				NodeToPath(ConfigSaveFilePath, SelectedNode);
-
-			PopulateTrees();
-
-			// Restore where we are.
-			if (Mode == DialogMode::OpenFile)
-				selectPathItemName = ConfigOpenFilePath.Head();
-			else if (Mode == DialogMode::OpenDir)
-				selectPathItemName = ConfigOpenDirPath.Head();
-			if (Mode == DialogMode::SaveFile)
-				selectPathItemName = ConfigSaveFilePath.Head();
-			if (selectPathItemName)
-				setYScrollToSel = true;
+			DoRefresh(selectPathItemName, setYScrollToSel);
 		}
 		Gutil::ToolTip("Refresh");
 
-		if (ImGui::BeginMenu("View##FileDialog"))
+		if (ImGui::BeginMenu("Options##FileDialog"))
 		{
-			ImGui::MenuItem("Show Hidden", "", &ConfigShowHidden);
+			if (ImGui::MenuItem("Show Hidden", "", &ConfigShowHidden))
+				DoRefresh(selectPathItemName, setYScrollToSel);
+			if (ImGui::MenuItem("Natural Sort", "", &ConfigNaturalSort))
+				DoRefresh(selectPathItemName, setYScrollToSel);
 			// @todo ImGui::MenuItem("List View");
 			// @todo ImGui::MenuItem("Details View");
 			ImGui::EndMenu();
