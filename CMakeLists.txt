@@ -1,5 +1,5 @@
 # Should really specify a range of tested versions.
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.24)
 
 cmake_policy(SET CMP0091 NEW)
 
@@ -53,11 +53,14 @@ if (CMAKE_SYSTEM_NAME MATCHES Windows)
 	option(TACENT_UTF16_API_CALLS "Build Tacent With UTF16 API Calls" On)
 endif()
 
+# See https://cmake.org/cmake/help/latest/guide/using-dependencies/index.html#fetchcontent-and-find-package-integration
+# for how FIND_PACKAGE_ARGS allows FetchContent_MakeAvailable to try find_package() first.
 FetchContent_Declare(
 	tacent
 	GIT_REPOSITORY https://github.com/bluescan/tacent.git
+	GIT_TAG e823e1798b3833e34802bbd21c0c9401e0d40973
 	# GIT_TAG v0.8.17
-	# GIT_TAG 7ac84ececd755d38eb42e24ec4e1b8bdeb5698c5
+	FIND_PACKAGE_ARGS NAMES tacent
 )
 FetchContent_MakeAvailable(tacent)
 
