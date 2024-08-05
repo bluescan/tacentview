@@ -992,14 +992,12 @@ void Image::PopulatePicturesDDS(const tImageDDS& dds)
 		int w = dds.GetWidth();
 		int h = dds.GetHeight();
 
-		tList<tLayer> layers;
+		tList<tLayer> layers(tListMode::External);
 		dds.GetLayers(layers);
 
 		int numMipmaps = layers.GetNumItems();
 		for (tLayer* layer = layers.First(); layer; layer = layer->Next())
 			Pictures.Append(new tPicture(layer->Width, layer->Height, (tPixel4b*)layer->Data, true));
-
-		layers.Reset();
 	}
 }
 
@@ -1105,14 +1103,12 @@ void Image::PopulatePicturesPVR(const tImagePVR& pvr)
 		int w = pvr.GetWidth();
 		int h = pvr.GetHeight();
 
-		tList<tLayer> layers;
+		tList<tLayer> layers(tListMode::External);
 		pvr.GetLayers(layers);
 
 		int numMipmaps = layers.GetNumItems();
 		for (tLayer* layer = layers.First(); layer; layer = layer->Next())
 			Pictures.Append(new tPicture(layer->Width, layer->Height, (tPixel4b*)layer->Data, true));
-
-		layers.Reset();
 	}
 }
 
@@ -1218,14 +1214,12 @@ void Image::PopulatePicturesKTX(const tImageKTX& ktx)
 		int w = ktx.GetWidth();
 		int h = ktx.GetHeight();
 
-		tList<tLayer> layers;
+		tList<tLayer> layers(tListMode::External);
 		ktx.GetLayers(layers);
 
 		int numMipmaps = layers.GetNumItems();
 		for (tLayer* layer = layers.First(); layer; layer = layer->Next())
 			Pictures.Append(new tPicture(layer->Width, layer->Height, (tPixel4b*)layer->Data, true));
-
-		layers.Reset();
 	}
 }
 
