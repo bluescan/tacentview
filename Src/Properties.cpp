@@ -25,19 +25,16 @@ using namespace tImage;
 
 namespace Viewer
 {
-	// These return true if any UI was drawn.
-	bool DoAltMipmapsDisplay(tString& texTypeName);
-	bool DoAltCubemapDisplay(tString& texTypeName);
-	bool DoChooseDisplayImage(tString& texTypeName, float itemWidth);
+	// Returns true if any UI was drawn. Currently called for DDS, KTX, KTX2, and PVR files.
+	bool DoMultiSurface(float itemWidth);
 }
 
 
-bool Viewer::DoAltMipmapsDisplay(tString& texTypeName)
+bool Viewer::DoMultiSurface(float itemWidth)
 {
+	bool anyDraw = false;
 	bool altMipmapsPicAvail = CurrImage->IsAltMipmapsPictureAvail() && !CropMode;
 	bool altMipmapsPicEnabl = altMipmapsPicAvail && CurrImage->IsAltPictureEnabled();
-	bool anyDraw = false;
-
 	if (altMipmapsPicAvail)
 	{
 		if (ImGui::Checkbox("Display All Mipmaps", &altMipmapsPicEnabl))
@@ -46,20 +43,11 @@ bool Viewer::DoAltMipmapsDisplay(tString& texTypeName)
 			CurrImage->Bind();
 		}
 		Gutil::ToolTip("Display all mipmaps in a single image.");
-		texTypeName = "Mipmap";
 		anyDraw = true;
 	}
 
-	return anyDraw;
-}
-
-
-bool Viewer::DoAltCubemapDisplay(tString& texTypeName)
-{
 	bool altCubemapPicAvail = CurrImage->IsAltCubemapPictureAvail() && !CropMode;
 	bool altCubemapPicEnabl = altCubemapPicAvail && CurrImage->IsAltPictureEnabled();
-	bool anyDraw = false;
-
 	if (altCubemapPicAvail)
 	{
 		if (ImGui::Checkbox("Display As Cubemap", &altCubemapPicEnabl))
@@ -68,25 +56,51 @@ bool Viewer::DoAltCubemapDisplay(tString& texTypeName)
 			CurrImage->Bind();
 		}
 		Gutil::ToolTip("Display all cubemap sides in a T-layout.");
-		texTypeName = "Cube Side";
 		anyDraw = true;
 	}
 
-	return anyDraw;
-}
-
-
-bool Viewer::DoChooseDisplayImage(tString& texTypeName, float itemWidth)
-{
-	bool anyDraw = false;
 	int numTextures = CurrImage->GetNumFrames();
-	if (numTextures >= 2)
+	if ((numTextures >= 2) && (!CurrImage->IsAltPictureEnabled()))
 	{
-		if (!CurrImage->IsAltPictureEnabled())
+		if (altCubemapPicAvail)
+		{
+			int numCubeSurfs = tFaceIndex_NumFaces;
+			int numCubeMips = numTextures / numCubeSurfs;
+			int oneBasedSurfNum = CurrImage->FrameNum/numCubeMips + 1;
+			int oneBasedMipNum = CurrImage->FrameNum - ((oneBasedSurfNum-1)*numCubeMips) + 1;
+
+			tString surfNumText;
+			tsPrintf(surfNumText, "Cube Side (%d)", numCubeSurfs);
+			ImGui::SetNextItemWidth(itemWidth);
+			if (ImGui::InputInt(surfNumText.Chr(), &oneBasedSurfNum))
+			{
+				tMath::tiClamp(oneBasedSurfNum, 1, numCubeSurfs);
+				CurrImage->FrameNum = (oneBasedSurfNum-1)*numCubeMips + (oneBasedMipNum-1);
+			}
+			ImGui::SameLine(); Gutil::HelpMark
+			(
+				"Cubemap side to display. Cubemaps use a left-handed ordering\n"
+				"with +Z facing forward and +Y up. Sides are shown in the order\n"
+				"+Z,-Z,+X,-X,+Y,-Y. That is, front, back, right, left, top, bottom."
+			);
+
+			if (numCubeMips > 1)
+			{
+				tString mipNumText;
+				tsPrintf(mipNumText, "Cube Mip (%d)", numCubeMips);
+				ImGui::SetNextItemWidth(itemWidth);
+				if (ImGui::InputInt(mipNumText.Chr(), &oneBasedMipNum))
+				{
+					tMath::tiClamp(oneBasedMipNum, 1, numCubeMips);
+					CurrImage->FrameNum = (oneBasedSurfNum-1)*numCubeMips + (oneBasedMipNum-1);
+				}
+				ImGui::SameLine(); Gutil::HelpMark("Which cubemap mipmap to display.");
+			}
+		}
+		else
 		{
 			tString imageNumText;
-			tsPrintf(imageNumText, "%s (%d)", texTypeName.Chr(), numTextures);
-
+			tsPrintf(imageNumText, "%s (%d)", altMipmapsPicAvail ? "Mipmap" : "Texture", numTextures);
 			int oneBasedTextureNum = CurrImage->FrameNum + 1;
 			ImGui::SetNextItemWidth(itemWidth);
 			if (ImGui::InputInt(imageNumText.Chr(), &oneBasedTextureNum))
@@ -94,10 +108,11 @@ bool Viewer::DoChooseDisplayImage(tString& texTypeName, float itemWidth)
 				CurrImage->FrameNum = oneBasedTextureNum - 1;
 				tMath::tiClamp(CurrImage->FrameNum, 0, numTextures-1);
 			}
-			ImGui::SameLine(); Gutil::HelpMark("Which mipmap or cubemap side to display.\nCubemap sides left-handed +X,-X,+Y,-Y,+Z,-Z");
-
+			ImGui::SameLine(); Gutil::HelpMark("Which mipmap or texture to display.");
 		}
+		anyDraw = true;
 	}
+
 	return anyDraw;
 }
 
@@ -147,10 +162,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			int numTextures = CurrImage->GetNumFrames();
 			bool reloadChanges = false;
 
-			tString texTypeName = "Texture";
-			anyUIDisplayed |= DoAltMipmapsDisplay(texTypeName);
-			anyUIDisplayed |= DoAltCubemapDisplay(texTypeName);
-			anyUIDisplayed |= DoChooseDisplayImage(texTypeName, itemWidth);
+			anyUIDisplayed |= DoMultiSurface(itemWidth);
 
 			if (tIsETCFormat(CurrImage->Info.SrcPixelFormat))
 			{
@@ -278,10 +290,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			int numTextures = CurrImage->GetNumFrames();
 			bool reloadChanges = false;
 
-			tString texTypeName = "Texture";
-			anyUIDisplayed |= DoAltMipmapsDisplay(texTypeName);
-			anyUIDisplayed |= DoAltCubemapDisplay(texTypeName);
-			anyUIDisplayed |= DoChooseDisplayImage(texTypeName, itemWidth);
+			anyUIDisplayed |= DoMultiSurface(itemWidth);
 
 			// If we're here show options when have 1 or more frames.
 			bool altEnabled = CurrImage->IsAltPictureEnabled();
@@ -413,10 +422,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			int numTextures = CurrImage->GetNumFrames();
 			bool reloadChanges = false;
 
-			tString texTypeName = "Texture";
-			anyUIDisplayed |= DoAltMipmapsDisplay(texTypeName);
-			anyUIDisplayed |= DoAltCubemapDisplay(texTypeName);
-			anyUIDisplayed |= DoChooseDisplayImage(texTypeName, itemWidth);
+			anyUIDisplayed |= DoMultiSurface(itemWidth);
 
 			if (tIsETCFormat(CurrImage->Info.SrcPixelFormat))
 			{
