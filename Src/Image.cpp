@@ -970,7 +970,8 @@ void Image::PopulatePicturesDDS(const tImageDDS& dds)
 		const int numFaces = tFaceIndex_NumFaces;
 		int faceOrder[numFaces] = { tFaceIndex_PosZ, tFaceIndex_NegZ, tFaceIndex_PosX, tFaceIndex_NegX, tFaceIndex_PosY, tFaceIndex_NegY };
 
-		tList<tLayer> layers[numFaces];
+		// Note that a teList does not own the items and will not delete them.
+		teList<tLayer> layers[numFaces];
 		dds.GetCubemapLayers(layers);
 		for (int f = 0; f < int(tFaceIndex_NumFaces); f++)
 		{
@@ -982,9 +983,6 @@ void Image::PopulatePicturesDDS(const tImageDDS& dds)
 				tAssert(sideMipLayer->PixelFormat == tPixelFormat::R8G8B8A8);
 				Pictures.Append(new tPicture(sideMipLayer->Width, sideMipLayer->Height, (tPixel4b*)sideMipLayer->Data, true));
 			}
-
-			// Lets reset the list so it doesn't do anything bad when destructed.
-			layers[face].Reset();
 		}
 	}
 	else
@@ -1025,7 +1023,7 @@ void Image::CreateAltPicturesDDS(const tImageDDS& dds)
 			{ tFaceIndex_NegY, w,	0	}
 		};
 
-		tList<tLayer> layers[numFaces];
+		teList<tLayer> layers[numFaces];
 		dds.GetCubemapLayers(layers);
 		for (int f = 0; f < int(tFaceIndex_NumFaces); f++)
 		{
@@ -1038,9 +1036,6 @@ void Image::CreateAltPicturesDDS(const tImageDDS& dds)
 			for (int y = 0; y < topMip->Height; y++)
 				for (int x = 0; x < topMip->Width; x++)
 					AltPicture.SetPixel(originX + x, originY + y, topMip->GetPixel(x, y));
-
-			// Let's reset the list so it doesn't do anything bad when destructed.
-			layers[face].Reset();
 		}
 		AltPictureTyp = AltPictureType::CubemapTLayout;
 	}
@@ -1081,7 +1076,7 @@ void Image::PopulatePicturesPVR(const tImagePVR& pvr)
 		const int numFaces = tFaceIndex_NumFaces;
 		int faceOrder[numFaces] = { tFaceIndex_PosZ, tFaceIndex_NegZ, tFaceIndex_PosX, tFaceIndex_NegX, tFaceIndex_PosY, tFaceIndex_NegY };
 
-		tList<tLayer> layers[numFaces];
+		teList<tLayer> layers[numFaces];
 		pvr.GetCubemapLayers(layers);
 		for (int f = 0; f < int(tFaceIndex_NumFaces); f++)
 		{
@@ -1093,9 +1088,6 @@ void Image::PopulatePicturesPVR(const tImagePVR& pvr)
 				tAssert(sideMipLayer->PixelFormat == tPixelFormat::R8G8B8A8);
 				Pictures.Append(new tPicture(sideMipLayer->Width, sideMipLayer->Height, (tPixel4b*)sideMipLayer->Data, true));
 			}
-
-			// Lets reset the list so it doesn't do anything bad when destructed.
-			layers[face].Reset();
 		}
 	}
 	else
@@ -1136,7 +1128,7 @@ void Image::CreateAltPicturesPVR(const tImagePVR& pvr)
 			{ tFaceIndex_NegY, w,	0	}
 		};
 
-		tList<tLayer> layers[numFaces];
+		teList<tLayer> layers[numFaces];
 		pvr.GetCubemapLayers(layers);
 		for (int f = 0; f < int(tFaceIndex_NumFaces); f++)
 		{
@@ -1149,9 +1141,6 @@ void Image::CreateAltPicturesPVR(const tImagePVR& pvr)
 			for (int y = 0; y < topMip->Height; y++)
 				for (int x = 0; x < topMip->Width; x++)
 					AltPicture.SetPixel(originX + x, originY + y, topMip->GetPixel(x, y));
-
-			// Let's reset the list so it doesn't do anything bad when destructed.
-			layers[face].Reset();
 		}
 		AltPictureTyp = AltPictureType::CubemapTLayout;
 	}
@@ -1192,7 +1181,7 @@ void Image::PopulatePicturesKTX(const tImageKTX& ktx)
 		const int numFaces = tFaceIndex_NumFaces;
 		int faceOrder[numFaces] = { tFaceIndex_PosZ, tFaceIndex_NegZ, tFaceIndex_PosX, tFaceIndex_NegX, tFaceIndex_PosY, tFaceIndex_NegY };
 
-		tList<tLayer> layers[numFaces];
+		teList<tLayer> layers[numFaces];
 		ktx.GetCubemapLayers(layers);
 		for (int f = 0; f < int(tFaceIndex_NumFaces); f++)
 		{
@@ -1204,9 +1193,6 @@ void Image::PopulatePicturesKTX(const tImageKTX& ktx)
 				tAssert(sideMipLayer->PixelFormat == tPixelFormat::R8G8B8A8);
 				Pictures.Append(new tPicture(sideMipLayer->Width, sideMipLayer->Height, (tPixel4b*)sideMipLayer->Data, true));
 			}
-
-			// Lets reset the list so it doesn't do anything bad when destructed.
-			layers[face].Reset();
 		}
 	}
 	else
@@ -1247,7 +1233,7 @@ void Image::CreateAltPicturesKTX(const tImageKTX& ktx)
 			{ tFaceIndex_NegY, w,	0	}
 		};
 
-		tList<tLayer> layers[numFaces];
+		teList<tLayer> layers[numFaces];
 		ktx.GetCubemapLayers(layers);
 		for (int f = 0; f < int(tFaceIndex_NumFaces); f++)
 		{
@@ -1260,9 +1246,6 @@ void Image::CreateAltPicturesKTX(const tImageKTX& ktx)
 			for (int y = 0; y < topMip->Height; y++)
 				for (int x = 0; x < topMip->Width; x++)
 					AltPicture.SetPixel(originX + x, originY + y, topMip->GetPixel(x, y));
-
-			// Let's reset the list so it doesn't do anything bad when destructed.
-			layers[face].Reset();
 		}
 		AltPictureTyp = AltPictureType::CubemapTLayout;
 	}
