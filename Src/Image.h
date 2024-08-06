@@ -2,7 +2,7 @@
 //
 // An image class that can load a file from disk into main memory and to VRAM.
 //
-// Copyright (c) 2019-2023 Tristan Grimmer.
+// Copyright (c) 2019-2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -44,6 +44,7 @@
 #include <Image/tImageKTX.h>
 #include "Config.h"
 #include "Undo.h"
+namespace tImage { class tLayer; }
 namespace Viewer
 {
 
@@ -330,13 +331,11 @@ private:
 	// Returns the approx main mem size of this image. Considers the Pictures list and the AltPicture.
 	int GetMemSizeBytes() const;
 
-	// @todo Combine the DDS, PVR, and KTX calls.
-	void PopulatePicturesDDS(const tImage::tImageDDS&);
-	void CreateAltPicturesDDS(const tImage::tImageDDS&);
-	void PopulatePicturesPVR(const tImage::tImagePVR&);
-	void CreateAltPicturesPVR(const tImage::tImagePVR&);
-	void PopulatePicturesKTX(const tImage::tImageKTX&);
-	void CreateAltPicturesKTX(const tImage::tImageKTX&);
+	// This function can handle DDS, PVR, and KTX images and populate the pictures list as well as create the
+	// alternate image if necessary.
+	void MultiSurfacePopulatePictures(const tImage::tBaseImage&);
+	void MultiSurfaceCreateAltCubemapPicture(const teList<tImage::tLayer> layers[tImage::tFaceIndex::tFaceIndex_NumFaces]);
+	void MultiSurfaceCreateAltMipmapPicture(const teList<tImage::tLayer>&);
 
 	void GetGLFormatInfo(GLint& srcFormat, GLenum& srcType, GLint& dstFormat, bool& compressed, tImage::tPixelFormat);
 	void BindLayers(const tList<tImage::tLayer>&, uint texID);

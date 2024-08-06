@@ -2,7 +2,7 @@
 //
 // An image class that can load a file from disk into main memory and to VRAM.
 //
-// Copyright (c) 2019-2023 Tristan Grimmer.
+// Copyright (c) 2019-2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -486,12 +486,8 @@ bool Image::Load(bool loadParamsFromConfig)
 			Info.AlphaMode			= dds.GetAlphaMode();
 			Info.ChannelType		= dds.GetChannelType();
 
-			// Appends to the Pictures list.
-			PopulatePicturesDDS(dds);
-
-			// Creates any alt images for cubemap or mipmapped dds files.
-			CreateAltPicturesDDS(dds);
-
+			// Appends to the Pictures list and may populate the alternate image.
+			MultiSurfacePopulatePictures(dds);
 			success = true;
 			break;
 		}
@@ -522,11 +518,8 @@ bool Image::Load(bool loadParamsFromConfig)
 			Info.AlphaMode			= pvr.GetAlphaMode();
 			Info.ChannelType		= pvr.GetChannelType();
 
-			// Appends to the Pictures list.
-			PopulatePicturesPVR(pvr);
-
-			// Creates any alt images for cubemap or mipmapped pvr files.
-			CreateAltPicturesPVR(pvr);
+			// Appends to the Pictures list and may populate the alternate image.
+			MultiSurfacePopulatePictures(pvr);
 			success = true;
 			break;
 		}
@@ -544,12 +537,8 @@ bool Image::Load(bool loadParamsFromConfig)
 			Info.AlphaMode			= ktx.GetAlphaMode();
 			Info.ChannelType		= ktx.GetChannelType();
 
-			// Appends to the Pictures list.
-			PopulatePicturesKTX(ktx);
-
-			// Creates any alt images for cubemap or mipmapped ktx files.
-			CreateAltPicturesKTX(ktx);
-
+			// Appends to the Pictures list and may populate the alternate image.
+			MultiSurfacePopulatePictures(ktx);
 			success = true;
 			break;
 		}
@@ -960,9 +949,9 @@ int Image::GetMemSizeBytes() const
 }
 
 
-void Image::PopulatePicturesDDS(const tImageDDS& dds)
+void Image::MultiSurfacePopulatePictures(const tBaseImage& img)
 {
-	if (dds.IsCubemap())
+	if (img.IsCubemap())
 	{
 		// Cubemaps sides use a left-hand coordinate system with +Z facing the front and +Y up. We want the front (+Z)
 		// to be the first image because it makes the most sense from a viewing perspective. In the tImage the sides
@@ -972,7 +961,7 @@ void Image::PopulatePicturesDDS(const tImageDDS& dds)
 
 		// Note that a teList does not own the items and will not delete them.
 		teList<tLayer> layers[numFaces];
-		dds.GetCubemapLayers(layers);
+		img.GetCubemapLayers(layers);
 		for (int f = 0; f < int(tFaceIndex_NumFaces); f++)
 		{
 			int face = faceOrder[f];
@@ -984,295 +973,86 @@ void Image::PopulatePicturesDDS(const tImageDDS& dds)
 				Pictures.Append(new tPicture(sideMipLayer->Width, sideMipLayer->Height, (tPixel4b*)sideMipLayer->Data, true));
 			}
 		}
+		MultiSurfaceCreateAltCubemapPicture(layers);
 	}
 	else
 	{
-		int w = dds.GetWidth();
-		int h = dds.GetHeight();
-
-		tList<tLayer> layers(tListMode::External);
-		dds.GetLayers(layers);
+		teList<tLayer> layers;
+		img.GetLayers(layers);
 
 		int numMipmaps = layers.GetNumItems();
 		for (tLayer* layer = layers.First(); layer; layer = layer->Next())
 			Pictures.Append(new tPicture(layer->Width, layer->Height, (tPixel4b*)layer->Data, true));
+
+		if (img.IsMipmapped())
+			MultiSurfaceCreateAltMipmapPicture(layers);
 	}
 }
 
 
-void Image::CreateAltPicturesDDS(const tImageDDS& dds)
+void Image::MultiSurfaceCreateAltCubemapPicture(const teList<tLayer> layers[tFaceIndex::tFaceIndex_NumFaces])
 {
-	if (dds.IsCubemap())
+	tAssert(!layers[0].IsEmpty());
+	int w = layers[0].First()->Width;
+	int h = layers[0].First()->Height;
+	AltPicture.Set(w*4, h*3, tPixel4b::transparent);
+
+	// Cubemaps sides use a left-hand coordinate system with +Z facing the front and +Y up. We want the front (+Z)
+	// to be the first image because it makes the most sense from a viewing perspective. In the tImage the sides
+	// are loaded in the +X,-X,+Y,-Y,+Z,-Z order. We display in +Z,-Z,+X,-X,+Y,-Y order.
+	const int numFaces = tFaceIndex_NumFaces;
+	struct FaceInfo { int Face; int OriginX; int OriginY; };
+	FaceInfo faceInfo[numFaces] =
 	{
-		int w = dds.GetWidth();
-		int h = dds.GetHeight();
-		AltPicture.Set(w*4, h*3, tPixel4b::transparent);
+		{ tFaceIndex_PosZ, w,	h	},
+		{ tFaceIndex_NegZ, 3*w,	h	},
+		{ tFaceIndex_PosX, 2*w,	h	},
+		{ tFaceIndex_NegX, 0,	h	},
+		{ tFaceIndex_PosY, w,	2*h	},
+		{ tFaceIndex_NegY, w,	0	}
+	};
 
-		// Cubemaps sides use a left-hand coordinate system with +Z facing the front and +Y up. We want the front (+Z)
-		// to be the first image because it makes the most sense from a viewing perspective. In the tImage the sides
-		// are loaded in the +X,-X,+Y,-Y,+Z,-Z order. We display in +Z,-Z,+X,-X,+Y,-Y order.
-		const int numFaces = tFaceIndex_NumFaces;
-		struct FaceInfo { int Face; int OriginX; int OriginY; };
-		FaceInfo faceInfo[numFaces] =
-		{
-			{ tFaceIndex_PosZ, w,	h	},
-			{ tFaceIndex_NegZ, 3*w,	h	},
-			{ tFaceIndex_PosX, 2*w,	h	},
-			{ tFaceIndex_NegX, 0,	h	},
-			{ tFaceIndex_PosY, w,	2*h	},
-			{ tFaceIndex_NegY, w,	0	}
-		};
-
-		teList<tLayer> layers[numFaces];
-		dds.GetCubemapLayers(layers);
-		for (int f = 0; f < int(tFaceIndex_NumFaces); f++)
-		{
-			int face = faceInfo[f].Face;
-			int originX = faceInfo[f].OriginX;
-			int originY = faceInfo[f].OriginY;
-
-			tLayer* topMip = layers[face].First();
-			tAssert(topMip->PixelFormat == tPixelFormat::R8G8B8A8);
-			for (int y = 0; y < topMip->Height; y++)
-				for (int x = 0; x < topMip->Width; x++)
-					AltPicture.SetPixel(originX + x, originY + y, topMip->GetPixel(x, y));
-		}
-		AltPictureTyp = AltPictureType::CubemapTLayout;
-	}
-	else if (dds.IsMipmapped())
+	for (int f = 0; f < int(tFaceIndex_NumFaces); f++)
 	{
-		int width = 0;
-		for (tPicture* layer = Pictures.First(); layer; layer = layer->Next())
-			width += layer->GetWidth();
-		int height = GetHeight();
+		int face = faceInfo[f].Face;
+		int originX = faceInfo[f].OriginX;
+		int originY = faceInfo[f].OriginY;
 
-		AltPicture.Set(width, height, tPixel4b::transparent);
-		int originY = 0;
-		int originX = 0;
-		for (tPicture* mipPic = Pictures.First(); mipPic; mipPic = mipPic->Next())
-		{
-			for (int y = 0; y < mipPic->GetHeight(); y++)
-			{
-				for (int x = 0; x < mipPic->GetWidth(); x++)
-				{
-					tPixel4b pixel = mipPic->GetPixel(x, y);
-					AltPicture.SetPixel(originX + x, y, pixel);
-				}
-			}
-			originX += mipPic->GetWidth();
-		}
-		AltPictureTyp = AltPictureType::MipmapSideBySide;
+		tLayer* topMip = layers[face].First();
+		tAssert(topMip->PixelFormat == tPixelFormat::R8G8B8A8);
+		for (int y = 0; y < topMip->Height; y++)
+			for (int x = 0; x < topMip->Width; x++)
+				AltPicture.SetPixel(originX + x, originY + y, topMip->GetPixel(x, y));
 	}
+	AltPictureTyp = AltPictureType::CubemapTLayout;
 }
 
 
-void Image::PopulatePicturesPVR(const tImagePVR& pvr)
+void Image::MultiSurfaceCreateAltMipmapPicture(const teList<tLayer>& layers)
 {
-	if (pvr.IsCubemap())
+	tAssert(!layers.IsEmpty());
+
+	int width = 0;
+	for (tLayer* layer = layers.First(); layer; layer = layer->Next())
+		width += layer->Width;
+	int height = layers.First()->Height;
+
+	AltPicture.Set(width, height, tPixel4b::transparent);
+	int originY = 0;
+	int originX = 0;
+	for (tLayer* mipPic = layers.First(); mipPic; mipPic = mipPic->Next())
 	{
-		// Cubemaps sides use a left-hand coordinate system with +Z facing the front and +Y up. We want the front (+Z)
-		// to be the first image because it makes the most sense from a viewing perspective. In the tImage the sides
-		// are loaded in the +X,-X,+Y,-Y,+Z,-Z order. We display in +Z,-Z,+X,-X,+Y,-Y order.
-		const int numFaces = tFaceIndex_NumFaces;
-		int faceOrder[numFaces] = { tFaceIndex_PosZ, tFaceIndex_NegZ, tFaceIndex_PosX, tFaceIndex_NegX, tFaceIndex_PosY, tFaceIndex_NegY };
-
-		teList<tLayer> layers[numFaces];
-		pvr.GetCubemapLayers(layers);
-		for (int f = 0; f < int(tFaceIndex_NumFaces); f++)
+		for (int y = 0; y < mipPic->Height; y++)
 		{
-			int face = faceOrder[f];
-
-			// Grab every mipmap of each cubemap side.
-			for (tLayer* sideMipLayer = layers[face].First(); sideMipLayer; sideMipLayer = sideMipLayer->Next())
+			for (int x = 0; x < mipPic->Width; x++)
 			{
-				tAssert(sideMipLayer->PixelFormat == tPixelFormat::R8G8B8A8);
-				Pictures.Append(new tPicture(sideMipLayer->Width, sideMipLayer->Height, (tPixel4b*)sideMipLayer->Data, true));
+				tPixel4b pixel = mipPic->GetPixel(x, y);
+				AltPicture.SetPixel(originX + x, y, pixel);
 			}
 		}
+		originX += mipPic->Width;
 	}
-	else
-	{
-		int w = pvr.GetWidth();
-		int h = pvr.GetHeight();
-
-		tList<tLayer> layers(tListMode::External);
-		pvr.GetLayers(layers);
-
-		int numMipmaps = layers.GetNumItems();
-		for (tLayer* layer = layers.First(); layer; layer = layer->Next())
-			Pictures.Append(new tPicture(layer->Width, layer->Height, (tPixel4b*)layer->Data, true));
-	}
-}
-
-
-void Image::CreateAltPicturesPVR(const tImagePVR& pvr)
-{
-	if (pvr.IsCubemap())
-	{
-		int w = pvr.GetWidth();
-		int h = pvr.GetHeight();
-		AltPicture.Set(w*4, h*3, tPixel4b::transparent);
-
-		// Cubemaps sides use a left-hand coordinate system with +Z facing the front and +Y up. We want the front (+Z)
-		// to be the first image because it makes the most sense from a viewing perspective. In the tImage the sides
-		// are loaded in the +X,-X,+Y,-Y,+Z,-Z order. We display in +Z,-Z,+X,-X,+Y,-Y order.
-		const int numFaces = tFaceIndex_NumFaces;
-		struct FaceInfo { int Face; int OriginX; int OriginY; };
-		FaceInfo faceInfo[numFaces] =
-		{
-			{ tFaceIndex_PosZ, w,	h	},
-			{ tFaceIndex_NegZ, 3*w,	h	},
-			{ tFaceIndex_PosX, 2*w,	h	},
-			{ tFaceIndex_NegX, 0,	h	},
-			{ tFaceIndex_PosY, w,	2*h	},
-			{ tFaceIndex_NegY, w,	0	}
-		};
-
-		teList<tLayer> layers[numFaces];
-		pvr.GetCubemapLayers(layers);
-		for (int f = 0; f < int(tFaceIndex_NumFaces); f++)
-		{
-			int face = faceInfo[f].Face;
-			int originX = faceInfo[f].OriginX;
-			int originY = faceInfo[f].OriginY;
-
-			tLayer* topMip = layers[face].First();
-			tAssert(topMip->PixelFormat == tPixelFormat::R8G8B8A8);
-			for (int y = 0; y < topMip->Height; y++)
-				for (int x = 0; x < topMip->Width; x++)
-					AltPicture.SetPixel(originX + x, originY + y, topMip->GetPixel(x, y));
-		}
-		AltPictureTyp = AltPictureType::CubemapTLayout;
-	}
-	else if (pvr.IsMipmapped())
-	{
-		int width = 0;
-		for (tPicture* layer = Pictures.First(); layer; layer = layer->Next())
-			width += layer->GetWidth();
-		int height = GetHeight();
-
-		AltPicture.Set(width, height, tPixel4b::transparent);
-		int originY = 0;
-		int originX = 0;
-		for (tPicture* layer = Pictures.First(); layer; layer = layer->Next())
-		{
-			for (int y = 0; y < layer->GetHeight(); y++)
-			{
-				for (int x = 0; x < layer->GetWidth(); x++)
-				{
-					tPixel4b pixel = layer->GetPixel(x, y);
-					AltPicture.SetPixel(originX + x, y, pixel);
-				}
-			}
-			originX += layer->GetWidth();
-		}
-		AltPictureTyp = AltPictureType::MipmapSideBySide;
-	}
-}
-
-
-void Image::PopulatePicturesKTX(const tImageKTX& ktx)
-{
-	if (ktx.IsCubemap())
-	{
-		// Cubemaps sides use a left-hand coordinate system with +Z facing the front and +Y up. We want the front (+Z)
-		// to be the first image because it makes the most sense from a viewing perspective. In the tImage the sides
-		// are loaded in the +X,-X,+Y,-Y,+Z,-Z order. We display in +Z,-Z,+X,-X,+Y,-Y order.
-		const int numFaces = tFaceIndex_NumFaces;
-		int faceOrder[numFaces] = { tFaceIndex_PosZ, tFaceIndex_NegZ, tFaceIndex_PosX, tFaceIndex_NegX, tFaceIndex_PosY, tFaceIndex_NegY };
-
-		teList<tLayer> layers[numFaces];
-		ktx.GetCubemapLayers(layers);
-		for (int f = 0; f < int(tFaceIndex_NumFaces); f++)
-		{
-			int face = faceOrder[f];
-
-			// Grab every mipmap of each cubemap side.
-			for (tLayer* sideMipLayer = layers[face].First(); sideMipLayer; sideMipLayer = sideMipLayer->Next())
-			{
-				tAssert(sideMipLayer->PixelFormat == tPixelFormat::R8G8B8A8);
-				Pictures.Append(new tPicture(sideMipLayer->Width, sideMipLayer->Height, (tPixel4b*)sideMipLayer->Data, true));
-			}
-		}
-	}
-	else
-	{
-		int w = ktx.GetWidth();
-		int h = ktx.GetHeight();
-
-		tList<tLayer> layers(tListMode::External);
-		ktx.GetLayers(layers);
-
-		int numMipmaps = layers.GetNumItems();
-		for (tLayer* layer = layers.First(); layer; layer = layer->Next())
-			Pictures.Append(new tPicture(layer->Width, layer->Height, (tPixel4b*)layer->Data, true));
-	}
-}
-
-
-void Image::CreateAltPicturesKTX(const tImageKTX& ktx)
-{
-	if (ktx.IsCubemap())
-	{
-		int w = ktx.GetWidth();
-		int h = ktx.GetHeight();
-		AltPicture.Set(w*4, h*3, tPixel4b::transparent);
-
-		// Cubemaps sides use a left-hand coordinate system with +Z facing the front and +Y up. We want the front (+Z)
-		// to be the first image because it makes the most sense from a viewing perspective. In the tImage the sides
-		// are loaded in the +X,-X,+Y,-Y,+Z,-Z order. We display in +Z,-Z,+X,-X,+Y,-Y order.
-		const int numFaces = tFaceIndex_NumFaces;
-		struct FaceInfo { int Face; int OriginX; int OriginY; };
-		FaceInfo faceInfo[numFaces] =
-		{
-			{ tFaceIndex_PosZ, w,	h	},
-			{ tFaceIndex_NegZ, 3*w,	h	},
-			{ tFaceIndex_PosX, 2*w,	h	},
-			{ tFaceIndex_NegX, 0,	h	},
-			{ tFaceIndex_PosY, w,	2*h	},
-			{ tFaceIndex_NegY, w,	0	}
-		};
-
-		teList<tLayer> layers[numFaces];
-		ktx.GetCubemapLayers(layers);
-		for (int f = 0; f < int(tFaceIndex_NumFaces); f++)
-		{
-			int face = faceInfo[f].Face;
-			int originX = faceInfo[f].OriginX;
-			int originY = faceInfo[f].OriginY;
-
-			tLayer* topMip = layers[face].First();
-			tAssert(topMip->PixelFormat == tPixelFormat::R8G8B8A8);
-			for (int y = 0; y < topMip->Height; y++)
-				for (int x = 0; x < topMip->Width; x++)
-					AltPicture.SetPixel(originX + x, originY + y, topMip->GetPixel(x, y));
-		}
-		AltPictureTyp = AltPictureType::CubemapTLayout;
-	}
-	else if (ktx.IsMipmapped())
-	{
-		int width = 0;
-		for (tPicture* layer = Pictures.First(); layer; layer = layer->Next())
-			width += layer->GetWidth();
-		int height = GetHeight();
-
-		AltPicture.Set(width, height, tPixel4b::transparent);
-		int originY = 0;
-		int originX = 0;
-		for (tPicture* layer = Pictures.First(); layer; layer = layer->Next())
-		{
-			for (int y = 0; y < layer->GetHeight(); y++)
-			{
-				for (int x = 0; x < layer->GetWidth(); x++)
-				{
-					tPixel4b pixel = layer->GetPixel(x, y);
-					AltPicture.SetPixel(originX + x, y, pixel);
-				}
-			}
-			originX += layer->GetWidth();
-		}
-		AltPictureTyp = AltPictureType::MipmapSideBySide;
-	}
+	AltPictureTyp = AltPictureType::MipmapSideBySide;
 }
 
 
