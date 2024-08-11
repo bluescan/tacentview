@@ -4282,7 +4282,7 @@ int main(int argc, char** argv)
 			staticDataDir = isDev ? (progDir + "Data/") : "/usr/share/tacentview/Data/";
 			tString localAppDir = isDev ? staticDataDir : homeDir + ".tacentview/";
 			if (!tSystem::tDirExists(localAppDir))
-				tSystem::tCreateDir(localAppDir);	
+				tSystem::tCreateDir(localAppDir);
 
 			cfgFile = localAppDir + "Viewer.cfg";
 			Viewer::Image::ThumbCacheDir = localAppDir + "Cache/";
@@ -4380,7 +4380,7 @@ int main(int argc, char** argv)
 	DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_A, &isDarkMode, sizeof(isDarkMode));
 	DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_B, &isDarkMode, sizeof(isDarkMode));
 
-	if (!tSystem::tDirExists(dataDir))
+	if (!tSystem::tDirExists(staticDataDir))
 	{
 		::MessageBoxA
 		(
