@@ -4259,8 +4259,12 @@ int main(int argc, char** argv)
 
 		#elif defined(PACKAGE_NIX)
 		{
-			// @todo @poperigby I'm not sure about these locations.
+			// @todo @poperigby
+			// I'm not sure about these locations. If the NIX_DATA_DIR is NOT specific to
+			// tacentview and is system-wide try replacing the next line with:
+			// tString nixStaticData = "/usr/share/tacentview/Data/";
 			tString nixStaticData = tSystem::tGetEnvVar("NIX_DATA_DIR") + "/";
+
 			tString homeDir = tSystem::tGetHomeDir();
 			tString localAppDir = homeDir + ".tacentview/";
 			if (!tSystem::tDirExists(localAppDir))
