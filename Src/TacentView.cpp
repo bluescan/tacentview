@@ -4199,17 +4199,6 @@ int main(int argc, char** argv)
 		#endif
 	}
 
-	#ifdef PACKAGE_SNAP
-	// SNAP_USER_DATA is common to all revisions and is backed up. Used for viewer user-configuration file.
-	// SNAP_USER_COMMON is common to all revisions of a snap and is not backed up. Used for viewer cache.
-	tString snapUserData = tSystem::tGetEnvVar("SNAP_USER_DATA") + "/";
-	tString snapUserCommon = tSystem::tGetEnvVar("SNAP_USER_COMMON") + "/";
-	tString ldLibraryPath = tSystem::tGetEnvVar("LD_LIBRARY_PATH") + "/";
-	tPrintf("SNAP_USER_DATA   : %s\n", snapUserData.Chr());
-	tPrintf("SNAP_USER_COMMON : %s\n", snapUserCommon.Chr());
-	tPrintf("LD_LIBRARY_PATH  : %s\n", ldLibraryPath.Chr());
-	#endif
-
 	// Setup window
 	glfwSetErrorCallback(Viewer::GlfwErrorCallback);
 	if (!glfwInit())
@@ -4224,30 +4213,90 @@ int main(int argc, char** argv)
 	tPrintf("GLFW V %d.%d.%d\n", glfwMajor, glfwMinor, glfwRev);
 	tPrintf("For CLI Mode: tacentview --cli --help\n");
 
+	// These three must get set. They depend on the platform and packaging.
+	tString staticDataDir;
+	tString cfgFile;
+	Viewer::Image::ThumbCacheDir.Clear();
+
 	#ifdef PLATFORM_WINDOWS
-	tString dataDir = tSystem::tGetProgramDir() + "Data/";
-	Viewer::Image::ThumbCacheDir = dataDir + "Cache/";
-	tString cfgFile = dataDir + "Viewer.cfg";
+	{
+		staticDataDir = tSystem::tGetProgramDir() + "Data/";
+
+		// Yes, for portability we put non-static stuff in the static data dir on windows.
+		cfgFile = staticDataDir + "Viewer.cfg";
+		Viewer::Image::ThumbCacheDir = staticDataDir + "Cache/";
+	}
 
 	#elif defined(PLATFORM_LINUX)
-		#ifdef PACKAGE_SNAP
-		tString progDir = tSystem::tGetProgramDir();
-		tString dataDir = progDir + "Data/";
+		#if defined(PACKAGE_SNAP)
+		{
+			// SNAP_USER_DATA is common to all revisions and is backed up. Used for viewer user-configuration file.
+			// SNAP_USER_COMMON is common to all revisions of a snap and is not backed up. Used for viewer cache.
+			tString snapUserData = tSystem::tGetEnvVar("SNAP_USER_DATA") + "/";
+			tString snapUserCommon = tSystem::tGetEnvVar("SNAP_USER_COMMON") + "/";
+			tString ldLibraryPath = tSystem::tGetEnvVar("LD_LIBRARY_PATH") + "/";
+			tPrintf("SNAP_USER_DATA   : %s\n", snapUserData.Chr());
+			tPrintf("SNAP_USER_COMMON : %s\n", snapUserCommon.Chr());
+			tPrintf("LD_LIBRARY_PATH  : %s\n", ldLibraryPath.Chr());
+			tString progDir = tSystem::tGetProgramDir();
 
-		tString cfgFile = snapUserData + "Viewer.cfg";
-		Viewer::Image::ThumbCacheDir = snapUserCommon + "Cache/";
+			staticDataDir = progDir + "Data/";
+			cfgFile = snapUserData + "Viewer.cfg";
+			Viewer::Image::ThumbCacheDir = snapUserCommon + "Cache/";
+		}
+
+		#elif defined(PACKAGE_DEB)
+		{
+			tString homeDir = tSystem::tGetHomeDir();
+			tString localAppDir = homeDir + ".tacentview/";
+			if (!tSystem::tDirExists(localAppDir))
+				tSystem::tCreateDir(localAppDir);	
+
+			staticDataDir = "/usr/share/tacentview/Data/";
+			cfgFile = localAppDir + "Viewer.cfg";
+			Viewer::Image::ThumbCacheDir = localAppDir + "Cache/";
+		}
+
+		#elif defined(PACKAGE_NIX)
+		{
+			// @todo @poperigby I'm not sure about these locations.
+			tString nixStaticData = tSystem::tGetEnvVar("NIX_DATA_DIR") + "/";
+			tString homeDir = tSystem::tGetHomeDir();
+			tString localAppDir = homeDir + ".tacentview/";
+			if (!tSystem::tDirExists(localAppDir))
+				tSystem::tCreateDir(localAppDir);	
+
+			// @todo @poperigby These three need to be set correctly for Nix packages.
+			staticDataDir = nixStaticData + "Data/";
+			cfgFile = localAppDir + "Viewer.cfg";
+			Viewer::Image::ThumbCacheDir = localAppDir + "Cache/";
+		}
 
 		#else
-		tString progDir = tSystem::tGetProgramDir();
-		bool isDev = (progDir != "/usr/bin/") ? true : false;
-		tString dataDir = isDev ? (progDir + "Data/") : "/usr/share/tacentview/Data/";
-		tString localAppDir = isDev ? dataDir : tSystem::tGetHomeDir() + ".tacentview/";
-		if (!tSystem::tDirExists(localAppDir))
-			tSystem::tCreateDir(localAppDir);	
-		Viewer::Image::ThumbCacheDir = localAppDir + "Cache/";
-		tString cfgFile = localAppDir + "Viewer.cfg";
+		{
+			tString progDir = tSystem::tGetProgramDir();
+			tString homeDir = tSystem::tGetHomeDir();
+
+			// In most cases we'll end up with isDev being true since we didn't set a PACKAGE define.
+			bool isDev = (progDir != "/usr/bin/") ? true : false;
+			staticDataDir = isDev ? (progDir + "Data/") : "/usr/share/tacentview/Data/";
+			tString localAppDir = isDev ? staticDataDir : homeDir + ".tacentview/";
+			if (!tSystem::tDirExists(localAppDir))
+				tSystem::tCreateDir(localAppDir);	
+
+			cfgFile = localAppDir + "Viewer.cfg";
+			Viewer::Image::ThumbCacheDir = localAppDir + "Cache/";
+		}
+
 		#endif
 	#endif
+
+	tAssert(staticDataDir.IsValid());
+	tAssert(Viewer::Image::ThumbCacheDir.IsValid());
+	tAssert(cfgFile.IsValid());
+	tPrintf("LocInfo: staticDataDir : %s\n", staticDataDir.Chr());
+	tPrintf("LocInfo; ThumbCacheDir : %s\n", Viewer::Image::ThumbCacheDir.Chr());
+	tPrintf("LocInfo: cfgFile       : %s\n", cfgFile.Chr());
 
 	if (!tSystem::tDirExists(Viewer::Image::ThumbCacheDir))
 		tSystem::tCreateDir(Viewer::Image::ThumbCacheDir);
@@ -4318,7 +4367,7 @@ int main(int argc, char** argv)
 	if (!Viewer::Window)
 		return 1;
 
-	Gutil::SetWindowIcon(dataDir + "TacentView.ico");
+	Gutil::SetWindowIcon(staticDataDir + "TacentView.ico");
 	Gutil::SetWindowTitle();
 	glfwSetWindowPos(Viewer::Window, Viewer::Config::Global.WindowX, Viewer::Config::Global.WindowY);
 
@@ -4348,7 +4397,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	#else
-	if (!tSystem::tDirExists(dataDir))
+	if (!tSystem::tDirExists(staticDataDir))
 	{
 		glfwDestroyWindow(Viewer::Window);
 		glfwTerminate();
@@ -4411,7 +4460,7 @@ int main(int argc, char** argv)
 	// Before we load the single font we currently need in the update loop, we need to know what the desired UI size is.
 	Viewer::UpdateDesiredUISize();
 
-	Viewer::LoadAppImages(dataDir);
+	Viewer::LoadAppImages(staticDataDir);
 	Viewer::PopulateImages();
 
 	// SetCurrentImage deals with ImageToLoad being empty.

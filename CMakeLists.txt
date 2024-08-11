@@ -182,6 +182,7 @@ target_compile_definitions(
 		$<$<PLATFORM_ID:Linux>:PLATFORM_LINUX>
 		$<$<AND:$<PLATFORM_ID:Linux>,$<BOOL:${PACKAGE_SNAP}>>:PACKAGE_SNAP>
 		$<$<AND:$<PLATFORM_ID:Linux>,$<BOOL:${PACKAGE_DEB}>>:PACKAGE_DEB>
+		$<$<AND:$<PLATFORM_ID:Linux>,$<BOOL:${PACKAGE_NIX}>>:PACKAGE_NIX>
 		$<$<AND:$<PLATFORM_ID:Windows>,$<BOOL:${PACKAGE_ZIP}>>:PACKAGE_ZIP>
 )
 

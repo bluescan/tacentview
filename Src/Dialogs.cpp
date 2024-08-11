@@ -48,6 +48,8 @@ void Viewer::ShowAboutPopup(bool* popen)
 			package = "Snap";
 		#elif defined(PACKAGE_DEB)
 			package = "Deb";
+		#elif defined(PACKAGE_NIX)
+			package = "Nix";
 		#elif defined(PACKAGE_ZIP)
 			package = "Zip";
 		#endif
