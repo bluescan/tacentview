@@ -4295,9 +4295,9 @@ int main(int argc, char** argv)
 	bool configDirExists = tSystem::tDirExists(configDir);
 	bool cacheDirExists  = tSystem::tDirExists(cacheDir);
 	if (!configDirExists)
-		configDirExists = tSystem::tCreateDir(configDir);
+		configDirExists = tSystem::tCreateDirs(configDir);
 	if (!cacheDirExists)
-		cacheDirExists = tSystem::tCreateDir(cacheDir);
+		cacheDirExists = tSystem::tCreateDirs(cacheDir);
 
 	// If any don't exist we are done for. We check config and cache here and asset
 	// later when we can display an error.
@@ -4397,7 +4397,8 @@ int main(int argc, char** argv)
 		return Viewer::ErrorCode_GUI_FailGLFWWindow;
 	}
 
-	Gutil::SetWindowIcon(assetsDir + "TacentView.ico");
+	if (assetsDirExists)
+		Gutil::SetWindowIcon(assetsDir + "TacentView.ico");
 	Gutil::SetWindowTitle();
 	glfwSetWindowPos(Viewer::Window, Viewer::Config::Global.WindowX, Viewer::Config::Global.WindowY);
 
@@ -4410,7 +4411,7 @@ int main(int argc, char** argv)
 	DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_A, &isDarkMode, sizeof(isDarkMode));
 	DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_B, &isDarkMode, sizeof(isDarkMode));
 
-	if (!tSystem::tDirExists(assetsDir))
+	if (!assetsDirExists)
 	{
 		::MessageBoxA
 		(
@@ -4427,7 +4428,7 @@ int main(int argc, char** argv)
 		return Viewer::ErrorCode_GUI_FailAssetDirMissing;
 	}
 	#else
-	if (!tSystem::tDirExists(assetsDir))
+	if (!assetsDirExists)
 	{
 		glfwDestroyWindow(Viewer::Window);
 		glfwTerminate();
