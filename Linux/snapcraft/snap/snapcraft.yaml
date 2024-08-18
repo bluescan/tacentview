@@ -1,7 +1,7 @@
 name: tacentview
 base: core20
 # The version is parsed from Version.cmake.h using adopt-info partname.
-# version: '1.0.11'
+# version takes a format like: '1.0.11'
 adopt-info: tacentview
 summary: An immediate mode GUI image viewer.
 description: |
@@ -56,8 +56,8 @@ parts:
       echo OverridePrimeTacentView
       snapcraftctl prime
       cp ../stage/root/parts/tacentview/build/ViewerInstall/tacentview tacentview
-      mkdir -p Data
-      cp ../stage/root/parts/tacentview/build/ViewerInstall/Data/* Data/
+      mkdir -p Assets
+      cp ../stage/root/parts/tacentview/build/ViewerInstall/Assets/* Assets/
 #    override-build: | 
 #      export CC=clang-12
 #      export CXX=clang++-12

@@ -1363,7 +1363,7 @@ int Command::Process()
 	if (OptionMarkdown)
 	{
 		Command::PrintExamplesMarkdown();
-		return 0;
+		return Viewer::ErrorCode_Success;
 	}
 	else
 	{
@@ -1389,19 +1389,19 @@ int Command::Process()
 	if (OptionHelp)
 	{
 		Command::PrintHelp();
-		return 0;
+		return Viewer::ErrorCode_Success;
 	}
 
 	if (OptionSyntax)
 	{
 		tCmdLine::tPrintSyntax();
-		return 0;
+		return Viewer::ErrorCode_Success;
 	}
 
 	if (OptionExamples)
 	{
 		Command::PrintExamples();
-		return 0;
+		return Viewer::ErrorCode_Success;
 	}
 
 	// Determine what input types will be processed when specifying a directory.
@@ -1441,7 +1441,7 @@ int Command::Process()
 			tPrintfNorm("Warning: Failed load: %s. Skipping.\n", inNameShort.Chr());
 			somethingFailed = true;
 			if (OptionEarlyExit)
-				return 1;
+				return Viewer::ErrorCode_CLI_FailImageLoad;
 			continue;
 		}
 
@@ -1453,7 +1453,7 @@ int Command::Process()
 			image->Unload();
 			somethingFailed = true;
 			if (OptionEarlyExit)
-				return 1;
+				return Viewer::ErrorCode_CLI_FailImageProcess;
 			continue;
 		}
 
@@ -1483,7 +1483,7 @@ int Command::Process()
 				if (OptionEarlyExit)
 				{
 					image->Unload();
-					return 1;
+					return Viewer::ErrorCode_CLI_FailEarlyExit;
 				}
 				continue;
 			}
@@ -1502,7 +1502,7 @@ int Command::Process()
 				if (OptionEarlyExit)
 				{
 					image->Unload();
-					return 1;
+					return Viewer::ErrorCode_CLI_FailImageSave;
 				}
 			}
 		}
@@ -1537,12 +1537,12 @@ int Command::Process()
 					tPrintfNorm("Warning: Failed post operation: %s\n", postop->GetName());
 					somethingFailed = true;
 					if (OptionEarlyExit)
-						return 1;
+						return Viewer::ErrorCode_CLI_FailEarlyExit;
 				}
 			}
 			tPrintfFull("Done processing post operations on %d images.\n", Images.Count());
 		}
 	}
 
-	return somethingFailed ? 1 : 0;
+	return somethingFailed ? Viewer::ErrorCode_CLI_FailUnknown : Viewer::ErrorCode_Success;
 }

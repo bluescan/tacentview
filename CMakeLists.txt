@@ -283,7 +283,7 @@ install(
 	TARGETS ${PROJECT_NAME}
 	RUNTIME DESTINATION "${VIEWER_INSTALL_DIR}"
 )
-install(DIRECTORY Data/ DESTINATION "${VIEWER_INSTALL_DIR}/Data")
+install(DIRECTORY Assets/ DESTINATION "${VIEWER_INSTALL_DIR}/Assets")
 
 # Packaging.
 if (CMAKE_SYSTEM_NAME MATCHES Linux)
@@ -305,23 +305,24 @@ if (CMAKE_SYSTEM_NAME MATCHES Linux)
 			"
 		)
 	endif()
-
 endif()
 
 if (CMAKE_SYSTEM_NAME MATCHES Windows)
-	install(DIRECTORY Windows/ DESTINATION "${VIEWER_PACKAGE_DIR}")
-	configure_file("Windows/create_zip.ps1.in" "${VIEWER_PACKAGE_DIR}/create_zip.ps1" @ONLY)
-	install(CODE
-		"
-		execute_process(
-			COMMAND powershell -ExecutionPolicy Bypass -File \"ViewerInstall/Package/create_zip.ps1\"
-			RESULT_VARIABLE package_result
+	if (PACKAGE_PORTABLE)
+		install(DIRECTORY Windows/ DESTINATION "${VIEWER_PACKAGE_DIR}")
+		configure_file("Windows/create_zip.ps1.in" "${VIEWER_PACKAGE_DIR}/create_zip.ps1" @ONLY)
+		install(CODE
+			"
+			execute_process(
+				COMMAND powershell -ExecutionPolicy Bypass -File \"ViewerInstall/Package/create_zip.ps1\"
+				RESULT_VARIABLE package_result
+			)
+			if (NOT package_result EQUAL \"0\")
+				message(FATAL_ERROR \"Viewer -- Zip package creation failed.\")
+			else()
+				message(STATUS \"Viewer -- Zip package creation succeeded.\")
+			endif()
+			"
 		)
-		if (NOT package_result EQUAL \"0\")
-			message(FATAL_ERROR \"Viewer -- Zip package creation failed.\")
-		else()
-			message(STATUS \"Viewer -- Zip package creation succeeded.\")
-		endif()
-		"
-	)
+	endif()
 endif()

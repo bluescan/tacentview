@@ -2,7 +2,7 @@
 //
 // A texture viewer for various formats.
 //
-// Copyright (c) 2019-2023 Tristan Grimmer.
+// Copyright (c) 2019-2024 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -24,6 +24,23 @@ struct GLFWwindow;
 
 namespace Viewer
 {
+	enum ErrorCode
+	{
+		ErrorCode_Success					= 0,
+		ErrorCode_GUI_FailGLFWInit			= 10,
+		ErrorCode_GUI_FailGLFWWindow		= 20,
+		ErrorCode_GUI_FailGLADInit			= 30,
+		ErrorCode_GUI_FailAssetDirMissing	= 40,
+		ErrorCode_GUI_FailConfigDirMissing	= 50,
+		ErrorCode_GUI_FailCacheDirMissing	= 60,
+
+		ErrorCode_CLI_FailUnknown			= 100,
+		ErrorCode_CLI_FailImageLoad			= 110,
+		ErrorCode_CLI_FailImageProcess		= 120,
+		ErrorCode_CLI_FailEarlyExit			= 130,
+		ErrorCode_CLI_FailImageSave			= 140,
+	};
+
 	enum class Anchor
 	{
 		Invalid			= -1,

@@ -203,7 +203,7 @@ namespace Viewer
 	Image* CurrImage												= nullptr;
 	tString ImageToLoad;
 
-	void LoadAppImages(const tString& dataDir);
+	void LoadAppImages(const tString& assetsDir);
 	void UnloadAppImages();
 	Image Image_Reticle;
 	Image Image_Next_Prev;							// For Prev flip UVs horizontally.
@@ -4087,43 +4087,43 @@ int Viewer::RemoveOldCacheFiles(const tString& cacheDir)
 }
 
 
-void Viewer::LoadAppImages(const tString& dataDir)
+void Viewer::LoadAppImages(const tString& assetsDir)
 {
-	Image_Reticle			.Load(dataDir + "Reticle.png");
-	Image_Next_Prev			.Load(dataDir + "Next_Prev.png");
-	Image_NextSide_PrevSide	.Load(dataDir + "NextSide_PrevSide.png");
-	Image_File				.Load(dataDir + "File.png");
-	Image_Folder			.Load(dataDir + "Folder.png");
-	Image_FlipH				.Load(dataDir + "FlipH.png");
-	Image_FlipV				.Load(dataDir + "FlipV.png");
-	Image_RotCW_RotACW		.Load(dataDir + "RotCW_RotACW.png");
-	Image_RotateTheta		.Load(dataDir + "RotTheta.png");
-	Image_Fullscreen		.Load(dataDir + "Fullscreen.png");
-	Image_Windowed			.Load(dataDir + "Windowed.png");
-	Image_SkipEnd_SkipBegin	.Load(dataDir + "SkipEnd_SkipBegin.png");
-	Image_Refresh			.Load(dataDir + "Refresh.png");
-	Image_ShowHidden		.Load(dataDir + "ShowHidden.png");
-	Image_Recycle			.Load(dataDir + "Recycle.png");
-	Image_PropEdit			.Load(dataDir + "PropEdit.png");
-	Image_InfoOverlay		.Load(dataDir + "InfoOverlay.png");
-	Image_MetaData			.Load(dataDir + "MetaData.png");
-	Image_Help				.Load(dataDir + "Help.png");
-	Image_Prefs				.Load(dataDir + "Settings.png");
-	Image_Tile				.Load(dataDir + "Tile.png");
-	Image_Stop				.Load(dataDir + "Stop.png");
-	Image_Play_PlayRev		.Load(dataDir + "Play_PlayRev.png");
-	Image_PlayLoop			.Load(dataDir + "PlayLoop.png");
-	Image_PlayOnce			.Load(dataDir + "PlayOnce.png");
-	Image_ChannelFilter		.Load(dataDir + "ChannelFilter.png");
-	Image_Levels			.Load(dataDir + "Levels.png");
-	Image_ContentView		.Load(dataDir + "ContentView.png");
-	Image_UpFolder			.Load(dataDir + "UpFolder.png");
-	Image_Crop				.Load(dataDir + "Crop.png");
-	Image_AnchorBL			.Load(dataDir + "AnchorBL.png");
-	Image_AnchorBM			.Load(dataDir + "AnchorBM.png");
-	Image_AnchorML			.Load(dataDir + "AnchorML.png");
-	Image_AnchorMM			.Load(dataDir + "AnchorMM.png");
-	Image_DefaultThumbnail	.Load(dataDir + "DefaultThumbnail.png");
+	Image_Reticle			.Load(assetsDir + "Reticle.png");
+	Image_Next_Prev			.Load(assetsDir + "Next_Prev.png");
+	Image_NextSide_PrevSide	.Load(assetsDir + "NextSide_PrevSide.png");
+	Image_File				.Load(assetsDir + "File.png");
+	Image_Folder			.Load(assetsDir + "Folder.png");
+	Image_FlipH				.Load(assetsDir + "FlipH.png");
+	Image_FlipV				.Load(assetsDir + "FlipV.png");
+	Image_RotCW_RotACW		.Load(assetsDir + "RotCW_RotACW.png");
+	Image_RotateTheta		.Load(assetsDir + "RotTheta.png");
+	Image_Fullscreen		.Load(assetsDir + "Fullscreen.png");
+	Image_Windowed			.Load(assetsDir + "Windowed.png");
+	Image_SkipEnd_SkipBegin	.Load(assetsDir + "SkipEnd_SkipBegin.png");
+	Image_Refresh			.Load(assetsDir + "Refresh.png");
+	Image_ShowHidden		.Load(assetsDir + "ShowHidden.png");
+	Image_Recycle			.Load(assetsDir + "Recycle.png");
+	Image_PropEdit			.Load(assetsDir + "PropEdit.png");
+	Image_InfoOverlay		.Load(assetsDir + "InfoOverlay.png");
+	Image_MetaData			.Load(assetsDir + "MetaData.png");
+	Image_Help				.Load(assetsDir + "Help.png");
+	Image_Prefs				.Load(assetsDir + "Settings.png");
+	Image_Tile				.Load(assetsDir + "Tile.png");
+	Image_Stop				.Load(assetsDir + "Stop.png");
+	Image_Play_PlayRev		.Load(assetsDir + "Play_PlayRev.png");
+	Image_PlayLoop			.Load(assetsDir + "PlayLoop.png");
+	Image_PlayOnce			.Load(assetsDir + "PlayOnce.png");
+	Image_ChannelFilter		.Load(assetsDir + "ChannelFilter.png");
+	Image_Levels			.Load(assetsDir + "Levels.png");
+	Image_ContentView		.Load(assetsDir + "ContentView.png");
+	Image_UpFolder			.Load(assetsDir + "UpFolder.png");
+	Image_Crop				.Load(assetsDir + "Crop.png");
+	Image_AnchorBL			.Load(assetsDir + "AnchorBL.png");
+	Image_AnchorBM			.Load(assetsDir + "AnchorBM.png");
+	Image_AnchorML			.Load(assetsDir + "AnchorML.png");
+	Image_AnchorMM			.Load(assetsDir + "AnchorMM.png");
+	Image_DefaultThumbnail	.Load(assetsDir + "DefaultThumbnail.png");
 }
 
 
@@ -4199,10 +4199,126 @@ int main(int argc, char** argv)
 		#endif
 	}
 
+	// These three must get set. They depend on the platform and packaging.
+	tString assetsDir;		// Must already exist and be populated with things like the icons that are needed for tacentview.
+	tString configDir;		// Directory will be created if needed. Contains the per-user viewer config file.
+	tString cacheDir;		// Directory will be created if needed. Contains cache information that is not required (but can) persist between releases.
+
+	#if defined(PLATFORM_WINDOWS) && defined(PACKAGE_PORTABLE)
+	{
+		// For Windows the portable layout matches the development layout: everything relative
+		// to the program executable with separate sub-directories for Assets, Config, and Cache.
+		// This keeps it portable and out of the way of any installed packages.
+		tString progDir	= tSystem::tGetProgramDir();
+		assetsDir		= progDir + "Assets/";
+		configDir		= progDir + "Config/";
+		cacheDir		= progDir + "Cache/";
+	}
+
+	#elif defined(PLATFORM_LINUX) && defined(PACKAGE_SNAP)
+	{
+		// SNAPs have specific environment variables that specify where to get and put stuff. We don't use XDG.
+		// SNAP_USER_DATA is not shared between snap releases (what they call revisions). Used for the cache which can be regenerated.
+		// SNAP_USER_COMMON is common to all releases/revisions of a snap. Used for the viewer config file.
+		tString snapUserData = tSystem::tGetEnvVar("SNAP_USER_DATA") + "/";
+		tString snapUserComm = tSystem::tGetEnvVar("SNAP_USER_COMMON") + "/";
+		tPrintf("SNAP USER DATA   : %s\n", snapUserData.Chr());
+		tPrintf("SNAP USER COMMON : %s\n", snapUserComm.Chr());
+
+		tString progDir	= tSystem::tGetProgramDir();
+		assetsDir		= progDir		+ "Assets/";
+		configDir		= snapUserComm	+ "Config/";
+		cacheDir		= snapUserData	+ "Cache/";
+	}
+
+	#elif defined(PLATFORM_LINUX) && defined(PACKAGE_DEB)
+	{
+		// Deb packages follow the XDG Base Directories specification.
+		tString xdgConfigHome; tSystem::tGetXDGConfigHome(xdgConfigHome);
+		tString xdgCacheHome;  tSystem::tGetXDGCacheHome(xdgCacheHome);
+		tPrintf("XDG CONFIG HOME  : %s\n", xdgConfigHome.Chr());
+		tPrintf("XDG CACHE HOME   : %s\n", xdgCacheHome.Chr());
+
+		assetsDir		= "/usr/share/tacentview/Assets/";
+		configDir		= xdgConfigHome + "tacentview/";
+		cacheDir		= xdgCacheHome + "tacentview/";
+	}
+
+	#elif defined(PLATFORM_LINUX) && defined(PACKAGE_NIX)
+	{
+		// @todo @poperigby
+		// I'm not sure about these locations. I believe NIX_DATA_DIR is NOT specific to
+		// tacentview and is system-wide. It defaults to prefix/share where 'prefix' is
+		// often just 'nix'. If it IS set we append "tacentview/" to it. If it is not set
+		// we use an explicit default of "/usr/share/"
+		//
+		// Nix supports XDG. We can use the tGetXDG calls even if Nix use-xdg-base-directories
+		// is not specified because tacent returns appropriate defaults when calling tGetXDG*.
+		tString nixDataDir = tSystem::tGetEnvVar("NIX_DATA_DIR");
+		if (nixDataDir.IsValid())
+			tSystem::tPathStdDir(nixDataDir);
+		else
+			nixDataDir = "/usr/share/";
+		tString xdgConfigHome; tSystem::tGetXDGConfigHome(xdgConfigHome);
+		tString xdgCacheHome;  tSystem::tGetXDGCacheHome(xdgCacheHome);
+		tPrintf("NIX DATA DIR     : %s\n", nixDataDir.Chr());
+		tPrintf("XDG CONFIG HOME  : %s\n", xdgConfigHome.Chr());
+		tPrintf("XDG CACHE HOME   : %s\n", xdgCacheHome.Chr());
+
+		assetsDir		= nixDataDir + "tacentview/Assets/";
+		configDir		= xdgConfigHome + "tacentview/";
+		cacheDir		= xdgCacheHome + "tacentview/";
+	}
+
+	#else
+	{
+		// If we're not packaging we're going to use the development layout: everything relative
+		// to the program executable with separate sub-directories for Assets, Config, and Cache.
+		// This keeps development out of the way of any installed packages.
+		tString progDir	= tSystem::tGetProgramDir();
+		assetsDir		= progDir + "Assets/";
+		configDir		= progDir + "Config/";
+		cacheDir		= progDir + "Cache/";
+	}
+	#endif
+
+	tAssert(assetsDir.IsValid());
+	tAssert(configDir.IsValid());
+	tAssert(cacheDir.IsValid());
+	tPrintf("LocInfo: assetsDir : %s\n", assetsDir.Chr());
+	tPrintf("LocInfo; configDir : %s\n", configDir.Chr());
+	tPrintf("LocInfo: cacheDir  : %s\n", cacheDir.Chr());
+
+	// assetDir is supposed to already exist and, well, have the assets in it.
+	// The other two locations need to be created if they don't already exist.
+	bool assetsDirExists = tSystem::tDirExists(assetsDir);
+	bool configDirExists = tSystem::tDirExists(configDir);
+	bool cacheDirExists  = tSystem::tDirExists(cacheDir);
+	if (!configDirExists)
+		configDirExists = tSystem::tCreateDir(configDir);
+	if (!cacheDirExists)
+		cacheDirExists = tSystem::tCreateDir(cacheDir);
+
+	// If any don't exist we are done for. We check config and cache here and asset
+	// later when we can display an error.
+	if (!configDirExists)
+	{
+		tPrintf("Error: Config directory could not be created.\n");
+		return Viewer::ErrorCode_GUI_FailConfigDirMissing;
+	}
+	if (!cacheDirExists)
+	{
+		tPrintf("Error: Cache directory could not be created.\n");
+		return Viewer::ErrorCode_GUI_FailCacheDirMissing;
+	}
+
+	Viewer::Image::ThumbCacheDir = cacheDir;
+	tString cfgFile = configDir + "Viewer.cfg";
+	
 	// Setup window
 	glfwSetErrorCallback(Viewer::GlfwErrorCallback);
 	if (!glfwInit())
-		return 1;
+		return Viewer::ErrorCode_GUI_FailGLFWInit;
 
 	int glfwMajor = 0; int glfwMinor = 0; int glfwRev = 0;
 	glfwGetVersion(&glfwMajor, &glfwMinor, &glfwRev);
@@ -4213,100 +4329,7 @@ int main(int argc, char** argv)
 	tPrintf("GLFW V %d.%d.%d\n", glfwMajor, glfwMinor, glfwRev);
 	tPrintf("For CLI Mode: tacentview --cli --help\n");
 
-	// These three must get set. They depend on the platform and packaging.
-	tString staticDataDir;
-	tString cfgFile;
-	Viewer::Image::ThumbCacheDir.Clear();
-
-	#ifdef PLATFORM_WINDOWS
-	{
-		staticDataDir = tSystem::tGetProgramDir() + "Data/";
-
-		// Yes, for portability we put non-static stuff in the static data dir on windows.
-		cfgFile = staticDataDir + "Viewer.cfg";
-		Viewer::Image::ThumbCacheDir = staticDataDir + "Cache/";
-	}
-
-	#elif defined(PLATFORM_LINUX)
-		#if defined(PACKAGE_SNAP)
-		{
-			// SNAP_USER_DATA is common to all revisions and is backed up. Used for viewer user-configuration file.
-			// SNAP_USER_COMMON is common to all revisions of a snap and is not backed up. Used for viewer cache.
-			tString snapUserData = tSystem::tGetEnvVar("SNAP_USER_DATA") + "/";
-			tString snapUserCommon = tSystem::tGetEnvVar("SNAP_USER_COMMON") + "/";
-			tString ldLibraryPath = tSystem::tGetEnvVar("LD_LIBRARY_PATH") + "/";
-			tPrintf("SNAP_USER_DATA   : %s\n", snapUserData.Chr());
-			tPrintf("SNAP_USER_COMMON : %s\n", snapUserCommon.Chr());
-			tPrintf("LD_LIBRARY_PATH  : %s\n", ldLibraryPath.Chr());
-			tString progDir = tSystem::tGetProgramDir();
-
-			staticDataDir = progDir + "Data/";
-			cfgFile = snapUserData + "Viewer.cfg";
-			Viewer::Image::ThumbCacheDir = snapUserCommon + "Cache/";
-		}
-
-		#elif defined(PACKAGE_DEB)
-		{
-			tString homeDir = tSystem::tGetHomeDir();
-			tString localAppDir = homeDir + ".tacentview/";
-			if (!tSystem::tDirExists(localAppDir))
-				tSystem::tCreateDir(localAppDir);	
-
-			staticDataDir = "/usr/share/tacentview/Data/";
-			cfgFile = localAppDir + "Viewer.cfg";
-			Viewer::Image::ThumbCacheDir = localAppDir + "Cache/";
-		}
-
-		#elif defined(PACKAGE_NIX)
-		{
-			// @todo @poperigby
-			// I'm not sure about these locations. If the NIX_DATA_DIR is NOT specific to
-			// tacentview and is system-wide try replacing the next line with:
-			// tString nixStaticData = "/usr/share/tacentview/Data/";
-			tString nixStaticData = tSystem::tGetEnvVar("NIX_DATA_DIR") + "/";
-
-			tString homeDir = tSystem::tGetHomeDir();
-			tString localAppDir = homeDir + ".tacentview/";
-			if (!tSystem::tDirExists(localAppDir))
-				tSystem::tCreateDir(localAppDir);	
-
-			// @todo @poperigby These three need to be set correctly for Nix packages.
-			staticDataDir = nixStaticData + "Data/";
-			cfgFile = localAppDir + "Viewer.cfg";
-			Viewer::Image::ThumbCacheDir = localAppDir + "Cache/";
-		}
-
-		#else
-		{
-			tString progDir = tSystem::tGetProgramDir();
-			tString homeDir = tSystem::tGetHomeDir();
-
-			// In most cases we'll end up with isDev being true since we didn't set a PACKAGE define.
-			bool isDev = (progDir != "/usr/bin/") ? true : false;
-			staticDataDir = isDev ? (progDir + "Data/") : "/usr/share/tacentview/Data/";
-			tString localAppDir = isDev ? staticDataDir : homeDir + ".tacentview/";
-			if (!tSystem::tDirExists(localAppDir))
-				tSystem::tCreateDir(localAppDir);
-
-			cfgFile = localAppDir + "Viewer.cfg";
-			Viewer::Image::ThumbCacheDir = localAppDir + "Cache/";
-		}
-
-		#endif
-	#endif
-
-	tAssert(staticDataDir.IsValid());
-	tAssert(Viewer::Image::ThumbCacheDir.IsValid());
-	tAssert(cfgFile.IsValid());
-	tPrintf("LocInfo: staticDataDir : %s\n", staticDataDir.Chr());
-	tPrintf("LocInfo; ThumbCacheDir : %s\n", Viewer::Image::ThumbCacheDir.Chr());
-	tPrintf("LocInfo: cfgFile       : %s\n", cfgFile.Chr());
-
-	if (!tSystem::tDirExists(Viewer::Image::ThumbCacheDir))
-		tSystem::tCreateDir(Viewer::Image::ThumbCacheDir);
-	
 	Viewer::Config::Load(cfgFile);
-
 	Viewer::Profile overridProfile = Viewer::Profile::Invalid;
 	Viewer::Profile originalProfile = Viewer::Config::GetProfile();
 	if (Viewer::OptionProfile)
@@ -4369,9 +4392,12 @@ int main(int argc, char** argv)
 	// to find things like the correct dock icon to display. The SetWindowTitle afterwards does not mod the WM_CLASS.
 	Viewer::Window = glfwCreateWindow(Viewer::Config::Global.WindowW, Viewer::Config::Global.WindowH, "tacentview", nullptr, nullptr);
 	if (!Viewer::Window)
-		return 1;
+	{
+		glfwTerminate();
+		return Viewer::ErrorCode_GUI_FailGLFWWindow;
+	}
 
-	Gutil::SetWindowIcon(staticDataDir + "TacentView.ico");
+	Gutil::SetWindowIcon(assetsDir + "TacentView.ico");
 	Gutil::SetWindowTitle();
 	glfwSetWindowPos(Viewer::Window, Viewer::Config::Global.WindowX, Viewer::Config::Global.WindowY);
 
@@ -4384,24 +4410,24 @@ int main(int argc, char** argv)
 	DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_A, &isDarkMode, sizeof(isDarkMode));
 	DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_B, &isDarkMode, sizeof(isDarkMode));
 
-	if (!tSystem::tDirExists(staticDataDir))
+	if (!tSystem::tDirExists(assetsDir))
 	{
 		::MessageBoxA
 		(
 			hwnd,
 			"Tacent Texture Viewer failed to launch because it was run from a location "
-			"that did not have the Data directory in it. The executable should be in the "
-			"same place as the Data directory.",
+			"that did not have the Assets directory in it. The executable should be in the "
+			"same place as the Assets directory.",
 			"Viewer Message",
 			MB_OK
 		);
 
 		glfwDestroyWindow(Viewer::Window);
 		glfwTerminate();
-		return 1;
+		return Viewer::ErrorCode_GUI_FailAssetDirMissing;
 	}
 	#else
-	if (!tSystem::tDirExists(staticDataDir))
+	if (!tSystem::tDirExists(assetsDir))
 	{
 		glfwDestroyWindow(Viewer::Window);
 		glfwTerminate();
@@ -4409,17 +4435,17 @@ int main(int argc, char** argv)
 		(
 			"zenity --ellipsize --title=\"Warning\" --warning --text=\""
 			"Tacent Texture Viewer failed to launch because it was run from a\n"
-			"location that did not have access to the Data directory.\""
+			"location that did not have access to the Assets directory.\""
 		);
 
 		tPrintf
 		(
 			"Tacent Texture Viewer failed to launch because it was run from a location "
-			"that did not have the Data directory in it. The executable should be in the "
-			"same place as the Data directory."
+			"that did not have the Assets directory in it. The executable should be in the "
+			"same place as the Assets directory."
 		);
 
-		return 15;
+		return Viewer::ErrorCode_GUI_FailAssetDirMissing;
 	}
 	#endif
 
@@ -4427,7 +4453,8 @@ int main(int argc, char** argv)
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		tPrintf("Failed to initialize GLAD\n");
-		return 10;
+		// @todo Do proper shutdown before return.
+		return Viewer::ErrorCode_GUI_FailGLADInit;
 	}
 	tPrintf("GLAD V %s\n", glGetString(GL_VERSION));
 
@@ -4464,7 +4491,7 @@ int main(int argc, char** argv)
 	// Before we load the single font we currently need in the update loop, we need to know what the desired UI size is.
 	Viewer::UpdateDesiredUISize();
 
-	Viewer::LoadAppImages(staticDataDir);
+	Viewer::LoadAppImages(assetsDir);
 	Viewer::PopulateImages();
 
 	// SetCurrentImage deals with ImageToLoad being empty.
@@ -4578,5 +4605,6 @@ int main(int argc, char** argv)
 		tSystem::tDeleteDir(Viewer::Image::ThumbCacheDir);
 	else
 		Viewer::RemoveOldCacheFiles(Viewer::Image::ThumbCacheDir);
-	return 0;
+
+	return Viewer::ErrorCode_Success;
 }

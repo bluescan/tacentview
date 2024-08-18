@@ -10,14 +10,14 @@ if (Test-Path $PackageName)
 	Remove-Item $PackageName -Recurse
 }
 New-Item $PackageName -itemtype directory
-New-Item "$($PackageName)\\Data" -itemtype directory
+New-Item "$($PackageName)\\Assets" -itemtype directory
 
 Copy-Item -Path "..\\tacentview.exe" -Destination "$($PackageName)\\"
 
 # png txt ttf 
-Copy-Item -Path "..\\Data\\*.png" -Destination "$($PackageName)\\Data"
-Copy-Item -Path "..\\Data\\*.txt" -Destination "$($PackageName)\\Data"
-Copy-Item -Path "..\\Data\\*.ttf" -Destination "$($PackageName)\\Data"
+Copy-Item -Path "..\\Assets\\*.png" -Destination "$($PackageName)\\Assets"
+Copy-Item -Path "..\\Assets\\*.txt" -Destination "$($PackageName)\\Assets"
+Copy-Item -Path "..\\Assets\\*.ttf" -Destination "$($PackageName)\\Assets"
 
 $ZipFile = "$($PackageName).zip"
 if (Test-Path $ZipFile)

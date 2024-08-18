@@ -17,9 +17,9 @@ sed -i "s/<ViewerVersionString>/${VersionString}/" "${PackageName}/DEBIAN/contro
 cp ../tacentview "${PackageName}/usr/bin/tacentview"
 
 # png txt ttf
-cp -f ../Data/*.png "${PackageName}/usr/share/tacentview/Data/"
-cp -f ../Data/*.txt "${PackageName}/usr/share/tacentview/Data/"
-cp -f ../Data/*.ttf "${PackageName}/usr/share/tacentview/Data/"
+cp -f ../Assets/*.png "${PackageName}/usr/share/tacentview/Assets/"
+cp -f ../Assets/*.txt "${PackageName}/usr/share/tacentview/Assets/"
+cp -f ../Assets/*.ttf "${PackageName}/usr/share/tacentview/Assets/"
 fakeroot dpkg-deb --build ${PackageName}
 
 #sleep 2s
