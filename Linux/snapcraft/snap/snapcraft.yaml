@@ -1,7 +1,6 @@
 name: tacentview
 base: core24
-# The version is parsed from Version.cmake.h using adopt-info partname.
-# version takes a format like: '1.0.11'
+# The version is parsed from Version.cmake.h using adopt-info. The version format is Major.Minor.Revision.
 adopt-info: tacentview
 summary: An immediate mode GUI image viewer.
 description: |
@@ -14,12 +13,8 @@ grade: stable       # Use either devel or stable.
 confinement: strict # Use either devmode or strict.
 platforms:
   amd64:
-# environment:
-  # LIBGL_DRIVERS_PATH: $SNAP/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/dri
 apps:
   tacentview:
-    # environment:
-    # LD_LIBRARY_PATH: $LD_LIBRARY_PATH:/usr/lib/$SNAPCRAFT_ARCH_TRIPLET
     command: desktop-launch $SNAP/tacentview
     plugs:
     - x11
@@ -45,8 +40,6 @@ parts:
       - -DCMAKE_BUILD_TYPE=Release
       - -DPACKAGE_SNAP=True
     build-packages:
-      #- g++13
-      #- clang-12
       - make
       - cmake
       - libx11-dev
@@ -62,9 +55,6 @@ parts:
       cp ../stage/root/parts/tacentview/build/ViewerInstall/tacentview tacentview
       mkdir -p Assets
       cp ../stage/root/parts/tacentview/build/ViewerInstall/Assets/* Assets/
-    # override-build: | 
-      # export CC=clang-12
-      # export CXX=clang++-12
     after:
       - desktop-glib-only
 
