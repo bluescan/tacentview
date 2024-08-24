@@ -1,18 +1,21 @@
 name: tacentview
-base: core20
+base: core24
 # The version is parsed from Version.cmake.h using adopt-info partname.
 # version takes a format like: '1.0.11'
 adopt-info: tacentview
 summary: An immediate mode GUI image viewer.
 description: |
   An image and texture viewer for tga, png, apng, exr, dds, pvr, ktx, ktx2, astc, pkm, qoi, gif, hdr,
-  jpg, tif, ico, webp, and bmp files. Uses Dear ImGui and the Tacent library. It displays alpha channels
-  correctly and can inspect the colour of individual pixels. There is basic editing functionality, batch
-  resizing, and the ability to generate contact sheets for FX etc.
+  jpg, tif, ico, webp, and bmp files. Uses Dear ImGui and the Tacent library. Features correct handling
+  of alpha channels, basic editing, colour quantization, flip-book generation, levels, raw data import,
+  cropping, scaling/resizing, channel masking, cube/mip-map display, creation of animated images and a
+  full-featured command-line interface for batch processing.
 grade: stable       # Use either devel or stable.
 confinement: strict # Use either devmode or strict.
-architectures:
-  - build-on: amd64
+platforms:
+  amd64:
+# environment:
+  # LIBGL_DRIVERS_PATH: $SNAP/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/dri
 apps:
   tacentview:
     # environment:
@@ -27,9 +30,11 @@ apps:
 parts:
   tacentview:
     stage-packages:
+      - libgl1
       - libgl1-mesa-dri
       - libglu1-mesa
       - libx11-6
+      # - libglx0
     plugin: cmake
     source: https://github.com/bluescan/tacentview.git
     # Handy for iterating src changes locally.
@@ -40,27 +45,26 @@ parts:
       - -DCMAKE_BUILD_TYPE=Release
       - -DPACKAGE_SNAP=True
     build-packages:
-      #- g++10
-      - clang-12
+      #- g++13
+      #- clang-12
       - make
       - cmake
-      # - libx11-6
       - libx11-dev
     override-pull: |
       echo OverridePullTacentView
-      snapcraftctl pull
+      craftctl default
       VER=`grep -o '".*"' Src/Version.cmake.h | sed 's/"//g' | sed 's/[^.0-9]//g' # | sed 's/.*/\"&\"/g'`
       echo Parsed version string: $VER
-      snapcraftctl set-version $VER
+      craftctl set version=$VER
     override-prime: |
       echo OverridePrimeTacentView
-      snapcraftctl prime
+      craftctl default
       cp ../stage/root/parts/tacentview/build/ViewerInstall/tacentview tacentview
       mkdir -p Assets
       cp ../stage/root/parts/tacentview/build/ViewerInstall/Assets/* Assets/
-#    override-build: | 
-#      export CC=clang-12
-#      export CXX=clang++-12
+    # override-build: | 
+      # export CC=clang-12
+      # export CXX=clang++-12
     after:
       - desktop-glib-only
 
@@ -74,5 +78,5 @@ parts:
       - libglib2.0-bin
     override-prime: |
       echo OverridePrimeDesktop
-      snapcraftctl prime
+      craftctl default
       cp ../stage/bin/desktop-launch desktop-launch

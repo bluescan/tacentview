@@ -863,7 +863,7 @@ bool Viewer::SetCurrentImage(const tString& currFilename, bool forceReload)
 		if (!currFilename.IsEmpty())
 			tPrintf("Could not display [%s].\n", tSystem::tGetFileName(currFilename).Chr());
 		if (CurrImage && !CurrImage->Filename.IsEmpty())
-			tPrintf("Displaying [%s] instead.\n", tSystem::tGetFileName(CurrImage->Filename).Chr());
+			tPrintf("First image [%s].\n", tSystem::tGetFileName(CurrImage->Filename).Chr());
 	}
 
 	if (CurrImage)
