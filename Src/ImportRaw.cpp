@@ -188,6 +188,14 @@ bool Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			tiClamp(profile.ImportRawDataOffset, 0, Viewer::Image::MaxDim-1);
 			if (profile.ImportRawLiveUpdate) liveUpdated = true;
 		}
+		ImGui::SameLine();
+		Gutil::HelpMark
+		(
+			"This sets how many bytes should be ignored at the start of the raw file. This is\n"
+			"also known as the header size. Most image files start with a header of some sort.\n"
+			"Specifying the data-offset allows these bytes to be ignored when importing. The\n"
+			"default of 0 means the first byte of the file will be considered valid pixel data."
+		);
 
 		ImGui::SetNextItemWidth(itemWidth);
 		if (ImGui::InputInt("Width##ImportRaw", &profile.ImportRawWidth))
