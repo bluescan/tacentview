@@ -279,6 +279,14 @@ set(VIEWER_PACKAGE_DIR "${VIEWER_INSTALL_DIR}/Package")
 message(STATUS "Viewer -- ${PROJECT_NAME} will be packaged to ${VIEWER_PACKAGE_DIR}")
 
 # Installation.
+
+# if (CMAKE_SYSTEM_NAME MATCHES Linux)
+#	include(GNUInstallDirs)
+#	message(STATUS "Viewer -- CMAKE_INSTALL_BINDIR has value ${CMAKE_INSTALL_BINDIR}")
+#	message(STATUS "Viewer -- CMAKE_INSTALL_DATADIR has value ${CMAKE_INSTALL_DATADIR}")
+#	install(DIRECTORY Assets/ DESTINATION ${CMAKE_INSTALL_DATADIR}/tacentview/Assets)
+# endif()
+
 install(
 	TARGETS ${PROJECT_NAME}
 	RUNTIME DESTINATION "${VIEWER_INSTALL_DIR}"
