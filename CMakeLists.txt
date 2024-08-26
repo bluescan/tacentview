@@ -312,6 +312,23 @@ if (CMAKE_SYSTEM_NAME MATCHES Linux)
 			endif()
 			"
 		)
+	elseif (PACKAGE_NIX)
+		install(DIRECTORY Linux/ DESTINATION "${VIEWER_PACKAGE_DIR}")
+		configure_file("Linux/create_nix.sh.in" "${VIEWER_PACKAGE_DIR}/create_nix.sh" @ONLY)
+		install(CODE
+			"
+			execute_process(COMMAND \"chmod\" \"a+x\" \"ViewerInstall/Package/create_nix.sh\")
+			execute_process(
+				COMMAND \"ViewerInstall/Package/create_nix.sh\"
+				RESULT_VARIABLE package_result
+			)
+			if (NOT package_result EQUAL \"0\")
+				message(FATAL_ERROR \"Viewer -- Nix package creation failed.\")
+			else()
+				message(STATUS \"Viewer -- Nix package creation succeeded.\")
+			endif()
+			"
+		)
 	endif()
 endif()
 

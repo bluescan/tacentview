@@ -1,0 +1,32 @@
+#!/bin/bash
+
+cd @VIEWER_PACKAGE_DIR@
+declare -a Numbers=()
+
+# Version string is replaced here.
+VersionString="@PROJECT_VERSION_MAJOR@.@PROJECT_VERSION_MINOR@-@PROJECT_VERSION_PATCH@"
+
+PackageName="tacentview_${VersionString}"
+echo "Creating nix package: ${PackageName}"
+rm -rf ${PackageName}
+mkdir ${PackageName}
+
+#
+# THE BELOW IS DEB-SPECIFIC AND NEEDS TO BE UPDATED FOR NIX.
+# If a nix equivalent of deb_template is needed for Nix it should be
+# created. The main content in the template are the control files needed to
+# make a deb, plus the desktop icon files.
+#
+cp -rf deb_template/* ${PackageName}/
+
+# Here we do a replacement of some fields in one of the deb script files.
+# We replace <ViewerVersionString> with the actual version string.
+sed -i "s/<ViewerVersionString>/${VersionString}/" "${PackageName}/DEBIAN/control"
+
+cp ../tacentview "${PackageName}/usr/bin/tacentview"
+
+# png txt ttf
+cp -f ../Assets/*.png "${PackageName}/usr/share/tacentview/Assets/"
+cp -f ../Assets/*.txt "${PackageName}/usr/share/tacentview/Assets/"
+cp -f ../Assets/*.ttf "${PackageName}/usr/share/tacentview/Assets/"
+fakeroot dpkg-deb --build ${PackageName}
