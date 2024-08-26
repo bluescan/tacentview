@@ -25,8 +25,8 @@ _Tacent View_ is distributed as:
 The source code, portable Windows zip, and deb files are available from the [releases GitHub page](https://github.com/bluescan/tacentview/releases). If running Linux you may also consider [installing the snap](https://snapcraft.io/tacentview). If you want to build it yourself, instructions are available at the [Tacent View GitHub page](https://github.com/bluescan/tacentview). The CMake build-system is used and can create projects (VS2022, make, nmake, ninja) for your desired compiler (MSVC, Clang, GCC). Build yourself if you have any security concerns. The buttons below link to pre-compiled versions of the latest stable release.
 
 <ul class="downloads">
-	<li><a href="https://github.com/bluescan/tacentview/releases/download/v1.0.41/tacentview_1.0.41.zip">Download <strong>WIN Zip</strong></a></li>
-	<li><a href="https://github.com/bluescan/tacentview/releases/download/v1.0.41/tacentview_1.0-41.deb">Download <strong>DEB File</strong></a></li>
+	<li><a href="https://github.com/bluescan/tacentview/releases/download/v1.0.45/tacentview_1.0.45.zip">Download <strong>WIN Zip</strong></a></li>
+	<li><a href="https://github.com/bluescan/tacentview/releases/download/v1.0.45/tacentview_1.0-45.deb">Download <strong>DEB File</strong></a></li>
 	<li><a href="https://snapcraft.io/tacentview">Snapcraft <strong>SNAP</strong></a></li>
 </ul>
 
@@ -105,6 +105,7 @@ Animates: _GIF WEBP APNG TIF/TIFF_
 * Copy images to the clipboard.
 * Paste images from the clipboard. Every paste generates a new file automatically.
 * Drag image files directly into viewing area.
+* Raw pixel-data import.
 
 ---
 ## Texture Pixel Formats
