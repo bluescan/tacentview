@@ -312,6 +312,7 @@ if (CMAKE_SYSTEM_NAME MATCHES Linux)
 			endif()
 			"
 		)
+#[[
 	elseif (PACKAGE_NIX)
 		install(DIRECTORY Linux/ DESTINATION "${VIEWER_PACKAGE_DIR}")
 		configure_file("Linux/create_nix.sh.in" "${VIEWER_PACKAGE_DIR}/create_nix.sh" @ONLY)
@@ -329,6 +330,7 @@ if (CMAKE_SYSTEM_NAME MATCHES Linux)
 			endif()
 			"
 		)
+]]
 	endif()
 endif()
 

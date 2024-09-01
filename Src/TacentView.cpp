@@ -4247,13 +4247,12 @@ int main(int argc, char** argv)
 	#elif defined(PLATFORM_LINUX) && defined(PACKAGE_NIX)
 	{
 		// @todo @poperigby
-		// I'm not sure about these locations. I believe NIX_DATA_DIR is NOT specific to
-		// tacentview and is system-wide. It defaults to prefix/share where 'prefix' is
-		// often just 'nix'. If it IS set we append "tacentview/" to it. If it is not set
-		// we use an explicit default of "/usr/share/"
+		// I'm not sure about these locations. I believe NIX_DATA_DIR is NOT specific to tacentview and is
+		// system-wide. It defaults to prefix/share where 'prefix' iscoften just 'nix'. If it IS set we
+		// append "share/tacentview/" to it. If it is not set we use an explicit default of "/usr/share/".
 		//
-		// Nix supports XDG. We can use the tGetXDG calls even if Nix use-xdg-base-directories
-		// is not specified because tacent returns appropriate defaults when calling tGetXDG*.
+		// Nix supports XDG. We can use the tGetXDG calls even if Nix use-xdg-base-directories is not
+		// specified because tacent returns appropriate defaults when calling tGetXDG*.
 		tString nixDataDir = tSystem::tGetEnvVar("NIX_DATA_DIR");
 		if (nixDataDir.IsValid())
 			tSystem::tPathStdDir(nixDataDir);
@@ -4265,7 +4264,7 @@ int main(int argc, char** argv)
 		tPrintf("XDG CONFIG HOME  : %s\n", xdgConfigHome.Chr());
 		tPrintf("XDG CACHE HOME   : %s\n", xdgCacheHome.Chr());
 
-		assetsDir		= nixDataDir + "tacentview/Assets/";
+		assetsDir		= nixDataDir + "share/tacentview/";
 		configDir		= xdgConfigHome + "tacentview/";
 		cacheDir		= xdgCacheHome + "tacentview/";
 	}
