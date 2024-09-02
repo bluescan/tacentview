@@ -4246,25 +4246,50 @@ int main(int argc, char** argv)
 
 	#elif defined(PLATFORM_LINUX) && defined(PACKAGE_NIX)
 	{
-		// @todo @poperigby
-		// I'm not sure about these locations. I believe NIX_DATA_DIR is NOT specific to tacentview and is
-		// system-wide. It defaults to prefix/share where 'prefix' iscoften just 'nix'. If it IS set we
-		// append "share/tacentview/" to it. If it is not set we use an explicit default of "/usr/share/".
+		// I'm not sure about the NIX_DATA_DIR location. AFAIK it is NOT specific to tacentview and is
+		// system-wide. It defaults to prefix/share where 'prefix' is often just 'nix'. If it IS set we
+		// could append "share/tacentview/" to it. If it is not set we could use an explicit default of "/usr/share/".
 		//
-		// Nix supports XDG. We can use the tGetXDG calls even if Nix use-xdg-base-directories is not
-		// specified because tacent returns appropriate defaults when calling tGetXDG*.
-		tString nixDataDir = tSystem::tGetEnvVar("NIX_DATA_DIR");
-		if (nixDataDir.IsValid())
-			tSystem::tPathStdDir(nixDataDir);
+		// Since Nix supports XDG. We can use the tGetXDG calls even if Nix use-xdg-base-directories is not
+		// specified because tacent returns appropriate defaults when calling tGetXDG*. For now we are not going to
+		// use NIX_DATA_DIR and we will use tGetXDGDataHome and tGetXDGDataDirs. We never use the default for
+		// tGetXDGDataHome but will use the tGetXDGDataDirs default if both are unset.
+		//
+		//	tString nixDataDir = tSystem::tGetEnvVar("NIX_DATA_DIR");
+		//	if (nixDataDir.IsValid())
+		//		tSystem::tPathStdDir(nixDataDir);
+		//	else
+		//		nixDataDir = "/usr/";
+		//	tPrintf("NIX DATA DIR     : %s\n", nixDataDir.Chr());
+		//	assetsDir		= nixDataDir + "share/tacentview/";
+		tString dataDir;
+		bool dataHomeWasSet = tSystem::tGetXDGDataHome(dataDir);
+		if (dataHomeWasSet && tSystem::tDirExists(dataDir + "tacentview/"))
+		{
+			assetsDir = dataDir + "tacentview/";
+		}
 		else
-			nixDataDir = "/usr/share/";
+		{
+			tList<tStringItem> dataDirs;
+			tSystem::tGetXDGDataDirs(dataDirs);
+			for (tStringItem* ddir = dataDirs.First(); ddir; ddir = ddir->Next())
+			{
+				tString contender = *ddir + "tacentview/";
+				if (tSystem::tDirExists(contender))
+				{
+					assetsDir = contender;
+					break;
+				}
+			}
+		}
+		if (assetsDir.IsEmpty())
+			assetsDir = "/usr/share/tacentview/";
+
 		tString xdgConfigHome; tSystem::tGetXDGConfigHome(xdgConfigHome);
 		tString xdgCacheHome;  tSystem::tGetXDGCacheHome(xdgCacheHome);
-		tPrintf("NIX DATA DIR     : %s\n", nixDataDir.Chr());
 		tPrintf("XDG CONFIG HOME  : %s\n", xdgConfigHome.Chr());
 		tPrintf("XDG CACHE HOME   : %s\n", xdgCacheHome.Chr());
 
-		assetsDir		= nixDataDir + "share/tacentview/";
 		configDir		= xdgConfigHome + "tacentview/";
 		cacheDir		= xdgCacheHome + "tacentview/";
 	}
@@ -4434,15 +4459,14 @@ int main(int argc, char** argv)
 		system
 		(
 			"zenity --ellipsize --title=\"Warning\" --warning --text=\""
-			"Tacent Texture Viewer failed to launch because it was run from a\n"
-			"location that did not have access to the Assets directory.\""
+			"Tacent Texture Viewer failed to launch because it could not find\n"
+			"the Assets directory. Check your XDG Data environemnt variables.\""
 		);
 
 		tPrintf
 		(
-			"Tacent Texture Viewer failed to launch because it was run from a location "
-			"that did not have the Assets directory in it. The executable should be in the "
-			"same place as the Assets directory."
+			"Tacent Texture Viewer failed to launch because it could not find "
+			"the Assets directory. Check your XDG Data environemnt variables."
 		);
 
 		return Viewer::ErrorCode_GUI_FailAssetDirMissing;
