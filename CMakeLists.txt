@@ -346,9 +346,29 @@ if (CMAKE_SYSTEM_NAME MATCHES Windows)
 				RESULT_VARIABLE package_result
 			)
 			if (NOT package_result EQUAL \"0\")
-				message(FATAL_ERROR \"Viewer -- Zip package creation failed.\")
+				message(FATAL_ERROR \"Viewer -- ZIP package creation failed.\")
 			else()
-				message(STATUS \"Viewer -- Zip package creation succeeded.\")
+				message(STATUS \"Viewer -- ZIP package creation succeeded.\")
+			endif()
+			"
+		)
+	endif()
+endif()
+
+if (CMAKE_SYSTEM_NAME MATCHES Linux)
+	if (PACKAGE_PORTABLE)
+		install(DIRECTORY Linux/ DESTINATION "${VIEWER_PACKAGE_DIR}")
+		configure_file("Linux/create_tgz.sh.in" "${VIEWER_PACKAGE_DIR}/create_tgz.sh" @ONLY)
+		install(CODE
+			"
+			execute_process(
+				COMMAND bash \"ViewerInstall/Package/create_tgz.sh\"
+				RESULT_VARIABLE package_result
+			)
+			if (NOT package_result EQUAL \"0\")
+				message(FATAL_ERROR \"Viewer -- TGZ package creation failed.\")
+			else()
+				message(STATUS \"Viewer -- TGZ package creation succeeded.\")
 			endif()
 			"
 		)
