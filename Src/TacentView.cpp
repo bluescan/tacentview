@@ -4235,10 +4235,11 @@ int main(int argc, char** argv)
 			// Everything other than SNAP, including Nix/Deb, support XDG. We never use the default for tGetXDGDataHome
 			// but will use the tGetXDGDataDirs default if both are unset. First we check data-home.
 			tString dataDir;
+			tString subAssetDir = "tacentview/Assets/";
 			bool dataHomeWasSet = tSystem::tGetXDGDataHome(dataDir);
-			if (dataHomeWasSet && tSystem::tDirExists(dataDir + "tacentview/"))
+			if (dataHomeWasSet && tSystem::tDirExists(dataDir + subAssetDir))
 			{
-				assetsDir = dataDir + "tacentview/";
+				assetsDir = dataDir + subAssetDir;
 			}
 			else
 			{
@@ -4246,7 +4247,7 @@ int main(int argc, char** argv)
 				tSystem::tGetXDGDataDirs(dataDirs);
 				for (tStringItem* ddir = dataDirs.First(); ddir; ddir = ddir->Next())
 				{
-					tString contender = *ddir + "tacentview/";
+					tString contender = *ddir + subAssetDir;
 					if (tSystem::tDirExists(contender))
 					{
 						assetsDir = contender;
@@ -4255,7 +4256,7 @@ int main(int argc, char** argv)
 				}
 			}
 			if (assetsDir.IsEmpty())
-				assetsDir = "/usr/share/tacentview/";
+				assetsDir = "/usr/share/" + subAssetDir;
 
 			tString xdgConfigHome; tSystem::tGetXDGConfigHome(xdgConfigHome);
 			tString xdgCacheHome;  tSystem::tGetXDGCacheHome(xdgCacheHome);
