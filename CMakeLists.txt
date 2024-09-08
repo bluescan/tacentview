@@ -169,7 +169,10 @@ target_compile_definitions(
 		$<$<CONFIG:Debug>:CONFIG_DEBUG>
 		$<$<CONFIG:Release>:CONFIG_RELEASE>
 		$<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_DEPRECATE>
+
+		$<$<BOOL:${PACKAGE_PORTABLE}>:PACKAGE_PORTABLE>
 		$<$<PLATFORM_ID:Windows>:PLATFORM_WINDOWS>
+		$<$<PLATFORM_ID:Linux>:PLATFORM_LINUX>
 
 		# These shouldn't actually be necessary as there are no direct Windows API calls
 		# in TacentView (they are abstracted away by the Tacent libraries). But just in case
@@ -179,11 +182,9 @@ target_compile_definitions(
 		$<$<AND:$<PLATFORM_ID:Windows>,$<BOOL:${TACENT_UTF16_API_CALLS}>>:_UNICODE>	# C		UTF-16
 		$<$<AND:$<PLATFORM_ID:Windows>,$<BOOL:${TACENT_UTF16_API_CALLS}>>:TACENT_UTF16_API_CALLS>
 
-		$<$<PLATFORM_ID:Linux>:PLATFORM_LINUX>
 		$<$<AND:$<PLATFORM_ID:Linux>,$<BOOL:${PACKAGE_SNAP}>>:PACKAGE_SNAP>
 		$<$<AND:$<PLATFORM_ID:Linux>,$<BOOL:${PACKAGE_DEB}>>:PACKAGE_DEB>
 		$<$<AND:$<PLATFORM_ID:Linux>,$<BOOL:${PACKAGE_NIX}>>:PACKAGE_NIX>
-		$<$<AND:$<PLATFORM_ID:Windows>,$<BOOL:${PACKAGE_ZIP}>>:PACKAGE_ZIP>
 )
 
 # Set compiler option flags based on specific compiler and configuration.

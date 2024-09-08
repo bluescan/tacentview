@@ -50,8 +50,8 @@ void Viewer::ShowAboutPopup(bool* popen)
 			package = "Deb";
 		#elif defined(PACKAGE_NIX)
 			package = "Nix";
-		#elif defined(PACKAGE_ZIP)
-			package = "Zip";
+		#elif defined(PACKAGE_PORTABLE)
+			package = "Portable";
 		#endif
 
 		ImGui::Text("Platform: %s", platform.Chr());

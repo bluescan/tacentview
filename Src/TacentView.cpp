@@ -4204,107 +4204,67 @@ int main(int argc, char** argv)
 	tString configDir;		// Directory will be created if needed. Contains the per-user viewer config file.
 	tString cacheDir;		// Directory will be created if needed. Contains cache information that is not required (but can) persist between releases.
 
-	#if defined(PLATFORM_WINDOWS) && defined(PACKAGE_PORTABLE)
+	#if defined(PLATFORM_WINDOWS) || defined(PACKAGE_PORTABLE)
 	{
-		// For Windows the portable layout matches the development layout: everything relative
+		// The portable layout is also what should be set while developing -- Everything relative
 		// to the program executable with separate sub-directories for Assets, Config, and Cache.
-		// This keeps it portable and out of the way of any installed packages.
+		// This keeps portable/dev out of the way of any installed packages. Windows currently only
+		// supports portable.
 		tString progDir	= tSystem::tGetProgramDir();
 		assetsDir		= progDir + "Assets/";
 		configDir		= progDir + "Config/";
 		cacheDir		= progDir + "Cache/";
 	}
 
-	#elif defined(PLATFORM_LINUX) && defined(PACKAGE_SNAP)
-	{
-		// SNAPs have specific environment variables that specify where to get and put stuff. We don't use XDG.
-		// SNAP_USER_DATA is not shared between snap releases (what they call revisions). Used for the cache which can be regenerated.
-		// SNAP_USER_COMMON is common to all releases/revisions of a snap. Used for the viewer config file.
-		tString snapUserData = tSystem::tGetEnvVar("SNAP_USER_DATA") + "/";
-		tString snapUserComm = tSystem::tGetEnvVar("SNAP_USER_COMMON") + "/";
-		tPrintf("SNAP USER DATA   : %s\n", snapUserData.Chr());
-		tPrintf("SNAP USER COMMON : %s\n", snapUserComm.Chr());
-
-		tString progDir	= tSystem::tGetProgramDir();
-		assetsDir		= progDir		+ "Assets/";
-		configDir		= snapUserComm	+ "Config/";
-		cacheDir		= snapUserData	+ "Cache/";
-	}
-
-	#elif defined(PLATFORM_LINUX) && defined(PACKAGE_DEB)
-	{
-		// Deb packages follow the XDG Base Directories specification.
-		tString xdgConfigHome; tSystem::tGetXDGConfigHome(xdgConfigHome);
-		tString xdgCacheHome;  tSystem::tGetXDGCacheHome(xdgCacheHome);
-		tPrintf("XDG CONFIG HOME  : %s\n", xdgConfigHome.Chr());
-		tPrintf("XDG CACHE HOME   : %s\n", xdgCacheHome.Chr());
-
-		assetsDir		= "/usr/share/tacentview/Assets/";
-		configDir		= xdgConfigHome + "tacentview/";
-		cacheDir		= xdgCacheHome + "tacentview/";
-	}
-
-	#elif defined(PLATFORM_LINUX) && defined(PACKAGE_NIX)
-	{
-		// I'm not sure about the NIX_DATA_DIR location. AFAIK it is NOT specific to tacentview and is
-		// system-wide. It defaults to prefix/share where 'prefix' is often just 'nix'. If it IS set we
-		// could append "share/tacentview/" to it. If it is not set we could use an explicit default of "/usr/share/".
-		//
-		// Since Nix supports XDG. We can use the tGetXDG calls even if Nix use-xdg-base-directories is not
-		// specified because tacent returns appropriate defaults when calling tGetXDG*. For now we are not going to
-		// use NIX_DATA_DIR and we will use tGetXDGDataHome and tGetXDGDataDirs. We never use the default for
-		// tGetXDGDataHome but will use the tGetXDGDataDirs default if both are unset.
-		//
-		//	tString nixDataDir = tSystem::tGetEnvVar("NIX_DATA_DIR");
-		//	if (nixDataDir.IsValid())
-		//		tSystem::tPathStdDir(nixDataDir);
-		//	else
-		//		nixDataDir = "/usr/";
-		//	tPrintf("NIX DATA DIR     : %s\n", nixDataDir.Chr());
-		//	assetsDir		= nixDataDir + "share/tacentview/";
-		tString dataDir;
-		bool dataHomeWasSet = tSystem::tGetXDGDataHome(dataDir);
-		if (dataHomeWasSet && tSystem::tDirExists(dataDir + "tacentview/"))
+	#elif defined(PLATFORM_LINUX)
+		#if defined(PACKAGE_SNAP)
 		{
-			assetsDir = dataDir + "tacentview/";
+			// SNAPs have specific environment variables that specify where to get and put stuff. We don't use XDG.
+			// SNAP_USER_DATA is not shared between snap releases (what they call revisions). Used for the cache which can be regenerated.
+			// SNAP_USER_COMMON is common to all releases/revisions of a snap. Used for the viewer config file.
+			tString snapUserData = tSystem::tGetEnvVar("SNAP_USER_DATA") + "/";
+			tString snapUserComm = tSystem::tGetEnvVar("SNAP_USER_COMMON") + "/";
+
+			tString progDir	= tSystem::tGetProgramDir();
+			assetsDir		= progDir		+ "Assets/";
+			configDir		= snapUserComm	+ "Config/";
+			cacheDir		= snapUserData	+ "Cache/";
 		}
-		else
+		#else
 		{
-			tList<tStringItem> dataDirs;
-			tSystem::tGetXDGDataDirs(dataDirs);
-			for (tStringItem* ddir = dataDirs.First(); ddir; ddir = ddir->Next())
+			// Everything other than SNAP, including Nix/Deb, support XDG. We never use the default for tGetXDGDataHome
+			// but will use the tGetXDGDataDirs default if both are unset. First we check data-home.
+			tString dataDir;
+			bool dataHomeWasSet = tSystem::tGetXDGDataHome(dataDir);
+			if (dataHomeWasSet && tSystem::tDirExists(dataDir + "tacentview/"))
 			{
-				tString contender = *ddir + "tacentview/";
-				if (tSystem::tDirExists(contender))
+				assetsDir = dataDir + "tacentview/";
+			}
+			else
+			{
+				tList<tStringItem> dataDirs;
+				tSystem::tGetXDGDataDirs(dataDirs);
+				for (tStringItem* ddir = dataDirs.First(); ddir; ddir = ddir->Next())
 				{
-					assetsDir = contender;
-					break;
+					tString contender = *ddir + "tacentview/";
+					if (tSystem::tDirExists(contender))
+					{
+						assetsDir = contender;
+						break;
+					}
 				}
 			}
+			if (assetsDir.IsEmpty())
+				assetsDir = "/usr/share/tacentview/";
+
+			tString xdgConfigHome; tSystem::tGetXDGConfigHome(xdgConfigHome);
+			tString xdgCacheHome;  tSystem::tGetXDGCacheHome(xdgCacheHome);
+
+			configDir		= xdgConfigHome + "tacentview/";
+			cacheDir		= xdgCacheHome + "tacentview/";
 		}
-		if (assetsDir.IsEmpty())
-			assetsDir = "/usr/share/tacentview/";
-
-		tString xdgConfigHome; tSystem::tGetXDGConfigHome(xdgConfigHome);
-		tString xdgCacheHome;  tSystem::tGetXDGCacheHome(xdgCacheHome);
-		tPrintf("XDG CONFIG HOME  : %s\n", xdgConfigHome.Chr());
-		tPrintf("XDG CACHE HOME   : %s\n", xdgCacheHome.Chr());
-
-		configDir		= xdgConfigHome + "tacentview/";
-		cacheDir		= xdgCacheHome + "tacentview/";
-	}
-
-	#else
-	{
-		// If we're not packaging we're going to use the development layout: everything relative
-		// to the program executable with separate sub-directories for Assets, Config, and Cache.
-		// This keeps development out of the way of any installed packages.
-		tString progDir	= tSystem::tGetProgramDir();
-		assetsDir		= progDir + "Assets/";
-		configDir		= progDir + "Config/";
-		cacheDir		= progDir + "Cache/";
-	}
-	#endif
+		#endif
+	#endif // Linux
 
 	tAssert(assetsDir.IsValid());
 	tAssert(configDir.IsValid());
