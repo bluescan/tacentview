@@ -170,9 +170,14 @@ target_compile_definitions(
 		$<$<CONFIG:Release>:CONFIG_RELEASE>
 		$<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_DEPRECATE>
 
-		$<$<BOOL:${PACKAGE_PORTABLE}>:PACKAGE_PORTABLE>
 		$<$<PLATFORM_ID:Windows>:PLATFORM_WINDOWS>
 		$<$<PLATFORM_ID:Linux>:PLATFORM_LINUX>
+
+		$<$<BOOL:${PACKAGE_PORTABLE}>:PACKAGE_PORTABLE>
+		$<$<BOOL:${PACKAGE_DEV}>:PACKAGE_DEV>
+		$<$<AND:$<PLATFORM_ID:Linux>,$<BOOL:${PACKAGE_SNAP}>>:PACKAGE_SNAP>
+		$<$<AND:$<PLATFORM_ID:Linux>,$<BOOL:${PACKAGE_DEB}>>:PACKAGE_DEB>
+		$<$<AND:$<PLATFORM_ID:Linux>,$<BOOL:${PACKAGE_NIX}>>:PACKAGE_NIX>
 
 		# These shouldn't actually be necessary as there are no direct Windows API calls
 		# in TacentView (they are abstracted away by the Tacent libraries). But just in case
@@ -181,10 +186,6 @@ target_compile_definitions(
 		$<$<AND:$<PLATFORM_ID:Windows>,$<BOOL:${TACENT_UTF16_API_CALLS}>>:UNICODE>	# C++	UFF-16
 		$<$<AND:$<PLATFORM_ID:Windows>,$<BOOL:${TACENT_UTF16_API_CALLS}>>:_UNICODE>	# C		UTF-16
 		$<$<AND:$<PLATFORM_ID:Windows>,$<BOOL:${TACENT_UTF16_API_CALLS}>>:TACENT_UTF16_API_CALLS>
-
-		$<$<AND:$<PLATFORM_ID:Linux>,$<BOOL:${PACKAGE_SNAP}>>:PACKAGE_SNAP>
-		$<$<AND:$<PLATFORM_ID:Linux>,$<BOOL:${PACKAGE_DEB}>>:PACKAGE_DEB>
-		$<$<AND:$<PLATFORM_ID:Linux>,$<BOOL:${PACKAGE_NIX}>>:PACKAGE_NIX>
 )
 
 # Set compiler option flags based on specific compiler and configuration.
@@ -313,29 +314,11 @@ if (CMAKE_SYSTEM_NAME MATCHES Linux)
 			endif()
 			"
 		)
-#[[
-	elseif (PACKAGE_NIX)
-		install(DIRECTORY Linux/ DESTINATION "${VIEWER_PACKAGE_DIR}")
-		configure_file("Linux/create_nix.sh.in" "${VIEWER_PACKAGE_DIR}/create_nix.sh" @ONLY)
-		install(CODE
-			"
-			execute_process(COMMAND \"chmod\" \"a+x\" \"ViewerInstall/Package/create_nix.sh\")
-			execute_process(
-				COMMAND \"ViewerInstall/Package/create_nix.sh\"
-				RESULT_VARIABLE package_result
-			)
-			if (NOT package_result EQUAL \"0\")
-				message(FATAL_ERROR \"Viewer -- Nix package creation failed.\")
-			else()
-				message(STATUS \"Viewer -- Nix package creation succeeded.\")
-			endif()
-			"
-		)
-]]
 	endif()
 endif()
 
 if (CMAKE_SYSTEM_NAME MATCHES Windows)
+	# The portable package for Windows generates a zip.
 	if (PACKAGE_PORTABLE)
 		install(DIRECTORY Windows/ DESTINATION "${VIEWER_PACKAGE_DIR}")
 		configure_file("Windows/create_zip.ps1.in" "${VIEWER_PACKAGE_DIR}/create_zip.ps1" @ONLY)
@@ -356,6 +339,7 @@ if (CMAKE_SYSTEM_NAME MATCHES Windows)
 endif()
 
 if (CMAKE_SYSTEM_NAME MATCHES Linux)
+	# The portable package for Linux generates a tgz.
 	if (PACKAGE_PORTABLE)
 		install(DIRECTORY Linux/ DESTINATION "${VIEWER_PACKAGE_DIR}")
 		configure_file("Linux/create_tgz.sh.in" "${VIEWER_PACKAGE_DIR}/create_tgz.sh" @ONLY)

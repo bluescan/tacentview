@@ -4204,12 +4204,12 @@ int main(int argc, char** argv)
 	tString configDir;		// Directory will be created if needed. Contains the per-user viewer config file.
 	tString cacheDir;		// Directory will be created if needed. Contains cache information that is not required (but can) persist between releases.
 
-	#if defined(PLATFORM_WINDOWS) || defined(PACKAGE_PORTABLE)
+	#if defined(PLATFORM_WINDOWS) || defined(PACKAGE_PORTABLE) || defined(PACKAGE_DEV)
 	{
 		// The portable layout is also what should be set while developing -- Everything relative
 		// to the program executable with separate sub-directories for Assets, Config, and Cache.
 		// This keeps portable/dev out of the way of any installed packages. Windows currently only
-		// supports portable.
+		// supports the portable layout.
 		tString progDir	= tSystem::tGetProgramDir();
 		assetsDir		= progDir + "Assets/";
 		configDir		= progDir + "Config/";
