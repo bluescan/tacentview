@@ -4438,7 +4438,8 @@ int main(int argc, char** argv)
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		tPrintf("Failed to initialize GLAD\n");
-		// @todo Do proper shutdown before return.
+		glfwDestroyWindow(Viewer::Window);
+		glfwTerminate();
 		return Viewer::ErrorCode_GUI_FailGLADInit;
 	}
 	tPrintf("GLAD V %s\n", glGetString(GL_VERSION));
