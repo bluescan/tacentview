@@ -1,0 +1,23 @@
+#!/bin/bash          
+cd @VIEWER_PACKAGE_DIR@
+
+VersionString="@PROJECT_VERSION_MAJOR@.@PROJECT_VERSION_MINOR@.@PROJECT_VERSION_PATCH@"
+echo "CreateTGZ: VersionString ${VersionString}"
+
+PackageName="tacentview_${VersionString}"
+echo "CreateTGZ: PackageName ${PackageName}"
+rm -rf $PackageName
+
+mkdir $PackageName
+mkdir "${PackageName}/Assets"
+
+cp ../tacentview $PackageName/tacentview
+
+# png txt ttf
+cp ../Assets/*.png "${PackageName}/Assets"
+cp ../Assets/*.txt "${PackageName}/Assets"
+cp ../Assets/*.ttf "${PackageName}/Assets"
+
+TGZFile="${PackageName}.tgz"
+rm -f $TGZFile
+tar cvzf $TGZFile $PackageName
