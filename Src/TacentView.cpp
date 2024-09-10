@@ -3144,9 +3144,16 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		if ((CursorMouseX >= 0.0f) && (CursorMouseX >= 0.0f))
 		{
 			tVector2 scrCursorPos(CursorMouseX, CursorMouseY);
+			int preClampCursorX = CursorX;
+			int preClampCursorY = CursorY;
 			bool clamped = ConvertScreenPosToImagePos(CursorX, CursorY, scrCursorPos, tVector4(left, right, top, bottom), tVector2(uoff, voff));
 			CursorMouseX = -1.0f; CursorMouseY = -1.0f;
 			ReticleVisibleOnSelect = !clamped;
+			if (clamped)
+			{
+				CursorX = preClampCursorX;
+				CursorY = preClampCursorY;
+			}
 		}
 
 		// If a request was made to move the cursor/reticle, process the request here,
@@ -3154,6 +3161,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 		{
 			if (!CropMode)
 			{
+				ReticleVisibleOnSelect = true;
 				switch (RequestCursorMove)
 				{
 					case CursorMove_Left:	CursorX--;	break;
@@ -3961,6 +3969,7 @@ void Viewer::MouseButtonCallback(GLFWwindow* window, int mouseButton, int press,
 				PanOffsetY += PanDragDownOffsetY;
 				PanDragDownOffsetX = 0;
 				PanDragDownOffsetY = 0;
+				ReticleVisibleOnSelect = true;
 			}
 			break;
 		}
