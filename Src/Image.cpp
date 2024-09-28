@@ -610,11 +610,11 @@ bool Image::Load(bool loadParamsFromConfig)
 		else
 			foundTransparent = true;
 	}
-	Info.Opacity = ImgInfo::OpacityType::Varies;
+	Info.Opacity = ImgInfo::OpacityEnum::Varies;
 	if (foundOpaque && !foundTransparent)
-		Info.Opacity = ImgInfo::OpacityType::True;
+		Info.Opacity = ImgInfo::OpacityEnum::True;
 	else if (foundTransparent && !foundOpaque)
-		Info.Opacity = ImgInfo::OpacityType::False;
+		Info.Opacity = ImgInfo::OpacityEnum::False;
 
 	Info.FileSizeBytes		= tSystem::tGetFileSize(Filename);
 	Info.MemSizeBytes		= GetMemSizeBytes();

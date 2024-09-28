@@ -827,7 +827,7 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 
 		case tSystem::tFileType::WEBP:
 		{
-			if (CurrImage->Info.Opacity != Image::Image::ImgInfo::OpacityType::True)
+			if (CurrImage->Info.Opacity != Image::Image::ImgInfo::OpacityEnum::True)
 			{
 				ImGui::Checkbox("Override Background", &CurrImage->OverrideBackgroundColour);
 				ImGui::SameLine();

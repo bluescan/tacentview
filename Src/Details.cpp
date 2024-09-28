@@ -157,9 +157,9 @@ void Viewer::ShowImageDetailsOverlay(bool* popen, float x, float y, float w, flo
 				ImGui::Text("Bits Per Pixel: %s", bppStr.Chr());
 				switch (info.Opacity)
 				{
-					case Image::ImgInfo::OpacityType::False:	ImGui::Text("Opaque: False");	Gutil::ToolTip("False means at least one pixel is not opaque.");	break;
-					case Image::ImgInfo::OpacityType::True:		ImGui::Text("Opaque: True");	Gutil::ToolTip("True means all pixels are opaque.");				break;
-					case Image::ImgInfo::OpacityType::Varies:	ImGui::Text("Opaque: Varies");	Gutil::ToolTip("Varies means there is more than one frame/mipmap/page/side\nand they don't all match. This is likely not what you want\nbut is reasonable for, say, pages in a tiff.");	break;
+					case Image::ImgInfo::OpacityEnum::False:	ImGui::Text("Opaque: False");	Gutil::ToolTip("False means at least one pixel is not opaque.");	break;
+					case Image::ImgInfo::OpacityEnum::True:		ImGui::Text("Opaque: True");	Gutil::ToolTip("True means all pixels are opaque.");				break;
+					case Image::ImgInfo::OpacityEnum::Varies:	ImGui::Text("Opaque: Varies");	Gutil::ToolTip("Varies means there is more than one frame/mipmap/page/side\nand they don't all match. This is likely not what you want\nbut is reasonable for, say, pages in a tiff.");	break;
 				}
 				ImGui::Text("Frames: %d", CurrImage->GetNumFrames());
 				tString sizeStr; tsPrintf(sizeStr, "File Size: %'d", info.FileSizeBytes);

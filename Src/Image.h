@@ -232,8 +232,8 @@ public:
 		tAlphaMode AlphaMode							= tAlphaMode::Unspecified;
 		tChannelType ChannelType						= tChannelType::Unspecified;
 
-		enum class OpacityType { False, True, Varies };	// Varies is for when there is more than one picture in the image (animated, mipmaps, etc) and they are not set all the same.
-		OpacityType Opacity								= OpacityType::False;
+		enum class OpacityEnum { False, True, Varies };	// Varies is for when there is more than one picture in the image (animated, mipmaps, etc) and they are not set all the same.
+		OpacityEnum Opacity								= OpacityEnum::False;
 		int FileSizeBytes								= 0;
 		int MemSizeBytes								= 0;
 	};
