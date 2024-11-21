@@ -1142,7 +1142,9 @@ void Viewer::OnUndo()
 
 void Viewer::OnRedo()
 {
-	tAssert(CurrImage && CurrImage->IsRedoAvailable());
+	if (!CurrImage || !CurrImage->IsRedoAvailable())
+		return;
+
 	CurrImage->Unbind();
 	CurrImage->Redo();
 	CurrImage->Bind();
@@ -3840,7 +3842,6 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 	Config::ProfileData& profile = Config::GetProfileData();
 	uint32 viewerModifiers = Bindings::TranslateModifiers(modifiers);
 	Bindings::Operation operation = profile.InputBindings.GetOperation(key, viewerModifiers);
-	bool imgAvail = CurrImage && CurrImage->IsLoaded();
 	switch (operation)
 	{
 		case Bindings::Operation::NextImage:			OnNextImage(true);				break;
