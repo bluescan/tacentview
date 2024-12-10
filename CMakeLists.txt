@@ -242,7 +242,6 @@ target_link_libraries(
 		# $<$<PLATFORM_ID:Windows>:comdlg32.lib>
 		# $<$<PLATFORM_ID:Windows>:advapi32.lib>
 
-		$<$<PLATFORM_ID:Windows>:shlwapi.lib>
 		$<$<PLATFORM_ID:Windows>:Dbghelp.lib>
 		$<$<PLATFORM_ID:Windows>:opengl32.lib>
 		$<$<PLATFORM_ID:Windows>:uxtheme.lib>
@@ -250,8 +249,6 @@ target_link_libraries(
 		$<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glfw/glfw3.lib>
 
 		$<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/Contrib/glfw/libglfw3.a>
-		$<$<PLATFORM_ID:Linux>:m>
-		$<$<PLATFORM_ID:Linux>:stdc++>
 		$<$<PLATFORM_ID:Linux>:dl>
 		$<$<PLATFORM_ID:Linux>:X11>
 		$<$<PLATFORM_ID:Linux>:xcb>		# For clipboard support.
