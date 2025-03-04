@@ -54,7 +54,7 @@ jobs:
       run: |
         echo '*** Configuring CMake ***'
         sudo apt-get install ninja-build
-		sudo apt-get install libx11-dev
+        sudo apt-get install libx11-dev
         mkdir buildninja
         cd buildninja
         cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang -DCMAKE_C_COMPILER=clang
