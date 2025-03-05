@@ -825,6 +825,50 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			break;
 		}
 
+		case tSystem::tFileType::TGA:
+		{
+			if ((CurrImage->Info.SrcPixelFormat == tPixelFormat::R8G8B8A8) || (CurrImage->Info.SrcPixelFormat == tPixelFormat::G3B5A1R5G2))
+			{
+				ImGui::Text("Truevision TGA");
+				bool reloadChanges = false;
+
+				ImGui::SetNextItemWidth(itemWidth);
+				if (ImGui::CheckboxFlags("Alpha Is Opacity", &CurrImage->LoadParams_TGA.Flags, tImageTGA::LoadFlag_AlphaOpacity))
+					reloadChanges = true;
+				ImGui::SameLine();
+				Gutil::HelpMark
+				(
+					"The most common way to interpret the alpha channel is\n"
+					"as opacity (0.0 is fully transparent, 1.0 is fully opaque).\n"
+					"There are some TGAs (especially 16-bit 5551) in the\n"
+					"wild that are saved with a 0 in the alpha channel and\n"
+					"are expected to be visible.\n"
+					"\n"
+					"Checked   : Normal (alpha is opacity)\n"
+					"  0 = transparent. 1 = opaque.\n"
+					"\n"
+					"Unchecked : Reversed (alpha is transparency)\n"
+					"  0 = opaque. 1 = transparent."
+				);
+
+				// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
+				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - itemWidth);
+				if (ImGui::Button("Reset", tVector2(itemWidth, 0.0f)))
+				{
+					CurrImage->ResetLoadParams();
+					reloadChanges = true;
+				}
+
+				if (reloadChanges)
+				{
+					CurrImage->Unload();
+					CurrImage->Load();
+				}
+				fileTypeSectionDisplayed = true;
+			}
+			break;
+		}
+
 		case tSystem::tFileType::WEBP:
 		{
 			if (CurrImage->Info.Opacity != Image::Image::ImgInfo::OpacityEnum::True)

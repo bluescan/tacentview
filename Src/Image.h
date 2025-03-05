@@ -65,6 +65,7 @@ public:
 	tImage::tImagePVR::LoadParams  LoadParams_PVR;
 	tImage::tImageEXR::LoadParams  LoadParams_EXR;
 	tImage::tImageHDR::LoadParams  LoadParams_HDR;
+	tImage::tImageTGA::LoadParams  LoadParams_TGA;
 	tImage::tImageJPG::LoadParams  LoadParams_JPG;
 	tImage::tImageKTX::LoadParams  LoadParams_KTX;
 	tImage::tImagePKM::LoadParams  LoadParams_PKM;

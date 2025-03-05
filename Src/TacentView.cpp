@@ -150,6 +150,7 @@ namespace Viewer
 		tFileType::ASTC,
 		tFileType::PKM,
 		tFileType::WEBP,
+		tFileType::TGA,
 		tFileType::EOL
 	};
 

@@ -124,6 +124,8 @@ void Image::ResetLoadParams()
 	LoadParams_HDR.Reset();
 	LoadParams_HDR.Gamma = profile.MonitorGamma;
 
+	LoadParams_TGA.Reset();
+
 	LoadParams_JPG.Reset();
 
 	LoadParams_KTX.Reset();
@@ -384,7 +386,8 @@ bool Image::Load(bool loadParamsFromConfig)
 		case tSystem::tFileType::TGA:
 		{
 			tImageTGA tga;
-			bool ok = tga.Load(Filename);
+			tImageTGA::LoadParams params = LoadParams_TGA;
+			bool ok = tga.Load(Filename, params);
 			if (!ok)
 				break;
 
