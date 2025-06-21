@@ -3788,7 +3788,9 @@ bool Viewer::NaturalSort(const char8_t* first, const char8_t* second)
 		if (*second == ' ') flagFoundSpace2 = true;
 
 		// If one character is alphanumeric, compare as usual
-		if (!isdigit(*first) || !isdigit(*second))
+		// Edge case when we encounter a zero first, to avoid problematic situations like '01.png' & '001.png' that would otherwise be considered equal
+		if (!isdigit(*first) || !isdigit(*second) ||
+			*first == '0'    || *second == '0')
 		{
 			// Normal comparision if any of character is non digit character
 			if (tolower(*first) < tolower(*second))
