@@ -3698,6 +3698,7 @@ bool Viewer::DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin)
 	return deleted;
 }
 
+// Code modified from https://github.com/scopeInfinity/NaturalSort
 bool Viewer::NaturalSort(const tString& first, const tString& second)
 {
 	// Indexes to traverse strings
@@ -3766,6 +3767,8 @@ bool Viewer::NaturalSort(const tString& first, const tString& second)
     
 	return false;
 }
+
+// Code modified from https://github.com/scopeInfinity/NaturalSort
 bool Viewer::NaturalSort(const char8_t* first, const char8_t* second)
 {	
 	// Flag for Space Found Check

@@ -137,6 +137,7 @@ namespace Viewer
 	void SortImages(Config::ProfileData::SortKeyEnum, bool ascending);
 	bool DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin);
 
+	// Code modified from https://github.com/scopeInfinity/NaturalSort
 	bool NaturalSort(const tString& first, const tString& second);	// Implements a natural sorting algorithm so files withs numbers appear in a pleasing format for 
 	bool NaturalSort(const char8_t* first, const char8_t* second);	// Implements a natural sorting algorithm so files withs numbers appear in a pleasing format for 
 	
