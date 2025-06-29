@@ -444,6 +444,7 @@ namespace Viewer
 	void ChangProfile(Viewer::Profile);
 }
 
+
 bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image& b) const
 {
 	switch (Key)
@@ -453,6 +454,8 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 		{
 			const char8_t* A = a.Filename.Chars();
 			const char8_t* B = b.Filename.Chars();
+			// @todo Reenable this once NaturalSort is moved into tNstrcmp.
+			// return Ascending ? (tNstrcmp(A, B) < 0) : (tNstrcmp(A, B) > 0);
 			return Ascending ? NaturalSort(A, B) : NaturalSort(B, A);
 		}
 
@@ -3698,9 +3701,11 @@ bool Viewer::DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin)
 	return deleted;
 }
 
-// Code modified from https://github.com/scopeInfinity/NaturalSort
+
 bool Viewer::NaturalSort(const tString& first, const tString& second)
 {
+	// Code modified from https://github.com/scopeInfinity/NaturalSort
+	// @todo Remove this once NaturalSort is moved into tNstrcmp.
 	// Indexes to traverse strings
 	int idx1 = 0;
 	int idx2 = 0;
@@ -3768,9 +3773,11 @@ bool Viewer::NaturalSort(const tString& first, const tString& second)
 	return false;
 }
 
-// Code modified from https://github.com/scopeInfinity/NaturalSort
+
 bool Viewer::NaturalSort(const char8_t* first, const char8_t* second)
 {	
+	// Code modified from https://github.com/scopeInfinity/NaturalSort
+	// @todo Remove this once NaturalSort is moved into tNstrcmp.
 	// Flag for Space Found Check
 	bool flagFoundSpace1 = false;
 	bool flagFoundSpace2 = false;
@@ -3822,6 +3829,7 @@ bool Viewer::NaturalSort(const char8_t* first, const char8_t* second)
     
 	return false;
 }
+
 
 bool Viewer::ChangeScreenMode(bool fullscreen, bool force)
 {

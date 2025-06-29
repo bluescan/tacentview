@@ -138,6 +138,7 @@ namespace Viewer
 	bool DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin);
 
 	// Code modified from https://github.com/scopeInfinity/NaturalSort
+	// @todo Remove this once NaturalSort is moved into tNstrcmp.
 	bool NaturalSort(const tString& first, const tString& second);	// Implements a natural sorting algorithm so files withs numbers appear in a pleasing format for 
 	bool NaturalSort(const char8_t* first, const char8_t* second);	// Implements a natural sorting algorithm so files withs numbers appear in a pleasing format for 
 	
