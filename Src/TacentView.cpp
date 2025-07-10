@@ -2,7 +2,7 @@
 //
 // A texture viewer for various formats.
 //
-// Copyright (c) 2018-2024 Tristan Grimmer.
+// Copyright (c) 2018-2025 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -4196,7 +4196,7 @@ void Viewer::FocusCallback(GLFWwindow* window, int gotFocus)
 
 void Viewer::IconifyCallback(GLFWwindow* window, int iconified)
 {
-	WindowIconified = iconified;
+	WindowIconified = iconified ? true : false;;
 }
 
 
@@ -4685,10 +4685,17 @@ int main(int argc, char** argv)
 			requestSnapMessageNoTrans = false;
 		}
 
+		int sleepms = 0;
+
 		// I don't seem to be able to get Linux to v-sync. This stops it using all the CPU.
 		#ifdef PLATFORM_LINUX
-		tSystem::tSleep(16);
+		sleepms = 16;
 		#endif
+
+		if (Viewer::WindowIconified)
+			sleepms = 100;
+		if (sleepms)
+			tSystem::tSleep(sleepms);
 
 		lastUpdateTime = currUpdateTime;
 	}
