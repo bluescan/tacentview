@@ -78,6 +78,8 @@ public:
 	};
 	DialogState DoPopup();					// Call every frame and observe returned state.
 	tString GetResult();
+	bool IsPopupOpen() const																							{ return PopupOpen; }
+	bool SetPath(const tString& dirPath);
 	
 private:
 	// The dialog uses a 'path' to represent the current directory. A path consists of a list of strings from root to
@@ -128,6 +130,7 @@ private:
 	// This member points to a node in one of the supported trees -- RootTreeNode for Linux and both RootTreeNode
 	// and NetworTreeNode for Windows. Be careful, the SelectedNode must be cleared or reset if the tree is deleted.
 	TreeNode* SelectedNode = nullptr;
+	bool PopupOpen = false;
 };
 
 

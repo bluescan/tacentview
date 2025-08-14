@@ -383,8 +383,8 @@ namespace Viewer
 	inline void OnChannelIntensity();
 	inline void OnDetails();
 	inline void OnTile();
-	bool		OnCopyImageToClipboard();
-	bool		OnPasteImageFromClipboard();
+	bool		OnCopyToClipboard();
+	bool		OnPasteFromClipboard();		// Handles image data as well as the text paths to image folders.
 	inline void OnImportRaw();
 	inline void OnRefresh();
 	inline void OnRefreshDir();
@@ -1155,7 +1155,7 @@ void Viewer::OnRedo()
 }
 
 
-bool Viewer::OnCopyImageToClipboard()
+bool Viewer::OnCopyToClipboard()
 {
 	if (!CurrImage || !CurrImage->IsLoaded())
 		return false;
@@ -1313,11 +1313,34 @@ tColour4b Viewer::GetClipboard64BPPColour
 }
 
 
-bool Viewer::OnPasteImageFromClipboard()
+bool Viewer::OnPasteFromClipboard()
 {
 	using namespace tImage;
 
 	bool ok = false;
+	ok = clip::has(clip::text_format());
+	if (ok)
+	{
+		std::string text;
+		ok = clip::get_text(text);
+		if (ok)
+		{
+			tString dirText(text.c_str());
+			tPrintf("Pasted Text: [%s]\n", text.c_str());
+
+			// Deal with text input. Basically update any open file dialogs.
+			// @todo Otherwise, perhaps, just go to the pasted image.
+			if (OpenFileDialog.IsPopupOpen())
+				OpenFileDialog.SetPath(dirText);
+			else if (OpenDirDialog.IsPopupOpen())
+				OpenDirDialog.SetPath(dirText);
+			else if (SaveAsDialog.IsPopupOpen())
+				SaveAsDialog.SetPath(dirText);
+
+			return true;
+		}
+	}
+
 	ok = clip::has(clip::image_format());
 	if (!ok)
 		return false;
@@ -2122,11 +2145,11 @@ int Viewer::DoMainMenuBar()
 
 			tString copyKey = profile.InputBindings.FindModKeyText(Bindings::Operation::Copy);
 			if (ImGui::MenuItem("Copy Image", copyKey.Chz(), false, imgAvail))
-				Viewer::OnCopyImageToClipboard();
+				Viewer::OnCopyToClipboard();
 
 			tString pasteKey = profile.InputBindings.FindModKeyText(Bindings::Operation::Paste);
 			if (ImGui::MenuItem("Paste Image", pasteKey.Chz()))
-				Viewer::OnPasteImageFromClipboard();
+				Viewer::OnPasteFromClipboard();
 
 			tString importRawKey = profile.InputBindings.FindModKeyText(Bindings::Operation::ImportRaw);
 			if (ImGui::MenuItem("Import Raw...", importRawKey.Chz(), &profile.ShowImportRaw))
@@ -3945,8 +3968,7 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		return;
 
 	ImGuiIO& io = ImGui::GetIO();
-	// Note: IsPopupOpen ignores str_id if ImGuiPopupFlags_AnyPopupId set.
-	if (io.WantTextInput || ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel))
+	if (io.WantTextInput)
 		return;
 
 	// Don't let key repeats starve the update loop. Ignore repeats if there hasn't
@@ -3974,6 +3996,23 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 	Config::ProfileData& profile = Config::GetProfileData();
 	uint32 viewerModifiers = Bindings::TranslateModifiers(modifiers);
 	Bindings::Operation operation = profile.InputBindings.GetOperation(key, viewerModifiers);
+
+	// We allow pasting text if one of the file dialogs is open.
+	if
+	(
+		(operation == Bindings::Operation::Paste) &&
+		clip::has(clip::text_format()) &&
+		(OpenFileDialog.IsPopupOpen() || OpenDirDialog.IsPopupOpen() || SaveAsDialog.IsPopupOpen())
+	)
+	{
+		OnPasteFromClipboard();
+		return;
+	}
+
+	// IsPopupOpen ignores str_id if ImGuiPopupFlags_AnyPopupId set.
+	if (ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel))
+		return;
+
 	switch (operation)
 	{
 		case Bindings::Operation::NextImage:			OnNextImage(true);				break;
@@ -4017,8 +4056,8 @@ void Viewer::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		case Bindings::Operation::Tile:					OnTile();						break;
 		case Bindings::Operation::Undo:					OnUndo();						break;
 		case Bindings::Operation::Redo:					OnRedo();						break;
-		case Bindings::Operation::Copy:					OnCopyImageToClipboard();		break;
-		case Bindings::Operation::Paste:				OnPasteImageFromClipboard();	break;
+		case Bindings::Operation::Copy:					OnCopyToClipboard();			break;
+		case Bindings::Operation::Paste:				OnPasteFromClipboard();			break;
 		case Bindings::Operation::ImportRaw:			OnImportRaw();					break;
 		case Bindings::Operation::Refresh:				OnRefresh();					break;
 		case Bindings::Operation::RefreshDir:			OnRefreshDir();					break;

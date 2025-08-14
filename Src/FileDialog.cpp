@@ -892,7 +892,7 @@ bool FileDialog::ProcessShareResults()
 #endif
 
 
-void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemName, bool setYScrollToSel)
+void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selPathItemName, bool setYScrollToSel)
 {
 	// There were two ways to implement hidden. Invalidate everything and enumerate the filesystem objects again (less memory)
 	// or the implemented method: enumerate hidden and non-hidden always, and just display or not based on the hidden flag.
@@ -909,12 +909,12 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 
 	bool populate = false;
 	bool setScroll = false;
-	if (selectPathItemName)
+	if (selPathItemName)
 	{
-		if (*selectPathItemName == node->Name)
+		if (*selPathItemName == node->Name)
 		{
 			node->NextOpen = true;
-			selectPathItemName = selectPathItemName->Next();
+			selPathItemName = selPathItemName->Next();
 			SelectedNode = node;
 			SelectedNode->SortingDirty = true;
 			if (setYScrollToSel)
@@ -922,7 +922,7 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 		}
 		else
 		{
-			selectPathItemName = nullptr;
+			selPathItemName = nullptr;
 			setYScrollToSel = false;
 		}
 	}
@@ -942,7 +942,7 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 	if (isSelected)
 	{
 		ImGui::SameLine();
-		if (ImGui::SmallButton("  +  ##BookmarkAdd"))
+		if (ImGui::SmallButton("  >  ##BookmarkAdd"))
 			ImGui::OpenPopup("DirContextMenu");
 
 		if (ImGui::BeginPopup("DirContextMenu")) 
@@ -967,7 +967,7 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 
 	if (isClicked)
 	{
-		if (!selectPathItemName)
+		if (!selPathItemName)
 		{
 			SelectedNode = node;
 			SelectedNode->SortingDirty = true;
@@ -1016,7 +1016,7 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selectPathItemNa
 	{
 		// Recurse children.
 		for (tItList<TreeNode>::Iter child = node->Children.First(); child; child++)
-			TreeNodeRecursive(child.GetObject(), selectPathItemName, setYScrollToSel);
+			TreeNodeRecursive(child.GetObject(), selPathItemName, setYScrollToSel);
 
 		ImGui::TreePop();
 	}
@@ -1149,7 +1149,7 @@ tStringItem* FileDialog::BookmarksLoop()
 				ImGui::SameLine();
 
 				tString buttonName;
-				tsPrintf(buttonName, "  +  ##BookmarkSubNum%d", bmNum);
+				tsPrintf(buttonName, "  >  ##BookmarkSubNum%d", bmNum);
 				if (ImGui::SmallButton(buttonName.Chr()))
 					ImGui::OpenPopup("BookmarkContextMenu");
 
@@ -1172,7 +1172,7 @@ tStringItem* FileDialog::BookmarksLoop()
 			if (bookmarkItem || bookmarkToRemove)
 				break;
 		}
-		ImGui::TreePop();	
+		ImGui::TreePop();
 	}
 
 	if (bookmarkToRemove)
@@ -1220,7 +1220,7 @@ bool tFileDialog::VerticalSplitter(float thickness, float& width1, float& width2
 }
 
 
-void FileDialog::DoRefresh(tStringItem*& selectPathItemName, bool& setYScrollToSel)
+void FileDialog::DoRefresh(tStringItem*& destPathItemName, bool& setYScrollToSel)
 {
 	// Remember where we are.
 	if (Mode == DialogMode::OpenFile)
@@ -1234,13 +1234,36 @@ void FileDialog::DoRefresh(tStringItem*& selectPathItemName, bool& setYScrollToS
 
 	// Restore where we are.
 	if (Mode == DialogMode::OpenFile)
-		selectPathItemName = ConfigOpenFilePath.Head();
+		destPathItemName = ConfigOpenFilePath.Head();
 	else if (Mode == DialogMode::OpenDir)
-		selectPathItemName = ConfigOpenDirPath.Head();
+		destPathItemName = ConfigOpenDirPath.Head();
 	if (Mode == DialogMode::SaveFile)
-		selectPathItemName = ConfigSaveFilePath.Head();
-	if (selectPathItemName)
+		destPathItemName = ConfigSaveFilePath.Head();
+
+	if (destPathItemName)
 		setYScrollToSel = true;
+}
+
+
+bool FileDialog::SetPath(const tString& dirPath)
+{
+	if (!IsPopupOpen())
+		return false;
+	tString normDirPath = dirPath;
+	tPathStdDir(normDirPath);
+	if (!tDirExists(normDirPath))
+		return false;
+
+	switch (Mode)
+	{
+		case DialogMode::OpenFile:		DirToPath(ConfigOpenFilePath, normDirPath);		break;
+		case DialogMode::OpenDir:		DirToPath(ConfigOpenDirPath, normDirPath);		break;
+		case DialogMode::SaveFile:		DirToPath(ConfigSaveFilePath, normDirPath);		break;
+	}
+
+	// @wip This seems like a bit of a workaround that needs more thought.
+	PopupJustOpened = true;
+	return true;
 }
 
 
@@ -1277,7 +1300,8 @@ FileDialog::DialogState FileDialog::DoPopup()
 	}
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-	if (!ImGui::BeginPopupModal(label, &isOpen, ImGuiWindowFlags_MenuBar))
+	PopupOpen = ImGui::BeginPopupModal(label, &isOpen, ImGuiWindowFlags_MenuBar);
+	if (!PopupOpen)
 	{
 		ImGui::PopStyleVar();
 		return DialogState::Closed;
@@ -1416,6 +1440,11 @@ FileDialog::DialogState FileDialog::DoPopup()
 		ImGui::BeginChild("LeftBookmarkPanel", tVector2(0.0f, heightBookmarks), false, ImGuiWindowFlags_HorizontalScrollbar);
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, tVector2(0.0f, 3.0f));
 		tStringItem* bookmarkItem = BookmarksLoop();
+
+		// @todo I _think_ this isn't quite right. Instead of pointing into the bookmarks, we should
+		// be updating the ConfigFile and Dir paths (based on the mode). This would also mean that when
+		// we reopened the dialog (after a save) it would be at the last place (or bookmark location if one
+		// had been selected.
 		if (bookmarkItem)
 		{
 			selectPathItemName = bookmarkItem;
