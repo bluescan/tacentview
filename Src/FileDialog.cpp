@@ -758,7 +758,7 @@ bool TreeNode::IsNetworkLocation() const
 
 
 FileDialog::FileDialog(DialogMode mode, const tSystem::tFileTypes& fileTypes) :
-	PopupJustOpened(false),
+	DoPopulate(false),
 	Mode(mode),
 	FileTypes(fileTypes),
 	RootTreeNode(nullptr),
@@ -810,7 +810,7 @@ void FileDialog::OpenPopup(const tString& openDir, const tString& saveFileBaseNa
 			break;
 	}
 
-	PopupJustOpened	= true;
+	DoPopulate	= true;
 }
 
 
@@ -1097,6 +1097,28 @@ void FileDialog::DoSelectable(ContentItem* item)
 }
 
 
+void FileDialog::DoSelect(const tString& filename)
+{
+	// Only allowed one selected max. Clear the others.
+	for (ContentItem* i = SelectedNode->Contents.First(); i; i = i->Next())
+	{
+		if (i->Name == filename)
+		{
+			i->Selected = true;
+
+			// If item just selected and we're in SaveFile mode we need to update the Edit widget.
+			// This widget uses the SaveFileResult string, so we update that.
+			if (Mode == DialogMode::SaveFile)
+				SaveFileResult = tGetFileBaseName(filename).Chr();				
+		}
+		else
+		{
+			i->Selected = false;
+		}
+	}
+}
+
+
 tStringItem* FileDialog::BookmarksLoop()
 {
 	int flags =
@@ -1245,24 +1267,41 @@ void FileDialog::DoRefresh(tStringItem*& destPathItemName, bool& setYScrollToSel
 }
 
 
-bool FileDialog::SetPath(const tString& dirPath)
+bool FileDialog::SetPath(const tString& path)
 {
 	if (!IsPopupOpen())
 		return false;
-	tString normDirPath = dirPath;
-	tPathStdDir(normDirPath);
-	if (!tDirExists(normDirPath))
+	tString normPath = path;
+
+	tPathStd(normPath);
+	
+	// Is the path a file or just a directory?
+	tString dir;
+	tString file;
+	if (tFileExists(normPath))
+	{
+		dir = tGetDir(normPath);
+		file = tGetFileName(normPath);
+	}
+	else if (tDirExists(normPath))
+	{
+		dir = normPath;
+	}
+	if (dir.IsEmpty())
 		return false;
+
+	// "C:\GitHub\tacent\UnitTests\TestData\Images\Bmp_Lambda.bmp"
 
 	switch (Mode)
 	{
-		case DialogMode::OpenFile:		DirToPath(ConfigOpenFilePath, normDirPath);		break;
-		case DialogMode::OpenDir:		DirToPath(ConfigOpenDirPath, normDirPath);		break;
-		case DialogMode::SaveFile:		DirToPath(ConfigSaveFilePath, normDirPath);		break;
+		case DialogMode::OpenFile:		DirToPath(ConfigOpenFilePath, dir);		break;
+		case DialogMode::OpenDir:		DirToPath(ConfigOpenDirPath, dir);		break;
+		case DialogMode::SaveFile:		DirToPath(ConfigSaveFilePath, dir);		break;
 	}
 
-	// @wip This seems like a bit of a workaround that needs more thought.
-	PopupJustOpened = true;
+	DoPopulate = true;
+	if (file.IsValid())
+		SelectFile = file;
 	return true;
 }
 
@@ -1291,10 +1330,10 @@ FileDialog::DialogState FileDialog::DoPopup()
 
 	tStringItem* selectPathItemName = nullptr;
 	bool setYScrollToSel = false;
-	if (PopupJustOpened)
+	if (DoPopulate)
 	{
 		selectPathItemName = (!configPath || configPath->IsEmpty()) ? nullptr : configPath->Head();
-		PopupJustOpened = false;
+		DoPopulate = false;
 		if (selectPathItemName)
 			setYScrollToSel = true;
 	}
@@ -1588,7 +1627,15 @@ FileDialog::DialogState FileDialog::DoPopup()
 
 					// The name column selectable spans all columns.
 					ImGui::TableNextColumn();
-					DoSelectable(item);
+					if (SelectFile.IsValid())
+					{
+						DoSelect(SelectFile);
+						SelectFile.Clear();
+					}
+					else
+					{
+						DoSelectable(item);
+					}
 
 					ImGui::TableNextColumn();
 					if (!item->IsDir)

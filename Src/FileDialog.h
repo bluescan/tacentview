@@ -92,6 +92,7 @@ private:
 
 	void DoRefresh(tStringItem*& selectPathItemName, bool& setYScrollToSel);
 	void DoSelectable(ContentItem*);
+	void DoSelect(const tString& filename);
 	void DoFileTypesDropdown(bool supportMultipleTypes);
 
 	// You can call this more than once if you need to refresh the trees. The old trees (if any) are deleted.
@@ -114,7 +115,7 @@ private:
 	bool ProcessingNetworkPath = false;
 	#endif
 
-	bool PopupJustOpened;
+	bool DoPopulate;
 	DialogMode Mode;
 	tSystem::tFileTypes FileTypes;
 	tString Result;
@@ -131,6 +132,7 @@ private:
 	// and NetworTreeNode for Windows. Be careful, the SelectedNode must be cleared or reset if the tree is deleted.
 	TreeNode* SelectedNode = nullptr;
 	bool PopupOpen = false;
+	tString SelectFile;
 };
 
 
