@@ -1109,7 +1109,7 @@ void FileDialog::DoSelect(const tString& filename)
 			// If item just selected and we're in SaveFile mode we need to update the Edit widget.
 			// This widget uses the SaveFileResult string, so we update that.
 			if (Mode == DialogMode::SaveFile)
-				SaveFileResult = tGetFileBaseName(filename).Chr();				
+				SaveFileResult = tGetFileBaseName(filename).Chr();
 		}
 		else
 		{
@@ -1290,13 +1290,17 @@ bool FileDialog::SetPath(const tString& path)
 	if (dir.IsEmpty())
 		return false;
 
-	// "C:\GitHub\tacent\UnitTests\TestData\Images\Bmp_Lambda.bmp"
-
 	switch (Mode)
 	{
 		case DialogMode::OpenFile:		DirToPath(ConfigOpenFilePath, dir);		break;
 		case DialogMode::OpenDir:		DirToPath(ConfigOpenDirPath, dir);		break;
 		case DialogMode::SaveFile:		DirToPath(ConfigSaveFilePath, dir);		break;
+	}
+
+	if (file.IsValid() && (Mode != DialogMode::OpenDir))
+	{
+		tFileType type = tGetFileType(file);
+		FileTypes.Select(type);
 	}
 
 	DoPopulate = true;
