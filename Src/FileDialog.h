@@ -2,7 +2,7 @@
 //
 // Dialog that allows selection of a file or directory. May be used for opening a file/directory or saving to a file.
 //
-// Copyright (c) 2021, 2022 Tristan Grimmer.
+// Copyright (c) 2021, 2022, 2025 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //

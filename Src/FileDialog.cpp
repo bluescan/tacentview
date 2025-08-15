@@ -2,7 +2,7 @@
 //
 // Dialog that allows selection of a file or directory. May be used for opening a file/directory or saving to a file.
 //
-// Copyright (c) 2021-2024 Tristan Grimmer.
+// Copyright (c) 2021-2025 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -1272,7 +1272,6 @@ bool FileDialog::SetPath(const tString& path)
 	if (!IsPopupOpen())
 		return false;
 	tString normPath = path;
-
 	tPathStd(normPath);
 	
 	// Is the path a file or just a directory?
@@ -1297,15 +1296,34 @@ bool FileDialog::SetPath(const tString& path)
 		case DialogMode::SaveFile:		DirToPath(ConfigSaveFilePath, dir);		break;
 	}
 
-	if (file.IsValid() && (Mode != DialogMode::OpenDir))
+	if (file.IsValid())
 	{
 		tFileType type = tGetFileType(file);
-		FileTypes.Select(type);
+		if (Mode == DialogMode::OpenFile)
+		{
+			if (FileTypes.AnySelected())		// If none selected it means all and we do nothing.
+			{
+				if (FileTypes.Contains(type) && !FileTypes.IsSelected(type))
+				{
+					FileTypes.Select(type);
+					InvalidateAllNodeContent();
+				}
+			}
+		}
+		else if (Mode == DialogMode::SaveFile)
+		{
+			if (FileTypes.Contains(type) && !FileTypes.IsSelected(type))
+			{
+				// The save dialog can only select a single type at a time.
+				FileTypes.ClearSelected();
+				FileTypes.Select(type);
+				InvalidateAllNodeContent();
+			}
+		}
+		SelectFile = file;
 	}
 
 	DoPopulate = true;
-	if (file.IsValid())
-		SelectFile = file;
 	return true;
 }
 

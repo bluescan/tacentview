@@ -1325,20 +1325,47 @@ bool Viewer::OnPasteFromClipboard()
 		ok = clip::get_text(text);
 		if (ok)
 		{
-			tString dirText(text.c_str());
+			tString path(text.c_str());
 			tPrintf("Pasted Text: [%s]\n", text.c_str());
 
 			// Deal with text input. Basically update any open file dialogs.
 			// @todo Otherwise, perhaps, just go to the pasted image.
 			if (OpenFileDialog.IsPopupOpen())
-				OpenFileDialog.SetPath(dirText);
+				return OpenFileDialog.SetPath(path);
 			else if (OpenDirDialog.IsPopupOpen())
-				OpenDirDialog.SetPath(dirText);
+				return OpenDirDialog.SetPath(path);
 			else if (SaveAsDialog.IsPopupOpen())
-				SaveAsDialog.SetPath(dirText);
+				return SaveAsDialog.SetPath(path);
+			else
+			{
+				// Just set the current image.
+				tPathStd(path);
+				tString chosenFile, dir;
+				tString file;
+				if (tFileExists(path))
+				{
+					chosenFile = path;
+				}
+				else if (tDirExists(path))
+				{
+					tPathStdDir(path);
+					chosenFile = path + "dummyfile.txt";
+				}
+				if (chosenFile.IsEmpty())
+					return false;
 
-			return true;
+				tPrintf("Opening file: %s\n", chosenFile.Chr());
+				ImageToLoad = chosenFile;
+				PopulateImages();
+				SetCurrentImage(chosenFile);
+				Gutil::SetWindowTitle();
+				return true;
+			}
+			return false;
 		}
+
+		// Couldn't retrieve clipped text.
+		return false;
 	}
 
 	ok = clip::has(clip::image_format());
