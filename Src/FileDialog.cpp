@@ -665,9 +665,7 @@ bool ContentItem::CompareFunctionObject::operator() (const ContentItem& a, const
 					const char8_t* A = a.Name.Chars();
 					const char8_t* B = b.Name.Chars();
 					if (ConfigNaturalSort)
-						// @todo Reenable this once NaturalSort is moved into tNstrcmp.
-						// return ascending ? (tStd::tNstrcmp(A, B) < 0) : (tStd::tNstrcmp(A, B) > 0);
-						return ascending ? Viewer::NaturalSort(A, B) : !Viewer::NaturalSort(B, A);
+						return ascending ? (tStd::tNstrcmp(A, B) < 0) : (tStd::tNstrcmp(A, B) > 0);
 
 					// For alphanumeric sort on Windows we do a case-insensitive compare. For Linux we do a case-sensitive compare.
 					// We could have done a case-insensitive compare on Linux too but it propably makes more sense to do a straight sensitive

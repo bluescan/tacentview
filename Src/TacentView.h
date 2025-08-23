@@ -136,11 +136,6 @@ namespace Viewer
 	bool ChangeScreenMode(bool fullscreeen, bool force = false);
 	void SortImages(Config::ProfileData::SortKeyEnum, bool ascending);
 	bool DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin);
-
-	// Code modified from https://github.com/scopeInfinity/NaturalSort
-	// @todo Remove this once NaturalSort is moved into tNstrcmp.
-	bool NaturalSort(const tString& first, const tString& second);	// Implements a natural sorting algorithm so files withs numbers appear in a pleasing format for 
-	bool NaturalSort(const char8_t* first, const char8_t* second);	// Implements a natural sorting algorithm so files withs numbers appear in a pleasing format for 
 	
 	Config::ProfileData::ZoomModeEnum GetZoomMode();				// Reads the ZoomModePerImage setting to see where to get the zoom mode.
 	void SetZoomMode(Config::ProfileData::ZoomModeEnum);			// Reads the ZoomModePerImage setting to see where to set the zoom mode.

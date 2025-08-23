@@ -454,9 +454,7 @@ bool Viewer::ImageCompareFunctionObject::operator() (const Image& a, const Image
 		{
 			const char8_t* A = a.Filename.Chars();
 			const char8_t* B = b.Filename.Chars();
-			// @todo Reenable this once NaturalSort is moved into tNstrcmp.
-			// return Ascending ? (tNstrcmp(A, B) < 0) : (tNstrcmp(A, B) > 0);
-			return Ascending ? NaturalSort(A, B) : NaturalSort(B, A);
+			return Ascending ? (tNstrcmp(A, B) < 0) : (tNstrcmp(A, B) > 0);
 		}
 
 		case Config::ProfileData::SortKeyEnum::FileName:
@@ -3749,135 +3747,6 @@ bool Viewer::DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin)
 	}
 
 	return deleted;
-}
-
-
-bool Viewer::NaturalSort(const tString& first, const tString& second)
-{
-	// Code modified from https://github.com/scopeInfinity/NaturalSort
-	// @todo Remove this once NaturalSort is moved into tNstrcmp.
-	// Indexes to traverse strings
-	int idx1 = 0;
-	int idx2 = 0;
-
-	// Flag for Space Found Check
-	bool flagFoundSpace1 = false;
-	bool flagFoundSpace2 = false;
-
-	// Loop on every character
-	while (idx1 < first.Length() && idx2 < second.Length())
-	{
-		// Ignore More than One Continous Space
-		while (flagFoundSpace1 && idx1 < first.Length() && first[idx1] == ' ') idx1++;
-		flagFoundSpace1 = false;
-		if (first[idx1] == ' ') flagFoundSpace1 = true;
-		
-		while (flagFoundSpace2 && idx2 < second.Length() && second[idx2] == ' ') idx2++;
-		flagFoundSpace2 = false;
-		if (second[idx2] == ' ') flagFoundSpace2 = true;
-
-		// If both numbers are alphanumeric, compare as usual
-		if (!isdigit(first[idx1]) || !isdigit(second[idx2]))
-		{
-			// Normal comparision if any of character is non digit character
-			if (tolower(first[idx1]) < tolower(second[idx2]))
-				return true;
-
-			if (tolower(second[idx1]) < tolower(first[idx2]))
-				return false;
-
-			idx1++; idx2++;
-		}
-		else
-		{
-			// Capture Numeric Part of Both String and then using it to compare Both
-			int lastNondigit1 = idx1;
-			int lastNondigit2 = idx2;
-
-			// Find the index of the last number
-			for (size_t i = idx1; i < first.Length(); i++)
-			{
-				lastNondigit1 = i;
-				if (!isdigit(first[i])) break;
-			}
-
-			for (size_t i = idx2; i < second.Length(); i++)
-			{
-				lastNondigit2 = i;
-				if (!isdigit(second[i])) break;
-			}
-			
-			int digit1 = first.Mid(idx1, lastNondigit1 - idx1).AsInt32();
-			int digit2 = second.Mid(idx2, lastNondigit2 - idx2).AsInt32();
-
-			if (digit1 < digit2)
-				return true;
-			if (digit2 < digit1)
-				return false;
-
-			idx1 = lastNondigit1;
-			idx2 = lastNondigit2;
-		}
-	}
-    
-	return false;
-}
-
-
-bool Viewer::NaturalSort(const char8_t* first, const char8_t* second)
-{	
-	// Code modified from https://github.com/scopeInfinity/NaturalSort
-	// @todo Remove this once NaturalSort is moved into tNstrcmp.
-	// Flag for Space Found Check
-	bool flagFoundSpace1 = false;
-	bool flagFoundSpace2 = false;
-
-	// Loop on every character
-	while (*first && *second)
-	{
-		// Ignore More than One Continous Space
-		while (flagFoundSpace1 && *first && *first == ' ') first++;
-		flagFoundSpace1 = false;
-		if (*first == ' ') flagFoundSpace1 = true;
-		
-		while (flagFoundSpace2 && *second && *second == ' ') second++;
-		flagFoundSpace2 = false;
-		if (*second == ' ') flagFoundSpace2 = true;
-
-		// If one character is alphanumeric, compare as usual
-		// Edge case when we encounter a zero first, to avoid problematic situations like '01.png' & '001.png' that would otherwise be considered equal
-		if (!isdigit(*first) || !isdigit(*second) ||
-			*first == '0'    || *second == '0')
-		{
-			// Normal comparision if any of character is non digit character
-			if (tolower(*first) < tolower(*second))
-				return true;
-
-			if (tolower(*second) < tolower(*first))
-				return false;
-
-			first++; second++;
-		}
-		// If both characters are numbers, do a numeral comparison
-		else
-		{
-			// Get the full number with std::atoi() (to account for when you're comparing e.g. '1.png' & '10.png')
-			int digit1 = std::atoi((const char*) first);
-			int digit2 = std::atoi((const char*) second);
-
-			// Compare the numbers, if they are the same we just continue
-			if (digit1 < digit2)
-				return true;
-			if (digit2 < digit1)
-				return false;
-
-			// Advance the pointers by the length of the digits (math, yay)
-			first  += static_cast<int>(floor(log10(digit1)) + 1);
-			second += static_cast<int>(floor(log10(digit2)) + 1);
-		}
-	}
-    
-	return false;
 }
 
 
