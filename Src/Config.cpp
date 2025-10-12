@@ -2,7 +2,7 @@
 //
 // Viewer settings stored as human-readable symbolic expressions.
 //
-// Copyright (c) 2019-2024 Tristan Grimmer.
+// Copyright (c) 2019-2025 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -468,7 +468,7 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		DetectAPNGInsidePNG			= true;
 		MipmapFilter				= int(tImage::tResampleFilter::Bilinear);
 		MipmapChaining				= true;
-		MonitorGamma				= tMath::DefaultGamma;
+		MonitorGamma				= tMath::fDefaultGamma;
 	}
 
 	if (categories & Category_Behaviour)
