@@ -4455,7 +4455,35 @@ int main(int argc, char** argv)
 	Viewer::Window = glfwCreateWindow(Viewer::Config::Global.WindowW, Viewer::Config::Global.WindowH, "tacentview", nullptr, nullptr);
 	if (!Viewer::Window)
 	{
+		// Attempt to display message about failing to create window.
+		#ifdef PLATFORM_WINDOWS
+		::MessageBoxA
+		(
+			nullptr,
+			"Tacent View failed to launch because it could not create a GLFW window. This may be due to "
+			"OpenGL being unavailable on your system or an incompatible graphics driver. Try using Mesa3D "
+			"for Windows and placing the opengl32.dll in the same directory as the tacentview executable.",
+			"Tacent View Message",
+			MB_OK
+		);
 		glfwTerminate();
+
+		#else
+		glfwTerminate();
+		system
+		(
+			"zenity --ellipsize --title=\"Warning\" --warning --text=\""
+			"Tacent View failed to launch because it could not\n"
+			"create a GLFW window.\""
+		);
+
+		tPrintf
+		(
+			"Tacent View failed to launch because could not "
+			"create a GLFW window."
+		);
+		#endif
+
 		return Viewer::ErrorCode_GUI_FailGLFWWindow;
 	}
 
@@ -4472,44 +4500,43 @@ int main(int argc, char** argv)
 	BOOL isDarkMode = 1;
 	DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_A, &isDarkMode, sizeof(isDarkMode));
 	DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_B, &isDarkMode, sizeof(isDarkMode));
+	#endif
 
 	if (!assetsDirExists)
 	{
+		#ifdef PLATFORM_WINDOWS
 		::MessageBoxA
 		(
 			hwnd,
-			"Tacent Texture Viewer failed to launch because it was run from a location "
+			"Tacent View failed to launch because it was run from a location "
 			"that did not have the Assets directory in it. The executable should be in the "
 			"same place as the Assets directory.",
-			"Viewer Message",
+			"Tacent View Message",
 			MB_OK
 		);
 
 		glfwDestroyWindow(Viewer::Window);
 		glfwTerminate();
-		return Viewer::ErrorCode_GUI_FailAssetDirMissing;
-	}
-	#else
-	if (!assetsDirExists)
-	{
+
+		#else
 		glfwDestroyWindow(Viewer::Window);
 		glfwTerminate();
 		system
 		(
 			"zenity --ellipsize --title=\"Warning\" --warning --text=\""
-			"Tacent Texture Viewer failed to launch because it could not find\n"
+			"Tacent View failed to launch because it could not find\n"
 			"the Assets directory. Check your XDG Data environemnt variables.\""
 		);
 
 		tPrintf
 		(
-			"Tacent Texture Viewer failed to launch because it could not find "
+			"Tacent View failed to launch because it could not find "
 			"the Assets directory. Check your XDG Data environemnt variables."
 		);
+		#endif
 
 		return Viewer::ErrorCode_GUI_FailAssetDirMissing;
 	}
-	#endif
 
 	glfwMakeContextCurrent(Viewer::Window);
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
