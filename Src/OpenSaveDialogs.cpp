@@ -2,7 +2,7 @@
 //
 // Modal dialogs open-file, open-dir, save-as and save-all.
 //
-// Copyright (c) 2019-2024 Tristan Grimmer.
+// Copyright (c) 2019-2025 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -61,7 +61,6 @@ void Viewer::DoOpenFileModal(bool openFilePressed)
 	if (state == FileDialog::DialogState::OK)
 	{
 		tString chosenFile = OpenFileDialog.GetResult();
-		tPrintf("Opening file: %s\n", chosenFile.Chr());
 		ImageToLoad = chosenFile;
 		PopulateImages();
 		SetCurrentImage(chosenFile);

@@ -2,7 +2,7 @@
 //
 // Various dialogs and helpers including a log window, info overlay, and about window.
 //
-// Copyright (c) 2019-2024 Tristan Grimmer.
+// Copyright (c) 2019-2025 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -23,7 +23,14 @@
 #include "GuiUtil.h"
 #include "Version.cmake.h"
 using namespace tMath;
-namespace Viewer { extern OutputLog OutLog; }
+namespace Viewer
+{
+	extern OutputLog OutLog;
+
+	bool Rename_InputText_SetInitialSelection = false;
+	bool Rename_InputText_TabKeyPressedFocus = false;
+	int Rename_InputText_Callback(ImGuiInputTextCallbackData*);
+}
 
 
 void Viewer::ShowAboutPopup(bool* popen)
@@ -327,6 +334,32 @@ void Viewer::DoSnapMessageNoFrameTransModal(bool justPressed)
 }
 
 
+int Viewer::Rename_InputText_Callback(ImGuiInputTextCallbackData* data)
+{
+	if (data->EventFlag == ImGuiInputTextFlags_CallbackAlways)
+	{
+		if (Rename_InputText_SetInitialSelection)
+		{
+			tString name(data->Buf);
+			int extPos = name.FindChar('.', true);
+			if (extPos == -1)
+				extPos = name.LengthNullTerminated();
+
+			data->SelectionStart = 0;
+			data->SelectionEnd = extPos;
+			data->CursorPos = extPos;
+			Rename_InputText_SetInitialSelection = false;
+		}
+    }
+	else if (data->EventFlag == ImGuiInputTextFlags_CallbackCompletion)
+	{
+		Rename_InputText_TabKeyPressedFocus = true;
+	}
+
+    return 0;
+}
+
+
 void Viewer::DoRenameModal(bool renamePressed)
 {
 	if (renamePressed)
@@ -343,15 +376,29 @@ void Viewer::DoRenameModal(bool renamePressed)
 
 	static char newname[128] = "Filename";
 	if (renamePressed)
+	{
 		tStd::tStrcpy(newname, origname.Chr());
+		Rename_InputText_SetInitialSelection = true;
+		Rename_InputText_TabKeyPressedFocus = false;
+	}
 
+	uint32 inputTextFlags =
+		ImGuiInputTextFlags_EnterReturnsTrue	|
+		ImGuiInputTextFlags_CallbackAlways		|
+		ImGuiInputTextFlags_CallbackCompletion	|
+		0;
 	bool nameChanged = false;
 	if (ImGui::IsWindowAppearing())
 		ImGui::SetKeyboardFocusHere();
-	if (ImGui::InputText("##NewNameText", newname, tNumElements(newname), ImGuiInputTextFlags_EnterReturnsTrue))
+	if (ImGui::InputText("##NewNameText", newname, tNumElements(newname), inputTextFlags, Rename_InputText_Callback))
 		nameChanged = true;
-	ImGui::NewLine();
 
+	ImGui::NewLine();
+	if (Rename_InputText_TabKeyPressedFocus && (origname == newname))
+	{
+		ImGui::SetKeyboardFocusHere();
+		Rename_InputText_TabKeyPressedFocus = false;
+	}
 	if (Gutil::Button("Cancel", tVector2(buttonWidth, 0.0f)))
 		ImGui::CloseCurrentPopup();
 
@@ -360,6 +407,11 @@ void Viewer::DoRenameModal(bool renamePressed)
 	float okOffset = Gutil::GetUIParamScaled(165.0f, 2.5f);
 	ImGui::SetCursorPosX(okOffset);
 
+	if (Rename_InputText_TabKeyPressedFocus && (origname != newname))
+	{
+		ImGui::SetKeyboardFocusHere();
+		Rename_InputText_TabKeyPressedFocus = false;
+	}
 	if (Gutil::Button("OK", tVector2(buttonWidth, 0.0f)) || nameChanged)
 	{
 		if (origname != newname)
