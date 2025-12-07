@@ -197,6 +197,7 @@ target_compile_options(
 
 		# Clang compiler.
 		$<$<CXX_COMPILER_ID:Clang>:-Wno-switch>
+		$<$<CXX_COMPILER_ID:Clang>:-Wno-nontrivial-memcall>
 
 		# GNU compiler.
 		$<$<CXX_COMPILER_ID:GNU>:-Wno-unused-result>
