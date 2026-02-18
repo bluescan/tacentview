@@ -327,10 +327,11 @@ namespace Viewer
 
 	void DrawBackground(float l, float r, float b, float t, float drawW, float drawH);
 	void PrintRedirectCallback(const char* text, int numChars);
-	void GlfwErrorCallback(int error, const char* description)															{ tPrintf("Glfw Error %d: %s\n", error, description); }
-	bool Compare_AlphabeticalAscending		(const tSystem::tFileInfo& a, const tSystem::tFileInfo& b)					{ return tStricmp(a.FileName.Chars(), b.FileName.Chars()) < 0; }
-	bool Compare_FileCreationTimeAscending	(const tSystem::tFileInfo& a, const tSystem::tFileInfo& b)					{ return a.CreationTime < b.CreationTime; }
-	bool Compare_ImageLoadTimeAscending		(const Image& a, const Image& b)											{ return a.GetLoadedTime() < b.GetLoadedTime(); }
+	void GlfwErrorCallback(int error, const char* description)																{ tPrintf("Glfw Error %d: %s\n", error, description); }
+	bool Compare_AlphabeticalAscending			(const tSystem::tFileInfo& a, const tSystem::tFileInfo& b)					{ return tStricmp(a.FileName.Chars(), b.FileName.Chars()) < 0; }
+	bool Compare_StringItemAlphabeticalAscending(const tStringItem& a, const tStringItem& b)								{ return tStricmp(a.Chars(), b.Chars()) < 0; }
+	bool Compare_FileCreationTimeAscending		(const tSystem::tFileInfo& a, const tSystem::tFileInfo& b)					{ return a.CreationTime < b.CreationTime; }
+	bool Compare_ImageLoadTimeAscending			(const Image& a, const Image& b)											{ return a.GetLoadedTime() < b.GetLoadedTime(); }
 
 	// This is a 'FunctionObject'. Basically an object that acts like a function. This is sorta cool as it allows state
 	// to be stored in the object. In this case we use it as the compare function for a Sort call. Instead of a
@@ -719,7 +720,7 @@ void Viewer::SetZoomPercent(float zoom)
 void Viewer::PrintRedirectCallback(const char* text, int numChars)
 {
 	OutLog.AddLog("%s", text);
-	
+
 	#ifdef PLATFORM_LINUX
 	// We have a terminal in Linux so use it.
 	printf("%s", text);
@@ -788,6 +789,7 @@ void Viewer::PopulateImagesSubDirs()
 
 		ImagesSubDirs.Append(new tStringItem(relPath));
 	}
+	ImagesSubDirs.Sort(Compare_StringItemAlphabeticalAscending, tListSortAlgorithm::Merge);
 }
 
 
@@ -984,7 +986,7 @@ bool Viewer::OnNextImage(bool next)
 		{ CurrImage = circ ? Images.NextCirc(CurrImage) : CurrImage->Next(); }
 	else
 		{ CurrImage = circ ? Images.PrevCirc(CurrImage) : CurrImage->Prev(); }
-	
+
 	LoadCurrImage();
 	return true;
 }
@@ -1028,7 +1030,7 @@ void Viewer::OnPixelMove(MoveDir dir)
 		case MoveDir::Left:		RequestCursorMove = CursorMove_Left;	break;
 		case MoveDir::Up:		RequestCursorMove = CursorMove_Up;		break;
 		case MoveDir::Down:		RequestCursorMove = CursorMove_Down;	break;
-	}		
+	}
 }
 
 
@@ -1241,7 +1243,7 @@ tColour4b Viewer::GetClipboard16BPPColour
 		float arange = float( (amask >> ashift) );
 		af = float((data & amask) >> ashift) / arange;
 	}
-	
+
 	tColour4b col(rf, gf, bf, af);
 	return col;
 }
@@ -2786,7 +2788,7 @@ void Viewer::DoNavBar(int dispw, int disph, int barHeight)
 		tString fname = tGetFileName(CurrImage->Filename);
 		tVector2 textSize = ImGui::CalcTextSize(fname.Chr());
 		float textStartX = w - textSize.x - navHPad;
-		
+
 		// Only display if it's not going to overlap with the dir navigation on the left.
 		if (textStartX > navRight)
 		{
@@ -3153,7 +3155,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 			glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
 			swizzleModified = true;
 		}
-	
+
 		if (!profile.Tile)
 		{
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
@@ -3242,7 +3244,7 @@ void Viewer::Update(GLFWwindow* window, double dt, bool dopoll)
 
 		// Show the cursor either as a square ouline or a reticle.
 		bool reticleVisible = false;
-		
+
 		// Must not be cropping to have a chance at making visible.
 		if (!CropMode)
 		{
@@ -3738,7 +3740,7 @@ bool Viewer::DeleteImageFile(const tString& imgFile, bool tryUseRecycleBin)
 	bool deleted = tSystem::tDeleteFile(imgFile, true, tryUseRecycleBin);
 	if (!deleted && tryUseRecycleBin)
 		deleted = tSystem::tDeleteFile(imgFile, true, false);
-		
+
 	if (deleted)
 	{
 		ImageToLoad = nextImgFile;		// We set this so if we lose and gain focus, we go back to the current image.
@@ -4049,7 +4051,7 @@ void Viewer::CursorPosCallback(GLFWwindow* window, double x, double y)
 {
 	if (ImGui::GetIO().WantCaptureMouse)
 		return;
-	
+
 	if (IgnoreNextCursorPosCallback)
 	{
 		IgnoreNextCursorPosCallback = false;
@@ -4376,7 +4378,7 @@ int main(int argc, char** argv)
 
 	Viewer::Image::ThumbCacheDir = cacheDir;
 	tString cfgFile = configDir + "Viewer.cfg";
-	
+
 	// Setup window
 	glfwSetErrorCallback(Viewer::GlfwErrorCallback);
 	if (!glfwInit())
