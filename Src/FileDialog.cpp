@@ -212,7 +212,7 @@ bool Bookmark::Set(Type type)
 	if (type == Type::Home)
 	{
 		BookmarkType = Type::Home;
- 
+
 		// All Windows platforms get a 'user' bookmark. Linux gets the 'home' location.
 		tString home = tSystem::tGetHomeDir();
 
@@ -246,7 +246,7 @@ bool Bookmark::Set(Type type)
 			{
 				root = *drive;
 				break;
-			}			
+			}
 		}
 		if (root.IsValid())
 			Items.Append(new tStringItem(root));
@@ -306,7 +306,7 @@ tString Bookmark::GetPath() const
 {
 	if (!IsValid())
 		return tString();
-	
+
 	tString pathType = *Items.First();
 
 	// @todo When we move to Tacent, consider these path types:
@@ -703,6 +703,22 @@ bool ContentItem::CompareFunctionObject::operator() (const ContentItem& a, const
 }
 
 
+bool Compare_ContentItemNameAscending(const ContentItem& a, const ContentItem& b)
+{
+	// Directories come first regardless of sort order.
+	if (a.IsDir && !b.IsDir)
+		return true;
+	if (!a.IsDir && b.IsDir)
+		return false;
+
+	// Then sort by name using natural sort if enabled, otherwise platform-specific comparison.
+	if (ConfigNaturalSort)
+		return tStd::tNstrcmp(a.Name.Chars(), b.Name.Chars()) < 0;
+	else
+		return tStd::tPstrcmp(a.Name.Chars(), b.Name.Chars()) < 0;
+}
+
+
 TreeNode* TreeNode::Find(const tString& name) const
 {
 	for (tItList<TreeNode>::Iter child = Children.First(); child; child++)
@@ -783,7 +799,7 @@ void FileDialog::OpenPopup(const tString& openDir, const tString& saveFileBaseNa
 	// We now defer population of the trees to this OpenPopup call. Before we did it in the constructor,
 	// but that seems like it's too early, especially if the dialog is a global object.
 	PopulateTrees();
-	
+
 	switch (Mode)
 	{
 		case DialogMode::OpenFile:
@@ -832,7 +848,7 @@ void FileDialog::PopulateTrees()
 			continue;
 
 		TreeNode* driveNode = new TreeNode(*drive, false, this, RootTreeNode);
-		RootTreeNode->AppendChild(driveNode);	
+		RootTreeNode->AppendChild(driveNode);
 	}
 
 	// NetworkTree. Windows only.
@@ -943,7 +959,7 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selPathItemName,
 		if (ImGui::SmallButton("  >  ##BookmarkAdd"))
 			ImGui::OpenPopup("DirContextMenu");
 
-		if (ImGui::BeginPopup("DirContextMenu")) 
+		if (ImGui::BeginPopup("DirContextMenu"))
 		{
 			if (ImGui::MenuItem("Add Bookmark"))
 			{
@@ -952,7 +968,7 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selPathItemName,
 				AddUniqueBookmark(bookmarkItems);
 			}
 			ImGui::EndPopup();
-		}	
+		}
 	}
 
 	if (setScroll)
@@ -1006,6 +1022,17 @@ void FileDialog::TreeNodeRecursive(TreeNode* node, tStringItem* selPathItemName,
 				TreeNode* child = new TreeNode(relDir, dir->Hidden, this, node);
 				node->AppendChild(child);
 			}
+
+			// Sort children alphabetically by name.
+			auto compareTreeNodes = [](const TreeNode& a, const TreeNode& b)
+			{
+				if (ConfigNaturalSort)
+					return tStd::tNstrcmp(a.Name.Chars(), b.Name.Chars()) < 0;
+				else
+					return tStd::tPstrcmp(a.Name.Chars(), b.Name.Chars()) < 0;
+			};
+			node->Children.Sort(compareTreeNodes, tListSortAlgorithm::Merge);
+
 			node->ChildrenPopulated = true;
 		}
 	}
@@ -1178,7 +1205,7 @@ tStringItem* FileDialog::BookmarksLoop()
 					if (ImGui::MenuItem("Remove Bookmark"))
 						bookmarkToRemove = bookmark;
 					ImGui::EndPopup();
-				}	
+				}
 			}
 			if (isClicked && isActive)
 			{
@@ -1271,7 +1298,7 @@ bool FileDialog::SetPath(const tString& path)
 		return false;
 	tString normPath = path;
 	tPathStd(normPath);
-	
+
 	// Is the path a file or just a directory?
 	tString dir;
 	tString file;
@@ -1328,7 +1355,7 @@ bool FileDialog::SetPath(const tString& path)
 
 FileDialog::DialogState FileDialog::DoPopup()
 {
-	// The unused isOpen bool is just so we get a close button in ImGui. 
+	// The unused isOpen bool is just so we get a close button in ImGui.
 	bool isOpen = true;
 	const char* label = nullptr;
 	tList<tStringItem>* configPath = nullptr;
@@ -1480,7 +1507,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 		// Left tree panel (bookmarks and tree-view). This is the workhorse of the dialog.
 		//
 		ImGui::TableSetColumnIndex(0);
-		
+
 		static float heightBookmarks = ImGui::GetTextLineHeightWithSpacing() * 5.0f;
 		static float heightTreeView = 0.0f;
 		static float panelHeight = 0.0f;
@@ -1578,12 +1605,13 @@ FileDialog::DialogState FileDialog::DoPopup()
 					}
 				}
 
+				SelectedNode->Contents.Sort(Compare_ContentItemNameAscending, tListSortAlgorithm::Merge);
 				SelectedNode->ContentsPopulated = true;
 				SelectedNode->SortingDirty = true;
 			}
 
 			int tableFlags =
-				ImGuiTableFlags_Resizable | 
+				ImGuiTableFlags_Resizable |
 				ImGuiTableFlags_NoSavedSettings |
 				ImGuiTableFlags_Reorderable |		// Drag columns to an order you like.
 				ImGuiTableFlags_Hideable |			// Hide individual columns.
@@ -1606,7 +1634,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 				ImGui::TableSetupColumn("Icon",		iconFlags,	colWidthIcon,	uint32(ContentItem::FieldID::Invalid)	);
 				ImGui::TableSetupColumn("Name",		nameFlags,	colWidthName,	uint32(ContentItem::FieldID::Name)		);
 				ImGui::TableSetupColumn("Modified",	propFlags,	colWidthTime,	uint32(ContentItem::FieldID::ModTime)	);
-				ImGui::TableSetupColumn("Type",		propFlags,	colWidthType,	uint32(ContentItem::FieldID::FileType)	);	
+				ImGui::TableSetupColumn("Type",		propFlags,	colWidthType,	uint32(ContentItem::FieldID::FileType)	);
 				ImGui::TableSetupColumn("Size",		propFlags,	colWidthSize,	uint32(ContentItem::FieldID::FileSize)	);
 				ImGui::TableSetupScrollFreeze(0, 1); // Make this row always visible.
 
@@ -1757,7 +1785,7 @@ FileDialog::DialogState FileDialog::DoPopup()
 		case DialogMode::OpenDir:
 		{
 			resultAvail = selItem && selItem->IsDir;
-			
+
 			// OK to select dir in left-hand pane where SelectedNode may be valid.
 			int depth = SelectedNode ? SelectedNode->Depth() : 0;
 			if (!resultAvail && depth)
