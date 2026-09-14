@@ -103,6 +103,8 @@ This project relies on myriad 3rd-party libraries. In the Assets folder you will
 * LibHEIF
 * LibDav1d
 * LibDE265
+* LunaSVG
+* PlutoVG
 
 Various development tools available for open source projects bear mentioning:
 * CMake
