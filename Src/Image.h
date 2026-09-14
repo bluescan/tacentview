@@ -44,6 +44,7 @@
 #include <Image/tImageHEIC.h>
 #include <Image/tImageAVIF.h>
 #include <Image/tImageKTX.h>
+#include <Image/tImageSVG.h>
 #include "Config.h"
 #include "Undo.h"
 namespace tImage { class tLayer; }
@@ -72,6 +73,7 @@ public:
 	tImage::tImageKTX::LoadParams  LoadParams_KTX;
 	tImage::tImagePKM::LoadParams  LoadParams_PKM;
 	tImage::tImagePNG::LoadParams  LoadParams_PNG;
+	tImage::tImageSVG::LoadParams  LoadParams_SVG;
 	bool LoadParams_DetectAPNGInsidePNG = false;
 
 	void RegenerateShuffleValue();

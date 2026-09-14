@@ -136,6 +136,8 @@ void Image::ResetLoadParams()
 
 	LoadParams_PNG.Reset();
 	LoadParams_DetectAPNGInsidePNG = false;
+
+	LoadParams_SVG.Reset();
 }
 
 
@@ -637,6 +639,25 @@ bool Image::Load(bool loadParamsFromConfig)
 
 			// We still delete the layer even though its data has been stolen.
 			delete layer;
+			success = true;
+			break;
+		}
+
+		case tSystem::tFileType::SVG:
+		{
+			tImageSVG svg;
+			bool ok = svg.Load(Filename, LoadParams_SVG);
+			if (!ok)
+				break;
+
+			Info.SrcPixelFormat		= svg.GetPixelFormatSrc();
+			Info.SrcColourProfile	= svg.GetColourProfileSrc();
+			int width = svg.GetWidth();
+			int height = svg.GetHeight();
+			tPixel4b* pixels = svg.StealPixels();
+
+			tPicture* picture = new tPicture(width, height, pixels, false);
+			Pictures.Append(picture);
 			success = true;
 			break;
 		}

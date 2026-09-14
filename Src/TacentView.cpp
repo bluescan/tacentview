@@ -104,6 +104,7 @@ namespace Viewer
 		tFileType::HEIC,
 		tFileType::AVIF,
 		tFileType::TIFF,
+		tFileType::SVG,
 		tFileType::EOL
 	);
 
@@ -153,6 +154,7 @@ namespace Viewer
 		tFileType::PKM,
 		tFileType::WEBP,
 		tFileType::TGA,
+		tFileType::SVG,
 		tFileType::EOL
 	};
 

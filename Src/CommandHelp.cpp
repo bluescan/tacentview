@@ -1003,6 +1003,21 @@ are sufficient. Image types with load parameters:
         inside a regular PNG file. This allows the command-line to load all
         the frames of an APNG file even if it has a regular (single-frame)
         png extension.
+
+--inSVG
+  mode: Size mode. Possible values:
+        auto* - Use the SVG's intrinsic (native) size.
+        width - Render so the image width is the value of dim.
+        height- Render so the image height is the value of dim.
+        The aspect ratio is always preserved -- the image is never stretched.
+  dim:  The target rasterization size in pixels for the chosen mode. Default
+        is 0* which means use the intrinsic (native) size. Ignored when the
+        mode is auto.
+  bg:   The background colour. Accepts hex (#RRGGBB or #RRGGBBAA) or named
+        colours (e.g. white, grey, red, green, blue, yellow, cyan, magenta,
+        black, trans). An alpha of 0 (default*) keeps the per-pixel alpha.
+        A non-zero alpha flattens the image onto this colour and the result
+        is fully opaque.
 )LOADPARAMS010"
 	);
 	tPrintf

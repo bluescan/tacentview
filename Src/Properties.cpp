@@ -888,6 +888,85 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			}
 			break;
 		}
+
+		case tSystem::tFileType::SVG:
+		{
+			ImGui::Text("Scalable Vector Graphics");
+			bool reloadChanges = false;
+
+			// The size mode: Auto (intrinsic size), Width, or Height.
+			{
+				static const char* svgSizeModes[] = { "Auto", "Width", "Height" };
+				int svgSizeMode = int(CurrImage->LoadParams_SVG.Mode);
+				ImGui::SetNextItemWidth(itemWidth);
+				if (ImGui::Combo("Size Mode", &svgSizeMode, svgSizeModes, tNumElements(svgSizeModes)))
+				{
+					CurrImage->LoadParams_SVG.Mode = (tImage::tImageSVG::DimensionMode)svgSizeMode;
+					reloadChanges = true;
+				}
+				ImGui::SameLine();
+				Gutil::HelpMark
+				(
+					"Auto uses the SVG's intrinsic (native) size.\n"
+					"Width and Height use the Size value below as the target\n"
+					"width or height in pixels. The aspect ratio is always\n"
+					"preserved -- the image is never stretched."
+				);
+			}
+
+			// The target rasterization size in pixels (ignored in Auto mode). It is greyed out while the size
+			// mode is Auto since the value is not used in that mode.
+			bool svgAutoMode = (CurrImage->LoadParams_SVG.Mode == tImage::tImageSVG::DimensionMode_Auto);
+			ImGui::BeginDisabled(svgAutoMode);
+			ImGui::SetNextItemWidth(itemWidth);
+			if (ImGui::InputInt("Size", &CurrImage->LoadParams_SVG.Dimension, 1, 1))
+				reloadChanges = true;
+			ImGui::EndDisabled();
+			ImGui::SameLine();
+			Gutil::HelpMark
+			(
+				"The target rasterization size in pixels. Ignored when the\n"
+				"Size Mode is Auto. A value of 0 or less also uses the\n"
+				"intrinsic (native) size. Hold Ctrl to speedup."
+			);
+			tMath::tiClamp(CurrImage->LoadParams_SVG.Dimension, 0, 8192);
+
+			// The background colour. An alpha of 0 keeps the per-pixel alpha.
+			{
+				tColour4f backgroundColour(CurrImage->LoadParams_SVG.BackgroundColor);
+				ImGui::SetNextItemWidth(itemWidth);
+				if (ImGui::ColorEdit4("Background", backgroundColour.E, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf))
+				{
+					CurrImage->LoadParams_SVG.BackgroundColor.Set(backgroundColour);
+					reloadChanges = true;
+				}
+				ImGui::SameLine();
+				Gutil::HelpMark
+				(
+					"The colour that shows through where the SVG is transparent.\n"
+					"An alpha of 0 (default) keeps the per-pixel alpha.\n"
+					"A non-zero alpha flattens the image onto this colour\n"
+					"and the result is fully opaque."
+				);
+			}
+
+			// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
+			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - itemWidth);
+			if (ImGui::Button("Reset", tVector2(itemWidth, 0.0f)))
+			{
+				CurrImage->ResetLoadParams();
+				reloadChanges = true;
+			}
+
+			if (reloadChanges)
+			{
+				CurrImage->Unload();
+				CurrImage->Load();
+			}
+
+			fileTypeSectionDisplayed = true;
+			break;
+		}
 	}
 
 	int numFrames = CurrImage->GetNumFrames();

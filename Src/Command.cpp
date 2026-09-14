@@ -48,6 +48,7 @@ namespace Command
 	tCmdLine::tOption OptionInKTX			("Load parameters for KTX files",	"inKTX",				1	);
 	tCmdLine::tOption OptionInPKM			("Load parameters for PKM files",	"inPKM",				1	);
 	tCmdLine::tOption OptionInPNG			("Load parameters for PNG files",	"inPNG",				1	);
+	tCmdLine::tOption OptionInSVG			("Load parameters for SVG files",	"inSVG",				1	);
 
 	tCmdLine::tOption OptionOperation		("Operation",						"op",					1	);
 	tCmdLine::tOption OptionPostOperation	("Post operation",					"po",					1	);
@@ -68,6 +69,7 @@ namespace Command
 	tCmdLine::tOption OptionEarlyExit		("Early exit / no skipping",		"earlyexit",	'e'			);
 	tCmdLine::tOption OptionSkipUnchanged	("Don't save unchanged files",		"skipunchanged",'k'			);
 
+	bool ParseColour(tColour4b& colour, const tString& strCol);
 	void BeginConsoleOutput();
 	void EndConsoleOutput();
 	#ifdef PLATFORM_WINDOWS
@@ -97,6 +99,7 @@ namespace Command
 	void ParseLoadParametersKTX();
 	void ParseLoadParametersPKM();
 	void ParseLoadParametersPNG();
+	void ParseLoadParametersSVG();
 
 	void DetermineInputFiles();																	// Step 2.
 	void GetItemsFromManifest(tList<tStringItem>& manifestItems, const tString& manifestFile);
@@ -141,6 +144,7 @@ namespace Command
 	tImage::tImageKTX::LoadParams	LoadParamsKTX;
 	tImage::tImagePKM::LoadParams	LoadParamsPKM;
 	tImage::tImagePNG::LoadParams	LoadParamsPNG;
+	tImage::tImageSVG::LoadParams	LoadParamsSVG;
 	bool LoadParams_DetectAPNGInsidePNG = false;
 
 	tSystem::tFileTypes InputTypes;
@@ -410,6 +414,7 @@ void Command::DetermineInputLoadParameters()
 			case tSystem::tFileType::KTX2:	ParseLoadParametersKTX();	break;
 			case tSystem::tFileType::PKM:	ParseLoadParametersPKM();	break;
 			case tSystem::tFileType::PNG:	ParseLoadParametersPNG();	break;
+			case tSystem::tFileType::SVG:	ParseLoadParametersSVG();	break;
 		}
 	}
 }
@@ -749,6 +754,44 @@ void Command::ParseLoadParametersPNG()
 }
 
 
+void Command::ParseLoadParametersSVG()
+{
+	tList<ParamValuePair> pairs;
+	ParseParamValuePairs(pairs, OptionInSVG.Arg1());
+	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
+	{
+		tString& param = p->Param;
+		tString& value = p->Value;
+		switch (tHash::tHashString(param.Chr()))
+		{
+			case tHash::tHashCT("mode"):
+			{
+				switch (tHash::tHashString(value.Chr()))
+				{
+					case tHash::tHashCT("auto"):	LoadParamsSVG.Mode = tImage::tImageSVG::DimensionMode_Auto;	break;
+					case tHash::tHashCT("width"):	LoadParamsSVG.Mode = tImage::tImageSVG::DimensionMode_Width;	break;
+					case tHash::tHashCT("height"):	LoadParamsSVG.Mode = tImage::tImageSVG::DimensionMode_Height;	break;
+				}
+				break;
+			}
+
+			case tHash::tHashCT("dim"):
+				LoadParamsSVG.Dimension = (value == "*") ? 0 : tMath::tClamp(value.AsInt(), 0, 8192);
+				break;
+
+			case tHash::tHashCT("bg"):
+			{
+				if (value == "*")
+					LoadParamsSVG.BackgroundColor = tColour4b::transparent;
+				else
+					ParseColour(LoadParamsSVG.BackgroundColor, value);
+				break;
+			}
+		}
+	}
+}
+
+
 void Command::DetermineInputFiles()
 {
 	tList<tSystem::tFileInfo> inputFiles;
@@ -808,6 +851,9 @@ void Command::PopulateImagesList()
 			case tSystem::tFileType::PNG:
 				newImage->LoadParams_PNG = LoadParamsPNG;
 				newImage->LoadParams_DetectAPNGInsidePNG = LoadParams_DetectAPNGInsidePNG;
+				break;
+			case tSystem::tFileType::SVG:
+				newImage->LoadParams_SVG = LoadParamsSVG;
 				break;
 		}
 
