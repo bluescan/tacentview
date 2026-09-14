@@ -108,6 +108,11 @@ void Viewer::ShowAboutPopup(bool* popen)
 		ImGui::Text("LibKTX %s", tImage::Version_LibKTX);
 		ImGui::Text("TinyXML2 V %d.%d.%d", tImage::Version_TinyXML2_Major, tImage::Version_TinyXML2_Minor, tImage::Version_TinyXML2_Patch);
 		ImGui::Text("TinyEXIF V %d.%d.%d", tImage::Version_TinyEXIF_Major, tImage::Version_TinyEXIF_Minor, tImage::Version_TinyEXIF_Patch);
+
+		#ifdef TACENT_ENABLE_HEIF
+		// @todo Need to be able to retrieve version info for libHEIF, libDE265, and libDav1d.
+		#endif
+
 		ImGui::Text("QOI");
 		ImGui::Text("BCDec V %d.%d", tImage::Version_BCDec_Major, tImage::Version_BCDec_Minor);
 		ImGui::Text("ETCDec V %d.%d", tImage::Version_ETCDec_Major, tImage::Version_ETCDec_Minor);
