@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 500 500" style="enable-background:new 0 0 500 500;" xml:space="preserve">
+<metadata>
+	<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+	<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Adobe XMP Core 5.6-c148 79.164036, 2019/08/13-01:06:57        ">
+		<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+			<rdf:Description rdf:about=""
+					xmlns:xmp="http://ns.adobe.com/xap/1.0/"
+					xmlns:dc="http://purl.org/dc/elements/1.1/"
+					xmlns:xmpRights="http://ns.adobe.com/xap/1.0/rights/">
+				<xmp:CreatorTool>AI Assistant Sample Generator</xmp:CreatorTool>
+				<xmp:CreateDate>2026-09-14T17:15:00-07:00</xmp:CreateDate>
+				<dc:format>image/svg+xml</dc:format>
+				<dc:title>
+					<rdf:Alt>
+						<rdf:li xml:lang="x-default">Test SVG with Embedded XMP Metadata</rdf:li>
+					</rdf:Alt>
+				</dc:title>
+				<dc:creator>
+					<rdf:Seq>
+						<rdf:li>AI Assistant</rdf:li>
+					</rdf:Seq>
+				</dc:creator>
+				<xmpRights:Marked>True</xmpRights:Marked>
+				<xmpRights:UsageTerms>
+					<rdf:Alt>
+						<rdf:li xml:lang="x-default">Creative Commons CC0 1.0 Universal</rdf:li>
+					</rdf:Alt>
+				</xmpRights:UsageTerms>
+			</rdf:Description>
+		</rdf:RDF>
+	</x:xmpmeta>
+	<?xpacket end="w"?>
+</metadata>
+<g>
+	<rect x="50" y="50" width="400" height="400" rx="20" fill="#4F46E5"/>
+	<circle cx="250" cy="250" r="120" fill="#10B981"/>
+	<polygon points="250,170 290,260 200,210 300,210 210,260" fill="#F59E0B"/>
+	<text x="250" y="430" font-family="sans-serif" font-size="24" font-weight="bold" fill="#FFFFFF" text-anchor="middle">XMP TEST FILE</text>
+</g>
+</svg>

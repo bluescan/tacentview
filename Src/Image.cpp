@@ -658,6 +658,7 @@ bool Image::Load(bool loadParamsFromConfig)
 
 			tPicture* picture = new tPicture(width, height, pixels, false);
 			Pictures.Append(picture);
+			Cached_MetaData = svg.MetaData;
 			success = true;
 			break;
 		}
