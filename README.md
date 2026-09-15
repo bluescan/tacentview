@@ -124,8 +124,7 @@ Various development tools available for open source projects bear mentioning:
 * This software includes [Radiance software](http://radsite.lbl.gov/) developed by the [Lawrence Berkeley National Laboratory](http://www.lbl.gov/).
 * We do not use the GPLv3-licenced work. However we do include a copy of the GPLv3 licence since it is referred to by LGPLv3. Look in the Assets folder for all licence copy.
 * LibHEIF and LibDE265 are LGPLv3-licensed libraries included with the Tacent library, a dependency of TacentView. LibHEIF and LibDE265 are protected under LGPLv3. Their use is optional. Obligations when using LGPLv3 libraries in an ISC repository have been met -- in particular supplying source code/linking instructions, this notice, and supplying license text (including the GPLv3). Details, including the exact Commit IDs of both libraries, may be found at [LibHEIF Licence Readme](https://github.com/bluescan/tacent/blob/master/Modules/Image/Contrib/LibHEIF/Licence_Readme.txt). To optionally disable support for AVIF and HEIC files and not link with these two LGPLv3 libraries, comment the following out in CMakeLists.txt before configuring and building.
-
 ```
-# HEIC/AVIF loading support in Tacent (via LibHEIF).
-option(TACENT_ENABLE_HEIF "Build Tacent With LibHEIF Support (HEIC/AVIF)" On)
+  # HEIC/AVIF loading support in Tacent (via LibHEIF).
+  option(TACENT_ENABLE_HEIF "Build Tacent With LibHEIF Support (HEIC/AVIF)" On)
 ```
