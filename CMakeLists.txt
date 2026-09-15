@@ -61,7 +61,7 @@ option(TACENT_ENABLE_HEIF "Build Tacent With LibHEIF Support (HEIC/AVIF)" On)
 FetchContent_Declare(
 	tacent
 	GIT_REPOSITORY https://github.com/bluescan/tacent.git
-	GIT_TAG c75d63cc5e2b6440cee4ba4fb99bf8d5e9688932
+	GIT_TAG cb8781f9a6cb4b58da5d4272b07d6483747cc66c
 	# GIT_TAG v0.8.19
 	FIND_PACKAGE_ARGS NAMES tacent
 )
@@ -168,6 +168,7 @@ target_compile_definitions(
 		ARCHITECTURE_X64
 		GLFW_INCLUDE_NONE
 		CLIP_ENABLE_IMAGE
+
 		$<$<PLATFORM_ID:Linux>:HAVE_PNG_H>
 		$<$<CONFIG:Debug>:CONFIG_DEBUG>
 		$<$<CONFIG:Release>:CONFIG_RELEASE>
@@ -175,6 +176,8 @@ target_compile_definitions(
 
 		$<$<PLATFORM_ID:Windows>:PLATFORM_WINDOWS>
 		$<$<PLATFORM_ID:Linux>:PLATFORM_LINUX>
+
+		$<$<BOOL:${TACENT_ENABLE_HEIF}>:TACENT_ENABLE_HEIF>
 
 		$<$<BOOL:${PACKAGE_PORTABLE}>:PACKAGE_PORTABLE>
 		$<$<BOOL:${PACKAGE_DEV}>:PACKAGE_DEV>

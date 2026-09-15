@@ -110,9 +110,13 @@ void Viewer::ShowAboutPopup(bool* popen)
 		ImGui::Text("TinyEXIF V %d.%d.%d", tImage::Version_TinyEXIF_Major, tImage::Version_TinyEXIF_Minor, tImage::Version_TinyEXIF_Patch);
 
 		#ifdef TACENT_ENABLE_HEIF
-		// @todo Need to be able to retrieve version info for libHEIF, libDE265, and libDav1d.
+		ImGui::Text("LibHEIF V %d.%d.%d", tImage::Version_LibHEIF_Major, tImage::Version_LibHEIF_Minor, tImage::Version_LibHEIF_Patch);
+		ImGui::Text("LibDE265 V %d.%d.%d", tImage::Version_LibDE265_Major, tImage::Version_LibDE265_Minor, tImage::Version_LibDE265_Patch);
+		ImGui::Text("LibDav1d V %s", tImage::Version_LibDav1d);
 		#endif
 
+		ImGui::Text("LunaSVG V %d.%d.%d", tImage::Version_LunaSVG_Major, tImage::Version_LunaSVG_Minor, tImage::Version_LunaSVG_Patch);
+		ImGui::Text("PlutoVG V %d.%d.%d", tImage::Version_PlutoVG_Major, tImage::Version_PlutoVG_Minor, tImage::Version_PlutoVG_Patch);
 		ImGui::Text("QOI");
 		ImGui::Text("BCDec V %d.%d", tImage::Version_BCDec_Major, tImage::Version_BCDec_Minor);
 		ImGui::Text("ETCDec V %d.%d", tImage::Version_ETCDec_Major, tImage::Version_ETCDec_Minor);
