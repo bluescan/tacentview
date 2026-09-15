@@ -61,7 +61,7 @@ option(TACENT_ENABLE_HEIF "Build Tacent With LibHEIF Support (HEIC/AVIF)" On)
 FetchContent_Declare(
 	tacent
 	GIT_REPOSITORY https://github.com/bluescan/tacent.git
-	GIT_TAG cb8781f9a6cb4b58da5d4272b07d6483747cc66c
+	GIT_TAG ffefb56ee5153b100523c4fe32bd47cd48d29afa
 	# GIT_TAG v0.8.19
 	FIND_PACKAGE_ARGS NAMES tacent
 )
