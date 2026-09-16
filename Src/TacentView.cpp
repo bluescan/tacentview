@@ -103,6 +103,7 @@ namespace Viewer
 		tFileType::ICO,
 		tFileType::HEIC,
 		tFileType::AVIF,
+		tFileType::JXL,
 		tFileType::TIFF,
 		tFileType::SVG,
 		tFileType::EOL
@@ -130,6 +131,7 @@ namespace Viewer
 		tFileType::APNG,
 		tFileType::PNG,
 		tFileType::TIFF,
+		tFileType::JXL,
 		tFileType::EOL
 	);
 

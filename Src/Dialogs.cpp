@@ -2,7 +2,7 @@
 //
 // Various dialogs and helpers including a log window, info overlay, and about window.
 //
-// Copyright (c) 2019-2025 Tristan Grimmer.
+// Copyright (c) 2019-2026 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -115,6 +115,9 @@ void Viewer::ShowAboutPopup(bool* popen)
 		ImGui::Text("LibDav1d V %s", tImage::Version_LibDav1d);
 		#endif
 
+		ImGui::Text("LibJXL V %d.%d.%d", tImage::Version_LibJXL_Major, tImage::Version_LibJXL_Minor, tImage::Version_LibJXL_Patch);
+		ImGui::Text("Highway V %d.%d.%d", tImage::Version_Highway_Major, tImage::Version_Highway_Minor, tImage::Version_Highway_Patch);
+		ImGui::Text("Brotli V %d.%d.%d", tImage::Version_Brotli_Major, tImage::Version_Brotli_Minor, tImage::Version_Brotli_Patch);
 		ImGui::Text("LunaSVG V %d.%d.%d", tImage::Version_LunaSVG_Major, tImage::Version_LunaSVG_Minor, tImage::Version_LunaSVG_Patch);
 		ImGui::Text("PlutoVG V %d.%d.%d", tImage::Version_PlutoVG_Major, tImage::Version_PlutoVG_Minor, tImage::Version_PlutoVG_Patch);
 		ImGui::Text("QOI");

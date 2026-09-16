@@ -62,7 +62,7 @@ FetchContent_Declare(
 	tacent
 	GIT_REPOSITORY https://github.com/bluescan/tacent.git
 	# GIT_TAG master
-	GIT_TAG 89b956229cbca4e5ea9c1f162e009b71cc7686b5
+	GIT_TAG 91daf399575bfc1fe826c21983e249b04b74b41e
 	# GIT_TAG v0.8.19
 	FIND_PACKAGE_ARGS NAMES tacent
 )

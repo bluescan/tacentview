@@ -513,6 +513,29 @@ bool Image::Load(bool loadParamsFromConfig)
 			break;
 		}
 
+		case tSystem::tFileType::JXL:
+		{
+			tImageJXL jxl;
+			bool ok = jxl.Load(Filename);
+			if (!ok)
+				break;
+
+			Info.SrcPixelFormat		= jxl.GetPixelFormatSrc();
+			Info.SrcColourProfile	= jxl.GetColourProfileSrc();
+			int numFrames = jxl.GetNumFrames();
+			for (int f = 0; f < numFrames; f++)
+			{
+				tFrame* frame = jxl.StealFrame(0);
+
+				// This constructor sets the duration from the frame as well. The frame is deleted for you since steal is true.
+				tPicture* picture = new tPicture(frame, true);
+				Pictures.Append(picture);
+			}
+			Cached_MetaData = jxl.MetaData;
+			success = true;
+			break;
+		}
+
 		case tSystem::tFileType::DDS:
 		{
 			tImageDDS::LoadParams params(LoadParams_DDS);

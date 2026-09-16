@@ -30,6 +30,7 @@
 #include <Image/tImageGIF.h>
 #include <Image/tImageICO.h>
 #include <Image/tImageJPG.h>
+#include <Image/tImageJXL.h>
 #include <Image/tImagePNG.h>
 #include <Image/tImageQOI.h>
 #include <Image/tImageTGA.h>
