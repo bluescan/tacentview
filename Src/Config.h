@@ -2,7 +2,7 @@
 //
 // Viewer settings stored as human-readable symbolic expressions.
 //
-// Copyright (c) 2019-2024 Tristan Grimmer.
+// Copyright (c) 2019-2024, 2026 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -50,8 +50,8 @@ enum Category
 // different profiles. Currently we have three profiles: Main, Basic, and Kiosk.
 struct ProfileData
 {
-	ProfileData(Profile profile)							: Name(), InputBindings() { Reset(profile, Category_All); }
-	tString Name;											// The name of the profile.
+	ProfileData(Profile profile)						: Name(), InputBindings() { Reset(profile, Category_All); }
+	tString Name;										// The name of the profile.
 
 	bool FullscreenMode;
 	bool ShowMenuBar;
@@ -75,14 +75,14 @@ struct ProfileData
 
 	enum class SortKeyEnum
 	{
-		Natural,				// Based on filename but groups integers so ordering is more 'human friendly'.
-		FileName,				// Alphanumeric based on encoding.
+		Natural,					// Based on filename but groups integers so ordering is more 'human friendly'.
+		FileName,					// Alphanumeric based on encoding.
 		FileModTime,
 		FileSize,
 		FileType,
 
 		FirstCachedKey,
-		ImageArea				= FirstCachedKey,
+		ImageArea					= FirstCachedKey,
 		ImageWidth,
 		ImageHeight,
 		MetaLatitude,
@@ -106,7 +106,7 @@ struct ProfileData
 		MetaCameraMake,
 		MetaDescription,
 		Shuffle,
-		LastCachedKey			= Shuffle,
+		LastCachedKey				= Shuffle,
 
 		NumKeys
 	};
@@ -235,6 +235,8 @@ struct ProfileData
 	int		SaveFileJpegQuality;							// E [1, 100]
 	bool	SaveFileWebpLossy;
 	float	SaveFileWebpQualComp;							// E [0.0, 100.0]
+	bool	SaveFileJxlLossless;
+	float	SaveFileJxlDistance;								// E [0.0, 4.0]
 	bool	SaveFileTiffZLibDeflate;
 	int		SaveFileGifBPP;									// E [1, 8]
 	int		SaveFileGifQuantMethod;							// E [0, 3]
@@ -245,11 +247,13 @@ struct ProfileData
 	int		SaveFileGifSampleFactor;						// E [1, 10]
 
 	int		SaveFileWebpDurOverride;						// E [-1, inf]. In ms.
+	int		SaveFileJxlDurOverride;							// E [-1, inf]. In ms.
 	int		SaveFileGifDurOverride;							// E [-1, inf]. In 1/100 seconds.
 	int		SaveFileApngDurOverride;						// E [-1, 65535]. In ms.
 	int		SaveFileTiffDurOverride;						// E [-1, inf]. In ms.
 
 	int		SaveFileWebpDurMultiFrame;						// E [0, inf]. In ms.
+	int		SaveFileJxlDurMultiFrame;						// E [0, inf]. In ms.
 	int		SaveFileGifDurMultiFrame;						// E [0, inf]. In 1/100 seconds.
 	int		SaveFileApngDurMultiFrame;						// E [0, 65536]. In ms.
 	int		SaveFileTiffDurMultiFrame;						// E [0, inf]. In ms.

@@ -882,6 +882,53 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 			break;
 		}
 
+		case tFileType::JXL:
+		{
+			tList<tFrame> frames;
+			if (onlyCurrentPic)
+			{
+				const tPicture* picture = GetCurrentPic();
+				frames.Append
+				(
+					new tFrame
+					(
+						picture->GetPixelPointer(),
+						picture->GetWidth(),
+						picture->GetHeight(),
+						picture->Duration
+					)
+				);
+			}
+			else
+			{
+				const tList<tImage::tPicture>& pics = GetPictures();
+				for (tPicture* picture = pics.First(); picture; picture = picture->Next())
+				{
+					frames.Append
+					(
+						new tFrame
+						(
+							picture->GetPixelPointer(),
+							picture->GetWidth(),
+							picture->GetHeight(),
+							picture->Duration
+						)
+					);
+				}
+			}
+
+			tImageJXL jxl(frames, true);
+			tImageJXL::SaveParams params(SaveParamsJXL);
+			if (useConfigSaveParams)
+			{
+				params.Lossless = profile.SaveFileJxlLossless;
+				params.Distance = profile.SaveFileJxlDistance;
+				params.OverrideFrameDuration = profile.SaveFileJxlDurOverride;
+			}
+			success = jxl.Save(outFile, params);
+			break;
+		}
+
 		case tFileType::QOI:
 		{
 			tPicture* picture = GetCurrentPic();

@@ -32,6 +32,7 @@
 #include <Image/tImageTGA.h>		// For paste from clipboard.
 #include <Image/tImagePNG.h>		// For paste from clipboard.
 #include <Image/tImageWEBP.h>		// For paste from clipboard.
+#include <Image/tImageJXL.h>		// For paste from clipboard.
 #include <Image/tImageQOI.h>		// For paste from clipboard.
 #include <Image/tImageBMP.h>		// For paste from clipboard.
 #include <Image/tImageTIFF.h>		// For paste from clipboard.
@@ -116,6 +117,7 @@ namespace Viewer
 		tFileType::JPG,
 		tFileType::GIF,
 		tFileType::WEBP,
+		tFileType::JXL,
 		tFileType::QOI,
 		tFileType::APNG,
 		tFileType::BMP,
@@ -139,6 +141,7 @@ namespace Viewer
 	(
 		tFileType::GIF,
 		tFileType::WEBP,
+		tFileType::JXL,
 		tFileType::APNG,
 		tFileType::TIFF,
 		tFileType::EOL
@@ -167,6 +170,7 @@ namespace Viewer
 		tFileType::TGA,
 		tFileType::PNG,
 		tFileType::WEBP,
+		tFileType::JXL,
 		tFileType::QOI,
 		tFileType::BMP,
 		tFileType::TIFF,
@@ -174,14 +178,15 @@ namespace Viewer
 	);
 
 	// File types that may be created when importing raw data. All of these must be lossless and support saving. TIFF
-	// is the default as it supports multiple lossless surfaces at different frame sizes (mipmaps). Additionally APNG
-	// and WEBP support multiple lossless frames but require a single canvas size. These 3 can support mipmaps but not
+	// is the default as it supports multiple lossless surfaces at different frame sizes (mipmaps). Additionally APNG,
+	// WEBP, and JXL support multiple lossless frames but require a single canvas size. These 4 can support mipmaps but not
 	// as well as TIFF. The remainder only support single lossless images and mipmap import is disabled.
 	tFileTypes FileTypes_ImportRaw
 	(
 		tFileType::TIFF,		// Supports mipmaps. Multiple lossless frames. Saved mipmaps frames have different sizes.
 		tFileType::APNG,		// Supports mipmaps. Multiple lossless frames. Saves mipmaps on frames of same size.
 		tFileType::WEBP,		// Supports mipmaps. Multiple lossless frames. Saves mipmaps on frames of same size.
+		tFileType::JXL,			// Supports mipmaps. Multiple lossless frames. Saves mipmaps on frames of same size.
 		tFileType::TGA,
 		tFileType::PNG,
 		tFileType::QOI,
@@ -1551,6 +1556,14 @@ bool Viewer::OnPasteFromClipboard()
 				tImage::tImageWEBP webp;
 				webp.Set(dstData, width, height, true);
 				saved = webp.Save(filename, false);
+				break;
+			}
+
+			case tFileType::JXL:
+			{
+				tImage::tImageJXL jxl;
+				jxl.Set(dstData, width, height, true);
+				saved = jxl.Save(filename, true);
 				break;
 			}
 

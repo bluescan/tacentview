@@ -2,7 +2,7 @@
 //
 // Viewer settings stored as human-readable symbolic expressions.
 //
-// Copyright (c) 2019-2025 Tristan Grimmer.
+// Copyright (c) 2019-2026 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -387,6 +387,8 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		SaveFileJpegQuality			= 95;
 		SaveFileWebpLossy			= false;
 		SaveFileWebpQualComp		= 90.0f;
+		SaveFileJxlLossless			= false;
+		SaveFileJxlDistance			= 1.0f;
 		SaveFileTiffZLibDeflate		= true;
 		SaveFileGifBPP				= 8;
 		SaveFileGifQuantMethod		= int(tImage::tQuantize::Method::Wu);
@@ -396,6 +398,7 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		SaveFileGifFilterSize		= 1;
 		SaveFileGifSampleFactor		= 1;
 		SaveFileWebpDurOverride		= -1;
+		SaveFileJxlDurOverride		= -1;	
 		SaveFileGifDurOverride		= -1;
 		SaveFileApngDurOverride		= -1;
 		SaveFileTiffDurOverride		= -1;
@@ -403,6 +406,7 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		SaveFileGifDurMultiFrame	= 3;
 		SaveFileApngDurMultiFrame	= 33;
 		SaveFileTiffDurMultiFrame	= 33;
+		SaveFileJxlDurMultiFrame	= 33;
 		SaveAllSizeMode				= 0;
 		FillColour					= tColour4b::black;
 		FillColourContact			= tColour4b::transparent;
@@ -581,6 +585,8 @@ void Config::ProfileData::Load(tExpression expr)
 			ReadItem(SaveFileJpegQuality);
 			ReadItem(SaveFileWebpLossy);
 			ReadItem(SaveFileWebpQualComp);
+			ReadItem(SaveFileJxlLossless);
+			ReadItem(SaveFileJxlDistance);
 			ReadItem(SaveFileTiffZLibDeflate);
 
 			ReadItem(SaveFileGifBPP);
@@ -592,11 +598,13 @@ void Config::ProfileData::Load(tExpression expr)
 			ReadItem(SaveFileGifSampleFactor);
 
 			ReadItem(SaveFileWebpDurOverride);
+			ReadItem(SaveFileJxlDurOverride);
 			ReadItem(SaveFileGifDurOverride);
 			ReadItem(SaveFileApngDurOverride);
 			ReadItem(SaveFileTiffDurOverride);
 
 			ReadItem(SaveFileWebpDurMultiFrame);
+			ReadItem(SaveFileJxlDurMultiFrame);
 			ReadItem(SaveFileGifDurMultiFrame);
 			ReadItem(SaveFileApngDurMultiFrame);
 			ReadItem(SaveFileTiffDurMultiFrame);
@@ -689,6 +697,7 @@ void Config::ProfileData::Load(tExpression expr)
 	tiClamp		(SaveFileBmpDepthMode, 0, 2);
 	tiClamp		(SaveFileJpegQuality, 1, 100);
 	tiClamp		(SaveFileWebpQualComp, 0.0f, 100.0f);
+	tiClamp		(SaveFileJxlDistance, 0.0f, 4.0f);
 	tiClamp		(SaveFileGifBPP, 1, 8);
 	tiClamp		(SaveFileGifQuantMethod, 0, int(tImage::tQuantize::Method::NumMethods)-1);
 	tiClampMin	(SaveFileGifLoop, 0);
@@ -698,11 +707,13 @@ void Config::ProfileData::Load(tExpression expr)
 	tiClamp		(SaveFileGifSampleFactor, 1, 10);
 
 	tiClampMin	(SaveFileWebpDurOverride, -1);
+	tiClampMin	(SaveFileJxlDurOverride, -1);
 	tiClampMin	(SaveFileGifDurOverride, -1);
 	tiClamp		(SaveFileApngDurOverride, -1, 65535);
 	tiClampMin	(SaveFileTiffDurOverride, -1);
 
 	tiClampMin	(SaveFileWebpDurMultiFrame, 0);
+	tiClampMin	(SaveFileJxlDurMultiFrame, 0);
 	tiClampMin	(SaveFileGifDurMultiFrame, 0);
 	tiClamp		(SaveFileApngDurMultiFrame, 0, 65535);
 	tiClampMin	(SaveFileTiffDurMultiFrame, 0);
@@ -783,6 +794,8 @@ bool Config::ProfileData::Save(tExprWriter& writer) const
 	WriteItem(SaveFileJpegQuality);
 	WriteItem(SaveFileWebpLossy);
 	WriteItem(SaveFileWebpQualComp);
+	WriteItem(SaveFileJxlLossless);
+	WriteItem(SaveFileJxlDistance);
 	WriteItem(SaveFileTiffZLibDeflate);
 
 	WriteItem(SaveFileGifBPP);
@@ -794,11 +807,13 @@ bool Config::ProfileData::Save(tExprWriter& writer) const
 	WriteItem(SaveFileGifSampleFactor);
 
 	WriteItem(SaveFileWebpDurOverride);
+	WriteItem(SaveFileJxlDurOverride);
 	WriteItem(SaveFileGifDurOverride);
 	WriteItem(SaveFileApngDurOverride);
 	WriteItem(SaveFileTiffDurOverride);
 
 	WriteItem(SaveFileWebpDurMultiFrame);
+	WriteItem(SaveFileJxlDurMultiFrame);
 	WriteItem(SaveFileGifDurMultiFrame);
 	WriteItem(SaveFileApngDurMultiFrame);
 	WriteItem(SaveFileTiffDurMultiFrame);

@@ -4,7 +4,7 @@
 // operations such as quantization, rescaling/filtering, cropping, rotation, extracting frames, creating contact-sheets,
 // amalgamating images into animated formats, and levels adjustments.
 //
-// Copyright (c) 2023, 2024 Tristan Grimmer.
+// Copyright (c) 2023, 2024, 2026 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -59,6 +59,7 @@ namespace Command
 	tCmdLine::tOption OptionOutBMP			("Save parameters for BMP  files",	"outBMP",				1	);
 	tCmdLine::tOption OptionOutGIF			("Save parameters for GIF  files",	"outGIF",				1	);
 	tCmdLine::tOption OptionOutJPG			("Save parameters for JPG  files",	"outJPG",				1	);
+	tCmdLine::tOption OptionOutJXL			("Save parameters for JXL  files",	"outJXL",				1	);
 	tCmdLine::tOption OptionOutPNG			("Save parameters for PNG  files",	"outPNG",				1	);
 	tCmdLine::tOption OptionOutQOI			("Save parameters for QOI  files",	"outQOI",				1	);
 	tCmdLine::tOption OptionOutTGA			("Save parameters for TGA  files",	"outTGA",				1	);
@@ -117,6 +118,7 @@ namespace Command
 	void ParseSaveParametersBMP();
 	void ParseSaveParametersGIF();
 	void ParseSaveParametersJPG();
+	void ParseSaveParametersJXL();
 	void ParseSaveParametersPNG();
 	void ParseSaveParametersQOI();
 	void ParseSaveParametersTGA();
@@ -129,6 +131,7 @@ namespace Command
 	tImage::tImageBMP::SaveParams	SaveParamsBMP;
 	tImage::tImageGIF::SaveParams	SaveParamsGIF;
 	tImage::tImageJPG::SaveParams	SaveParamsJPG;
+	tImage::tImageJXL::SaveParams	SaveParamsJXL;
 	tImage::tImagePNG::SaveParams	SaveParamsPNG;
 	tImage::tImageQOI::SaveParams	SaveParamsQOI;
 	tImage::tImageTGA::SaveParams	SaveParamsTGA;
@@ -1030,6 +1033,7 @@ void Command::DetermineOutputSaveParameters()
 			case tSystem::tFileType::BMP:  ParseSaveParametersBMP();  break;
 			case tSystem::tFileType::GIF:  ParseSaveParametersGIF();  break;
 			case tSystem::tFileType::JPG:  ParseSaveParametersJPG();  break;
+			case tSystem::tFileType::JXL:  ParseSaveParametersJXL();  break;
 			case tSystem::tFileType::PNG:  ParseSaveParametersPNG();  break;
 			case tSystem::tFileType::QOI:  ParseSaveParametersQOI();  break;
 			case tSystem::tFileType::TGA:  ParseSaveParametersTGA();  break;
@@ -1049,6 +1053,7 @@ void Command::SetImageSaveParameters(Viewer::Image& image, tSystem::tFileType fi
 		case tSystem::tFileType::BMP:  image.SaveParamsBMP  = SaveParamsBMP;  break;
 		case tSystem::tFileType::GIF:  image.SaveParamsGIF  = SaveParamsGIF;  break;
 		case tSystem::tFileType::JPG:  image.SaveParamsJPG  = SaveParamsJPG;  break;
+		case tSystem::tFileType::JXL:  image.SaveParamsJXL  = SaveParamsJXL;  break;
 		case tSystem::tFileType::PNG:  image.SaveParamsPNG  = SaveParamsPNG;  break;
 		case tSystem::tFileType::QOI:  image.SaveParamsQOI  = SaveParamsQOI;  break;
 		case tSystem::tFileType::TGA:  image.SaveParamsTGA  = SaveParamsTGA;  break;
@@ -1192,6 +1197,35 @@ void Command::ParseSaveParametersJPG()
 					SaveParamsJPG.Quality = 95;
 				else
 					SaveParamsJPG.Quality = tMath::tClamp(value.AsInt(), 1, 100);
+				break;
+		}
+	}
+}
+
+
+void Command::ParseSaveParametersJXL()
+{
+	tList<ParamValuePair> pairs;
+	ParseParamValuePairs(pairs, OptionOutJXL.Arg1());
+	for (ParamValuePair* p = pairs.First(); p; p = p->Next())
+	{
+		tString& param = p->Param;
+		tString& value = p->Value;
+		switch (tHash::tHashString(param.Chr()))
+		{
+			case tHash::tHashCT("loss"):
+				SaveParamsJXL.Lossless = (value == "*") ? false : value.AsBool();
+				break;
+
+			case tHash::tHashCT("dist"):
+				if (value == "*")
+					SaveParamsJXL.Distance = 1.0f;
+				else
+					SaveParamsJXL.Distance = tMath::tClamp(value.AsFloat(), 0.0f, 4.0f);
+				break;
+
+			case tHash::tHashCT("dur"):
+				SaveParamsJXL.OverrideFrameDuration = (value == "*") ? -1 : tMath::tClampMin(value.AsInt(), -1);
 				break;
 		}
 	}

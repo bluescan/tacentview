@@ -2,7 +2,7 @@
 //
 // Import contiguous raw pixel data from any file.
 //
-// Copyright (c) 2024 Tristan Grimmer.
+// Copyright (c) 2024, 2026 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -21,6 +21,7 @@
 #include <Image/tImageTIFF.h>
 #include <Image/tImageAPNG.h>
 #include <Image/tImageWEBP.h>
+#include <Image/tImageJXL.h>
 #include <Image/tImageTGA.h>
 #include <Image/tImagePNG.h>
 #include <Image/tImageQOI.h>
@@ -179,7 +180,7 @@ bool Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			"Valid types are ones that are lossless or support lossless encoding like webp.\n"
 			"Created images support alpha channel. If no alpha it saves the image without it.\n"
 			"If the creation type supports multiple frames, the option to import mipmaps will\n"
-			"be available. TIFF, APNG, and WEBP support mipmaps."
+			"be available. TIFF, APNG, WEBP, and JXL support mipmaps."
 		);
 
 		ImGui::SetNextItemWidth(itemWidth);
@@ -211,7 +212,7 @@ bool Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			if (profile.ImportRawLiveUpdate) liveUpdated = true;
 		}
 
-		bool fileTypeSupportsMultipleFrames = (dstType == tSystem::tFileType::TIFF) || (dstType == tSystem::tFileType::APNG) || (dstType == tSystem::tFileType::WEBP);
+		bool fileTypeSupportsMultipleFrames = (dstType == tSystem::tFileType::TIFF) || (dstType == tSystem::tFileType::APNG) || (dstType == tSystem::tFileType::WEBP) || (dstType == tSystem::tFileType::JXL);
 
 		if (!fileTypeSupportsMultipleFrames)
 			Gutil::PushDisable();
@@ -235,7 +236,7 @@ bool Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 			}
 		}
 
-		bool mipmapForceSameFrameSize = (dstType == tSystem::tFileType::APNG) || (dstType == tSystem::tFileType::WEBP);
+		bool mipmapForceSameFrameSize = (dstType == tSystem::tFileType::APNG) || (dstType == tSystem::tFileType::WEBP) || (dstType == tSystem::tFileType::JXL);
 		ImGui::SetNextItemWidth(itemWidth);
 		if (ImGui::Checkbox("Mipmaps##ImportRaw", &profile.ImportRawMipmaps))
 		{
@@ -248,10 +249,11 @@ bool Viewer::ShowImportRawOverlay(bool* popen, bool justOpened)
 		ImGui::SameLine();
 		Gutil::HelpMark
 		(
-			"Filetypes TIFF, APNG, and WEBP support mipmaps or multiple surfaces.\n"
+			"Filetypes TIFF, APNG, WEBP, and JXL support mipmaps or multiple surfaces.\n"
 			"TIFF: Mipmap frames will have correct sizes.\n"
 			"APNG: Mipmap frames will be same size. Unused areas will be opaque black.\n"
-			"WEBP: Mipmap frames will be same size. Unused areas will be opaque black."
+			"WEBP: Mipmap frames will be same size. Unused areas will be opaque black.\n"
+			"JXL : Mipmap frames will be same size. Unused areas will be opaque black."
 		);
 		bool importMipmaps = fileTypeSupportsMultipleFrames ? profile.ImportRawMipmaps : false;
 		int surfOrMipCount = fileTypeSupportsMultipleFrames ? surfaceOrMipmapCount : 1;
@@ -682,6 +684,14 @@ bool ImportRaw::CreateImportedFile(tList<tFrame>& frames, const tString& filenam
 			tImage::tImageWEBP webp;
 			webp.Set(frames, true);
 			bool saved = webp.Save(filename, false, 90.0f, 1000);
+			return saved;
+		}
+
+		case tSystem::tFileType::JXL:
+		{
+			tImage::tImageJXL jxl;
+			jxl.Set(frames, true);
+			bool saved = jxl.Save(filename, true);
 			return saved;
 		}
 

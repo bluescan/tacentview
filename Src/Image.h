@@ -101,6 +101,7 @@ public:
 	tImage::tImageBMP::SaveParams  SaveParamsBMP;
 	tImage::tImageGIF::SaveParams  SaveParamsGIF;
 	tImage::tImageJPG::SaveParams  SaveParamsJPG;
+	tImage::tImageJXL::SaveParams  SaveParamsJXL;
 	tImage::tImagePNG::SaveParams  SaveParamsPNG;
 	tImage::tImageQOI::SaveParams  SaveParamsQOI;
 	tImage::tImageTGA::SaveParams  SaveParamsTGA;

@@ -6,7 +6,7 @@
 // post-operations and implement things like creating contact-sheets or amalgamating multiple images into a single
 // animated image.
 //
-// Copyright (c) 2023 Tristan Grimmer.
+// Copyright (c) 2023, 2026 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -19,6 +19,7 @@
 #include <System/tTime.h>
 #include <Image/tImageGIF.h>
 #include <Image/tImageWEBP.h>
+#include <Image/tImageJXL.h>
 #include <Image/tImageAPNG.h>
 #include <Image/tImageTIFF.h>
 #include "CommandOps.h"
@@ -1866,6 +1867,13 @@ bool Command::PostOperationCombine::Apply(tList<Viewer::Image>& images)
 				break;
 			}
 
+			case tSystem::tFileType::JXL:
+			{
+				tImage::tImageJXL jxl(frames, allowStealFrames);
+				success = jxl.Save(outFile, SaveParamsJXL);
+				break;
+			}
+
 			case tSystem::tFileType::APNG:
 			{
 				tImage::tImageAPNG apng(frames, allowStealFrames);
@@ -2177,6 +2185,13 @@ bool Command::PostOperationContact::Apply(tList<Viewer::Image>& images)
 			{
 				tImage::tImageWEBP webp(outPic, allowStealFrames);
 				success = webp.Save(outFile, SaveParamsWEBP);
+				break;
+			}
+
+			case tSystem::tFileType::JXL:
+			{
+				tImage::tImageJXL jxl(outPic, allowStealFrames);
+				success = jxl.Save(outFile, SaveParamsJXL);
 				break;
 			}
 

@@ -4,7 +4,7 @@
 // operations such as quantization, rescaling/filtering, cropping, rotation, extracting frames, creating contact-sheets,
 // amalgamating images into animated formats, and levels adjustments.
 //
-// Copyright (c) 2023 Tristan Grimmer.
+// Copyright (c) 2023, 2026 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -41,6 +41,7 @@ namespace Command
 	extern tImage::tImageBMP::SaveParams  SaveParamsBMP;
 	extern tImage::tImageGIF::SaveParams  SaveParamsGIF;
 	extern tImage::tImageJPG::SaveParams  SaveParamsJPG;
+	extern tImage::tImageJXL::SaveParams  SaveParamsJXL;
 	extern tImage::tImagePNG::SaveParams  SaveParamsPNG;
 	extern tImage::tImageQOI::SaveParams  SaveParamsQOI;
 	extern tImage::tImageTGA::SaveParams  SaveParamsTGA;

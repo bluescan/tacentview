@@ -2,7 +2,7 @@
 //
 // Command line help text.
 //
-// Copyright (c) 2023, 2024 Tristan Grimmer.
+// Copyright (c) 2023, 2024, 2026 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -1547,6 +1547,16 @@ with save parameters:
 
 --outJPG
   qual: Quality of jpeg in range [1,100]. Default is 95*
+
+--outJXL
+  loss: Generate a lossless image. Boolean true or false*. Lossless round-trips
+        8-bit RGBA exactly and encodes faster than lossy.
+  dist: Target Butteraugli distance in range [0.0,4.0]. Default is 1.0*.
+        Lower is higher quality but bigger files. Recommended range is 0.5 to
+        3.0. At 1.0 you likely won't perceive any compression. 0.0 is basically
+        lossless but may not be bit-for-bit perfect; use loss for that.
+  dur:  Frame duration override in milliseconds. Use -1* for no override.
+        Only applies when saving an animation (more than one frame).
 
 --outPNG
   bpp:  Bits per pixel. Possible values:

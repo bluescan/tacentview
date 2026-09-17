@@ -2,7 +2,7 @@
 //
 // Modal dialogs open-file, open-dir, save-as and save-all.
 //
-// Copyright (c) 2019-2025 Tristan Grimmer.
+// Copyright (c) 2019-2026 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -17,6 +17,7 @@
 #include <Image/tImageJPG.h>
 #include <Image/tImageGIF.h>
 #include <Image/tImageWEBP.h>
+#include <Image/tImageJXL.h>
 #include <Image/tImageQOI.h>
 #include <Image/tImageAPNG.h>
 #include <Image/tImageBMP.h>
@@ -333,7 +334,7 @@ tSystem::tFileType Viewer::DoSaveChooseFiletype()
 		ImGui::EndCombo();
 	}
 	ImGui::SameLine();
-	Gutil::HelpMark("Output image format.\nFull (non-binary) alpha supported by tga, png, apng, bmp, tiff, qoi, and webp.\nAnimation supported by webp, gif, tiff, and apng.");
+	Gutil::HelpMark("Output image format.\nFull (non-binary) alpha supported by tga, png, apng, bmp, tiff, qoi, webp, and jxl.\nAnimation supported by webp, gif, tiff, apng, and jxl.");
 
 	return tGetFileTypeFromName(profile.SaveFileType);
 }
@@ -437,7 +438,6 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 		profile.SaveFileGifDitherLevel		= 0.0f;
 		profile.SaveFileGifFilterSize		= 1;
 		profile.SaveFileGifSampleFactor		= 1;
-		profile.SaveFileWebpDurOverride		= -1;
 		profile.SaveFileGifDurOverride		= -1;
 		profile.SaveFileGifDurMultiFrame	= 3;
 	}
@@ -501,6 +501,21 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			if (Gutil::Button("0.5s"))  profile.SaveFileWebpDurOverride = 500;  ImGui::SameLine();
 			if (Gutil::Button("30fps")) profile.SaveFileWebpDurOverride = 33;   ImGui::SameLine();
 			if (Gutil::Button("60fps")) profile.SaveFileWebpDurOverride = 16;
+			break;
+
+		case tFileType::JXL:
+			ImGui::Checkbox("Lossless", &profile.SaveFileJxlLossless);
+			if (!profile.SaveFileJxlLossless)
+			{
+					ImGui::SliderFloat("Distance", &profile.SaveFileJxlDistance, 0.0f, 4.0f, "%.2f");
+					ImGui::SameLine(); Gutil::HelpMark("Target Butteraugli distance for lossy encoding. Lower is higher quality.\nRecommended range is 0.5 to 3.0. At the default of 1.0 you likely won't\nperceive any compression. 0.0 is basically lossless but may not be\nbit-for-bit exact -- use Lossless for a guaranteed exact round-trip.");
+			}
+			ImGui::SliderInt("Duration Override", &profile.SaveFileJxlDurOverride, -1, 10000, "%d");
+			ImGui::SameLine(); Gutil::HelpMark("In milliseconds. If set to >= 0, overrides all frame durations when saving an animation.\nIf -1, uses the current value for the frame.");
+			if (Gutil::Button("1.0s"))  profile.SaveFileJxlDurOverride = 1000; ImGui::SameLine();
+			if (Gutil::Button("0.5s"))  profile.SaveFileJxlDurOverride = 500;  ImGui::SameLine();
+			if (Gutil::Button("30fps")) profile.SaveFileJxlDurOverride = 33;   ImGui::SameLine();
+			if (Gutil::Button("60fps")) profile.SaveFileJxlDurOverride = 16;
 			break;
 
 		case tFileType::QOI:
@@ -611,6 +626,25 @@ tString Viewer::DoSaveFiletypeMultiFrame()
 			if (ImGui::Button("0.5s"))  profile.SaveFileWebpDurMultiFrame = 500;  ImGui::SameLine();
 			if (ImGui::Button("30fps")) profile.SaveFileWebpDurMultiFrame = 33;   ImGui::SameLine();
 			if (ImGui::Button("60fps")) profile.SaveFileWebpDurMultiFrame = 16;
+			break;
+
+
+		case tFileType::JXL:
+			// @todo This should be using a standard options call like the GIF type.
+			ImGui::Checkbox("Lossless", &profile.SaveFileJxlLossless);
+			if (!profile.SaveFileJxlLossless)
+			{
+				ImGui::SetNextItemWidth(itemWidth);
+				ImGui::SliderFloat("Distance", &profile.SaveFileJxlDistance, 0.0f, 4.0f, "%.2f");
+				ImGui::SameLine(); Gutil::ToolTip("Butteraugli distance. Lower is higher quality. Recommended 0.5 to 3.0, default 1.0"); ImGui::NewLine();
+			}
+			ImGui::SetNextItemWidth(itemWidth);
+			ImGui::SliderInt("Frame Duration", &profile.SaveFileJxlDurMultiFrame, 0, 10000, "%d");
+			ImGui::SameLine(); Gutil::ToolTip("In milliseconds."); ImGui::NewLine();
+			if (ImGui::Button("1.0s"))  profile.SaveFileJxlDurMultiFrame = 1000; ImGui::SameLine();
+			if (ImGui::Button("0.5s"))  profile.SaveFileJxlDurMultiFrame = 500;  ImGui::SameLine();
+			if (ImGui::Button("30fps")) profile.SaveFileJxlDurMultiFrame = 33;   ImGui::SameLine();
+			if (ImGui::Button("60fps")) profile.SaveFileJxlDurMultiFrame = 16;
 			break;
 
 		case tFileType::APNG:
@@ -1126,6 +1160,17 @@ bool Viewer::SavePictureAs(tImage::tPicture& picture, const tString& outFile, tF
 		{
 			tImageWEBP webp(picture, steal);
 			success = webp.Save(outFile, profile.SaveFileWebpLossy, profile.SaveFileWebpQualComp, profile.SaveFileWebpDurOverride);
+			break;
+		}
+
+		case tFileType::JXL:
+		{
+			tImageJXL jxl(picture, steal);
+			tImageJXL::SaveParams params;
+			params.Lossless = profile.SaveFileJxlLossless;
+			params.Distance = profile.SaveFileJxlDistance;
+			params.OverrideFrameDuration = profile.SaveFileJxlDurOverride;
+			success = jxl.Save(outFile, params);
 			break;
 		}
 
