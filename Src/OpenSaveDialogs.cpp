@@ -495,12 +495,17 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 				ImGui::SliderFloat("Compression", &profile.SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
 				ImGui::SameLine(); Gutil::HelpMark("Non-lossy selected. This is the image compression strength.\nBigger is slower and yields smaller files.");
 			}
-			ImGui::SliderInt("Duration Override", &profile.SaveFileWebpDurOverride, -1, 10000, "%d");
-			ImGui::SameLine(); Gutil::HelpMark("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
-			if (Gutil::Button("1.0s"))  profile.SaveFileWebpDurOverride = 1000; ImGui::SameLine();
-			if (Gutil::Button("0.5s"))  profile.SaveFileWebpDurOverride = 500;  ImGui::SameLine();
-			if (Gutil::Button("30fps")) profile.SaveFileWebpDurOverride = 33;   ImGui::SameLine();
-			if (Gutil::Button("60fps")) profile.SaveFileWebpDurOverride = 16;
+			
+			// The duration override only applies to animated (multi-frame) output, so hide it for a single still frame.
+			if (CurrImage && (CurrImage->GetNumPictures() > 1))
+			{
+				ImGui::SliderInt("Duration Override", &profile.SaveFileWebpDurOverride, -1, 10000, "%d");
+				ImGui::SameLine(); Gutil::HelpMark("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
+				if (Gutil::Button("1.0s"))  profile.SaveFileWebpDurOverride = 1000; ImGui::SameLine();
+				if (Gutil::Button("0.5s"))  profile.SaveFileWebpDurOverride = 500;  ImGui::SameLine();
+				if (Gutil::Button("30fps")) profile.SaveFileWebpDurOverride = 33;   ImGui::SameLine();
+				if (Gutil::Button("60fps")) profile.SaveFileWebpDurOverride = 16;
+			}
 			break;
 
 		case tFileType::JXL:
@@ -510,12 +515,17 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 					ImGui::SliderFloat("Distance", &profile.SaveFileJxlDistance, 0.0f, 4.0f, "%.2f");
 					ImGui::SameLine(); Gutil::HelpMark("Target Butteraugli distance for lossy encoding. Lower is higher quality.\nRecommended range is 0.5 to 3.0. At the default of 1.0 you likely won't\nperceive any compression. 0.0 is basically lossless but may not be\nbit-for-bit exact -- use Lossless for a guaranteed exact round-trip.");
 			}
-			ImGui::SliderInt("Duration Override", &profile.SaveFileJxlDurOverride, -1, 10000, "%d");
-			ImGui::SameLine(); Gutil::HelpMark("In milliseconds. If set to >= 0, overrides all frame durations when saving an animation.\nIf -1, uses the current value for the frame.");
-			if (Gutil::Button("1.0s"))  profile.SaveFileJxlDurOverride = 1000; ImGui::SameLine();
-			if (Gutil::Button("0.5s"))  profile.SaveFileJxlDurOverride = 500;  ImGui::SameLine();
-			if (Gutil::Button("30fps")) profile.SaveFileJxlDurOverride = 33;   ImGui::SameLine();
-			if (Gutil::Button("60fps")) profile.SaveFileJxlDurOverride = 16;
+
+			// The duration override only applies to animated (multi-frame) output, so hide it for a single still frame.
+			if (CurrImage && (CurrImage->GetNumPictures() > 1))
+			{
+				ImGui::SliderInt("Duration Override", &profile.SaveFileJxlDurOverride, -1, 10000, "%d");
+				ImGui::SameLine(); Gutil::HelpMark("In milliseconds. If set to >= 0, overrides all frame durations when saving an animation.\nIf -1, uses the current value for the frame.");
+				if (Gutil::Button("1.0s"))  profile.SaveFileJxlDurOverride = 1000; ImGui::SameLine();
+				if (Gutil::Button("0.5s"))  profile.SaveFileJxlDurOverride = 500;  ImGui::SameLine();
+				if (Gutil::Button("30fps")) profile.SaveFileJxlDurOverride = 33;   ImGui::SameLine();
+				if (Gutil::Button("60fps")) profile.SaveFileJxlDurOverride = 16;
+			}
 			break;
 
 		case tFileType::QOI:
