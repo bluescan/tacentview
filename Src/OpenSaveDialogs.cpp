@@ -48,7 +48,9 @@ namespace Viewer
 	void DoSavePopup();
 	void DoSaveUnsupportedTypePopup();
 
-	void DoSaveGifOptions(bool multiframeConfigValues);
+	void DoSaveGIFOptions(bool multiframeConfigValues);
+	void DoSaveWEBPOptions(bool multiframeConfigValues);
+	void DoSaveJXLOptions(bool multiframeConfigValues);
 	tString SaveAsFile;
 }
 
@@ -340,7 +342,7 @@ tSystem::tFileType Viewer::DoSaveChooseFiletype()
 }
 
 
-void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
+void Viewer::DoSaveGIFOptions(bool multiframeConfigValues)
 {
 	Config::ProfileData& profile = Config::GetProfileData();
 	float itemWidth = Gutil::GetUIParamScaled(160.0f, 2.5f);
@@ -444,6 +446,109 @@ void Viewer::DoSaveGifOptions(bool multiframeConfigValues)
 }
 
 
+void Viewer::DoSaveWEBPOptions(bool multiframeConfigValues)
+{
+	Config::ProfileData& profile = Config::GetProfileData();
+	float itemWidth = Gutil::GetUIParamScaled(160.0f, 2.5f);
+
+	ImGui::Checkbox("Lossy", &profile.SaveFileWebpLossy);
+	ImGui::SetNextItemWidth(itemWidth);
+	if (profile.SaveFileWebpLossy)
+	{
+		ImGui::SliderFloat("Quality", &profile.SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
+		ImGui::SameLine(); Gutil::HelpMark("Lossy selected. This is the image quality percent.");
+	}
+	else
+	{
+		ImGui::SliderFloat("Compression", &profile.SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
+		ImGui::SameLine(); Gutil::HelpMark("Non-lossy selected. This is the image compression strength.\nBigger is slower and yields smaller files.");
+	}
+
+	if (!multiframeConfigValues)
+	{
+		// The duration override only applies to animated (multi-frame) output, so hide it for a single still frame.
+		if (CurrImage && (CurrImage->GetNumPictures() > 1))
+		{
+			ImGui::SetNextItemWidth(itemWidth);
+			ImGui::SliderInt("Duration Override", &profile.SaveFileWebpDurOverride, -1, 10000, "%d");
+			ImGui::SameLine(); Gutil::HelpMark("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
+			if (Gutil::Button("1.0s"))  profile.SaveFileWebpDurOverride = 1000; ImGui::SameLine();
+			if (Gutil::Button("0.5s"))  profile.SaveFileWebpDurOverride = 500;  ImGui::SameLine();
+			if (Gutil::Button("30fps")) profile.SaveFileWebpDurOverride = 33;   ImGui::SameLine();
+			if (Gutil::Button("60fps")) profile.SaveFileWebpDurOverride = 16;
+		}
+	}
+	else
+	{
+		ImGui::SetNextItemWidth(itemWidth);
+		ImGui::SliderInt("Frame Duration", &profile.SaveFileWebpDurMultiFrame, 0, 10000, "%d");
+		ImGui::SameLine(); Gutil::HelpMark("In milliseconds. Used for all frame durations.");
+		if (ImGui::Button("1.0s"))  profile.SaveFileWebpDurMultiFrame = 1000; ImGui::SameLine();
+		if (ImGui::Button("0.5s"))  profile.SaveFileWebpDurMultiFrame = 500;  ImGui::SameLine();
+		if (ImGui::Button("30fps")) profile.SaveFileWebpDurMultiFrame = 33;   ImGui::SameLine();
+		if (ImGui::Button("60fps")) profile.SaveFileWebpDurMultiFrame = 16;
+	}
+
+	float buttonWidth = Gutil::GetUIParamScaled(76.0f, 2.5f);
+	if (Gutil::Button("Reset", tVector2(buttonWidth, 0.0f)))
+	{
+		profile.SaveFileWebpLossy			= false;
+		profile.SaveFileWebpQualComp		= 90.0f;
+		profile.SaveFileWebpDurOverride		= -1;
+		profile.SaveFileWebpDurMultiFrame	= 33;
+	}
+}
+
+
+void Viewer::DoSaveJXLOptions(bool multiframeConfigValues)
+{
+	Config::ProfileData& profile = Config::GetProfileData();
+	float itemWidth = Gutil::GetUIParamScaled(160.0f, 2.5f);
+
+	ImGui::Checkbox("Lossless", &profile.SaveFileJxlLossless);
+	if (!profile.SaveFileJxlLossless)
+	{
+		ImGui::SetNextItemWidth(itemWidth);
+		ImGui::SliderFloat("Distance", &profile.SaveFileJxlDistance, 0.0f, 25.0f, "%.2f");
+		ImGui::SameLine(); Gutil::HelpMark("Target Butteraugli distance for lossy encoding. Lower is higher quality/bigger.\nRecommended range is 0.5 to 3.0. At the default of 1.0 you likely won't\nperceive any artifacts. 0.0 is basically lossless but may not be\nbit-for-bit exact -- use Lossless for exact encoding.");
+	}
+
+	if (!multiframeConfigValues)
+	{
+		// The duration override only applies to animated (multi-frame) output, so hide it for a single still frame
+		if (CurrImage && (CurrImage->GetNumPictures() > 1))
+		{
+			ImGui::SetNextItemWidth(itemWidth);
+			ImGui::SliderInt("Duration Override", &profile.SaveFileJxlDurOverride, -1, 10000, "%d");
+			ImGui::SameLine(); Gutil::HelpMark("In milliseconds. If set to >= 0, overrides all frame durations when saving an animation.\nIf -1, uses the current value for the frame.");
+			if (Gutil::Button("1.0s"))  profile.SaveFileJxlDurOverride = 1000; ImGui::SameLine();
+			if (Gutil::Button("0.5s"))  profile.SaveFileJxlDurOverride = 500;  ImGui::SameLine();
+			if (Gutil::Button("30fps")) profile.SaveFileJxlDurOverride = 33;   ImGui::SameLine();
+			if (Gutil::Button("60fps")) profile.SaveFileJxlDurOverride = 16;
+		}
+	}
+	else
+	{
+		ImGui::SetNextItemWidth(itemWidth);
+		ImGui::SliderInt("Frame Duration", &profile.SaveFileJxlDurMultiFrame, 0, 10000, "%d");
+		ImGui::SameLine(); Gutil::HelpMark("In milliseconds. Used for all frame durations.");
+		if (ImGui::Button("1.0s"))  profile.SaveFileJxlDurMultiFrame = 1000; ImGui::SameLine();
+		if (ImGui::Button("0.5s"))  profile.SaveFileJxlDurMultiFrame = 500;  ImGui::SameLine();
+		if (ImGui::Button("30fps")) profile.SaveFileJxlDurMultiFrame = 33;   ImGui::SameLine();
+		if (ImGui::Button("60fps")) profile.SaveFileJxlDurMultiFrame = 16;
+	}
+
+	float buttonWidth = Gutil::GetUIParamScaled(76.0f, 2.5f);
+	if (Gutil::Button("Reset", tVector2(buttonWidth, 0.0f)))
+	{
+		profile.SaveFileJxlLossless			= false;
+		profile.SaveFileJxlDistance			= 1.0f;
+		profile.SaveFileJxlDurOverride		= -1;
+		profile.SaveFileJxlDurMultiFrame	= 33;
+	}
+}
+
+
 void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 {
 	Config::ProfileData& profile = Config::GetProfileData();
@@ -480,52 +585,15 @@ void Viewer::DoSaveFiletypeOptions(tFileType fileType)
 			break;
 
 		case tFileType::GIF:
-			DoSaveGifOptions(false);
+			DoSaveGIFOptions(false);
 			break;
 
 		case tFileType::WEBP:
-			ImGui::Checkbox("Lossy", &profile.SaveFileWebpLossy);
-			if (profile.SaveFileWebpLossy)
-			{
-				ImGui::SliderFloat("Quality", &profile.SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
-				ImGui::SameLine(); Gutil::HelpMark("Lossy selected. This is the image quality percent.");
-			}
-			else
-			{
-				ImGui::SliderFloat("Compression", &profile.SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
-				ImGui::SameLine(); Gutil::HelpMark("Non-lossy selected. This is the image compression strength.\nBigger is slower and yields smaller files.");
-			}
-			
-			// The duration override only applies to animated (multi-frame) output, so hide it for a single still frame.
-			if (CurrImage && (CurrImage->GetNumPictures() > 1))
-			{
-				ImGui::SliderInt("Duration Override", &profile.SaveFileWebpDurOverride, -1, 10000, "%d");
-				ImGui::SameLine(); Gutil::HelpMark("In milliseconds. If set to >= 0, overrides all frame durations.\nIf -1, uses the current value for the frame.");
-				if (Gutil::Button("1.0s"))  profile.SaveFileWebpDurOverride = 1000; ImGui::SameLine();
-				if (Gutil::Button("0.5s"))  profile.SaveFileWebpDurOverride = 500;  ImGui::SameLine();
-				if (Gutil::Button("30fps")) profile.SaveFileWebpDurOverride = 33;   ImGui::SameLine();
-				if (Gutil::Button("60fps")) profile.SaveFileWebpDurOverride = 16;
-			}
+			DoSaveWEBPOptions(false);
 			break;
 
 		case tFileType::JXL:
-			ImGui::Checkbox("Lossless", &profile.SaveFileJxlLossless);
-			if (!profile.SaveFileJxlLossless)
-			{
-					ImGui::SliderFloat("Distance", &profile.SaveFileJxlDistance, 0.0f, 4.0f, "%.2f");
-					ImGui::SameLine(); Gutil::HelpMark("Target Butteraugli distance for lossy encoding. Lower is higher quality.\nRecommended range is 0.5 to 3.0. At the default of 1.0 you likely won't\nperceive any compression. 0.0 is basically lossless but may not be\nbit-for-bit exact -- use Lossless for a guaranteed exact round-trip.");
-			}
-
-			// The duration override only applies to animated (multi-frame) output, so hide it for a single still frame.
-			if (CurrImage && (CurrImage->GetNumPictures() > 1))
-			{
-				ImGui::SliderInt("Duration Override", &profile.SaveFileJxlDurOverride, -1, 10000, "%d");
-				ImGui::SameLine(); Gutil::HelpMark("In milliseconds. If set to >= 0, overrides all frame durations when saving an animation.\nIf -1, uses the current value for the frame.");
-				if (Gutil::Button("1.0s"))  profile.SaveFileJxlDurOverride = 1000; ImGui::SameLine();
-				if (Gutil::Button("0.5s"))  profile.SaveFileJxlDurOverride = 500;  ImGui::SameLine();
-				if (Gutil::Button("30fps")) profile.SaveFileJxlDurOverride = 33;   ImGui::SameLine();
-				if (Gutil::Button("60fps")) profile.SaveFileJxlDurOverride = 16;
-			}
+			DoSaveJXLOptions(false);
 			break;
 
 		case tFileType::QOI:
@@ -620,41 +688,15 @@ tString Viewer::DoSaveFiletypeMultiFrame()
 	switch (fileType)
 	{
 		case tFileType::GIF:
-			DoSaveGifOptions(true);
+			DoSaveGIFOptions(true);
 			break;
 
 		case tFileType::WEBP:
-			// @todo This should be using a standard options call like the GIF type.
-			ImGui::Checkbox("Lossy", &profile.SaveFileWebpLossy);
-			ImGui::SetNextItemWidth(itemWidth);
-			ImGui::SliderFloat("Quality / Compression", &profile.SaveFileWebpQualComp, 0.0f, 100.0f, "%.1f");
-			ImGui::SameLine(); Gutil::ToolTip("Image quality percent if lossy. Image compression strength if not lossy"); ImGui::NewLine();
-			ImGui::SetNextItemWidth(itemWidth);
-			ImGui::SliderInt("Frame Duration", &profile.SaveFileWebpDurMultiFrame, 0, 10000, "%d");
-			ImGui::SameLine(); Gutil::ToolTip("In milliseconds."); ImGui::NewLine();
-			if (ImGui::Button("1.0s"))  profile.SaveFileWebpDurMultiFrame = 1000; ImGui::SameLine();
-			if (ImGui::Button("0.5s"))  profile.SaveFileWebpDurMultiFrame = 500;  ImGui::SameLine();
-			if (ImGui::Button("30fps")) profile.SaveFileWebpDurMultiFrame = 33;   ImGui::SameLine();
-			if (ImGui::Button("60fps")) profile.SaveFileWebpDurMultiFrame = 16;
+			DoSaveWEBPOptions(true);
 			break;
 
-
 		case tFileType::JXL:
-			// @todo This should be using a standard options call like the GIF type.
-			ImGui::Checkbox("Lossless", &profile.SaveFileJxlLossless);
-			if (!profile.SaveFileJxlLossless)
-			{
-				ImGui::SetNextItemWidth(itemWidth);
-				ImGui::SliderFloat("Distance", &profile.SaveFileJxlDistance, 0.0f, 4.0f, "%.2f");
-				ImGui::SameLine(); Gutil::ToolTip("Butteraugli distance. Lower is higher quality. Recommended 0.5 to 3.0, default 1.0"); ImGui::NewLine();
-			}
-			ImGui::SetNextItemWidth(itemWidth);
-			ImGui::SliderInt("Frame Duration", &profile.SaveFileJxlDurMultiFrame, 0, 10000, "%d");
-			ImGui::SameLine(); Gutil::ToolTip("In milliseconds."); ImGui::NewLine();
-			if (ImGui::Button("1.0s"))  profile.SaveFileJxlDurMultiFrame = 1000; ImGui::SameLine();
-			if (ImGui::Button("0.5s"))  profile.SaveFileJxlDurMultiFrame = 500;  ImGui::SameLine();
-			if (ImGui::Button("30fps")) profile.SaveFileJxlDurMultiFrame = 33;   ImGui::SameLine();
-			if (ImGui::Button("60fps")) profile.SaveFileJxlDurMultiFrame = 16;
+			DoSaveJXLOptions(true);
 			break;
 
 		case tFileType::APNG:

@@ -236,7 +236,7 @@ struct ProfileData
 	bool	SaveFileWebpLossy;
 	float	SaveFileWebpQualComp;							// E [0.0, 100.0]
 	bool	SaveFileJxlLossless;
-	float	SaveFileJxlDistance;								// E [0.0, 4.0]
+	float	SaveFileJxlDistance;							// E [0.0, 25.0]
 	bool	SaveFileTiffZLibDeflate;
 	int		SaveFileGifBPP;									// E [1, 8]
 	int		SaveFileGifQuantMethod;							// E [0, 3]

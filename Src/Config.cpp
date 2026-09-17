@@ -697,7 +697,7 @@ void Config::ProfileData::Load(tExpression expr)
 	tiClamp		(SaveFileBmpDepthMode, 0, 2);
 	tiClamp		(SaveFileJpegQuality, 1, 100);
 	tiClamp		(SaveFileWebpQualComp, 0.0f, 100.0f);
-	tiClamp		(SaveFileJxlDistance, 0.0f, 4.0f);
+	tiClamp		(SaveFileJxlDistance, 0.0f, 25.0f);
 	tiClamp		(SaveFileGifBPP, 1, 8);
 	tiClamp		(SaveFileGifQuantMethod, 0, int(tImage::tQuantize::Method::NumMethods)-1);
 	tiClampMin	(SaveFileGifLoop, 0);
