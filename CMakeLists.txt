@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.24)
 
 cmake_policy(SET CMP0091 NEW)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
+
 # Set default build-type (AKA the configuration in other IDEs).
 set(CMAKE_BUILD_TYPE_INIT Release)
 
@@ -48,6 +50,10 @@ message(STATUS "Viewer -- InstallPrefix ${CMAKE_INSTALL_PREFIX}")
 
 include(FetchContent)
 
+# Project-local FetchContent extension that adds GIT_SPARSE_CHECKOUT support. Implemented in CMakeModules/FetchContent_Sparse.cmake.
+# Used below to grab and track image files from the tacentfixtures repository.
+include(FetchContent_Sparse)
+
 # Grab the Tacent library from github at configure time. Set desired options here first.
 if (CMAKE_SYSTEM_NAME MATCHES Windows)
 	option(TACENT_UTF16_API_CALLS "Build Tacent With UTF16 API Calls" On)
@@ -68,11 +74,30 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tacent)
 
-# After this call you can use variables tacent_POPULATED (a bool), tacent_BINARY_DIR, and tacent_SOURCE_DIR
+# After this call you can use variables tacent_POPULATED (a bool), tacent_BINARY_DIR, and tacent_SOURCE_DIR.
 FetchContent_GetProperties(tacent)
 message(STATUS "Viewer -- tacent_POPULATED: ${tacent_POPULATED}")
 message(STATUS "Viewer -- tacent_BINARY_DIR: ${tacent_BINARY_DIR}")
 message(STATUS "Viewer -- tacent_SOURCE_DIR: ${tacent_SOURCE_DIR}")
+
+# Grab the Tacent/TacentView test fixtures from github using a SPARSE checkout so we only pull the 'Images' tree instead
+# of the whole repository. This uses the project-local FetchContent_Sparse_Declare which supports GIT_SPARSE_CHECKOUT.
+# The standard FetchContent_MakeAvailable below then reports the dependency as already populated.
+#
+#   GIT_SPARSE_CHECKOUT = where to grab from (the 'Images' tree in the repo)
+#   SOURCE_DIR          = where the files land (its contents are copied in)
+#                       -> ${CMAKE_SOURCE_DIR}/Images/...
+FetchContent_Sparse_Declare(
+	tacentimagefixtures
+	GIT_REPOSITORY https://github.com/bluescan/tacentfixtures.git
+	GIT_TAG master
+	GIT_SPARSE_CHECKOUT Images
+	SOURCE_DIR ${CMAKE_SOURCE_DIR}/Images
+)
+FetchContent_MakeAvailable(tacentimagefixtures)
+FetchContent_GetProperties(tacentimagefixtures)
+message(STATUS "Viewer -- tacentimagefixtures_POPULATED: ${tacentfixtures_POPULATED}")
+message(STATUS "Viewer -- tacentimagefixtures_SOURCE_DIR: ${tacentfixtures_SOURCE_DIR}")
 
 # Files needed to create executable.
 add_executable(
