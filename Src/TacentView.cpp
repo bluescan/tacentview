@@ -2883,8 +2883,9 @@ void Viewer::SetUISize(Viewer::Config::ProfileData::UISizeEnum uiSize)
 
 	ImVector<ImWchar> ranges;
 	ImFontGlyphRangesBuilder builder;
-	builder.AddChar(0x2026);                               // Adds ellipsis.
-	builder.AddRanges(io.Fonts->GetGlyphRangesCyrillic()); // Default plus Cyrillic.
+	builder.AddChar(0x2026);								// Adds ellipsis.
+	builder.AddRanges(io.Fonts->GetGlyphRangesCyrillic());	// Default plus Cyrillic.
+	builder.AddRanges(io.Fonts->GetGlyphRangesGreek());		// Default plus Greek.
 	builder.BuildRanges(&ranges);
 
 	// The first step is to make sure ImGui has the font added. FontUISizeAdded stores either Invalid
