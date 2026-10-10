@@ -13,6 +13,13 @@ maintaining alphabetical ordering if applicable.
 4. If you need to create temporary files, or need a place for bat or Powershell
 or bash scripts, please put them in C:\ClinePads (or ~/ClinePads
 when running on a Linux distro).
+5. If you need the project's files at a specific commit (e.g. for A/B comparison
+or inspection), copy them into ClinePads in a way that leaves NO persistent
+references or links in the project repo. Prefer a plain snapshot, e.g.
+`git archive <commit> | tar -x -C C:\ClinePads\<folder>`. Do NOT use
+`git worktree add` for scratch copies -- it leaves a worktree entry under the
+project's `.git/worktrees` plus a `.git` pointer file that you must later
+clean up (via `git worktree remove` from the repo, not a plain delete).
 
 Further guidance on ClinePads. I want you to have a long term memory of
 what you worked on so you can reuse scripts or re-read results. Please organize
