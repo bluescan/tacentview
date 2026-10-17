@@ -46,6 +46,11 @@ check for an existing Recipe_ or Task_ folder before writing new scripts.
 Pull environment specifics (paths, flags, build steps) from the Recipe_
 folders instead of re-deriving them.
 
+When the user gives an authoritative instruction, decision, spec, or constraint,
+immediately persist it verbatim into a ClinePads `Task`/note file (or a repo
+file) and re-read that file after any compaction, and always before doing any
+related work. Never depend on conversation context to retain user instructions.
+
 You may find it helpful to maintain a build of TacentView. Use folders called
 Build_TacentView_DescriptionInCamelCase inside ClinePads. Configure it as an out
 of source build using cmake commands with the "install" build target. Ninja and
