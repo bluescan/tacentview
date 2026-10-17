@@ -3,6 +3,7 @@
 build*/
 
 # Ignore specific directories.
+# This Images folder is fetched from tacentfixtures.
 /Images/
 
 # Filetypes in directories.
