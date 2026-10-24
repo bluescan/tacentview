@@ -198,6 +198,8 @@ namespace Viewer
 	tFileTypes FileTypes_LosslessTransform
 	(
 		tFileType::JPG,
+		tFileType::HEIC,
+		tFileType::AVIF,
 		tFileType::EOL
 	);
 

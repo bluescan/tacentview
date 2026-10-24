@@ -178,10 +178,12 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 {
 	static const char* transName = nullptr;
 	static LosslessTransformMode currMode = LosslessTransformMode::None;
-	static bool isPerfect = false;
+	static bool jpgNotAreaPreservingWarning = false;
 
 	float buttonWidth = Gutil::GetUIParamScaled(76.0f, 2.5f);
 
+	// Mode is only non-none temporarily for the first call. The stuff inside
+	// this if does not run every update frame.
 	if (mode != LosslessTransformMode::None)
 	{
 		currMode = mode;
@@ -197,25 +199,30 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 			// @todo This isn't ideal as we are loading the jpg only to find out if a perfect
 			// lossless transformation is possible. Later the user may press the lossless button
 			// in which case we need to load the jpg again.
-			isPerfect = false;
+			jpgNotAreaPreservingWarning = false;
 			tImage::tImageJPG jpg;
 			tImage::tImageJPG::LoadParams params;
 			params.Flags = tImage::tImageJPG::LoadFlag_NoDecompress;
 			jpg.Load(CurrImage->Filename, params);
 			if (jpg.IsValid())
 			{
+				tImage::tImageJPG::Transform trans = tImage::tImageJPG::Transform::Identity;
+
 				switch (mode)
 				{
-					case LosslessTransformMode::Rot90ACW:	isPerfect = jpg.CanDoPerfectLosslessTransform(tImage::tImageJPG::Transform::Rotate90ACW);	break;
-					case LosslessTransformMode::Rot90CW:	isPerfect = jpg.CanDoPerfectLosslessTransform(tImage::tImageJPG::Transform::Rotate90CW);	break;
-					case LosslessTransformMode::FlipH:		isPerfect = jpg.CanDoPerfectLosslessTransform(tImage::tImageJPG::Transform::FlipH);			break;
-					case LosslessTransformMode::FlipV:		isPerfect = jpg.CanDoPerfectLosslessTransform(tImage::tImageJPG::Transform::FlipV);			break;
+					case LosslessTransformMode::Rot90ACW:	trans = tImage::tImageJPG::Transform::Rotate90ACW;	break;
+					case LosslessTransformMode::Rot90CW:	trans = tImage::tImageJPG::Transform::Rotate90CW;	break;
+					case LosslessTransformMode::FlipH:		trans = tImage::tImageJPG::Transform::FlipH;		break;
+					case LosslessTransformMode::FlipV:		trans = tImage::tImageJPG::Transform::FlipV;		break;
 				}
+
+				jpgNotAreaPreservingWarning = !jpg.CanDoPerfectLosslessTransform(trans);
 			}
 		}
 		else
 		{
-			isPerfect = true;
+			// This is a specific warning just for some jpg files.
+			jpgNotAreaPreservingWarning = false;
 		}
 		ImGui::OpenPopup("Lossless Transform");
 	}
@@ -225,9 +232,11 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 	if (!ImGui::BeginPopupModal("Lossless Transform", &isOpenRen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
 		return;
 
+	tString fileTypeName = tSystem::tGetFileTypeName(CurrImage->Filetype);
 	ImGui::Text
 	(
-		"Tacent View supports lossless %ss.\n"
+		"Tacent View supports lossless %ss\n"
+		"for %s files.\n"
 		"\n"
 		"If you select 'Normal' the transform will be performed\n"
 		"but if you save to a lossy format it will need to re-compress.\n"
@@ -235,14 +244,14 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 		"If you press 'Lossless' the transform will be applied directly\n"
 		"to the file without decompressing. The image will be saved\n"
 		"and reloaded. There is no undo but also no loss of quality.\n\n",
-		transName
+		transName, fileTypeName.Chr()
 	);
 
-	if (!isPerfect)
+	if (jpgNotAreaPreservingWarning)
 	{
 		ImGui::Text
 		(
-			"Note: For this file a perfect (area-preserving) transformation\n"
+			"Note: For this JPeg a perfect (area-preserving) transformation\n"
 			"is not possible because the width or height is not a multiple of\n"
 			"the JPeg MCU block-size. If you press 'Lossless' you will still\n"
 			"get a lossless image afterwards, but the right or bottom edge\n"
@@ -288,6 +297,7 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 				jpg.Load(CurrImage->Filename, params);
 				if (!jpg.IsValid())
 					break;
+
 				switch (currMode)
 				{
 					case LosslessTransformMode::Rot90ACW:	jpg.LosslessTransform(tImage::tImageJPG::Transform::Rotate90ACW);	break;
@@ -298,7 +308,48 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 				fileSaved = jpg.Save(CurrImage->Filename);
 				break;
 			}
+
+			case tSystem::tFileType::HEIC:
+			{
+				tImage::tImageHEIC heic;
+				tImage::tImageHEIC::LoadParams params;
+				params.Flags = tImage::tImageHEIC::LoadFlag_NoDecompress;
+				heic.Load(CurrImage->Filename, params);
+				if (!heic.IsValid())
+					break;
+
+				switch (currMode)
+				{
+					case LosslessTransformMode::Rot90ACW:	heic.LosslessTransform(tImage::HEIFTransform::Rotate90ACW);		break;
+					case LosslessTransformMode::Rot90CW:	heic.LosslessTransform(tImage::HEIFTransform::Rotate90CW);		break;
+					case LosslessTransformMode::FlipH:		heic.LosslessTransform(tImage::HEIFTransform::FlipH);			break;
+					case LosslessTransformMode::FlipV:		heic.LosslessTransform(tImage::HEIFTransform::FlipV);			break;
+				}
+				fileSaved = heic.Save(CurrImage->Filename);
+				break;
+			}
+
+			case tSystem::tFileType::AVIF:
+			{
+				tImage::tImageAVIF avif;
+				tImage::tImageAVIF::LoadParams params;
+				params.Flags = tImage::tImageAVIF::LoadFlag_NoDecompress;
+				avif.Load(CurrImage->Filename, params);
+				if (!avif.IsValid())
+					break;
+
+				switch (currMode)
+				{
+					case LosslessTransformMode::Rot90ACW:	avif.LosslessTransform(tImage::HEIFTransform::Rotate90ACW);		break;
+					case LosslessTransformMode::Rot90CW:	avif.LosslessTransform(tImage::HEIFTransform::Rotate90CW);		break;
+					case LosslessTransformMode::FlipH:		avif.LosslessTransform(tImage::HEIFTransform::FlipH);			break;
+					case LosslessTransformMode::FlipV:		avif.LosslessTransform(tImage::HEIFTransform::FlipV);			break;
+				}
+				fileSaved = avif.Save(CurrImage->Filename);
+				break;
+			}
 		}
+
 		if (fileSaved)
 		{
 			CurrImage->Unbind();
