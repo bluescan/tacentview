@@ -16,7 +16,6 @@
 #include <Math/tColour.h>
 #include <System/tFile.h>
 #include <Image/tPixelFormat.h>
-#include <Image/tPixelUtil.h>
 #include <Image/tFrame.h>
 #include <Image/tImageTIFF.h>
 #include <Image/tImageAPNG.h>
@@ -26,6 +25,7 @@
 #include <Image/tImagePNG.h>
 #include <Image/tImageQOI.h>
 #include <Image/tImageBMP.h>
+#include <Image/tUtilPixel.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "imgui.h"
