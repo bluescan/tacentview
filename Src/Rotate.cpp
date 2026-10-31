@@ -2,7 +2,7 @@
 //
 // Modals for rotating an image.
 //
-// Copyright (c) 2020-2024 Tristan Grimmer.
+// Copyright (c) 2020-2024, 2026 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -242,8 +242,8 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 		"but if you save to a lossy format it will need to re-compress.\n"
 		"\n"
 		"If you press 'Lossless' the transform will be applied directly\n"
-		"to the file without decompressing. The image will be saved\n"
-		"and reloaded. There is no undo but also no loss of quality.\n\n",
+		"to the file without decoding. The image will be saved and\n"
+		"reloaded. There is no undo but also no loss of quality.\n\n",
 		transName, fileTypeName.Chr()
 	);
 
@@ -363,3 +363,4 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 
 	ImGui::EndPopup();
 }
+
