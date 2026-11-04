@@ -202,7 +202,7 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 			jpgNotAreaPreservingWarning = false;
 			tImage::tImageJPG jpg;
 			tImage::tImageJPG::LoadParams params;
-			params.Flags = tImage::tImageJPG::LoadFlag_NoDecompress;
+			params.Flags = tImage::tImageJPG::LoadFlag_NoDecode;
 			jpg.Load(CurrImage->Filename, params);
 			if (jpg.IsValid())
 			{
@@ -293,7 +293,7 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 			{
 				tImage::tImageJPG jpg;
 				tImage::tImageJPG::LoadParams params;
-				params.Flags = tImage::tImageJPG::LoadFlag_NoDecompress;
+				params.Flags = tImage::tImageJPG::LoadFlag_NoDecode;
 				jpg.Load(CurrImage->Filename, params);
 				if (!jpg.IsValid())
 					break;
@@ -313,7 +313,7 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 			{
 				tImage::tImageHEIC heic;
 				tImage::tImageHEIC::LoadParams params;
-				params.Flags = tImage::tImageHEIC::LoadFlag_NoDecompress;
+				params.Flags = tImage::tImageHEIC::LoadFlag_NoDecode;
 				heic.Load(CurrImage->Filename, params);
 				if (!heic.IsValid())
 					break;
@@ -333,7 +333,7 @@ void Viewer::DoLosslessTransformModal(LosslessTransformMode mode)
 			{
 				tImage::tImageAVIF avif;
 				tImage::tImageAVIF::LoadParams params;
-				params.Flags = tImage::tImageAVIF::LoadFlag_NoDecompress;
+				params.Flags = tImage::tImageAVIF::LoadFlag_NoDecode;
 				avif.Load(CurrImage->Filename, params);
 				if (!avif.IsValid())
 					break;
