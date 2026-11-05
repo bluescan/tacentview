@@ -1,4 +1,9 @@
-* linguist-vendored
-*.cpp linguist-vendored=false
-* -text
+# Every file in this repository is third-party/vendored.
+# * linguist-vendored
 
+# Overrides the first rule specifically for C++ source files. Setting it to
+# false tells GitHub these .cpp files are my handwritten source code.
+# *.cpp linguist-vendored=false
+
+# Leave my text line endings alone. I will manage them myself thank you.
+* -text
