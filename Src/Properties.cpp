@@ -2,7 +2,7 @@
 //
 // Image properties display and editor window.
 //
-// Copyright (c) 2019-2024 Tristan Grimmer.
+// Copyright (c) 2019-2024, 2026 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -742,12 +742,39 @@ void Viewer::ShowPropertiesWindow(bool* popen)
 			Gutil::HelpMark("Gamma to use [0.6, 3.0]. Hold Ctrl to speedup. Open preferences to edit default gamma value.");
 			tMath::tiClamp(CurrImage->LoadParams_HDR.Gamma, 0.6f, 3.0f);
 
+			// Auto-exposure mode. Map the LoadFlag bitmask to a 3-state combo (None / Mean / White).
+			int autoExpMode = 0;	// 0 = None (manual Exposure), 1 = Mean, 2 = White.
+			if (CurrImage->LoadParams_HDR.Flags & tImageHDR::LoadFlag_AutoExposureWhite)
+				autoExpMode = 2;
+			else if (CurrImage->LoadParams_HDR.Flags & tImageHDR::LoadFlag_AutoExposureMean)
+				autoExpMode = 1;
+			const char* autoExpItems[] = { "None", "Mean", "White" };
 			ImGui::SetNextItemWidth(itemWidth);
-			if (ImGui::InputInt("Exposure", &CurrImage->LoadParams_HDR.Exposure))
+			if (ImGui::Combo("Auto Exposure", &autoExpMode, autoExpItems, tNumElements(autoExpItems)))
+			{
+				CurrImage->LoadParams_HDR.Flags &= ~(tImageHDR::LoadFlag_AutoExposureMean | tImageHDR::LoadFlag_AutoExposureWhite);
+				if (autoExpMode == 1) CurrImage->LoadParams_HDR.Flags |= tImageHDR::LoadFlag_AutoExposureMean;
+				if (autoExpMode == 2) CurrImage->LoadParams_HDR.Flags |= tImageHDR::LoadFlag_AutoExposureWhite;
+				reloadChanges = true;
+			}
+			ImGui::SameLine();
+			Gutil::HelpMark
+			(
+				"Auto Exposure\n"
+				"None  : Use the manual Exposure value below.\n"
+				"Mean  : Auto-expose so the mean luminance targets ~18% grey, in either direction (brighten or darken).\n"
+				"White : Auto-expose so the mean luminance targets ~18% grey, but only ever darkens (never brightens).\n",
+				false
+			);
+
+			// Manual exposure only applies when Auto Exposure is set to 'None'.
+			bool autoExposureOn = (CurrImage->LoadParams_HDR.Flags & (tImageHDR::LoadFlag_AutoExposureMean | tImageHDR::LoadFlag_AutoExposureWhite)) != 0;
+			ImGui::SetNextItemWidth(itemWidth);
+			if (!autoExposureOn && ImGui::InputInt("Exposure", &CurrImage->LoadParams_HDR.Exposure, 1, 4, 0))
 				reloadChanges = true;
 			ImGui::SameLine();
-			Gutil::HelpMark("Exposure adjustment [-10, 10]. Hold Ctrl to speedup.");
-			tMath::tiClamp(CurrImage->LoadParams_HDR.Exposure, -10, 10);
+			Gutil::HelpMark("Exposure adjustment [-24, 24] (stops, x2 each). Hold Ctrl to speedup. Greyed out while Auto Exposure is not 'None'.");
+			tMath::tiClamp(CurrImage->LoadParams_HDR.Exposure, -24, 24);
 
 			// The GetWindowContentRegionMax is OK here since width was fixed to a specific size before the Begin call.
 			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - itemWidth);

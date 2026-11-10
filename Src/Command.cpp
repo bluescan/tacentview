@@ -590,8 +590,31 @@ void Command::ParseLoadParametersHDR()
 				break;
 
 			case tHash::tHashCT("expo"):
-				LoadParamsHDR.Exposure = (value == "*") ? 0 : tMath::tClamp(value.AsInt(), -10, 10);
+				LoadParamsHDR.Exposure = (value == "*") ? 0 : tMath::tClamp(value.AsInt(), -24, 24);
 				break;
+
+			case tHash::tHashCT("aexpo"):
+			{
+				// Auto-exposure mode: none | mean | white.
+				if (value == "*")
+					LoadParamsHDR.Flags = tImage::tImageHDR::LoadFlags_Default;
+				else
+					switch (tHash::tHashString(value.Chr()))
+					{
+						case tHash::tHashCT("none"):
+							LoadParamsHDR.Flags &= ~(tImage::tImageHDR::LoadFlag_AutoExposureMean | tImage::tImageHDR::LoadFlag_AutoExposureWhite);
+							break;
+						case tHash::tHashCT("mean"):
+							LoadParamsHDR.Flags &= ~(tImage::tImageHDR::LoadFlag_AutoExposureWhite);
+							LoadParamsHDR.Flags |= tImage::tImageHDR::LoadFlag_AutoExposureMean;
+							break;
+						case tHash::tHashCT("white"):
+							LoadParamsHDR.Flags &= ~(tImage::tImageHDR::LoadFlag_AutoExposureMean);
+							LoadParamsHDR.Flags |= tImage::tImageHDR::LoadFlag_AutoExposureWhite;
+							break;
+					}
+				break;
+			}
 		}
 	}
 }
