@@ -26,14 +26,16 @@
 #     )
 #     FetchContent_MakeAvailable(myfixtures)
 #
-# GIT_SPARSE_CHECKOUT names the path(s) in the repository to fetch (e.g. 'Images'),
-# i.e. where to grab the files FROM. SOURCE_DIR is the final destination: the
-# CONTENTS of the first listed path are copied directly into it, so
-#     GIT_SPARSE_CHECKOUT Images   +   SOURCE_DIR <dir>   ->   <dir>/<each item in 'Images'>
-# If several paths are listed, their contents are all merged into SOURCE_DIR.
-# The temporary clone (and its .git) is removed afterwards, so only the requested
-# content is left behind. SOURCE_DIR must be a subdirectory (or a build-tree
-# path), never the source root itself.
+# GIT_SPARSE_CHECKOUT names the path(s) in the repository to fetch (a directory such as
+# 'Images', or a single file such as 'README.md'), i.e. where to grab the files FROM.
+# SOURCE_DIR is the final destination: each listed path is placed there under its OWN
+# name, keeping the repository's tree structure intact, so
+#     GIT_SPARSE_CHECKOUT CSV FileSystem Images   +   SOURCE_DIR <dir>
+#         ->   <dir>/CSV, <dir>/FileSystem, <dir>/Images
+# If several paths are listed, they are all placed side by side in SOURCE_DIR (e.g. a
+# repo with CSV/, FileSystem/, Images/ and README.md can be reproduced verbatim under
+# any folder). The temporary clone (and its .git) is removed afterwards, so only the
+# requested content is left behind.
 #
 # Revision (GIT_TAG) and auto-tracking:
 #   * branch  (e.g. master)  -> tracked: `git ls-remote` reports the current tip;
@@ -56,8 +58,18 @@
 #   -DFETCHCONTENT_SPARSE_REFRESH=ON                  (every sparse dep)
 #   -DFETCHCONTENT_SPARSE_REFRESH=myfixtures           (just that one)
 #
-# Deletions propagate: every re-fetch MIRRORS the destination (clears it, then
-# copies), so files removed upstream are removed from SOURCE_DIR too.
+# Re-fetch semantics (SYNC, not mirror): a re-fetch UPDATES the destination -- fetched
+# files are added and any whose content changed are overwritten, while local files that
+# are not part of the fetch (e.g. test outputs saved into the tree) are left alone and
+# upstream deletions do not propagate. If nothing upstream changed, a re-configure is a
+# fast no-op (no clone, no copy). To force a full mirror (clear the destination first)
+# pass -DFETCHCONTENT_SPARSE_CLEAR=ON (every sparse dep) or
+# -DFETCHCONTENT_SPARSE_CLEAR=<name> (just that one). The clear is guarded: it will
+# never remove the source root or anything above it.
+#
+# BOTH REFRESH and CLEAR are ONE-SHOT: once read they are consumed (removed from the
+# CMake cache) so a stale flag cannot keep wiping local files (CLEAR) or force re-fetches
+# (REFRESH) on later, plain re-configures. Re-pass the -D flag if you need it again.
 
 include_guard(GLOBAL)
 
@@ -231,7 +243,9 @@ function(FetchContent_Sparse_Declare contentName)
     # Where the fetch bookkeeping (stamp) lives. Kept in the build tree, never
     # in the source tree.
     set(stampFile "${binaryDir}/.FetchContent_Sparse_${contentName}.stamp")
-    list(JOIN "${FC_GIT_SPARSE_CHECKOUT}" "," pathsJoined)
+    # NB: pass the list UNQUOTED -- CMake 4.x's list(JOIN) no longer accepts a
+    # quoted ;-list as its first argument (it silently produces an empty string).
+    list(JOIN FC_GIT_SPARSE_CHECKOUT "," pathsJoined)
 
     # Is the requested revision a fixed commit hash? Branches/tags can move and
     # are auto-tracked; a hash cannot move and is never re-polled.
@@ -268,6 +282,23 @@ function(FetchContent_Sparse_Declare contentName)
             set(_refresh ON)
         endif()
     endif()
+    # ---- Optional CLEAR hatch (mirror): clear the destination before the copy. -------
+    #   -DFETCHCONTENT_SPARSE_CLEAR=ON                 -> every sparse dep
+    #   -DFETCHCONTENT_SPARSE_CLEAR=<name>[;<name>...]  -> just those
+    set(_clear OFF)
+    if(DEFINED FETCHCONTENT_SPARSE_CLEAR AND NOT FETCHCONTENT_SPARSE_CLEAR STREQUAL "OFF")
+        if(FETCHCONTENT_SPARSE_CLEAR MATCHES "^(ON|TRUE|YES|1)$"
+           OR "${contentName}" IN_LIST FETCHCONTENT_SPARSE_CLEAR)
+            set(_clear ON)
+        endif()
+    endif()
+
+    # One-shot semantics: both hatch flags have now been consumed for this dependency --
+    # remove any cache entries so a later plain re-configure stays on the safe, fast
+    # path (a stale CLEAR must never keep wiping local files, and a stale REFRESH must
+    # not keep forcing network re-fetches).
+    unset(FETCHCONTENT_SPARSE_REFRESH CACHE)
+    unset(FETCHCONTENT_SPARSE_CLEAR CACHE)
 
     # ---- Disconnected fast-paths -------------------------------------------
     if(_fullyDisc OR _updatesDisc)
@@ -378,27 +409,41 @@ function(FetchContent_Sparse_Declare contentName)
     endif()
     string(STRIP "${_headSha}" _headSha)
 
-    # 5) Verify every sparse path exists and is non-empty in the scratch clone
-    #    BEFORE touching the destination, so a bad fetch can't wipe good content.
+    # 5) Verify every sparse path exists in the scratch clone BEFORE touching the
+    #    destination, so a bad fetch can't disturb it. A directory must be
+    #    non-empty; a single file (e.g. 'README.md') is fine as-is. The paths
+    #    THEMSELVES are what get copied (with their structure, including any
+    #    dotfiles inside them) so the destination keeps the repository layout.
     set(_copyItems "")
     foreach(path IN LISTS FC_GIT_SPARSE_CHECKOUT)
         set(srcPath "${cloneDir}/${path}")
-        if(NOT IS_DIRECTORY "${srcPath}")
-            message(FATAL_ERROR "FetchContent_Sparse(${contentName}): sparse path '${path}' not found in ${FC_GIT_REPOSITORY} (rev: ${FC_GIT_TAG}).")
+        if(IS_DIRECTORY "${srcPath}")
+            file(GLOB _items   "${srcPath}/*")
+            file(GLOB _hidden "${srcPath}/.[^ ]*")   # also count dotfiles
+            list(APPEND _items ${_hidden})
+            if(NOT _items)
+                message(FATAL_ERROR "FetchContent_Sparse(${contentName}): sparse path '${path}' is an empty directory.")
+            endif()
+        else()
+            # Not a directory: a single file (e.g. 'README.md') is fine as-is;
+            # anything else is a bad path. (CMake 4's if() has no IS_FILE.)
+            if(NOT EXISTS "${srcPath}")
+                message(FATAL_ERROR "FetchContent_Sparse(${contentName}): sparse path '${path}' not found in ${FC_GIT_REPOSITORY} (rev: ${FC_GIT_TAG}).")
+            endif()
         endif()
-        file(GLOB _items  "${srcPath}/*")
-        file(GLOB _hidden "${srcPath}/.[^ ]*")   # also pick up dotfiles
-        list(APPEND _items ${_hidden})
-        if(NOT _items)
-            message(FATAL_ERROR "FetchContent_Sparse(${contentName}): sparse path '${path}' is empty.")
-        endif()
-        list(APPEND _copyItems ${_items})
+        list(APPEND _copyItems "${srcPath}")
     endforeach()
 
-    # 6) MIRROR the destination: clear it (guarded), then copy the fresh content.
-    #    Clearing first is what makes *deletions* propagate; SafeRemove refuses
-    #    to touch the source tree or anything above it, so this is safe.
-    FetchContent_Sparse_SafeRemove("${FC_SOURCE_DIR}")
+    # 6) SYNC the destination: copy each fetched path in, updating files whose content
+    #    changed (file(COPY) leaves unchanged files alone, so a re-fetch is quick).
+    #    Local files that are not part of the fetch (e.g. generated test output) are
+    #    preserved, and deletions upstream do not propagate. Only when
+    #    FETCHCONTENT_SPARSE_CLEAR is set is the destination cleared first, giving a
+    #    true mirror; the clear goes through SafeRemove so it can never touch the
+    #    source root or anything above it.
+    if(_clear)
+        FetchContent_Sparse_SafeRemove("${FC_SOURCE_DIR}")
+    endif()
     file(MAKE_DIRECTORY "${FC_SOURCE_DIR}")
     file(COPY ${_copyItems} DESTINATION "${FC_SOURCE_DIR}")
 

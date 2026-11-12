@@ -85,14 +85,14 @@ message(STATUS "Viewer -- tacent_SOURCE_DIR: ${tacent_SOURCE_DIR}")
 # The standard FetchContent_MakeAvailable below then reports the dependency as already populated.
 #
 #   GIT_SPARSE_CHECKOUT = where to grab from (the 'Images' tree in the repo)
-#   SOURCE_DIR          = where the files land (its contents are copied in)
+#   SOURCE_DIR          = where the files land ('Images' is placed there under its own name)
 #                       -> ${CMAKE_SOURCE_DIR}/Images/...
 FetchContent_Sparse_Declare(
 	tacentimagefixtures
 	GIT_REPOSITORY https://github.com/bluescan/tacentfixtures.git
 	GIT_TAG master
 	GIT_SPARSE_CHECKOUT Images
-	SOURCE_DIR ${CMAKE_SOURCE_DIR}/Images
+	SOURCE_DIR ${CMAKE_SOURCE_DIR}
 )
 FetchContent_MakeAvailable(tacentimagefixtures)
 FetchContent_GetProperties(tacentimagefixtures)
