@@ -4268,7 +4268,7 @@ void Viewer::UnloadAppImages()
 }
 
 
-#ifdef TACENT_UTF16_API_CALLS
+#ifdef PLATFORM_WINDOWS
 int wmain(int argc, wchar_t** argv)
 #else
 int main(int argc, char** argv)

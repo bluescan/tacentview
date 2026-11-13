@@ -54,11 +54,6 @@ include(FetchContent)
 # Used below to grab and track image files from the tacentfixtures repository.
 include(FetchContent_Sparse)
 
-# Grab the Tacent library from github at configure time. Set desired options here first.
-if (CMAKE_SYSTEM_NAME MATCHES Windows)
-	option(TACENT_UTF16_API_CALLS "Build Tacent With UTF16 API Calls" On)
-endif()
-
 # HEIC/AVIF loading support in Tacent (via LibHEIF).
 option(TACENT_ENABLE_HEIF "Build Tacent With LibHEIF Support (HEIC/AVIF)" On)
 
@@ -214,10 +209,9 @@ target_compile_definitions(
 		# These shouldn't actually be necessary as there are no direct Windows API calls
 		# in TacentView (they are abstracted away by the Tacent libraries). But just in case
 		# anything in the viewer were to call an OS-level function, these enable the UTF-16
-		# versions if the TACENT_UTF16_API_CALLS option is set.
-		$<$<AND:$<PLATFORM_ID:Windows>,$<BOOL:${TACENT_UTF16_API_CALLS}>>:UNICODE>	# C++	UFF-16
-		$<$<AND:$<PLATFORM_ID:Windows>,$<BOOL:${TACENT_UTF16_API_CALLS}>>:_UNICODE>	# C		UTF-16
-		$<$<AND:$<PLATFORM_ID:Windows>,$<BOOL:${TACENT_UTF16_API_CALLS}>>:TACENT_UTF16_API_CALLS>
+		# versions.
+		$<$<PLATFORM_ID:Windows>:UNICODE>	# C++	UFF-16 API CALLS
+		$<$<PLATFORM_ID:Windows>:_UNICODE>	# C		UTF-16 API CALLS
 )
 
 # Set compiler option flags based on specific compiler and configuration.
@@ -290,16 +284,14 @@ target_link_libraries(
 if (MSVC)
 	target_link_options(
 		${PROJECT_NAME}
-		PRIVATE
-		$<IF:$<BOOL:${TACENT_UTF16_API_CALLS}>,/ENTRY:wmainCRTStartup,/ENTRY:mainCRTStartup>
+		PRIVATE "/ENTRY:wmainCRTStartup"
 		#"/SUBSYSTEM:CONSOLE"
 		#"/SUBSYSTEM:WINDOWS"
 	)
 	if (CMAKE_BUILD_TYPE MATCHES Debug)
 		target_link_options(
 			${PROJECT_NAME}
-			PRIVATE
-				"/NODEFAULTLIB:LIBCMT.lib"
+			PRIVATE "/NODEFAULTLIB:LIBCMT.lib"
 	)
 	endif()
 endif()

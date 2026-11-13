@@ -8,7 +8,6 @@
 	"version": "0.2.0",
 	"configurations":
 	[
-
 		{
 			"name": "Launch GDB",
 			"type": "cppdbg",
@@ -16,7 +15,7 @@
 			"program": "${command:cmake.buildDirectory}/ViewerInstall/tacentview",
 			"args": [],
 			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}/TestImages/Variety",
+			"cwd": "${workspaceFolder}/Images/Photos",
 			"environment": [],
 			"externalConsole": false,
 			"MIMode": "gdb",
@@ -37,7 +36,7 @@
 			"program": "${command:cmake.buildDirectory}/ViewerInstall/tacentview.exe",
 			"args": [],
 			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}/TestImages/Variety",
+			"cwd": "${workspaceFolder}/Images/Photos",
 			"environment": [],
 			"console": "integratedTerminal",
 		}

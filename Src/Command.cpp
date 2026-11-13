@@ -1475,12 +1475,7 @@ int Command::Process()
 		tString platform	= tGetPlatformNameShort( tGetPlatform() );
 		tString architec	= tGetArchitectureName( tGetArchitecture() );
 		tString config		= tGetConfigurationName( tGetConfiguration() );
-		#ifdef TACENT_UTF16_API_CALLS
-		tString api			= "UTF-16";
-		#else
-		tString api			= "UTF-8";
-		#endif
-		tPrintfNorm("%s %s %s %s API\n", platform.Chr(), architec.Chr(), config.Chr(), api.Chr());
+		tPrintfNorm("%s %s %s\n", platform.Chr(), architec.Chr(), config.Chr());
 
 		if (OptionHelp)
 			tPrintfNorm("CLI Mode\n");
