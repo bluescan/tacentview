@@ -1185,7 +1185,11 @@ void Command::ParseSaveParametersGIF()
 				break;
 
 			case tHash::tHashCT("dith"):
-				SaveParamsGIF.DitherLevel = (value == "*") ? 0.0 : tMath::tClampMin(value.AsDouble(), 0.0);
+				SaveParamsGIF.DitherLevel = (value == "*") ? -1.0f : tMath::tClampMin(value.AsFloat(), 0.0f);
+				break;
+
+			case tHash::tHashCT("bw"):
+				SaveParamsGIF.ForceBlackAndWhite = (value == "*") ? false : value.AsBool();
 				break;
 
 			case tHash::tHashCT("filt"):

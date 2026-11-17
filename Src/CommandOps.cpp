@@ -1339,10 +1339,12 @@ Command::OperationQuantize::OperationQuantize(const tString& argsStr)
 		{
 			case tImage::tQuantize::Method::Spatial:
 				if (ditherStr == "*")
-					Dither = 0.0;
+					Dither = -1.0f;
 				else
-					Dither = ditherStr.AsDouble();
-				tMath::tiClamp(Dither, 0.0, 30.0);
+				{
+					Dither = ditherStr.AsFloat();
+					tMath::tiClamp(Dither, 0.0f, 30.0f);
+				}
 				break;
 		}
 	}

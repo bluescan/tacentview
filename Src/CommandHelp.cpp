@@ -1276,10 +1276,9 @@ R"OPERATIONS020(
         For neu quant this is the sample-factor from 1* to 30. Smaller values
         are better quality -- more faithful representation of the original.
   dith: Dither amount. Only applies to scolorq. Values from 0.0 to 30.0.
-        The default is 0.0* which means auto-determine the dither amount based
-        on the image dimensions and number of colours. Otherwise, a value of
-        0.1 results in essentially no dither, and at around 20.0 there is
-        significant dithering.
+        The default is * which auto-determines a good amount based on the image
+        dimensions and number of colours. 0.0 disables dithering. Values
+        greater than 0.0 set the amount with 20.0 being significant dithering.
 
 --op channel[mode*,chan*,col*]
   Channel operations affect components of all pixels. The supported modes
@@ -1535,11 +1534,12 @@ with save parameters:
         for auto-mode where a threshold of 127 if used if image is not opaque.
         If set to -1 and image is opaque, the resultant GIF will be opaque.
   dur:  Frame duration override in 1/100 s. Use -1* for no override.
-  dith: Dither level. Value in [0.0,2.0+]. Only applies to spatial
-        quantization. 0.0* means auto-determine a good value for the current
-        image based on its dimensions. Greater than 0.0 means manually set the
-        amount. A dither value of 0.1 results in no dithering. 2.0 results in
-        significant dithering.
+  dith: Dither level. Only applies to spatial scolorq quantization. Value in
+        [0.0,2.0+]. Default (*) auto-determines a good value for the current
+        image based on its dimensions. 0.0 disables dithering. Greater than 0.0
+        manually sets the amount with 2.0 being significant dithering.
+  bw:   Force a pure black & white (2-colour) GIF. Only applies when bpp is 1
+        and the quantization method is spatial (spc). * is off, 1 turns it on.
   filt: Filter size. Only applies to spatial quantization. Must be 1, 3*, 5.
   samp: Sample factor. Range is [1,30]. Only applies to neu quantization. 1*
         means whole image learning. 10 means 1/10 of image only. Max value 30

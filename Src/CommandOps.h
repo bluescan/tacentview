@@ -6,7 +6,7 @@
 // post-operations and implement things like creating contact-sheets or amalgamating multiple images into a single
 // animated image.
 //
-// Copyright (c) 2023 Tristan Grimmer.
+// Copyright (c) 2023, 2026 Tristan Grimmer.
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 // granted, provided that the above copyright notice and this permission notice appear in all copies.
 //
@@ -188,11 +188,11 @@ struct OperationBrightness : public Operation
 struct OperationQuantize : public Operation
 {
 	OperationQuantize(const tString& args);
-	tImage::tQuantize::Method Method					= tImage::tQuantize::Method::Fixed;		// Required.
+	tImage::tQuantize::Method Method					= tImage::tQuantize::Method::Fixed;	// Required.
 	int NumColours										= 256;							// Required.
 	bool CheckExact										= true;							// Optional.
 	int SampFilt										= 0;							// Optional. 0 is invalid.
-	double Dither										= 0.0;							// Optional, 0.0 is auto.
+	float Dither										= -1.0f;						// Optional. <0.0f auto, 0.0f no dither, >0.0f amount.
 
 	bool Apply(Viewer::Image&) override;
 };

@@ -827,8 +827,9 @@ bool Image::Save(const tString& outFile, tFileType fileType, bool useConfigSaveP
 				params.Loop						= profile.SaveFileGifLoop;
 				params.AlphaThreshold			= profile.SaveFileGifAlphaThreshold;
 				params.OverrideFrameDuration	= profile.SaveFileGifDurOverride;
-				params.DitherLevel				= double(profile.SaveFileGifDitherLevel);
+				params.DitherLevel				= profile.SaveFileGifDitherLevel;
 				params.FilterSize				= (profile.SaveFileGifFilterSize * 2) + 1;
+				params.ForceBlackAndWhite		= profile.SaveFileGifForceBW;
 				params.SampleFactor				= profile.SaveFileGifSampleFactor;
 			}
 			success = gif.Save(outFile, params);
@@ -1319,7 +1320,7 @@ void Image::QuantizeFixed(int numColours, bool checkExact)
 }
 
 
-void Image::QuantizeSpatial(int numColours, bool checkExact, double ditherLevel, int filterSize)
+void Image::QuantizeSpatial(int numColours, bool checkExact, float ditherLevel, int filterSize)
 {
 	tString desc; tsPrintf(desc, "Quantize %d", numColours);
 	PushUndo(desc);

@@ -50,7 +50,7 @@ float Viewer::ComputeApproxQuantizeDuration(const Image* image, tImage::tQuantiz
 }
 
 
-void Viewer::DoQuantizeInterface(int& method, int& spatialFilterSize, float& spatialDitherLevel, int& neuSampleFactor, float itemWidth)
+void Viewer::DoQuantizeInterface(int& method, int& spatialFilterSize, bool& spatialAutoDither, float& spatialDitherLevel, int& neuSampleFactor, float itemWidth)
 {
 	if (itemWidth > 0.0f)
 		ImGui::SetNextItemWidth(itemWidth);
@@ -87,16 +87,26 @@ void Viewer::DoQuantizeInterface(int& method, int& spatialFilterSize, float& spa
 		ImGui::SameLine();
 		Gutil::HelpMark("Filter size for the scolorq/spatial quantizer. Low -> 1, Med -> 3, High -> 5");
 
-		if (itemWidth > 0.0f)
-			ImGui::SetNextItemWidth(itemWidth);
-		ImGui::SliderFloat("Quantize Dither", &spatialDitherLevel, 0.0f, 2.0f, "%.1f");
+		ImGui::Checkbox("Auto Dither", &spatialAutoDither);
 		ImGui::SameLine();
 		Gutil::HelpMark
 		(
-			"Dither level for the scolorq/spatial quantizer. 0 means auto-determine a good value for\n"
-			"the current image based on its dimensions. Greater than zero means manually set the\n"
-			"amount. A dither value of 0.1 results in no dithering. 2.0 results in significant dithering."
+			"If checked, a good dither amount is auto-determined for the current image.\n"
+			"If unchecked, use the Quantize Dither slider to set the amount manually."
 		);
+
+		if (!spatialAutoDither)
+		{
+			if (itemWidth > 0.0f)
+				ImGui::SetNextItemWidth(itemWidth);
+			ImGui::SliderFloat("Quantize Dither", &spatialDitherLevel, 0.0f, 2.0f, "%.1f");
+			ImGui::SameLine();
+			Gutil::HelpMark
+			(
+				"Dither amount for the scolorq/spatial quantizer. 0.0 means no dithering at all.\n"
+				"0.1 is very light dithering. 2.0 is significant dithering."
+			);
+		}
 	}
 
 	if (method == int(tQuantize::Method::Neu))
@@ -136,11 +146,12 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 	tAssert(CurrImage);
 	static int method = int(tImage::tQuantize::Method::Wu);
 	static int spatialFilterSize = 1;
+	static bool autoDither = true;
 	static float spatialDitherLevel = 0.0f;
 	static int neuSampleFactor = 1;
 	static int numColours = 256;
 
-	DoQuantizeInterface(method, spatialFilterSize, spatialDitherLevel, neuSampleFactor, itemWidth);
+	DoQuantizeInterface(method, spatialFilterSize, autoDither, spatialDitherLevel, neuSampleFactor, itemWidth);
 
 	ImGui::SetNextItemWidth(itemWidth);
 	ImGui::InputInt("Num Colours", &numColours);
@@ -187,6 +198,7 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 	{
 		method = int(tImage::tQuantize::Method::Wu);
 		spatialFilterSize = 1;
+		autoDither = true;
 		spatialDitherLevel = 0.0f;
 		neuSampleFactor = 1;
 		numColours = 256;
@@ -215,7 +227,7 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 			case tImage::tQuantize::Method::Spatial:
 			{
 				int filterSize135 = (spatialFilterSize * 2) + 1;
-				CurrImage->QuantizeSpatial(numColours, checkExact, spatialDitherLevel, filterSize135);
+				CurrImage->QuantizeSpatial(numColours, checkExact, autoDither ? -1.0 : spatialDitherLevel, filterSize135);
 				break;
 			}
 

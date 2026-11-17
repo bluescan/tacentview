@@ -274,7 +274,7 @@ void Viewer::SaveMultiFrameTo(const tString& outFile, int outWidth, int outHeigh
 			params.Loop						= profile.SaveFileGifLoop;
 			params.AlphaThreshold			= profile.SaveFileGifAlphaThreshold;
 			params.OverrideFrameDuration	= profile.SaveFileGifDurMultiFrame;
-			params.DitherLevel				= double(profile.SaveFileGifDitherLevel);
+			params.DitherLevel				= profile.SaveFileGifDitherLevel;
 			params.FilterSize				= (profile.SaveFileGifFilterSize * 2) + 1;
 			params.SampleFactor				= profile.SaveFileGifSampleFactor;
 			success = gif.Save(outFile, params);

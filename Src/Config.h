@@ -245,6 +245,8 @@ struct ProfileData
 	float	SaveFileGifDitherLevel;							// E [0.0f, inf]
 	int		SaveFileGifFilterSize;							// E [0, 2] Maps to 1, 3, 5.
 	int		SaveFileGifSampleFactor;						// E [1, 10]
+	bool	SaveFileGifAutoDither;
+	bool	SaveFileGifForceBW;
 
 	int		SaveFileWebpDurOverride;						// E [-1, inf]. In ms.
 	int		SaveFileJxlDurOverride;							// E [-1, inf]. In ms.

@@ -21,7 +21,7 @@ namespace Viewer
 	void DoQuantizeInterface
 	(
 		int& method,
-		int& spatialFilterSize, float& spatialDitherLevel, int& neuSampleFactor,
+		int& spatialFilterSize, bool& spatialAutoDither, float& spatialDitherLevel, int& neuSampleFactor,
 		float itemWidth = 0.0f
 	);
 }

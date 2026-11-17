@@ -360,24 +360,40 @@ void Viewer::DoSaveGIFOptions(bool multiframeConfigValues)
 	(
 		profile.SaveFileGifQuantMethod,
 		profile.SaveFileGifFilterSize,
+		profile.SaveFileGifAutoDither,
 		profile.SaveFileGifDitherLevel,
 		profile.SaveFileGifSampleFactor,
 		itemWidth
 	);
 
-	ImGui::SetNextItemWidth(itemWidth);
-	ImGui::InputInt("Alpha Threshold", &profile.SaveFileGifAlphaThreshold);
-	tiClamp(profile.SaveFileGifAlphaThreshold, -1, 255);
-	ImGui::SameLine(); Gutil::HelpMark
-	(
-		"Gif only supports binary alpha. Set threshold -1 to auto-determine if the GIF\n"
-		"should have alpha -- if the image is fully opaque the GIF will not have alpha and\n"
-		"if the image has transparency, a threshold of 127 will be used. When threshold\n"
-		"between 0 and 254 (both inclusive) it will use the threshold to determine if the\n"
-		"pixel is transparent or not. A pixel alpha less-than or equal means the pixel\n"
-		"will be transparent. Larger means opaque. If the threshold is set to 255 it will\n"
-		"force the gif to be opaque regardless of the pixel alpha value."
-	);
+	if ((profile.SaveFileGifBPP == 1) && (profile.SaveFileGifQuantMethod == int(tImage::tQuantize::Method::Spatial)))
+	{
+		ImGui::Checkbox("Black & White", &profile.SaveFileGifForceBW);
+		ImGui::SameLine();
+		Gutil::HelpMark
+		(
+			"Forces a pure black/white 2-colour GIF. The Spatial quantizer still dithers\n"
+			"to preserve smooth transitions. Only applies to the Spatial Scolorq method\n"
+			"and when the Bits per Pixel is 1."
+		);
+	}
+
+	if (profile.SaveFileGifBPP > 1)
+	{
+		ImGui::SetNextItemWidth(itemWidth);
+		ImGui::InputInt("Alpha Threshold", &profile.SaveFileGifAlphaThreshold);
+		tiClamp(profile.SaveFileGifAlphaThreshold, -1, 255);
+		ImGui::SameLine(); Gutil::HelpMark
+		(
+			"Gif only supports binary alpha. Set threshold -1 to auto-determine if the GIF\n"
+			"should have alpha -- if the image is fully opaque the GIF will not have alpha and\n"
+			"if the image has transparency, a threshold of 127 will be used. When threshold\n"
+			"between 0 and 254 (both inclusive) it will use the threshold to determine if the\n"
+			"pixel is transparent or not. A pixel alpha less-than or equal means the pixel\n"
+			"will be transparent. Larger means opaque. If the threshold is set to 255 it will\n"
+			"force the gif to be opaque regardless of the pixel alpha value."
+		);
+	}
 
 	ImGui::SetNextItemWidth(itemWidth);
 	if (!multiframeConfigValues)
@@ -419,7 +435,11 @@ void Viewer::DoSaveGIFOptions(bool multiframeConfigValues)
 	tString desc;
 	tsPrintf(desc, " %d-bit palette GIF. If animated, loops %s.\n", profile.SaveFileGifBPP, loopDesc.Chr());
 	if (profile.SaveFileGifBPP == 1)
+	{
 		tsaPrintf(desc, " 2-colour images are always opaque.\n");
+		if ((profile.SaveFileGifQuantMethod == int(tQuantize::Method::Spatial)) && profile.SaveFileGifForceBW)
+			tsaPrintf(desc, " Forced pure black/white.\n");
+	}
 	else if (profile.SaveFileGifAlphaThreshold < 0)
 		tsaPrintf(desc, " Auto-alpha. If image transparent %d colours.\n", (1 << profile.SaveFileGifBPP) - 1);
 	else if (profile.SaveFileGifAlphaThreshold >= 255)
@@ -440,6 +460,8 @@ void Viewer::DoSaveGIFOptions(bool multiframeConfigValues)
 		profile.SaveFileGifDitherLevel		= 0.0f;
 		profile.SaveFileGifFilterSize		= 1;
 		profile.SaveFileGifSampleFactor		= 1;
+		profile.SaveFileGifAutoDither		= true;
+		profile.SaveFileGifForceBW			= false;
 		profile.SaveFileGifDurOverride		= -1;
 		profile.SaveFileGifDurMultiFrame	= 3;
 	}
@@ -1201,8 +1223,9 @@ bool Viewer::SavePictureAs(tImage::tPicture& picture, const tString& outFile, tF
 			params.Loop						= profile.SaveFileGifLoop;
 			params.AlphaThreshold			= profile.SaveFileGifAlphaThreshold;
 			params.OverrideFrameDuration	= profile.SaveFileGifDurOverride;
-			params.DitherLevel				= double(profile.SaveFileGifDitherLevel);
+			params.DitherLevel				= profile.SaveFileGifAutoDither ? -1.0f : profile.SaveFileGifDitherLevel;
 			params.FilterSize				= (profile.SaveFileGifFilterSize * 2) + 1;
+			params.ForceBlackAndWhite		= profile.SaveFileGifForceBW && (profile.SaveFileGifBPP == 1);
 			params.SampleFactor				= profile.SaveFileGifSampleFactor;
 			success = gif.Save(outFile, params);
 			break;

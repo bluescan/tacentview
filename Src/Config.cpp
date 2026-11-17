@@ -397,6 +397,8 @@ void Config::ProfileData::Reset(Viewer::Profile profile, uint32 categories)
 		SaveFileGifDitherLevel		= 0.0f;
 		SaveFileGifFilterSize		= 1;
 		SaveFileGifSampleFactor		= 1;
+		SaveFileGifAutoDither		= true;
+		SaveFileGifForceBW			= false;
 		SaveFileWebpDurOverride		= -1;
 		SaveFileJxlDurOverride		= -1;	
 		SaveFileGifDurOverride		= -1;
@@ -596,6 +598,8 @@ void Config::ProfileData::Load(tExpression expr)
 			ReadItem(SaveFileGifDitherLevel);
 			ReadItem(SaveFileGifFilterSize);
 			ReadItem(SaveFileGifSampleFactor);
+			ReadItem(SaveFileGifAutoDither);
+			ReadItem(SaveFileGifForceBW);
 
 			ReadItem(SaveFileWebpDurOverride);
 			ReadItem(SaveFileJxlDurOverride);
@@ -805,6 +809,8 @@ bool Config::ProfileData::Save(tExprWriter& writer) const
 	WriteItem(SaveFileGifDitherLevel);
 	WriteItem(SaveFileGifFilterSize);
 	WriteItem(SaveFileGifSampleFactor);
+	WriteItem(SaveFileGifAutoDither);
+	WriteItem(SaveFileGifForceBW);
 
 	WriteItem(SaveFileWebpDurOverride);
 	WriteItem(SaveFileJxlDurOverride);
