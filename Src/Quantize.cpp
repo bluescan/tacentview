@@ -150,6 +150,7 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 	static float spatialDitherLevel = 0.0f;
 	static int neuSampleFactor = 1;
 	static int numColours = 256;
+	static bool forceBW = false;
 
 	DoQuantizeInterface(method, spatialFilterSize, autoDither, spatialDitherLevel, neuSampleFactor, itemWidth);
 
@@ -161,6 +162,19 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 		"The number of colours you are quantizing to. Must be between 2 and 256."
 	);
 	tMath::tiClamp(numColours, 2, 256);
+
+	// Black & White. Only meaningful for the Spatial quantizer at exactly 2 colours.
+	if ((numColours == 2) && (method == int(tImage::tQuantize::Method::Spatial)))
+	{
+		ImGui::Checkbox("Black & White", &forceBW);
+		ImGui::SameLine();
+		Gutil::HelpMark
+		(
+			"Instead of generating a 2-colour palette from the image, dither against a fixed\n"
+			"pure black and white palette. Produces a black & white image with (optional)\n"
+			"dithering to preserve smooth transitions."
+		);
+	}
 
 	static bool checkExact = true;
 	ImGui::Checkbox("Check Exact", &checkExact);
@@ -227,7 +241,7 @@ void Viewer::DoQuantizeModal(bool quantizeImagePressed)
 			case tImage::tQuantize::Method::Spatial:
 			{
 				int filterSize135 = (spatialFilterSize * 2) + 1;
-				CurrImage->QuantizeSpatial(numColours, checkExact, autoDither ? -1.0 : spatialDitherLevel, filterSize135);
+				CurrImage->QuantizeSpatial(numColours, checkExact, autoDither ? -1.0 : spatialDitherLevel, filterSize135, forceBW && (numColours == 2));
 				break;
 			}
 

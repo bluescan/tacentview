@@ -1320,12 +1320,16 @@ void Image::QuantizeFixed(int numColours, bool checkExact)
 }
 
 
-void Image::QuantizeSpatial(int numColours, bool checkExact, float ditherLevel, int filterSize)
+void Image::QuantizeSpatial(int numColours, bool checkExact, float ditherLevel, int filterSize, bool forceBlackAndWhite)
 {
-	tString desc; tsPrintf(desc, "Quantize %d", numColours);
+	tString desc;
+	if (forceBlackAndWhite)
+		tsPrintf(desc, "Quantize 2 BW");
+	else
+		tsPrintf(desc, "Quantize %d", numColours);
 	PushUndo(desc);
 	for (tPicture* picture = Pictures.First(); picture; picture = picture->Next())
-		picture->QuantizeSpatial(numColours, checkExact, ditherLevel, filterSize);
+		picture->QuantizeSpatial(numColours, checkExact, ditherLevel, filterSize, forceBlackAndWhite);
 
 	Dirty = true;
 }
